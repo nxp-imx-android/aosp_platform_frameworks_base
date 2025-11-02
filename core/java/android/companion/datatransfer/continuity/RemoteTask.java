@@ -17,17 +17,17 @@
 package android.companion.datatransfer.continuity;
 
 import android.annotation.FlaggedApi;
-import android.annotation.SystemApi;
-import android.annotation.Nullable;
-import android.graphics.drawable.Icon;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.SystemApi;
+import android.graphics.drawable.Icon;
 import android.os.Parcel;
 import android.os.Parcelable;
 import java.util.Objects;
 
 /**
- * This represents a task currently running on another device owned by the user. This is returned by
- * the {@link TaskContinuityManager#getRemoteTasks()} method.
+ * This represents a task currently on another device owned by the user. This is returned by the
+ * {@link TaskContinuityManager#getRemoteTasks()} method.
  *
  * <p>Consumers should use this class to display remote tasks to the user in an interface (such as
  * the device's launcher). When the user wishes to hand off this task to the current device, this
@@ -39,13 +39,15 @@ import java.util.Objects;
 @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
 public final class RemoteTask implements Parcelable {
 
-    private final int mId;
-    private final int mDeviceId;
-    @NonNull private final String mLabel;
+    private final int mTaskId;
+    private final int mCompanionDeviceAssociationId;
+    @Nullable private final String mLabel;
     private final boolean mIsHandoffEnabled;
-    @NonNull private final String mSourceDeviceName;
+    @Nullable private final String mAssociationDisplayName;
     private final long mLastUsedTimestampMillis;
     @Nullable private final Icon mIcon;
+    private final boolean mIsTaskInForeground;
+    @Nullable private final String mPackageName;
 
     public static final @NonNull Parcelable.Creator<RemoteTask> CREATOR =
             new Parcelable.Creator<RemoteTask>() {
@@ -61,21 +63,35 @@ public final class RemoteTask implements Parcelable {
             };
 
     RemoteTask(@NonNull Builder builder) {
-        mId = builder.mId;
-        mDeviceId = builder.mDeviceId;
+        mTaskId = builder.mTaskId;
+        mCompanionDeviceAssociationId = builder.mCompanionDeviceAssociationId;
         mLabel = builder.mLabel;
         mIcon = builder.mIcon;
         mIsHandoffEnabled = builder.mIsHandoffEnabled;
-        mSourceDeviceName = builder.mSourceDeviceName;
+        mAssociationDisplayName = builder.mAssociationDisplayName;
         mLastUsedTimestampMillis = builder.mLastUsedTimestampMillis;
+        mIsTaskInForeground = builder.mIsTaskInForeground;
+        mPackageName = builder.mPackageName;
     }
 
     RemoteTask(@NonNull Parcel in) {
-        mId = in.readInt();
-        mDeviceId = in.readInt();
-        mLabel = in.readString();
+        Objects.requireNonNull(in);
+
+        mTaskId = in.readInt();
+        mCompanionDeviceAssociationId = in.readInt();
+        if (in.readInt() != 0) {
+            mLabel = in.readString();
+        } else {
+            mLabel = null;
+        }
+
         mIsHandoffEnabled = in.readBoolean();
-        mSourceDeviceName = in.readString();
+        if (in.readInt() != 0) {
+            mAssociationDisplayName = in.readString();
+        } else {
+            mAssociationDisplayName = null;
+        }
+
         mLastUsedTimestampMillis = in.readLong();
         if (in.readInt() != 0) {
             mIcon =
@@ -84,29 +100,32 @@ public final class RemoteTask implements Parcelable {
         } else {
             mIcon = null;
         }
+        mIsTaskInForeground = in.readBoolean();
+        if (in.readInt() != 0) {
+            mPackageName = in.readString();
+        } else {
+            mPackageName = null;
+        }
     }
 
     /**
      * Returns the ID of this task on the remote device. This is the same ID provided by {@link
-     * ActivityManager.RunningTaskInfo#taskId}
+     * ActivityManager.RunningTaskInfo#taskId} on the remote device.
      */
-    public int getId() {
-        return mId;
+    public int getTaskId() {
+        return mTaskId;
     }
 
-    /**
-     * Returns the device ID of the remote device. This is guaranteed to be a unique identifier for
-     * the device.
-     */
-    public int getDeviceId() {
-        return mDeviceId;
+    /** Returns the ID of the device association where this task is located. */
+    public int getCompanionDeviceAssociationId() {
+        return mCompanionDeviceAssociationId;
     }
 
     /**
      * Returns the label of this task on the remote device. This is the name of the {@link Activity}
      * represented by {@link ActivityTaskManager.RunningTaskInfo#baseActivity}
      */
-    @NonNull
+    @Nullable
     public String getLabel() {
         return mLabel;
     }
@@ -129,10 +148,21 @@ public final class RemoteTask implements Parcelable {
         return mIsHandoffEnabled;
     }
 
-    /** Returns the name of the source device. */
-    @NonNull
-    public String getSourceDeviceName() {
-        return mSourceDeviceName;
+    /** Returns if this task is currently in the foreground on the remote device. */
+    public boolean isTaskInForeground() {
+        return mIsTaskInForeground;
+    }
+
+    /** Returns the package name of the top activity of the task on the remote device. */
+    @Nullable
+    public String getPackageName() {
+        return mPackageName;
+    }
+
+    /** Returns the display name associated with this association. */
+    @Nullable
+    public String getAssociationDisplayName() {
+        return mAssociationDisplayName;
     }
 
     /** Returns the last used timestamp of the task. */
@@ -148,26 +178,30 @@ public final class RemoteTask implements Parcelable {
     @Override
     public int hashCode() {
         return Objects.hash(
-                mId,
-                mDeviceId,
+                mTaskId,
+                mCompanionDeviceAssociationId,
                 mLabel,
                 mIcon,
                 mIsHandoffEnabled,
-                mSourceDeviceName,
-                mLastUsedTimestampMillis);
+                mAssociationDisplayName,
+                mLastUsedTimestampMillis,
+                mIsTaskInForeground,
+                mPackageName);
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof RemoteTask) {
             RemoteTask other = (RemoteTask) o;
-            return mId == other.mId
-                    && mDeviceId == other.mDeviceId
+            return mTaskId == other.mTaskId
+                    && mCompanionDeviceAssociationId == other.mCompanionDeviceAssociationId
                     && Objects.equals(mLabel, other.mLabel)
                     && (mIcon == null ? other.mIcon == null : mIcon.sameAs(other.mIcon))
                     && mIsHandoffEnabled == other.mIsHandoffEnabled
                     && mLastUsedTimestampMillis == other.mLastUsedTimestampMillis
-                    && Objects.equals(mSourceDeviceName, other.mSourceDeviceName);
+                    && Objects.equals(mAssociationDisplayName, other.mAssociationDisplayName)
+                    && mIsTaskInForeground == other.mIsTaskInForeground
+                    && Objects.equals(mPackageName, other.mPackageName);
         }
 
         return false;
@@ -175,11 +209,23 @@ public final class RemoteTask implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeInt(mId);
-        dest.writeInt(mDeviceId);
-        dest.writeString(mLabel);
+        Objects.requireNonNull(dest);
+
+        dest.writeInt(mTaskId);
+        dest.writeInt(mCompanionDeviceAssociationId);
+        if (mLabel != null) {
+            dest.writeInt(1);
+            dest.writeString(mLabel);
+        } else {
+            dest.writeInt(0);
+        }
         dest.writeBoolean(mIsHandoffEnabled);
-        dest.writeString(mSourceDeviceName);
+        if (mAssociationDisplayName != null) {
+            dest.writeInt(1);
+            dest.writeString(mAssociationDisplayName);
+        } else {
+            dest.writeInt(0);
+        }
         dest.writeLong(mLastUsedTimestampMillis);
         if (mIcon != null) {
             dest.writeInt(1);
@@ -187,25 +233,49 @@ public final class RemoteTask implements Parcelable {
         } else {
             dest.writeInt(0);
         }
+        dest.writeBoolean(mIsTaskInForeground);
+        if (mPackageName != null) {
+            dest.writeInt(1);
+            dest.writeString(mPackageName);
+        } else {
+            dest.writeInt(0);
+        }
     }
 
     /** Builder for {@link RemoteTask}. */
     public static final class Builder {
-        private int mId = 0;
-        private int mDeviceId = 0;
-        @NonNull private String mLabel = "";
+        private int mTaskId = 0;
+        private int mCompanionDeviceAssociationId = 0;
+        @Nullable private String mPackageName = null;
+        @Nullable private String mLabel = null;
         @Nullable private Icon mIcon = null;
+        @Nullable private String mAssociationDisplayName = null;
         private boolean mIsHandoffEnabled = false;
-        @NonNull private String mSourceDeviceName = "";
         private long mLastUsedTimestampMillis = 0;
+        private boolean mIsTaskInForeground = false;
 
         /**
-         * Creates a new builder for a task with the given ID.
+         * Creates a new builder for a remote task with the given ID.
          *
-         * @param id The ID of the task.
+         * @param companionDeviceAssociationId The ID of the device association where this task is
+         *     located.
+         * @param taskId The ID of the task.
          */
-        public Builder(int id) {
-            mId = id;
+        public Builder(int companionDeviceAssociationId, int taskId) {
+            mCompanionDeviceAssociationId = companionDeviceAssociationId;
+            mTaskId = taskId;
+        }
+
+        /**
+         * Sets if the task is currently in the foreground on the remote device.
+         *
+         * @param isTaskInForeground Whether the task is currently in the foreground on the remote
+         *     device.
+         */
+        @NonNull
+        public Builder setTaskInForeground(boolean isTaskInForeground) {
+            mIsTaskInForeground = isTaskInForeground;
+            return this;
         }
 
         /**
@@ -214,7 +284,7 @@ public final class RemoteTask implements Parcelable {
          * @param label The label of the task.
          */
         @NonNull
-        public Builder setLabel(@NonNull String label) {
+        public Builder setLabel(@Nullable String label) {
             mLabel = label;
             return this;
         }
@@ -231,18 +301,6 @@ public final class RemoteTask implements Parcelable {
         }
 
         /**
-         * Sets the device ID of the remote device. This is guaranteed to be a unique identifier for
-         * the device.
-         *
-         * @param deviceId The device ID of the remote device.
-         */
-        @NonNull
-        public Builder setDeviceId(int deviceId) {
-            mDeviceId = deviceId;
-            return this;
-        }
-
-        /**
          * Sets if the task is eligible to be handed off to the current device.
          *
          * @param isHandoffEnabled Whether the task is eligible to be handed off to the current
@@ -255,13 +313,24 @@ public final class RemoteTask implements Parcelable {
         }
 
         /**
-         * Sets the name of the source device.
+         * Sets the name of the association, if applicable.
          *
-         * @param sourceDeviceName The name of the source device.
+         * @param associationDisplayName The name of the source device.
          */
         @NonNull
-        public Builder setSourceDeviceName(@NonNull String sourceDeviceName) {
-            mSourceDeviceName = sourceDeviceName;
+        public Builder setAssociationDisplayName(@Nullable String associationDisplayName) {
+            mAssociationDisplayName = associationDisplayName;
+            return this;
+        }
+
+        /**
+         * Sets the package name of the top activity of the task on the remote device.
+         *
+         * @param packageName The package name of the top activity of the task on the remote device.
+         */
+        @NonNull
+        public Builder setPackageName(@Nullable String packageName) {
+            mPackageName = packageName;
             return this;
         }
 
