@@ -63,6 +63,16 @@ flag {
 }
 
 flag {
+  name: "camera_compat_update_treatment_on_rotation"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Update the camera compatibility treatment when the display rotates, as it needs different rotate and crop amount."
+  bug: "335826583"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "scrolling_from_letterbox"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether to enable app scrolling from gestures from letterbox area"
