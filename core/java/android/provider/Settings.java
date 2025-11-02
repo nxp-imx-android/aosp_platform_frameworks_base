@@ -18483,7 +18483,6 @@ public final class Settings {
          * @hide
          */
         @Readable
-        @FlaggedApi(android.app.admin.flags.Flags.FLAG_BACKUP_CONNECTED_APPS_SETTINGS)
         public static final String CONNECTED_APPS_ALLOWED_PACKAGES =
                 "connected_apps_allowed_packages";
 
@@ -18494,7 +18493,6 @@ public final class Settings {
          * @hide
          */
         @Readable
-        @FlaggedApi(android.app.admin.flags.Flags.FLAG_BACKUP_CONNECTED_APPS_SETTINGS)
         public static final String CONNECTED_APPS_DISALLOWED_PACKAGES =
                 "connected_apps_disallowed_packages";
 

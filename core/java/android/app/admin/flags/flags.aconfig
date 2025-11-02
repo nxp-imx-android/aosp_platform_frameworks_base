@@ -296,13 +296,6 @@ flag {
 }
 
 flag {
-    name: "backup_connected_apps_settings"
-    namespace: "enterprise"
-    description: "backup and restore connected work and personal apps user settings across devices"
-    bug: "175067666"
-}
-
-flag {
     name: "headless_single_min_target_sdk"
     namespace: "enterprise"
     description: "Only allow DPCs targeting Android V to provision into single user mode"
