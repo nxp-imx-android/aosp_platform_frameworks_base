@@ -17,7 +17,6 @@
 package com.android.systemui.shade;
 
 import static com.android.systemui.Flags.communalShadeTouchHandlingFixes;
-import static com.android.systemui.Flags.hubBlurredByShadeFix;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
@@ -369,13 +368,11 @@ public class NotificationShadeWindowViewController implements Dumpable {
             if (!mView.dispatchTouchEvent(event)) {
                 return;
             }
-            if (hubBlurredByShadeFix()) {
-                // When the DragDownHelper has already initiated a drag of the shade over the hub,
-                // just send the touch. If onInterceptTouchEvent is called again mid-drag, it can
-                // lead to ACTION_UP being ignored, causing the shade to become stuck.
-                mExternalTouchIntercepted = mUseDragDownHelperForTouch
-                        && mDragDownHelper.isDraggingDown();
-            }
+            // When the DragDownHelper has already initiated a drag of the shade over the hub,
+            // just send the touch. If onInterceptTouchEvent is called again mid-drag, it can
+            // lead to ACTION_UP being ignored, causing the shade to become stuck.
+            mExternalTouchIntercepted = mUseDragDownHelperForTouch
+                    && mDragDownHelper.isDraggingDown();
             if (!mExternalTouchIntercepted) {
                 mExternalTouchIntercepted = mView.onInterceptTouchEvent(event);
             }
