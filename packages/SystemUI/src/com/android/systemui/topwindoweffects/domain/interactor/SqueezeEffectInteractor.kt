@@ -30,8 +30,6 @@ import kotlinx.coroutines.flow.filterNotNull
 class SqueezeEffectInteractor
 @Inject
 constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
-    val isSqueezeEffectHapticEnabled = squeezeEffectRepository.isSqueezeEffectHapticEnabled
-
     val isPowerButtonLongPressed = squeezeEffectRepository.isPowerButtonLongPressed
 
     val gestureProgress = squeezeEffectRepository.gestureProgress
