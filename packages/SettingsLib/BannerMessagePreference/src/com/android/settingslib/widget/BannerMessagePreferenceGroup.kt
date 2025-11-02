@@ -84,6 +84,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         val wasAdded = super.addPreference(preference)
         if (wasAdded) {
             childPreferences.add(preference)
+            childPreferences.sortBy { it.order }
             maybeCreateExpandCollapsePreference()
             updateCollapsedItemCount()
             updateVisibilities()
