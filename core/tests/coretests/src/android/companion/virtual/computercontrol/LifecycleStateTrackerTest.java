@@ -91,15 +91,55 @@ public class LifecycleStateTrackerTest {
     }
 
     @Test
-    public void changeStateFromCallback_throwsIllegalStateException() {
+    public void onBlocked_notifiesCallback() {
+        // Add a callback to the tracker.
         mLifecycle.addCallback(mMockCallback);
-        doAnswer((inv) -> {
-            mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
-            return null;
-        }).when(mMockCallback).onBlocked(anyInt(), any());
 
+        // Transition to the blocked state.
+        mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT, "test.package");
+
+        // Verify that the callback's onBlocked method was called with the correct parameters.
+        verify(mMockCallback).onBlocked(
+                eq(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT), eq("test.package"));
+    }
+
+    @Test
+    public void onActive_afterClosed_throwsIllegalStateException() {
+        // Close the session first.
+        mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
+
+        // Attempting to transition to active after being closed should throw an exception.
+        assertThrows(IllegalStateException.class, () -> mLifecycle.onActive());
+    }
+
+    @Test
+    public void onBlocked_afterClosed_throwsIllegalStateException() {
+        // Close the session first.
+        mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
+
+        // Attempting to transition to blocked after being closed should throw an exception.
         assertThrows(IllegalStateException.class,
                 () -> mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT,
-                        null));
+                        "test.package"));
+    }
+
+    @Test
+    public void onActive_whenAlreadyActive_throwsIllegalStateException() {
+        // Transition to active state.
+        mLifecycle.onActive();
+
+        // Attempting to transition to active again should throw an exception.
+        assertThrows(IllegalStateException.class, () -> mLifecycle.onActive());
+    }
+
+    @Test
+    public void onBlocked_whenAlreadyBlocked_throwsIllegalStateException() {
+        // Transition to blocked state.
+        mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT, "test.package");
+
+        // Attempting to transition to the same blocked state again should throw an exception.
+        assertThrows(IllegalStateException.class,
+                () -> mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT,
+                        "test.package"));
     }
 }
