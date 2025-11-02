@@ -1801,16 +1801,6 @@ flag {
 }
 
 flag {
-    name: "lowlight_clock_uses_keyguard_charging_status"
-    namespace: "systemui"
-    description: "Make sure keyguard and low-light clock show the same charging status."
-    bug: "424297980"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "gesture_between_hub_and_lockscreen_motion"
     namespace: "systemui"
     description: "Motion update when gestures into and out of glanceable hub from lockscreen."
