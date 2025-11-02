@@ -54,13 +54,14 @@ import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * Logic related to the ability to wake directly to GONE from asleep (AOD/DOZING), without going
@@ -158,7 +159,7 @@ constructor(
                         keyguardInteractor.isKeyguardDismissible.value) ||
                     (currentState == KeyguardState.GONE && startedStep.to == KeyguardState.GONE)
             }
-            .distinctUntilChanged()
+            .stateIn(scope, SharingStarted.Eagerly, false)
 
     /**
      * Counter that is incremented every time we wake up or stop dreaming. Upon sleeping/dreaming,
