@@ -147,3 +147,19 @@ flag {
     bug: "441566552"
     is_fixed_read_only: false
 }
+
+flag {
+  name: "redact_web_otp_sms_api"
+  namespace: "telephony"
+  description: "API flag for redacting WebOTP SMS messages from untrusted packages"
+  is_exported: true
+  bug: "437043173"
+}
+
+flag {
+  name: "redact_otp_app_compat_api"
+  namespace: "telephony"
+  description: "App Compat API flag for redacting OTP messages from untrusted packages"
+  is_exported: true
+  bug: "437043173"
+}
