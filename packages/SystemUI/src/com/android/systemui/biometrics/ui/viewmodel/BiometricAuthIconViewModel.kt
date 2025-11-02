@@ -343,7 +343,7 @@ constructor(
             }
             .distinctUntilChanged()
 
-    val udfpsLocation by
+    val udfpsLocationState by
         deviceEntryUdfpsInteractor.udfpsLocation.hydratedStateOf(
             traceName = "udfpsLocationState",
             initialValue = null,

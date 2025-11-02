@@ -59,12 +59,20 @@ class FakeFingerprintPropertyRepository @Inject constructor() : FingerprintPrope
     }
 
     /** setProperties as if the device supports UDFPS_OPTICAL. */
-    fun supportsUdfps(sensorStrength: SensorStrength = SensorStrength.STRONG) {
+    fun supportsUdfps(
+        sensorStrength: SensorStrength = SensorStrength.STRONG,
+        displayId: String? = "screen0",
+    ) {
         setProperties(
             sensorId = 0,
             strength = sensorStrength,
             sensorType = FingerprintSensorType.UDFPS_OPTICAL,
-            sensorLocations = emptyMap(),
+            sensorLocations =
+                if (displayId != null) {
+                    mapOf(Pair(displayId, SensorLocationInternal(displayId, 500, 1700, 100)))
+                } else {
+                    emptyMap()
+                },
         )
     }
 
