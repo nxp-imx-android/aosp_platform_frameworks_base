@@ -11431,6 +11431,7 @@ package android.content {
     field public static final String APP_OPS_SERVICE = "appops";
     field public static final String APP_SEARCH_SERVICE = "app_search";
     field public static final String AUDIO_SERVICE = "audio";
+    field @FlaggedApi("android.service.autofill.public_autofill_service_name") public static final String AUTOFILL_SERVICE = "autofill";
     field public static final String BATTERY_SERVICE = "batterymanager";
     field public static final int BIND_ABOVE_CLIENT = 8; // 0x8
     field public static final int BIND_ADJUST_WITH_ACTIVITY = 128; // 0x80
