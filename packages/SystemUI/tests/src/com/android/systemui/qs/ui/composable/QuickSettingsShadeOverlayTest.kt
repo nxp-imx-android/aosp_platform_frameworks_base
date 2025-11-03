@@ -22,6 +22,7 @@ import android.testing.TestableLooper
 import android.view.Display
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -65,9 +66,9 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     val rule = FixedActivitySizeComposeTestRule(
         DeviceEmulationSpec(
             // Use a large display size intentionally to verify the dimens tuned for large screens.
-            // Also, use a multiple of 160 as the display density to avoid the rounding errors
-            // triggered by the pixel-DP conversion.
-            Displays.Desktop,
+            // Also, use 160dpi as the display density to avoid the rounding errors triggered by the
+            // pixel-DP conversion.
+            Displays.Desktop160dpi,
             isLandscape = true,
         )
     )
@@ -129,6 +130,10 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
 
         composeTestRule.onNodeWithTag(resIdToTestTag("qs_tile_icon"), useUnmergedTree = true)
             .assertHeightIsEqualTo(32.dp)
+
+        // Verify the QS shade overlay's width.
+        composeTestRule.onNodeWithTag(resIdToTestTag("quick_settings_panel"))
+            .assertWidthIsEqualTo(if (DesktopSizing.isEnabled) 376.dp else 474.dp)
     }
 
     @Test
