@@ -16,21 +16,25 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.Swipe
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
@@ -46,7 +50,6 @@ import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,37 +61,27 @@ import org.junit.runner.RunWith
 class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val testScope = kosmos.testScope
 
-    private val editModeViewModel = kosmos.editModeViewModel
-    private val sceneInteractor = kosmos.sceneInteractor
-    private val sceneBackInteractor = kosmos.sceneBackInteractor
-    private val sceneContainerStartable = kosmos.sceneContainerStartable
-
-    private lateinit var underTest: QuickSettingsUserActionsViewModel
+    private val Kosmos.underTest: QuickSettingsUserActionsViewModel by
+        Kosmos.Fixture { quickSettingsUserActionsViewModel }
 
     @Before
     fun setUp() {
-        sceneContainerStartable.start()
-        underTest =
-            QuickSettingsUserActionsViewModel(
-                editModeViewModel = editModeViewModel,
-                sceneBackInteractor = sceneBackInteractor,
-            )
-        underTest.activateIn(testScope)
+        with(kosmos) {
+            sceneContainerStartable.start()
+            underTest.activateIn(testScope)
+        }
     }
 
     @Test
     fun destinations_whenNotCustomizing_unlocked() =
-        testScope.runTest {
-            kosmos.enableSingleShade()
+        kosmos.runTest {
+            enableSingleShade()
             val actions by collectLastValue(underTest.actions)
-            val homeScene by collectLastValue(kosmos.homeSceneFamilyResolver.resolvedScene)
+            val homeScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
             editModeViewModel.stopEditing()
-            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
-                AuthenticationMethodModel.Pin
-            )
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -106,14 +99,14 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     fun destinations_whenNotCustomizing_withPreviousSceneLockscreen() =
-        testScope.runTest {
-            kosmos.enableSingleShade()
+        kosmos.runTest {
+            enableSingleShade()
             editModeViewModel.stopEditing()
             val actions by collectLastValue(underTest.actions)
 
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backScene by collectLastValue(sceneBackInteractor.backScene)
-            val homeScene by collectLastValue(kosmos.homeSceneFamilyResolver.resolvedScene)
+            val homeScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
             sceneInteractor.changeScene(Scenes.QuickSettings, "reason")
             assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
@@ -132,18 +125,18 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     fun destinations_whenNotCustomizing_withPreviousSceneLockscreen_butLockscreenDisabled() =
-        testScope.runTest {
-            kosmos.enableSingleShade()
+        kosmos.runTest {
+            enableSingleShade()
             editModeViewModel.stopEditing()
             val actions by collectLastValue(underTest.actions)
 
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backScene by collectLastValue(sceneBackInteractor.backScene)
-            val homeScene by collectLastValue(kosmos.homeSceneFamilyResolver.resolvedScene)
+            val homeScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
             sceneInteractor.changeScene(Scenes.QuickSettings, "reason")
 
-            kosmos.keyguardEnabledInteractor.notifyKeyguardEnabled(false)
+            keyguardEnabledInteractor.notifyKeyguardEnabled(false)
 
             assertThat(currentScene).isEqualTo(Scenes.Gone)
             assertThat(backScene).isNull()
@@ -160,15 +153,13 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     fun destinations_whenNotCustomizing_authMethodSwipe_lockscreenNotDismissed() =
-        testScope.runTest {
-            kosmos.enableSingleShade()
+        kosmos.runTest {
+            enableSingleShade()
             val actions by collectLastValue(underTest.actions)
-            val homeScene by collectLastValue(kosmos.homeSceneFamilyResolver.resolvedScene)
+            val homeScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
             editModeViewModel.stopEditing()
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(true)
-            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
-                AuthenticationMethodModel.None
-            )
+            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
 
             assertThat(actions)
                 .isEqualTo(
@@ -183,8 +174,8 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     fun destinations_whenCustomizing_canDismissOnlyFromBottomEdge() =
-        testScope.runTest {
-            kosmos.enableSingleShade()
+        kosmos.runTest {
+            enableSingleShade()
             val actions by collectLastValue(underTest.actions)
             editModeViewModel.startEditing()
 
@@ -193,16 +184,15 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun destinations_whenNotCustomizing_inSplitShade_unlocked() =
-        testScope.runTest {
-            kosmos.enableSplitShade()
+        kosmos.runTest {
+            enableSplitShade()
             val actions by collectLastValue(underTest.actions)
-            val homeScene by collectLastValue(kosmos.homeSceneFamilyResolver.resolvedScene)
+            val homeScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
             editModeViewModel.stopEditing()
-            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
-                AuthenticationMethodModel.Pin
-            )
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+            fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
+            biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
@@ -219,9 +209,10 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun destinations_whenCustomizing_inSplitShade_canDismissOnlyFromBottomEdge() =
-        testScope.runTest {
-            kosmos.enableSplitShade()
+        kosmos.runTest {
+            enableSplitShade()
             val actions by collectLastValue(underTest.actions)
             editModeViewModel.startEditing()
 
