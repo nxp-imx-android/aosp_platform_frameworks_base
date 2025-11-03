@@ -203,24 +203,25 @@
       ],
       "host": true
     },
-    {
-      "name": "FrameworksCoreTestsRavenwood",
-      "options": [
-        {
-          "exclude-annotation": "androidx.test.filters.FlakyTest"
-        },
-        {
-          "exclude-annotation": "android.platform.test.annotations.FlakyTest"
-        },
-        {
-          "exclude-annotation": "androidx.test.filters.LargeTest"
-        },
-        {
-          "exclude-annotation": "android.platform.test.annotations.LargeTest"
-        }
-      ],
-      "host": true
-    },
+// TODO(b/457437499) Uncomment it once it's stable. It's flaky now.
+//    {
+//      "name": "FrameworksCoreTestsRavenwood",
+//      "options": [
+//        {
+//          "exclude-annotation": "androidx.test.filters.FlakyTest"
+//        },
+//        {
+//          "exclude-annotation": "android.platform.test.annotations.FlakyTest"
+//        },
+//        {
+//          "exclude-annotation": "androidx.test.filters.LargeTest"
+//        },
+//        {
+//          "exclude-annotation": "android.platform.test.annotations.LargeTest"
+//        }
+//      ],
+//      "host": true
+//    },
     {
       "name": "FrameworksInputMethodSystemServerTestsRavenwood",
       "options": [
@@ -241,24 +242,6 @@
     },
     {
       "name": "FrameworksServicesTestsRavenwood_Compat",
-      "options": [
-        {
-          "exclude-annotation": "androidx.test.filters.FlakyTest"
-        },
-        {
-          "exclude-annotation": "android.platform.test.annotations.FlakyTest"
-        },
-        {
-          "exclude-annotation": "androidx.test.filters.LargeTest"
-        },
-        {
-          "exclude-annotation": "android.platform.test.annotations.LargeTest"
-        }
-      ],
-      "host": true
-    },
-    {
-      "name": "FrameworksServicesTestsRavenwood_ProcessStateController",
       "options": [
         {
           "exclude-annotation": "androidx.test.filters.FlakyTest"
