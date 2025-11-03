@@ -557,6 +557,11 @@
   <java-symbol type="color" name="shade_panel_fg" />
   <java-symbol type="color" name="shade_panel_bg" />
   <java-symbol type="color" name="shade_panel_scrim" />
+  <java-symbol type="color" name="surface_effect_0" />
+  <java-symbol type="color" name="surface_effect_1" />
+  <java-symbol type="color" name="surface_effect_2" />
+  <java-symbol type="color" name="surface_effect_3" />
+  <java-symbol type="color" name="surface_effect_0_fallback" />
   <java-symbol type="color" name="tab_indicator_text_v4" />
 
   <java-symbol type="dimen" name="accessibility_touch_slop" />
@@ -5833,11 +5838,6 @@
   <java-symbol name="customColorUnderSurface" type="color"/>
   <java-symbol name="customColorWeatherTemp" type="color"/>
   <java-symbol name="customColorWidgetBackground" type="color"/>
-  <java-symbol name="customColorSurfaceEffect0" type="color"/>
-  <java-symbol name="customColorSurfaceEffect1" type="color"/>
-  <java-symbol name="customColorSurfaceEffect2" type="color"/>
-  <java-symbol name="customColorSurfaceEffect3" type="color"/>
-  <java-symbol name="customColorSurfaceEffect0Fallback" type="color"/>
 
   <java-symbol name="system_brand_a_light" type="color"/>
   <java-symbol name="system_brand_b_light" type="color"/>
@@ -5855,11 +5855,6 @@
   <java-symbol name="system_shade_active_light" type="color"/>
   <java-symbol name="system_shade_disabled_light" type="color"/>
   <java-symbol name="system_shade_inactive_light" type="color"/>
-  <java-symbol name="system_surface_effect_0_light" type="color"/>
-  <java-symbol name="system_surface_effect_0_fallback_light" type="color"/>
-  <java-symbol name="system_surface_effect_1_light" type="color"/>
-  <java-symbol name="system_surface_effect_2_light" type="color"/>
-  <java-symbol name="system_surface_effect_3_light" type="color"/>
   <java-symbol name="system_theme_app_light" type="color"/>
   <java-symbol name="system_theme_app_ring_light" type="color"/>
   <java-symbol name="system_theme_notif_light" type="color"/>
@@ -5883,20 +5878,12 @@
   <java-symbol name="system_shade_active_dark" type="color"/>
   <java-symbol name="system_shade_disabled_dark" type="color"/>
   <java-symbol name="system_shade_inactive_dark" type="color"/>
-  <java-symbol name="system_surface_effect_0_dark" type="color"/>
-  <java-symbol name="system_surface_effect_0_fallback_dark" type="color"/>
-  <java-symbol name="system_surface_effect_1_dark" type="color"/>
-  <java-symbol name="system_surface_effect_2_dark" type="color"/>
-  <java-symbol name="system_surface_effect_3_dark" type="color"/>
   <java-symbol name="system_theme_app_dark" type="color"/>
   <java-symbol name="system_theme_app_ring_dark" type="color"/>
   <java-symbol name="system_theme_notif_dark" type="color"/>
   <java-symbol name="system_under_surface_dark" type="color"/>
   <java-symbol name="system_weather_temp_dark" type="color"/>
   <java-symbol name="system_widget_background_dark" type="color"/>
-
-  <!--Manually added materialColor* tokens-->
-  <java-symbol name="materialColorSemanticRedContainerHigh" type="color"/>
 
   <java-symbol type="attr" name="actionModeUndoDrawable" />
   <java-symbol type="attr" name="actionModeRedoDrawable" />
