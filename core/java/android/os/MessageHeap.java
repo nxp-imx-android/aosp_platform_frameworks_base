@@ -203,7 +203,8 @@ public final class MessageHeap {
         }
 
         if (newSize >= INITIAL_SIZE
-                && mNumElements <= newSize) {
+                && mNumElements <= newSize
+                && newSize < mHeap.length) {
             Message[] newHeap;
 
             newHeap = Arrays.copyOf(mHeap, newSize);
