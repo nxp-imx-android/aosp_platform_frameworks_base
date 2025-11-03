@@ -350,20 +350,6 @@ public:
         return subclassID == &gBinderOffsets;
     }
 
-    jobject object() const
-    {
-        return mObject;
-    }
-
-protected:
-    virtual ~JavaBBinder()
-    {
-        ALOGV("Destroying JavaBBinder %p\n", this);
-        gNumLocalRefsDeleted.fetch_add(1, std::memory_order_relaxed);
-        JNIEnv* env = javavm_to_jnienv(mVM);
-        env->DeleteGlobalRef(mObject);
-    }
-
     const String16& getInterfaceDescriptor() const override
     {
         call_once(mPopulateDescriptor, [this] {
@@ -386,6 +372,18 @@ protected:
         });
 
         return mDescriptor;
+    }
+
+    jobject object() const {
+        return mObject;
+    }
+
+protected:
+    virtual ~JavaBBinder() {
+        ALOGV("Destroying JavaBBinder %p\n", this);
+        gNumLocalRefsDeleted.fetch_add(1, std::memory_order_relaxed);
+        JNIEnv* env = javavm_to_jnienv(mVM);
+        env->DeleteGlobalRef(mObject);
     }
 
     status_t onTransact(
