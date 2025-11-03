@@ -44,7 +44,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -118,6 +122,7 @@ constructor(
 
     @Composable
     private fun DialogContent(uri: Uri, thumbnail: Icon?) {
+        var isConfirmDeletionDialogShowing by remember { mutableStateOf(false) }
         if (!visibleState.targetState && visibleState.isIdle) {
             SideEffect {
                 if (dialog.isShowing) {
@@ -126,8 +131,8 @@ constructor(
             }
         }
 
-        LaunchedEffect(visibleState.targetState) {
-            if (visibleState.targetState) {
+        LaunchedEffect(visibleState.targetState, isConfirmDeletionDialogShowing) {
+            if (visibleState.targetState && !isConfirmDeletionDialogShowing) {
                 delay(DEFAULT_TIMEOUT)
                 hide()
             }
@@ -171,6 +176,7 @@ constructor(
                             .value,
                     onClick = {
                         coroutineScope.launch {
+                            isConfirmDeletionDialogShowing = true
                             if (
                                 postRecordingConfirmDeletion(
                                     dialogFactory,
@@ -183,6 +189,7 @@ constructor(
                                     postRecordingViewModel.videoUri
                                 )
                             }
+                            isConfirmDeletionDialogShowing = false
                         }
                     },
                 ),
