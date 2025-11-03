@@ -120,6 +120,20 @@
         android:visibility="gone"
         />
 
+    <com.android.internal.widget.NotificationRowIconView
+        android:id="@+id/bridging_app_icon"
+        android:layout_width="@dimen/notification_2025_badge_size"
+        android:layout_height="@dimen/notification_2025_badge_size"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:background="@drawable/notification_icon_circle"
+        android:layout_marginStart="@dimen/notification_header_separating_margin"
+        android:layout_marginEnd="@dimen/notification_header_separating_margin"
+        android:maxDrawableWidth="@dimen/notification_header_subtext_icon_size"
+        android:maxDrawableHeight="@dimen/notification_header_subtext_icon_size"
+        android:visibility="gone"
+        />
+
     <ViewStub
         android:id="@+id/chronometer"
         android:layout_width="wrap_content"

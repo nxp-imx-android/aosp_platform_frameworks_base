@@ -16,14 +16,19 @@
 
 package com.android.internal.widget;
 
+import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.RemotableViewMethod;
 import android.widget.RemoteViews;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * An image view that holds the icon displayed at the start of a notification row.
@@ -33,6 +38,8 @@ import android.widget.RemoteViews;
  */
 @RemoteViews.RemoteView
 public class NotificationRowIconView extends CachingIconView {
+    private static final String TAG = "NotificationRowIconView";
+
     private NotificationIconProvider mIconProvider;
 
     private Drawable mAppIcon = null;
@@ -43,6 +50,40 @@ public class NotificationRowIconView extends CachingIconView {
     private Drawable mOriginalBackground = null;
     private int mOriginalBackgroundColor = ColoredIconHelper.COLOR_INVALID;
     private int mOriginalIconColor = ColoredIconHelper.COLOR_INVALID;
+
+    /**
+     * Represents that Icon type has not been set.
+     */
+    public static final int ICON_TYPE_INVALID = -1;
+    /**
+     * Represents the "small icon" provided by the developer when posting the notification.
+     */
+    public static final int ICON_TYPE_SMALL_ICON = 0;
+
+    /**
+     * Represents the icon the way the app that posted the notification is displayed in the
+     * launcher.
+     */
+    public static final int ICON_TYPE_LAUNCHER_ICON = 1;
+
+    /**
+     * Represents the icon of the app the notification originates from, which differs from the one
+     * that actually posted the notification on the device, and also displays the device type as a
+     * bottom plate.
+     */
+    public static final int ICON_TYPE_BRIDGED_ICON = 2;
+
+    @IconType int mIconTypeOverride = ICON_TYPE_INVALID;
+
+    /** @hide */
+    @IntDef(prefix = { "ICON_TYPE_" }, value = {
+            ICON_TYPE_INVALID,
+            ICON_TYPE_SMALL_ICON,
+            ICON_TYPE_LAUNCHER_ICON,
+            ICON_TYPE_BRIDGED_ICON,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface IconType {}
 
     public NotificationRowIconView(Context context) {
         super(context);
@@ -72,10 +113,29 @@ public class NotificationRowIconView extends CachingIconView {
     }
 
     private Drawable loadAppIcon() {
-        if (mIconProvider != null && mIconProvider.shouldShowAppIcon()) {
-            return mIconProvider.getAppIcon();
+        if (android.app.Flags.bridgedNotifications() && mIconProvider != null) {
+            int effectiveIconType = mIconTypeOverride != ICON_TYPE_INVALID
+                    ? mIconTypeOverride : mIconProvider.getIconType();
+            return switch (effectiveIconType) {
+                case ICON_TYPE_SMALL_ICON -> null;
+                case ICON_TYPE_BRIDGED_ICON -> {
+                    Drawable bridgedIcon = mIconProvider.getBridgedIcon();
+                    if (bridgedIcon == null) {
+                        Log.w(TAG, "Bridged notification metadata missing icon, falling back to"
+                                + " launcher icon");
+                        yield mIconProvider.getLauncherIcon();
+                    }
+                    yield bridgedIcon;
+                }
+                case ICON_TYPE_LAUNCHER_ICON -> mIconProvider.getLauncherIcon();
+                default -> null;
+            };
+        } else {
+            if (mIconProvider != null && mIconProvider.getIconType() == ICON_TYPE_LAUNCHER_ICON) {
+                return mIconProvider.getLauncherIcon();
+            }
+            return null;
         }
-        return null;
     }
 
     @RemotableViewMethod(asyncImpl = "setImageIconAsync")
@@ -208,15 +268,43 @@ public class NotificationRowIconView extends CachingIconView {
     }
 
     /**
+     * Manually set which type of icon should be used for the View. See AppIconType for possible
+     * icon types.
+     * Important: When setting the override to {@link ICON_TYPE_SMALL_ICON}, this call must be
+     * followed by a {@link setImageIcon} call to actually set the drawable.
+     */
+    @RemotableViewMethod
+    public void setIconTypeOverride(@IconType int iconType) {
+        mIconTypeOverride = iconType;
+        mAppIcon = loadAppIcon();
+        if (mAppIcon != null) {
+            setImageDrawable(mAppIcon);
+            adjustViewForAppIcon();
+        }
+    }
+
+
+    /**
      * A provider that allows this view to verify whether it should use the app icon instead of the
      * icon provided to it via setImageIcon, as well as actually fetching the app icon. It should
      * primarily be called on the background thread.
      */
     public interface NotificationIconProvider {
-        /** Whether this notification should use the app icon instead of the small icon. */
-        boolean shouldShowAppIcon();
 
-        /** Get the app icon for this notification. */
-        @Nullable Drawable getAppIcon();
+        /** Whether this notification should use the app icon, the small icon, or a bridged icon. */
+        @IconType int getIconType();
+
+        /**
+         * If this is a bridged notification, this is the icon of the app that the notification
+         * originates from, including a bottom plate representing the origin device type.
+         * Otherwise, this is null.
+         */
+        @Nullable Drawable getBridgedIcon();
+
+        /**
+         * Get the icon associated with the app that posted this notification.
+         * This may include the profile (e.g. work) badge, but no other decorations.
+         */
+        @Nullable Drawable getLauncherIcon();
     }
 }

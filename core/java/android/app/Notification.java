@@ -135,6 +135,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.util.NotificationBigTextNormalizer;
 import com.android.internal.widget.NotificationProgressModel;
+import com.android.internal.widget.NotificationRowIconView;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -6940,7 +6941,23 @@ public class Notification implements Parcelable
             bindAlertedIcon(contentView, p);
             bindExpandButton(contentView, p);
             bindCloseButton(contentView, p);
+            if (Flags.bridgedNotifications()) {
+                bindBridgedIcon(contentView);
+            }
             mN.mUsesStandardHeader = true;
+        }
+
+        private void bindBridgedIcon(RemoteViews contentView) {
+            if (mN.getBridgedNotificationMetadata() != null) {
+                contentView.setViewVisibility(R.id.bridging_app_icon, View.VISIBLE);
+
+                // The NotificationRowIconView is showing the "bridged" icon by default for bridged
+                // notifications, meaning the icon of the app that the notification originates from.
+                // We still want to show the icon of the app that actually posted the notification
+                // in the top line though.
+                contentView.setInt(R.id.bridging_app_icon,
+                        "setIconTypeOverride", NotificationRowIconView.ICON_TYPE_LAUNCHER_ICON);
+            }
         }
 
         private void bindExpandButton(RemoteViews contentView, StandardTemplateParams p) {
