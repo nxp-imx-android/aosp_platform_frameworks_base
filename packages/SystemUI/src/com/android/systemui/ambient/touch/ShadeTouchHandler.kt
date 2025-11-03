@@ -23,7 +23,6 @@ import android.view.InputEvent
 import android.view.MotionEvent
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags.restrictCommunalShadeToWhenIdle
 import com.android.systemui.ambient.touch.TouchHandler.TouchSession
 import com.android.systemui.ambient.touch.dagger.ShadeModule
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
@@ -150,9 +149,7 @@ constructor(
             // Send touches to central surfaces only when on the glanceable hub while not dreaming.
             // While sending touches where while dreaming will open the shade, the shade
             // while closing if opened then closed in the same gesture.
-            if (
-                !restrictCommunalShadeToWhenIdle() || communalSceneInteractor.isIdleOnCommunal.value
-            ) {
+            if (communalSceneInteractor.isIdleOnCommunal.value) {
                 surfaces.get().handleExternalShadeWindowTouch(event)
             }
         } else {

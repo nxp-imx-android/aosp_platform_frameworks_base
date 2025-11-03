@@ -28,8 +28,6 @@ import com.android.internal.telecom.IConnectionService;
 import com.android.internal.telecom.IConnectionServiceAdapter;
 import com.android.internal.telecom.IVideoProvider;
 import com.android.internal.telecom.RemoteServiceCallback;
-import com.android.server.telecom.flags.FeatureFlags;
-import com.android.server.telecom.flags.FeatureFlagsImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -565,9 +563,6 @@ final class RemoteConnectionService {
     private final Map<String, RemoteConnection> mConnectionById = new HashMap<>();
     private final Map<String, RemoteConference> mConferenceById = new HashMap<>();
     private final Set<RemoteConnection> mPendingConnections = new HashSet<>();
-
-    /** Telecom feature flags **/
-    private final FeatureFlags mTelecomFeatureFlags = new FeatureFlagsImpl();
 
     RemoteConnectionService(
             IConnectionService outgoingConnectionServiceRpc,

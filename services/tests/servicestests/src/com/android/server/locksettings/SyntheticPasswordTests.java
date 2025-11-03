@@ -28,6 +28,7 @@ import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN;
 import static com.android.internal.widget.LockPatternUtils.PIN_LENGTH_UNAVAILABLE;
 import static com.android.server.locksettings.SyntheticPasswordManager.FAILURE_COUNTER_FILE_SIZE;
 import static com.android.server.locksettings.SyntheticPasswordManager.FAILURE_COUNTER_NAME;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.decryptProfilePassword;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,6 +45,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.app.admin.PasswordMetrics;
 import android.content.pm.UserInfo;
@@ -70,6 +73,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -1009,6 +1013,76 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         final long newProtectorId = mService.getCurrentLskfBasedProtectorId(userId);
         assertNotEquals(oldProtectorId, newProtectorId);
         assertEquals(0, mSpManager.readFailureCounter(oldLskfId));
+    }
+
+    @Test
+    public void testTieProtectorToParent() throws Exception {
+        mService.initializeSyntheticPassword(PRIMARY_USER_ID);
+        mService.initializeSyntheticPassword(MANAGED_PROFILE_USER_ID);
+
+        LockscreenCredential password = newPassword("password");
+        LockscreenCredential profilePassword = LockscreenCredential.createUnifiedProfilePassword(
+                "profilePassword".getBytes(UTF_8));
+        mService.setLockCredential(password, nonePassword(), PRIMARY_USER_ID);
+
+        long profileProtectorId = mService.getCurrentLskfBasedProtectorId(MANAGED_PROFILE_USER_ID);
+
+        mSpManager.tieProtectorToParent(mGateKeeperService, MANAGED_PROFILE_USER_ID,
+                profileProtectorId, PRIMARY_USER_ID,
+                profilePassword);
+
+        assertTrue(mSpManager.hasProfilePassword(MANAGED_PROFILE_USER_ID, profileProtectorId));
+        byte[] encryptedBytes = mSpManager.loadProfilePassword(MANAGED_PROFILE_USER_ID,
+                profileProtectorId);
+        byte[] decryptedBytes = decryptProfilePassword(
+                mKeyStoreRule.getKeyStore(),
+                MANAGED_PROFILE_USER_ID,
+                profileProtectorId,
+                encryptedBytes).getCredential();
+        String decryptedPassword = UTF_8.decode(ByteBuffer.wrap(decryptedBytes)).toString();
+        assertEquals("profilePassword", decryptedPassword);
+    }
+
+    @Test
+    public void testTieProtectorToParent_gatekeeperFailure() {
+        mService.initializeSyntheticPassword(PRIMARY_USER_ID);
+        mService.initializeSyntheticPassword(MANAGED_PROFILE_USER_ID);
+
+        LockscreenCredential password = newPassword("password");
+        LockscreenCredential profilePassword = newPassword("profilePassword");
+        mService.setLockCredential(password, nonePassword(), PRIMARY_USER_ID);
+
+        long profileProtectorId = mService.getCurrentLskfBasedProtectorId(MANAGED_PROFILE_USER_ID);
+        mGateKeeperService.setFailOnNextGetSecureUserId();
+
+        assertThrows(IllegalStateException.class, () -> {
+            mSpManager.tieProtectorToParent(mGateKeeperService, MANAGED_PROFILE_USER_ID,
+                    profileProtectorId, PRIMARY_USER_ID,
+                    profilePassword);
+        });
+    }
+
+    @Test
+    public void testDestroyLskfBasedProtector() {
+        mService.initializeSyntheticPassword(PRIMARY_USER_ID);
+        mService.initializeSyntheticPassword(MANAGED_PROFILE_USER_ID);
+
+        LockscreenCredential password = newPassword("password");
+        LockscreenCredential profilePassword = newPassword("profilePassword");
+        mService.setLockCredential(password, nonePassword(), PRIMARY_USER_ID);
+
+        long profileProtectorId = mService.getCurrentLskfBasedProtectorId(MANAGED_PROFILE_USER_ID);
+
+        mSpManager.tieProtectorToParent(mGateKeeperService, MANAGED_PROFILE_USER_ID,
+                profileProtectorId, PRIMARY_USER_ID,
+                profilePassword);
+
+        assertTrue(mSpManager.hasProfilePassword(MANAGED_PROFILE_USER_ID, profileProtectorId));
+
+        mSpManager.destroyLskfBasedProtector(profileProtectorId, MANAGED_PROFILE_USER_ID);
+
+        assertFalse(mSpManager.hasProfilePassword(MANAGED_PROFILE_USER_ID, profileProtectorId));
+        assertNull(mSpManager.loadProfilePassword(MANAGED_PROFILE_USER_ID, profileProtectorId));
     }
 
     // b/62213311

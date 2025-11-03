@@ -629,15 +629,6 @@ flag {
 }
 
 flag {
-    name: "watch_face_role_enabled"
-    is_exported: true
-    namespace: "wear_watchfaces"
-    description: "This flag enables watchface roles support and API"
-    bug: "399850691"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "access_local_network_permission_enabled"
     is_exported: true
     is_fixed_read_only: true
@@ -652,6 +643,14 @@ flag {
     namespace: "android_core_networking"
     description: "This flag is used to enable the new USE_LOOPBACK_INTERFACE install permission. When enabled, this permission will guard IP traffic on the loopback interface."
     bug: "430058614"
+}
+
+flag {
+    name: "interact_cellbroadcast_permission_enabled"
+    is_exported: true
+    namespace: "telephony"
+    description: "This flag is used to enable the INTERACT_CELL_BROADCAST permission. When enabled, this permission will guard to interact with cellbroadcast module"
+    bug: "410738387"
 }
 
 flag {
@@ -692,3 +691,12 @@ flag {
     description: "enable assistant settings privacy improvements"
     bug: "437416500"
 }
+
+flag {
+    name: "active_watch_face_role_enabled"
+    is_exported: true
+    namespace: "wear_watchfaces"
+    description: "This flag enables watchface roles support and API"
+    bug: "396431730"
+}
+

@@ -88,10 +88,8 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Ишеним агенти жеткиликсиз"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"PIN код өтө көп жолу туура эмес киргизилди."</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"Бул PIN кодду киргизгенсиз. Башкасын колдонуп көрүңүз."</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"Бул графикалык ачкычты киргизгенсиз. Башкасын колдонуп көрүңүз."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"Бул сырсөздү киргизгенсиз. Башкасын колдонуп көрүңүз."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Графикалык ачкыч өтө көп жолу туура эмес тартылды."</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Сырсөздү өтө көп жолу туура эмес киргиздиңиз."</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"PIN код өтө көп жолу туура эмес киргизилди\nКеңири маалымат: <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>

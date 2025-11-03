@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.events
 import android.location.flags.Flags.locationIndicatorsEnabled
 import android.os.Process
 import android.provider.DeviceConfig
+import android.view.Display
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
@@ -74,8 +75,8 @@ import kotlinx.coroutines.withTimeout
 open class SystemStatusAnimationSchedulerImpl
 @AssistedInject
 constructor(
-    private val coordinator: SystemEventCoordinator,
-    private val chipAnimationController: SystemEventChipAnimationController,
+    @Assisted private val coordinator: SystemEventCoordinator,
+    @Assisted private val chipAnimationController: SystemEventChipAnimationController,
     @Assisted private val displayId: Int,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     dumpManager: DumpManager,
@@ -87,6 +88,8 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(
+            coordinator: SystemEventCoordinator,
+            chipAnimationController: SystemEventChipAnimationController,
             displayId: Int,
             coroutineScope: CoroutineScope,
         ): SystemStatusAnimationSchedulerImpl
@@ -123,7 +126,13 @@ constructor(
 
     init {
         coordinator.attachScheduler(this)
-        dumpManager.registerCriticalDumpable(TAG, this)
+        val dumpableTagSuffix =
+            if (displayId == Display.DEFAULT_DISPLAY) {
+                ""
+            } else {
+                displayId.toString()
+            }
+        dumpManager.registerCriticalDumpable("$TAG$dumpableTagSuffix", this)
 
         coroutineScope.launch {
             // Wait for animationState to become ANIMATION_QUEUED and scheduledEvent to be non null.

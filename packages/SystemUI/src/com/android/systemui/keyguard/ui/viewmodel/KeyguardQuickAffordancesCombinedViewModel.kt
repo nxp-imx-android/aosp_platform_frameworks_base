@@ -30,6 +30,7 @@ import com.android.systemui.keyguard.domain.model.KeyguardQuickAffordanceModel
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.quickaffordance.ActivationState
 import com.android.systemui.keyguard.shared.quickaffordance.KeyguardQuickAffordancePosition
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.keyguard.shared.model.KeyguardQuickAffordanceSlots
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
@@ -87,11 +89,22 @@ constructor(
 
     /** The only time the expansion is important is while lockscreen is actively displayed */
     private val shadeExpansionAlpha =
-        combine(showingLockscreen, shadeInteractor.anyExpansion) { showingLockscreen, expansion ->
-            if (showingLockscreen) {
-                1 - expansion
-            } else {
-                0f
+        if (SceneContainerFlag.isEnabled) {
+            showingLockscreen.flatMapLatestConflated { showingLockscreen ->
+                if (showingLockscreen) {
+                    shadeInteractor.anyExpansion.map { 1 - it }
+                } else {
+                    flowOf(0f)
+                }
+            }
+        } else {
+            combine(showingLockscreen, shadeInteractor.anyExpansion) { showingLockscreen, expansion
+                ->
+                if (showingLockscreen) {
+                    1 - expansion
+                } else {
+                    0f
+                }
             }
         }
 

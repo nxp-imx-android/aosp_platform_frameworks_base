@@ -18,6 +18,7 @@ package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.screencapture.common.ui.viewmodel.appContentsViewModelFactory
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.shareScreenUiInteractor
@@ -25,17 +26,23 @@ import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.
 
 val Kosmos.screenCaptureShareScreenViewModelFactory by Fixture {
     object : ScreenCaptureShareScreenViewModel.Factory {
-        override fun create(): ScreenCaptureShareScreenViewModel {
+        override fun create(
+            thumbnailWidthPx: Int,
+            thumbnailHeightPx: Int,
+        ): ScreenCaptureShareScreenViewModel {
             return ScreenCaptureShareScreenViewModel(
                 drawableLoaderViewModelImpl,
                 shareScreenUiInteractor,
                 shareScreenPrivacyIndicatorInteractor,
+                thumbnailWidthPx,
+                thumbnailHeightPx,
                 { recentTasksViewModel },
+                appContentsViewModelFactory,
             )
         }
     }
 }
 
 val Kosmos.screenCaptureShareScreenViewModel by Fixture {
-    screenCaptureShareScreenViewModelFactory.create()
+    screenCaptureShareScreenViewModelFactory.create(200, 100)
 }

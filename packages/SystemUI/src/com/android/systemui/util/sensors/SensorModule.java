@@ -129,22 +129,26 @@ public class SensorModule {
     ) {
         boolean inactivityDetectionAvailable = Flags.aodInactivityDetection()
                 && resources.getBoolean(config_dozeSupportsAodInactivityDetection);
-        boolean inactivityDetectionEnabled = secureSettings.getIntForUser(
-                Settings.Secure.DOZE_ALWAYS_ON_INACTIVITY_DETECTION, 0,
-                selectedUserInteractor.getSelectedUserId()) != 0;
+        if (inactivityDetectionAvailable) {
+            // This is a blocking call, so we only make it when the device supports the feature.
+            boolean inactivityDetectionEnabled = secureSettings.getIntForUser(
+                    Settings.Secure.DOZE_ALWAYS_ON_INACTIVITY_DETECTION, 0,
+                    selectedUserInteractor.getSelectedUserId()) != 0;
 
-        if (inactivityDetectionAvailable && inactivityDetectionEnabled) {
-            try {
-                ThresholdSensor dozeActivitySensor = thresholdSensorBuilder
-                        .setSensorDelay(SensorManager.SENSOR_DELAY_NORMAL)
-                        .setSensorResourceId(R.string.doze_activity_sensor_type, true)
-                        .setThresholdResourceId(R.dimen.doze_activity_sensor_threshold)
-                        .setThresholdLatchResourceId(R.dimen.doze_activity_sensor_threshold_latch)
-                        .build();
-                return new ProximitySensorImpl(
-                        dozeActivitySensor, secondary, delayableExecutor, execution);
-            } catch (IllegalStateException e) {
-                // Fall through to use the generic proximity sensor if activity sensor fails.
+            if (inactivityDetectionEnabled) {
+                try {
+                    ThresholdSensor dozeActivitySensor = thresholdSensorBuilder
+                            .setSensorDelay(SensorManager.SENSOR_DELAY_NORMAL)
+                            .setSensorResourceId(R.string.doze_activity_sensor_type, true)
+                            .setThresholdResourceId(R.dimen.doze_activity_sensor_threshold)
+                            .setThresholdLatchResourceId(
+                                    R.dimen.doze_activity_sensor_threshold_latch)
+                            .build();
+                    return new ProximitySensorImpl(
+                            dozeActivitySensor, secondary, delayableExecutor, execution);
+                } catch (IllegalStateException e) {
+                    // Fall through to use the generic proximity sensor if activity sensor fails.
+                }
             }
         }
 

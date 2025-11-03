@@ -21,7 +21,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.IntentFilter
 import android.os.UserHandle
 import android.security.Flags.lockscreenIndicateDuplicateGuesses
-import android.security.Flags.manageLockoutEndTimeInService
 import android.security.Flags.secureLockDevice
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -54,10 +53,10 @@ import java.util.function.Function
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.toJavaDuration
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -128,10 +127,6 @@ interface AuthenticationRepository {
      *
      * Note: there may be other ways to unlock the device that "bypass" the need for this
      * authentication challenge (notably, biometrics like fingerprint or face unlock).
-     *
-     * Note: by design, this is a [Flow] and not a [StateFlow]; a consumer who wishes to get a
-     * snapshot of the current authentication method without establishing a collector of the flow
-     * can do so by invoking [getAuthenticationMethod].
      */
     val authenticationMethod: StateFlow<AuthenticationMethodModel>
 
@@ -150,20 +145,6 @@ interface AuthenticationRepository {
      */
     suspend fun checkCredential(credential: LockscreenCredential): AuthenticationResultModel
 
-    /**
-     * Returns the currently-configured authentication method. This determines how the
-     * authentication challenge needs to be completed in order to unlock an otherwise locked device.
-     *
-     * Note: there may be other ways to unlock the device that "bypass" the need for this
-     * authentication challenge (notably, biometrics like fingerprint or face unlock).
-     *
-     * Note: by design, this is offered as a convenience method alongside [authenticationMethod].
-     * The flow should be used for code that wishes to stay up-to-date its logic as the
-     * authentication changes over time and this method should be used for simple code that only
-     * needs to check the current value.
-     */
-    suspend fun getAuthenticationMethod(): AuthenticationMethodModel
-
     /** Returns the length of the PIN or `0` if the current auth method is not PIN. */
     suspend fun getPinLength(): Int
 
@@ -171,7 +152,7 @@ interface AuthenticationRepository {
     suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean = false)
 
     /** Reports that the user has entered a temporary device lockout (throttling). */
-    suspend fun reportLockoutStarted(durationMs: Int)
+    suspend fun reportLockoutStarted(duration: Duration)
 
     /**
      * Returns the current maximum number of login attempts that are allowed before the device or
@@ -264,7 +245,11 @@ constructor(
                     .onStart { emit(Unit) }
                     .map { selectedUserId }
             }
-            .map { getAuthenticationMethod() }
+            .map {
+                withContext(backgroundDispatcher) {
+                    getAuthenticationMethodBlocking(selectedUserId)
+                }
+            }
             .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = None)
             .stateIn(
                 scope = applicationScope,
@@ -288,12 +273,9 @@ constructor(
 
     override val lockoutEndTime: Duration?
         get() =
-            if (manageLockoutEndTimeInService()) {
-                    lockPatternUtils.getLockoutEndTime(selectedUserId).toKotlinDuration()
-                } else {
-                    lockPatternUtils.getLockoutAttemptDeadline(selectedUserId).milliseconds
-                }
-                .takeIf { clock.elapsedRealtime().milliseconds < it }
+            lockPatternUtils.getLockoutEndTime(selectedUserId).toKotlinDuration().takeIf {
+                clock.elapsedRealtime().milliseconds < it
+            }
 
     private val _hasLockoutOccurred = MutableStateFlow(false)
     override val hasLockoutOccurred: StateFlow<Boolean> = _hasLockoutOccurred.asStateFlow()
@@ -317,26 +299,13 @@ constructor(
         credential: LockscreenCredential
     ): AuthenticationResultModel {
         return withContext(backgroundDispatcher) {
-            if (lockscreenIndicateDuplicateGuesses()) {
-                val response =
-                    lockPatternUtils.checkCredentialWithResponse(credential, selectedUserId) {}
-                return@withContext AuthenticationResultModel(
-                    isSuccessful = response.isMatched,
-                    lockoutDurationMs = response.timeout,
-                    isDuplicate = response.isCredAlreadyTried,
-                )
-            }
-            try {
-                val matched = lockPatternUtils.checkCredential(credential, selectedUserId) {}
-                AuthenticationResultModel(isSuccessful = matched, lockoutDurationMs = 0)
-            } catch (ex: LockPatternUtils.RequestThrottledException) {
-                AuthenticationResultModel(isSuccessful = false, lockoutDurationMs = ex.timeoutMs)
-            }
+            val response = lockPatternUtils.checkCredential(credential, selectedUserId) {}
+            return@withContext AuthenticationResultModel(
+                isSuccessful = response.isMatched,
+                lockoutDuration = response.timeout.toKotlinDuration(),
+                isDuplicate = lockscreenIndicateDuplicateGuesses() && response.isCredAlreadyTried,
+            )
         }
-    }
-
-    override suspend fun getAuthenticationMethod(): AuthenticationMethodModel {
-        return withContext(backgroundDispatcher) { getAuthenticationMethodBlocking(selectedUserId) }
     }
 
     override suspend fun getPinLength(): Int {
@@ -371,10 +340,10 @@ constructor(
         }
     }
 
-    override suspend fun reportLockoutStarted(durationMs: Int) {
-        lockPatternUtils.setLockoutAttemptDeadline(selectedUserId, durationMs)
+    override suspend fun reportLockoutStarted(duration: Duration) {
+        lockPatternUtils.setLockoutAttemptDeadline(selectedUserId, duration.toJavaDuration())
         withContext(backgroundDispatcher) {
-            lockPatternUtils.reportPasswordLockout(durationMs, selectedUserId)
+            lockPatternUtils.reportPasswordLockout(duration.toJavaDuration(), selectedUserId)
         }
         _hasLockoutOccurred.value = true
     }

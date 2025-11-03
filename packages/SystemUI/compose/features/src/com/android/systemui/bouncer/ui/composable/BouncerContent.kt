@@ -53,6 +53,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -126,7 +128,6 @@ import com.android.systemui.fold.ui.helper.FoldPosture
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.transitions.BOUNCER_INITIAL_TRANSLATION
-import com.android.wm.shell.common.split.SplitLayout
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
@@ -200,8 +201,8 @@ fun ContentScope.BouncerContent(
             BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY.takeIf { viewModel.shouldDelayBouncerContent() }
                 ?: 0
 
-        // evaluate once when BouncerContent first shows; we don't animate if the
-        // bouncer showing was initiated from a drag/fling
+        // Evaluate once when BouncerContent first shows; we don't animate if the bouncer showing
+        // was initiated from a drag/fling.
         appearAnimationDuration =
             if (!isDraggingToBouncer()) BOUNCER_CONTENTS_ALPHA_IN_ANIMATION_DURATION else 0
 
@@ -251,7 +252,13 @@ fun ContentScope.BouncerContentLayout(
     modifier: Modifier,
 ) {
     val scale by viewModel.scale.collectAsStateWithLifecycle()
-    Box(modifier = modifier.onKeyEvent(viewModel::onKeyEvent).scale(scale)) {
+    val showSignInButton by viewModel.showSignInButton.collectAsStateWithLifecycle()
+    Box(
+        modifier =
+            modifier.onKeyEvent(viewModel::onKeyEvent).scale(scale).pointerInput(Unit) {
+                detectTapGestures { viewModel.backgroundTap() }
+            }
+    ) {
         when (layout) {
             BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
             BouncerOverlayLayout.BESIDE_USER_SWITCHER ->
@@ -268,6 +275,16 @@ fun ContentScope.BouncerContentLayout(
                 onClick = viewModel::navigateBack,
                 text = stringResource(R.string.back_button_on_bouncer),
                 modifier = Modifier.align(Alignment.BottomStart).testTag("BackButton"),
+            )
+        }
+        if (showSignInButton) {
+            val isSignInButtonEnabled by
+                viewModel.isSignInButtonEnabled.collectAsStateWithLifecycle()
+            FilledTextButton(
+                onClick = viewModel::onSignIn,
+                text = stringResource(R.string.sign_in_button_on_bouncer),
+                modifier = Modifier.align(Alignment.BottomEnd).testTag("SignInButton"),
+                enabled = isSignInButtonEnabled,
             )
         }
         if (viewModel.showAccessibilityButton) {
@@ -443,7 +460,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
     val isLeftToRight = LocalLayoutDirection.current == LayoutDirection.Ltr
     val isInputPreferredOnLeftSide by
         viewModel.isInputPreferredOnLeftSide.collectAsStateWithLifecycle()
-    // Swaps the order of user switcher and bouncer input area
+    // Swaps the order of user switcher and bouncer input area.
     // Default layout is assumed as user switcher followed by bouncer input area in the direction
     // of layout.
     val isSwapped = isLeftToRight == isInputPreferredOnLeftSide
@@ -465,8 +482,8 @@ private fun ContentScope.BesideUserSwitcherLayout(
     var swapAnimationEnd by remember { mutableStateOf(false) }
 
     fun wasEventOnNonInputHalfOfScreen(x: Float, totalWidth: Int): Boolean {
-        // Default layout is assumed as user switcher followed by bouncer input area in
-        // the direction of layout. Swapped layout means that bouncer input area is first, followed
+        // Default layout is assumed as user switcher followed by bouncer input area in the
+        // direction of layout. Swapped layout means that bouncer input area is first, followed
         // by user switcher in the direction of layout.
         val halfWidth = totalWidth / 2
         return if (x > halfWidth) {
@@ -488,7 +505,8 @@ private fun ContentScope.BesideUserSwitcherLayout(
                             viewModel.onDoubleTap(
                                 wasEventOnNonInputHalfOfScreen(offset.x, size.width)
                             )
-                        }
+                        },
+                        onTap = { viewModel.backgroundTap() },
                     )
                 }
                 .pointerInput(isSwapped, isInputPreferredOnLeftSide) {
@@ -528,15 +546,15 @@ private fun ContentScope.BesideUserSwitcherLayout(
                 swapAnimationEnd = true
             }
 
-        fun Modifier.swappable(inversed: Boolean = false): Modifier {
+        fun Modifier.swappable(inverted: Boolean = false): Modifier {
             return graphicsLayer {
                     translationX =
                         size.width *
                             animatedOffset *
-                            if (inversed) {
+                            if (inverted) {
                                 // A negative sign is used to make sure this is offset in the
-                                // direction that's opposite to the direction that the user
-                                // switcher is pushed in.
+                                // direction that's opposite to the direction that the user switcher
+                                // is pushed in.
                                 -1
                             } else {
                                 1
@@ -552,7 +570,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
         )
 
         FoldAware(
-            modifier = Modifier.weight(1f).swappable(inversed = true).testTag("FoldAware"),
+            modifier = Modifier.weight(1f).swappable(inverted = true).testTag("FoldAware"),
             viewModel = viewModel,
             aboveFold = {
                 Column(
@@ -1063,7 +1081,19 @@ private fun UserSwitcherDropdownMenu(
 
 @Composable
 private fun TextButton(onClick: () -> Unit, text: String, modifier: Modifier = Modifier) {
-    Button(onClick = onClick, modifier = modifier) {
+    BouncerOutlinedButton(onClick = onClick, modifier = modifier) {
+        Text(text = text, style = MaterialTheme.typography.titleMedium)
+    }
+}
+
+@Composable
+private fun FilledTextButton(
+    onClick: () -> Unit,
+    text: String,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    BouncerFilledButton(onClick = onClick, modifier = modifier, enabled = enabled) {
         Text(text = text, style = MaterialTheme.typography.titleMedium)
     }
 }
@@ -1075,7 +1105,7 @@ private fun IconButton(
     contentDescription: String,
     modifier: Modifier = Modifier,
 ) {
-    Button(onClick = onClick, modifier = modifier) {
+    BouncerOutlinedButton(onClick = onClick, modifier = modifier) {
         Icon(
             imageVector = imageVector,
             contentDescription = contentDescription,
@@ -1085,7 +1115,7 @@ private fun IconButton(
 }
 
 @Composable
-private fun Button(
+private fun BouncerOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
@@ -1098,6 +1128,32 @@ private fun Button(
         colors =
             ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
         content = content,
+    )
+}
+
+@Composable
+private fun BouncerFilledButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.padding(24.dp),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+        colors = filledButtonColors(),
+        enabled = enabled,
+        content = content,
+    )
+}
+
+@Composable
+private fun filledButtonColors(): ButtonColors {
+    val colors = MaterialTheme.colorScheme
+    return ButtonDefaults.buttonColors(
+        containerColor = colors.primary,
+        contentColor = colors.onPrimary,
     )
 }
 

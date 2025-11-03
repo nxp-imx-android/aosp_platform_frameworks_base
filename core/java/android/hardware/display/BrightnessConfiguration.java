@@ -579,7 +579,7 @@ public final class BrightnessConfiguration implements Parcelable {
          *
          * @return The builder.
          *
-         * @throws IllegalArgumentExceptions
+         * @throws IllegalArgumentException
          *      Maximum number of corrections by package name exceeded (see
          *      {@link #getMaxCorrectionsByPackageName}).
          *

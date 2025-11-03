@@ -485,6 +485,24 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             assertThat(underTest.textFieldState.text.toString()).isEqualTo("p")
         }
 
+    @Test
+    fun readyToTryAuthenticate() =
+        kosmos.runTest {
+            val readyToTryAuthenticate by collectLastValue(underTest.readyToTryAuthenticate)
+            lockDeviceAndOpenPasswordBouncer()
+            assertThat(readyToTryAuthenticate).isFalse()
+
+            runOnMainThreadAndWaitForIdleSync {
+                underTest.textFieldState.setTextAndPlaceCursorAtEnd("p")
+            }
+            assertThat(readyToTryAuthenticate).isTrue()
+
+            runOnMainThreadAndWaitForIdleSync {
+                underTest.textFieldState.setTextAndPlaceCursorAtEnd("")
+            }
+            assertThat(readyToTryAuthenticate).isFalse()
+        }
+
     private fun Kosmos.showBouncer() {
         val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
         sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
@@ -512,9 +530,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             repeat(failedAttemptCount) {
                 fakeAuthenticationRepository.reportAuthenticationAttempt(false)
             }
-            fakeAuthenticationRepository.reportLockoutStarted(
-                30.seconds.inWholeMilliseconds.toInt()
-            )
+            fakeAuthenticationRepository.reportLockoutStarted(30.seconds)
         } else {
             fakeAuthenticationRepository.reportAuthenticationAttempt(true)
         }

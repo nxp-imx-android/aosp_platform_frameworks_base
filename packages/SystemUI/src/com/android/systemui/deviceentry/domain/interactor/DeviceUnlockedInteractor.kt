@@ -34,8 +34,7 @@ import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.domain.interactor.BiometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
-import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
-import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
+import com.android.systemui.keyguard.shared.model.toDeviceUnlockSource
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
@@ -209,22 +208,8 @@ constructor(
             } else {
                 merge(
                     biometricUnlockInteractor.unlockState
-                        .map {
-                            return@map when (it.source) {
-                                BiometricUnlockSource.FINGERPRINT_SENSOR -> {
-                                    DeviceUnlockSource.Fingerprint
-                                }
-
-                                BiometricUnlockSource.FACE_SENSOR -> {
-                                    if (BiometricUnlockMode.dismissesKeyguard(it.mode)) {
-                                        DeviceUnlockSource.FaceWithBypassOrUnlockIntent
-                                    } else {
-                                        DeviceUnlockSource.FaceWithoutBypass
-                                    }
-                                }
-
-                                null -> null
-                            }
+                        .map { biometricUnlockModel ->
+                            return@map biometricUnlockModel.toDeviceUnlockSource()
                         }
                         .filterNotNull(),
                     trustInteractor.isTrusted.filter { it }.map { DeviceUnlockSource.TrustAgent },
@@ -373,6 +358,8 @@ constructor(
                                             lastSleepReason == WakeSleepReason.SLEEP_BUTTON
                                         ) {
                                             LockImmediately("locked instantly from sleep button")
+                                        } else if (lastSleepReason == WakeSleepReason.FOLD) {
+                                            LockImmediately("locked instantly from fold")
                                         } else {
                                             LockWithDelay("entering sleep")
                                         }

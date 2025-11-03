@@ -19,8 +19,10 @@ package android.service.personalcontext;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.UserHandleAware;
 import android.content.Context;
 import android.os.RemoteException;
 import android.service.personalcontext.hint.ContextHint;
@@ -33,25 +35,25 @@ import java.util.List;
 
 /**
  * Client facing access to the PersonalContext service.
+ *
  * @hide
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 @SystemApi
 @SystemService(Context.PERSONAL_CONTEXT_SERVICE)
 public final class PersonalContextManager {
-    /**
-     * The name of the Personal Context service.
-     */
+    /** The name of the Personal Context service. */
     public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
 
     private static final String TAG = "PersonalContextManager";
 
+    private final Context mContext;
     private final IPersonalContextManager mService;
 
-    /**
-     * @hide
-     */
-    public PersonalContextManager(@NonNull IPersonalContextManager service)  {
+    /** @hide */
+    public PersonalContextManager(
+            @NonNull Context context, @NonNull IPersonalContextManager service) {
+        mContext = context;
         mService = service;
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "Set up service: " + mService);
@@ -63,15 +65,18 @@ public final class PersonalContextManager {
      *
      * @param hints raw data to be injected into the context flow
      * @param renderToken optional token indicating which renderer should be used to render results
-     *                    of this flow to the user; if {@code null} then this flow can be rendered
-     *                    by any Personal Context renderer
+     *     of this flow to the user; if {@code null} then this flow can be rendered by any Personal
+     *     Context renderer
      * @hide
      */
     @SystemApi
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(
             @NonNull List<ContextHint> hints, @Nullable RenderToken renderToken) {
         try {
-            mService.publishTriggeringHint(ContextHintWrapper.wrapList(hints), renderToken);
+            mService.publishTriggeringHint(
+                    ContextHintWrapper.wrapList(hints), renderToken, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -81,18 +86,19 @@ public final class PersonalContextManager {
      * Triggers a Personal Context service flow with data that has been understood in the form of
      * insights.
      *
-     * This method may deliver multiple new insights at once. All insights must be derived from
-     * hints previously supplied. All hints used to generate an insight must have the same
-     * {@link RenderToken}, or a {@code null} {@link RenderToken}; non-confirming insights will be
-     * ignored.
+     * <p>This method may deliver multiple new insights at once. All insights must be derived from
+     * hints previously supplied. All hints used to generate an insight must have the same {@link
+     * RenderToken}, or a {@code null} {@link RenderToken}; non-confirming insights will be ignored.
      *
      * @param insights new insights to be injected into the context flow
      * @hide
      */
     @SystemApi
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishInsight(@NonNull List<ContextInsight> insights) {
         try {
-            mService.publishInsight(ContextInsightWrapper.wrapList(insights));
+            mService.publishInsight(ContextInsightWrapper.wrapList(insights), mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

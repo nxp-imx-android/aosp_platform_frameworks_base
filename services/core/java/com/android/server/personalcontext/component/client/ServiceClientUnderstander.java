@@ -18,7 +18,7 @@ package com.android.server.personalcontext.component.client;
 
 import android.content.Context;
 import android.content.pm.ServiceInfo;
-import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,13 +36,13 @@ public class ServiceClientUnderstander extends ServiceClientRefiner {
     }
 
     @Override
-    public Set<Set<ContextHint>> getInterestedHintClusters(
-            Set<ContextHint> allContextHints, Set<UUID> seenIDs, boolean isFirstRun) {
+    public Set<Set<ContextHintWithSignature>> getInterestedHintClusters(
+            Set<ContextHintWithSignature> allContextHints, Set<UUID> seenIDs, boolean isFirstRun) {
         // TODO(b/452425566): Implement this to use a filter in the package's manifest.
         // For now this runs hints through the understander in one big block.
-        final Set<ContextHint> interestingHints = new HashSet<>();
-        for (ContextHint hint : allContextHints) {
-            if (!seenIDs.contains(hint.getHintId())) interestingHints.add(hint);
+        final Set<ContextHintWithSignature> interestingHints = new HashSet<>();
+        for (ContextHintWithSignature hint : allContextHints) {
+            if (!seenIDs.contains(hint.getContextHint().getHintId())) interestingHints.add(hint);
         }
         if (interestingHints.isEmpty()) {
             return Collections.emptySet();

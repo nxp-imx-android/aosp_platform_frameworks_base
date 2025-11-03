@@ -31,7 +31,6 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.ArrayMap;
 import android.util.SparseArray;
 
@@ -42,7 +41,6 @@ import com.android.internal.os.BinderInternal.CallSession;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,8 +59,6 @@ import java.util.Set;
 @Presubmit
 @DisabledOnRavenwood(blockedBy = BinderCallsStats.class)
 public class BinderCallsStatsTest {
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule();
 
     private static final int WORKSOURCE_UID = Process.FIRST_APPLICATION_UID;
     private static final int CALLING_UID = 2;

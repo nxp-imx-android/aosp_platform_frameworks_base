@@ -379,7 +379,7 @@ constructor(
                 controller.sessionToken,
             )
         }
-        return createActionsFromState(context, packageName, controller)
+        return createActionsFromState(context, packageName, controller, user.identifier)
     }
 
     private fun getPlaybackLocation(sbn: StatusBarNotification, mediaController: MediaController) =

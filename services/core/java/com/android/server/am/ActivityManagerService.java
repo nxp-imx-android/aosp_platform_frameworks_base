@@ -2435,7 +2435,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
+                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
+                         new OomAdjusterStateGetter())
                 .setHandlerThread(handlerThread)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
@@ -2506,7 +2507,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
+                .Builder(this, mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
+                         new OomAdjusterStateGetter())
                 .setLockObject(this)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .setProcessLruUpdater(mProcessList)
@@ -7380,13 +7382,14 @@ public class ActivityManagerService extends IActivityManager.Stub
     final ProcessRecord addAppLocked(ApplicationInfo info, String customProcess, boolean isolated,
             boolean disableHiddenApiChecks, String abiOverride, int zygotePolicyFlags) {
         return addAppLocked(info, customProcess, isolated, disableHiddenApiChecks,
-                false /* disableTestApiChecks */, abiOverride, zygotePolicyFlags);
+                false /* disableTestApiChecks */, false /* runInPccSandbox */,
+                abiOverride, zygotePolicyFlags);
     }
 
     // TODO: Move to ProcessList?
     @GuardedBy("this")
     final ProcessRecord addAppLocked(ApplicationInfo info, String customProcess, boolean isolated,
-            boolean disableHiddenApiChecks, boolean disableTestApiChecks,
+            boolean disableHiddenApiChecks, boolean disableTestApiChecks, boolean runInPccSandbox,
             String abiOverride, int zygotePolicyFlags) {
         return addAppLocked(
                 info,
@@ -7397,6 +7400,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 /* sdkSandboxClientAppPackage= */ null,
                 disableHiddenApiChecks,
                 disableTestApiChecks,
+                runInPccSandbox,
                 abiOverride,
                 zygotePolicyFlags);
     }
@@ -7410,12 +7414,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             @Nullable String sdkSandboxClientAppPackage,
             boolean disableHiddenApiChecks,
             boolean disableTestApiChecks,
+            boolean runInPccSandbox,
             String abiOverride,
             int zygotePolicyFlags) {
         ProcessRecord app;
         if (!isolated) {
             app = getProcessRecordLocked(customProcess != null ? customProcess : info.processName,
-                    info.uid);
+                    runInPccSandbox ? info.pccUid : info.uid);
         } else {
             app = null;
         }
@@ -7430,7 +7435,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                     sdkSandboxUid,
                     sdkSandboxClientAppPackage,
                     new HostingRecord(HostingRecord.HOSTING_TYPE_ADDED_APPLICATION,
-                            customProcess != null ? customProcess : info.processName));
+                            customProcess != null ? customProcess : info.processName,
+                            runInPccSandbox));
             updateLruProcessLocked(app, false, null);
             updateOomAdjLocked(app, OOM_ADJ_REASON_PROCESS_BEGIN);
         }
@@ -14673,12 +14679,21 @@ public class ActivityManagerService extends IActivityManager.Stub
                             == PackageManager.PERMISSION_GRANTED;
             activeInstr.mNoRestart = noRestart;
 
+            final boolean runInPccSandbox = (flags & ActivityManager.INSTR_FLAG_RUN_IN_PCC) != 0;
+            final int uid = runInPccSandbox ? ai.pccUid : ai.uid;
+            if (runInPccSandbox && !Process.isPccUid(uid)) {
+                reportStartInstrumentationFailureLocked(watcher, className,
+                        "Instrumentation target " + ii.targetPackage
+                                + " does not have a valid PCC uid.");
+                return false;
+            }
+
             final long origId = Binder.clearCallingIdentity();
 
             ProcessRecord app;
             synchronized (mProcLock) {
                 if (noRestart) {
-                    app = getProcessRecordLocked(ai.processName, ai.uid);
+                    app = getProcessRecordLocked(ai.processName, uid);
                 } else {
                     // Instrumentation can kill and relaunch even persistent processes
                     forceStopPackageLocked(ii.targetPackage, -1, true, false, true, true, false,
@@ -14689,7 +14704,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                                 UsageEvents.Event.SYSTEM_INTERACTION);
                     }
                     app = addAppLocked(ai, defProcess, false, disableHiddenApiChecks,
-                            disableTestApiChecks, abiOverride, ZYGOTE_POLICY_FLAG_EMPTY);
+                            disableTestApiChecks, runInPccSandbox, abiOverride,
+                            ZYGOTE_POLICY_FLAG_EMPTY);
                     app.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_INSTRUMENTATION);
                 }
 
@@ -14705,13 +14721,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             if ((flags & INSTR_FLAG_DISABLE_ISOLATED_STORAGE) != 0) {
                 // Allow OP_NO_ISOLATED_STORAGE app op for the package running instrumentation with
                 // --no-isolated-storage flag.
-                mAppOpsService.setMode(AppOpsManager.OP_NO_ISOLATED_STORAGE, ai.uid,
+                mAppOpsService.setMode(AppOpsManager.OP_NO_ISOLATED_STORAGE, uid,
                         ii.packageName, AppOpsManager.MODE_ALLOWED);
             }
             Binder.restoreCallingIdentity(origId);
 
             if (noRestart) {
-                instrumentWithoutRestart(activeInstr, ai);
+                instrumentWithoutRestart(activeInstr, ai, runInPccSandbox);
             }
         }
 
@@ -14836,6 +14852,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         sdkSandboxClientAppInfo.packageName,
                         disableHiddenApiChecks,
                         disableTestApiChecks,
+                        /* runInPccSandbox= */ false,
                         abiOverride,
                         ZYGOTE_POLICY_FLAG_EMPTY);
 
@@ -14856,10 +14873,11 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     private void instrumentWithoutRestart(ActiveInstrumentation activeInstr,
-            ApplicationInfo targetInfo) {
+            ApplicationInfo targetInfo, boolean runInPccSandbox) {
         ProcessRecord pr;
         synchronized (this) {
-            pr = getProcessRecordLocked(targetInfo.processName, targetInfo.uid);
+            pr = getProcessRecordLocked(targetInfo.processName,
+                    runInPccSandbox ? targetInfo.pccUid : targetInfo.uid);
         }
 
         try {
@@ -15321,6 +15339,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 final long cpuTimeUsed = curCpuTime - lastCpuTime;
                 if (checkExcessivePowerUsageLPr(uptimeSince, doCpuKills, cpuTimeUsed,
                             app.processName, app.toShortString(), cpuLimit, app)) {
+                    // Access app fields here because mProcLock is held.
+                    final int uid = app.uid;
+                    final String packageName = app.info != null ? app.info.packageName : null;
+
                     mHandler.post(() -> {
                         synchronized (ActivityManagerService.this) {
                             if (app.getThread() == null
@@ -15332,6 +15354,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
                                     ApplicationExitInfo.SUBREASON_EXCESSIVE_CPU,
                                     true);
+                        }
+                        if (packageName != null) {
+                            sendKillExcessiveCpuProfilingTrigger(uid, packageName);
                         }
                     });
                     profile.reportExcessiveCpu();
@@ -15350,6 +15375,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                 final long cpuTimeUsed = r.mCurrentCputime - r.mLastCputime;
                 if (checkExcessivePowerUsageLPr(uptimeSince, doCpuKills, cpuTimeUsed,
                             app.processName, r.toString(), cpuLimit, app)) {
+                    // Access app fields here because mProcLock is held.
+                    final int uid = app.uid;
+                    final String packageName = app.info != null ? app.info.packageName : null;
+
                     mHandler.post(() -> {
                         synchronized (ActivityManagerService.this) {
                             if (app.getThread() == null
@@ -15361,6 +15390,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     ApplicationExitInfo.SUBREASON_EXCESSIVE_CPU,
                                     "excessive cpu " + cpuTimeUsed + " during "
                                     + uptimeSince + " dur=" + checkDur + " limit=" + cpuLimit);
+                        }
+                        if (packageName != null) {
+                            sendKillExcessiveCpuProfilingTrigger(uid, packageName);
                         }
                     });
                     return false;
@@ -19601,6 +19633,33 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
+        public void onOomAdjUpdated(int adjSeq) {
+            if (mAlwaysFinishActivities) {
+                // Need to do this on its own message because the stack may not
+                // be in a consistent state at this point.
+                mAtmInternal.scheduleDestroyAllActivities("always-finish");
+            }
+
+            synchronized (mProcessStats.mLock) {
+                final long nowUptime = SystemClock.uptimeMillis();
+                if (mProcessStats.shouldWriteNowLocked(nowUptime)) {
+                    mHandler.post(new ActivityManagerService.ProcStatsRunnable(
+                            ActivityManagerService.this, mProcessStats));
+                }
+
+                // Run this after making sure all procstates are updated.
+                mProcessStats.updateTrackingAssociationsLocked(adjSeq, nowUptime);
+            }
+        }
+
+        @Override
+        public void onProcessUpdatedAndTrimmed(int numCached, int numEmpty, long now) {
+            mAppProfiler.updateLowMemStateLSP(numCached, numEmpty, now);
+            mProcessStateController.setIsLastMemoryLevelNormal(
+                    mAppProfiler.isLastMemoryLevelNormal());
+        }
+
+        @Override
         public void onProcessBackgroundRestricted(ProcessRecordInternal app) {
             mHandler.post(() -> {
                 synchronized (ActivityManagerService.this) {
@@ -19620,6 +19679,32 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG,
                         mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
             }
+        }
+
+        @Override
+        public void onReportOomAdjMessage(String msg) {
+            reportOomAdjMessageLocked(msg);
+        }
+    }
+
+    private final class OomAdjusterStateGetter implements OomAdjuster.StateGetter {
+        @Override
+        public boolean isDeviceFullyAwake() {
+            return mWakefulness.get() == PowerManagerInternal.WAKEFULNESS_AWAKE;
+        }
+
+        @Override
+        public boolean isBackupProcess(ProcessRecordInternal app) {
+            final BackupRecord backupTarget = mBackupTargets.get(app.userId);
+            if (backupTarget == null) {
+                return false;
+            }
+            return app == backupTarget.app;
+        }
+
+        @Override
+        public boolean isLastMemoryLevelNormal() {
+            return mAppProfiler.isLastMemoryLevelNormal();
         }
     }
 
@@ -20071,6 +20156,20 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         });
+    }
+
+    /**
+     * Sends a {@code TRIGGER_TYPE_KILL_EXCESSIVE_CPU_USAGE} trigger to profiling service.
+     * @param uid The UID of the app which this trigger relates to.
+     * @param packageName The package name of the app which this trigger relates to.
+     */
+    public void sendKillExcessiveCpuProfilingTrigger(int uid, @NonNull String packageName) {
+        if (android.os.profiling.Flags.profilingTriggerKillExcessiveCpuUsage()) {
+            sendProfilingTrigger(
+                    uid,
+                    packageName,
+                    ProfilingTrigger.TRIGGER_TYPE_KILL_EXCESSIVE_CPU_USAGE);
+        }
     }
 
     @Override

@@ -141,3 +141,10 @@ flag {
     description: "Enable APIs to support trusted devices"
     bug: "437224522"
 }
+
+flag {
+    name: "expand_app_streaming_role_permissions"
+    namespace: "companion"
+    description: "Enable storage and notification permissions for the APP_STREAMING role."
+    bug: "450063948"
+}

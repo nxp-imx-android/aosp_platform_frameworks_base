@@ -14,3 +14,10 @@ flag {
     description: "Enable extra debug logging by checking a runtime system property."
     bug: "397418860"
 }
+
+flag {
+    name: "skip_service_warning"
+    namespace: "printing"
+    description: "Skip displaying the first-use print service warning."
+    bug: "455021653"
+}

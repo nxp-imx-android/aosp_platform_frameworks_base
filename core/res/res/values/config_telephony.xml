@@ -540,7 +540,13 @@
 
     <!-- Telephony config for un-supported network capabilities in string array
          format. Refer to getNetworkCapabilityFromString() in DataUtils.java for available
-         capabilities. -->
+         capabilities. Note this is per-device setting. For per-carrier setting, please use
+         CarrierConfigManager#KEY_TELEPHONY_UNSUPPORTED_NETWORK_CAPABILITY_STRING_ARRAY.
+
+         The possible values are "MMS", "SUPL", "DUN", "FOTA", "IMS", "CBS", "XCAP", "EIMS",
+         "INTERNET", "MCX", "VSIM", "BIP", "ENTERPRISE", "PRIORITIZE_BANDWIDTH",
+         "PRIORITIZE_LATENCY", "RCS", "PRIORITIZE_UNIFIED_COMMUNICATIONS", "OEM_PAID", "OEM_PRIVATE"
+         -->
     <string-array name="config_unsupported_network_capabilities" translatable="false"></string-array>
     <java-symbol type="array" name="config_unsupported_network_capabilities" />
 

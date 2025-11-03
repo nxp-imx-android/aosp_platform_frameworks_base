@@ -16,25 +16,28 @@
 #undef ANDROID_UTILS_REF_BASE_DISABLE_IMPLICIT_CONSTRUCTION // TODO:remove this and fix code
 #define LOG_TAG "SensorManager"
 
-#include <nativehelper/JNIHelp.h>
-#include "android_os_MessageQueue.h"
-#include "core_jni_helpers.h"
-#include "jni.h"
-
-#include <nativehelper/ScopedUtfChars.h>
-#include <nativehelper/ScopedLocalRef.h>
+#include <android/hardware/sensor/ISensorClientListener.h>
 #include <android_runtime/AndroidRuntime.h>
 #include <android_runtime/android_hardware_HardwareBuffer.h>
-#include <vndk/hardware_buffer.h>
+#include <binder/Parcel.h>
+#include <cutils/native_handle.h>
+#include <nativehelper/JNIHelp.h>
+#include <nativehelper/ScopedLocalRef.h>
+#include <nativehelper/ScopedUtfChars.h>
 #include <sensor/Sensor.h>
 #include <sensor/SensorEventQueue.h>
 #include <sensor/SensorManager.h>
-#include <cutils/native_handle.h>
 #include <utils/Log.h>
 #include <utils/Looper.h>
 #include <utils/Vector.h>
+#include <vndk/hardware_buffer.h>
 
 #include <map>
+
+#include "android_os_MessageQueue.h"
+#include "android_util_Binder.h"
+#include "core_jni_helpers.h"
+#include "jni.h"
 
 namespace {
 
@@ -544,12 +547,35 @@ static jint nativeInjectSensorData(JNIEnv *env, jclass clazz, jlong eventQ, jint
     env->GetFloatArrayRegion(values, 0, env->GetArrayLength(values), sensor_event.data);
     return receiver->getSensorEventQueue()->injectSensorEvent(sensor_event);
 }
+
+static void nativeRegisterClientListener(JNIEnv *env, jclass clazz, jlong sensorManager,
+                                         jobject listener) {
+    SensorManager *sm = reinterpret_cast<SensorManager *>(sensorManager);
+    if (sm == nullptr) {
+        ALOGE("nativeRegisterClientListener: sensorManager is nullptr");
+        return;
+    }
+    sp<IBinder> binder = ibinderForJavaObject(env, listener);
+    if (binder == nullptr) {
+        ALOGE("nativeRegisterClientListener: binder is nullptr");
+        return;
+    }
+    sp<android::hardware::sensor::ISensorClientListener> clientListener =
+            interface_cast<android::hardware::sensor::ISensorClientListener>(binder);
+    if (clientListener == nullptr) {
+        ALOGE("nativeRegisterClientListener: clientListener is nullptr");
+        return;
+    }
+    sm->registerClientListener(clientListener);
+}
+
 //----------------------------------------------------------------------------
 
 static const JNINativeMethod gSystemSensorManagerMethods[] = {
         {"nativeClassInit", "()V", (void *)nativeClassInit},
         {"nativeCreate", "(Ljava/lang/String;)J", (void *)nativeCreate},
-
+        {"nativeRegisterClientListener", "(JLandroid/os/IBinder;)V",
+         (void *)nativeRegisterClientListener},
         {"nativeGetSensorAtIndex", "(JLandroid/hardware/Sensor;I)Z",
          (void *)nativeGetSensorAtIndex},
 

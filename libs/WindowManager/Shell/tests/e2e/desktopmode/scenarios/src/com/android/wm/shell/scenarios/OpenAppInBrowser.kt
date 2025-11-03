@@ -54,6 +54,17 @@ abstract class OpenAppInBrowser(val rotation: Rotation = Rotation.ROTATION_0) :
         wmHelper.StateSyncBuilder().withFullScreenApp(browserApp).waitForAndVerify()
     }
 
+    @Test
+    open fun triggerInDesktopMode() {
+        mailApp.enterDesktopMode(wmHelper,device)
+        mailApp.clickOpenAppInBrowserButton(wmHelper, device, isDesktop = true)
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .withTopVisibleApp(browserApp)
+            .waitForAndVerify()
+    }
+
     @After
     fun teardown() {
         // The test opens mail website. We want to make sure to clear storage

@@ -23,16 +23,38 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
+import com.android.compose.animation.scene.SceneKey
 
 /** A fake implementation of [HeadlineViewModel]. */
 class FakeHeadlineViewModel(
     override val items: List<HeadlineItem> = fakeHeadlineItems(),
-    currentItem: HeadlineItem? = items.first(),
-) : HeadlineViewModel {
     override val state: HoistedSceneTransitionLayoutState =
-        HoistedSceneTransitionLayoutState(
-            currentItem?.key?.toSceneKey() ?: HeadlineViewModel.GoneScene
-        )
+        HoistedSceneTransitionLayoutState(defaultInitialScene(items)),
+    private val onItemClicked: (HeadlineItem) -> Unit = {
+        // TODO(b/450236706): Call state.animateOrSnapTo(item.key.toSceneKey()) by default.
+    },
+) : HeadlineViewModel {
+    constructor(
+        items: List<HeadlineItem> = fakeHeadlineItems(),
+        currentItem: HeadlineItem? = items.first(),
+        onItemClicked: (HeadlineItem) -> Unit = {},
+    ) : this(
+        items = items,
+        state =
+            HoistedSceneTransitionLayoutState(
+                currentItem?.key?.toSceneKey() ?: HeadlineViewModel.GoneScene
+            ),
+        onItemClicked = onItemClicked,
+    )
+
+    override fun onItemClicked(item: HeadlineItem) {
+        onItemClicked.invoke(item)
+    }
+
+    companion object {
+        private fun defaultInitialScene(items: List<HeadlineItem>): SceneKey =
+            (items.firstOrNull()?.key ?: HeadlineItemKey.None).toSceneKey()
+    }
 }
 
 fun fakeHeadlineItems(): List<FakeHeadlineItem> {

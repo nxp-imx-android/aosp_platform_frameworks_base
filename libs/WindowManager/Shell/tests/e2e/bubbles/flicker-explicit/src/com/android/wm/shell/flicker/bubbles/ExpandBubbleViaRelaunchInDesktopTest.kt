@@ -109,6 +109,7 @@ class ExpandBubbleViaRelaunchInDesktopTest : BubbleFlickerTestBase(), ExpandBubb
 
     @get:Rule(order = 2)
     val setUpRule = RunOncePerParameterRule(
+        testClass = this::class,
         wrappedRule = testSetupRule(MODE_GESTURAL).around(recordTraceWithTransitionRule),
     )
 

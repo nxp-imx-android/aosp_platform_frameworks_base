@@ -114,6 +114,7 @@ aconfig_declarations_group {
         "com.android.net.thread.platform.flags-aconfig-java",
         "com.android.permission.flags-aconfig-java-export",
         "com.android.ranging.flags.ranging-aconfig-java-export",
+        "com.android.server.lights.feature.flags-java",
         "com.android.server.contextualsearch.flags-java",
         "com.android.server.flags.services-aconfig-java",
         "com.android.server.voiceinteraction.flags-java",
@@ -135,7 +136,7 @@ aconfig_declarations_group {
         "libgui_flags_java_lib",
         "mediaprovider_exported_aconfig_flag_lib",
         "networksecurity_exported_aconfig_flags_lib",
-        "npumanager_flags_lib",
+        "npumanager_aconfig_flags_lib",
         "power_flags_lib",
         "sdk_sandbox_exported_flags_lib",
         "surfaceflinger_flags_java_lib",
@@ -779,6 +780,7 @@ java_aconfig_library {
 
 cc_aconfig_library {
     name: "aconfig_hardware_flags_c_lib",
+    host_supported: true,
     aconfig_declarations: "android.hardware.flags-aconfig",
 }
 
@@ -884,6 +886,11 @@ cc_aconfig_library {
             enabled: true,
         },
     },
+    min_sdk_version: "apex_inherit",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.webapp",
+    ],
 }
 
 // Media BetterTogether
@@ -921,6 +928,13 @@ aconfig_declarations {
 java_aconfig_library {
     name: "com.android.media.flags.editing-aconfig-java",
     aconfig_declarations: "com.android.media.flags.editing-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "com.android.media.flags.editing-aconfig-java-host",
+    aconfig_declarations: "com.android.media.flags.editing-aconfig",
+    host_supported: true,
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
@@ -1108,6 +1122,7 @@ java_aconfig_library {
 
 cc_aconfig_library {
     name: "android.server.display.flags-aconfig-cc",
+    host_supported: true,
     aconfig_declarations: "display_flags",
 }
 
@@ -1322,6 +1337,13 @@ aconfig_declarations {
 java_aconfig_library {
     name: "com.android.server.contextualsearch.flags-java",
     aconfig_declarations: "com.android.server.contextualsearch.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Ligths service
+java_aconfig_library {
+    name: "com.android.server.lights.feature.flags-java",
+    aconfig_declarations: "lights_flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 

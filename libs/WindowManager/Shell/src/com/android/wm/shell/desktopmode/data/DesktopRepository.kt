@@ -508,6 +508,7 @@ class DesktopRepository(
      *
      * TODO: b/389960283 - add explicit [deskId] argument.
      */
+    @Deprecated("Use addTaskToDesk() instead.", ReplaceWith("addTaskToDesk()"))
     fun addTask(displayId: Int, taskId: Int, isVisible: Boolean, taskBounds: Rect) {
         logD(
             "addTask for displayId=%d, taskId=%d, isVisible=%b," + "taskBounds=%s",

@@ -148,9 +148,9 @@ class DesktopStateImpl(context: Context) : DesktopState {
     override val isFreeformEnabled: Boolean = hasFreeformFeature || hasFreeformDevOption
 
     override val shouldShowHomeBehindDesktop: Boolean =
-        Flags.showHomeBehindDesktop() && context.resources.getBoolean(
-            R.bool.config_showHomeBehindDesktop
-        )
+        Flags.showHomeBehindDesktop() && SystemProperties.getBoolean(
+            SHOW_HOME_BEHIND_DESKTOP_SYS_PROP,
+            context.resources.getBoolean(R.bool.config_showHomeBehindDesktop))
 
     companion object {
         @VisibleForTesting
@@ -160,6 +160,9 @@ class DesktopStateImpl(context: Context) : DesktopState {
         @VisibleForTesting
         const val ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP =
             "persist.wm.debug.enter_desktop_by_default_on_freeform_display"
+
+        private const val SHOW_HOME_BEHIND_DESKTOP_SYS_PROP =
+            "persist.wm.debug.show_home_behind_desktop"
 
         @Volatile
         private var instance: DesktopState? = null

@@ -55,6 +55,7 @@ import static android.content.Intent.CATEGORY_LAUNCHER;
 import static android.content.Intent.CATEGORY_SECONDARY_HOME;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
 import static android.content.Intent.FLAG_ACTIVITY_NO_HISTORY;
+import static android.content.pm.ActivityInfo.CONFIG_ASSETS_PATHS;
 import static android.content.pm.ActivityInfo.CONFIG_ORIENTATION;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
 import static android.content.pm.ActivityInfo.CONFIG_SCREEN_LAYOUT;
@@ -1721,6 +1722,8 @@ final class ActivityRecord extends WindowToken {
         }
 
         mDisplayContent.onRunningActivityChanged();
+        mAppCompatController.getResourceOverlayPolicy().setDisplayId(
+                mDisplayContent.getDisplayId());
 
         if (prevDc == null) {
             return;
@@ -3601,16 +3604,6 @@ final class ActivityRecord extends WindowToken {
         }
 
         final Task rootTask = getRootTask();
-        final boolean mayAdjustTop = !Flags.polishCloseWallpaperIncludesOpenChange()
-                && (isState(RESUMED) || rootTask.getTopResumedActivity() == null)
-                && rootTask.isFocusedRootTaskOnDisplay()
-                // Do not adjust focus task because the task will be reused to launch new activity.
-                && !task.isClearingToReuseTask();
-        final boolean shouldAdjustGlobalFocus = mayAdjustTop
-                // It must be checked before {@link #makeFinishingLocked} is called, because a
-                // root task is not visible if it only contains finishing activities.
-                && mRootWindowContainer.isTopDisplayFocusedRootTask(rootTask);
-
         final ActionChain chain;
         final Transition sourceTransit = mTransitionController.getCollectingTransition();
         if (sourceTransit != null
@@ -3660,13 +3653,6 @@ final class ActivityRecord extends WindowToken {
                 if (displayArea != null && rootTask == displayArea.mPreferredTopFocusableRootTask) {
                     displayArea.clearPreferredTopFocusableRootTask();
                 }
-            }
-            // We are finishing the top focused activity and its task has nothing to be focused so
-            // the next focusable task should be focused.
-            if (mayAdjustTop && task.topRunningActivity(true /* focusableOnly */)
-                    == null) {
-                task.adjustFocusToNextFocusableTask("finish-top", false /* allowFocusSelf */,
-                        shouldAdjustGlobalFocus);
             }
 
             finishActivityResults(resultCode, resultData, resultGrants);
@@ -8689,6 +8675,19 @@ final class ActivityRecord extends WindowToken {
         // Some apps relaunch unexpectedly with display move and crash.
         configChanged |= mAppCompatController.getDisplayCompatModePolicy()
                 .getDisplayCompatModeConfigMask();
+
+        // For CONFIG_ASSETS_PATHS change, check the constraints for the resource overlays which
+        // have been added/removed, and figure out if they are going to affect this activity at all.
+        // If the activity already handles CONFIG_ASSETS_PATHS changes, then nothing needs to be
+        // done.
+        // TODO(b/454293961): Explore if display-specific configuration changes can be applied for
+        // RROs with constraints, and if so, then remove this temporary solution.
+        if ((configChanged & CONFIG_ASSETS_PATHS) == 0
+                && (changes & CONFIG_ASSETS_PATHS) != 0
+                && !mAppCompatController.getResourceOverlayPolicy()
+                .doResourceOverlayChangesAffectActivity()) {
+            configChanged |= CONFIG_ASSETS_PATHS;
+        }
 
         return (changes & (~configChanged)) != 0;
     }

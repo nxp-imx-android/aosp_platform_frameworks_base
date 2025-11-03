@@ -41,6 +41,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsIntera
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
+import com.android.systemui.globalactions.data.repository.globalActionsRepository
 import com.android.systemui.globalactions.domain.interactor.globalActionsInteractor
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
@@ -198,6 +199,7 @@ class KosmosJavaAdapter() {
     val fromPrimaryBouncerTransitionInteractor by lazy {
         kosmos.fromPrimaryBouncerTransitionInteractor
     }
+    val globalActionsRepository by lazy { kosmos.globalActionsRepository }
     val globalActionsInteractor by lazy { kosmos.globalActionsInteractor }
     val keyguardClockInteractor by lazy { kosmos.keyguardClockInteractor }
     val brightnessMirrorShowingRepository by lazy { kosmos.brightnessMirrorShowingRepository }

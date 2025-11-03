@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"공유할 앱 선택"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"오디오 공유"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"앱 창 공유"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"공유 시 화면의 콘텐츠가 표시됩니다."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"창 스크린샷 찍기"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"창 녹화"</string>
@@ -367,8 +369,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"센서 끄기 활성화"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"모든 알림 지우기"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"알림"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"어시스턴트"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -710,8 +711,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"무음"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"알림"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"대화"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"하이라이트"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"무음 알림 모두 삭제"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"알림 설정 열기"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{알림 없음}=1{{mode} 모드로 인해 알림이 일시중지되었습니다.}=2{{mode} 및 다른 모드로 인해 알림이 일시중지되었습니다.}other{{mode} 및 다른 모드 #개로 인해 알림이 일시중지되었습니다.}}"</string>
@@ -1151,29 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"전원 메뉴"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>페이지 중 <xliff:g id="ID_1">%1$d</xliff:g>페이지"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 기능을 사용 설정하시겠습니까?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키는 <xliff:g id="ID_3">^3</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"<xliff:g id="ID_3">%3$s</xliff:g> 기능을 사용 설정하려면 작업 + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> 키를 다시 누르세요"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> 단축키를 사용 설정하시겠습니까?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"사용 설정하지 않음"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"단축키 사용 설정"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> 단축키 사용 설정됨"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키는 접근성 기능인 <xliff:g id="ID_3">^3</xliff:g> 기능을 사용할 수 있는 단축키입니다. 이를 통해 화면을 빠르게 확대하여 콘텐츠를 더 크게 표시할 수 있습니다. 확대 기능이 사용 설정되면 작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_4">^1</xliff:g>에 \'+\' 또는 \'-\'를 눌러 확대/축소를 조정합니다."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"단축키 사용 중지"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"계속 사용"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키는 <xliff:g id="ID_3">^3</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_4">^3</xliff:g> 기능은 항목을 소리 내어 읽어 주는 스크린 리더입니다. 이 기능은 화면을 보기 어려운 사용자에게 도움을 줄 수 있습니다. 이렇게 하면 기기 작동 방식이 달라질 수 있습니다."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"단축키를 사용 설정하면 TalkBack에서 기기를 완전히 제어할 수 있게 됩니다."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"접근성 관련 지원을 제공하는 앱에는 완벽한 제어권을 부여하는 것이 좋으나, 대부분의 앱에는 적합하지 않습니다."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"화면 확인 및 제어"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"화면에 표시된 모든 콘텐츠를 읽고 다른 앱 위에 콘텐츠를 표시할 수 있습니다."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"작업 확인 및 실행"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"앱 또는 하드웨어 센서와의 상호작용을 추적할 수 있으며, 나를 대신해 앱과 상호작용할 수 있습니다."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"작업 "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 키를 누르면 접근성 기능인 <xliff:g id="ID_3">^3</xliff:g> 기능이 사용 설정됩니다. 이를 통해 핸즈프리로 기기를 제어할 수 있습니다."</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"접근성"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"완료"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"잠금 화면"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"종료 중…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"해결 방법 확인하기"</string>
@@ -1740,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"다음 페이지로 이동"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"자동 완성"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"펼치기"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

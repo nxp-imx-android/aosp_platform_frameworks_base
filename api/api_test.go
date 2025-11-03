@@ -46,7 +46,7 @@ var prepareForTestWithCombinedApis = android.GroupFixturePreparers(
 
 func getAllTestSdkLibraries() []string {
 	modules := slices.Clone(non_updatable_modules)
-	for _, flagInfo := range releaseFlagToModule {
+	for _, flagInfo := range moduleFlagInfos {
 		modules = append(modules, flagInfo.moduleName)
 	}
 	return modules

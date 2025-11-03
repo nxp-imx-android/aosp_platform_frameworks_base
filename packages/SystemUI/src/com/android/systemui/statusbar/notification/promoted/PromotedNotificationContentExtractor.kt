@@ -127,6 +127,11 @@ constructor(
                 packageContext = packageContext,
                 systemUiContext = systemUiContext,
             )
+
+        if (privateVersion.notificationView == null) {
+            logger.logSkeletonInflationFailed(entry, "Private View inflation failed")
+        }
+
         val publicVersion =
             if (redactionType == REDACTION_TYPE_NONE) {
                 privateVersion
@@ -144,6 +149,11 @@ constructor(
                         systemUiContext = systemUiContext,
                     )
             }
+
+        if (redactionType != REDACTION_TYPE_NONE && publicVersion.notificationView == null) {
+            logger.logSkeletonInflationFailed(entry, "Public View inflation failed")
+        }
+
         return PromotedNotificationContentModels(
                 privateVersion = privateVersion,
                 publicVersion = publicVersion,
@@ -275,16 +285,19 @@ constructor(
         // properly inflate this view while adhering to upcoming architectural constraints.
         trace("AODPromotedNotification#inflate") {
             contentBuilder.notificationView =
-                LayoutInflater.from(systemUiContext).inflate(res, /* root= */ null)
-            val inflationIdentity =
+                try {
+                    LayoutInflater.from(systemUiContext).inflate(res, /* root= */ null)
+                } catch (_: Throwable) {
+                    null
+                }
+
+            contentBuilder.notificationView?.setTag(
+                com.android.systemui.res.R.id.aod_promoted_notification_inflation_identity,
                 InflationIdentity(
                     layout = res,
                     density = systemUiContext.resources.displayMetrics.density,
                     scale = systemUiContext.resources.displayMetrics.scaledDensity,
-                )
-            contentBuilder.notificationView?.setTag(
-                com.android.systemui.res.R.id.aod_promoted_notification_inflation_identity,
-                inflationIdentity,
+                ),
             )
         }
     }
@@ -529,7 +542,12 @@ constructor(
         contentBuilder: PromotedNotificationContentModel.Builder
     ) {
         // TODO: Create NotificationProgressModel.toSkeleton, or something similar.
-        contentBuilder.newProgress = createProgressModel(0xffffffff.toInt(), 0xff000000.toInt())
+        contentBuilder.newProgress =
+            createProgressModel(
+                0xffffffff.toInt(),
+                0xff000000.toInt(),
+                { Notification.COLOR_DEFAULT },
+            )
     }
 
     companion object {

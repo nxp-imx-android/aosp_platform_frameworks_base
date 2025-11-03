@@ -40,7 +40,6 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
 import android.view.Display;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.DesktopModeCompatPolicy;
@@ -274,18 +273,16 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             }
         }
 
-        if (DesktopModeFlags.INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES.isTrue()) {
-            ActivityRecord topVisibleFreeformActivity =
-                    task.getDisplayContent().getTopMostVisibleFreeformActivity();
-            final Rect inheritedBounds = getInheritedExistingTaskBounds(source,
-                    topVisibleFreeformActivity, targetActivity, task);
-            if (inheritedBounds != null) {
-                appendLog("inheriting bounds from existing closing instance");
-                outParams.mBounds.set(inheritedBounds);
-                appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
-                // Return result done to prevent other modifiers from changing or cascading bounds.
-                return RESULT_DONE;
-            }
+        ActivityRecord topVisibleFreeformActivity =
+                task.getDisplayContent().getTopMostVisibleFreeformActivity();
+        final Rect inheritedBounds = getInheritedExistingTaskBounds(source,
+                topVisibleFreeformActivity, targetActivity, task);
+        if (inheritedBounds != null) {
+            appendLog("inheriting bounds from existing closing instance");
+            outParams.mBounds.set(inheritedBounds);
+            appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
+            // Return result done to prevent other modifiers from changing or cascading bounds.
+            return RESULT_DONE;
         }
 
         DesktopModeBoundsCalculator.updateInitialBounds(task, layout, targetActivity, options,

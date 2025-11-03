@@ -76,220 +76,244 @@ constructor(
     /** Whether media carousel should scroll to the first card in the list after composition */
     val scrollToFirst: Boolean by derivedStateOf { interactor.shouldScrollToFirst }
 
+    private var latestVersion = emptyList<MediaCardViewModel>()
+    private var isVisible: () -> Boolean = { true }
+
     /** The current list of cards to show in the UI. */
     val cards: List<MediaCardViewModel> by derivedStateOf {
-        interactor.sessions.mapIndexed { sessionIndex, session ->
-            val isCurrentSessionAndScrubbing = isScrubbing && sessionIndex == selectedCardIndex
-            object : MediaCardViewModel {
-                override val key = session.key
-                override val icon = session.appIcon
-                override val background: Icon?
-                    get() = session.background
+        interactor.sessions
+            .mapIndexed { sessionIndex, session ->
+                val isCurrentSessionAndScrubbing = isScrubbing && sessionIndex == selectedCardIndex
+                object : MediaCardViewModel {
+                    override val key = session.key
+                    override val icon = session.appIcon
+                    override val background: Icon?
+                        get() = session.background
 
-                override val colorScheme: MediaColorScheme?
-                    get() = session.colorScheme
+                    override val colorScheme: MediaColorScheme?
+                        get() = session.colorScheme
 
-                override val title = session.title
-                override val subtitle = session.subtitle
-                override val actionButtonLayout = session.actionButtonLayout
-                override val playPauseAction =
-                    session.playPauseAction.toPlayPauseActionViewModel(session.state)
-                override val additionalActions: List<MediaSecondaryActionViewModel>
-                    get() {
-                        return session.additionalActions.map { action ->
-                            action.toSecondaryActionViewModel()
+                    override val title = session.title
+                    override val subtitle = session.subtitle
+                    override val isExplicit = session.isExplicit
+                    override val actionButtonLayout = session.actionButtonLayout
+                    override val playPauseAction =
+                        session.playPauseAction.toPlayPauseActionViewModel(session.state)
+                    override val additionalActions: List<MediaSecondaryActionViewModel>
+                        get() {
+                            return session.additionalActions.map { action ->
+                                action.toSecondaryActionViewModel()
+                            }
                         }
-                    }
 
-                override val navigation: MediaNavigationViewModel
-                    get() {
-                        return if (session.canBeScrubbed) {
-                            MediaNavigationViewModel.Showing(
-                                progress =
-                                    if (!isCurrentSessionAndScrubbing) {
-                                        session.positionMs.toFloat() / session.durationMs
-                                    } else {
-                                        seekProgress
+                    override val navigation: MediaNavigationViewModel
+                        get() {
+                            return if (session.canBeScrubbed) {
+                                MediaNavigationViewModel.Showing(
+                                    progress =
+                                        if (!isCurrentSessionAndScrubbing) {
+                                            session.positionMs.toFloat() / session.durationMs
+                                        } else {
+                                            seekProgress
+                                        },
+                                    left = session.leftAction.toSecondaryActionViewModel(),
+                                    right = session.rightAction.toSecondaryActionViewModel(),
+                                    isSquiggly =
+                                        session.state != MediaSessionState.Paused &&
+                                            !isCurrentSessionAndScrubbing,
+                                    isScrubbing = isCurrentSessionAndScrubbing,
+                                    onScrubChange = { progress ->
+                                        check(selectedCardIndex == sessionIndex) {
+                                            "Can't seek on a card that's not the selected card!"
+                                        }
+                                        isScrubbing = true
+                                        seekProgress = progress
                                     },
-                                left = session.leftAction.toSecondaryActionViewModel(),
-                                right = session.rightAction.toSecondaryActionViewModel(),
-                                isSquiggly =
-                                    session.state != MediaSessionState.Paused &&
-                                        !isCurrentSessionAndScrubbing,
-                                isScrubbing = isCurrentSessionAndScrubbing,
-                                onScrubChange = { progress ->
-                                    check(selectedCardIndex == sessionIndex) {
-                                        "Can't seek on a card that's not the selected card!"
-                                    }
-                                    isScrubbing = true
-                                    seekProgress = progress
-                                },
-                                onScrubFinished = { dragDelta ->
-                                    if (
-                                        dragDelta.isHorizontal() &&
-                                            !falsingSystem.isFalseTouch(Classifier.MEDIA_SEEKBAR)
-                                    ) {
-                                        interactor.seek(
-                                            sessionKey = session.key,
-                                            to = (seekProgress * session.durationMs).roundToLong(),
-                                        )
-                                    }
-                                    isScrubbing = false
-                                },
-                                contentDescription =
-                                    context.getString(
-                                        R.string.controls_media_seekbar_description,
-                                        formatTimeContentDescription(session.positionMs),
-                                        formatTimeContentDescription(session.durationMs),
-                                    ),
-                            )
-                        } else {
-                            MediaNavigationViewModel.Hidden
+                                    onScrubFinished = { dragDelta ->
+                                        if (
+                                            dragDelta.isHorizontal() &&
+                                                !falsingSystem.isFalseTouch(
+                                                    Classifier.MEDIA_SEEKBAR
+                                                )
+                                        ) {
+                                            interactor.seek(
+                                                sessionKey = session.key,
+                                                to =
+                                                    (seekProgress * session.durationMs)
+                                                        .roundToLong(),
+                                            )
+                                        }
+                                        isScrubbing = false
+                                    },
+                                    contentDescription =
+                                        context.getString(
+                                            R.string.controls_media_seekbar_description,
+                                            formatTimeContentDescription(session.positionMs),
+                                            formatTimeContentDescription(session.durationMs),
+                                        ),
+                                )
+                            } else {
+                                MediaNavigationViewModel.Hidden
+                            }
                         }
-                    }
 
-                override val guts: MediaCardGutsViewModel
-                    get() {
-                        return MediaCardGutsViewModel(
-                            isVisible = isGutsVisible,
-                            text =
-                                if (session.canBeHidden) {
-                                    context.getString(
-                                        R.string.controls_media_close_session,
-                                        session.appName,
-                                    )
-                                } else {
-                                    context.getString(R.string.controls_media_active_session)
-                                },
-                            primaryAction =
-                                if (session.canBeHidden) {
+                    override val guts: MediaCardGutsViewModel
+                        get() {
+                            return MediaCardGutsViewModel(
+                                isVisible = isGutsVisible,
+                                text =
+                                    if (session.canBeHidden) {
+                                        context.getString(
+                                            R.string.controls_media_close_session,
+                                            session.appName,
+                                        )
+                                    } else {
+                                        context.getString(R.string.controls_media_active_session)
+                                    },
+                                primaryAction =
+                                    if (session.canBeHidden) {
+                                        MediaGutsButtonViewModel(
+                                            text =
+                                                context.getString(
+                                                    R.string.controls_media_dismiss_button
+                                                ),
+                                            onClick = {
+                                                falsingSystem.runIfNotFalseTap(
+                                                    FalsingManager.LOW_PENALTY
+                                                ) {
+                                                    interactor.hide(
+                                                        session.key,
+                                                        MEDIA_PLAYER_ANIMATION_DELAY_MS,
+                                                    )
+                                                    isGutsVisible = false
+                                                }
+                                            },
+                                        )
+                                    } else {
+                                        MediaGutsButtonViewModel(
+                                            text = context.getString(R.string.cancel),
+                                            onClick = {
+                                                falsingSystem.runIfNotFalseTap(
+                                                    FalsingManager.LOW_PENALTY
+                                                ) {
+                                                    isGutsVisible = false
+                                                }
+                                            },
+                                        )
+                                    },
+                                secondaryAction =
                                     MediaGutsButtonViewModel(
-                                        text =
-                                            context.getString(
-                                                R.string.controls_media_dismiss_button
+                                            text = context.getString(R.string.cancel),
+                                            onClick = {
+                                                falsingSystem.runIfNotFalseTap(
+                                                    FalsingManager.LOW_PENALTY
+                                                ) {
+                                                    isGutsVisible = false
+                                                }
+                                            },
+                                        )
+                                        .takeIf { session.canBeHidden },
+                                settingsButton =
+                                    MediaGutsSettingsButtonViewModel(
+                                        icon =
+                                            Icon.Resource(
+                                                resId = R.drawable.ic_settings,
+                                                contentDescription =
+                                                    ContentDescription.Resource(
+                                                        res =
+                                                            R.string.controls_media_settings_button
+                                                    ),
                                             ),
                                         onClick = {
                                             falsingSystem.runIfNotFalseTap(
                                                 FalsingManager.LOW_PENALTY
                                             ) {
-                                                interactor.hide(
-                                                    session.key,
-                                                    MEDIA_PLAYER_ANIMATION_DELAY_MS,
-                                                )
-                                                isGutsVisible = false
+                                                interactor.openMediaSettings()
                                             }
                                         },
-                                    )
-                                } else {
-                                    MediaGutsButtonViewModel(
-                                        text = context.getString(R.string.cancel),
-                                        onClick = {
-                                            falsingSystem.runIfNotFalseTap(
-                                                FalsingManager.LOW_PENALTY
-                                            ) {
-                                                isGutsVisible = false
-                                            }
-                                        },
-                                    )
-                                },
-                            secondaryAction =
-                                MediaGutsButtonViewModel(
-                                        text = context.getString(R.string.cancel),
-                                        onClick = {
-                                            falsingSystem.runIfNotFalseTap(
-                                                FalsingManager.LOW_PENALTY
-                                            ) {
-                                                isGutsVisible = false
-                                            }
-                                        },
-                                    )
-                                    .takeIf { session.canBeHidden },
-                            settingsButton =
-                                MediaGutsSettingsButtonViewModel(
-                                    icon =
-                                        Icon.Resource(
-                                            resId = R.drawable.ic_settings,
-                                            contentDescription =
-                                                ContentDescription.Resource(
-                                                    res = R.string.controls_media_settings_button
-                                                ),
+                                    ),
+                                onLongClick = { isGutsVisible = false },
+                            )
+                        }
+
+                    override val deviceSuggestionChip: MediaDeviceChipViewModel?
+                        get() {
+                            return session.suggestedOutputDevice?.let {
+                                MediaDeviceChipViewModel(
+                                    icon = it.icon,
+                                    text =
+                                        context.getString(
+                                            R.string.media_suggestion_disconnected_text,
+                                            it.name,
                                         ),
-                                    onClick = {
-                                        falsingSystem.runIfNotFalseTap(FalsingManager.LOW_PENALTY) {
-                                            interactor.openMediaSettings()
+                                    isConnecting = it.isInProgress,
+                                    onClick = { expandable ->
+                                        falsingSystem.runIfNotFalseTap(
+                                            FalsingManager.MODERATE_PENALTY
+                                        ) {
+                                            it.onClick(expandable)
                                         }
                                     },
-                                ),
-                            onLongClick = { isGutsVisible = false },
-                        )
-                    }
+                                )
+                            }
+                        }
 
-                override val deviceSuggestionChip: MediaDeviceChipViewModel?
-                    get() {
-                        return session.suggestedOutputDevice?.let {
-                            MediaDeviceChipViewModel(
-                                icon = it.icon,
+                    override val outputSwitcherChip: MediaDeviceChipViewModel
+                        get() {
+                            return MediaDeviceChipViewModel(
+                                icon = session.outputDevice.icon,
                                 text =
-                                    context.getString(
-                                        R.string.media_suggestion_disconnected_text,
-                                        it.name,
-                                    ),
-                                isConnecting = it.isInProgress,
+                                    if (session.suggestedOutputDevice == null)
+                                        session.outputDevice.name
+                                    else null,
                                 onClick = { expandable ->
                                     falsingSystem.runIfNotFalseTap(
                                         FalsingManager.MODERATE_PENALTY
                                     ) {
-                                        it.onClick(expandable)
+                                        session.outputDevice.onClick(expandable)
                                     }
                                 },
                             )
                         }
-                    }
 
-                override val outputSwitcherChip: MediaDeviceChipViewModel
-                    get() {
-                        return MediaDeviceChipViewModel(
-                            icon = session.outputDevice.icon,
-                            text =
-                                if (session.suggestedOutputDevice == null) session.outputDevice.name
-                                else null,
-                            onClick = { expandable ->
-                                falsingSystem.runIfNotFalseTap(FalsingManager.MODERATE_PENALTY) {
-                                    session.outputDevice.onClick(expandable)
-                                }
-                            },
-                        )
-                    }
+                    override val outputSwitcherChipButton: MediaSecondaryActionViewModel.Action
+                        get() {
+                            return MediaSecondaryActionViewModel.Action(
+                                icon = session.outputDevice.icon,
+                                onClick = {
+                                    falsingSystem.runIfNotFalseTap(
+                                        FalsingManager.MODERATE_PENALTY
+                                    ) {
+                                        // TODO(b/397989775): tell the UI to show the output
+                                        // switcher.
+                                    }
+                                },
+                            )
+                        }
 
-                override val outputSwitcherChipButton: MediaSecondaryActionViewModel.Action
-                    get() {
-                        return MediaSecondaryActionViewModel.Action(
-                            icon = session.outputDevice.icon,
-                            onClick = {
-                                falsingSystem.runIfNotFalseTap(FalsingManager.MODERATE_PENALTY) {
-                                    // TODO(b/397989775): tell the UI to show the output switcher.
-                                }
-                            },
-                        )
+                    override val onClick = { expandable: Expandable ->
+                        falsingSystem.runIfNotFalseTap(FalsingManager.LOW_PENALTY) {
+                            session.onClick(expandable)
+                        }
                     }
-
-                override val onClick = { expandable: Expandable ->
-                    falsingSystem.runIfNotFalseTap(FalsingManager.LOW_PENALTY) {
-                        session.onClick(expandable)
-                    }
+                    override val onClickLabel =
+                        context.getString(R.string.controls_media_playing_item_description)
+                    override val onLongClick = { isGutsVisible = true }
                 }
-                override val onClickLabel =
-                    context.getString(R.string.controls_media_playing_item_description)
-                override val onLongClick = { isGutsVisible = true }
             }
-        }
+            .let {
+                if (isVisible()) {
+                    latestVersion = it
+                }
+                latestVersion
+            }
     }
 
     val settingsButtonViewModel =
         MediaSettingsButtonViewModel(
             icon =
                 Icon.Resource(
-                    resId = R.drawable.ic_settings,
+                    resId = R.drawable.ic_media_settings,
                     contentDescription =
                         ContentDescription.Resource(res = R.string.controls_media_settings_button),
                 ),
@@ -310,10 +334,16 @@ constructor(
                     interactor.sessions.any { session -> session.isActive }
             }
 
+    fun setVisibility(visible: () -> Boolean) {
+        isVisible = visible
+    }
+
     /** Notifies that the card at [cardIndex] has been selected in the UI. */
     fun onCardSelected(cardIndex: Int) {
         if (cardIndex == selectedCardIndex) return
-        check(cardIndex >= 0 && cardIndex < cards.size) { "Invalid card index $cardIndex" }
+        check(!isVisible() || cardIndex >= 0 && cardIndex < cards.size) {
+            "Invalid card index $cardIndex"
+        }
         selectedCardIndex = cardIndex
         interactor.storeCurrentCarouselIndex(selectedCardIndex)
     }

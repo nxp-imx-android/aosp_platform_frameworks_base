@@ -406,6 +406,7 @@ java_library {
     visibility: [
         ":__subpackages__",
         "//frameworks/opt:__subpackages__",
+        "//vendor:__subpackages__",
     ],
 
     lint: {

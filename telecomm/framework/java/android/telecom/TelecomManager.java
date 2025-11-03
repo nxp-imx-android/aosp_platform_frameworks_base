@@ -259,7 +259,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_PROMOTE_EXTRA_DO_NOT_LOG_CALL_TO_SYSTEM_API)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_PROMOTE_EXTRA_DO_NOT_LOG_CALL_TO_SYSTEM_API)
     @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
     public static final String EXTRA_DO_NOT_LOG_CALL =
             "android.telecom.extra.DO_NOT_LOG_CALL";
@@ -1174,7 +1174,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     public static final int CALL_CONNECTED_INDICATOR_NONE = 0;
 
     /**
@@ -1187,7 +1187,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     public static final int CALL_CONNECTED_INDICATOR_TONE = (1 << 0);
 
     /**
@@ -1200,12 +1200,12 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     public static final int CALL_CONNECTED_INDICATOR_VIBRATION = (1 << 1);
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     @IntDef(
             prefix = {"CALL_CONNECTED_INDICATOR_"},
             flag = true,
@@ -1257,6 +1257,9 @@ public class TelecomManager {
      * </ul>
      * <p>
      * If no {@link PhoneAccount} fits the criteria above, this method will return {@code null}.
+     * <p>
+     * For callers only interested in finding the default SIM for voice calls, it is recommended
+     * to use {@link SubscriptionManager#getDefaultVoiceSubscriptionId()} instead.
      *
      * @param uriScheme The URI scheme.
      * @return The {@link PhoneAccountHandle} corresponding to the account to be used.
@@ -1440,6 +1443,9 @@ public class TelecomManager {
      * Returns a list of {@link PhoneAccountHandle}s which can be used to make and receive phone
      * calls. The returned list includes only those accounts which have been explicitly enabled
      * by the user.
+     * <p>
+     * For callers only interested in finding all SIMs for voice calls, it is recommended
+     * to use {@link SubscriptionManager#getActiveSubscriptionInfoList()} instead.
      *
      * @see #EXTRA_PHONE_ACCOUNT_HANDLE
      * @return A list of {@code PhoneAccountHandle} objects.
@@ -3118,7 +3124,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public @CallConnectedIndicator int getCallConnectedIndicatorPreference() {
         ITelecomService service = getTelecomService();
@@ -3144,7 +3150,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public void setCallConnectedIndicatorPreference(@CallConnectedIndicator int preference) {
         ITelecomService service = getTelecomService();
@@ -3172,7 +3178,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
     @RequiresPermission(READ_PRIVILEGED_PHONE_STATE)
     public @NonNull Map<String, Boolean> getVoipCallLogIntegrationStatus() {
         ITelecomService service = getTelecomService();
@@ -3199,7 +3205,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public void setVoipCallLogIntegrationEnabled(@NonNull String packageName, boolean enabled) {
         ITelecomService service = getTelecomService();
@@ -3229,7 +3235,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public boolean isLocalVoicemailSupported() {
         ITelecomService service = getTelecomService();
@@ -3269,7 +3275,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public void enableLocalVoicemail(@NonNull PhoneAccountHandle phoneAccountHandle,
             @NonNull Duration timeout) {
@@ -3305,7 +3311,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
     public void disableLocalVoicemail(@NonNull PhoneAccountHandle phoneAccountHandle) {
         if (phoneAccountHandle == null) {
@@ -3337,7 +3343,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public boolean isLocalVoicemailEnabled(@NonNull PhoneAccountHandle phoneAccountHandle) {
         ITelecomService service = getTelecomService();
@@ -3379,7 +3385,7 @@ public class TelecomManager {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_LOCAL_VOICEMAIL)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_LOCAL_VOICEMAIL)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public @NonNull Duration getLocalVoicemailTimeout(
             @NonNull PhoneAccountHandle phoneAccountHandle) {

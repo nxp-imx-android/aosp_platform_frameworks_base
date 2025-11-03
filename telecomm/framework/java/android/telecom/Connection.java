@@ -2249,7 +2249,7 @@ public abstract class Connection extends Conferenceable {
     /**
      * The verification status for an incoming call's phone number.
      */
-    private @VerificationStatus int mCallerNumberVerificationStatus;
+    private @Annotation.VerificationStatus int mCallerNumberVerificationStatus;
 
 
     /**
@@ -3802,8 +3802,9 @@ public abstract class Connection extends Conferenceable {
         protected CallFilteringCompletionInfo(Parcel in) {
             mIsBlocked = in.readByte() != 0;
             mIsInContacts = in.readByte() != 0;
-            CallScreeningService.ParcelableCallResponse response
-                    = in.readParcelable(CallScreeningService.class.getClassLoader(), android.telecom.CallScreeningService.ParcelableCallResponse.class);
+            ParcelableCallResponse response = in.readParcelable(
+                    CallScreeningService.class.getClassLoader(),
+                    android.telecom.ParcelableCallResponse.class);
             mCallResponse = response == null ? null : response.toCallResponse();
             mCallScreeningComponent = in.readParcelable(ComponentName.class.getClassLoader(), android.content.ComponentName.class);
         }
@@ -4158,7 +4159,7 @@ public abstract class Connection extends Conferenceable {
      * ATIS-1000082.
      * @return the verification status.
      */
-    public final @VerificationStatus int getCallerNumberVerificationStatus() {
+    public final @Annotation.VerificationStatus int getCallerNumberVerificationStatus() {
         return mCallerNumberVerificationStatus;
     }
 
@@ -4171,7 +4172,7 @@ public abstract class Connection extends Conferenceable {
      * {@link ConnectionService#onCreateIncomingConnection(PhoneAccountHandle, ConnectionRequest)}.
      */
     public final void setCallerNumberVerificationStatus(
-            @VerificationStatus int callerNumberVerificationStatus) {
+            @Annotation.VerificationStatus int callerNumberVerificationStatus) {
         mCallerNumberVerificationStatus = callerNumberVerificationStatus;
     }
 }

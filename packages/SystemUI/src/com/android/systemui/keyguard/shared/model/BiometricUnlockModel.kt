@@ -15,21 +15,61 @@
  */
 package com.android.systemui.keyguard.shared.model
 
+import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
+
 /**
  * Model [BiometricUnlockMode] with [BiometricUnlockSource].
  *
  * @param source can be null as a starting state or if the unlock isn't coming from a biometric (the
  *   latter should be deprecated in the future, b/338578036)
  */
-data class BiometricUnlockModel(
-    val mode: BiometricUnlockMode,
-    val source: BiometricUnlockSource?,
-)
+data class BiometricUnlockModel(val mode: BiometricUnlockMode, val source: BiometricUnlockSource?)
+
+/**
+ * Maps BiometricUnlockModel to an unlockSource.
+ *
+ * @return the DeviceUnlockSource corresponding with the BiometricUnlockModel. This can return null
+ *   if the BiometricUnlockModel does not mean the device was unlocked.
+ */
+fun BiometricUnlockModel.toDeviceUnlockSource(): DeviceUnlockSource? {
+    return when (mode) {
+        BiometricUnlockMode.NONE,
+        BiometricUnlockMode.SHOW_BOUNCER,
+        BiometricUnlockMode.ONLY_WAKE -> null
+
+        BiometricUnlockMode.UNLOCK_COLLAPSING,
+        BiometricUnlockMode.DISMISS_BOUNCER,
+        BiometricUnlockMode.WAKE_AND_UNLOCK,
+        BiometricUnlockMode.WAKE_AND_UNLOCK_FROM_DREAM,
+        BiometricUnlockMode.WAKE_AND_UNLOCK_PULSING ->
+            when (source) {
+                BiometricUnlockSource.FINGERPRINT_SENSOR -> DeviceUnlockSource.Fingerprint
+                BiometricUnlockSource.FACE_SENSOR -> DeviceUnlockSource.FaceWithBypassOrUnlockIntent
+                null -> null
+            }
+
+        // These states are only valid for passive auth (ie: face)
+        BiometricUnlockMode.NONE_UNLOCKED,
+        BiometricUnlockMode.ONLY_WAKE_UNLOCKED ->
+            when (source) {
+                BiometricUnlockSource.FACE_SENSOR -> DeviceUnlockSource.FaceWithoutBypass
+                else -> null
+            }
+    }
+}
 
 /** Model device wakefulness states. */
 enum class BiometricUnlockMode {
-    /** Mode in which we don't need to wake up the device when we authenticate. */
+    /**
+     * Mode in which we don't need to wake up the device when we attempted authentication. No
+     * authentication occurred.
+     */
     NONE,
+    /**
+     * Mode in which we don't need to wake up the device when we authenticate. Authentication was
+     * successful.
+     */
+    NONE_UNLOCKED,
     /**
      * Mode in which we wake up the device, and directly dismiss Keyguard. Active when we acquire a
      * fingerprint while the screen is off and the device was sleeping.
@@ -46,9 +86,14 @@ enum class BiometricUnlockMode {
      */
     SHOW_BOUNCER,
     /**
-     * Mode in which we only wake up the device, and keyguard was not showing when we authenticated.
+     * Mode in which we only wake up the device, and keyguard was not showing when we attempted
+     * authentication. No authentication occurred.
      */
     ONLY_WAKE,
+    /**
+     * Mode in which we only wake up the device. Authentication was successful.
+     */
+    ONLY_WAKE_UNLOCKED,
     /**
      * Mode in which fingerprint unlocks the device or passive auth (ie face auth) unlocks the
      * device while being requested when keyguard is occluded or showing.
@@ -68,7 +113,16 @@ enum class BiometricUnlockMode {
                 WAKE_AND_UNLOCK_PULSING,
                 UNLOCK_COLLAPSING,
                 WAKE_AND_UNLOCK_FROM_DREAM,
-                DISMISS_BOUNCER
+                DISMISS_BOUNCER,
+            )
+        private val unlockModes =
+            setOf(
+                NONE,
+                WAKE_AND_UNLOCK,
+                WAKE_AND_UNLOCK_PULSING,
+                UNLOCK_COLLAPSING,
+                WAKE_AND_UNLOCK_FROM_DREAM,
+                DISMISS_BOUNCER,
             )
 
         fun isWakeAndUnlock(mode: BiometricUnlockMode): Boolean {

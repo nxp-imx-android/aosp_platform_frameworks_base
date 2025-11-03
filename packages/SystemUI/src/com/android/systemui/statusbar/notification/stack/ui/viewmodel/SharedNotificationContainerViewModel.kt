@@ -107,6 +107,7 @@ import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import com.android.systemui.utils.coroutines.flow.transformLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
 import kotlin.math.round
@@ -120,6 +121,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -207,8 +209,8 @@ constructor(
      */
     private val isAnyExpanded =
         combine(
-                shadeInteractor.shadeExpansion.map { it > 0f },
-                shadeInteractor.qsExpansion.map { it > 0f },
+                shadeInteractor.shadeExpansion.map { it > 0f }.distinctUntilChanged(),
+                shadeInteractor.qsExpansion.map { it > 0f }.distinctUntilChanged(),
             ) { shadeExpansion, qsExpansion ->
                 shadeExpansion || qsExpansion
             }
@@ -293,6 +295,7 @@ constructor(
                                 when (horizontalAlignment) {
                                     Alignment.Start ->
                                         marginHorizontal.coerceAtLeast(insetStart) to 0
+
                                     Alignment.End -> 0 to marginHorizontal.coerceAtLeast(insetEnd)
                                     else -> 0 to 0
                                 }
@@ -562,41 +565,51 @@ constructor(
                     @Suppress("DEPRECATION") // to handle split shade
                     when (shadeMode) {
                         Single ->
-                            combineTransform(
-                                shadeInteractor.shadeExpansion,
-                                shadeInteractor.qsExpansion,
-                            ) { shadeExpansion, qsExpansion ->
-                                if (qsExpansion == 1f) {
-                                    // Ensure HUNs will be visible in QS shade (at least while
-                                    // unlocked)
-                                    emit(1f)
-                                } else if (shadeExpansion > 0f || qsExpansion > 0f) {
-                                    // Fade as QS shade expands
-                                    emit(1f - qsExpansion)
+                            shadeInteractor.qsExpansion
+                                .map { it == 1f }
+                                .distinctUntilChanged()
+                                .flatMapLatestConflated { qsFullyExpanded ->
+                                    if (qsFullyExpanded) {
+                                        // Ensure HUNs will be visible in QS shade (at least
+                                        // while unlocked)
+                                        flowOf(1f)
+                                    } else {
+                                        combineTransform(
+                                                shadeInteractor.shadeExpansion,
+                                                shadeInteractor.qsExpansion,
+                                            ) { shadeExpansion, qsExpansion ->
+                                                // Fade as QS shade expands
+                                                if (shadeExpansion > 0 || qsExpansion > 0) {
+                                                    emit(1f - qsExpansion)
+                                                }
+                                            }
+                                            .distinctUntilChanged()
+                                    }
                                 }
-                            }
+
                         Split ->
                             isAnyExpanded.transform { isAnyExpanded ->
                                 if (isAnyExpanded) {
                                     emit(1f)
                                 }
                             }
+
                         Dual ->
-                            combineTransform(
-                                headsUpNotificationInteractor.get().isHeadsUpOrAnimatingAway,
-                                shadeInteractor.shadeExpansion,
-                                shadeInteractor.qsExpansion,
-                            ) { isHeadsUpOrAnimatingAway, shadeExpansion, qsExpansion ->
-                                if (isHeadsUpOrAnimatingAway) {
-                                    // Ensure HUNs will be visible in QS shade (at least while
-                                    // unlocked)
-                                    emit(1f)
-                                } else if (shadeExpansion > 0f || qsExpansion > 0f) {
-                                    // On a narrow screen, the QS shade overlaps with lockscreen
-                                    // notifications. Fade them out as the QS shade expands.
-                                    emit(1f - qsExpansion)
+                            headsUpNotificationInteractor
+                                .get()
+                                .isHeadsUpOrAnimatingAway
+                                .transformLatestConflated { isHeadsUpOrAnimatingAway ->
+                                    if (isHeadsUpOrAnimatingAway) {
+                                        // Ensure HUNs will be visible in QS shade (at least
+                                        // while unlocked)
+                                        emit(1f)
+                                    } else {
+                                        // On a narrow screen, the QS shade overlaps with
+                                        // lockscreen notifications. Fade them out as the QS
+                                        // shade expands.
+                                        emitAll(shadeInteractor.qsExpansion.map { 1f - it })
+                                    }
                                 }
-                            }
                     }
                 }
             } else {

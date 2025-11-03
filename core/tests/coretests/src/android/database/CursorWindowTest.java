@@ -21,12 +21,10 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import android.database.sqlite.SQLiteException;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,8 +33,6 @@ import java.util.Arrays;
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public class CursorWindowTest {
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule();
 
     @Test
     public void testConstructor_WithName() {

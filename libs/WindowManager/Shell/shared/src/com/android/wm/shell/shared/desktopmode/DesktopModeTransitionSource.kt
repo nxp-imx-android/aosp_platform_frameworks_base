@@ -35,6 +35,8 @@ enum class DesktopModeTransitionSource : Parcelable {
     RECENTS,
     /** Transitions that originated from Taskbar. */
     TASKBAR,
+    /** Transitions that originate from switching windowing layers. */
+    LAYER_SWITCH,
     /** Transitions with source unknown. */
     UNKNOWN;
 

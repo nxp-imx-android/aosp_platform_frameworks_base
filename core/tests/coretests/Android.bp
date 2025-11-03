@@ -153,6 +153,7 @@ android_test {
         ":HelloWorldUsingSdkMalformedNegativeVersion",
         ":NoUpdateAppWidgetTestApp",
         ":com.android.cts.helpers.aosp",
+        ":ResApkBadXml",
     ],
 }
 
@@ -298,7 +299,6 @@ android_ravenwood_test {
     resource_zips: [":FrameworksCoreTests_apks_as_resources"],
     sdk_version: "core_platform",
     auto_gen_config: true,
-    team: "trendy_team_ravenwood",
 }
 
 test_module_config {

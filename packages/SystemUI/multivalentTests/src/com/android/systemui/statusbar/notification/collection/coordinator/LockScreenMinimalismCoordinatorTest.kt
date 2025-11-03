@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.NotificationManager.IMPORTANCE_LOW
@@ -213,11 +212,7 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
     fun testTopOngoingSectioner_rejects_classifiedConversation() {
         runCoordinatorTest {
             for (id in SYSTEM_RESERVED_IDS) {
-                assertFalse(
-                    topOngoingSectioner.isInSection(
-                        kosmos.makeClassifiedConversation(id)
-                    )
-                )
+                assertFalse(topOngoingSectioner.isInSection(kosmos.makeClassifiedConversation(id)))
             }
         }
     }
@@ -226,11 +221,7 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
     fun testTopUnseenSectioner_rejects_classifiedConversation() {
         runCoordinatorTest {
             for (id in SYSTEM_RESERVED_IDS) {
-                assertFalse(
-                    topUnseenSectioner.isInSection(
-                        kosmos.makeClassifiedConversation(id)
-                    )
-                )
+                assertFalse(topUnseenSectioner.isInSection(kosmos.makeClassifiedConversation(id)))
             }
         }
     }

@@ -1548,7 +1548,8 @@ public class LocalDisplayAdapterTest {
             changeStateRunnable.run();
         }
 
-        verify(mDisplayOffloader, times(mDisplayOffloadSupportedStates.size())).startOffload();
+        verify(mDisplayOffloader, times(mDisplayOffloadSupportedStates.size()))
+                .startOffload(anyInt());
         assertTrue(mDisplayOffloadSession.isActive());
     }
 
@@ -1726,7 +1727,7 @@ public class LocalDisplayAdapterTest {
     }
 
     private void initDisplayOffloadSession() {
-        when(mDisplayOffloader.startOffload()).thenReturn(true);
+        when(mDisplayOffloader.startOffload(Display.STATE_DOZE_SUSPEND)).thenReturn(true);
         when(mDisplayOffloader.allowAutoBrightnessInDoze()).thenReturn(true);
         mDisplayOffloadSession = new DisplayOffloadSessionImpl(mDisplayOffloader,
                 mMockedDisplayPowerController);

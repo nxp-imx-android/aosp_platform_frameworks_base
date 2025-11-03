@@ -200,8 +200,6 @@ filegroup {
         "tests/src/**/systemui/statusbar/KeyboardShortcutsTest.java",
         "tests/src/**/systemui/statusbar/notification/collection/NotificationEntryTest.java",
         "tests/src/**/systemui/statusbar/notification/collection/ShadeListBuilderTest.java",
-        "tests/src/**/systemui/statusbar/notification/interruption/NotificationInterruptStateProviderImplTest.java",
-        "tests/src/**/systemui/statusbar/notification/interruption/NotificationInterruptStateProviderWrapperTest.kt",
         "tests/src/**/systemui/statusbar/notification/interruption/VisualInterruptionDecisionProviderImplTest.kt",
         "tests/src/**/systemui/statusbar/notification/logging/NotificationLoggerTest.java",
         "tests/src/**/systemui/statusbar/notification/row/ExpandableNotificationRowTest.java",
@@ -413,6 +411,7 @@ filegroup {
 android_library {
     name: "SystemUI-res",
     use_resource_processor: true,
+    enable_ksp: true,
     resource_dirs: [
         "res-product",
         "res-keyguard",
@@ -596,8 +595,9 @@ android_library {
         "displaylib",
         "aconfig_settings_flags_lib",
     ],
-    javacflags: [
-        "-Aroom.schemaLocation=frameworks/base/packages/SystemUI/schemas",
+    enable_ksp: true,
+    annotation_processor_flags: [
+        "room.schemaLocation=frameworks/base/packages/SystemUI/schemas",
     ],
 }
 
@@ -621,11 +621,12 @@ android_library {
         "com.android.systemui.pods-api-aosp-handheld",
         "com.android.systemui.pods-impl-aosp-handheld",
     ],
-    javacflags: [
-        "-Adagger.fastInit=enabled",
-        "-Adagger.explicitBindingConflictsWithInject=ERROR",
-        "-Adagger.strictMultibindingValidation=enabled",
-        "-Adagger.useBindingGraphFix=ENABLED",
+    enable_ksp: true,
+    annotation_processor_flags: [
+        "dagger.fastInit=enabled",
+        "dagger.explicitBindingConflictsWithInject=ERROR",
+        "dagger.strictMultibindingValidation=enabled",
+        "dagger.useBindingGraphFix=ENABLED",
     ],
     manifest: "AndroidManifest.xml",
 }
@@ -653,13 +654,30 @@ java_library {
 }
 
 filegroup {
-    name: "SystemUI-tests-utils",
+    name: "SystemUI-tests-utils-pods",
+    srcs: [
+        "pods/testFixtures/src/**/*.kt",
+        "pods/testFixtures/src/**/*.java",
+    ],
+    path: "pods/testFixtures/src",
+}
+
+filegroup {
+    name: "SystemUI-tests-utils-monolith",
     srcs: [
         "tests/utils/src/**/*.java",
         "tests/utils/src/**/*.kt",
-        ":kosmos-src",
     ],
     path: "tests/utils",
+}
+
+filegroup {
+    name: "SystemUI-tests-utils",
+    srcs: [
+        ":SystemUI-tests-utils-monolith",
+        ":SystemUI-tests-utils-pods",
+        ":kosmos-src",
+    ],
 }
 
 filegroup {
@@ -1116,6 +1134,7 @@ android_app {
         "SystemUI-application",
     ],
     resource_dirs: [],
+    enable_ksp: true,
 
     use_resource_processor: true,
     platform_apis: true,

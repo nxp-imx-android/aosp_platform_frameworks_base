@@ -3,16 +3,6 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes
 flag {
-    name: "apply_desk_activation_on_user_switch"
-    namespace: "lse_desktop_experience"
-    description: "Fixes desk activation when switching users"
-    bug: "430988310"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "close_fullscreen_and_splitscreen_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close fullscreen and split screen tasks"
@@ -288,6 +278,16 @@ flag {
 }
 
 flag {
+    name: "enable_close_lid_wm_shell_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables Shell-side bugfixes for close lid feature."
+    bug: "382689704"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_compat_ui_desktop_mode_synchronization_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables synchronization logic so that app-compat UI is properly synchronized with desktop mode state"
@@ -504,6 +504,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_first_sys_user_hsum_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fix the bug around desktop-first policy for system user in HSUM."
+    bug: "430154044"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_first_top_fullscreen_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fix desktop-first policy for the case where any fullscreen app is focused."
@@ -578,26 +588,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables rounded corners bugfix for Recents transitions."
     bug: "383079261"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_splitscreen_transition_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables Desktop > Splitscreen transition bugfix."
-    bug: "394074421"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_system_dialogs_transitions"
-    namespace: "lse_desktop_experience"
-    description: "Enables custom transitions for system dialogs in Desktop Mode."
-    bug: "335638193"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -824,20 +814,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_task_limit"
-    namespace: "lse_desktop_experience"
-    description: "Enables a limit on the number of Tasks shown in Desktop Mode"
-    bug: "332502912"
-}
-
-flag {
-    name: "enable_desktop_windowing_taskbar_running_apps"
-    namespace: "lse_desktop_experience"
-    description: "Shows running apps in Desktop Mode Taskbar"
-    bug: "332504528"
-}
-
-flag {
     name: "enable_desktop_windowing_transitions"
     namespace: "lse_desktop_experience"
     description: "Enables desktop windowing transition & motion polish changes"
@@ -901,16 +877,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables setting up the drag-resize input listener in a bg thread"
     bug: "396445663"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_drag_to_desktop_incoming_transitions_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables bugfix handling incoming transitions during the DragToDesktop transition."
-    bug: "397135730"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1105,16 +1071,6 @@ flag {
 }
 
 flag {
-    name: "enable_launcher_handle_go_home_keyboard_shortcut"
-    namespace: "lse_desktop_experience"
-    description: "Enables handling the go home keyboard shortcut on the Launcher side."
-    bug: "427579352"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_minimize_button"
     namespace: "lse_desktop_experience"
     description: "Adds a minimize button the the caption bar"
@@ -1266,6 +1222,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables full support of presentation API for connected displays."
     bug: "378503083"
+}
+
+flag {
+    name: "enable_prevent_desktop_in_locktaskmode_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fix the bug to unexpectedly enter desktop mode when in lock task mode."
+    bug: "448763429"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1481,30 +1447,10 @@ flag {
 }
 
 flag {
-    name: "enable_updated_display_connection_dialog"
-    namespace: "lse_desktop_experience"
-    description: "Enables new display connection dialog that allows selecting between desktop and mirroring. Requires ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT flag to work properly."
-    bug: "413620089"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_upscaling_size_compat_on_exiting_desktop_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables upscaling of size-compat apps in fullscreen after they exit desktop mode."
     bug: "432329483"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_visual_indicator_in_transition_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables bugfix to move visual drop-zone indicator to transition root, so it can't be shown after the transition."
-    bug: "392826275"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1648,31 +1594,10 @@ flag {
 }
 
 flag {
-    name: "inherit_task_bounds_for_trampoline_task_launches"
-    namespace: "lse_desktop_experience"
-    description: "Forces trampoline task launches to inherit the bounds of the previous instance /n"
-                 "before is closes to prevent each task from cascading."
-    bug: "392815318"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "keyboard_shortcuts_to_switch_desks"
     namespace: "lse_desktop_experience"
     description: "Enable switching the active desk with keyboard shortcuts"
     bug: "389957556"
-}
-
-flag {
-    name: "move_to_next_display_shortcut_with_projected_mode"
-    namespace: "lse_desktop_experience"
-    description: "Enable the 'move to next display' shortcut to work with the projected mode"
-    bug: "424748132"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1829,6 +1754,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Toggles the focused task's fullscreen state when the fullscreen key is pressed."
     bug: "396483171"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_tdas_task_move_allowed_on_desktop_first_change"
+    namespace: "lse_desktop_experience"
+    description: "Updates the TaskMoveAllowed bit on the default TaskDisplayArea of a display whose desktop-first mode changes."
+    bug: "452049009"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

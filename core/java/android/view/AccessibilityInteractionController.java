@@ -982,15 +982,7 @@ public final class AccessibilityInteractionController {
         if (!isVisibleToAccessibilityService(mViewRootImpl.mView)) {
             return null;
         }
-        if (Flags.ignoreUnimportantRoot()) {
-            if (mViewRootImpl.mView == null || !mViewRootImpl.mView.includeForAccessibility()) {
-                return null;
-            } else {
-                return mViewRootImpl.mView;
-            }
-        } else {
-            return mViewRootImpl.mView;
-        }
+        return mViewRootImpl.mView;
     }
 
     private void setAccessibilityFetchFlags(int flags) {

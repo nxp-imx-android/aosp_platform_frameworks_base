@@ -61,6 +61,7 @@ import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.notification.Adjustment;
+import android.service.notification.DynamicBundle;
 import android.testing.TestableContext;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -1142,6 +1143,52 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         assertThat(p13b.getAdjustmentAllowed()).isTrue();
         assertThat(p13b.getAllowedBundleTypesList())
                 .containsExactly(BundleTypes.forNumber(NotificationProtoEnums.TYPE_SOCIAL_MEDIA));
+    }
+
+    @EnableFlags(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
+    @Test
+    public void testDynamicBundles_createReadDelete() {
+        DynamicBundle expected = new DynamicBundle(111, "sports spoilers");
+        mAssistants.createDynamicBundle(
+                0, expected.getDynamicBundleType(), expected.getBundleName());
+
+        assertThat(mAssistants.getDynamicBundles(0)).containsExactly(expected);
+    }
+
+    @EnableFlags(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
+    @Test
+    public void testDynamicBundles_primarySharesWithProfiles() {
+        DynamicBundle expected = new DynamicBundle(111, "sports spoilers");
+        mAssistants.createDynamicBundle(
+                11, expected.getDynamicBundleType(), expected.getBundleName());
+
+        assertThat(mAssistants.getDynamicBundles(0)).containsExactly(expected);
+    }
+
+    @EnableFlags(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
+    @Test
+    public void testDynamicBundles_xml() throws Exception {
+        DynamicBundle expected = new DynamicBundle(111, "sports spoilers");
+        DynamicBundle expected2 = new DynamicBundle(112, "shipping emails");
+        mAssistants.createDynamicBundle(
+                11, expected.getDynamicBundleType(), expected.getBundleName());
+        mAssistants.createDynamicBundle(
+                0, expected2.getDynamicBundleType(), expected2.getBundleName());
+
+        writeXmlAndReload(USER_ALL);
+
+        assertThat(mAssistants.getDynamicBundles(0)).containsExactly(expected, expected2);
+    }
+
+    @EnableFlags(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
+    @Test
+    public void testDynamicBundles_getNameFromId() {
+        DynamicBundle expected = new DynamicBundle(111, "sports spoilers");
+        mAssistants.createDynamicBundle(
+                0, expected.getDynamicBundleType(), expected.getBundleName());
+
+        assertThat(mAssistants.getDynamicBundleName(0, 0)).isNull();
+        assertThat(mAssistants.getDynamicBundleName(0, 111)).isEqualTo(expected.getBundleName());
     }
 
     // Helper function for getting the NotificationAdjustmentPreferences pulled atom data from a

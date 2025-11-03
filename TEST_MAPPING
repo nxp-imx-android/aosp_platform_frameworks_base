@@ -1,4 +1,9 @@
 {
+  "imports": [
+    {
+      "path": "frameworks/base/ravenwood/test-mapping-frameworks"
+    }
+  ],
   "desktop-presubmit": [
     {
       "name": "CfVkmsCursorTest"
@@ -61,22 +66,6 @@
     },
     {
       "name": "CtsStrictJavaPackagesTestCases"
-    }
-  ],
-  "ravenwood-presubmit": [
-    {
-      "name": "CtsUtilTestCasesRavenwood",
-      "host": true,
-      "file_patterns": [
-        "[Rr]avenwood"
-      ]
-    },
-    {
-      "name": "RavenwoodBivalentTest",
-      "host": true,
-      "file_patterns": [
-        "[Rr]avenwood"
-      ]
     }
   ],
   "postsubmit-managedprofile-stress": [

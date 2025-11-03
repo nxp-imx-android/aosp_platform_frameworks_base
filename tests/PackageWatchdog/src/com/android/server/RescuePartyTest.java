@@ -227,9 +227,11 @@ public class RescuePartyTest {
         mockCrashRecoveryProperties(mMockPackageWatchdog);
 
         // Mock CrashRecoveryUtils
-        doAnswer((Answer<Set<String>>) invocationOnMock ->
-                Set.of(NAMESPACE_TO_RESET1, NAMESPACE_TO_RESET2))
-                .when(CrashRecoveryUtils::getFlagNamespacesInModules);
+        Field sFlagNamespacesToMonitorField = RescueParty.class
+                .getDeclaredField("sFlagNamespacesToMonitor");
+        sFlagNamespacesToMonitorField.setAccessible(true);
+        sFlagNamespacesToMonitorField.set(RescueParty.class,
+                Set.of(NAMESPACE_TO_RESET1, NAMESPACE_TO_RESET2));
         doAnswer((Answer<String>) invocationOnMock -> NETWORK_STACK_PACKAGE_NAME)
                 .when(() -> CrashRecoveryUtils.getNetworkStackPackageName(mMockContext));
 
@@ -477,7 +479,6 @@ public class RescuePartyTest {
         RescuePartyObserver observer = RescuePartyObserver.getInstance(mMockContext);
         injectTestHandler(observer);
 
-        verify(CrashRecoveryUtils::getFlagNamespacesInModules);
         verify(() -> CrashRecoveryUtils.getNetworkStackPackageName(mMockContext));
         observer.initializeDeviceConfigMonitoringIfRequiredAsync();
         mTestLooperManager.execute(mTestLooperManager.next());
@@ -509,45 +510,8 @@ public class RescuePartyTest {
     }
 
     @Test
-    public void testObserverCreation_emptyNamespaces() throws Exception {
-        assumeTrue(RescueParty.isFlagResetEnabled());
-        doAnswer((Answer<Set<String>>) invocationOnMock -> Set.of())
-                .when(CrashRecoveryUtils::getFlagNamespacesInModules);
-
-        RescuePartyObserver observer = RescuePartyObserver.getInstance(mMockContext);
-        injectTestHandler(observer);
-
-        observer.initializeDeviceConfigMonitoringIfRequiredAsync();
-
-        // Verify no listeners are added
-        verify(() -> DeviceConfig.addOnPropertiesChangedListener(anyString(),
-                any(Executor.class), any(OnPropertiesChangedListener.class)), times(0));
-    }
-
-    @Test
     public void testObserverCreation_nullNetworkPackage() throws Exception {
         assumeTrue(RescueParty.isFlagResetEnabled());
-        doAnswer((Answer<String>) invocationOnMock -> null)
-                .when(() -> CrashRecoveryUtils.getNetworkStackPackageName(mMockContext));
-
-        RescuePartyObserver observer = RescuePartyObserver.getInstance(mMockContext);
-        injectTestHandler(observer);
-
-        verify(() -> android.util.Slog.wtf(eq(RescueParty.TAG),
-                eq("Unable to find NetworkPackage for monitoring network health")));
-
-        observer.initializeDeviceConfigMonitoringIfRequiredAsync();
-
-        // Verify no listeners are added
-        verify(() -> DeviceConfig.addOnPropertiesChangedListener(anyString(),
-                any(Executor.class), any(OnPropertiesChangedListener.class)), times(0));
-    }
-
-    @Test
-    public void testObserverCreation_emptyNamespaces_nullNetworkPackage() throws Exception {
-        assumeTrue(RescueParty.isFlagResetEnabled());
-        doAnswer((Answer<Set<String>>) invocationOnMock -> Set.of())
-                .when(CrashRecoveryUtils::getFlagNamespacesInModules);
         doAnswer((Answer<String>) invocationOnMock -> null)
                 .when(() -> CrashRecoveryUtils.getNetworkStackPackageName(mMockContext));
 

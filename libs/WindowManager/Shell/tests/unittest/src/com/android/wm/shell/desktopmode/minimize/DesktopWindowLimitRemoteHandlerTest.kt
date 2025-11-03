@@ -31,6 +31,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.transition.TransitionInfoBuilder
+import com.android.wm.shell.transition.TransitionLeashManager
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -51,6 +52,7 @@ class DesktopWindowLimitRemoteHandlerTest {
     private val shellExecutor = TestShellExecutor()
     private val transition: IBinder = Binder()
 
+    private val transitionLeashManager = mock<TransitionLeashManager>()
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val remoteTransition = mock<RemoteTransition>()
     private val iRemoteTransition = mock<IRemoteTransition>()
@@ -67,6 +69,7 @@ class DesktopWindowLimitRemoteHandlerTest {
     private fun createRemoteHandler(taskIdToMinimize: Int) =
         DesktopWindowLimitRemoteHandler(
             shellExecutor,
+            transitionLeashManager,
             rootTaskDisplayAreaOrganizer,
             remoteTransition,
             taskIdToMinimize,

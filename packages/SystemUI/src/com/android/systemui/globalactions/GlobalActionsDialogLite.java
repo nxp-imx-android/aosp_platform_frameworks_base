@@ -73,7 +73,6 @@ import android.telecom.TelecomManager;
 import android.telephony.ServiceState;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
-import android.util.ArraySet;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Display;
@@ -130,6 +129,7 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository;
 import com.android.systemui.display.shared.model.DisplayWindowProperties;
 import com.android.systemui.globalactions.domain.interactor.GlobalActionsInteractor;
+import com.android.systemui.globalactions.shared.model.GlobalActionType;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.GlobalActions.GlobalActionsManager;
 import com.android.systemui.plugins.GlobalActionsPanelPlugin;
@@ -184,26 +184,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private static final String INTERACTION_JANK_TAG = "global_actions";
 
     private static final boolean SHOW_SILENT_TOGGLE = true;
-
-    /* Valid settings for global actions keys.
-     * see config.xml config_globalActionList */
-    @VisibleForTesting
-    static final String GLOBAL_ACTION_KEY_POWER = "power";
-    private static final String GLOBAL_ACTION_KEY_AIRPLANE = "airplane";
-    static final String GLOBAL_ACTION_KEY_BUGREPORT = "bugreport";
-    private static final String GLOBAL_ACTION_KEY_SILENT = "silent";
-    private static final String GLOBAL_ACTION_KEY_USERS = "users";
-    private static final String GLOBAL_ACTION_KEY_SETTINGS = "settings";
-    static final String GLOBAL_ACTION_KEY_LOCKDOWN = "lockdown";
-    static final String GLOBAL_ACTION_KEY_LOCK = "lock";
-    private static final String GLOBAL_ACTION_KEY_VOICEASSIST = "voiceassist";
-    private static final String GLOBAL_ACTION_KEY_ASSIST = "assist";
-    static final String GLOBAL_ACTION_KEY_RESTART = "restart";
-    private static final String GLOBAL_ACTION_KEY_LOGOUT = "logout";
-    static final String GLOBAL_ACTION_KEY_EMERGENCY = "emergency";
-    static final String GLOBAL_ACTION_KEY_SCREENSHOT = "screenshot";
-    static final String GLOBAL_ACTION_KEY_SYSTEM_UPDATE = "system_update";
-    static final String GLOBAL_ACTION_KEY_STANDBY = "standby";
 
     // See NotificationManagerService#scheduleDurationReachedLocked
     private static final long TOAST_FADE_TIME = 333;
@@ -651,11 +631,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         }
     }
 
-    @VisibleForTesting
-    protected String[] getDefaultActions() {
-        return mResources.getStringArray(R.array.config_globalActionsList);
-    }
-
     private void addIfShouldShowAction(List<Action> actions, Action action) {
         if (shouldShowAction(action)) {
             actions.add(action);
@@ -677,75 +652,93 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mItems.clear();
         mOverflowItems.clear();
         mPowerItems.clear();
-        String[] defaultActions = getDefaultActions();
+
+        List<GlobalActionType> actionTypes = mInteractor.getPossibleGlobalActions();
 
         ShutDownAction shutdownAction = new ShutDownAction();
         RestartAction restartAction = new RestartAction();
-        ArraySet<String> addedKeys = new ArraySet<>();
         List<Action> tempActions = new ArrayList<>();
         CurrentUserProvider currentUser = new CurrentUserProvider();
+        final UserInfo currentUserInfo = currentUser.get();
 
-        // make sure emergency affordance action is first, if needed
+        // Make sure emergency affordance action is first
+        boolean handledEmergencyAffordance = false;
         if (mEmergencyAffordanceManager.needsEmergencyAffordance()) {
             addIfShouldShowAction(tempActions, new EmergencyAffordanceAction());
-            addedKeys.add(GLOBAL_ACTION_KEY_EMERGENCY);
+            handledEmergencyAffordance = true;
         }
 
-        for (int i = 0; i < defaultActions.length; i++) {
-            String actionKey = defaultActions[i];
-            if (addedKeys.contains(actionKey)) {
-                // If we already have added this, don't add it again.
-                continue;
+        for (int i = 0; i < actionTypes.size(); i++) {
+            GlobalActionType actionType = actionTypes.get(i);
+            switch (actionType) {
+                case POWER:
+                    addIfShouldShowAction(tempActions, shutdownAction);
+                    break;
+                case AIRPLANE:
+                    addIfShouldShowAction(tempActions, mAirplaneModeOn);
+                    break;
+                case BUGREPORT:
+                    if (shouldDisplayBugReport(currentUserInfo)) {
+                        addIfShouldShowAction(tempActions, new BugReportAction());
+                    }
+                    break;
+                case SILENT:
+                    if (mShowSilentToggle) {
+                        addIfShouldShowAction(tempActions, mSilentModeAction);
+                    }
+                    break;
+                case USERS:
+                    if (SystemProperties.getBoolean("fw.power_user_switcher", false)) {
+                        addUserActions(tempActions, currentUserInfo);
+                    }
+                    break;
+                case SETTINGS:
+                    addIfShouldShowAction(tempActions, getSettingsAction());
+                    break;
+                case LOCKDOWN:
+                    if (shouldDisplayLockdown(currentUserInfo)) {
+                        addIfShouldShowAction(tempActions, new LockDownAction());
+                    }
+                    break;
+                case LOCK:
+                    addIfShouldShowAction(tempActions, new LockAction());
+                    break;
+                case VOICEASSIST:
+                    addIfShouldShowAction(tempActions, getVoiceAssistAction());
+                    break;
+                case ASSIST:
+                    addIfShouldShowAction(tempActions, getAssistAction());
+                    break;
+                case RESTART:
+                    addIfShouldShowAction(tempActions, restartAction);
+                    break;
+                case SCREENSHOT:
+                    addIfShouldShowAction(tempActions, new ScreenshotAction());
+                    break;
+                case LOGOUT:
+                    if (mLogoutInteractor.isLogoutEnabled().getValue()) {
+                        addIfShouldShowAction(tempActions, new LogoutAction());
+                    }
+                    break;
+                case SYSTEM_UPDATE:
+                    addIfShouldShowAction(tempActions, new SystemUpdateAction());
+                    break;
+                case STANDBY:
+                    addIfShouldShowAction(tempActions, new StandbyAction());
+                    break;
+                case EMERGENCY:
+                    // Only add the standard EmergencyDialerAction if the
+                    // EmergencyAffordanceAction was NOT already handled.
+                    if (!handledEmergencyAffordance) {
+                        if (shouldDisplayEmergency()) {
+                            addIfShouldShowAction(tempActions, new EmergencyDialerAction());
+                        }
+                    }
+                    break;
+                default:
+                    Log.e(TAG, "Unknown global action type: " + actionType.getConfigKey());
+                    break;
             }
-            if (GLOBAL_ACTION_KEY_POWER.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, shutdownAction);
-            } else if (GLOBAL_ACTION_KEY_AIRPLANE.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, mAirplaneModeOn);
-            } else if (GLOBAL_ACTION_KEY_BUGREPORT.equals(actionKey)) {
-                if (shouldDisplayBugReport(currentUser.get())) {
-                    addIfShouldShowAction(tempActions, new BugReportAction());
-                }
-            } else if (GLOBAL_ACTION_KEY_SILENT.equals(actionKey)) {
-                if (mShowSilentToggle) {
-                    addIfShouldShowAction(tempActions, mSilentModeAction);
-                }
-            } else if (GLOBAL_ACTION_KEY_USERS.equals(actionKey)) {
-                if (SystemProperties.getBoolean("fw.power_user_switcher", false)) {
-                    addUserActions(tempActions, currentUser.get());
-                }
-            } else if (GLOBAL_ACTION_KEY_SETTINGS.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, getSettingsAction());
-            } else if (GLOBAL_ACTION_KEY_LOCKDOWN.equals(actionKey)) {
-                if (shouldDisplayLockdown(currentUser.get())) {
-                    addIfShouldShowAction(tempActions, new LockDownAction());
-                }
-            } else if (GLOBAL_ACTION_KEY_LOCK.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, new LockAction());
-            } else if (GLOBAL_ACTION_KEY_VOICEASSIST.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, getVoiceAssistAction());
-            } else if (GLOBAL_ACTION_KEY_ASSIST.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, getAssistAction());
-            } else if (GLOBAL_ACTION_KEY_RESTART.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, restartAction);
-            } else if (GLOBAL_ACTION_KEY_SCREENSHOT.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, new ScreenshotAction());
-            } else if (GLOBAL_ACTION_KEY_LOGOUT.equals(actionKey)) {
-                if (mLogoutInteractor.isLogoutEnabled().getValue()) {
-                    addIfShouldShowAction(tempActions, new LogoutAction());
-                }
-            } else if (GLOBAL_ACTION_KEY_EMERGENCY.equals(actionKey)) {
-                if (shouldDisplayEmergency()) {
-                    addIfShouldShowAction(tempActions, new EmergencyDialerAction());
-                }
-            } else if (GLOBAL_ACTION_KEY_SYSTEM_UPDATE.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, new SystemUpdateAction());
-            } else if (GLOBAL_ACTION_KEY_STANDBY.equals(actionKey)) {
-                addIfShouldShowAction(tempActions, new StandbyAction());
-            } else {
-                Log.e(TAG, "Invalid global action key " + actionKey);
-            }
-            // Add here so we don't add more than one.
-            addedKeys.add(actionKey);
         }
 
         // replace power and restart with a single power options action, if needed
@@ -762,8 +755,9 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             // add the PowerOptionsAction after Emergency, if present
             tempActions.add(powerOptionsIndex, new PowerOptionsAction());
         }
-        for (Action action : tempActions) {
-            addActionItem(action);
+
+        for (int i = 0; i < tempActions.size(); i++) {
+            addActionItem(tempActions.get(i));
         }
     }
 

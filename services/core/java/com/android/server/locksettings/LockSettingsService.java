@@ -50,11 +50,11 @@ import static com.android.internal.widget.LockPatternUtils.pinOrPasswordQualityT
 import static com.android.internal.widget.LockPatternUtils.userOwnsFrpCredential;
 import static com.android.server.locksettings.SyntheticPasswordManager.TOKEN_TYPE_STRONG;
 import static com.android.server.locksettings.SyntheticPasswordManager.TOKEN_TYPE_WEAK;
-import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.decryptProfilePassword;
-import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.encryptProfilePassword;
-import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.profilePasswordDecryptAlias;
-import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.profilePasswordEncryptAlias;
-import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.removeKeystoreProfileKey;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.decryptProfilePasswordLegacy;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.encryptProfilePasswordLegacy;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.profilePasswordDecryptLegacyAlias;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.profilePasswordEncryptLegacyAlias;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.removeKeystoreProfileKeyLegacy;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -464,8 +464,15 @@ public class LockSettingsService extends ILockSettings.Stub {
         // as its parent.
         if (!isUserSecure(parent.id) && !profileUserPassword.isNone()) {
             Slogf.i(TAG, "Clearing password for profile user %d to match parent", profileUserId);
-            setLockCredentialInternal(LockscreenCredential.createNone(), profileUserPassword,
-                    profileUserId, /* isLockTiedToParent= */ true);
+            if (android.security.Flags.enableAtomicChildProfileLskf()) {
+                clearUnifiedProfilePassword(profileUserPassword, profileUserId);
+            } else {
+                setLockCredentialInternal(
+                        LockscreenCredential.createNone(),
+                        profileUserPassword,
+                        profileUserId,
+                        /* isLockTiedToParent= */ true);
+            }
             return;
         }
         final long parentSid;
@@ -1108,9 +1115,9 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (isCredentialShareableWithParent(user.id)
                     && !getSeparateProfileChallengeEnabledInternal(user.id)) {
                 success &= SyntheticPasswordCrypto.migrateLockSettingsKey(
-                        profilePasswordEncryptAlias(user.id));
+                        profilePasswordEncryptLegacyAlias(user.id));
                 success &= SyntheticPasswordCrypto.migrateLockSettingsKey(
-                        profilePasswordDecryptAlias(user.id));
+                        profilePasswordDecryptLegacyAlias(user.id));
             }
         }
         return success;
@@ -1410,7 +1417,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         try {
             if (enabled) {
                 mStorage.removeChildProfileLock(userId);
-                removeKeystoreProfileKey(mKeyStore, userId);
+                removeKeystoreProfileKeyLegacy(mKeyStore, userId);
             } else {
                 synchronized (mSpManager) {
                     tieProfileLockIfNecessary(userId, profileUserPassword);
@@ -1607,7 +1614,8 @@ public class LockSettingsService extends ILockSettings.Stub {
         if (storedData == null) {
             throw new FileNotFoundException("Child profile lock file not found");
         }
-        LockscreenCredential credential = decryptProfilePassword(mKeyStore, userId, storedData);
+        LockscreenCredential credential =
+                decryptProfilePasswordLegacy(mKeyStore, userId, storedData);
         try {
             long parentSid = getGateKeeperService().getSecureUserId(
                     mUserManager.getProfileParent(userId).id);
@@ -1628,7 +1636,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 | InvalidAlgorithmParameterException | IllegalBlockSizeException
                 | BadPaddingException | CertificateException | IOException e) {
             if (e instanceof FileNotFoundException) {
-                Slog.i(TAG, "Child profile key not found");
+                Slog.e(TAG, "Child profile key not found", e);
             } else {
                 Slog.e(TAG, "Failed to decrypt child profile key", e);
             }
@@ -1792,18 +1800,27 @@ public class LockSettingsService extends ILockSettings.Stub {
                     // credential, otherwise they get lost
                     if (profilePasswordMap != null
                             && profilePasswordMap.containsKey(profileUserId)) {
-                        setLockCredentialInternal(LockscreenCredential.createNone(),
-                                profilePasswordMap.get(profileUserId),
-                                profileUserId,
-                                /* isLockTiedToParent= */ true);
-                        mStorage.removeChildProfileLock(profileUserId);
-                        removeKeystoreProfileKey(mKeyStore, profileUserId);
+                        LockscreenCredential profilePassword =
+                                profilePasswordMap.get(profileUserId);
+                        clearUnifiedProfilePassword(profilePassword, profileUserId);
                     } else {
                         Slog.wtf(TAG, "Attempt to clear tied challenge, but no password supplied.");
                     }
                 }
             }
         }
+    }
+
+    @GuardedBy("mSpManager")
+    private void clearUnifiedProfilePassword(
+            LockscreenCredential profilePassword, int profileUserId) {
+        setLockCredentialInternal(
+                LockscreenCredential.createNone(),
+                profilePassword,
+                profileUserId,
+                /* isLockTiedToParent= */ true);
+        mStorage.removeChildProfileLock(profileUserId);
+        removeKeystoreProfileKeyLegacy(mKeyStore, profileUserId);
     }
 
     /**
@@ -1992,7 +2009,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                         profilePassword = getDecryptedPasswordForUnifiedProfile(userId);
                         savedCredential = profilePassword;
                     } catch (FileNotFoundException e) {
-                        Slog.i(TAG, "Child profile key not found");
+                        Slog.e(TAG, "Child profile key not found", e);
                     } catch (UnrecoverableKeyException
                             | InvalidKeyException
                             | KeyStoreException
@@ -2229,7 +2246,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         } catch (RemoteException e) {
             throw new IllegalStateException("Failed to talk to GateKeeper service", e);
         }
-        byte[] encryptedPasswordData = encryptProfilePassword(mKeyStore, profileUserId,
+        byte[] encryptedPasswordData = encryptProfilePasswordLegacy(mKeyStore, profileUserId,
                 parentSid, password);
         mStorage.writeChildProfileLock(profileUserId, encryptedPasswordData);
     }
@@ -2714,7 +2731,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         mUnifiedProfilePasswordCache.removePassword(userId);
 
         gateKeeperClearSecureUserId(userId);
-        removeKeystoreProfileKey(mKeyStore, userId);
+        removeKeystoreProfileKeyLegacy(mKeyStore, userId);
         // Clean up storage last, so that removeStateForReusedUserIdIfNecessary() can assume that no
         // USER_SERIAL_NUMBER_KEY means user is fully removed.
         mStorage.removeUser(userId);
@@ -3257,7 +3274,11 @@ public class LockSettingsService extends ILockSettings.Stub {
             mSoftwareRateLimiter.clearLskfState(new LskfIdentifier(userId, oldProtectorId));
         }
         mSpManager.destroyLskfBasedProtector(oldProtectorId, userId);
-        Slogf.i(TAG, "Successfully changed lockscreen credential of user %d", userId);
+        Slogf.i(
+                TAG,
+                "Successfully changed lockscreen credential of user %d to type %s",
+                userId,
+                LockPatternUtils.credentialTypeToString(credential.getType()));
         return newProtectorId;
     }
 

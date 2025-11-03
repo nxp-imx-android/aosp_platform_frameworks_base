@@ -36,11 +36,11 @@ data class GlowBoxConfig(
     val blurAmount: Float,
     /**
      * Duration of the animation. Note that the full duration of the animation is
-     * [duration] + [easeInDuration] + [easeOutDuration].
+     * [duration] + [fadeInDuration] + [fadeOutDuration].
      */
     val duration: Long,
-    /** Ease in duration of the animation. */
-    val easeInDuration: Long,
-    /** Ease out duration of the animation. */
-    val easeOutDuration: Long,
+    /** Fade in duration of the animation. */
+    val fadeInDuration: Long,
+    /** Fade out duration of the animation. */
+    val fadeOutDuration: Long,
 )

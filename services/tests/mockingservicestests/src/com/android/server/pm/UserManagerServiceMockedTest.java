@@ -37,9 +37,9 @@ import static android.os.UserManager.DISALLOW_OUTGOING_CALLS;
 import static android.os.UserManager.DISALLOW_SMS;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
+import static android.os.UserManager.REMOVE_RESULT_ERROR_DEVICE_OWNER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN;
-import static android.os.UserManager.REMOVE_RESULT_ERROR_DEVICE_OWNER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER;
 import static android.os.UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND;
 import static android.os.UserManager.REMOVE_RESULT_USER_IS_REMOVABLE;
@@ -430,6 +430,22 @@ public final class UserManagerServiceMockedTest {
         // Boot user not switchable so return most recently in foreground.
         assertWithMessage("getBootUser")
                 .that(mUmi.getBootUser(/* waitUntilSet= */ false)).isEqualTo(USER_ID2);
+    }
+
+    /** Verifies that HSU is not excluded from setBootUser by supportsSwitchTo(). */
+    @Test
+    public void testSetBootUser_canBeHsu() throws Exception {
+        mockCanSwitchToHeadlessSystemUser(true);
+        mockHsumBootStrategy(BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER);
+        setSystemUserHeadless(true);
+        addSecondaryUser(USER_ID);
+        setLastForegroundTime(USER_ID, Long.MAX_VALUE);
+
+        mUms.setBootUser(UserHandle.USER_SYSTEM);
+
+        assertWithMessage("getBootUser")
+                .that(mUmi.getBootUser(/* waitUntilSet= */ false))
+                .isEqualTo(UserHandle.USER_SYSTEM);
     }
 
     @Test

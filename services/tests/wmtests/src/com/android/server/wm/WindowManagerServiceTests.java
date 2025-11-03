@@ -1966,6 +1966,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final int testMode = WindowManager.ENGAGEMENT_MODE_FLAG_VISUALS_ON;
         mWm.setDisplayEngagementMode(mDefaultDisplay.getDisplayId(), testMode);
 
+        waitUntilHandlersIdle();
         verify(mDefaultDisplay, never()).setEngagementMode(anyInt());
     }
 
@@ -1978,6 +1979,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         mWm.setDisplayEngagementMode(mDefaultDisplay.getDisplayId(), testMode);
         when(mDefaultDisplay.getEngagementMode()).thenReturn(testMode);
 
+        waitUntilHandlersIdle();
         verify(mDefaultDisplay).setEngagementMode(testMode);
         final int result = mWm.getDisplayEngagementMode(mDefaultDisplay.getDisplayId());
         assertEquals(testMode, result);
@@ -1994,6 +1996,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         assertThat(initialMode).isNotEqualTo(newMode);
         mWm.setDisplayEngagementMode(mDefaultDisplay.getDisplayId(), newMode);
 
+        waitUntilHandlersIdle();
         verify(mWm, times(1)).dispatchDisplayEngagementModeChanged(
                 mDefaultDisplay.getDisplayId(), newMode);
     }
@@ -2006,6 +2009,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final int testMode = WindowManager.ENGAGEMENT_MODE_FLAG_VISUALS_ON;
         mWm.setDisplayEngagementMode(Display.INVALID_DISPLAY, testMode);
 
+        waitUntilHandlersIdle();
         verify(mDefaultDisplay, never()).setEngagementMode(testMode);
     }
 
@@ -2018,21 +2022,22 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         IDisplayEngagementModeCallback callback = mock(IDisplayEngagementModeCallback.class);
         when(callback.asBinder()).thenReturn(new Binder());
         mWm.registerDisplayEngagementModeCallback(callback);
-        waitUntilHandlersIdle();
 
+        waitUntilHandlersIdle();
         // The register callback should trigger a callback with the initial mode.
         verify(callback).onEngagementModeChanged(mDefaultDisplay.getDisplayId(),
                 DisplayContent.DEFAULT_ENGAGEMENT_MODE);
 
         mWm.setDisplayEngagementMode(mDefaultDisplay.getDisplayId(), testMode);
-        waitUntilHandlersIdle();
 
+        waitUntilHandlersIdle();
         // Callback should be triggered with the new mode.
         verify(callback).onEngagementModeChanged(mDefaultDisplay.getDisplayId(), testMode);
 
         mWm.unregisterDisplayEngagementModeCallback(callback);
         final int newMode = WindowManager.ENGAGEMENT_MODE_FLAG_AUDIO_ON;
         mWm.setDisplayEngagementMode(mDefaultDisplay.getDisplayId(), newMode);
+
         waitUntilHandlersIdle();
         verify(callback, never()).onEngagementModeChanged(mDefaultDisplay.getDisplayId(), newMode);
     }
@@ -2059,6 +2064,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         mWm.setDisplayEngagementMode(dc.getDisplayId(), secondaryDisplayMode);
         when(dc.getEngagementMode()).thenReturn(secondaryDisplayMode);
 
+        waitUntilHandlersIdle();
         verify(mDefaultDisplay).setEngagementMode(defaultDisplayMode);
         verify(dc).setEngagementMode(secondaryDisplayMode);
 

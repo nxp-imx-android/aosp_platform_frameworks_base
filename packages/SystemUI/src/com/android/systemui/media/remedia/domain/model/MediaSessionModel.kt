@@ -41,6 +41,9 @@ interface MediaSessionModel {
 
     val subtitle: String
 
+    /** Whether explicit indicator is provided. */
+    val isExplicit: Boolean
+
     val onClick: (Expandable) -> Unit
 
     /**

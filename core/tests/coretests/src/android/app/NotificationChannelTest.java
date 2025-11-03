@@ -751,6 +751,9 @@ public class NotificationChannelTest {
         original.setImportantConversation(true);
         original.setDeletedTimeMs(100);
         original.setImportanceLockedByCriticalDeviceFunction(false);
+        if (Flags.nmContextualDisplay()) {
+            original.setIsBundleChannel(true);
+        }
 
         NotificationChannel parcelCopy = writeToAndReadFromParcel(original);
         assertThat(original.copy()).isEqualTo(parcelCopy);

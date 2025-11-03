@@ -27,8 +27,7 @@ import kotlinx.coroutines.awaitCancellation
 /** Data for a UI to display app content. */
 class AppContentViewModel
 @AssistedInject
-constructor(@Assisted override val model: ScreenCaptureAppContent) :
-    TargetViewModel<ScreenCaptureAppContent> {
+constructor(@Assisted override val model: ScreenCaptureAppContent) : TargetViewModel {
 
     override val icon: Result<Bitmap>? =
         Result.failure(IllegalArgumentException("App content does not yet support icons"))

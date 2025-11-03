@@ -118,8 +118,7 @@ public final class LockPatternChecker {
                                             + "priority display", e);
                         }
                     }
-                    return utils.checkCredentialWithResponse(credentialCopy, userId,
-                            callback::onEarlyMatched);
+                    return utils.checkCredential(credentialCopy, userId, callback::onEarlyMatched);
                 } finally {
                     if (runCheckCredentialWithHigherPriority()
                         && originalPriority != INVALID_PRIORITY) {

@@ -203,16 +203,6 @@ flag {
 }
 
 flag {
-    name: "fix_bubbles_expanded_sysui_flag"
-    namespace: "multitasking"
-    description: "Fixes a bug when we shell fails to notify launcher of collapsed expanded bubble."
-    bug: "435098356"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_bubbles_add_same_bubble_being_removed"
     namespace: "multitasking"
     description: "Fixes a race condition where a bubble gets an update while being animated out"
@@ -237,16 +227,6 @@ flag {
     namespace: "multitasking"
     description: "Fixes a bug where tapping on a notification for a PiP-ed app while on Lockscreen does not launch it in fullscreen."
     bug: "373314569"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_shell_restart_bubble_cleanup"
-    namespace: "multitasking"
-    description: "Convert bubbled tasks back to fullscreen when WMShell restarts."
-    bug: "425496840"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -300,6 +280,16 @@ flag {
 }
 
 flag {
+    name: "remove_app_bubble_overflow_dupes"
+    namespace: "multitasking"
+    description: "Don't allow multiple instances of same app in bubble overflow"
+    bug: "415103355"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_flickers_during_switch_from_dismiss"
     namespace: "multitasking"
     description: "Fixes flickers while switching bubbles as a result of dismissing a bubble."
@@ -327,4 +317,11 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "add_one_off_handler_leashes"
+    namespace: "multitasking"
+    description: "Add one-off leashes to non-Shell handlers (Remote, Recents, etc.) when starting or taking over an animation."
+    bug: "403529740"
 }

@@ -21,16 +21,25 @@ import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.screencapture.common.domain.model.TargetModel
 
 /** Interface for view models that provide capture targets. */
-interface TargetsViewModel<T : TargetModel> :
-    Activatable, DrawableLoaderViewModel, AudioSwitchViewModel {
+interface TargetsViewModel : Activatable, DrawableLoaderViewModel, AudioSwitchViewModel {
     /** The currently available targets. */
-    val targets: State<List<T>?>
+    val targets: State<List<TargetModel>?>
     /** The view model of the currently selected target. */
-    val selectedTarget: State<TargetViewModel<T>?>
+    val selectedTarget: State<TargetViewModel?>
 
-    /** Sets the view model for the currently selected target. */
-    fun setSelectedTarget(target: TargetViewModel<T>?)
+    /**
+     * Sets the view model for the currently selected target.
+     *
+     * This should only be called with [TargetViewModel]s created using this instance's
+     * [createViewModelFor] method.
+     */
+    fun setSelectedTarget(target: TargetViewModel?)
 
-    /** Creates a view model for */
-    fun createViewModelFor(target: T): TargetViewModel<T>
+    /**
+     * Creates a view model for the given [target]. The caller assumes ownership of the returned
+     * [TargetViewModel] and needs to manage its activation.
+     *
+     * This should only be called with elements retrieved from this instance's [targets].
+     */
+    fun createViewModelFor(target: TargetModel): TargetViewModel
 }

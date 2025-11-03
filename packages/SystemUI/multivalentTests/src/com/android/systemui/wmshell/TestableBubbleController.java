@@ -30,8 +30,8 @@ import com.android.wm.shell.bubbles.BubbleData;
 import com.android.wm.shell.bubbles.BubbleDataRepository;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleTransitions;
+import com.android.wm.shell.bubbles.BubbleViewInfoTask;
 import com.android.wm.shell.bubbles.ResizabilityChecker;
-import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
 import com.android.wm.shell.common.DisplayController;
@@ -88,9 +88,9 @@ public class TestableBubbleController extends BubbleController {
             IWindowManager wmService,
             ResizabilityChecker resizabilityChecker,
             HomeIntentProvider homeIntentProvider,
-            BubbleAppInfoProvider appInfoProvider,
             Optional<SplitScreenController> splitScreenController,
-            BubbleSessionTracker sessionTracker) {
+            BubbleSessionTracker sessionTracker,
+            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
         super(context, shellInit, shellCommandHandler, shellController, data, Runnable::run,
                 floatingContentCoordinator, dataRepository, bubbleTransitions, statusBarService,
                 windowManager, displayInsetsController, displayImeController, userManager,
@@ -98,8 +98,8 @@ public class TestableBubbleController extends BubbleController {
                 displayController, oneHandedOptional, dragAndDropController, shellMainExecutor,
                 shellMainHandler, new SyncExecutor(), taskViewTransitions,
                 transitions, syncQueue, wmService, resizabilityChecker, homeIntentProvider,
-                appInfoProvider, () -> splitScreenController, Optional.empty(), () -> false,
-                sessionTracker);
+                () -> splitScreenController, Optional.empty(), () -> false, sessionTracker,
+                bubbleViewInfoTaskFactory);
         setInflateSynchronously(true);
         onInit();
     }

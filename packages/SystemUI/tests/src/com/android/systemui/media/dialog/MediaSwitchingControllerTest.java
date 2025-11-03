@@ -1069,7 +1069,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void getNotificationSmallIcon_packageNameIsNull_returnsNull() {
+    public void getAppIcon_packageNameIsNull_returnsNull() {
         MediaSwitchingController testMediaSwitchingController =
                 new MediaSwitchingController(
                         mSpyContext,
@@ -1097,7 +1097,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         testMediaSwitchingController.getAppSourceName();
 
-        assertThat(testMediaSwitchingController.getNotificationSmallIcon()).isNull();
+        assertThat(testMediaSwitchingController.getAppIcon()).isNull();
     }
 
     @Test
@@ -1408,16 +1408,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     @Test
     public void getNotificationLargeIcon_withoutLargeIcon_returnsNull() {
-        final List<NotificationEntry> entryList = new ArrayList<>();
-        final NotificationEntry entry = mock(NotificationEntry.class);
-        final StatusBarNotification sbn = mock(StatusBarNotification.class);
-        final Notification notification = mock(Notification.class);
-        entryList.add(entry);
-
-        when(mNotifCollection.getAllNotifs()).thenReturn(entryList);
-        when(entry.getSbn()).thenReturn(sbn);
-        when(sbn.getNotification()).thenReturn(notification);
-        when(sbn.getPackageName()).thenReturn(mPackageName);
+        Notification notification = setupNotificationMock();
         when(notification.isMediaNotification()).thenReturn(true);
         when(notification.getLargeIcon()).thenReturn(null);
 
@@ -1426,17 +1417,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     @Test
     public void getNotificationLargeIcon_withPackageNameAndMediaSession_returnsIconCompat() {
-        final List<NotificationEntry> entryList = new ArrayList<>();
-        final NotificationEntry entry = mock(NotificationEntry.class);
-        final StatusBarNotification sbn = mock(StatusBarNotification.class);
-        final Notification notification = mock(Notification.class);
         final Icon icon = mock(Icon.class);
-        entryList.add(entry);
-
-        when(mNotifCollection.getAllNotifs()).thenReturn(entryList);
-        when(entry.getSbn()).thenReturn(sbn);
-        when(sbn.getNotification()).thenReturn(notification);
-        when(sbn.getPackageName()).thenReturn(mPackageName);
+        Notification notification = setupNotificationMock();
         when(notification.isMediaNotification()).thenReturn(true);
         when(notification.getLargeIcon()).thenReturn(icon);
 
@@ -1445,17 +1427,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     @Test
     public void getNotificationLargeIcon_withPackageNameAndNoMediaSession_returnsNull() {
-        final List<NotificationEntry> entryList = new ArrayList<>();
-        final NotificationEntry entry = mock(NotificationEntry.class);
-        final StatusBarNotification sbn = mock(StatusBarNotification.class);
-        final Notification notification = mock(Notification.class);
         final Icon icon = mock(Icon.class);
-        entryList.add(entry);
-
-        when(mNotifCollection.getAllNotifs()).thenReturn(entryList);
-        when(entry.getSbn()).thenReturn(sbn);
-        when(sbn.getNotification()).thenReturn(notification);
-        when(sbn.getPackageName()).thenReturn(mPackageName);
+        Notification notification = setupNotificationMock();
         when(notification.isMediaNotification()).thenReturn(false);
         when(notification.getLargeIcon()).thenReturn(icon);
 
@@ -1463,41 +1436,40 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void getNotificationSmallIcon_withoutSmallIcon_returnsNull() {
-        final List<NotificationEntry> entryList = new ArrayList<>();
-        final NotificationEntry entry = mock(NotificationEntry.class);
-        final StatusBarNotification sbn = mock(StatusBarNotification.class);
-        final Notification notification = mock(Notification.class);
-        entryList.add(entry);
-
-        when(mNotifCollection.getAllNotifs()).thenReturn(entryList);
-        when(entry.getSbn()).thenReturn(sbn);
-        when(sbn.getNotification()).thenReturn(notification);
-        when(sbn.getPackageName()).thenReturn(mPackageName);
+    public void getAppIcon_noNotificationIconAndNoPackageIcon_returnsNull() throws Exception  {
+        final Notification notification = setupNotificationMock();
         when(notification.isMediaNotification()).thenReturn(true);
         when(notification.getSmallIcon()).thenReturn(null);
 
-        assertThat(mMediaSwitchingController.getNotificationSmallIcon()).isNull();
+        when(mPackageManager.getApplicationIcon(mPackageName))
+                .thenThrow(new PackageManager.NameNotFoundException());
+
+        assertThat(mMediaSwitchingController.getAppIcon()).isNull();
     }
 
     @Test
-    public void getNotificationSmallIcon_withPackageNameAndMediaSession_returnsIconCompat() {
-        final List<NotificationEntry> entryList = new ArrayList<>();
-        final NotificationEntry entry = mock(NotificationEntry.class);
-        final StatusBarNotification sbn = mock(StatusBarNotification.class);
-        final Notification notification = mock(Notification.class);
-        final Icon icon = mock(Icon.class);
-        entryList.add(entry);
+    public void getAppIcon_noNotificationIcon_returnsPackageIcon() throws Exception  {
+        // no notification icon
+        Notification notification = setupNotificationMock();
+        when(notification.isMediaNotification()).thenReturn(true);
+        when(notification.getSmallIcon()).thenReturn(null);
+        // Fallback to package icon
+        Drawable packageIcon = mock(Drawable.class);
+        when(mPackageManager.getApplicationIcon(mPackageName)).thenReturn(packageIcon);
 
-        when(mNotifCollection.getAllNotifs()).thenReturn(entryList);
-        when(entry.getSbn()).thenReturn(sbn);
-        when(sbn.getNotification()).thenReturn(notification);
-        when(sbn.getPackageName()).thenReturn(mPackageName);
+        assertThat(mMediaSwitchingController.getAppIcon()).isEqualTo(packageIcon);
+    }
+
+    @Test
+    public void getAppIcon_withPackageNameAndMediaSession_returnsNotificationSmallIcon() {
+        final Icon icon = mock(Icon.class);
+        final Drawable drawable = mock(Drawable.class);
+        Notification notification = setupNotificationMock();
         when(notification.isMediaNotification()).thenReturn(true);
         when(notification.getSmallIcon()).thenReturn(icon);
+        when(icon.loadDrawable(any())).thenReturn(drawable);
 
-        assertThat(mMediaSwitchingController.getNotificationSmallIcon())
-                .isInstanceOf(IconCompat.class);
+        assertThat(mMediaSwitchingController.getAppIcon()).isEqualTo(drawable);
     }
 
     @Test
@@ -2053,5 +2025,19 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 mUserTracker,
                 mJavaAdapter,
                 mAudioSharingRepository);
+    }
+
+    private Notification setupNotificationMock() {
+        final List<NotificationEntry> entryList = new ArrayList<>();
+        final NotificationEntry entry = mock(NotificationEntry.class);
+        final StatusBarNotification sbn = mock(StatusBarNotification.class);
+        final Notification notification = mock(Notification.class);
+        entryList.add(entry);
+
+        when(mNotifCollection.getAllNotifs()).thenReturn(entryList);
+        when(entry.getSbn()).thenReturn(sbn);
+        when(sbn.getNotification()).thenReturn(notification);
+        when(sbn.getPackageName()).thenReturn(mPackageName);
+        return notification;
     }
 }

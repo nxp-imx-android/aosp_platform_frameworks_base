@@ -49,6 +49,7 @@ import com.android.systemui.bouncer.data.repository.BouncerRepositoryModule;
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractorModule;
 import com.android.systemui.bouncer.ui.BouncerViewModule;
 import com.android.systemui.brightness.dagger.ScreenBrightnessModule;
+import com.android.systemui.brightness.impl.BrightnessModule;
 import com.android.systemui.classifier.FalsingModule;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayModule;
 import com.android.systemui.common.data.CommonDataLayerModule;
@@ -73,6 +74,7 @@ import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.FlagDependenciesModule;
 import com.android.systemui.flags.FlagsModule;
+import com.android.systemui.globalactions.GlobalActionsModule;
 import com.android.systemui.growth.dagger.GrowthModule;
 import com.android.systemui.haptics.msdl.dagger.MSDLModule;
 import com.android.systemui.inputdevice.InputDeviceModule;
@@ -115,7 +117,6 @@ import com.android.systemui.scene.shared.model.SceneContainerConfig;
 import com.android.systemui.scene.shared.model.SceneDataSource;
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator;
 import com.android.systemui.scene.ui.view.WindowRootViewComponent;
-import com.android.systemui.screencapture.common.ScreenCaptureModule;
 import com.android.systemui.screenrecord.ScreenRecordModule;
 import com.android.systemui.screenshot.dagger.ScreenshotModule;
 import com.android.systemui.securelockdevice.dagger.SecureLockDeviceModule;
@@ -180,6 +181,7 @@ import com.android.systemui.util.EventLogModule;
 import com.android.systemui.util.concurrency.SysUIConcurrencyModule;
 import com.android.systemui.util.dagger.UtilModule;
 import com.android.systemui.util.kotlin.SysUICoroutinesModule;
+import com.android.systemui.util.policy.impl.PolicyRestrictionModule;
 import com.android.systemui.util.reference.ReferenceModule;
 import com.android.systemui.util.sensors.SensorModule;
 import com.android.systemui.util.settings.SettingsProxy;
@@ -230,6 +232,7 @@ import javax.inject.Named;
         BouncerInteractorModule.class,
         BouncerRepositoryModule.class,
         BouncerViewModule.class,
+        BrightnessModule.class,
         CameraProtectionModule.class,
         ClipboardOverlayModule.class,
         ClockRegistryModule.class,
@@ -256,6 +259,7 @@ import javax.inject.Named;
         FooterActionsModule.class,
         KairosCoreStartableModule.class,
         GestureModule.class,
+        GlobalActionsModule.class,
         GrowthModule.class,
         InputMethodModule.class,
         KeyEventRepositoryModule.class,
@@ -273,6 +277,7 @@ import javax.inject.Named;
         PeopleModule.class,
         PluginModule.class,
         PolicyModule.class,
+        PolicyRestrictionModule.class,
         PrivacyModule.class,
         QRCodeScannerModule.class,
         RecordIssueModule.class,
@@ -284,7 +289,6 @@ import javax.inject.Named;
         SecureLockDeviceModule.class,
         SensorModule.class,
         SecurityRepositoryModule.class,
-        ScreenCaptureModule.class,
         ScreenRecordModule.class,
         SettingsUtilModule.class,
         SmartRepliesInflationModule.class,

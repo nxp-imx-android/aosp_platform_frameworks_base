@@ -56,5 +56,5 @@ oneway interface IMediaRoute2ProviderService {
     void deselectRoute(long requestId, String sessionId, String routeId);
     void transferToRoute(long requestId, String sessionId, String routeId);
     void setSessionVolume(long requestId, String sessionId, int volume);
-    void releaseSession(long requestId, String sessionId);
+    void releaseSession(long requestId, String sessionId, boolean shouldRetainFocus);
 }

@@ -22,54 +22,47 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureAppContentInteractor
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
+import com.android.systemui.screencapture.common.domain.model.TargetModel
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 /**
- * Interface for view models concerned with app content.
+ * Interface for view models concerned with app contents.
  *
- * Example Usage:
+ * Example usage in a [HydratedActivatable]:
  * ```
  * class FooViewModel(
- *     factory: AppContentsViewModel.Factory,
- * ) : AppContentsViewModel, HydratedActivatable() {
+ *     viewModelFactory: AppContentsViewModel.Factory,
+ * ) : HydratedActivatable() {
  *
- *     private val appContentsViewModel = factory.create(200, 100)
- *
- *     override val targets = appContentsViewModel.targets
+ *     private val viewModel = viewModelFactory.create(200, 100)
  *
  *     override suspend fun onActivated() {
  *         coroutineScope {
- *             launch { appContentsViewModel.activate() }
+ *             launchTraced("FooTraceName") { viewModel.activate() }
  *         }
  *     }
  * }
  * ```
  *
- * And then in compose:
+ * Example usage in a [Composable][androidx.compose.runtime.Composable]
+ *
  * ```
  * @Composable
- * fun Foo(
- *     viewModel: FooViewModel,
- *     modelFactory: AppContentViewModel.Factory,
- * ) {
- *     val appContents by viewModel.appContents
- *     LazyRow {
- *         appContents?.let {
- *             items(it) { appContent ->
- *                 val model by rememberViewModel("FooTraceName", appContent) {
- *                     modelFactory.create(appContent)
- *                 }
- *                 // ...
- *             }
- *         }
- *     }
+ * fun Foo(viewModelFactory: AppContentsViewModel.Factory) {
+ *     val viewModel = rememberViewModel("FooTraceName") {  viewModelFactory.create(200, 100) }
  * }
  * ```
  */
-interface AppContentsViewModel : TargetsViewModel<ScreenCaptureAppContent> {
+interface AppContentsViewModel : TargetsViewModel {
+
+    override val targets: State<List<ScreenCaptureAppContent>?>
+    override val selectedTarget: State<AppContentViewModel?>
+
+    override fun createViewModelFor(target: TargetModel): AppContentViewModel
+
     interface Factory {
         fun create(thumbnailWidthPx: Int, thumbnailHeightPx: Int): AppContentsViewModel
     }
@@ -102,16 +95,15 @@ constructor(
             }
             .hydratedStateOf("AppContentsViewModel#getAppContents", null)
 
-    private val _selectedTarget = mutableStateOf<TargetViewModel<ScreenCaptureAppContent>?>(null)
-    override val selectedTarget: State<TargetViewModel<ScreenCaptureAppContent>?> = _selectedTarget
+    private val _selectedTarget = mutableStateOf<AppContentViewModel?>(null)
+    override val selectedTarget: State<AppContentViewModel?> = _selectedTarget
 
-    override fun setSelectedTarget(target: TargetViewModel<ScreenCaptureAppContent>?) {
-        _selectedTarget.value = target
+    override fun setSelectedTarget(target: TargetViewModel?) {
+        _selectedTarget.value = target as AppContentViewModel?
     }
 
-    override fun createViewModelFor(
-        target: ScreenCaptureAppContent
-    ): TargetViewModel<ScreenCaptureAppContent> = appContentViewModelFactory.create(target)
+    override fun createViewModelFor(target: TargetModel): AppContentViewModel =
+        appContentViewModelFactory.create(target as ScreenCaptureAppContent)
 
     @AssistedFactory
     interface Factory : AppContentsViewModel.Factory {

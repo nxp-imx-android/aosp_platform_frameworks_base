@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Sélectionnez une appli à partager"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Partager le contenu audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Partager la fenêtre de l\'appli"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Lorsque vous partagez votre écran, son contenu est visible"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Faire une capture d\'écran de la fenêtre"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Enregistrer la fenêtre"</string>
@@ -367,8 +369,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Option \"Capteurs désactivés\" active"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Supprimer toutes les notifications"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifications"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> autres"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# autre notification dans le groupe.}one{# autre notification dans le groupe.}many{# autres notifications dans le groupe.}other{# autres notifications dans le groupe.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"L\'écran est verrouillé en mode paysage."</string>
@@ -710,8 +711,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Silencieux"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notifications"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversations"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Sélection"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Effacer toutes les notifications silencieuses"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Ouvrir les paramètres de notification"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Aucune notification}=1{Notifications suspendues par le mode {mode}}=2{Notifications suspendues par le mode {mode} et un autre mode}one{Notifications suspendues par le mode {mode} et # autre mode}many{Notifications suspendues par le mode {mode} et # d\'autres modes}other{Notifications suspendues par le mode {mode} et # autres modes}}"</string>
@@ -1151,29 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu Marche/Arrêt"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> sur <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Activer <xliff:g id="ID_1">%1$s</xliff:g> ?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"L\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Appuyez de nouveau sur la touche d\'action + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> pour activer <xliff:g id="ID_3">%3$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Activer le raccourci clavier <xliff:g id="ID_1">%1$s</xliff:g> ?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne pas activer"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activer le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Raccourci clavier <xliff:g id="ID_1">%1$s</xliff:g> activé"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"L\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_3">^3</xliff:g>, une fonctionnalité d\'accessibilité. Cela vous permet de faire un zoom avant rapide sur l\'écran pour agrandir le contenu. Une fois la loupe activée, appuyez sur l\'icône Action "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_4">^1</xliff:g> et sur \"+\" ou \"-\" pour ajuster le zoom."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Désactiver le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Laisser activé"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"L\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> correspond au raccourci clavier permettant d\'utiliser <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> est un lecteur d\'écran qui vous permet d\'entendre des éléments prononcés à voix haute. Cet outil est conçu pour les personnes qui ont du mal à voir l\'écran. Cela peut affecter le fonctionnement de votre appareil."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"En activant le raccourci clavier, vous autoriserez TalkBack à contrôler totalement votre appareil."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Le contrôle total convient aux applications qui répondent à vos besoins d\'accessibilité. Il ne convient pas à la plupart des applications."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Afficher et contrôler l\'écran"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Le service peut lire l\'intégralité du contenu à l\'écran et afficher du contenu par-dessus d\'autres applications."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Afficher et effectuer des actions"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Cette fonctionnalité peut effectuer le suivi de vos interactions avec une application ou un capteur matériel, et interagir avec les applications en votre nom."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Appuyer sur l\'action "<annotation id="action_key_icon">"icône"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> active <xliff:g id="ID_3">^3</xliff:g>, une fonctionnalité d\'accessibilité. Cela vous permet de contrôler votre appareil en mode mains libres."</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accessibilité"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"OK"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arrêt…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Afficher les étapes d\'entretien"</string>
@@ -1740,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"accéder à la page suivante"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"saisir automatiquement"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"développer"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

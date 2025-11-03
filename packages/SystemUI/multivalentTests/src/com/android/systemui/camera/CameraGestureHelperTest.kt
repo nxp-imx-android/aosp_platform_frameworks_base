@@ -25,11 +25,13 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.os.Bundle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.settings.DisplayTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
@@ -67,7 +69,9 @@ class CameraGestureHelperTest : SysuiTestCase() {
     @Mock lateinit var selectedUserInteractor: SelectedUserInteractor
     @Mock lateinit var devicePolicyManager: DevicePolicyManager
     @Mock lateinit var lockscreenUserManager: NotificationLockscreenUserManager
+    @Mock lateinit var displayTracker: DisplayTracker
     private val TEST_USER_ID = 1
+    private val DISPLAY_ID = 5
     private lateinit var underTest: CameraGestureHelper
 
     @Before
@@ -77,6 +81,7 @@ class CameraGestureHelperTest : SysuiTestCase() {
             .thenReturn(Intent(CameraIntents.DEFAULT_SECURE_CAMERA_INTENT_ACTION))
         whenever(cameraIntents.getInsecureCameraIntent(any()))
             .thenReturn(Intent(CameraIntents.DEFAULT_INSECURE_CAMERA_INTENT_ACTION))
+        whenever(displayTracker.defaultDisplayId).thenReturn(DISPLAY_ID)
 
         prepare()
 
@@ -96,6 +101,7 @@ class CameraGestureHelperTest : SysuiTestCase() {
                 selectedUserInteractor = selectedUserInteractor,
                 devicePolicyManager = devicePolicyManager,
                 lockscreenUserManager = lockscreenUserManager,
+                displayTracker = displayTracker,
             )
     }
 
@@ -291,6 +297,7 @@ class CameraGestureHelperTest : SysuiTestCase() {
         moreThanOneCameraAppInstalled: Boolean = false,
     ) {
         val intentCaptor = KotlinArgumentCaptor(Intent::class.java)
+        val bundleCaptor = KotlinArgumentCaptor(Bundle::class.java)
         if (isSecure && !moreThanOneCameraAppInstalled) {
             verify(activityTaskManager)
                 .startActivityAsUser(
@@ -304,9 +311,11 @@ class CameraGestureHelperTest : SysuiTestCase() {
                     anyInt(),
                     anyInt(),
                     isNull(),
-                    any(),
+                    bundleCaptor.capture(),
                     anyInt(),
                 )
+            assertThat(bundleCaptor.value.getInt("android.activity.launchDisplayId", -100))
+                .isEqualTo(DISPLAY_ID)
         } else {
             verify(activityStarter).startActivity(intentCaptor.capture(), eq(false))
         }

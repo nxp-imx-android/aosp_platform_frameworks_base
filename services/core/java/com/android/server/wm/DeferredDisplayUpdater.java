@@ -249,8 +249,7 @@ class DeferredDisplayUpdater {
         }
 
         mDisplayContent.mTransitionController.startCollectOrQueue(transition, deferred -> {
-            final Rect startBounds = new Rect(0, 0, mDisplayContent.mInitialDisplayWidth,
-                    mDisplayContent.mInitialDisplayHeight);
+            final Rect startBounds = new Rect(mDisplayContent.getBounds());
             final int fromRotation = mDisplayContent.getRotation();
             if (physicalDisplayUpdated) {
                 final WindowState notificationShade =
@@ -340,8 +339,7 @@ class DeferredDisplayUpdater {
     @NonNull
     private TransitionRequestInfo.DisplayChange getCurrentDisplayChange(int fromRotation,
             @NonNull Rect startBounds) {
-        final Rect endBounds = new Rect(0, 0, mDisplayContent.mInitialDisplayWidth,
-                mDisplayContent.mInitialDisplayHeight);
+        final Rect endBounds = new Rect(mDisplayContent.getBounds());
         final int toRotation = mDisplayContent.getRotation();
 
         final TransitionRequestInfo.DisplayChange displayChange =

@@ -196,6 +196,9 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     /** Provides a source for obtaining uptime, used for precise timing calculations. */
     private final TimeSource mTimeSource;
 
+    /** Used to ensure that the names used when creating virtual devices are unique. */
+    private static int sNextVirtualDeviceId = 0;
+
     /**
      * Enum representing different types of mouse key events, each associated with a specific
      * key code.
@@ -615,11 +618,17 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     private VirtualMouse createVirtualMouse(int displayId) {
         final VirtualDeviceManagerInternal localVdm =
                 LocalServices.getService(VirtualDeviceManagerInternal.class);
+        // Virtual device names are expected to be unique, and since virtual device operations are
+        // asynchronous it is possible to create a new virtual device before the old virtual device
+        // is cleaned up. To avoid using the same name for two virtual devices we generate names
+        // using with an integer that is incremented each time a virtual device is created.
+        final String virtualDeviceName = "Mouse Keys Virtual Device (" + sNextVirtualDeviceId++
+                + ")";
         mVirtualDevice = localVdm.createVirtualDevice(
-                new VirtualDeviceParams.Builder().setName("Mouse Keys Virtual Device").build());
+                new VirtualDeviceParams.Builder().setName(virtualDeviceName).build());
         VirtualMouse virtualMouse = mVirtualDevice.createVirtualMouse(
                 new VirtualMouseConfig.Builder()
-                .setInputDeviceName("Mouse Keys Virtual Mouse")
+                .setInputDeviceName(virtualDeviceName)
                 .setAssociatedDisplayId(displayId)
                 .build());
         return virtualMouse;

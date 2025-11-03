@@ -641,6 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"อนุญาตให้แอปแสดงข้อมูล เชื่อมต่อ และระบุตำแหน่งซึ่งสัมพันธ์กับอุปกรณ์ Wi-Fi ที่อยู่ใกล้เคียง"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"เข้าถึงอุปกรณ์ในเครือข่ายในพื้นที่"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"อนุญาตให้แอปเข้าถึงอุปกรณ์ในเครือข่ายในพื้นที่"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ใช้อินเทอร์เฟซ Loopbackd"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"อนุญาตให้แอปโต้ตอบกับแอปอื่นๆ ผ่านอินเทอร์เฟซ Loopback"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"ระบุตำแหน่งสัมพันธ์ระหว่างอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"อนุญาตให้แอประบุตำแหน่งสัมพันธ์ระหว่างอุปกรณ์ที่อยู่ใกล้เคียง"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ข้อมูลบริการชำระเงิน NFC ที่ต้องการ"</string>
@@ -1043,7 +1045,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"พิมพ์ PIN เพื่อปลดล็อก"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"รหัส PIN ไม่ถูกต้อง"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"หากต้องการปลดล็อก กด เมนู ตามด้วย 0"</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"หมายเลขฉุกเฉิน"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"ไม่มีบริการ"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"หน้าจอถูกล็อก"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"กด เมนู เพื่อปลดล็อกหรือโทรฉุกเฉิน"</string>
@@ -1277,8 +1278,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"ทำงานให้เสร็จสิ้น"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"เปิดด้วย"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"เปิดด้วย %1$s"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"เปิด <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"เปิด"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"เปิดลิงก์ <xliff:g id="HOST">%1$s</xliff:g> ด้วย"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"เปิดลิงก์ด้วย"</string>

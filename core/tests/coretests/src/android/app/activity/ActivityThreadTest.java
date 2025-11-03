@@ -675,7 +675,6 @@ public class ActivityThreadTest {
         assertEquals(ORIENTATION_PORTRAIT, activity.mConfig.orientation);
     }
 
-    @FlakyTest(bugId = 428903046)
     @Test
     public void testOrientationChanged_DoesntOverrideVirtualDisplayOrientation() {
         final TestActivity activity = mActivityTestRule.launchActivity(new Intent());
@@ -769,6 +768,7 @@ public class ActivityThreadTest {
         });
     }
 
+    @FlakyTest(bugId = 428903046)
     @Test
     public void testHandleConfigurationChanged_DoesntOverrideActivityConfig() {
         final TestActivity activity = mActivityTestRule.launchActivity(new Intent());

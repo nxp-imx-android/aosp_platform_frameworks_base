@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Chagua programu ili utume"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Sikiliza pamoja na wengine"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Ruhusu dirisha la programu lifikiwe"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Unaporuhusu ufikiaji, maudhui yaliyo kwenye skrini yako huonekana"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Piga picha ya skrini ya dirisha"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Rekodi dirisha"</string>
@@ -367,8 +369,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Kipengele cha kuzima vitambuzi kimewashwa"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Futa arifa zote."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Arifa"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Kiratibu"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Kuna arifa # zaidi ndani ya kikundi.}other{Kuna arifa # zaidi ndani ya kikundi.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skrini imefungwa sasa katika uelekezo wa mandhari."</string>
@@ -710,8 +711,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Kimya"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Arifa"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Mazungumzo"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Zilizoangaziwa"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Futa arifa zote zisizo na sauti"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Fungua mipangilio ya arifa"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Hakuna arifa}=1{Arifa zimesitishwa na {mode}}=2{Arifa zimesitishwa na {mode} na hali nyingine moja}other{Arifa zimesitishwa na {mode} na hali nyingine #}}"</string>
@@ -1151,29 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menyu ya kuzima/kuwasha"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Ukurasa wa <xliff:g id="ID_1">%1$d</xliff:g> kati ya <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ungependa kuwasha <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Aikoni ya "<annotation id="action_key_icon">"kitendo"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ni mikato ya kibodi inayopaswa kutumia <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Bonyeza tena aikoni ya Kitendo + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> ili uwashe <xliff:g id="ID_3">%3$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Ungependa kuwasha mikato ya kibodi ya <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Usiwashe"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Washa njia ya mkato"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Umewasha mikato ya kibodi ya <xliff:g id="ID_1">%1$s</xliff:g>"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572"><annotation id="action_key_icon">"Aikoni"</annotation>" ya kitendo + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ni mikato ya kibodi ya kutumia <xliff:g id="ID_3">^3</xliff:g>, kipengele cha ufikivu. Hali hii hukuruhusu uvute karibu kwa haraka kwenye skrini ili ufanye maudhui yawe makubwa zaidi. Baada ya kuwasha kipengele cha ukuzaji, bonyeza "<annotation id="action_key_icon">"Aikoni"</annotation>" ya kitendo + <xliff:g id="ID_4">^1</xliff:g> na \"+\" au \"-\" ili urekebishe kiwango cha ukuzaji."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Zima kipengele cha njia ya mkato"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Usizime"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003"><annotation id="action_key_icon">"Aikoni"</annotation>" ya Kitendo + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ndio mikato ya kibodi unayopaswa kutumia <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> ni kisoma skrini kinachokuruhusu usikie vipengee vikitamkwa kwa sauti. Kinaweza kuwasaidia watu walio na matatizo ya kuona skrini. Huenda hatua hii ikabadilisha jinsi kifaa chako kinafanya kazi."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Kwa kuwasha mikato ya kibodi, utaruhusu TalkBack idhibiti kifaa chako kikamilifu."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Udhibiti kamili unafaa kwa programu zinazokusaidia kutimiza mahitaji ya ufikivu, ila si kwa programu nyingi."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Kuangalia na kudhibiti skrini"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Hatua hii inaweza kusoma maudhui yote kwenye skrini na kuonyesha maudhui kwenye programu zingine."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Kuangalia na kutekeleza vitendo"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Hatua hii inaweza kufuatilia mitagusano yako na programu au kitambuzi cha maunzi na kutagusana na programu zingine kwa niaba yako."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Kubonyeza "<annotation id="action_key_icon">"Aikoni"</annotation>" ya kitendo + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> huwasha <xliff:g id="ID_3">^3</xliff:g>, kipengele cha ufikivu. Mipangilio hii hukuwezesha kudhibiti kifaa chako bila kugusa."</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Ufikivu"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Nimemaliza"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Skrini iliyofungwa"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Inazima…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Angalia hatua za utunzaji"</string>
@@ -1740,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"usogeze kwenye ukurasa unaofuata"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"jaza kiotomatiki"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"panua"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

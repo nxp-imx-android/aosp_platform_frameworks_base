@@ -21,13 +21,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.screencapture.common.domain.model.TargetModel
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
+import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ShareScreenUiInteractor
 import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Provider
@@ -39,28 +40,43 @@ constructor(
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val shareScreenUiInteractor: ShareScreenUiInteractor,
     private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
+    @Assisted("thumbnailWidthPx") private val thumbnailWidthPx: Int,
+    @Assisted("thumbnailHeightPx") private val thumbnailHeightPx: Int,
     recentTasksViewModelProvider: Provider<RecentTasksViewModel>,
+    appContentsViewModelFactory: AppContentsViewModel.Factory,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
-    var selectedScreenCaptureTarget: ScreenCaptureTarget by
-        mutableStateOf(ScreenCaptureTarget.AppContent(contentId = 0))
-
     private val recentTasksViewModel = recentTasksViewModelProvider.get()
+    private val appContentsViewModel =
+        appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
 
-    var currentTargetsModel by
-        mutableStateOf<TargetsViewModel<out TargetModel>>(recentTasksViewModel)
+    var currentTargetsModel by mutableStateOf<TargetsViewModel>(appContentsViewModel)
         private set
 
     var isUiVisible by mutableStateOf(true)
         private set
 
+    fun setTargetViewModel(type: ScreenCaptureTarget) {
+        currentTargetsModel =
+            when (type) {
+                is ScreenCaptureTarget.App -> recentTasksViewModel
+                is ScreenCaptureTarget.AppContent -> appContentsViewModel
+                else ->
+                    throw IllegalArgumentException("Unsupported ScreenCaptureTarget type: $type")
+            }
+    }
+
     fun onShareClicked() {
         // Hide the UI immediately for responsive feedback.
         isUiVisible = false
 
-        if (selectedScreenCaptureTarget is ScreenCaptureTarget.App) {
-            recentTasksViewModel.selectedTarget.value?.let {
-                shareScreenUiInteractor.onScreenSharingApproved(it.model.taskId)
+        when (val currentModel = currentTargetsModel) {
+            is RecentTasksViewModel -> {
+                currentModel.selectedTarget.value?.let {
+                    shareScreenUiInteractor.onScreenSharingApproved(it.model.taskId)
+                }
             }
+            // TODO(b/423708479) Add the logic to support app content and fullscreen sharing.
+            else -> throw IllegalStateException("Unsupported TargetsViewModel type: $currentModel")
         }
         shareScreenPrivacyIndicatorInteractor.showChip()
     }
@@ -70,11 +86,17 @@ constructor(
     }
 
     override suspend fun onActivated() {
-        coroutineScope { launchTraced("RecentTasksViewModel") { recentTasksViewModel.activate() } }
+        coroutineScope {
+            launchTraced("RecentTasksViewModel") { recentTasksViewModel.activate() }
+            launchTraced("AppContentsViewModel") { appContentsViewModel.activate() }
+        }
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(): ScreenCaptureShareScreenViewModel
+        fun create(
+            @Assisted("thumbnailWidthPx") thumbnailWidthPx: Int,
+            @Assisted("thumbnailHeightPx") thumbnailHeightPx: Int,
+        ): ScreenCaptureShareScreenViewModel
     }
 }

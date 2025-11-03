@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
@@ -100,28 +101,16 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
                 leadingIcon = { icons?.frontCamera?.let { Icon(icon = it) } },
                 checked = recordParameters.shouldShowFrontCamera ?: false,
                 onCheckedChange = { recordParameters.setShouldShowFrontCamera(it) },
-                enabled = true,
+                enabled = screenRecordingSelected,
             )
 
-            // TODO (b/444278100) - Implement UI provided by designer, this is a placeholder
             if (viewModel.customSaveLocationSupported) {
-                DropdownMenuItem(
-                    text = { Text("Save Location: ${viewModel.customSaveLocationUriString}") },
-                    onClick = { /* TODO (b/444278100) - Add selectable options based off UI design */
-                    },
-                )
-
-                DropdownMenuItem(
-                    text = { Text("Default folder?: ${!viewModel.isCustomSaveLocationActive}") },
-                    onClick = { /* TODO: Remove, this is for testing purposes */ },
-                )
-
-                DropdownMenuItem(
-                    text = { Text("Set Custom Save Location (Test)") },
-                    onClick = {
-                        viewModel.requestLaunchDirectoryPicker()
-                        showMenu = false
-                    },
+                SaveLocationDropdown(
+                    viewModel = viewModel,
+                    icons = icons,
+                    onClose = { showMenu = false },
+                    modifier =
+                        Modifier.padding(start = 14.dp, top = 12.dp, end = 14.dp, bottom = 6.dp),
                 )
             }
         }

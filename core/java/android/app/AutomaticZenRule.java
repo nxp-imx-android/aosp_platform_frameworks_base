@@ -19,6 +19,7 @@ package android.app;
 import static com.android.internal.util.Preconditions.checkArgument;
 
 import android.annotation.DrawableRes;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -93,11 +94,16 @@ public final class AutomaticZenRule implements Parcelable {
      * <p>Only a 'Device Owner' app may own rules of this type.
      */
     public static final int TYPE_MANAGED = 7;
+    /**
+     * The type for rules triggered during the user's transiting.
+     */
+    @FlaggedApi(Flags.FLAG_MODES_UI_TRANSIT)
+    public static final int TYPE_TRANSIT = 8;
 
     /** @hide */
     @IntDef(prefix = { "TYPE_" }, value = {
             TYPE_UNKNOWN, TYPE_OTHER, TYPE_SCHEDULE_TIME, TYPE_SCHEDULE_CALENDAR, TYPE_BEDTIME,
-            TYPE_DRIVING, TYPE_IMMERSIVE, TYPE_THEATER, TYPE_MANAGED
+            TYPE_DRIVING, TYPE_IMMERSIVE, TYPE_THEATER, TYPE_MANAGED, TYPE_TRANSIT
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {}
@@ -484,10 +490,10 @@ public final class AutomaticZenRule implements Parcelable {
 
     @Type
     private static int checkValidType(@Type int type) {
-        checkArgument(type >= TYPE_UNKNOWN && type <= TYPE_MANAGED,
+        checkArgument(type >= TYPE_UNKNOWN && type <= TYPE_TRANSIT,
                 "Rule type must be one of TYPE_UNKNOWN, TYPE_OTHER, TYPE_SCHEDULE_TIME, "
                         + "TYPE_SCHEDULE_CALENDAR, TYPE_BEDTIME, TYPE_DRIVING, TYPE_IMMERSIVE, "
-                        + "TYPE_THEATER, or TYPE_MANAGED");
+                        + "TYPE_THEATER, TYPE_MANAGED, or TYPE_TRANSIT");
         return type;
     }
 

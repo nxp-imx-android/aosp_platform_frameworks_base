@@ -28,6 +28,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.transition.OneShotRemoteHandler
+import com.android.wm.shell.transition.TransitionLeashManager
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 
@@ -40,12 +41,14 @@ import com.android.wm.shell.transition.Transitions.TransitionHandler
  */
 class DesktopWindowLimitRemoteHandler(
     mainExecutor: ShellExecutor,
+    transitionLeashManager: TransitionLeashManager,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     remoteTransition: RemoteTransition,
     private val taskIdToMinimize: Int,
 ) : TransitionHandler {
 
-    private val oneShotRemoteHandler = OneShotRemoteHandler(mainExecutor, remoteTransition)
+    private val oneShotRemoteHandler =
+        OneShotRemoteHandler(mainExecutor, transitionLeashManager, remoteTransition)
     private var transition: IBinder? = null
 
     /** Sets the transition that will be handled - this must be called before [startAnimation]. */

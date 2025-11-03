@@ -128,11 +128,6 @@ public class BtHelper {
     @GuardedBy("mDeviceBroker.mDeviceStateLock")
     private int mScoAudioState;
 
-    // Indicates the mode used for SCO audio connection. The mode is virtual call if the request
-    // originated from an app targeting an API version before JB MR2 and raw audio after that.
-    @GuardedBy("mDeviceBroker.mDeviceStateLock")
-    private int mScoAudioMode;
-
     // SCO audio state is not active
     private static final int SCO_STATE_INACTIVE = 0;
     // SCO audio activation request waiting for headset service to connect
@@ -147,15 +142,6 @@ public class BtHelper {
     // SCO audio deactivation in progress, waiting for Bluetooth audio intent
     private static final int SCO_STATE_DEACTIVATING = 5;
 
-    // SCO audio mode is undefined
-    /*package*/  static final int SCO_MODE_UNDEFINED = -1;
-    // SCO audio mode is virtual voice call (BluetoothHeadset.startScoUsingVirtualVoiceCall())
-    /*package*/  static final int SCO_MODE_VIRTUAL_CALL = 0;
-    // SCO audio mode is Voice Recognition (BluetoothHeadset.startVoiceRecognition())
-    private static final int SCO_MODE_VR = 2;
-    // max valid SCO audio mode values
-    private static final int SCO_MODE_MAX = 2;
-
     private static final int BT_HEARING_AID_GAIN_MIN = -128;
     private static final int BT_LE_AUDIO_MAX_VOL = 255;
 
@@ -166,22 +152,6 @@ public class BtHelper {
     private static final String DEVICE_TYPE_HEADSET = "Headset";
     private static final String DEVICE_TYPE_CARKIT = "Carkit";
     private static final String DEVICE_TYPE_HEARING_AID = "HearingAid";
-
-    /**
-     * Returns a string representation of the scoAudioMode.
-     */
-    public static String scoAudioModeToString(int scoAudioMode) {
-        switch (scoAudioMode) {
-            case SCO_MODE_UNDEFINED:
-                return "SCO_MODE_UNDEFINED";
-            case SCO_MODE_VIRTUAL_CALL:
-                return "SCO_MODE_VIRTUAL_CALL";
-            case SCO_MODE_VR:
-                return "SCO_MODE_VR";
-            default:
-                return "SCO_MODE_(" + scoAudioMode + ")";
-        }
-    }
 
     /**
      * Returns a string representation of the scoAudioState.
@@ -446,8 +416,7 @@ public class BtHelper {
                 // state SCO_STATE_ACTIVE_EXTERNAL and BT SCO is requested.
                 if (mScoAudioState == SCO_STATE_ACTIVATE_REQ) {
                     if (mBluetoothHeadset != null && mBluetoothHeadsetDevice != null
-                            && connectBluetoothScoAudioHelper(mBluetoothHeadset,
-                            mBluetoothHeadsetDevice, mScoAudioMode)) {
+                            && mBluetoothHeadset.startScoUsingVirtualVoiceCall()) {
                         mScoAudioState = SCO_STATE_ACTIVE_INTERNAL;
                         scoAudioState = AudioManager.SCO_AUDIO_STATE_CONNECTING;
                         broadcast = true;
@@ -503,16 +472,15 @@ public class BtHelper {
     }
 
     @GuardedBy("mDeviceBroker.mDeviceStateLock")
-    /*package*/ synchronized boolean startBluetoothSco(int scoAudioMode,
-                @NonNull String eventSource) {
+    /*package*/ synchronized boolean startBluetoothSco(@NonNull String eventSource) {
         AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(eventSource));
-        return requestScoState(BluetoothHeadset.STATE_AUDIO_CONNECTED, scoAudioMode);
+        return requestScoState(BluetoothHeadset.STATE_AUDIO_CONNECTED);
     }
 
     @GuardedBy("mDeviceBroker.mDeviceStateLock")
     /*package*/ synchronized boolean stopBluetoothSco(@NonNull String eventSource) {
         AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(eventSource));
-        return requestScoState(BluetoothHeadset.STATE_AUDIO_DISCONNECTED, SCO_MODE_VIRTUAL_CALL);
+        return requestScoState(BluetoothHeadset.STATE_AUDIO_DISCONNECTED);
     }
 
     /*package*/ synchronized void setLeAudioVolume(int index, int maxIndex, int streamType) {
@@ -835,17 +803,13 @@ public class BtHelper {
         if (mBluetoothHeadsetDevice != null) {
             switch (mScoAudioState) {
                 case SCO_STATE_ACTIVATE_REQ:
-                    status = connectBluetoothScoAudioHelper(
-                            mBluetoothHeadset,
-                            mBluetoothHeadsetDevice, mScoAudioMode);
+                    status = mBluetoothHeadset.startScoUsingVirtualVoiceCall();
                     if (status) {
                         mScoAudioState = SCO_STATE_ACTIVE_INTERNAL;
                     }
                     break;
                 case SCO_STATE_DEACTIVATE_REQ:
-                    status = disconnectBluetoothScoAudioHelper(
-                            mBluetoothHeadset,
-                            mBluetoothHeadsetDevice, mScoAudioMode);
+                    status = mBluetoothHeadset.stopScoUsingVirtualVoiceCall();
                     if (status) {
                         mScoAudioState = SCO_STATE_DEACTIVATING;
                     }
@@ -1042,7 +1006,7 @@ public class BtHelper {
     //----------------------------------------------------------------------
 
     @GuardedBy("mDeviceBroker.mDeviceStateLock")
-    private synchronized boolean requestScoState(int state, int scoAudioMode) {
+    private synchronized boolean requestScoState(int state) {
         checkScoAudioState();
         if (state == BluetoothHeadset.STATE_AUDIO_CONNECTED) {
             // Make sure that the state transitions to CONNECTING even if we cannot initiate
@@ -1052,26 +1016,12 @@ public class BtHelper {
             }
             switch (mScoAudioState) {
                 case SCO_STATE_INACTIVE:
-                    mScoAudioMode = scoAudioMode;
-                    if (scoAudioMode == SCO_MODE_UNDEFINED) {
-                        mScoAudioMode = SCO_MODE_VIRTUAL_CALL;
-                        if (mBluetoothHeadsetDevice != null) {
-                            mScoAudioMode = Settings.Global.getInt(
-                                    mDeviceBroker.getContentResolver(),
-                                    "bluetooth_sco_channel_"
-                                            + mBluetoothHeadsetDevice.getAddress(),
-                                    SCO_MODE_VIRTUAL_CALL);
-                            if (mScoAudioMode > SCO_MODE_MAX || mScoAudioMode < 0) {
-                                mScoAudioMode = SCO_MODE_VIRTUAL_CALL;
-                            }
-                        }
-                    }
                     if (mBluetoothHeadset == null) {
                         if (getBluetoothHeadset()) {
                             mScoAudioState = SCO_STATE_ACTIVATE_REQ;
                         } else {
                             Log.w(TAG, "requestScoState: getBluetoothHeadset failed during"
-                                    + " connection, mScoAudioMode=" + mScoAudioMode);
+                                    + " connection");
                             broadcastScoConnectionState(
                                     AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                             return false;
@@ -1079,19 +1029,17 @@ public class BtHelper {
                         break;
                     }
                     if (mBluetoothHeadsetDevice == null) {
-                        Log.w(TAG, "requestScoState: no active device while connecting,"
-                                + " mScoAudioMode=" + mScoAudioMode);
+                        Log.w(TAG, "requestScoState: no active device while connecting");
                         broadcastScoConnectionState(
                                 AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                         return false;
                     }
-                    if (connectBluetoothScoAudioHelper(mBluetoothHeadset,
-                            mBluetoothHeadsetDevice, mScoAudioMode)) {
+                    if (mBluetoothHeadset.startScoUsingVirtualVoiceCall()) {
                         mScoAudioState = SCO_STATE_ACTIVE_INTERNAL;
                     } else {
                         Log.w(TAG, "requestScoState: connect to "
                                 + getAnonymizedAddress(mBluetoothHeadsetDevice)
-                                + " failed, mScoAudioMode=" + mScoAudioMode);
+                                + " failed");
                         broadcastScoConnectionState(
                                 AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                         return false;
@@ -1117,8 +1065,7 @@ public class BtHelper {
                     broadcastScoConnectionState(AudioManager.SCO_AUDIO_STATE_CONNECTED);
                     break;
                 default:
-                    Log.w(TAG, "requestScoState: failed to connect in state "
-                            + mScoAudioState + ", scoAudioMode=" + scoAudioMode);
+                    Log.w(TAG, "requestScoState: failed to connect in state " + mScoAudioState);
                     broadcastScoConnectionState(AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                     return false;
             }
@@ -1130,7 +1077,7 @@ public class BtHelper {
                             mScoAudioState = SCO_STATE_DEACTIVATE_REQ;
                         } else {
                             Log.w(TAG, "requestScoState: getBluetoothHeadset failed during"
-                                    + " disconnection, mScoAudioMode=" + mScoAudioMode);
+                                    + " disconnection");
                             mScoAudioState = SCO_STATE_INACTIVE;
                             broadcastScoConnectionState(
                                     AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
@@ -1144,8 +1091,7 @@ public class BtHelper {
                                 AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                         break;
                     }
-                    if (disconnectBluetoothScoAudioHelper(mBluetoothHeadset,
-                            mBluetoothHeadsetDevice, mScoAudioMode)) {
+                    if (mBluetoothHeadset.stopScoUsingVirtualVoiceCall()) {
                         mScoAudioState = SCO_STATE_DEACTIVATING;
                     } else {
                         mScoAudioState = SCO_STATE_INACTIVE;
@@ -1159,7 +1105,7 @@ public class BtHelper {
                     break;
                 default:
                     Log.w(TAG, "requestScoState: failed to disconnect in state "
-                            + mScoAudioState + ", scoAudioMode=" + scoAudioMode);
+                            + mScoAudioState);
                     broadcastScoConnectionState(AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                     return false;
             }
@@ -1179,30 +1125,6 @@ public class BtHelper {
             mDeviceBroker.getContext().sendStickyBroadcastAsUser(intent, UserHandle.ALL);
         } finally {
             Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    private static boolean disconnectBluetoothScoAudioHelper(BluetoothHeadset bluetoothHeadset,
-            BluetoothDevice device, int scoAudioMode) {
-        switch (scoAudioMode) {
-            case SCO_MODE_VIRTUAL_CALL:
-                return bluetoothHeadset.stopScoUsingVirtualVoiceCall();
-            case SCO_MODE_VR:
-                return bluetoothHeadset.stopVoiceRecognition(device);
-            default:
-                return false;
-        }
-    }
-
-    private static boolean connectBluetoothScoAudioHelper(BluetoothHeadset bluetoothHeadset,
-            BluetoothDevice device, int scoAudioMode) {
-        switch (scoAudioMode) {
-            case SCO_MODE_VIRTUAL_CALL:
-                return bluetoothHeadset.startScoUsingVirtualVoiceCall();
-            case SCO_MODE_VR:
-                return bluetoothHeadset.startVoiceRecognition(device);
-            default:
-                return false;
         }
     }
 
@@ -1446,7 +1368,6 @@ public class BtHelper {
             }
         }
         pw.println(prefix + "mScoAudioState: " + scoAudioStateToString(mScoAudioState));
-        pw.println(prefix + "mScoAudioMode: " + scoAudioModeToString(mScoAudioMode));
         pw.println("\n" + prefix + "mHearingAid: " + mHearingAid);
         pw.println("\n" + prefix + "mLeAudio: " + mLeAudio);
         pw.println(prefix + "mA2dp: " + mA2dp);

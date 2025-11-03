@@ -39,6 +39,7 @@ import android.app.AppOpsManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageInstaller;
+import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.os.FileUtils;
 import android.os.Handler;
@@ -305,5 +306,28 @@ public class PackageInstallerServiceTest {
                 () -> service.setDeveloperVerificationPolicy(
                 /* policy= */ PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                 /* userId= */ UserHandle.USER_SYSTEM));
+    }
+
+    @Test
+    public void testForceUuidFlagWithoutUuidArgumentThrowsException() {
+        doReturn(mMockDeveloperVerifierController).when(
+                () -> DeveloperVerifierController.getInstance(any(), any(), eq(null))
+        );
+        when(mMockDeveloperVerifierController.getVerifierPackageName()).thenReturn(null);
+        PackageInstallerService service = new PackageInstallerService(
+                rule.mocks().getContext(), mPms, null, null);
+        service.systemReady();
+        PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
+                PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+        params.installFlags = PackageManager.INSTALL_FORCE_VOLUME_UUID;
+        params.isMultiPackage = false;
+        params.volumeUuid = "..";
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createSessionInternal(
+                        params,
+                        /* installerPackageName= */ null,
+                        /* installerAttributionTag= */ null,
+                        /* callingUid= */ myUid(),
+                        /* userId= */ UserHandle.USER_SYSTEM));
     }
 }

@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Leyfir forritinu að auglýsa, tengja og áætla staðsetningu nálægra WiFi-tækja"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"aðgangur að tækjum á staðarneti"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Veitir forritinu aðgang að tækjum á staðarneti"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"greina áætlaða fjarlægð á milli nálægra tækja"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Leyfðu forritinu að greina áætlaða fjarlægð á milli nálægra tækja"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Upplýsingar um valda NFC-greiðsluþjónustu"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Sláðu inn PIN-númer til að opna"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Rangt PIN-númer."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Til að taka úr lás ýtirðu á valmyndartakkann og síðan 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Neyðarnúmer"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Ekkert símasamband"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Skjár læstur."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Ýttu á valmyndartakkann til að taka úr lás eða hringja neyðarsímtal."</string>
@@ -1277,8 +1280,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Ljúka aðgerð"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Opna með"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Opna með %1$s"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"Opna <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Opna"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Opna <xliff:g id="HOST">%1$s</xliff:g> tengla með"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Opna tengla með"</string>

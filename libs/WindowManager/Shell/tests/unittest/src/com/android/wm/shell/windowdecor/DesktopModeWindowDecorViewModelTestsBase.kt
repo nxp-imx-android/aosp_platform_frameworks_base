@@ -182,7 +182,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected lateinit var desktopConfig: FakeDesktopConfig
     private val mockUserProfileContexts = mock<UserProfileContexts>()
 
-    private val mockPinnedLayerController = mock<PinnedLayerController>()
+    protected val mockPinnedLayerController = mock<PinnedLayerController>()
 
     private val transactionFactory =
         Supplier<SurfaceControl.Transaction> { SurfaceControl.Transaction() }
@@ -348,7 +348,8 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         doReturn(HOME_LAUNCHER_PACKAGE_NAME)
             .whenever(desktopModeCompatPolicy)
             .getDefaultHomePackage(any())
-        whenever(mockDesktopTasksController.getNextFocusedTask(any())).thenReturn(testTaskId)
+        whenever(mockDesktopTasksController.getTopTask(anyInt(), anyInt(), anyInt()))
+            .thenReturn(testTaskId)
         whenever(windowDecorByTaskIdSpy.get(testTaskId)).thenReturn(mockWindowDecoration)
     }
 

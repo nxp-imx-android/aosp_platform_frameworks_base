@@ -642,6 +642,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Дозвољава апликацији да се оглашава, повезује и утврђује релативну позицију WiFi уређаја у близини"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"приступ уређајима на локалној мрежи"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Дозвољава апликацији да приступа уређајима на локалној мрежи"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"коришћење интерфејса повратне петље"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Дозвољава апликацији да остварује интеракцију са другим апликацијама преко интерфејса повратне петље"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"одређивање раздаљине између уређаја у близини"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Дозволите апликацији да одређује релативну раздаљину између уређаја у близини"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Информације о жељеној NFC услузи за плаћање"</string>
@@ -1044,7 +1046,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Унесите PIN за откључавање"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN кôд је нетачан."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Да бисте откључали, притисните „Мени“, а затим 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Број за хитне случајеве"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Мобилна мрежа није доступна"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Екран је закључан."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Притисните „Мени“ да бисте откључали телефон или упутите хитан позив."</string>
@@ -1278,8 +1279,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Заврши радњу"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Отворите помоћу"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Отворите помоћу апликације %1$s"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"Отворите: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Отвори"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Отварајте <xliff:g id="HOST">%1$s</xliff:g> линкове помоћу"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Отварај линкове помоћу"</string>
@@ -1734,7 +1734,7 @@
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Систем"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Bluetooth аудио"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Бежични екран"</string>
-    <string name="media_route_button_content_description" msgid="2299223698196869956">"Пребацуј"</string>
+    <string name="media_route_button_content_description" msgid="2299223698196869956">"Пребаци"</string>
     <string name="media_route_chooser_title" msgid="6646594924991269208">"Повежите са уређајем"</string>
     <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"Пребаците екран на уређај"</string>
     <string name="media_route_chooser_searching" msgid="6119673534251329535">"Тражење уређаја…"</string>
@@ -2484,7 +2484,7 @@
     <string name="vdm_camera_access_denied" product="tablet" msgid="6895968310395249076">"Не може да се приступи камери таблета са <xliff:g id="DEVICE">%1$s</xliff:g> уређаја"</string>
     <string name="vdm_secure_window" msgid="161700398158812314">"Овом не можете да приступате током стримовања. Пробајте на телефону."</string>
     <string name="vdm_pip_blocked" msgid="4036107522497281397">"Не можете да гледате слику у слици при стримовању"</string>
-    <string name="system_locale_title" msgid="711882686834677268">"Подразумевани системски"</string>
+    <string name="system_locale_title" msgid="711882686834677268">"Подразумевано за систем"</string>
     <string name="default_card_name" msgid="9198284935962911468">"КАРТИЦА <xliff:g id="CARDNUMBER">%d</xliff:g>"</string>
     <string name="permlab_companionProfileWatch" msgid="2457738382085872542">"Дозвола за профил пратећег сата за управљање сатовима"</string>
     <string name="permdesc_companionProfileWatch" msgid="5655698581110449397">"Дозвољава пратећој апликацији да управља сатовима."</string>

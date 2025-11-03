@@ -415,7 +415,7 @@ public final class Call {
      * {@link Connection#putExtras(Bundle)} should be used to notify
      * Telecom this extra has been set.
      */
-    @FlaggedApi(Flags.FLAG_IS_USING_VIDEO_RINGBACK)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
     public static final String EXTRA_IS_USING_VIDEO_RINGBACK =
             "android.telecom.extra.IS_USING_VIDEO_RINGBACK";
 
@@ -800,7 +800,7 @@ public final class Call {
          * <p>
          * This property is specific to IMS conference calls originating in Telephony.
          */
-        @FlaggedApi(Flags.FLAG_REMOTELY_HOSTED_PROPERTY)
+        @FlaggedApi(android.telecom.flags.Flags.FLAG_REMOTELY_HOSTED_PROPERTY)
         public static final int PROPERTY_REMOTELY_HOSTED = 0x00010000;
 
         //******************************************************************************************
@@ -827,7 +827,7 @@ public final class Call {
         private final long mCreationTimeMillis;
         private final String mContactDisplayName;
         private final @CallDirection int mCallDirection;
-        private final @Connection.VerificationStatus int mCallerNumberVerificationStatus;
+        private final @Annotation.VerificationStatus int mCallerNumberVerificationStatus;
         private final Uri mContactPhotoUri;
         private final UserHandle mAssociatedUser;
 
@@ -1236,7 +1236,7 @@ public final class Call {
          * potentially impersonated numbers.
          * @return the verification status.
          */
-        public @Connection.VerificationStatus int getCallerNumberVerificationStatus() {
+        public @Annotation.VerificationStatus int getCallerNumberVerificationStatus() {
             return mCallerNumberVerificationStatus;
         }
 

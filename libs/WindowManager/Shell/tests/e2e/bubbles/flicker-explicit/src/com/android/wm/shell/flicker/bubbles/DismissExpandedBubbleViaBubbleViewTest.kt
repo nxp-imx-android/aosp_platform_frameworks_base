@@ -85,6 +85,7 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTest
 
     @get:Rule(order = 2)
     val setUpRule = RunOncePerParameterRule(
+        testClass = this::class,
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )

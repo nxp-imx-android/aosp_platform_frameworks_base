@@ -1152,7 +1152,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
     private void testTimeoutClamping(Duration originalTimeout, int expectedClampedTimeout) {
         VerifyCredentialResponse response = VerifyCredentialResponse.fromTimeout(originalTimeout);
-        assertEquals(expectedClampedTimeout, response.getTimeout());
+        assertEquals(Duration.ofMillis(expectedClampedTimeout), response.getTimeout());
     }
 
     private void checkRecordedFrpNotificationIntent() {

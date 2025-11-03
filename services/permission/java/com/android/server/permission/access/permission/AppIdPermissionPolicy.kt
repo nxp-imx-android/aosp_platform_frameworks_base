@@ -87,6 +87,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
         newState.externalState.appIdPackageNames.forEachIndexed { _, appId, _ ->
             inheritImplicitPermissionStates(appId, userId)
         }
+        onPermissionFlagsChangedListeners.forEachIndexed { _, it -> it.onUserAdded(userId) }
     }
 
     override fun MutateStateScope.onUserRemoved(userId: Int) {
@@ -2056,6 +2057,15 @@ class AppIdPermissionPolicy : SchemePolicy() {
             oldFlags: Int,
             newFlags: Int,
         )
+
+        /**
+         * Called when a user is added to the system.
+         *
+         * Implementations should keep this method fast to avoid stalling the locked state mutation,
+         * and only call external code after [onStateMutated] when the new state has actually become
+         * the current state visible to external code.
+         */
+        fun onUserAdded(userId: Int) {}
 
         /**
          * Called when a user is removed from the system.

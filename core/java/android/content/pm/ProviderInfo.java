@@ -191,6 +191,15 @@ public final class ProviderInfo extends ComponentInfo
         return "ContentProviderInfo{name=" + authority + " className=" + name + "}";
     }
 
+    /**
+     * Returns whether if the provider should run in PCC sandbox
+     * @hide
+     */
+    @Override
+    public boolean shouldRunInPccSandbox() {
+        return (flags & FLAG_RUN_IN_PCC_SANDBOX) != 0;
+    }
+
     private ProviderInfo(Parcel in) {
         super(in);
         authority = in.readString8();

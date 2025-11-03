@@ -2263,6 +2263,58 @@ public class TaskTests extends WindowTestsBase {
         assertFalse(task.getHasBeenVisible());
     }
 
+    @Test
+    public void testRestoreWindowingMode_reparentsToAttachedParent() {
+        // Create a parent task that the child task will be restored to.
+        final Task parentTask = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+
+        // Simulate the task having been moved to fullscreen from a multi-window parent.
+        task.mMultiWindowRestoreWindowingMode = WINDOWING_MODE_FREEFORM;
+        task.mMultiWindowRestoreParent = parentTask.mRemoteToken.toWindowContainerToken();
+
+        // Spy on the task to verify reparenting call.
+        spyOn(task);
+
+        // The parent is attached, so reparenting should happen.
+        task.restoreWindowingMode();
+
+        // Verify that the task was reparented to its original parent.
+        verify(task).reparent(eq(parentTask), eq(Integer.MAX_VALUE));
+        assertEquals(parentTask, task.getParent());
+        // Verify the windowing mode was restored.
+        assertEquals(WINDOWING_MODE_FREEFORM, task.getWindowingMode());
+    }
+
+    @Test
+    public void testRestoreWindowingMode_doesNotReparentToDetachedParent() {
+        // Create a parent task that will be removed.
+        final Task parentTask = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+
+        // Simulate the task having been moved to fullscreen from a multi-window parent.
+        task.mMultiWindowRestoreWindowingMode = WINDOWING_MODE_FREEFORM;
+        task.mMultiWindowRestoreParent = parentTask.mRemoteToken.toWindowContainerToken();
+        final WindowContainer originalParent = task.getParent();
+
+        // Remove the restore parent, making it detached.
+        parentTask.removeImmediately();
+        assertFalse(parentTask.isAttached());
+
+        // Spy on the task to verify reparenting call.
+        spyOn(task);
+
+        // The parent is detached, so reparenting should be skipped.
+        task.restoreWindowingMode();
+
+        // Verify that reparent was not called.
+        verify(task, never()).reparent(any(Task.class), anyInt());
+        // Verify the task's parent remains unchanged.
+        assertEquals(originalParent, task.getParent());
+        // Verify the windowing mode was still restored.
+        assertEquals(WINDOWING_MODE_FREEFORM, task.getWindowingMode());
+    }
+
     private Task getTestTask() {
         return new TaskBuilder(mSupervisor).setCreateActivity(true).build();
     }

@@ -34,7 +34,6 @@ android_test {
         "test-apps/TopologyTestApp/src/**/*.java",
     ],
 
-    exclude_srcs: ["src/com/android/server/signalcollector/**/*.java"],
     static_libs: [
         "ActivityContext",
         "CtsAccessibilityCommon",
@@ -96,13 +95,11 @@ android_test {
         // which provides assertThrows
         "testng",
         "truth",
+        "services.signal-collectors",
+        "services.signal-collector-manager-internal",
+        "service-anomaly-detector.impl",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": ["service-crashrecovery-pre-jarjar"],
-        default: [],
-    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
-        true: [
-            "signal-collector-service-test",
-        ],
         default: [],
     }),
 
@@ -176,6 +173,7 @@ java_defaults {
         "androidx.annotation_annotation",
         "androidx.test.rules",
         "flag-junit",
+        "truth",
     ],
     auto_gen_config: true,
 }
@@ -188,7 +186,6 @@ java_defaults {
 android_ravenwood_test {
     name: "FrameworksServicesTestsRavenwood_Uri",
     defaults: ["FrameworksServicesTestsRavenwood-defaults"],
-    team: "trendy_team_ravenwood",
     static_libs: [
         "services.core",
     ],
@@ -203,7 +200,6 @@ android_ravenwood_test {
 android_ravenwood_test {
     name: "FrameworksServicesTestsRavenwood_Compat",
     defaults: ["FrameworksServicesTestsRavenwood-defaults"],
-    team: "trendy_team_ravenwood",
     static_libs: [
         "services.core.ravenwood",
     ],

@@ -414,7 +414,7 @@ package android.app {
     method public void clickNotification(@Nullable String, int, int, boolean);
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public void collapsePanels();
     method public void expandNotificationsPanel();
-    method @FlaggedApi("com.android.server.telecom.flags.resolve_hidden_dependencies_two") @DrawableRes @RequiresPermission(android.Manifest.permission.STATUS_BAR) public int getIcon(@NonNull String);
+    method @FlaggedApi("android.telecom.flags.release_icon_as_api") @DrawableRes @RequiresPermission(android.Manifest.permission.STATUS_BAR) public int getIcon(@NonNull String);
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public int getLastSystemKey();
     method @RequiresPermission(android.Manifest.permission.STATUS_BAR) public void handleSystemKey(@NonNull android.view.KeyEvent);
     method public void sendNotificationFeedback(@Nullable String, @Nullable android.os.Bundle);
@@ -571,6 +571,7 @@ package android.app.admin {
     method @Nullable public String getDevicePolicyManagementRoleHolderUpdaterPackage();
     method @NonNull public java.util.Set<java.lang.String> getDisallowedSystemApps(@NonNull android.content.ComponentName, int, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public int getHeadlessDeviceOwnerMode();
+    method public int getIntegerPolicy(@NonNull String, int);
     method public long getLastBugReportRequestTime();
     method public long getLastNetworkLogRetrievalTime();
     method public long getLastSecurityLogRetrievalTime();
@@ -922,6 +923,7 @@ package android.companion {
     method @NonNull public android.companion.AssociationInfo.Builder setSelfManaged(boolean);
     method @NonNull public android.companion.AssociationInfo.Builder setSystemDataSyncFlags(int);
     method @NonNull public android.companion.AssociationInfo.Builder setTimeApproved(long);
+    method @FlaggedApi("android.companion.enable_data_sync") @NonNull public android.companion.AssociationInfo.Builder setTransportAttached(boolean);
     method @NonNull public android.companion.AssociationInfo.Builder setTransportFlags(int);
   }
 
@@ -1926,10 +1928,10 @@ package android.hardware.input {
     method @FlaggedApi("com.android.input.flags.device_associations") @RequiresPermission("android.permission.ASSOCIATE_INPUT_DEVICE_TO_DISPLAY") public void addUniqueIdAssociationByDescriptor(@NonNull String, @NonNull String);
     method @RequiresPermission("android.permission.ASSOCIATE_INPUT_DEVICE_TO_DISPLAY") public void addUniqueIdAssociationByPort(@NonNull String, @NonNull String);
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void clearAllControllerAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
-    method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void clearAllControllerButtonRemapping(@NonNull android.hardware.input.InputDeviceIdentifier);
+    method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void clearAllControllerButtonRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public void clearAllModifierKeyRemappings();
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<java.lang.Integer,java.lang.Integer> getControllerAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
-    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<java.lang.Integer,java.lang.Integer> getControllerButtonRemapping(@NonNull android.hardware.input.InputDeviceIdentifier);
+    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<java.lang.Integer,java.lang.Integer> getControllerButtonRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @Nullable @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.graphics.PointF getCursorPosition(int);
     method @NonNull public java.util.List<java.lang.String> getKeyboardLayoutDescriptors();
     method @NonNull public String getKeyboardLayoutTypeForLayoutDescriptor(@NonNull String);
@@ -1979,6 +1981,7 @@ package android.hardware.lights {
   }
 
   public abstract class LightsManager {
+    method @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") @Nullable public abstract android.hardware.lights.ColorSequence getLightSequence(@NonNull android.hardware.lights.Light);
     method @NonNull public abstract android.hardware.lights.LightsManager.LightsSession openSession(int);
   }
 

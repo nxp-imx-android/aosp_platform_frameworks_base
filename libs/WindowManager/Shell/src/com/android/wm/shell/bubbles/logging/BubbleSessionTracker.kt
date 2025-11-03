@@ -19,6 +19,7 @@ package com.android.wm.shell.bubbles.logging
 import com.android.wm.shell.bubbles.Bubble
 import com.android.wm.shell.bubbles.BubbleOverflow
 import com.android.wm.shell.bubbles.BubbleViewProvider
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 
 /**
  * Keeps track of the current Bubble session.
@@ -53,11 +54,9 @@ fun interface BubbleSessionTracker {
 
             companion object {
 
-                @JvmStatic
-                fun forBubbleBar() = Ended(forBubbleBar = true)
+                @JvmStatic fun forBubbleBar() = Ended(forBubbleBar = true)
 
-                @JvmStatic
-                fun forFloatingBubble() = Ended(forBubbleBar = false)
+                @JvmStatic fun forFloatingBubble() = Ended(forBubbleBar = false)
             }
         }
 
@@ -81,10 +80,24 @@ fun interface BubbleSessionTracker {
 
     companion object {
         @JvmStatic
-        fun BubbleViewProvider.getBubblePackageForLogging() = when (this) {
-            is Bubble -> packageName
-            is BubbleOverflow -> "Overflow"
-            else -> throw IllegalArgumentException("Unsupported type of BubbleViewProvider")
-        }
+        fun BubbleViewProvider?.getBubblePackageForLogging() =
+            when (this) {
+                is Bubble -> packageName
+                is BubbleOverflow -> "Overflow"
+                null -> {
+                    BubbleLog.w(
+                        "BubbleSessionTracker.getBubblePackageForLogging: null BubbleViewProvider"
+                    )
+                    "null"
+                }
+                else -> {
+                    BubbleLog.w(
+                        "BubbleSessionTracker.getBubblePackageForLogging: "
+                                + "Unsupported type of BubbleViewProvider with key %s",
+                        key
+                    )
+                    "unknown"
+                }
+            }
     }
 }

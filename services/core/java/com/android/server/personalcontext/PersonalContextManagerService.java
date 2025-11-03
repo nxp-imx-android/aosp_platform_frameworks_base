@@ -17,13 +17,17 @@
 package com.android.server.personalcontext;
 
 import android.annotation.PermissionManuallyEnforced;
+import android.annotation.UserIdInt;
 import android.content.Context;
+import android.os.Binder;
 import android.os.UserHandle;
+import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.RenderToken.RenderTokenBuilder;
 import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.NotificationEvent;
 import android.service.personalcontext.hint.NotificationHint;
@@ -31,9 +35,11 @@ import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
 import android.util.Slog;
+import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
@@ -44,43 +50,83 @@ import com.android.server.personalcontext.notifications.NotificationActionRender
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-/** @hide */
+import javax.crypto.spec.SecretKeySpec;
+
+/**
+ * The system service that manages personal context components and workflows.
+ *
+ * <p>This service is responsible for discovering and managing the lifecycle of various components
+ * (Refiners, Understanders, Renderers) on a per-user basis. It handles incoming contextual data
+ * (hints) and routes them through a processing workflow to generate and display actionable insights
+ * to the user.
+ *
+ * @hide
+ */
 public class PersonalContextManagerService extends SystemService {
     private static final String TAG = "PersonalContext";
 
-    private final ContextComponentManager mComponentManager =
-            new ContextComponentManager(getContext());
+    private static final SecretKeySpec HINT_SIGNING_KEY;
+
+    static {
+        // Generate a new random signing key on each system start.
+        final byte[] key = new byte[64];
+        new SecureRandom().nextBytes(key);
+        HINT_SIGNING_KEY = new SecretKeySpec(key, ContextHintWithSignature.HMAC_ALGORITHM);
+    }
+
+    /** Encapsulates all state associated with a specific user. */
+    private record UserState(
+            @NonNull ContextComponentManager componentManager,
+            @NonNull ContextComponentMonitor monitor,
+            @NonNull NotificationActionRenderer notificationActionRenderer) {
+        /** Unregisters the monitor, cleaning up the user state. */
+        void cleanup() {
+            monitor.unregister();
+        }
+    }
 
     // TODO(b/454430085): Inject these fields.
     private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
-    private final ContextComponentMonitor mMonitor = new ContextComponentMonitor(mComponentManager);
-
-    private boolean mInitialRegistrationStarted = false;
-    private NotificationActionRenderer mNotificationActionRenderer;
-
+    private final SparseArray<UserState> mUserStates = new SparseArray<>();
 
     private final PersonalContextManagerInternal mInternalService =
             new PersonalContextManagerInternal() {
                 @Override
                 public void onNotificationEvent(@NonNull NotificationEvent event) {
                     final Set<ContextHint> hints =
-                            Set.of(new NotificationHint.NotificationHintBuilder(event).build());
-                    if (mNotificationActionRenderer == null) {
-                        Slog.e(TAG, "Notification action renderer not available");
+                            Set.of(new NotificationHint.Builder(event).build());
+
+                    final StatusBarNotification sbn = getSbnFromNotificationEvent(event);
+                    if (sbn == null) {
+                        Slog.e(TAG, "Could not get SBN from notification event.");
                         return;
                     }
+
+                    final UserHandle user = sbn.getUser();
+                    final UserState userState;
+                    synchronized (mUserStates) {
+                        userState = mUserStates.get(user.getIdentifier());
+                    }
+
+                    if (userState == null) {
+                        Slog.e(TAG, "No user state for user " + user.getIdentifier());
+                        return;
+                    }
+
                     final RenderToken renderToken =
                             new RenderTokenBuilder()
                                     .setRendererComponentId(
-                                            mNotificationActionRenderer.getComponentId())
+                                            userState.notificationActionRenderer().getComponentId())
                                     .build();
-                    startRefinerWorkflow(hints, renderToken);
+
+                    startRefinerWorkflow(user.getIdentifier(), hints, renderToken);
                 }
             };
 
@@ -93,54 +139,135 @@ public class PersonalContextManagerService extends SystemService {
         publishBinderService(
                 PersonalContextManager.PERSONAL_CONTEXT_SERVICE, new BinderService(this));
         publishLocalService(PersonalContextManagerInternal.class, mInternalService);
-
-        mNotificationActionRenderer =
-                new NotificationActionRenderer(
-                        getContext(),
-                        getLocalService(NotificationManagerInternal.class),
-                        getContext().getPackageManager());
-
         Slog.i(TAG, "Personal Context Service started");
     }
 
     @Override
+    public void onUserStarting(@NonNull TargetUser user) {
+        final int userId = user.getUserIdentifier();
+        synchronized (mUserStates) {
+            final UserState oldState = mUserStates.get(userId);
+            if (oldState != null) {
+                Slog.w(TAG, "Cleaning up old state for starting user: " + userId);
+                oldState.cleanup();
+            }
+
+            Slog.i(TAG, "Creating new state for user " + userId);
+            Context userContext = getContext().createContextAsUser(user.getUserHandle(), 0);
+            final ContextComponentManager componentManager =
+                    new ContextComponentManager(userContext);
+            final ContextComponentMonitor monitor = new ContextComponentMonitor(componentManager);
+            final NotificationActionRenderer renderer =
+                    new NotificationActionRenderer(
+                            userContext,
+                            getLocalService(NotificationManagerInternal.class),
+                            userContext.getPackageManager());
+            mUserStates.put(userId, new UserState(componentManager, monitor, renderer));
+        }
+    }
+
+    @Override
     public void onUserUnlocked(@NonNull TargetUser user) {
-        if (mInitialRegistrationStarted) {
+        final int userId = user.getUserIdentifier();
+        Slog.i(TAG, "Unlocking user " + userId);
+
+        UserState userState;
+        synchronized (mUserStates) {
+            userState = mUserStates.get(userId);
+        }
+
+        if (userState == null) {
+            onUserStarting(user);
+            synchronized (mUserStates) {
+                userState = mUserStates.get(userId);
+            }
+            if (userState == null) {
+                Slog.e(TAG, "Failed to create UserState for unlocking user " + userId);
+                return;
+            }
+        }
+
+        final ContextComponentManager componentManager = userState.componentManager();
+
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Registering internal components for user " + userId);
+        }
+        componentManager.register(userState.notificationActionRenderer());
+
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Registering external components for user " + userId);
+        }
+        componentManager.registerComponentsForAllPackages();
+
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Starting package monitor for user " + userId);
+        }
+        userState
+                .monitor()
+                .register(
+                        getContext().createContextAsUser(user.getUserHandle(), 0),
+                        /* looper= */ null,
+                        user.getUserHandle(),
+                        /* externalStorage= */ false);
+    }
+
+    @Override
+    public void onUserStopping(@NonNull TargetUser user) {
+        final int userId = user.getUserIdentifier();
+        Slog.i(TAG, "Stopping user " + userId);
+        synchronized (mUserStates) {
+            final UserState userState = mUserStates.get(userId);
+            if (userState != null) {
+                userState.cleanup();
+            }
+            mUserStates.remove(userId);
+        }
+    }
+
+    @Nullable
+    private StatusBarNotification getSbnFromNotificationEvent(@NonNull NotificationEvent event) {
+        if (event instanceof NotificationEvent.NotificationEnqueuedEvent) {
+            return ((NotificationEvent.NotificationEnqueuedEvent) event).getStatusBarNotification();
+        } else if (event instanceof NotificationEvent.NotificationRemovedEvent) {
+            return ((NotificationEvent.NotificationRemovedEvent) event).getStatusBarNotification();
+        }
+        return null;
+    }
+
+    private void startRefinerWorkflow(
+            @UserIdInt int userId, Set<ContextHint> hints, RenderToken renderToken) {
+        final ContextComponentManager componentManager = getComponentManagerForUser(userId);
+        if (componentManager == null) {
+            Slog.w(TAG, "Cannot start refiner workflow, no component manager for user " + userId);
             return;
         }
 
-        mInitialRegistrationStarted = true;
-
-        if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Registering internal components");
-        // Register in-process components with mComponentManager.register() here.
-        mComponentManager.register(mNotificationActionRenderer);
-
-        if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Registering external components");
-        mComponentManager.registerComponentsForAllPackages();
-
-        if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Starting package monitor");
-        mMonitor.register(
-                getContext(),
-                /* looper= */ null,
-                /* user= */ UserHandle.CURRENT,
-                /* externalStorage= */ false);
-    }
-
-    private void startRefinerWorkflow(Set<ContextHint> hints, RenderToken renderToken) {
         RefinerWorkflow.start(
-                mComponentManager, hints, renderToken, /* eventListener= */ null, mExecutor);
+                componentManager,
+                hints,
+                renderToken,
+                HINT_SIGNING_KEY,
+                /* eventListener= */ null,
+                mExecutor);
     }
 
-    private void startInsightWorkflow(Set<ContextInsight> insights) {
+    private void startInsightWorkflow(@UserIdInt int userId, Set<ContextInsight> insights) {
         // TODO(b/452425186): Make this into a workflow like refiners.
+        final ContextComponentManager componentManager = getComponentManagerForUser(userId);
+        if (componentManager == null) {
+            Slog.w(TAG, "Cannot start insight workflow, no component manager for user " + userId);
+            return;
+        }
         try {
-            if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Insight workflow started");
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Slog.d(TAG, "Insight workflow started for user " + userId);
+            }
 
             for (ContextInsight insight : insights) {
                 if (Log.isLoggable(TAG, Log.DEBUG)) {
                     Slog.d(TAG, "Handling insight: " + insight);
                 }
-                for (Renderer renderer : mComponentManager.getRenderers()) {
+                for (Renderer renderer : componentManager.getRenderers()) {
                     if (Log.isLoggable(TAG, Log.DEBUG)) {
                         Slog.d(TAG, "Sending to renderer: " + renderer);
                     }
@@ -148,9 +275,21 @@ public class PersonalContextManagerService extends SystemService {
                 }
             }
 
-            if (Log.isLoggable(TAG, Log.DEBUG)) Slog.d(TAG, "Insight workflow complete");
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Slog.d(TAG, "Insight workflow complete for user " + userId);
+            }
         } catch (Exception e) {
-            Slog.e(TAG, "Insight workflow failed", e);
+            Slog.e(TAG, "Insight workflow failed for user " + userId, e);
+        }
+    }
+
+    /** Returns the component manager for the given user, for testing purposes. */
+    @VisibleForTesting
+    @Nullable
+    ContextComponentManager getComponentManagerForUser(@UserIdInt int userId) {
+        synchronized (mUserStates) {
+            final UserState userState = mUserStates.get(userId);
+            return userState != null ? userState.componentManager() : null;
         }
     }
 
@@ -170,30 +309,51 @@ public class PersonalContextManagerService extends SystemService {
             return service;
         }
 
-        @PermissionManuallyEnforced
-        @Override
-        public void publishTriggeringHint(List<ContextHintWrapper> hints, RenderToken renderToken) {
-            // TODO(b/450547433): Add security checks.
-            final long identity = BinderService.clearCallingIdentity();
-            try {
-                getService().startRefinerWorkflow(
-                        ContextHintWrapper.unwrapInto(hints, new HashSet<>()), renderToken);
-            } finally {
-                restoreCallingIdentity(identity);
+        private void verifyUser(@UserIdInt int userId) {
+            final int callingUserId = UserHandle.getCallingUserId();
+            if (userId != callingUserId) {
+                getService()
+                        .getContext()
+                        .enforceCallingPermission(
+                                android.Manifest.permission.INTERACT_ACROSS_USERS,
+                                "Cross-user interaction requires INTERACT_ACROSS_USERS. userId="
+                                        + userId
+                                        + " callingUserId="
+                                        + callingUserId);
             }
         }
 
         @PermissionManuallyEnforced
         @Override
-        public void publishInsight(List<ContextInsightWrapper> insights) {
+        public void publishTriggeringHint(
+                List<ContextHintWrapper> hints, RenderToken renderToken, int userId) {
+            verifyUser(userId);
+
             // TODO(b/450547433): Add security checks.
-            final long identity = BinderService.clearCallingIdentity();
-            try {
-                getService().startInsightWorkflow(
-                        ContextInsightWrapper.unwrapInto(insights, new HashSet<>()));
-            } finally {
-                restoreCallingIdentity(identity);
-            }
+            Binder.withCleanCallingIdentity(
+                    () -> {
+                        getService()
+                                .startRefinerWorkflow(
+                                        userId,
+                                        ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
+                                        renderToken);
+                    });
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void publishInsight(List<ContextInsightWrapper> insights, int userId) {
+            verifyUser(userId);
+
+            // TODO(b/450547433): Add security checks.
+            Binder.withCleanCallingIdentity(
+                    () -> {
+                        getService()
+                                .startInsightWorkflow(
+                                        userId,
+                                        ContextInsightWrapper.unwrapInto(
+                                                insights, new HashSet<>()));
+                    });
         }
 
         @PermissionManuallyEnforced
@@ -205,7 +365,14 @@ public class PersonalContextManagerService extends SystemService {
                 return;
             }
 
-            service.mComponentManager.dump(fout);
+            synchronized (service.mUserStates) {
+                for (int i = 0; i < service.mUserStates.size(); i++) {
+                    int userId = service.mUserStates.keyAt(i);
+                    fout.println("User " + userId + ":");
+                    UserState userState = service.mUserStates.valueAt(i);
+                    userState.componentManager().dump(fout);
+                }
+            }
         }
     }
 }

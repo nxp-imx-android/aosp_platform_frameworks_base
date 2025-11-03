@@ -3962,23 +3962,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 confirm);
     }
 
-    /** Update the current user. */
-    public void setCurrentUser(@UserIdInt int newUserId) {
-        if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) return;
-        synchronized (mGlobalLock) {
-            final TransitionController controller = mAtmService.getTransitionController();
-            final ActionChain chain = mAtmService.mChainTracker.startTransit("setUser");
-            if (!chain.isCollecting() && controller.isShellTransitionsEnabled()) {
-                chain.attachTransition(controller.createTransition(TRANSIT_OPEN));
-                controller.requestStartTransition(chain.getTransition(),
-                        null /* trigger */, null /* remote */, null /* disp */);
-            }
-            prepareUserStart(newUserId);
-            switchUserInternal(newUserId);
-            mAtmService.mChainTracker.end();
-        }
-    }
-
     /**
      * Called when a new user is about to start.
      */
@@ -4041,16 +4024,19 @@ public class WindowManagerService extends IWindowManager.Stub
                         ? forcedDensity : displayContent.getInitialDisplayDensity();
                 displayContent.setForcedDensity(targetDensity, UserHandle.USER_CURRENT);
 
-                // Because DisplayWindowSettingsProvider.mOverrideSettings has been reset for
-                // the new user, we need to update DisplayWindowSettings.mShouldShowSystemDecors
-                // to ensure it reflects the latest value.
-                if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                    final int displayCount = mRoot.mChildren.size();
-                    for (int i = 0; i < displayCount; ++i) {
-                        final DisplayContent dc = mRoot.mChildren.get(i);
-                        dc.updateShouldShowSystemDecorations();
+                mRoot.forAllDisplays(display -> {
+                    if (Flags.moveUserDisplaySettingsToDeStorage()) {
+                        mDisplayWindowSettings.applySettingsToDisplayLocked(display);
+                        display.reconfigureDisplayLocked();
                     }
-                }
+
+                    // Because DisplayWindowSettingsProvider.mOverrideSettings has been reset for
+                    // the new user, we need to update DisplayWindowSettings.mShouldShowSystemDecors
+                    // to ensure it reflects the latest value.
+                    if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+                        display.updateShouldShowSystemDecorations();
+                    }
+                });
             }
         }
     }

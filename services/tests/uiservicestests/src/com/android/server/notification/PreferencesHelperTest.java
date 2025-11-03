@@ -446,6 +446,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         assertEquals(expected.getParentChannelId(), actual.getParentChannelId());
         assertEquals(expected.getConversationId(), actual.getConversationId());
         assertEquals(expected.isDemoted(), actual.isDemoted());
+        assertEquals(false, actual.isBundleChannel());
     }
 
     private void compareChannelsParentChild(NotificationChannel parent,
@@ -628,6 +629,14 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         channel2.setConversationId("id1", "conversation");
         channel2.setDemoted(true);
 
+        NotificationChannel dynamicBundle =
+                new NotificationChannel("dynamic", "dynamic", IMPORTANCE_LOW);
+        if (android.app.Flags.nmContextualDisplay()) {
+            dynamicBundle.setIsBundleChannel(true);
+            assertTrue(mHelper.createNotificationChannel(PKG_P, UID_P, dynamicBundle, false, false,
+                    1000, true));
+        }
+
         mHelper.createNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, ncg, true,
                 UID_N_MR1, false);
         mHelper.createNotificationChannelGroup(PKG_N_MR1, UID_N_MR1, ncg2, true,
@@ -638,7 +647,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 UID_N_MR1, false));
 
         NotificationChannel updateNews = null;
-        mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_NEWS);
+        mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_NEWS, "news");
         // change one of the reserved bundle channels to ensure changes are not persisted
         // across boot
         updateNews = mHelper.getNotificationChannel(
@@ -668,6 +677,16 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 false)).isEqualTo(updateNews);
         assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
                 false).getImportance()).isEqualTo(IMPORTANCE_LOW);
+
+        if (android.app.Flags.nmContextualDisplay()) {
+            assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, dynamicBundle.getId(),
+                    false).getImportance()).isEqualTo(IMPORTANCE_LOW);
+            assertThat(mXmlHelper.getNotificationChannel(PKG_P, UID_P, dynamicBundle.getId(),
+                    false).isBundleChannel()).isTrue();
+
+            assertThat(mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, updateNews.getId(),
+                    false).isBundleChannel()).isTrue();
+        }
 
         List<NotificationChannelGroup> actualGroups = mXmlHelper.getNotificationChannelGroups(
                 PKG_N_MR1, UID_N_MR1,
@@ -3066,7 +3085,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testOnlyHasDefaultChannel_bundleExists() throws Exception {
-        mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_NEWS);
+        mHelper.createReservedChannel(PKG_N_MR1, UID_N_MR1, TYPE_NEWS, "news");
         assertTrue(mHelper.onlyHasDefaultChannel(PKG_N_MR1, UID_N_MR1));
         assertFalse(mHelper.onlyHasDefaultChannel(PKG_O, UID_O));
 
@@ -6468,46 +6487,58 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testGetNotificationChannels_omitBundleChannels() {
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS, "news");
 
         assertThat(mHelper.getNotificationChannels(PKG_O, UID_O, true, false).getList()).isEmpty();
     }
 
     @Test
     public void testNotificationBundles() {
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
-        assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, NEWS_ID, false).getImportance())
-                .isEqualTo(IMPORTANCE_LOW);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS, "news");
+        NotificationChannel actual = mHelper.getNotificationChannel(PKG_O, UID_O, NEWS_ID, false);
+        assertThat(actual.getImportance()).isEqualTo(IMPORTANCE_LOW);
         assertThat(mHelper.getNotificationChannels(PKG_O, UID_O, true, true).getList().size())
                 .isEqualTo(1);
+        if (android.app.Flags.nmContextualDisplay()) {
+            assertThat(actual.isBundleChannel()).isTrue();
+        }
 
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_SOCIAL_MEDIA);
-        assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, SOCIAL_MEDIA_ID, false).
-                getImportance()).isEqualTo(IMPORTANCE_LOW);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_SOCIAL_MEDIA, "social");
+        actual = mHelper.getNotificationChannel(PKG_O, UID_O, SOCIAL_MEDIA_ID, false);
+        assertThat(actual.getImportance()).isEqualTo(IMPORTANCE_LOW);
         assertThat(mHelper.getNotificationChannels(PKG_O, UID_O, true, true).getList().size())
                 .isEqualTo(2);
+        if (android.app.Flags.nmContextualDisplay()) {
+            assertThat(actual.isBundleChannel()).isTrue();
+        }
 
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_CONTENT_RECOMMENDATION);
-        assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, RECS_ID, false).getImportance())
-                .isEqualTo(IMPORTANCE_LOW);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_CONTENT_RECOMMENDATION, "recs");
+        actual = mHelper.getNotificationChannel(PKG_O, UID_O, RECS_ID, false);
+        assertThat(actual.getImportance()).isEqualTo(IMPORTANCE_LOW);
         assertThat(mHelper.getNotificationChannels(PKG_O, UID_O, true, true).getList().size())
                 .isEqualTo(3);
+        if (android.app.Flags.nmContextualDisplay()) {
+            assertThat(actual.isBundleChannel()).isTrue();
+        }
 
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_PROMOTION);
-        assertThat(mHelper.getNotificationChannel(PKG_O, UID_O, PROMOTIONS_ID, false)
-                .getImportance()).isEqualTo(IMPORTANCE_LOW);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_PROMOTION, "promos");
+        actual = mHelper.getNotificationChannel(PKG_O, UID_O, PROMOTIONS_ID, false);
+        assertThat(actual.getImportance()).isEqualTo(IMPORTANCE_LOW);
         assertThat(mHelper.getNotificationChannels(PKG_O, UID_O, true, true).getList().size())
                 .isEqualTo(4);
+        if (android.app.Flags.nmContextualDisplay()) {
+            assertThat(actual.isBundleChannel()).isTrue();
+        }
 
         // only the first 4 types are created; no others
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_OTHER);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_OTHER, "other");
         assertThat(mHelper.getNotificationChannels(PKG_O, UID_O, true, true).getList().size())
                 .isEqualTo(4);
     }
 
     @Test
     public void testNotificationBundles_appsCannotUpdate() {
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS, "news");
 
         NotificationChannel fromApp =
                 new NotificationChannel(NEWS_ID, "The best channel", IMPORTANCE_HIGH);
@@ -6519,7 +6550,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testNotificationBundles_osCanAllowToBypassDnd() {
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS, "news");
 
         NotificationChannel fromApp =
                 new NotificationChannel(NEWS_ID, "The best channel", IMPORTANCE_HIGH);
@@ -6528,17 +6559,17 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     public void testUpdateReservedChannels_disableAndEnable() {
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS);
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_SOCIAL_MEDIA);
-        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_CONTENT_RECOMMENDATION);
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_NEWS, "news");
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_SOCIAL_MEDIA, "social");
+        mHelper.createReservedChannel(PKG_O, UID_O, TYPE_CONTENT_RECOMMENDATION, "recs");
 
         // other userId also changed in the process
         int alsoChangedUid = UserHandle.getUid(20, UserHandle.getAppId(UID_O));
-        mHelper.createReservedChannel(PKG_O, alsoChangedUid, TYPE_NEWS);
+        mHelper.createReservedChannel(PKG_O, alsoChangedUid, TYPE_NEWS, "news");
 
         // Also create some for other users, same package; make sure those are not affected.
         int otherUserUid = UserHandle.getUid(15, UserHandle.getAppId(UID_O));
-        mHelper.createReservedChannel(PKG_O, otherUserUid, TYPE_SOCIAL_MEDIA);
+        mHelper.createReservedChannel(PKG_O, otherUserUid, TYPE_SOCIAL_MEDIA, "social");
 
 
         // Ban news & social media types, leave recs as-is

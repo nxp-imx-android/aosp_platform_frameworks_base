@@ -20,23 +20,16 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-import android.platform.test.ravenwood.RavenwoodRule;
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import java.util.IdentityHashMap;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,8 +39,6 @@ import java.util.ArrayList;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class ParcelTest {
-    @Rule public final RavenwoodRule mRavenwood = new RavenwoodRule();
-
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 

@@ -75,10 +75,18 @@ constructor(
 
     override val lockoutMessageId = R.string.kg_too_many_failed_password_attempts_dialog_message
 
+    override val _readyToTryAuthenticate = MutableStateFlow(false)
+
     val isMoreIndicatorsAndButtonsEnabled: Boolean
         get() =
             Flags.moreIndicatorsAndButtonsOnPasswordBouncer() &&
                 interactor.isImproveLargeScreenInteractionEnabled
+
+    /**
+     * Only request that the Bouncer overlay displays a sign-in button on the bottom bar if enabled
+     * by Flag & aconfig.
+     */
+    override val showSignInButton = isMoreIndicatorsAndButtonsEnabled
 
     private val _isImeSwitcherButtonVisible = MutableStateFlow(false)
     /** Informs the UI whether the input method switcher button should be visible. */
@@ -161,6 +169,7 @@ constructor(
                 launch {
                     snapshotFlow { textFieldState.text.toString() }
                         .collect {
+                            _readyToTryAuthenticate.value = determineIsReadyToAuthenticate()
                             if (it.isNotEmpty()) {
                                 onIntentionalUserInput()
                             }
@@ -236,7 +245,7 @@ constructor(
 
     /** Notifies that the user has pressed the key for attempting to authenticate the password. */
     fun onAuthenticateKeyPressed() {
-        if (textFieldState.text.isNotEmpty()) {
+        if (determineIsReadyToAuthenticate()) {
             tryAuthenticate()
         }
     }
@@ -255,6 +264,10 @@ constructor(
         return transitionState.isIdle() &&
             Overlays.Bouncer in transitionState.currentOverlays &&
             transitionState.currentScene == Scenes.Lockscreen
+    }
+
+    fun determineIsReadyToAuthenticate(): Boolean {
+        return !textFieldState.text.isEmpty()
     }
 
     @AssistedFactory

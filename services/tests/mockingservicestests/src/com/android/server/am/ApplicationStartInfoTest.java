@@ -134,8 +134,6 @@ public class ApplicationStartInfoTest {
                 Clock.SYSTEM_CLOCK.elapsedRealtime(), Clock.SYSTEM_CLOCK);
         mAppStartInfoTracker.clearProcessStartInfo(true);
         mAppStartInfoTracker.mAppStartInfoLoaded.set(true);
-        mAppStartInfoTracker.mAppStartInfoHistoryListSize =
-                mAppStartInfoTracker.APP_START_INFO_HISTORY_LIST_SIZE;
         doNothing().when(mAppStartInfoTracker).schedulePersistProcessStartInfo(anyBoolean());
 
         mAppStartInfoTracker.mProcStartStoreDir = new File(mContext.getFilesDir(),

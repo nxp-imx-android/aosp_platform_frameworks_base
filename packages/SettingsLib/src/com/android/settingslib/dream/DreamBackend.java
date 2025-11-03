@@ -219,15 +219,13 @@ public class DreamBackend {
                 continue;
             }
 
-            DreamInfo dreamInfo = new DreamInfo();
-            dreamInfo.caption = resolveInfo.loadLabel(pm);
-            dreamInfo.icon = resolveInfo.loadIcon(pm);
-            dreamInfo.description = getDescription(resolveInfo, pm);
-            dreamInfo.componentName = componentName;
-            dreamInfo.isActive = dreamInfo.componentName.equals(activeDream);
-
             final DreamService.DreamMetadata dreamMetadata = DreamService.getDreamMetadata(
                     mContext.getPackageManager(), resolveInfo.serviceInfo);
+            if (dreamMetadata != null && !dreamMetadata.userSelectable) {
+                continue;
+            }
+
+            DreamInfo dreamInfo = new DreamInfo();
             if (dreamMetadata != null) {
                 dreamInfo.settingsComponentName = dreamMetadata.settingsActivity;
                 dreamInfo.previewImage = dreamMetadata.previewImage;
@@ -235,6 +233,12 @@ public class DreamBackend {
                 dreamInfo.dreamCategory = dreamMetadata.dreamCategory;
                 dreamInfo.userSelectable = dreamMetadata.userSelectable;
             }
+            dreamInfo.caption = resolveInfo.loadLabel(pm);
+            dreamInfo.icon = resolveInfo.loadIcon(pm);
+            dreamInfo.description = getDescription(resolveInfo, pm);
+            dreamInfo.componentName = componentName;
+            dreamInfo.isActive = dreamInfo.componentName.equals(activeDream);
+
             dreamInfos.add(dreamInfo);
         }
         dreamInfos.sort(mComparator);

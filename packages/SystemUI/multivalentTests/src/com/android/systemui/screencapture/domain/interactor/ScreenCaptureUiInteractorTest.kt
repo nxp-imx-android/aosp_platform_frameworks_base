@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.domain.interactor
 import android.content.pm.UserInfo
 import android.os.UserHandle
 import android.platform.test.flag.junit.SetFlagsRule
+import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -38,6 +39,7 @@ import org.mockito.Mockito.`when` as whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@TestableLooper.RunWithLooper(setAsMainLooper = true)
 class ScreenCaptureUiInteractorTest : SysuiTestCase() {
 
     @get:Rule val setFlagsRule = SetFlagsRule()
@@ -47,20 +49,33 @@ class ScreenCaptureUiInteractorTest : SysuiTestCase() {
     private val underTest by lazy { kosmos.screenCaptureUiInteractor }
 
     @Test
-    fun screenCaptureDisabledByPolicyDoesNotUpdateRepository() =
+    fun show_whenScreenCaptureDisabledByPolicy_doesNotUpdateVisibility() =
         kosmos.runTest {
             val uiState by collectLastValue(underTest.uiState(ScreenCaptureType.RECORD))
 
-            val devicePolicyResolver = kosmos.mockDevicePolicyResolver
-            whenever(devicePolicyResolver.isScreenCaptureCompletelyDisabled(UserHandle.of(USER_ID)))
+            whenever(
+                    mockDevicePolicyResolver.isScreenCaptureCompletelyDisabled(
+                        UserHandle.of(USER_ID)
+                    )
+                )
                 .thenReturn(true)
 
             val userInfo = UserInfo(USER_ID, "test user", 0)
-            kosmos.fakeUserRepository.setUserInfos(listOf(userInfo))
-            kosmos.fakeUserRepository.setSelectedUserInfo(userInfo)
+            fakeUserRepository.setUserInfos(listOf(userInfo))
+            fakeUserRepository.setSelectedUserInfo(userInfo)
 
             underTest.show(ScreenCaptureUiParameters.Record())
             assertThat(uiState).isEqualTo(ScreenCaptureUiState.Invisible)
+        }
+
+    @Test
+    fun isVisible_returnsTrueWhenVisible() =
+        kosmos.runTest {
+            assertThat(underTest.isVisible(ScreenCaptureType.RECORD)).isFalse()
+
+            underTest.show(ScreenCaptureUiParameters.Record())
+
+            assertThat(underTest.isVisible(ScreenCaptureType.RECORD)).isTrue()
         }
 
     companion object {

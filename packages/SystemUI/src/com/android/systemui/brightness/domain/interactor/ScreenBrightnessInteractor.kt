@@ -18,19 +18,19 @@ package com.android.systemui.brightness.domain.interactor
 
 import com.android.settingslib.display.BrightnessUtils
 import com.android.systemui.brightness.data.repository.ScreenBrightnessRepository
-import com.android.systemui.brightness.shared.model.BrightnessLog
+import com.android.systemui.brightness.shared.BrightnessLog
 import com.android.systemui.brightness.shared.model.GammaBrightness
 import com.android.systemui.brightness.shared.model.LinearBrightness
 import com.android.systemui.brightness.shared.model.logDiffForTable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.table.TableLogBuffer
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 
 /**
  * Converts between [GammaBrightness] and [LinearBrightness].
@@ -57,11 +57,10 @@ constructor(
      */
     val gammaBrightness: Flow<GammaBrightness> =
         with(screenBrightnessRepository) {
-            combine(
-                    linearBrightness,
-                    minLinearBrightness,
-                    maxLinearBrightness,
-                ) { brightness, min, max ->
+            combine(linearBrightness, minLinearBrightness, maxLinearBrightness) {
+                    brightness,
+                    min,
+                    max ->
                     brightness.toGammaBrightness(min, max)
                 }
                 .logDiffForTable(tableBuffer, TABLE_PREFIX_GAMMA, TABLE_COLUMN_BRIGHTNESS, null)
@@ -88,7 +87,7 @@ constructor(
             BrightnessUtils.convertGammaToLinearFloat(
                 value,
                 bounds.first.floatValue,
-                bounds.second.floatValue
+                bounds.second.floatValue,
             )
         )
     }

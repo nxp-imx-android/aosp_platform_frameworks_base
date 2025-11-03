@@ -16,8 +16,10 @@
 
 package com.android.settingslib.safetycenter
 
+import android.app.PendingIntent
 import android.safetycenter.SafetyCenterEntry
 import android.safetycenter.SafetyCenterIssue
+import android.safetycenter.SafetyCenterStaticEntry
 import android.safetycenter.SafetyCenterStatus
 
 /**
@@ -25,38 +27,55 @@ import android.safetycenter.SafetyCenterStatus
  *
  * @property status The overall status of the Safety Center.
  * @property entriesByUserIdAndSourceId A map where the key is the user ID (Int) and the value is
- *     another map, keyed by safety source ID (String) to the SafetyCenterEntry.
- * @property activeIssuesBySourceId A map grouping lists of active SafetyCenterIssue
- *     objects by their safety source ID.
- * @property dismissedIssuesBySourceId A map grouping lists of dismissed SafetyCenterIssue
- *     objects by their safety source ID.
+ *   another map, keyed by safety source ID (String) to the SafetyCenterEntry.
+ * @property staticEntriesByUserIdAndSourceId A map for static entries, structured like
+ *   entriesByUserIdAndSourceId.
+ * @property activeIssuesBySourceId A map grouping lists of active SafetyCenterIssue objects by
+ *   their safety source ID.
+ * @property dismissedIssuesBySourceId A map grouping lists of dismissed SafetyCenterIssue objects
+ *   by their safety source ID.
  */
 data class SafetyCenterUiData(
     val status: SafetyCenterStatus,
     val entriesByUserIdAndSourceId: Map<Int, Map<String, SafetyCenterEntry>>,
+    val staticEntriesByUserIdAndSourceId: Map<Int, Map<String, SafetyCenterStaticEntry>>,
     val activeIssuesBySourceId: Map<String, List<SafetyCenterIssue>>,
     val dismissedIssuesBySourceId: Map<String, List<SafetyCenterIssue>>,
+    val resolvedIssues: Map<String, String> = emptyMap(),
 ) {
 
     /**
-     * Retrieves a specific SafetyCenterEntry for a given user and source ID.
-     *
-     * @param userId The ID of the user.
-     * @param sourceId The safety source ID of the entry.
-     * @return The matching SafetyCenterEntry, or null if not found.
+     * Creates a copy of this [SafetyCenterUiData] with the provided [resolvedIssues].
      */
-    fun getEntry(userId: Int, sourceId: String): SafetyCenterEntry? {
-        return entriesByUserIdAndSourceId[userId]?.get(sourceId)
+    fun copyWithResolvedIssues(resolvedIssues: Map<String, String>): SafetyCenterUiData {
+        return this.copy(resolvedIssues = resolvedIssues)
     }
 
     /**
-     * Retrieves all entries across all profiles that are associated with
-     * any of the provided safety source IDs.
+     * Retrieves a specific SafetyCenterUiEntry for a given user and source ID. It first checks
+     * dynamic entries and then falls back to static entries.
+     *
+     * @param userId The ID of the user.
+     * @param sourceId The safety source ID of the entry.
+     * @return The matching SafetyCenterUiEntry, or null if not found in dynamic or static entries.
+     */
+    fun getEntry(userId: Int, sourceId: String): SafetyCenterUiEntry? {
+        return entriesByUserIdAndSourceId[userId]?.get(sourceId)?.let {
+            SafetyCenterUiEntry.fromSafetyCenterEntry(it)
+        }
+            ?: staticEntriesByUserIdAndSourceId[userId]?.get(sourceId)?.let {
+                SafetyCenterUiEntry.fromSafetyCenterStaticEntry(it)
+            }
+    }
+
+    /**
+     * Retrieves all dynamic entries across all profiles that are associated with any of the
+     * provided safety source IDs.
      *
      * @param sourceIds A list defining the safety source IDs to filter by.
      * @return A list of matching SafetyCenterEntry objects.
      */
-    fun getEntriesForSources(sourceIds: List<String>): List<SafetyCenterEntry> {
+    fun getDynamicEntriesForSources(sourceIds: List<String>): List<SafetyCenterEntry> {
         return entriesByUserIdAndSourceId.values
             .flatMap { sourceIdToEntryMap -> sourceIdToEntryMap.values }
             .filter { entry -> sourceIds.contains(entry.safetySourceId) }
@@ -65,29 +84,24 @@ data class SafetyCenterUiData(
     /**
      * Retrieves all active issues across all profiles, sorted by severity and source ID order.
      *
-     * @param sourceIdsOrder An optional list defining the preferred order
-     *      of safety source IDs for secondary sorting.
+     * @param sourceIdsOrder An optional list defining the preferred order of safety source IDs for
+     *   secondary sorting.
      * @return A sorted list of all active SafetyCenterIssue objects.
      */
-    fun getActiveIssues(
-        sourceIdsOrder: List<String> = emptyList(),
-    ): List<SafetyCenterIssue> {
+    fun getActiveIssues(sourceIdsOrder: List<String> = emptyList()): List<SafetyCenterIssue> {
         val allIssues = activeIssuesBySourceId.values.flatten().distinct()
         return allIssues.sortedWith(issueComparator(sourceIdsOrder))
     }
 
     /**
-     * Retrieves active issues across all profiles that are associated with
-     * any of the provided safety source IDs.
-     * The results are sorted by severity and the provided source ID order.
+     * Retrieves active issues across all profiles that are associated with any of the provided
+     * safety source IDs. The results are sorted by severity and the provided source ID order.
      *
-     * @param sourceIdsOrder A list defining the safety source IDs to filter
-     *      by and their preferred order for secondary sorting.
+     * @param sourceIdsOrder A list defining the safety source IDs to filter by and their preferred
+     *   order for secondary sorting.
      * @return A sorted list of matching active SafetyCenterIssue objects.
      */
-    fun getActiveIssuesForSources(
-        sourceIdsOrder: List<String>,
-    ): List<SafetyCenterIssue> {
+    fun getActiveIssuesForSources(sourceIdsOrder: List<String>): List<SafetyCenterIssue> {
         val relevantIssues =
             sourceIdsOrder
                 .flatMap { sourceId -> activeIssuesBySourceId[sourceId] ?: emptyList() }
@@ -96,17 +110,14 @@ data class SafetyCenterUiData(
     }
 
     /**
-     * Retrieves dismissed issues across all profiles that are associated with
-     * any of the provided safety source IDs.
-     * The results are sorted by severity and the provided source ID order.
+     * Retrieves dismissed issues across all profiles that are associated with any of the provided
+     * safety source IDs. The results are sorted by severity and the provided source ID order.
      *
-     * @param sourceIdsOrder A list defining the safety source IDs to filter
-     *      by and their preferred order for secondary sorting.
+     * @param sourceIdsOrder A list defining the safety source IDs to filter by and their preferred
+     *   order for secondary sorting.
      * @return A sorted list of matching dismissed SafetyCenterIssue objects.
      */
-    fun getDismissedIssuesForSources(
-        sourceIdsOrder: List<String>,
-    ): List<SafetyCenterIssue> {
+    fun getDismissedIssuesForSources(sourceIdsOrder: List<String>): List<SafetyCenterIssue> {
         val relevantIssues =
             sourceIdsOrder
                 .flatMap { sourceId -> dismissedIssuesBySourceId[sourceId] ?: emptyList() }
@@ -123,27 +134,57 @@ data class SafetyCenterUiData(
             )
 
         /**
-         * Comparator for sorting SafetyCenterIssue objects.
-         * Issues are sorted primarily by severity (Critical > Recommendation > OK).
-         * Secondary sorting is based on the order of safety source IDs
-         * provided in `sourceIdsOrder`.
-         * An issue's position in the secondary sort is determined by the lowest index
-         * of any of its associated safetySourceIds within the `sourceIdsOrder` list.
-         * This comparator provides a stable sort.
+         * Comparator for sorting SafetyCenterIssue objects. Issues are sorted primarily by severity
+         * (Critical > Recommendation > OK). Secondary sorting is based on the order of safety
+         * source IDs provided in `sourceIdsOrder`. An issue's position in the secondary sort is
+         * determined by the lowest index of any of its associated safetySourceIds within the
+         * `sourceIdsOrder` list. This comparator provides a stable sort.
          */
         private fun issueComparator(sourceIdsOrder: List<String>): Comparator<SafetyCenterIssue> {
             return compareBy<SafetyCenterIssue> {
-                SEVERITY_ORDER[it.severityLevel] ?: Int.MAX_VALUE
-            }
-                .thenBy { issue ->
-                    issue.safetySourceIds
-                        .minOfOrNull { sourceId ->
-                            sourceIdsOrder.indexOf(sourceId).let { index ->
-                                if (index == -1) Int.MAX_VALUE else index
-                            }
-                        }
-                        ?: Int.MAX_VALUE
+                    SEVERITY_ORDER[it.severityLevel] ?: Int.MAX_VALUE
                 }
+                .thenBy { issue ->
+                    issue.safetySourceIds.minOfOrNull { sourceId ->
+                        sourceIdsOrder.indexOf(sourceId).let { index ->
+                            if (index == -1) Int.MAX_VALUE else index
+                        }
+                    } ?: Int.MAX_VALUE
+                }
+        }
+    }
+}
+
+/**
+ * Represents a unified view of a safety entry, abstracting away whether it came from a dynamic or
+ * static source.
+ *
+ * @property title The title of the entry.
+ * @property summary The summary text of the entry.
+ * @property pendingIntent The PendingIntent to fire when the entry is clicked.
+ */
+data class SafetyCenterUiEntry(
+    val title: CharSequence,
+    val summary: CharSequence?,
+    val pendingIntent: PendingIntent?,
+) {
+    companion object {
+        /** Creates a [SafetyCenterUiEntry] from a [SafetyCenterEntry]. */
+        fun fromSafetyCenterEntry(entry: SafetyCenterEntry): SafetyCenterUiEntry {
+            return SafetyCenterUiEntry(
+                title = entry.title,
+                summary = entry.summary,
+                pendingIntent = entry.pendingIntent,
+            )
+        }
+
+        /** Creates a [SafetyCenterUiEntry] from a [SafetyCenterStaticEntry]. */
+        fun fromSafetyCenterStaticEntry(entry: SafetyCenterStaticEntry): SafetyCenterUiEntry {
+            return SafetyCenterUiEntry(
+                title = entry.title,
+                summary = entry.summary,
+                pendingIntent = entry.pendingIntent,
+            )
         }
     }
 }

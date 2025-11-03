@@ -120,6 +120,7 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
+import com.android.wm.shell.transition.TransitionLeashManager;
 import com.android.wm.shell.transition.Transitions;
 
 import com.google.android.msdl.domain.MSDLPlayer;
@@ -939,7 +940,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT)
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
     public void startIntent_onNonDefaultDisplay_updatesSplitLayoutConfiguration() {
         // Setup: Define a non-default display and its configuration.
         final int nonDefaultDisplayId = DEFAULT_DISPLAY + 1;
@@ -972,7 +973,8 @@ public class StageCoordinatorTests extends ShellTestCase {
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
                 mTaskOrganizer, mTransactionPool, mock(DisplayController.class),
                 mDisplayInsetsController, mMainExecutor, mMainHandler, mAnimExecutor,
-                mock(HomeTransitionObserver.class), mock(FocusTransitionObserver.class));
+                mock(TransitionLeashManager.class), mock(HomeTransitionObserver.class),
+                mock(FocusTransitionObserver.class));
         shellInit.init();
         return t;
     }

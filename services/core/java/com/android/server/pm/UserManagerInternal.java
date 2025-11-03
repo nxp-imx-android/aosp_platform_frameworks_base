@@ -648,14 +648,18 @@ public abstract class UserManagerInternal {
     public abstract boolean isHeadlessSystemUserMode();
 
     /**
-     * Checks if the given activity can be launched for the
-     * {@link UserManager#isHeadlessSystemUserMode() Headless System User}.
+     * Gets the {@link UserActivitiesAllowlist} for the given user type.
+     *
+     * <p>If the type doesn't have an allowlist it returns {@code null}, meaning any activity can
+     * be launched for such type.
      */
-    public abstract boolean isActivityAllowlistedForHsu(ComponentName activity);
+    public abstract @Nullable UserActivitiesAllowlist getActivitiesAllowlist(String userType);
 
     // TODO(b/414326600): for now it's only using different methods for launched and blocked
     // activities, but once the allowlist logging mechanism is properly designed, it should pass
     // some sort of @HsuUiActionResult int result instead
+    // TODO(b/414326600, 412177078): also, it might be better to be a generic "forUserType" method
+    // (to be consistent with isActivityAllowlisted(...) above).
     /** Logs an activity launched in the headless system user */
     public abstract void logLaunchedHsuActivity(ComponentName activity);
     /** Logs an activity blocked in the headless system user */

@@ -232,7 +232,7 @@ public final class NotificationRecord {
     private boolean mCanceledAfterLifetimeExtension = false;
 
     // type of the bundle if the notification was classified
-    private @Adjustment.Types int mBundleType = Adjustment.TYPE_OTHER;
+    private int mBundleType = Adjustment.TYPE_OTHER;
 
     private String mSummarization = null;
 
@@ -871,7 +871,7 @@ public final class NotificationRecord {
                 }
                 if (signals.containsKey(KEY_TYPE) && !keysToSkip.contains(KEY_TYPE)) {
                     // Store original channel visibility before re-assigning channel
-                    if (!NotificationChannel.SYSTEM_RESERVED_IDS.contains(mChannel.getId())) {
+                    if (!mChannel.isBundleChannel()) {
                         setOriginalChannelVisibility(mChannel.getLockscreenVisibility());
                     }
                     updateNotificationChannel(signals.getParcelable(KEY_TYPE,
@@ -1723,11 +1723,11 @@ public final class NotificationRecord {
         mCanceledAfterLifetimeExtension = canceledAfterLifetimeExtension;
     }
 
-    public @Adjustment.Types int getBundleType() {
+    public int getBundleType() {
         return mBundleType;
     }
 
-    public void setBundleType(@Adjustment.Types int bundleType) {
+    public void setBundleType(int bundleType) {
         mBundleType = bundleType;
     }
 

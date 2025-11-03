@@ -340,7 +340,7 @@
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"আপনার পরিচিতি অ্যাক্সেস করুন এবং আপনার যেসব অ্যাকাউন্ট এই ডিভাইসে পরিচিতি সেভ করতে পারে সেগুলির তালিকা দেখুন"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"লোকেশন"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"এই ডিভাইসের লোকেশন অ্যাক্সেস"</string>
-    <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
+    <string name="permgrouplab_calendar" msgid="6426860926123033230">"ক্যালেন্ডার"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"আপনার ক্যালেন্ডারে অ্যাক্সেস"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"SMS"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"এসএমএসগুলি পাঠাতে এবং দেখতে"</string>
@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"এটির ফলে অ্যাপ আশপাশের ওয়াই-ফাই ডিভাইসের তথ্য দেখতে, তাদের সাথে কানেক্ট করতে এবং তা কত দূরত্বে আছে সেটি জানতে পারবে"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"লোকাল নেটওয়ার্ক ডিভাইসে অ্যাক্সেস"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"অ্যাপকে লোকাল নেটওয়ার্ক ডিভাইস অ্যাক্সেস করার অনুমতি দেয়"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"আশেপাশের ডিভাইসের আপেক্ষিক অবস্থান নির্ণয় করুন"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"অ্যাপকে আশেপাশের ডিভাইসের আপেক্ষিক অবস্থান নির্ণয় করার অনুমতি দিন"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"পছন্দের NFC পেমেন্ট পরিষেবার তথ্য"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"আনলক করতে পিন লিখুন"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ভুল পিন কোড৷"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"আনলক করতে, মেনু টিপুন তারপর ০ টিপুন৷"</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"জরুরী নম্বর"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"কোনও পরিষেবা নেই"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"স্ক্রীণ লক করা আছে৷"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"আনলক করতে বা জরুরি কল করতে মেনু টিপুন৷"</string>
@@ -1277,8 +1280,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"ক্রিয়াকলাপ সম্পূর্ণ করুন"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"এর মাধ্যমে খুলুন"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s দিয়ে খুলুন"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"<xliff:g id="APP_NAME">%1$s</xliff:g> খুলুন"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"খুলুন"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"এই ব্রাউজারে <xliff:g id="HOST">%1$s</xliff:g> লিঙ্কটি খুলুন"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"এই ব্রাউজারে লিঙ্কটি খুলুন"</string>

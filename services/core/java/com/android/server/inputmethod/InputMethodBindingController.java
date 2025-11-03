@@ -46,7 +46,6 @@ import android.util.EventLog;
 import android.util.Slog;
 import android.view.Display;
 import android.view.WindowManager;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -472,8 +471,6 @@ final class InputMethodBindingController {
                     // should now try to restart the service for us.
                     mLastBindTime = SystemClock.uptimeMillis();
                     clearCurMethodAndSessions();
-                    final var userData = mService.getUserData(mUserId);
-                    userData.mVisibilityStateComputer.setInputShown(false);
                     mService.unbindCurrentClientLocked(UnbindReason.DISCONNECT_IME, mUserId);
                 }
             }
@@ -520,11 +517,9 @@ final class InputMethodBindingController {
 
     @GuardedBy("ImfLock.class")
     private void clearCurMethodAndSessions() {
-        if (Flags.reportAnimatingInsetsTypes()) {
-            final var userData = mService.getUserData(mUserId);
-            userData.mVisibilityStateComputer.setInputShown(false);
-        }
-        mService.clearClientSessionsLocked(this);
+        final var userData = mService.getUserData(mUserId);
+        userData.mVisibilityStateComputer.setInputShown(false);
+        mService.clearClientSessionsLocked(mUserId);
         mCurMethod = null;
         mCurMethodUid = Process.INVALID_UID;
     }
@@ -614,7 +609,14 @@ final class InputMethodBindingController {
             Slog.e(TAG, "--- bind failed: service = " + mCurIntent + ", conn = " + conn);
             return false;
         }
-        return mContext.bindServiceAsUser(mCurIntent, conn, flags, new UserHandle(mUserId));
+        final boolean hasBound = mContext.bindServiceAsUser(mCurIntent, conn, flags,
+                new UserHandle(mUserId));
+        if (!hasBound) {
+            Slog.e(TAG, "--- bind failed: service = " + mCurIntent + ", conn = " + conn);
+            // As per javadoc, unbind even if the binding failed.
+            mContext.unbindService(conn);
+        }
+        return hasBound;
     }
 
     @GuardedBy("ImfLock.class")

@@ -641,6 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"允許應用程式向附近的 Wi-Fi 裝置顯示此裝置、連接這些裝置並判斷其相對位置"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"存取本地網絡裝置"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"允許應用程式存取本地網絡裝置"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"使用迴環介面"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"允許應用程式透過迴環介面與其他應用程式互動"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"判斷附近裝置之間的相對位置"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"允許應用程式判斷附近裝置之間的相對位置"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"由用戶允許授權的 NFC 付款服務資訊"</string>
@@ -1043,7 +1045,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"輸入 PIN 碼即可解鎖"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN 碼不正確。"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"如要解鎖，請按選單鍵，然後按 0。"</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"緊急電話號碼"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"沒有服務"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"螢幕已鎖定。"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"按選單鍵解鎖或撥打緊急電話。"</string>
@@ -1277,8 +1278,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"完成操作"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"選擇開啟方式"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"使用 %1$s 開啟"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"開啟「<xliff:g id="APP_NAME">%1$s</xliff:g>」"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"開啟"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"開啟 <xliff:g id="HOST">%1$s</xliff:g> 連結的方式"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"開啟連結的方式"</string>

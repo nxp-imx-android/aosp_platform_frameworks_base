@@ -992,10 +992,8 @@
     <!-- Permission required for CTS test - CtsNfcTestCases -->
     <uses-permission android:name="android.permission.NFC_SET_CONTROLLER_ALWAYS_ON" />
     <!-- Permission required for CTS test - AdvancedProtectionManagerTest -->
-    <uses-permission android:name="android.permission.MANAGE_ADVANCED_PROTECTION_MODE"
-        android:featureFlag="android.security.aapm_api"/>
-    <uses-permission android:name="android.permission.QUERY_ADVANCED_PROTECTION_MODE"
-        android:featureFlag="android.security.aapm_api"/>
+    <uses-permission android:name="android.permission.MANAGE_ADVANCED_PROTECTION_MODE"/>
+    <uses-permission android:name="android.permission.QUERY_ADVANCED_PROTECTION_MODE" />
     <uses-permission android:name="android.permission.MANAGE_DEVICE_POLICY_MTE" />
 
     <!-- Permission required for CTS test - IntrusionDetectionManagerTest -->
@@ -1069,6 +1067,9 @@
 
     <!-- Permission required for CTS test - CtsAnomalyDetectorTests -->
     <uses-permission android:name="android.permission.CONFIGURE_ANOMALY_DETECTOR" />
+
+    <!-- Permission required for CTS test - CtsNpuManagerTestCases -->
+    <uses-permission android:name="android.permission.ACCESS_NPU_MODEL_MANAGER_API"/>
 
     <application
         android:label="@string/app_label"

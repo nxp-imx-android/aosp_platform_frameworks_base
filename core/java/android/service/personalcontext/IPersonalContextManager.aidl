@@ -29,7 +29,7 @@ import android.service.personalcontext.insight.ContextInsightWrapper;
  */
 interface IPersonalContextManager {
     oneway void publishTriggeringHint(
-            in List<ContextHintWrapper> hints, in RenderToken renderToken);
+            in List<ContextHintWrapper> hints, in RenderToken renderToken, int userId);
 
-    oneway void publishInsight(in List<ContextInsightWrapper> insights);
+    oneway void publishInsight(in List<ContextInsightWrapper> insights, int userId);
 }

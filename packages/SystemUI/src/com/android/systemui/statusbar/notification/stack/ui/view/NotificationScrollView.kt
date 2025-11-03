@@ -21,6 +21,7 @@ import android.view.View
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState
+import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel.HeightSuppressionState
 import com.android.systemui.util.state.ObservableState
 import java.util.function.Consumer
 
@@ -162,6 +163,6 @@ interface NotificationScrollView {
     /** @see addHeadsUpHeightChangedListener */
     fun removeHeadsUpHeightChangedListener(runnable: Runnable)
 
-    /** Sets whether updates to the stack are are suppressed. */
-    fun suppressHeightUpdates(suppress: Boolean)
+    /** Sets whether height updates to the stack are suppressed. */
+    fun suppressHeightUpdates(suppress: HeightSuppressionState)
 }

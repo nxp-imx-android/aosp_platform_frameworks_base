@@ -57,8 +57,8 @@ class AppToWebRepositoryImpl(
     shellInit: ShellInit,
 ) : TaskVanishedListener, AppToWebRepository {
     private var appToWebDataByTask = SparseArray<TaskAppToWebData>()
+    private val firstRunPromptShownByTaskId = mutableSetOf<Int>()
 
-    // TODO(b/451760698) - Persist this data across reboots.
     // TODO(b/451777807) - Remove an entry when its package is uninstalled.
     private var firstRunPromptShownPackagesByUserId: MutableMap<Int, MutableSet<String>> =
         mutableMapOf()
@@ -72,6 +72,9 @@ class AppToWebRepositoryImpl(
     override fun onTaskVanished(taskInfo: RunningTaskInfo) {
         logD("Task %d is vanishing. Removing task data from repository", taskInfo.taskId)
         appToWebDataByTask.remove(taskInfo.taskId)
+        if (Flags.enableEnhancedAppToWebTransition()) {
+            firstRunPromptShownByTaskId.remove(taskInfo.taskId)
+        }
     }
 
     /** Sets the captured link for the given task if a new link is provided. */
@@ -171,7 +174,18 @@ class AppToWebRepositoryImpl(
         ) && taskInfo.capturedLink != null
     }
 
+    override fun isFirstRunPromptShown(taskInfo: RunningTaskInfo): Boolean {
+        if (!Flags.enableEnhancedAppToWebTransition()) {
+            return false
+        }
+        return firstRunPromptShownByTaskId.contains(taskInfo.taskId)
+    }
+
     override fun onFirstRunPromptShown(taskInfo: RunningTaskInfo) {
+        if (!Flags.enableEnhancedAppToWebTransition()) {
+            return
+        }
+        firstRunPromptShownByTaskId.add(taskInfo.taskId)
         val packageName = taskInfo.baseActivity?.packageName ?: return
         firstRunPromptShownPackagesByUserId.putIfAbsent(taskInfo.userId, mutableSetOf())
         checkNotNull(firstRunPromptShownPackagesByUserId[taskInfo.userId]) {

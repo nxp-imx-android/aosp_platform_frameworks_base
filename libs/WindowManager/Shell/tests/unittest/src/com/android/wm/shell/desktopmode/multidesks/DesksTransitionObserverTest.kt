@@ -21,7 +21,6 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.graphics.Rect
 import android.os.Binder
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.AndroidTestingRunner
@@ -123,7 +122,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 desktopUserRepositories = desktopUserRepositories,
                 desksOrganizer = mockDesksOrganizer,
                 transitions = mockTransitions,
-                shellController = mockShellController,
                 desktopWallpaperActivityTokenProvider = mockDesktopWallpaperActivityTokenProvider,
                 mainScope = testScope.backgroundScope,
                 desktopModeEventLogger = mockDesktopModeEventLogger,
@@ -545,10 +543,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_deactivateDesk_userSwitch_keepsDeskActiveInRepo() {
         val transition = Binder()
         val deskChange = Change(mock(), mock())
@@ -1042,135 +1037,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
-    )
-    @DisableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
-    fun independentDeskTransition_deskToBack_userSwitch_deactivatesKeepingRepoActive() =
-        testScope.runTest {
-            val deskId = 5
-            val displayId = DEFAULT_DISPLAY
-            val oldUserRepository = desktopUserRepositories.getProfile(USER_ID_1)
-            val newUserRepository = desktopUserRepositories.getProfile(USER_ID_2)
-            oldUserRepository.addDesk(displayId, deskId)
-            oldUserRepository.setActiveDesk(displayId, deskId)
-
-            observer.onTransitionReady(
-                transition = Binder(),
-                info =
-                    buildTransitionInfo()
-                        .addHomeChange(
-                            mode = TRANSIT_TO_FRONT,
-                            userId = newUserRepository.userId,
-                            displayId = displayId,
-                        )
-                        .addDeskChange(
-                            deskId = deskId,
-                            mode = TRANSIT_TO_BACK,
-                            // Change's user id is already updated to new user
-                            userId = newUserRepository.userId,
-                            displayId = displayId,
-                        ),
-            )
-            runCurrent()
-
-            // The desk root must be deactivated to prevent future launches into it while the user
-            // is inactive.
-            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
-            verify(mockDesksOrganizer)
-                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
-            verify(mockTransitions)
-                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
-            // However, it should remain active (in the old user's repo) to allow restoring to it
-            // when switching back.
-            assertThat(oldUserRepository.getActiveDeskId(displayId)).isEqualTo(deskId)
-            verify(mockDesktopModeEventLogger)
-                .logPendingSessionExit(eq(5), eq(ExitReason.UNKNOWN_EXIT))
-        }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
-    )
-    fun independentDeskTransition_deskToBackWithNothingInFront_keepsDeskActive() =
-        testScope.runTest {
-            val deskId = 5
-            val displayId = DEFAULT_DISPLAY
-            val repository = desktopUserRepositories.getProfile(USER_ID_1)
-            repository.addDesk(displayId, deskId)
-            repository.setActiveDesk(displayId, deskId)
-
-            observer.onTransitionReady(
-                transition = Binder(),
-                info =
-                    buildTransitionInfo()
-                        .addDeskChange(
-                            deskId = deskId,
-                            mode = TRANSIT_TO_BACK,
-                            userId = repository.userId,
-                            displayId = displayId,
-                        ),
-            )
-            runCurrent()
-
-            verify(mockDesksOrganizer, never())
-                .deactivateDesk(any(), deskId = eq(5), skipReorder = any())
-            assertThat(repository.getActiveDeskId(displayId)).isEqualTo(deskId)
-            verify(mockDesktopModeEventLogger, never()).logPendingSessionExit(any(), any())
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
-    fun independentDeskTransition_emptyDeskToBackHomeToFront_userSwitch_deactivatesKeepingRepoActive() =
-        testScope.runTest {
-            val deskId = 5
-            val displayId = DEFAULT_DISPLAY
-            val oldUserRepository = desktopUserRepositories.getProfile(USER_ID_1)
-            val newUserRepository = desktopUserRepositories.getProfile(USER_ID_2)
-            oldUserRepository.addDesk(displayId, deskId)
-            oldUserRepository.setActiveDesk(displayId, deskId)
-
-            observer.onTransitionReady(
-                transition = Binder(),
-                info =
-                    buildTransitionInfo()
-                        // New user is landing in its Home.
-                        .addHomeChange(
-                            mode = TRANSIT_TO_FRONT,
-                            userId = newUserRepository.userId,
-                            displayId = displayId,
-                        )
-                        // Desktop of old user is hiding, but because it uses |showForAllUsers| the
-                        // user id will be of the new user.
-                        .addDesktopWallpaperChange(
-                            mode = TRANSIT_TO_BACK,
-                            userId = newUserRepository.userId,
-                            displayId = displayId,
-                        ),
-                // Empty desks won't be seen in a transition when being sent to back
-                // because they're already invisible.
-
-            )
-            runCurrent()
-
-            // The desk root must be deactivated to prevent future launches into it while the user
-            // is inactive.
-            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
-            verify(mockDesksOrganizer)
-                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
-            verify(mockTransitions)
-                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
-            // However, it should remain active (in the old user's repo) to allow restoring to it
-            // when switching back.
-            assertThat(oldUserRepository.getActiveDeskId(displayId)).isEqualTo(deskId)
-            verify(mockDesktopModeEventLogger)
-                .logPendingSessionExit(eq(5), eq(ExitReason.UNKNOWN_EXIT))
-        }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperOverActiveDesk_reactivatesDeskWithOrder() =
         testScope.runTest {
@@ -1269,45 +1135,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
             // Also mark it inactive in the repository
             assertThat(repository.getActiveDeskId(displayId)).isNull()
-            verify(mockDesktopModeEventLogger)
-                .logPendingSessionExit(eq(5), eq(ExitReason.UNKNOWN_EXIT))
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @DisableFlags(Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH)
-    fun independentDeskTransition_wallpaperToBackWithoutDesk_userSwitch_deactivatesDeskWithoutOrderAndKeepsRepoActive() =
-        testScope.runTest {
-            val deskId = 5
-            val displayId = DEFAULT_DISPLAY
-            val oldUserRepository = desktopUserRepositories.getProfile(USER_ID_1)
-            val newUserRepository = desktopUserRepositories.getProfile(USER_ID_2)
-            oldUserRepository.addDesk(displayId, deskId)
-            oldUserRepository.setActiveDesk(displayId, deskId)
-
-            observer.onTransitionReady(
-                transition = Binder(),
-                info =
-                    buildTransitionInfo()
-                        .addDesktopWallpaperChange(
-                            mode = TRANSIT_TO_BACK,
-                            // User id will have changed to the new user because of
-                            // |showForAllUsers|
-                            userId = newUserRepository.userId,
-                            displayId = displayId,
-                        ),
-                // No desk change, as seen when the desk is empty.
-            )
-            runCurrent()
-
-            // The desk root must be deactivated (without order) to clear the launch root.
-            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
-            verify(mockDesksOrganizer)
-                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
-            verify(mockTransitions)
-                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
-            // Remains active to restore to when switching back to the old user.
-            assertThat(oldUserRepository.getActiveDeskId(displayId)).isEqualTo(deskId)
             verify(mockDesktopModeEventLogger)
                 .logPendingSessionExit(eq(5), eq(ExitReason.UNKNOWN_EXIT))
         }

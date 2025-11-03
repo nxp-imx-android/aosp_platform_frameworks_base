@@ -773,7 +773,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /** All tokens used to put activities on this display to sleep (including mOffToken) */
     final ArrayList<RootWindowContainer.SleepToken> mAllSleepTokens = new ArrayList<>();
 
-    private boolean mSleeping = true;
+    private boolean mSleeping;
 
     /** We started the process of removing the display from the system. */
     private boolean mRemoving;
@@ -5551,6 +5551,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
 
             if (!isDefaultDisplay) {
+                // Non-default display is default sleeping because it can be empty.
+                mSleeping = true;
                 mDisplayRotation.updateRotationUnchecked(true);
             }
 

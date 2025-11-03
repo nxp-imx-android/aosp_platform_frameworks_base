@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selecciona qué app quieres compartir"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Compartir audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Compartir ventana de la app"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Al compartir, se ve el contenido de tu pantalla"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Hacer captura de pantalla de la ventana"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grabar ventana"</string>
@@ -367,8 +369,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Sensores desactivados"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Borrar todas las notificaciones"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notificaciones"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Asistente"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> más"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notificación más en el grupo.}many{# notificaciones más en el grupo.}other{# notificaciones más en el grupo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"La pantalla está bloqueada en modo horizontal."</string>
@@ -710,8 +711,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Silenciadas"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notificaciones"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversaciones"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Destacadas"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Borrar todas las notificaciones silenciosas"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Abrir los ajustes de notificaciones"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{No hay notificaciones}=1{Notificaciones pausadas por {mode}}=2{Notificaciones pausadas por {mode} y un modo más}many{Notificaciones pausadas por {mode} y # modos más}other{Notificaciones pausadas por {mode} y # modos más}}"</string>
@@ -1151,29 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menú de encendido"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Página <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"¿Activar <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"La combinación de teclas para usar <xliff:g id="ID_3">^3</xliff:g> es "<annotation id="action_key_icon">"icono de acción"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Vuelve a pulsar Acción + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> para habilitar <xliff:g id="ID_3">%3$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"¿Activar combinación de teclas de <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"No activar"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activar"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Combinación de teclas de <xliff:g id="ID_1">%1$s</xliff:g> activada"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"La combinación de teclas para usar <xliff:g id="ID_3">^3</xliff:g>, una función de accesibilidad, es "<annotation id="action_key_icon">"icono"</annotation>" de acción + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. Esto te permite ampliar rápidamente la pantalla para que el contenido se vea más grande. Una vez que la ampliación esté activada, pulsa el "<annotation id="action_key_icon">"icono"</annotation>" de acción + <xliff:g id="ID_4">^1</xliff:g> y \"+\" o \"-\" para ajustar el zoom."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactivar combinación de teclas"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantener activada"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"La combinación de teclas para usar <xliff:g id="ID_3">^3</xliff:g> es "<annotation id="action_key_icon">"icono"</annotation>" de acción + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> es un lector de pantalla que te permite oír los elementos en voz alta. Puede ser útil para las personas que tienen dificultades para ver la pantalla. Esta función puede modificar el funcionamiento del dispositivo."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Al activar la combinación de teclas, permitirás que TalkBack tenga control total sobre tu dispositivo."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"El control total es adecuado para las aplicaciones de accesibilidad, pero no para la mayoría de las aplicaciones."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Ver y controlar la pantalla"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Puede leer todo el contenido de la pantalla y mostrar contenido sobre otras aplicaciones."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Ver y realizar acciones"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Puede registrar tus interacciones con una aplicación o un sensor de hardware, así como interactuar con las aplicaciones en tu nombre."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Si pulsas Acción "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>, se activa <xliff:g id="ID_3">^3</xliff:g>, una función de accesibilidad. Esto te permite controlar tu dispositivo sin usar las manos."</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accesibilidad"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Hecho"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueo"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Apagando…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Ver pasos de mantenimiento"</string>
@@ -1607,7 +1608,7 @@
     <string name="privacy_dialog_recent_app_usage_2" msgid="2874689735085367167">"Usado recientemente por <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>)"</string>
     <string name="shortcut_helper_category_system" msgid="462110876978937359">"Sistema"</string>
     <string name="shortcut_helper_category_system_controls" msgid="3153344561395751020">"Controles del sistema"</string>
-    <string name="shortcut_helper_category_system_apps" msgid="6001757545472556810">"Apps del sistema"</string>
+    <string name="shortcut_helper_category_system_apps" msgid="6001757545472556810">"Aplicaciones del sistema"</string>
     <string name="shortcut_helper_category_multitasking" msgid="7413381961404090136">"Multitarea"</string>
     <string name="shortcutHelper_category_split_screen" msgid="1159669813444812244">"Pantalla dividida"</string>
     <string name="shortcutHelper_category_accessibility" msgid="8068337792277570938">"Accesibilidad"</string>
@@ -1740,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ir a la página siguiente"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autocompletar"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"mostrar"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

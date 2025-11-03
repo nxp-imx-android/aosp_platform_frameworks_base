@@ -83,7 +83,11 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
+import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepStaticInitializer;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.text.TextUtils;
@@ -161,6 +165,7 @@ import java.util.function.Consumer;
  */
 @SystemService(Context.ACTIVITY_SERVICE)
 @RavenwoodKeepPartialClass
+@RavenwoodKeepStaticInitializer
 @RavenwoodRedirectionClass("ActivityManager_ravenwood")
 public class ActivityManager {
     private static String TAG = "ActivityManager";
@@ -216,6 +221,11 @@ public class ActivityManager {
      * @hide
      */
     public static final int INSTR_FLAG_INSTRUMENT_SDK_IN_SANDBOX = 1 << 6;
+    /**
+     * Run the target process in pcc sandbox.
+     * @hide
+     */
+    public static final int INSTR_FLAG_RUN_IN_PCC = 1 << 7;
 
     static final class MyUidObserver extends UidObserver {
         final OnUidImportanceListener mListener;
@@ -553,11 +563,11 @@ public class ActivityManager {
     public static final int START_ASSISTANT_NOT_ACTIVE_SESSION = FIRST_START_FATAL_ERROR_CODE + 11;
 
     /**
-     * Result for IActivityManager.startAssistantActivity: activity is not allowed to be launched in
-     * the {@link android.os.UserManager#isHeadlessSystemUserMode() Headless System User}.
+     * Result for IActivityManager.startAssistantActivity: activity is not allowed to be launched
+     * for the given user.
      * @hide
      */
-    public static final int START_NOT_ALLOWED_FOR_HEADLESS_SYSTEM_USER =
+    public static final int START_NOT_ALLOWED_FOR_USER =
             FIRST_START_FATAL_ERROR_CODE + 12;
 
     /**
@@ -1073,7 +1083,7 @@ public class ActivityManager {
      * Print capability bits in human-readable form.
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static void printCapabilitiesSummary(PrintWriter pw, @ProcessCapability int caps) {
         pw.print((caps & PROCESS_CAPABILITY_FOREGROUND_LOCATION) != 0 ? 'L' : '-');
         pw.print((caps & PROCESS_CAPABILITY_FOREGROUND_CAMERA) != 0 ? 'C' : '-');
@@ -1087,7 +1097,7 @@ public class ActivityManager {
     }
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static void printCapabilitiesSummary(StringBuilder sb, @ProcessCapability int caps) {
         sb.append((caps & PROCESS_CAPABILITY_FOREGROUND_LOCATION) != 0 ? 'L' : '-');
         sb.append((caps & PROCESS_CAPABILITY_FOREGROUND_CAMERA) != 0 ? 'C' : '-');
@@ -1104,7 +1114,7 @@ public class ActivityManager {
      * Print capability bits in human-readable form.
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static void printCapabilitiesFull(PrintWriter pw, @ProcessCapability int caps) {
         printCapabilitiesSummary(pw, caps);
         final int remain = caps & ~PROCESS_CAPABILITY_ALL;
@@ -1115,7 +1125,7 @@ public class ActivityManager {
     }
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static String getCapabilitiesSummary(@ProcessCapability int caps) {
         final StringBuilder sb = new StringBuilder();
         printCapabilitiesSummary(sb, caps);
@@ -1135,7 +1145,7 @@ public class ActivityManager {
      * @return the value of the corresponding enums.proto ProcessCapabilityEnum value.
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static final int processCapabilityAmToProto(int amInt) {
         switch (amInt) {
             case PROCESS_CAPABILITY_FOREGROUND_LOCATION:
@@ -1176,7 +1186,7 @@ public class ActivityManager {
      * @return the value of the corresponding enums.proto ProcessStateEnum value.
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static final int processStateAmToProto(int amInt) {
         switch (amInt) {
             case PROCESS_STATE_UNKNOWN:
@@ -1237,19 +1247,19 @@ public class ActivityManager {
     public static final int MAX_PROCESS_STATE = PROCESS_STATE_NONEXISTENT;
 
     /** @hide Should this process state be considered a background state? */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static final boolean isProcStateBackground(int procState) {
         return procState >= PROCESS_STATE_TRANSIENT_BACKGROUND;
     }
 
     /** @hide Should this process state be considered in the cache? */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static final boolean isProcStateCached(int procState) {
         return procState >= PROCESS_STATE_CACHED_ACTIVITY;
     }
 
     /** @hide Is this a foreground service type? */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static boolean isForegroundService(int procState) {
         return procState == PROCESS_STATE_FOREGROUND_SERVICE;
     }
@@ -1339,7 +1349,7 @@ public class ActivityManager {
      * Returns whether the launch was successful.
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static final boolean isStartResultSuccessful(int result) {
         return FIRST_START_SUCCESS_CODE <= result && result <= LAST_START_SUCCESS_CODE;
     }
@@ -1348,7 +1358,7 @@ public class ActivityManager {
      * Returns whether the launch result was a fatal error.
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static final boolean isStartResultFatalError(int result) {
         return FIRST_START_FATAL_ERROR_CODE <= result && result <= LAST_START_FATAL_ERROR_CODE;
     }
@@ -1668,7 +1678,7 @@ public class ActivityManager {
     public @interface RestrictionSource{}
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static String restrictionLevelToName(@RestrictionLevel int level) {
         switch (level) {
             case RESTRICTION_LEVEL_UNKNOWN:
@@ -1805,14 +1815,14 @@ public class ActivityManager {
      * something with 1GB or less of RAM.  This is mostly intended to be used by apps
      * to determine whether they should turn off certain features that require more RAM.
      */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public boolean isLowRamDevice() {
         return isLowRamDeviceStatic();
     }
 
     /** @hide */
     @UnsupportedAppUsage
-    @android.ravenwood.annotation.RavenwoodIgnore
+    @RavenwoodIgnore
     public static boolean isLowRamDeviceStatic() {
         return RoSystemProperties.CONFIG_LOW_RAM ||
                 (Build.IS_DEBUGGABLE && DEVELOPMENT_FORCE_LOW_RAM);
@@ -3682,6 +3692,7 @@ public class ActivityManager {
      * Information you can retrieve about the available memory through
      * {@link ActivityManager#getMemoryInfo}.
      */
+    @RavenwoodKeepWholeClass
     public static class MemoryInfo implements Parcelable {
         /**
          * The advertised memory of the system, as the end user would encounter in a retail display
@@ -4029,6 +4040,7 @@ public class ActivityManager {
     /**
      * Information you can retrieve about a running process.
      */
+    @RavenwoodKeepWholeClass
     public static class RunningAppProcessInfo implements Parcelable {
         // The list of fields must be kept in sync with RunningAppProcessInfo.aidl.
         // LINT.IfChange
@@ -6310,13 +6322,13 @@ public class ActivityManager {
     }
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static boolean isProcStateConsideredInteraction(@ProcessState int procState) {
         return (procState <= PROCESS_STATE_TOP || procState == PROCESS_STATE_BOUND_TOP);
     }
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static String procStateToString(int procState) {
         final String procStateStr;
         switch (procState) {

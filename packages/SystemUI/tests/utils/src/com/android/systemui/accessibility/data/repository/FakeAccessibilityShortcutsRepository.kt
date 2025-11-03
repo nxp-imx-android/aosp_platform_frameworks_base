@@ -21,13 +21,14 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.hardware.input.KeyGestureEvent
 import android.os.Handler
-import android.view.Display.DEFAULT_DISPLAY
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.mockito.Mockito.mock
 
 class FakeAccessibilityShortcutsRepository(
@@ -41,12 +42,15 @@ class FakeAccessibilityShortcutsRepository(
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to "Select to Speak",
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to "Voice Access",
         )
+    private var selectedTargetsList: List<AccessibilityTargetModel> = emptyList()
 
     var areShortcutsEnabled: Boolean = false
     var isMagnificationAndZoomInEnabled: Boolean = false
     var ttsPrompt: TtsPrompt? = null
     var ttsText: CharSequence = ""
     var shortcutTypeAssigned: Int = 0
+    var enabledShortcutTargetName = ""
+    var performedShortcutTargetName = ""
 
     override suspend fun getKeyGestureConfirmInfo(
         keyGestureType: Int,
@@ -75,7 +79,7 @@ class FakeAccessibilityShortcutsRepository(
                     emptyList(),
                     targetName,
                     0,
-                    DEFAULT_DISPLAY,
+                    displayId,
                     ttsText,
                 )
             }
@@ -90,6 +94,7 @@ class FakeAccessibilityShortcutsRepository(
     ) {
         areShortcutsEnabled = enable
         shortcutTypeAssigned = shortcutType
+        enabledShortcutTargetName = targetName
     }
 
     override fun enableMagnificationAndZoomIn(displayId: Int) {
@@ -107,6 +112,7 @@ class FakeAccessibilityShortcutsRepository(
         targetName: String,
     ) {
         shortcutTypeAssigned = shortcutType
+        performedShortcutTargetName = targetName
     }
 
     override fun getAllAccessibilityTargetsInfo(
@@ -148,11 +154,21 @@ class FakeAccessibilityShortcutsRepository(
         )
     }
 
+    override fun getAllAccessibilityTargets(
+        @UserShortcutType shortcutType: Int
+    ): Flow<List<AccessibilityTargetModel>> = flow {
+        emit(getAllAccessibilityTargetsInfo(shortcutType))
+    }
+
     override fun getSelectedAccessibilityTargetsInfo(
         @UserShortcutType shortcutType: Int
     ): List<AccessibilityTargetModel> {
         shortcutTypeAssigned = shortcutType
 
-        return emptyList()
+        return selectedTargetsList
+    }
+
+    fun setSelectedAccessibilityTargetsList(list: List<AccessibilityTargetModel>) {
+        selectedTargetsList = list.toList()
     }
 }

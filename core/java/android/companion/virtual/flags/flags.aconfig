@@ -248,30 +248,10 @@ flag {
 }
 
 flag {
-    name: "computer_control_consent"
-    namespace: "virtual_devices"
-    description: "Show a consent dialog for computer control session creation"
-    bug: "437901655"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "automated_app_launch_interception"
     namespace: "virtual_devices"
     description: "Show a warning dialog when launching an automated app"
     bug: "442627126"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "computer_control_activity_policy_strict"
-    namespace: "virtual_devices"
-    description: "Implements a strict Activity policy for ComputerControl VirtualDevices"
-    bug: "437849470"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -298,36 +278,6 @@ flag {
 }
 
 flag {
-    name: "computer_control_user_restriction"
-    namespace: "virtual_devices"
-    description: "Support 'allowed users' in VirtualDevice and use it to constrain CC to calling user and prevent managed profiles"
-    bug: "433734861"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "computer_control_blocked_state"
-    namespace: "virtual_devices"
-    description: "Support 'blocked' state for ComputerControl session"
-    bug: "448654781"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "computer_control_block_input_and_screenshots"
-    namespace: "virtual_devices"
-    description: "Block agent input and screenshots whenever we are in the 'blocked' state"
-    bug: "442540670"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "virtual_camera_stable_stream_id"
     namespace: "virtual_devices"
     description: "Assign the index at which a stream has been added to the virtual camera config as its id."
@@ -338,40 +288,20 @@ flag {
 }
 
 flag {
-    name: "computer_control_show_touches"
-    namespace: "virtual_devices"
-    description: "Show touch indicator in ComputerControl displays"
-    bug: "444467476"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "computer_control_non_dismissible_notifications"
-    namespace: "virtual_devices"
-    description: "Make notifications non-dismissible for ComputerControlSession owners"
-    bug: "447297434"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "computer_control_intercept_audio"
-    namespace: "virtual_devices"
-    description: "Intercept audio streams for playback and capture on a ComputerControlSession"
-    bug: "446853112"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "gwpc_secure_window_state_tracking"
     namespace: "virtual_devices"
-    description: "Track secure states across activity launches in GenericWindowPolicyController"
+    description: "Track secure window states across activity launches in GenericWindowPolicyController"
     bug: "449765707"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "computer_control_allowlists"
+    namespace: "virtual_devices"
+    description: "Use DeviceConfig to configure allowlists (agents, automatable apps) for ComputerControl."
+    bug: "432678187"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

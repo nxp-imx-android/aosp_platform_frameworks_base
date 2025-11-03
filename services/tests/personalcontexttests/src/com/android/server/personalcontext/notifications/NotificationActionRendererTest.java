@@ -17,25 +17,25 @@
 package com.android.server.personalcontext.notifications;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
+
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.annotation.Nullable;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.annotation.Nullable;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Icon;
-import androidx.test.platform.app.InstrumentationRegistry;
-import android.content.Intent;
-import android.os.UserHandle;
 import android.service.notification.Adjustment;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -48,10 +48,10 @@ import android.service.personalcontext.insight.InsightDisplayDetails;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.notification.NotificationManagerInternal;
 
-import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +60,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @SmallTest
@@ -163,7 +164,7 @@ public class NotificationActionRendererTest {
     @Test
     public void testRender_cannotResolveIntent_noAction() {
         NotificationHint hint =
-                new NotificationHint.NotificationHintBuilder(
+                new NotificationHint.Builder(
                                 new NotificationEnqueuedEvent(
                                         mNotification, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
@@ -184,7 +185,7 @@ public class NotificationActionRendererTest {
 
     private ActionableInsight createActionableInsight(@Nullable String title, @Nullable Icon icon) {
         NotificationHint hint =
-                new NotificationHint.NotificationHintBuilder(
+                new NotificationHint.Builder(
                                 new NotificationEnqueuedEvent(
                                         mNotification, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();

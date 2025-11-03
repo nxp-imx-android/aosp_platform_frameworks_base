@@ -45,6 +45,10 @@ import static android.app.Notification.MessagingStyle.Message.KEY_DATA_URI;
 import static android.app.Notification.MessagingStyle.Message.KEY_SENDER_PERSON;
 import static android.app.Notification.MessagingStyle.Message.KEY_TEXT;
 import static android.app.Notification.MessagingStyle.Message.KEY_TIMESTAMP;
+import static android.app.Notification.SEMANTIC_STYLE_CAUTION;
+import static android.app.Notification.SEMANTIC_STYLE_DANGER;
+import static android.app.Notification.SEMANTIC_STYLE_INFO;
+import static android.app.Notification.SEMANTIC_STYLE_UNSPECIFIED;
 import static android.app.Notification.TvExtender.EXTRA_CONTENT_INTENT;
 import static android.app.Notification.TvExtender.EXTRA_DELETE_INTENT;
 import static android.app.Notification.WearableExtender.KEY_BACKGROUND;
@@ -54,6 +58,7 @@ import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
 import static com.android.internal.util.ContrastColorUtilTest.assertContrastIsAtLeast;
 import static com.android.internal.util.ContrastColorUtilTest.assertContrastIsWithinRange;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.truth.Truth.assertThat;
 
 import static junit.framework.Assert.assertNotNull;
@@ -2691,20 +2696,20 @@ public class NotificationTest {
 
     @Test
     public void progressStyle_createProgressModel_ignoresPointsAtMax() {
-        // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         progressStyle.addProgressSegment(new Notification.ProgressStyle.Segment(100));
         // Points should not larger than progress maximum.
         progressStyle
                 .addProgressPoint(new Notification.ProgressStyle.Point(100));
 
-        // THEN
-        assertThat(progressStyle.createProgressModel(Color.BLUE, Color.RED).getPoints()).isEmpty();
+        NotificationProgressModel model = progressStyle.createProgressModel(Color.BLUE, Color.RED,
+                unusedStyle -> Notification.COLOR_DEFAULT);
+
+        assertThat(model.getPoints()).isEmpty();
     }
 
     @Test
     public void progressStyle_createProgressModel_ignoresPointsExceedingMax() {
-        // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         progressStyle.addProgressSegment(new Notification.ProgressStyle.Segment(100));
         // Points should not larger than progress maximum.
@@ -2712,16 +2717,16 @@ public class NotificationTest {
                 .addProgressPoint(new Notification.ProgressStyle.Point(101))
                 .addProgressPoint(new Notification.ProgressStyle.Point(500));
 
-        // THEN
-        assertThat(progressStyle.createProgressModel(Color.BLUE, Color.RED).getPoints()).isEmpty();
+        NotificationProgressModel model = progressStyle.createProgressModel(Color.BLUE, Color.RED,
+                unusedStyle -> Notification.COLOR_DEFAULT);
+
+        assertThat(model.getPoints()).isEmpty();
     }
 
     @Test
     public void progressStyle_createProgressModel_ignoresOverLimitPoints() {
-        // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         progressStyle.addProgressSegment(new Notification.ProgressStyle.Segment(100));
-
         // maximum 4 points are going to be rendered.
         progressStyle
                 .addProgressPoint(new Notification.ProgressStyle.Point(0))
@@ -2740,42 +2745,33 @@ public class NotificationTest {
                 /* bg = */backgroundColor,
                 /* defaultColor = */defaultProgressColor);
 
-        // THEN
-        assertThat(progressStyle.createProgressModel(defaultProgressColor, backgroundColor)
-                .getPoints()).isEqualTo(
-                        List.of(new Notification.ProgressStyle.Point(20)
-                                .setColor(expectedProgressColor),
-                                new Notification.ProgressStyle.Point(50)
-                                .setColor(expectedProgressColor),
-                                new Notification.ProgressStyle.Point(70)
-                                .setColor(expectedProgressColor),
-                                new Notification.ProgressStyle.Point(80)
-                                        .setColor(expectedProgressColor)
-                        )
-        );
+        NotificationProgressModel model = progressStyle.createProgressModel(defaultProgressColor,
+                backgroundColor, unusedStyle -> Notification.COLOR_DEFAULT);
+
+        assertThat(model.getPoints()).containsExactly(
+                new Notification.ProgressStyle.Point(20).setColor(expectedProgressColor),
+                new Notification.ProgressStyle.Point(50).setColor(expectedProgressColor),
+                new Notification.ProgressStyle.Point(70).setColor(expectedProgressColor),
+                new Notification.ProgressStyle.Point(80).setColor(expectedProgressColor))
+                .inOrder();
     }
 
     @Test
     public void progressStyle_createProgressModel_mergeSegmentsOnOverflow() {
-        // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
-
         for (int i = 0; i < 15; i++) {
-            progressStyle
-                    .addProgressSegment(new Notification.ProgressStyle.Segment(10));
+            progressStyle.addProgressSegment(new Notification.ProgressStyle.Segment(10));
         }
 
         final NotificationProgressModel progressModel = progressStyle.createProgressModel(
-                Color.BLUE, Color.RED);
+                Color.BLUE, Color.RED, unusedStyle -> Notification.COLOR_DEFAULT);
 
-        // THEN
         assertThat(progressModel.getSegments().size()).isEqualTo(1);
         assertThat(progressModel.getProgressMax()).isEqualTo(150);
     }
 
     @Test
     public void progressStyle_createProgressModel_useSegmentColorWhenAllMatch() {
-        // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         final int segmentColor = Color.YELLOW;
         final int defaultProgressColor = Color.BLUE;
@@ -2793,9 +2789,8 @@ public class NotificationTest {
         }
 
         final NotificationProgressModel progressModel = progressStyle.createProgressModel(
-                defaultProgressColor, backgroundColor);
+                defaultProgressColor, backgroundColor, unusedStyle -> Notification.COLOR_DEFAULT);
 
-        // THEN
         assertThat(progressModel.getSegments())
                 .isEqualTo(List.of(new Notification.ProgressStyle.Segment(150)
                         .setColor(expectedSegmentColor)));
@@ -2803,7 +2798,6 @@ public class NotificationTest {
 
     @Test
     public void progressStyle_createProgressModel_useDefaultColorWhenAllNotMatch() {
-        // GIVEN
         final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
         final int defaultProgressColor = Color.BLUE;
         final int backgroundColor = Color.RED;
@@ -2822,12 +2816,91 @@ public class NotificationTest {
         }
 
         final NotificationProgressModel progressModel = progressStyle.createProgressModel(
-                defaultProgressColor, backgroundColor);
+                defaultProgressColor, backgroundColor, unusedStyle -> Notification.COLOR_DEFAULT);
 
-        // THEN
         assertThat(progressModel.getSegments())
                 .isEqualTo(List.of(new Notification.ProgressStyle.Segment(150)
                         .setColor(expectedSegmentColor)));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public void progressStyle_createProgressModel_appliesSemanticStyle() {
+        Notification.ProgressStyle progressStyle = new Notification.ProgressStyle()
+                .addProgressSegment(new Notification.ProgressStyle.Segment(100)
+                        .setSemanticStyle(SEMANTIC_STYLE_INFO))
+                .addProgressPoint(new Notification.ProgressStyle.Point(50)
+                        .setSemanticStyle(SEMANTIC_STYLE_CAUTION))
+                .addProgressPoint(new Notification.ProgressStyle.Point(90)
+                        .setSemanticStyle(SEMANTIC_STYLE_DANGER));
+
+        // Use a fake semantic style -> color mapping function to verify results.
+        NotificationProgressModel model = progressStyle.createProgressModel(
+                Color.WHITE, Color.WHITE, semanticStyle -> Color.BLACK + semanticStyle);
+
+        assertThat(model.getSegments().get(0).getColor()).isEqualTo(
+                Color.BLACK + SEMANTIC_STYLE_INFO);
+        assertThat(model.getPoints().get(0).getColor()).isEqualTo(
+                Color.BLACK + SEMANTIC_STYLE_CAUTION);
+        assertThat(model.getPoints().get(1).getColor()).isEqualTo(
+                Color.BLACK + SEMANTIC_STYLE_DANGER);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public void progressStyle_createProgressModel_colorBeatsSemanticStyle() {
+        Notification.ProgressStyle progressStyle = new Notification.ProgressStyle()
+                .addProgressSegment(new Notification.ProgressStyle.Segment(100)
+                        .setSemanticStyle(SEMANTIC_STYLE_INFO)
+                        .setColor(Color.MAGENTA))
+                .addProgressPoint(new Notification.ProgressStyle.Point(50)
+                        .setSemanticStyle(SEMANTIC_STYLE_CAUTION)
+                        .setColor(Color.MAGENTA));
+
+        // Use a fake semantic style -> color mapping function to verify (non-)results.
+        NotificationProgressModel model = progressStyle.createProgressModel(
+                Color.WHITE, Color.WHITE, semanticColor -> Color.BLACK + semanticColor);
+
+        assertThat(model.getSegments().get(0).getColor()).isEqualTo(Color.MAGENTA);
+        assertThat(model.getPoints().get(0).getColor()).isEqualTo(Color.MAGENTA);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public void progressStyle_createProgressModel_useSegmentSemanticStyleWhenAllMatch() {
+        final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
+        for (int i = 0; i < 15; i++) {
+            progressStyle
+                    .addProgressSegment(new Notification.ProgressStyle.Segment(10)
+                            .setSemanticStyle(Notification.SEMANTIC_STYLE_CAUTION));
+        }
+
+        final NotificationProgressModel progressModel = progressStyle.createProgressModel(
+                Color.RED, Color.BLUE, unusedStyle -> Notification.COLOR_DEFAULT);
+
+        assertThat(progressModel.getSegments()).hasSize(1);
+        assertThat(getOnlyElement(progressModel.getSegments()).getSemanticStyle()).isEqualTo(
+                SEMANTIC_STYLE_CAUTION);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    public void progressStyle_createProgressModel_useDefaultSemanticStyleWhenAllNotMatch() {
+        final Notification.ProgressStyle progressStyle = new Notification.ProgressStyle();
+        for (int i = 0; i < 15; i++) {
+            progressStyle
+                    .addProgressSegment(new Notification.ProgressStyle.Segment(5)
+                            .setSemanticStyle(SEMANTIC_STYLE_INFO))
+                    .addProgressSegment(new Notification.ProgressStyle.Segment(5)
+                            .setSemanticStyle(SEMANTIC_STYLE_DANGER));
+        }
+
+        final NotificationProgressModel progressModel = progressStyle.createProgressModel(
+                Color.RED, Color.BLUE, unusedStyle -> Notification.COLOR_DEFAULT);
+
+        assertThat(progressModel.getSegments()).hasSize(1);
+        assertThat(getOnlyElement(progressModel.getSegments()).getSemanticStyle()).isEqualTo(
+                SEMANTIC_STYLE_UNSPECIFIED);
     }
 
     @Test

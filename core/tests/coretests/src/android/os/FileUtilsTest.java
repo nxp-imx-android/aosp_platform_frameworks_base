@@ -59,7 +59,6 @@ import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.provider.DocumentsContract.Document;
 import android.system.Os;
 import android.util.DataUnit;
@@ -89,8 +88,6 @@ import java.util.Random;
 
 @RunWith(AndroidJUnit4.class)
 public class FileUtilsTest {
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule();
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();

@@ -140,27 +140,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-UnmaximizeAppWindowTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-UnminimizeAppFromAllAppsTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-UnminimizeAppFromTaskbarTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-appcompat-DialogStaysInsideDesktopAppTest",
       "keywords": [
         "device",
@@ -492,14 +471,18 @@
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeUnfocusedAppWindowTest",
       "keywords": [
-        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-maximize-UnmaximizeAppWindowTest",
+      "keywords": [
         "desktop"
       ]
     },
@@ -534,28 +517,36 @@
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeAppWindowsTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeAutoPipAppWindowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeWindowOnAppOpenTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeWindowOnAppOpenViaIntentTest",
       "keywords": [
-        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-minimize-UnminimizeAppFromAllAppsTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-minimize-UnminimizeAppFromTaskbarTest",
+      "keywords": [
         "desktop"
       ]
     },

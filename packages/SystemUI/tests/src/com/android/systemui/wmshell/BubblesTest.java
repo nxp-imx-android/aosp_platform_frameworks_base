@@ -141,10 +141,9 @@ import com.android.systemui.statusbar.notification.collection.render.Notificatio
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.interruption.AvalancheProvider;
 import com.android.systemui.statusbar.notification.interruption.KeyguardNotificationVisibilityProvider;
-import com.android.systemui.statusbar.notification.interruption.NotificationInterruptLogger;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionLogger;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
-import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderTestUtil;
+import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderImpl;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.phone.DozeParameters;
@@ -170,10 +169,12 @@ import com.android.wm.shell.bubbles.BubbleData;
 import com.android.wm.shell.bubbles.BubbleDataRepository;
 import com.android.wm.shell.bubbles.BubbleEducationController;
 import com.android.wm.shell.bubbles.BubbleEntry;
+import com.android.wm.shell.bubbles.BubbleExpandedViewManager;
 import com.android.wm.shell.bubbles.BubbleOverflow;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.BubbleStackView;
 import com.android.wm.shell.bubbles.BubbleTaskView;
+import com.android.wm.shell.bubbles.BubbleTaskViewFactory;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.BubbleViewInfoTask;
 import com.android.wm.shell.bubbles.BubbleViewProvider;
@@ -183,6 +184,8 @@ import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.logging.BubbleLogger;
 import com.android.wm.shell.bubbles.logging.BubbleSessionTracker;
+import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
+import com.android.wm.shell.bubbles.user.model.BubbleUserInfo;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -196,6 +199,7 @@ import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.shared.animation.PhysicsAnimatorTestUtils;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
+import com.android.wm.shell.shared.bubbles.UserType;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -478,19 +482,17 @@ public class BubblesTest extends SysuiTestCase {
         fakeGlobalSettings.putInt(HEADS_UP_NOTIFICATIONS_ENABLED, HEADS_UP_ON);
 
         final VisualInterruptionDecisionProvider interruptionDecisionProvider =
-                VisualInterruptionDecisionProviderTestUtil.INSTANCE.createProviderByFlag(
+                new VisualInterruptionDecisionProviderImpl(
                         mock(AmbientDisplayConfiguration.class),
                         mock(BatteryController.class),
                         mock(DeviceProvisionedController.class),
                         new FakeEventLog(),
-                        mock(NotifPipelineFlags.class),
                         fakeGlobalSettings,
                         mock(HeadsUpManager.class),
                         mock(KeyguardNotificationVisibilityProvider.class),
                         mock(KeyguardStateController.class),
-                        mock(Handler.class),
                         mock(VisualInterruptionDecisionLogger.class),
-                        mock(NotificationInterruptLogger.class),
+                        mock(Handler.class),
                         mock(PowerManager.class),
                         mock(StatusBarStateController.class),
                         mock(SystemClock.class),
@@ -518,6 +520,20 @@ public class BubblesTest extends SysuiTestCase {
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
                 mShellTaskOrganizer, mSyncQueue);
         mAppInfoProvider = new PackageManagerBubbleAppInfoProvider();
+        BubbleUserResolver bubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
+        BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory = new BubbleViewInfoTask.Factory() {
+            @Override
+            public BubbleViewInfoTask create(Bubble b, Context context,
+                    BubbleExpandedViewManager expandedViewManager,
+                    BubbleTaskViewFactory taskViewFactory, @Nullable BubbleStackView stackView,
+                    @Nullable BubbleBarLayerView layerView, BubbleIconFactory factory,
+                    boolean skipInflation, @Nullable BubbleViewInfoTask.Callback c) {
+                return new BubbleViewInfoTask(b, context, expandedViewManager, taskViewFactory,
+                        stackView, layerView, factory, skipInflation, c, mPositioner,
+                        mAppInfoProvider, syncExecutor, syncExecutor, bubbleUserResolver);
+            }
+        };
+
         mBubbleController = new TestableBubbleController(
                 mContext,
                 mShellInit,
@@ -548,9 +564,9 @@ public class BubblesTest extends SysuiTestCase {
                 mock(IWindowManager.class),
                 new BubbleResizabilityChecker(),
                 mHomeIntentProvider,
-                mAppInfoProvider,
                 Optional.empty(),
-                mSessionTracker);
+                mSessionTracker,
+                bubbleViewInfoTaskFactory);
         mBubbleController.setExpandListener(mBubbleExpandListener);
         spyOn(mBubbleController);
 

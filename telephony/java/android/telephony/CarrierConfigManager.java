@@ -9771,11 +9771,34 @@ public class CarrierConfigManager {
      * from the lowest 0 to the highest 100. The long-lived network shall have the lowest priority.
      * This allows other short-lived requests like MMS requests to be established. Emergency request
      * always has the highest priority.
-     *
+     * <p>
+     * The possible values for capabilities are {@code "MMS"}, {@code "SUPL"}, {@code "DUN"},
+     * {@code "FOTA"}, {@code "IMS"}, {@code "CBS"}, {@code "XCAP"}, {@code "EIMS"},
+     * {@code "INTERNET"}, {@code "MCX"}, {@code "VSIM"}, {@code "BIP"}, {@code "ENTERPRISE"},
+     * {@code "PRIORITIZE_BANDWIDTH"}, {@code "PRIORITIZE_LATENCY"}, {@code "RCS"},
+     * {@code "PRIORITIZE_UNIFIED_COMMUNICATIONS"}, {@code "OEM_PAID"}, {@code "OEM_PRIVATE"}
      * @hide
      */
     public static final String KEY_TELEPHONY_NETWORK_CAPABILITY_PRIORITIES_STRING_ARRAY =
             "telephony_network_capability_priorities_string_array";
+
+    /**
+     * Defines the network network capabilities that carrier does not support. Note that for
+     * device-wide settings, should still use the resource overlay
+     * {@code config_unsupported_network_capabilities}.
+     *
+     * The possible values are {@code "MMS"}, {@code "SUPL"}, {@code "DUN"}, {@code "FOTA"},
+     * {@code "IMS"}, {@code "CBS"}, {@code "XCAP"}, {@code "EIMS"}, {@code "INTERNET"},
+     * {@code "MCX"}, {@code "VSIM"}, {@code "BIP"}, {@code "ENTERPRISE"},
+     * {@code "PRIORITIZE_BANDWIDTH"}, {@code "PRIORITIZE_LATENCY"}, {@code "RCS"},
+     * {@code "PRIORITIZE_UNIFIED_COMMUNICATIONS"}, {@code "OEM_PAID"}, {@code "OEM_PRIVATE"}
+     *
+     * @see NetworkCapabilities
+     *
+     * @hide
+     */
+    public static final String KEY_TELEPHONY_UNSUPPORTED_NETWORK_CAPABILITY_STRING_ARRAY =
+            "telephony_unsupported_network_capability_string_array";
 
     /**
      * Defines the rules for data setup retry.
@@ -9797,16 +9820,22 @@ public class CarrierConfigManager {
      *    is specified for retrying the next available APN.
      * "permanent_fail_causes=8|27|28|29|30|32|33|35|50|51|111|-5|-6|65537|65538|-3|65543|65547|
      *     2252|2253|2254, retry_interval=2500"
-     *
+     * <p>
      * For example,
      * "capabilities=eims, retry_interval=1000, maximum_retries=20" means if the attached
      * network request is emergency, then retry data network setup every 1 second for up to 20
      * times.
-     *
+     * <p>
      * "capabilities=internet|enterprise|dun|ims|fota, retry_interval=2500|3000|"
      * "5000|10000|15000|20000|40000|60000|120000|240000|600000|1200000|1800000"
      * "1800000, maximum_retries=20" means for those capabilities, retry happens in 2.5s, 3s, 5s,
      * 10s, 15s, 20s, 40s, 1m, 2m, 4m, 10m, 20m, 30m, 30m, 30m, until reaching 20 retries.
+     *
+     * The possible values for capabilities are {@code "MMS"}, {@code "SUPL"}, {@code "DUN"},
+     * {@code "FOTA"}, {@code "IMS"}, {@code "CBS"}, {@code "XCAP"}, {@code "EIMS"},
+     * {@code "INTERNET"}, {@code "MCX"}, {@code "VSIM"}, {@code "BIP"}, {@code "ENTERPRISE"},
+     * {@code "PRIORITIZE_BANDWIDTH"}, {@code "PRIORITIZE_LATENCY"}, {@code "RCS"},
+     * {@code "PRIORITIZE_UNIFIED_COMMUNICATIONS"}, {@code "OEM_PAID"}, {@code "OEM_PRIVATE"}
      *
      * @hide
      */
@@ -10483,7 +10512,7 @@ public class CarrierConfigManager {
     /**
      * Indicates if the carrier supports a video color ring back tone call (CRBT).
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
     public static final String KEY_SUPPORTS_VIDEO_RINGBACK_BOOL =
             "supports_video_back_tone_bool";
 
@@ -10815,10 +10844,16 @@ public class CarrierConfigManager {
      *     <item value="source=GERAN|UTRAN|EUTRAN|NGRAN|IWLAN|UNKNOWN,
      *         target=GERAN|UTRAN|EUTRAN|NGRAN|IWLAN, type=allowed"/>
      * </string-array>
-     *
+     * <p>
      * When handover is not allowed, frameworks will tear down the data network on source transport,
      * and then setup a new one on the target transport when Qualified Network Service changes the
      * preferred access networks for particular APN types.
+     *
+     * The possible values for capabilities are {@code "MMS"}, {@code "SUPL"}, {@code "DUN"},
+     * {@code "FOTA"}, {@code "IMS"}, {@code "CBS"}, {@code "XCAP"}, {@code "EIMS"},
+     * {@code "INTERNET"}, {@code "MCX"}, {@code "VSIM"}, {@code "BIP"}, {@code "ENTERPRISE"},
+     * {@code "PRIORITIZE_BANDWIDTH"}, {@code "PRIORITIZE_LATENCY"}, {@code "RCS"},
+     * {@code "PRIORITIZE_UNIFIED_COMMUNICATIONS"}, {@code "OEM_PAID"}, {@code "OEM_PRIVATE"}
      *
      * @hide
      */
@@ -11046,6 +11081,95 @@ public class CarrierConfigManager {
     @FlaggedApi(Flags.FLAG_EXPOSE_OPPT_AUTO_DATA_SWITCH_POLICIES)
     public static final String KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT =
             "opp_auto_data_switch_policy_int";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, defines the
+     * duration for which a subscription's availability must be stable before switching, in
+     * milliseconds. A value of 0 means the switch should occur immediately. A negative value
+     * disables availability-based switching for opportunistic networks.
+     *
+     * <p>When overridden, this value supersedes the value from the device configuration {@code
+     * auto_data_switch_availability_stability_time_threshold_millis}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is 10000.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_STABILITY_MILLIS_LONG =
+            "opp_auto_data_switch_availability_stability_millis_long";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, defines the
+     * duration for which a subscription must maintain a network performance advantage (i.e., the
+     * score exceeds the value from {@code auto_data_switch_score_tolerance}) before switching, in
+     * milliseconds. A value of 0 means the switch should occur immediately. A negative value
+     * disables performance-based switching for opportunistic networks.
+     *
+     * <p>When overridden, this value supersedes the value from device configuration {@code
+     * auto_data_switch_performance_stability_time_threshold_millis}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is 120000.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_PERFORMANCE_STABILITY_MILLIS_LONG =
+            "opp_auto_data_switch_performance_stability_millis_long";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, defines the
+     * duration to wait before switching data back to the default SIM when both SIMs are out of
+     * service, in milliseconds. A value of 0 means the switch should occur immediately. A negative
+     * value indicates the threshold defined by {@link
+     * #KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_STABILITY_MILLIS_LONG} will be used instead.
+     *
+     * <p>When overridden, this value supersedes the value from device configuration {@code
+     * auto_data_switch_availability_switchback_stability_time_threshold_millis}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is 150000.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_SWITCHBACK_MILLIS_LONG =
+            "opp_auto_data_switch_availability_switchback_millis_long";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, indicates
+     * whether a ping test is required on the target data SIM before the device automatically
+     * switches to it.
+     *
+     * <p>When overridden, this value supersedes the value from the device configuration
+     * {@code auto_data_switch_ping_test_before_switch}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is true.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_PING_BEFORE_SWITCH_BOOL =
+            "opp_auto_data_switch_ping_before_switch_bool";
+
+    /**
+     * In the context of auto data switch between primary and opportunistic networks, defines the
+     * maximum number of retries when a validation for a switch has failed.
+     *
+     * <p>When overridden, this value supersedes the value from device configuration {@code
+     * auto_data_switch_validation_max_retry}.
+     *
+     * <p>This value does not impact auto data switching between primary networks.
+     *
+     * <p>The default value is 7.
+     *
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_VALIDATION_MAX_RETRIES_INT =
+            "opp_auto_data_switch_validation_max_retries_int";
 
     /**
      * Battery level threshold (in percentage) to trigger an audio alert.
@@ -11753,6 +11877,7 @@ public class CarrierConfigManager {
                 KEY_TELEPHONY_DATA_HANDOVER_RETRY_RULES_STRING_ARRAY, new String[] {
                         "retry_interval=1000|2000|4000|8000|16000, maximum_retries=5"
                 });
+        sDefaults.putStringArray(KEY_TELEPHONY_UNSUPPORTED_NETWORK_CAPABILITY_STRING_ARRAY, null);
         sDefaults.putBoolean(KEY_DELAY_IMS_TEAR_DOWN_UNTIL_CALL_END_BOOL, false);
         sDefaults.putStringArray(KEY_MISSED_INCOMING_CALL_SMS_PATTERN_STRING_ARRAY, new String[0]);
         sDefaults.putPersistableBundle(
@@ -11938,6 +12063,15 @@ public class CarrierConfigManager {
             sDefaults.putBoolean(KEY_SHOW_AVOID_BAD_WIFI_TOGGLE_BOOL, false);
         }
         sDefaults.putInt(KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT, 0);
+        sDefaults.putLong(
+                KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_STABILITY_MILLIS_LONG, 10000);
+        sDefaults.putLong(
+                KEY_OPP_AUTO_DATA_SWITCH_PERFORMANCE_STABILITY_MILLIS_LONG, 120000);
+        sDefaults.putLong(
+                KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_SWITCHBACK_MILLIS_LONG,
+                150000);
+        sDefaults.putBoolean(KEY_OPP_AUTO_DATA_SWITCH_PING_BEFORE_SWITCH_BOOL, true);
+        sDefaults.putInt(KEY_OPP_AUTO_DATA_SWITCH_VALIDATION_MAX_RETRIES_INT, 7);
 
         // Default value for low battery alert.
         sDefaults.putInt(KEY_LOW_BATTERY_ALERT_THRESHOLD_INT,
@@ -12505,10 +12639,10 @@ public class CarrierConfigManager {
     }
 
     /**
-     * Get subset of specified carrier configuration if available or empty bundle, without throwing
-     * {@link RuntimeException} to caller.
-     *
-     * <p>This is a system internally used only utility to reduce the repetitive logic.
+     * Retrieves a subset of carrier configuration values for a specific subscription.
+     * <p>
+     * This is a utility method for internal use that simplifies retrieving specific carrier
+     * configurations and handles exceptions by returning an empty bundle.
      *
      * <p>Requires Permission:
      * {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}, or the calling app
@@ -12518,7 +12652,8 @@ public class CarrierConfigManager {
      * @param context Context used to get the CarrierConfigManager service.
      * @param subId The subscription ID to get the config from.
      * @param keys The config keys the client is interested in.
-     * @return Config bundle with key/value for the specified keys or empty bundle when failed
+     * @return A {@link PersistableBundle} containing the requested key-value pairs, or an empty
+     *         bundle if the configuration is unavailable or an error occurs.
      * @hide
      */
     @RequiresPermission(anyOf = {

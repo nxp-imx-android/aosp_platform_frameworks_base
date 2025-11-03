@@ -141,6 +141,7 @@ import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
 import com.android.wm.shell.transition.MixedTransitionHandler;
+import com.android.wm.shell.transition.TransitionLeashManager;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider;
 import com.android.wm.shell.unfold.UnfoldAnimationController;
@@ -774,13 +775,14 @@ public abstract class WMShellBaseModule {
             Optional<DesktopUserRepositories> desktopUserRepositories,
             TaskStackTransitionObserver taskStackTransitionObserver,
             @ShellMainThread ShellExecutor mainExecutor,
-            DesktopState desktopState
+            DesktopState desktopState,
+            DesktopModeCompatPolicy desktopModeCompatPolicy
     ) {
         return Optional.ofNullable(
                 RecentTasksController.create(context, shellInit, shellController,
                         shellCommandHandler, taskStackListener, activityTaskManager,
                         desktopUserRepositories, taskStackTransitionObserver, mainExecutor,
-                        desktopState));
+                        desktopState, desktopModeCompatPolicy));
     }
 
     @BindsOptionalOf
@@ -809,13 +811,20 @@ public abstract class WMShellBaseModule {
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             @ShellAnimationThread ShellExecutor animExecutor,
+            TransitionLeashManager transitionLeashManager,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             HomeTransitionObserver homeTransitionObserver,
             FocusTransitionObserver focusTransitionObserver) {
         return new Transitions(context, shellInit, shellCommandHandler, shellController, organizer,
                 pool, displayController, displayInsetsController, mainExecutor, mainHandler,
-                animExecutor, rootTaskDisplayAreaOrganizer, homeTransitionObserver,
-                focusTransitionObserver);
+                animExecutor, transitionLeashManager, rootTaskDisplayAreaOrganizer,
+                homeTransitionObserver, focusTransitionObserver);
+    }
+
+    @WMSingleton
+    @Provides
+    static TransitionLeashManager provideTransitionsLeashManager() {
+        return new TransitionLeashManager();
     }
 
     @WMSingleton
@@ -1068,7 +1077,6 @@ public abstract class WMShellBaseModule {
             Optional<DesktopTasksController> desktopTasksController) {
         return desktopTasksController.map(DesktopTasksController::asDesktopMode);
     }
-
 
     @BindsOptionalOf
     @DynamicOverride

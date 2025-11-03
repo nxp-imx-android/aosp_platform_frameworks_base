@@ -111,18 +111,20 @@ fun RecordDetailsSettings(
                 onCheckedChange = { parametersViewModel.shouldRecordMicrophone = it },
                 modifier = Modifier,
             )
-            RichSwitch(
-                icon =
-                    loadIcon(
-                        viewModel = drawableLoaderViewModel,
-                        resId = R.drawable.ic_selfie_expressive,
-                        contentDescription = null,
-                    ),
-                label = stringResource(R.string.screen_record_should_show_camera_label),
-                checked = parametersViewModel.shouldShowFrontCamera == true,
-                onCheckedChange = { parametersViewModel.setShouldShowFrontCamera(it) },
-                modifier = Modifier,
-            )
+            AnimatedVisibility(parametersViewModel.canUseFrontCamera) {
+                RichSwitch(
+                    icon =
+                        loadIcon(
+                            viewModel = drawableLoaderViewModel,
+                            resId = R.drawable.ic_selfie_expressive,
+                            contentDescription = null,
+                        ),
+                    label = stringResource(R.string.screen_record_should_show_camera_label),
+                    checked = parametersViewModel.shouldShowFrontCamera == true,
+                    onCheckedChange = { parametersViewModel.setShouldShowFrontCamera(it) },
+                    modifier = Modifier,
+                )
+            }
             AnimatedVisibility(
                 targetViewModel.currentTarget is RecordDetailsTargetItemViewModel.EntireScreen
             ) {

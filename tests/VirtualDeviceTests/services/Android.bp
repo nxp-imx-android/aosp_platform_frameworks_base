@@ -24,6 +24,7 @@ android_test {
         "androidx.test.runner",
         "flag-junit",
         "junit",
+        "junit-params",
         "mockito-target-extended-minus-junit4",
         "services.companion",
         "services.core",

@@ -69,6 +69,8 @@ import java.time.Duration;
 @RunWithLooper
 public class KeyguardAbsKeyInputViewControllerTest extends SysuiTestCase {
 
+    private static final Duration TIMEOUT = Duration.ofMillis(100);
+
     @Mock
     private KeyguardAbsKeyInputView mAbsKeyInputView;
     @Mock
@@ -206,11 +208,7 @@ public class KeyguardAbsKeyInputViewControllerTest extends SysuiTestCase {
     public void testOnViewAttached() {
         reset(mLockPatternUtils);
         mKeyguardAbsKeyInputViewController.onViewAttached();
-        if (android.security.Flags.manageLockoutEndTimeInService()) {
-            verify(mLockPatternUtils).getLockoutEndTime(anyInt());
-        } else {
-            verify(mLockPatternUtils).getLockoutAttemptDeadline(anyInt());
-        }
+        verify(mLockPatternUtils).getLockoutEndTime(anyInt());
     }
 
     @Test
@@ -226,28 +224,28 @@ public class KeyguardAbsKeyInputViewControllerTest extends SysuiTestCase {
     @Test
     @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
     public void onPasswordChecked_withMSDLFeedback_withMatch_playsUnlockToken() {
-        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, true, 100, true, false);
+        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, true, TIMEOUT, true, false);
         assertThat(mMSDLPlayer.getLatestTokenPlayed()).isEqualTo(MSDLToken.UNLOCK);
     }
 
     @Test
     @DisableFlags(Flags.FLAG_MSDL_FEEDBACK)
     public void onPasswordChecked_withoutMSDLFeedback_withMatch_doesNotPlayToken() {
-        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, true, 100, true, false);
+        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, true, TIMEOUT, true, false);
         assertThat(mMSDLPlayer.getLatestTokenPlayed()).isNull();
     }
 
     @Test
     @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
     public void onPasswordChecked_withMSDLFeedback_withoutMatch_playsFailureToken() {
-        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, false, 100, true, false);
+        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, false, TIMEOUT, true, false);
         assertThat(mMSDLPlayer.getLatestTokenPlayed()).isEqualTo(MSDLToken.FAILURE);
     }
 
     @Test
     @DisableFlags(Flags.FLAG_MSDL_FEEDBACK)
     public void onPasswordChecked_withoutMSDLFeedback_withoutMatch_doesNotPlayToken() {
-        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, false, 100, true, false);
+        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, false, TIMEOUT, true, false);
         assertThat(mMSDLPlayer.getLatestTokenPlayed()).isNull();
     }
 }

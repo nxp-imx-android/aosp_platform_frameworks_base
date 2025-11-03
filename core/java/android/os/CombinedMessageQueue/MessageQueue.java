@@ -34,7 +34,6 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
-import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 import android.util.Printer;
 import android.util.SparseArray;
@@ -195,14 +194,7 @@ public final class MessageQueue {
     private static boolean computeUseConcurrent() {
         if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)
                 || Flags.useConcurrentMessageQueueInApps()) {
-            // b/447778739: Some Robolectric tests still use legacy LooperMode.
-            try {
-                Class.forName("org.robolectric.Robolectric");
-                // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
-                return false;
-            } catch (ClassNotFoundException e) {
-                return true;
-            }
+            return true;
         }
 
         final String processName = Process.myProcessName();
@@ -227,7 +219,9 @@ public final class MessageQueue {
         if (sSkipEpollWaitForZeroTimeoutInitialized) {
             return;
         }
-        nativeSetSkipEpollWaitForZeroTimeout(ptr);
+        if (!Flags.nativeLooperSkipEpollWaitForZeroTimeoutHoldback()) {
+            nativeSetSkipEpollWaitForZeroTimeout(ptr);
+        }
         sSkipEpollWaitForZeroTimeoutInitialized = true;
     }
 
@@ -502,7 +496,6 @@ public final class MessageQueue {
      * @see OnFileDescriptorEventListener
      * @see #removeOnFileDescriptorEventListener
      */
-    @RavenwoodThrow(blockedBy = android.os.ParcelFileDescriptor.class)
     public void addOnFileDescriptorEventListener(@NonNull FileDescriptor fd,
             @OnFileDescriptorEventListener.Events int events,
             @NonNull OnFileDescriptorEventListener listener) {
@@ -544,7 +537,6 @@ public final class MessageQueue {
      * @see OnFileDescriptorEventListener
      * @see #addOnFileDescriptorEventListener
      */
-    @RavenwoodThrow(blockedBy = android.os.ParcelFileDescriptor.class)
     public void removeOnFileDescriptorEventListener(@NonNull FileDescriptor fd) {
         if (fd == null) {
             throw new IllegalArgumentException("fd must not be null");
@@ -556,7 +548,6 @@ public final class MessageQueue {
         }
     }
 
-    @RavenwoodThrow(blockedBy = android.os.ParcelFileDescriptor.class)
     private void updateOnFileDescriptorEventListenerLocked(FileDescriptor fd, int events,
             OnFileDescriptorEventListener listener) {
         final int fdNum = fd.getInt$();

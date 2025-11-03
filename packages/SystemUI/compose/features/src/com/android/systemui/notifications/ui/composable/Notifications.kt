@@ -107,7 +107,6 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 object Notifications {
@@ -300,7 +299,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 blurSupported = isTransparencyEnabled,
             )
         )
-    val syntheticScroll = viewModel.syntheticScroll.collectAsStateWithLifecycle(0f)
     val expansionFraction by viewModel.expandFraction.collectAsStateWithLifecycle(0f)
     val screenHeight = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
 
@@ -327,25 +325,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
     // The top y bound of the IME.
     val imeTop = remember { mutableFloatStateOf(0f) }
-
-    // if we receive scroll delta from NSSL, offset the scrim and placeholder accordingly.
-    LaunchedEffect(syntheticScroll, scrollState) {
-        snapshotFlow { syntheticScroll.value }
-            .filter {
-                val transitionState =
-                    this@NestedScrollingNotificationPanel.layoutState.transitionState
-                // Only apply the synthetic scroll if we are not transitioning and showing notifs
-                transitionState.isIdle(Scenes.Shade) ||
-                    transitionState.isIdle(Overlays.NotificationsShade)
-            }
-            .collect { delta ->
-                scrollStackWithNestedScroll(
-                    delta = Offset(x = 0f, y = delta),
-                    nestedScrollDispatcher = nestedScrollDispatcher,
-                    scrollState = scrollState,
-                )
-            }
-    }
 
     // if remote input state changes, compare the row and IME's overlap and offset the scrim and
     // placeholder accordingly.

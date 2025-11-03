@@ -1178,8 +1178,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mView.setOnEmptySpaceClickListener(listener);
     }
 
-    public void setTrackingHeadsUp(ExpandableNotificationRow expandableNotificationRow) {
-        mView.setTrackingHeadsUp(expandableNotificationRow);
+    public void setTrackingHeadsUp(ExpandableNotificationRow row, String caller) {
+        if (HeadsUpTouchHelper.DEBUG) {
+            String key = "null";
+            if (row != null) {
+                key = row.getKey();
+            }
+            Log.i(HeadsUpTouchHelper.TAG, caller + " => NSSLC.setTrackingHeadsUp: " + key);
+        }
+        mView.setTrackingHeadsUp(row);
     }
 
     public void wakeUpFromPulse() {
@@ -1938,8 +1945,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 @Override
-                public void setTrackedHeadsUp(ExpandableNotificationRow expandableNotificationRow) {
-                    setTrackingHeadsUp(expandableNotificationRow);
+                public void setTrackedHeadsUp(ExpandableNotificationRow row, String reason) {
+                    setTrackingHeadsUp(row, reason + " => HeadsUpNotificationViewController");
                 }
 
                 @Override

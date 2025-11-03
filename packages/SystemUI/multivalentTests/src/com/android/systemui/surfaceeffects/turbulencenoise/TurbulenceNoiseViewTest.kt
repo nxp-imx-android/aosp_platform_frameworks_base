@@ -52,32 +52,32 @@ class TurbulenceNoiseViewTest : SysuiTestCase() {
     }
 
     @Test
-    fun playEaseIn_playsEaseInAnimation() {
+    fun playFadeIn_playsFadeInAnimation() {
         val config = TurbulenceNoiseAnimationConfig()
         val turbulenceNoiseView = TurbulenceNoiseView(context, null)
         turbulenceNoiseView.initShader(SIMPLEX_NOISE, config)
         var onAnimationEndCalled = false
 
         fakeExecutor.execute {
-            turbulenceNoiseView.playEaseIn(onAnimationEnd = { onAnimationEndCalled = true })
+            turbulenceNoiseView.playFadeIn(onAnimationEnd = { onAnimationEndCalled = true })
 
-            fakeSystemClock.advanceTime(config.easeInDuration.toLong())
+            fakeSystemClock.advanceTime(config.fadeInDuration.toLong())
 
             assertThat(onAnimationEndCalled).isTrue()
         }
     }
 
     @Test
-    fun playEaseOut_playsEaseOutAnimation() {
+    fun playFadeOut_playsFadeOutAnimation() {
         val config = TurbulenceNoiseAnimationConfig()
         val turbulenceNoiseView = TurbulenceNoiseView(context, null)
         turbulenceNoiseView.initShader(SIMPLEX_NOISE, config)
         var onAnimationEndCalled = false
 
         fakeExecutor.execute {
-            turbulenceNoiseView.playEaseOut(onAnimationEnd = { onAnimationEndCalled = true })
+            turbulenceNoiseView.playFadeOut(onAnimationEnd = { onAnimationEndCalled = true })
 
-            fakeSystemClock.advanceTime(config.easeOutDuration.toLong())
+            fakeSystemClock.advanceTime(config.fadeOutDuration.toLong())
 
             assertThat(onAnimationEndCalled).isTrue()
         }

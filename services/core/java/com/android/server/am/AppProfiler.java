@@ -76,7 +76,6 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Debug;
-import android.os.Flags;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -742,14 +741,11 @@ public class AppProfiler {
     }
 
     boolean isProfilingPss() {
-        return !Flags.removeAppProfilerPssCollection()
-                || mService.mConstants.mForceEnablePssProfiling;
+        return mService.mConstants.mForceEnablePssProfiling;
     }
 
-    // This method is analogous to collectPssInBackground() and is intended to be used as a
-    // replacement if Flags.removeAppProfilerPssCollection() is enabled. References to PSS in
-    // methods outside of AppProfiler have generally been kept where a new RSS equivalent is not
-    // technically necessary. These can be updated once the flag is completely rolled out.
+    // This method is analogous to collectPssInBackground() and is used by default, if PSS
+    // collection hasn't been manually enabled.
     private void collectRssInBackground() {
         long start = SystemClock.uptimeMillis();
         MemInfoReader memInfo = null;
@@ -955,9 +951,9 @@ public class AppProfiler {
     /**
      * Record new RSS sample for a process.
      *
-     * This method is analogous to recordPssSampleLPf() and is intended to be used as a replacement
-     * if Flags.removeAppProfilerPssCollection() is enabled. Functionally, this differs in that PSS,
-     * SwapPss, and USS are no longer collected and reported.
+     * This method is analogous to recordPssSampleLPf() and is used by default, as long as PSS
+     * collection isn't manually enabled. Functionally, this differs in that PSS, SwapPss, and USS
+     * are no longer collected and reported.
      *
      * This method will also poll PSS if the app has requested that a heap dump be taken if its PSS
      * reaches some threshold set with ActivityManager.setWatchHeapLimit().
@@ -1339,7 +1335,7 @@ public class AppProfiler {
     }
 
     @GuardedBy({"mService", "mProcLock"})
-    void updateLowMemStateLSP(int numCached, int numEmpty, int numTrimming, long now) {
+    void updateLowMemStateLSP(int numCached, int numEmpty, long now) {
         int memFactor;
         if (mLowMemDetector != null && mLowMemDetector.isAvailable()) {
             memFactor = mLowMemDetector.getMemFactor();
@@ -1393,24 +1389,19 @@ public class AppProfiler {
 
         mCachedAppsWatermarkData.updateCachedAppsHighWatermarkIfNecessaryLocked(
                 numCached + numEmpty, now);
-        boolean allChanged;
-        int trackerMemFactor;
         synchronized (mService.mProcessStats.mLock) {
-            allChanged = mService.mProcessStats.setMemFactorLocked(memFactor,
+            mService.mProcessStats.setMemFactorLocked(memFactor,
                     mService.mAtmInternal == null || !mService.mAtmInternal.isSleeping(),
                     SystemClock.uptimeMillis() /* re-acquire the time within the lock */);
-            trackerMemFactor = mService.mProcessStats.getMemFactorLocked();
         }
 
         mLastMemoryLevel = memFactor;
-        mService.mProcessStateController.setIsLastMemoryLevelNormal(isLastMemoryLevelNormal());
         mLastNumProcesses = mService.mProcessList.getLruSizeLOSP();
 
         // Dispatch UI_HIDDEN to processes that need it
         mService.mProcessList.forEachLruProcessesLOSP(
                 true,
                 app -> {
-                    final ProcessProfileRecord profile = app.mProfile;
                     final IApplicationThread thread;
                     int procState = app.getCurProcState();
                     if (((procState >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND

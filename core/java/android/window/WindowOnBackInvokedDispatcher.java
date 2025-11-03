@@ -665,11 +665,9 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
             // This is only called in some special cases such as when activity embedding is active
             // or when the activity is letterboxed. Otherwise mProgressAnimator#onBackProgressed is
             // called from WindowOnBackInvokedDispatcher#onMotionEvent
-            mHandler.post(() -> {
-                if (getBackAnimationCallback() != null) {
-                    mProgressAnimator.onBackProgressed(backEvent);
-                }
-            });
+            if (getBackAnimationCallback() != null) {
+                mHandler.post(() -> mProgressAnimator.onBackProgressed(backEvent));
+            }
         }
 
         @Override

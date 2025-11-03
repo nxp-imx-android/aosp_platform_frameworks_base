@@ -20,19 +20,17 @@ import android.annotation.NonNull;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.util.Slog;
-
 import com.android.internal.annotations.VisibleForTesting;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.Objects;
 import javax.annotation.concurrent.GuardedBy;
 
 class ConnectedAssociationStore {
@@ -50,8 +48,7 @@ class ConnectedAssociationStore {
     interface Listener {
         void onTransportConnected(@NonNull AssociationInfo associationInfo);
 
-        void onTransportDisconnected(
-                int associationId, @NonNull Collection<AssociationInfo> connectedAssociations);
+        void onTransportDisconnected(int associationId);
     }
 
     ConnectedAssociationStore(
@@ -130,7 +127,7 @@ class ConnectedAssociationStore {
             Slog.i(TAG, "Transport disconnected for association: " + associationId);
 
             mConnectedAssociations.remove(associationId);
-            mListener.onTransportDisconnected(associationId, newTaskContinuityAssociations);
+            mListener.onTransportDisconnected(associationId);
         }
 
         for (AssociationInfo associationInfo : addedAssociations) {

@@ -16,8 +16,10 @@
 
 package com.android.systemui.statusbar.notification.stack.domain.interactor
 
+import android.platform.test.annotations.DisableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -77,6 +79,7 @@ class NotificationStackAppearanceInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun stackRounding() =
         kosmos.runTest {
             val stackRounding by collectLastValue(underTest.shadeScrimRounding)

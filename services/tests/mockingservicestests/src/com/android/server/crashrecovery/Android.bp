@@ -32,8 +32,12 @@ android_test {
     static_libs: [
         "androidx.test.core",
         "androidx.test.runner",
+        "com.android.crashrecovery.flags-aconfig-java",
         "flag-junit",
         "mockito-target-extended-minus-junit4",
+        "platform-compat-test-rules",
+        "platform-parametric-runner-lib",
+        "platform-test-annotations",
         "services.core",
         "truth",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {

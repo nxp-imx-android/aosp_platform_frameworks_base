@@ -172,12 +172,8 @@
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"നിങ്ങളുടെ ബ്രൗസറിൽ"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"ശരി"</string>
     <string name="desktop_windowing_app_to_web_education_text" msgid="1599668769538703570">"നിങ്ങളുടെ ബ്രൗസറിലെ ആപ്പുകൾ ഇവിടെ അതിവേഗം തുറക്കുക"</string>
-    <!-- no translation found for open_by_default_splash_dialog_title_text (2645214455870859991) -->
-    <skip />
-    <!-- no translation found for open_by_default_splash_dialog_checkbox_text (7367791478473586694) -->
-    <skip />
-    <!-- no translation found for open_by_default_splash_dialog_browser_text (4439951040200685938) -->
-    <skip />
-    <!-- no translation found for open_by_default_splash_dialog_app_text (2680408983754147907) -->
-    <skip />
+    <string name="open_by_default_splash_dialog_title_text" msgid="2645214455870859991">"&lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt; ലിങ്കുകൾ എങ്ങനെ തുറക്കാനാണ് നിങ്ങൾ ആഗ്രഹിക്കുന്നത്?"</string>
+    <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"എന്റെ ചോയ്‌സ് ഓർമ്മിക്കുക"</string>
+    <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"ബ്രൗസറിൽ തുറക്കുക"</string>
+    <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"ആപ്പിൽ തന്നെ തുടരുക"</string>
 </resources>

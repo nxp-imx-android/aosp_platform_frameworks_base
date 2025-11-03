@@ -113,11 +113,16 @@ public class GpuService extends SystemService {
     public void onBootPhase(int phase) {
         if (phase == PHASE_BOOT_COMPLETED) {
             mContentResolver = mContext.getContentResolver();
+            if (android.provider.flags.Flags.angleDynamicDenylist()) {
+                mGameDriverListener = new GameDriverDeviceConfigListener();
+            }
             if (!mHasProdDriver && !mHasDevDriver) {
                 return;
             }
+            if (mGameDriverListener == null) {
+                mGameDriverListener = new GameDriverDeviceConfigListener();
+            }
             mSettingsObserver = new SettingsObserver();
-            mGameDriverListener = new GameDriverDeviceConfigListener();
             fetchProductionDriverPackageProperties();
             processDenylists();
             setDenylist();

@@ -35,7 +35,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         // Only allow one package to create one toolbar
         if (existingToolbar != null) {
             verboseLog("Reshow for existing toolbar for uid: $uid")
-            toolbarUiExecutor.execute { existingToolbar.show(showInfo) }
+            existingToolbar.show(showInfo)
         } else {
             verboseLog("Show new toolbar for uid: $uid")
             val toolbar =
@@ -48,7 +48,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
                     ::onPasteAction,
                 )
             toolbarCache[uid] = toolbar
-            toolbarUiExecutor.execute { toolbar.show(showInfo) }
+            toolbar.show(showInfo)
         }
     }
 
@@ -56,7 +56,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
             verboseLog("onHide() for uid: $uid")
-            toolbarUiExecutor.execute { toolbar.hide(uid) }
+            toolbar.hide(uid)
         }
     }
 
@@ -73,7 +73,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
     private fun removeAndDismissToolbar(uid: Int) {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
-            toolbarUiExecutor.execute { toolbar.dismiss(uid) }
+            toolbar.dismiss(uid)
             toolbarCache -= uid
         }
     }

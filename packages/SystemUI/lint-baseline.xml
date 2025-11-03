@@ -24276,7 +24276,7 @@
         errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="frameworks/base/packages/SystemUI/src/com/android/systemui/user/data/repository/UserRepository.kt"
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/user/data/repository/UserRepositoryImpl.kt"
             line="34"
             column="1"/>
     </issue>

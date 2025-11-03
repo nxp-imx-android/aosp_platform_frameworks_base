@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selecteer een app om te delen"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Audio delen"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"App-venster delen"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Als je deelt, is de content van je scherm zichtbaar"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Screenshot van venster maken"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Venster opnemen"</string>
@@ -367,8 +369,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"\'Sensoren uit\' actief"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Alle meldingen wissen."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Meldingen"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Nog # melding in deze groep.}other{Nog # meldingen in deze groep.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Het scherm is nu vergrendeld in liggende stand."</string>
@@ -710,8 +711,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Stil"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Meldingen"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Gesprekken"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Hoogtepunten"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Alle stille meldingen wissen"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Instellingen voor meldingen openen"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Geen meldingen}=1{Meldingen onderbroken door {mode}}=2{Meldingen onderbroken door {mode} en 1 andere modus}other{Meldingen onderbroken door {mode} en # andere modi}}"</string>
@@ -1151,29 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Aan/uit-menu"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Pagina <xliff:g id="ID_1">%1$d</xliff:g> van <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> aanzetten?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Actie "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is de sneltoets om <xliff:g id="ID_3">^3</xliff:g> te gebruiken. <xliff:g id="ID_4">^4</xliff:g>."</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Druk nog een keer op Actie + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> om <xliff:g id="ID_3">%3$s</xliff:g> aan te zetten"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Sneltoets voor <xliff:g id="ID_1">%1$s</xliff:g> aanzetten?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Niet aanzetten"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Sneltoets aanzetten"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Sneltoets <xliff:g id="ID_1">%1$s</xliff:g> aangezet"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Actie "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is de sneltoets om <xliff:g id="ID_3">^3</xliff:g> te gebruiken, een toegankelijkheidsfunctie. Hiermee kun je snel inzoomen op het scherm om content te vergroten. Als vergroting aanstaat, druk je op Actie "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> en dan + of - om het zoomniveau aan te passen."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Sneltoets uitzetten"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Aan laten"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Actie "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> is de sneltoets om <xliff:g id="ID_3">^3</xliff:g> te gebruiken. <xliff:g id="ID_4">^3</xliff:g> is een schermlezer waarmee je items hardop kunt laten voorlezen. Deze kan nuttig zijn voor mensen die het scherm moeilijk kunnen zien. Hierdoor kan de manier veranderen waarop je apparaat werkt."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Als je de sneltoets aanzet, geef je TalkBack volledige controle over je apparaat."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Volledige controle is gepast voor apps die je helpen met toegankelijkheid, maar niet voor de meeste apps."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Scherm bekijken en bedienen"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"De functie kan alle content op het scherm lezen en content bovenop andere apps weergeven."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Acties bekijken en uitvoeren"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"De functie kan je interacties met een app of een hardwaresensor bijhouden en namens jou met apps communiceren."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Als je op Actie "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> drukt, wordt <xliff:g id="ID_3">^3</xliff:g> aangezet, een toegankelijkheidsfunctie. Hiermee kun je je apparaat handsfree bedienen."</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Toegankelijkheid"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Klaar"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Vergrendelscherm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Uitzetten…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Onderhoudsstappen bekijken"</string>
@@ -1740,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"naar de volgende pagina navigeren"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatisch invullen"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"uitvouwen"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

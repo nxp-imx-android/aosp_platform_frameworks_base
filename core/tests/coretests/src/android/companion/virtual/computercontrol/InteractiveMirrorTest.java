@@ -22,18 +22,13 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import android.companion.virtualdevice.flags.Flags;
 import android.os.RemoteException;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.SurfaceControl;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -41,8 +36,6 @@ import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
 public class InteractiveMirrorTest {
-    @Rule
-    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private IInteractiveMirror mMockRemoteMirror;
 
@@ -88,16 +81,6 @@ public class InteractiveMirrorTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_SHOW_TOUCHES)
-    public void resize_doesNotResizeMirrorSurface() throws RemoteException {
-        final int width = 100;
-        final int height = 600;
-        mMirror.resize(width, height);
-        verify(mMockRemoteMirror, never()).resize(anyInt(), anyInt());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_SHOW_TOUCHES)
     public void resize_resizesMirrorSurface() throws RemoteException {
         final int width = 100;
         final int height = 600;

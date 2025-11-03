@@ -30,6 +30,7 @@ import android.app.PendingIntent;
 import android.app.WallpaperColors;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.theming.ThemeStyle;
 import android.graphics.Bitmap;
@@ -891,8 +892,7 @@ public class MediaControlPanel {
                 artwork = new ColorDrawable(Color.TRANSPARENT);
                 isArtworkBound = false;
                 try {
-                    Drawable icon = mContext.getPackageManager()
-                            .getApplicationIcon(data.getPackageName());
+                    Drawable icon = getAppIcon(data.getPackageName());
                     mutableColorScheme = new ColorScheme(WallpaperColors.fromDrawable(icon),
                             darkTheme, ThemeStyle.CONTENT);
                 } catch (PackageManager.NameNotFoundException e) {
@@ -951,17 +951,23 @@ public class MediaControlPanel {
                     // Resume players use launcher icon
                     appIconView.setColorFilter(getGrayscaleFilter());
                     try {
-                        Drawable icon = mContext.getPackageManager()
-                                .getApplicationIcon(data.getPackageName());
+                        Drawable icon = getAppIcon(data.getPackageName());
                         appIconView.setImageDrawable(icon);
                     } catch (PackageManager.NameNotFoundException e) {
                         Log.w(TAG, "Cannot find icon for package " + data.getPackageName(), e);
                         appIconView.setImageResource(R.drawable.ic_music_note);
+                        appIconView.setColorFilter(Color.WHITE);
                     }
                 }
                 Trace.endAsyncSection(traceName, traceCookie);
             });
         });
+    }
+
+    private Drawable getAppIcon(String packageName) throws PackageManager.NameNotFoundException {
+        ApplicationInfo appInfo = mContext.getPackageManager()
+                .getApplicationInfoAsUser(packageName, 0, mMediaData.getUserId());
+        return mContext.getPackageManager().getApplicationIcon(appInfo);
     }
 
     // This method should be called from a background thread. WallpaperColors.fromBitmap takes a

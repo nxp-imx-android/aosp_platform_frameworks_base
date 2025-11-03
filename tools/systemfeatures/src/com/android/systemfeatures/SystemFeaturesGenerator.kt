@@ -437,7 +437,11 @@ object SystemFeaturesGenerator {
                 // As an optimization, only create the switch block if needed. Even an empty
                 // switch-on-string block can induce a hash, which we can avoid if readonly
                 // support is completely disabled.
+                // Note that we insert the null check as a defensive measure; this shouldn't happen
+                // in production (and is disallowed by public APIs), but can occur in testing and
+                // we don't want this optimization to surface the NPE.
                 hasSwitchBlock = true
+                methodBuilder.addStatement("if (featureName == null) return null")
                 methodBuilder.beginControlFlow("switch (featureName)")
             }
             methodBuilder.addCode("case \$T.\$N: ", PACKAGEMANAGER_CLASS, feature.name)

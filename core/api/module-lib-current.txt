@@ -104,6 +104,7 @@ package android.content {
     field @FlaggedApi("android.app.ondeviceintelligence.flags.enable_on_device_intelligence_module") public static final int BIND_FOREGROUND_SERVICE = 67108864; // 0x4000000
     field public static final String PAC_PROXY_SERVICE = "pac_proxy";
     field public static final String TEST_NETWORK_SERVICE = "test_network";
+    field @FlaggedApi("android.security.uprobestats_bridge_service") public static final String UPROBESTATS_BRIDGE_SERVICE = "uprobestats_bridge";
     field @FlaggedApi("android.os.mainline_vcn_platform_api") public static final String VCN_MANAGEMENT_SERVICE = "vcn_management";
     field @FlaggedApi("android.webkit.update_service_ipc_wrapper") public static final String WEBVIEW_UPDATE_SERVICE = "webviewupdate";
   }
@@ -622,6 +623,15 @@ package android.se.omapi {
     method @FlaggedApi("android.nfc.enable_nfc_mainline") @NonNull public android.os.IBinder getOrThrow() throws android.se.omapi.SeServiceManager.ServiceNotFoundException;
     method @FlaggedApi("android.nfc.enable_nfc_mainline") public void register(@NonNull android.os.IBinder);
     method @FlaggedApi("android.nfc.enable_nfc_mainline") @Nullable public android.os.IBinder tryGet();
+  }
+
+}
+
+package android.service.uprobestats {
+
+  @FlaggedApi("android.security.dynamic_instrumentation_api") public class DynamicInstrumentationUtil {
+    method @FlaggedApi("android.security.dynamic_instrumentation_api") @Nullable public static android.content.ComponentName getDynamicInstrumentationEventConsumer(@NonNull android.content.Context);
+    method @FlaggedApi("android.security.dynamic_instrumentation_api") public static void setDynamicInstrumentationEventConsumer(@NonNull android.content.Context, @Nullable android.content.ComponentName);
   }
 
 }

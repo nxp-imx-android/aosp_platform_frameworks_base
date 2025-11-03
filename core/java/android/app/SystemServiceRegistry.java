@@ -189,7 +189,6 @@ import android.net.wifi.sharedconnectivity.app.SharedConnectivityManager;
 import android.nfc.NfcFrameworkInitializer;
 import android.npumanager.NpuManagerFrameworkInitializer;
 import android.ondevicepersonalization.OnDevicePersonalizationFrameworkInitializer;
-import android.os.AnomalyDetectorFrameworkInitializer;
 import android.os.BatteryManager;
 import android.os.BatteryStats;
 import android.os.BatteryStatsManager;
@@ -233,6 +232,7 @@ import android.os.image.DynamicSystemManager;
 import android.os.image.IDynamicSystemService;
 import android.os.incremental.IIncrementalService;
 import android.os.incremental.IncrementalManager;
+import android.os.profiling.anomaly.AnomalyDetectorFrameworkInitializer;
 import android.os.storage.StorageManager;
 import android.permission.LegacyPermissionManager;
 import android.permission.PermissionCheckerManager;
@@ -638,9 +638,8 @@ public final class SystemServiceRegistry {
             @Override
             public TextServicesManager createService(ContextImpl ctx)
                     throws ServiceNotFoundException {
-                 if (ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)
-                        && ServiceManager.getService(Context.TEXT_SERVICES_MANAGER_SERVICE) == null
-                        && android.server.Flags.removeTextService()) {
+                if (ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH) &&
+                        ServiceManager.getService(Context.TEXT_SERVICES_MANAGER_SERVICE) == null) {
                     return null;
                 }
                 return TextServicesManager.createInstance(ctx);
@@ -1748,7 +1747,7 @@ public final class SystemServiceRegistry {
                                     Context.PERSONAL_CONTEXT_SERVICE);
                             IPersonalContextManager service =
                                     IPersonalContextManager.Stub.asInterface(iBinder);
-                            return new PersonalContextManager(service);
+                            return new PersonalContextManager(ctx, service);
                         }
                     });
         }
@@ -1922,23 +1921,22 @@ public final class SystemServiceRegistry {
                         return new SupervisionManager(ctx, service);
                     }
                 });
-        if (android.security.Flags.aapmApi()) {
-            registerService(Context.ADVANCED_PROTECTION_SERVICE, AdvancedProtectionManager.class,
-                    new CachedServiceFetcher<>() {
-                        @Override
-                        public AdvancedProtectionManager createService(ContextImpl ctx)
-                                throws ServiceNotFoundException {
-                            IBinder iBinder = ServiceManager.getService(
-                                    Context.ADVANCED_PROTECTION_SERVICE);
-                            IAdvancedProtectionService service =
-                                    IAdvancedProtectionService.Stub.asInterface(iBinder);
-                            if (service == null) {
-                                return null;
-                            }
-                            return new AdvancedProtectionManager(service);
+
+        registerService(Context.ADVANCED_PROTECTION_SERVICE, AdvancedProtectionManager.class,
+                new CachedServiceFetcher<>() {
+                    @Override
+                    public AdvancedProtectionManager createService(ContextImpl ctx)
+                            throws ServiceNotFoundException {
+                        IBinder iBinder = ServiceManager.getService(
+                                Context.ADVANCED_PROTECTION_SERVICE);
+                        IAdvancedProtectionService service =
+                                IAdvancedProtectionService.Stub.asInterface(iBinder);
+                        if (service == null) {
+                            return null;
                         }
-                    });
-        }
+                        return new AdvancedProtectionManager(service);
+                    }
+                });
 
         // DO NOT do a flag check like this unless the flag is read-only.
         // (because this code is executed during preload in zygote.)
@@ -2149,8 +2147,7 @@ public final class SystemServiceRegistry {
                     }
                     break;
                 case Context.TEXT_SERVICES_MANAGER_SERVICE:
-                    if (android.server.Flags.removeTextService()
-                            && hasSystemFeatureOpportunistic(ctx, PackageManager.FEATURE_WATCH)) {
+                    if (hasSystemFeatureOpportunistic(ctx, PackageManager.FEATURE_WATCH)) {
                         return null;
                     }
                     break;
@@ -2256,7 +2253,6 @@ public final class SystemServiceRegistry {
      * @hide
      */
     @Nullable
-    @RavenwoodRedirect
     public static String getSystemServiceClassName(@NonNull String name) {
         return SYSTEM_SERVICE_CLASS_NAMES.get(name);
     }

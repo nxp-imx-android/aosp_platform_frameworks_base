@@ -395,8 +395,15 @@
     <style name="SettingsLibEntityHeaderIcon">
         <item name="android:layout_width">@dimen/settingslib_expressive_space_large3</item>
         <item name="android:layout_height">@dimen/settingslib_expressive_space_large3</item>
+        <item name="android:layout_gravity">center</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:antialias">true</item>
+    </style>
+
+    <style name="SettingsLibEntityHeaderIconBackground">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
     </style>
 
     <style name="SettingsLibEntityHeaderTitle">

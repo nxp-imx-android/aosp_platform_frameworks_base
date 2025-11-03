@@ -73,7 +73,7 @@ class ScreenRecordingServiceNotificationInteractor(
                         putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, strings.title)
                     }
                 )
-        notificationManager.notify(notificationId, builder.build())
+        notificationManager.notify(tag, notificationId, builder.build())
     }
 
     override fun notifyRecording(notificationId: Int, audioSource: ScreenRecordingAudioSource) {
@@ -116,7 +116,7 @@ class ScreenRecordingServiceNotificationInteractor(
                         putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, strings.title)
                     }
                 )
-        notificationManager.notify(notificationId, builder.build())
+        notificationManager.notify(tag, notificationId, builder.build())
     }
 
     override fun notifySaved(
@@ -190,7 +190,7 @@ class ScreenRecordingServiceNotificationInteractor(
                     .showBigPictureWhenCollapsed(true)
             builder.setStyle(pictureStyle)
         }
-        notificationManager.notify(notificationId, builder.build())
+        notificationManager.notify(tag, notificationId, builder.build())
     }
 
     override fun notifyErrorSaving(notificationId: Int) {

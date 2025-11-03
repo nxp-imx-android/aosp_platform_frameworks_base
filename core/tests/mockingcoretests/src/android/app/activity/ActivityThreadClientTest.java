@@ -48,14 +48,18 @@ import android.app.Activity;
 import android.app.ActivityClient;
 import android.app.ActivityThread;
 import android.app.ActivityThread.ActivityClientRecord;
+import android.app.ContentProviderHolder;
 import android.app.LoadedApk;
 import android.app.servertransaction.PendingTransactionActions;
 import android.content.ComponentName;
+import android.content.ContentProvider;
 import android.content.Context;
+import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserHandle;
 import android.platform.test.annotations.Presubmit;
@@ -250,6 +254,35 @@ public class ActivityThreadClientTest {
                 shouldReportChange(currentConfig, newConfig, buckets,
                         CONFIG_FONT_SCALE /* handledConfigChanges */,
                         false /* alwaysReportChange */));
+    }
+
+    @Test
+    public void testUpdateDeviceIdForNonUIContexts_nullProviderContext() {
+        try (ClientMockSession clientSession = new ClientMockSession()) {
+            ActivityThread activityThread = ActivityThread.currentActivityThread();
+            final int testDeviceId = 1;
+
+            // Create a mock ContentProvider that returns a null context
+            ContentProvider mockProvider = mock(ContentProvider.class);
+            doReturn(null).when(mockProvider).getContext();
+
+            // Create a ProviderClientRecord with the mock provider
+            ActivityThread.ProviderClientRecord providerClientRecord =
+                    new ActivityThread.ProviderClientRecord(
+                            new String[]{"com.android.test.provider"},
+                            mock(IContentProvider.class),
+                            mockProvider,
+                            mock(ContentProviderHolder.class));
+
+            final IBinder keyBinder = new Binder();
+            activityThread.mLocalProviders.put(keyBinder, providerClientRecord);
+
+            try {
+                activityThread.updateDeviceIdForNonUIContexts(testDeviceId);
+            } finally {
+                activityThread.mLocalProviders.remove(keyBinder);
+            }
+        }
     }
 
     private void recreateAndVerifyNoRelaunch(ActivityThread activityThread, TestActivity activity) {

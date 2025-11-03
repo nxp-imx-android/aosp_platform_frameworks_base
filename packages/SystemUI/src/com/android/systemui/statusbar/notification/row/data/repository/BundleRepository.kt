@@ -31,7 +31,7 @@ class BundleRepository(
     @StringRes val titleText: Int,
     @DrawableRes val bundleIcon: Int,
     @StringRes val summaryText: Int,
-    @Adjustment.Types val bundleType: Int,
+    val bundleType: Int,
 ) {
 
     var numberOfChildren by mutableStateOf<Int?>(0)

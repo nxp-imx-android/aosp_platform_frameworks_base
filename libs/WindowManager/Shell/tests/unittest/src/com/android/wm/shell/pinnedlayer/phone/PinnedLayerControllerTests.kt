@@ -35,16 +35,19 @@ import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.view.WindowManager.TransitionType
 import android.window.TransitionInfo
 import android.window.TransitionInfo.FLAG_NONE
-import android.window.WindowContainerTransaction
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
+import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.desktopmode.NormalAppLayerHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -55,9 +58,12 @@ import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 
 /**
  * Unit tests against [PinnedLayerController]
@@ -74,12 +80,18 @@ class PinnedLayerControllerTests : ShellTestCase() {
     @Mock private lateinit var transitions: Transitions
     @Mock private lateinit var startTransaction: SurfaceControl.Transaction
     @Mock private lateinit var finishTransaction: SurfaceControl.Transaction
+    @Mock private lateinit var normalLayerHandler: NormalAppLayerHandler
 
     private lateinit var pinnedLayerController: PinnedLayerController
 
     @Before
     fun setup() {
-        pinnedLayerController = PinnedLayerController(shellInit, transitions)
+        pinnedLayerController =
+            PinnedLayerController(
+                shellInit,
+                transitions,
+                lazy(LazyThreadSafetyMode.NONE) { normalLayerHandler },
+            )
     }
 
     @Test
@@ -95,12 +107,12 @@ class PinnedLayerControllerTests : ShellTestCase() {
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
         pinnedLayerController.handleRequest(transition, requestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         verifyCallbackResult(callback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
@@ -139,14 +151,20 @@ class PinnedLayerControllerTests : ShellTestCase() {
         )
 
         val wct1 = pinnedLayerController.handleRequest(transition1, requestInfo1)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             transition1,
             transitionInfo1,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         val wct2 = pinnedLayerController.handleRequest(transition2, requestInfo2)
+        pinnedLayerController.onTransitionReady(
+            transition2,
+            transitionInfo2,
+            startTransaction,
+            finishTransaction,
+        )
         pinnedLayerController.onTransitionConsumed(transition2, /* aborted= */ true, null)
 
         assertNotNull(wct1)
@@ -170,12 +188,12 @@ class PinnedLayerControllerTests : ShellTestCase() {
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
         pinnedLayerController.handleRequest(transition, requestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         verifyNoInteractions(callback)
         assertTrue(pinnedLayerController.isNotPinned(TASK_ID_0))
@@ -187,12 +205,12 @@ class PinnedLayerControllerTests : ShellTestCase() {
         val transition = mock<IBinder>()
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         assertTrue(pinnedLayerController.isNotPinned(TASK_ID_0))
         assertNull(pinnedLayerController.currentPinnedTask)
@@ -224,19 +242,19 @@ class PinnedLayerControllerTests : ShellTestCase() {
         )
 
         pinnedLayerController.handleRequest(transition1, requestInfo1)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             transition1,
             transitionInfo1,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
         pinnedLayerController.handleRequest(transition2, requestInfo2)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             transition2,
             transitionInfo2,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         verifyCallbackResult(callback1, RESULT_APPROVED)
         verifyCallbackResult(callback2, RESULT_APPROVED)
@@ -272,19 +290,19 @@ class PinnedLayerControllerTests : ShellTestCase() {
         )
 
         pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
         pinnedLayerController.handleRequest(backTransition, backRequestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             backTransition,
             backTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         verifyCallbackResult(pinCallback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
@@ -311,19 +329,19 @@ class PinnedLayerControllerTests : ShellTestCase() {
         )
 
         pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
         pinnedLayerController.handleRequest(closeTransition, closeRequestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             closeTransition,
             closeTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         verifyCallbackResult(pinCallback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isNotPinned(TASK_ID_0))
@@ -369,27 +387,27 @@ class PinnedLayerControllerTests : ShellTestCase() {
         )
 
         pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
         pinnedLayerController.handleRequest(backTransition, backRequestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             backTransition,
             backTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         pinnedLayerController.handleRequest(frontTransition, frontRequestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             frontTransition,
             frontTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         verifyCallbackResult(pinCallback, RESULT_APPROVED)
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
@@ -410,19 +428,23 @@ class PinnedLayerControllerTests : ShellTestCase() {
 
         // Pin the task
         pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             pinTransition,
             pinTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
         assertTrue(pinnedLayerController.hasActivePinnedTask())
 
         // Augment to dismiss the pin
         val dismissTransition = mock<IBinder>()
         val dismissRequestInfo = mock<TransitionRequestInfo>()
         val wct = WindowContainerTransaction()
-        pinnedLayerController.augmentRequestDismissPinnedTask(dismissTransition, dismissRequestInfo, wct)
+        pinnedLayerController.augmentRequestDismissPinnedTask(
+            dismissTransition,
+            dismissRequestInfo,
+            wct,
+        )
 
         // After augmenting, start the animation to process the unpin
         val backRequestInfo = sendTransitionRequest(TRANSIT_TO_BACK, triggerTaskId = TASK_ID_0)
@@ -430,14 +452,71 @@ class PinnedLayerControllerTests : ShellTestCase() {
         backTransitionInfo.addChange(
             buildChange(TRANSIT_TO_BACK, requireNotNull(backRequestInfo.triggerTask))
         )
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             dismissTransition,
             backTransitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         assertFalse(pinnedLayerController.hasActivePinnedTask())
+    }
+
+    @Test
+    fun handleUnpinRequest_taskIsPinned_unpinAndSwitchLayer() {
+        val pinTransition = mock<IBinder>()
+        val pinCallback = mock<IRemoteCallback>()
+        val pinnedToken = MockToken.token()
+        val pinRequestInfo =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                pinCallback,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedToken,
+            )
+        val pinTransitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+        pinTransitionInfo.addChange(
+            buildChange(TRANSIT_CHANGE, requireNotNull(pinRequestInfo.triggerTask))
+        )
+
+        val normalLayerTransition = mock<IBinder>()
+        val normalLayerCallback = mock<IRemoteCallback>()
+        val normalLayerRequestInfo =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_NORMAL_APP,
+                normalLayerCallback,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = pinnedToken,
+            )
+        val normalLayerTransitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+        normalLayerTransitionInfo.addChange(
+            buildChange(TRANSIT_CHANGE, requireNotNull(normalLayerRequestInfo.triggerTask))
+        )
+
+        whenever(normalLayerHandler.handleRequest(normalLayerTransition, normalLayerRequestInfo))
+            .thenReturn(WindowContainerTransaction())
+
+        // Pin the task first
+        pinnedLayerController.handleRequest(pinTransition, pinRequestInfo)
+        pinnedLayerController.onTransitionReady(
+            pinTransition,
+            pinTransitionInfo,
+            startTransaction,
+            finishTransaction,
+        )
+
+        // Then unpin it by switching layer
+        pinnedLayerController.handleRequest(normalLayerTransition, normalLayerRequestInfo)
+        pinnedLayerController.onTransitionReady(
+            normalLayerTransition,
+            normalLayerTransitionInfo,
+            startTransaction,
+            finishTransaction,
+        )
+
+        verifyCallbackResult(pinCallback, RESULT_APPROVED)
+        assertTrue(pinnedLayerController.isNotPinned(TASK_ID_0))
+        assertNull(pinnedLayerController.currentPinnedTask)
     }
 
     @Test
@@ -445,7 +524,9 @@ class PinnedLayerControllerTests : ShellTestCase() {
         val wct = WindowContainerTransaction()
 
         pinnedLayerController.augmentRequestDismissPinnedTask(
-            mock<IBinder>(), mock<TransitionRequestInfo>(), wct
+            mock<IBinder>(),
+            mock<TransitionRequestInfo>(),
+            wct,
         )
 
         assertTrue(wct.isEmpty)
@@ -460,22 +541,68 @@ class PinnedLayerControllerTests : ShellTestCase() {
     fun hasActivePinnedTask_withPinnedTask_returnsFalse() {
         val transition = mock<IBinder>()
         val callback = mock<IRemoteCallback>()
-        val requestInfo =
-            setupWindowingLayerTransition(
-                WINDOWING_LAYER_PINNED,
-                callback,
-            )
+        val requestInfo = setupWindowingLayerTransition(WINDOWING_LAYER_PINNED, callback)
         val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
 
         pinnedLayerController.handleRequest(transition, requestInfo)
-        pinnedLayerController.startAnimation(
+        pinnedLayerController.onTransitionReady(
             transition,
             transitionInfo,
             startTransaction,
             finishTransaction,
-        ) {}
+        )
 
         assertTrue(pinnedLayerController.hasActivePinnedTask())
+    }
+
+    @Test
+    fun closeTask_taskNotPinned_returnsFalse() {
+        // This task should not be pinned as it hasn't been registered anywhere in the
+        // PinnedLayerController.
+        val taskInfo = RunningTaskInfo().apply { taskId = TASK_ID_0 }
+
+        assertFalse(pinnedLayerController.closeTask(taskInfo))
+    }
+
+    @Test
+    fun closeTask_taskPinned_returnsTrueAndSendsTransition() {
+        val taskToken = MockToken.token()
+        val taskInfo =
+            RunningTaskInfo().apply {
+                token = taskToken
+                taskId = TASK_ID_0
+            }
+
+        val transition = mock<IBinder>()
+        val callback = mock<IRemoteCallback>()
+        val requestInfo =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                callback,
+                triggerTaskId = TASK_ID_0,
+                triggerTaskToken = taskToken,
+            )
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+        pinnedLayerController.handleRequest(transition, requestInfo)
+        pinnedLayerController.onTransitionReady(
+            transition,
+            transitionInfo,
+            startTransaction,
+            finishTransaction,
+        )
+        assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
+
+        assertTrue(pinnedLayerController.closeTask(taskInfo))
+
+        val wctCaptor = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        verify(transitions).startTransition(eq(TRANSIT_CLOSE), wctCaptor.capture(), anyOrNull())
+        assertThat(
+                wctCaptor.value.hierarchyOps.any { hop ->
+                    hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK &&
+                        hop.container == taskToken.asBinder()
+                }
+            )
+            .isTrue()
     }
 
     private fun verifyCallbackResult(callback: IRemoteCallback, expected: Int) {

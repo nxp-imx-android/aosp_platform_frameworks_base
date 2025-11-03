@@ -20,7 +20,7 @@ import android.annotation.SuppressLint
 import android.hardware.display.BrightnessInfo
 import android.hardware.display.DisplayManager
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.brightness.shared.model.BrightnessLog
+import com.android.systemui.brightness.shared.BrightnessLog
 import com.android.systemui.brightness.shared.model.LinearBrightness
 import com.android.systemui.brightness.shared.model.formatBrightness
 import com.android.systemui.brightness.shared.model.logDiffForTable

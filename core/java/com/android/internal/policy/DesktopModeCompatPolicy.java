@@ -17,6 +17,9 @@
 package com.android.internal.policy;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.os.UserHandle.USER_SYSTEM;
+import static android.os.UserManager.isHeadlessSystemUserMode;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -33,6 +36,7 @@ import android.content.pm.ResolveInfo;
 import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
+import com.android.window.flags.Flags;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -106,6 +110,11 @@ public class DesktopModeCompatPolicy {
     public boolean isTopActivityExemptFromDesktopWindowing(@Nullable ComponentName baseActivity,
             boolean isTopActivityNoDisplay, boolean isActivityStackTransparent, int numActivities,
             int userId, ActivityInfo info, @WindowConfiguration.ActivityType int topActivityType) {
+        if (Flags.enableDesktopFirstSysUserHsumBugfix()
+                && isHeadlessSystemUserMode() && userId == USER_SYSTEM) {
+            // An activity for system user in HSUM should not activate desktop windowing.
+            return true;
+        }
         final String packageName = baseActivity != null ? baseActivity.getPackageName() : null;
         if (packageName == null) {
             return false;
@@ -277,5 +286,24 @@ public class DesktopModeCompatPolicy {
             int userId) {
         final String defaultHomePackage = getDefaultHomePackage(userId);
         return defaultHomePackage == null || packageName.equals(defaultHomePackage);
+    }
+
+    /**
+    * Returns true if the task is transparent and full screen.
+    * Examples are Gemini and circle to search that overlay on top of other apps.
+    */
+    public boolean isTransparentOverlay(@NonNull TaskInfo task) {
+        return isTransparentOverlay(task.isActivityStackTransparent, task.numActivities,
+                task.getWindowingMode());
+    }
+
+   /**
+    * Returns true if the task is transparent and full screen.
+    * Examples are Gemini and circle to search that overlay on top of other apps.
+    */
+    public boolean isTransparentOverlay(boolean isActivityStackTransparent,
+            int numActivities, int windowingMode) {
+        return isTransparentTask(isActivityStackTransparent, numActivities)
+                && windowingMode == WINDOWING_MODE_FULLSCREEN;
     }
 }

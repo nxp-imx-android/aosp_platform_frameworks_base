@@ -199,6 +199,8 @@ android_app {
         "display_flags",
         "android.os.profiling.anomaly.flags-aconfig",
         "com.android.media.flags.mediasession-aconfig",
+        "npumanager_aconfig_flags",
+        "telecom_flags",
     ],
 }
 

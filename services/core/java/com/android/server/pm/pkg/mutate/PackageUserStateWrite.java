@@ -38,6 +38,15 @@ public interface PackageUserStateWrite {
     PackageUserStateWrite setDistractionFlags(
             @PackageManager.DistractionRestriction int restrictionFlags);
 
+    /**
+     * Writes the passed in App Lock enabled value to disk for the package
+     *
+     * @param enabled true if we are trying to enable App Lock, false otherwise
+     * @return the object doing the writing.
+     */
+    @NonNull
+    PackageUserStateWrite setAppLockEnabled(boolean enabled);
+
     @NonNull
     PackageUserStateWrite putSuspendParams(@NonNull UserPackage suspendingPackage,
             @Nullable SuspendParams suspendParams);

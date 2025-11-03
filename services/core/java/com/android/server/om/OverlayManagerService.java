@@ -1237,6 +1237,13 @@ public final class OverlayManagerService extends SystemService {
         }
 
         @Override
+        @NonNull
+        public List<OverlayConstraint> getOverlayConstraints(@NonNull String overlayBaseCodePath,
+                int userId) {
+            return mImpl.getOverlayConstraints(overlayBaseCodePath, userId);
+        }
+
+        @Override
         public void commit(@NonNull OverlayManagerTransaction transaction) {
             try {
                 getService().commit(transaction);

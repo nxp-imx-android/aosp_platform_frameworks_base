@@ -2003,14 +2003,18 @@ public final class CompanionDeviceManager {
      * <p>
      * This API should be called after the app has received a request via
      * {@link CompanionDeviceService#onActionRequested(AssociationInfo, ActionRequest)}.
-     * This API is only available for companion apps that manage their own connectivity.
      *
+     * For example:
+     * <ul>
+     *   <li>After receiving {@link ActionRequest#OP_ACTIVATE}, the app should call this method
+     *   with {@link ActionResult#RESULT_ACTIVATED} upon success or
+     *   {@link ActionResult#RESULT_FAILED_TO_ACTIVATE} upon failure.</li>
+     *
+     *   <li>If a previously activated feature later fails or stops for any reason, the app should
+     *   proactively call this method with {@link ActionResult#RESULT_DEACTIVATED}.</li>
+     * </ul>
      * @param result The {@link ActionResult} to report to the system.
-     *
-     * @hide
      */
-    @SystemApi
-    @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED)
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
     public void notifyActionResult(int associationId, @NonNull ActionResult result) {
         if (mService == null) {
@@ -2348,10 +2352,39 @@ public final class CompanionDeviceManager {
      * deliver the action request via a
      * {@link CompanionDeviceService#onActionRequested(AssociationInfo, ActionRequest)}.
      *
-     * <p>This method allows multiple system services to safely share a resource, such as
-     * scanning or advertising. An action is only started for the first service that requests it
-     * (using {@link ActionRequest#OP_ACTIVATE}) and is only stopped when the very last
-     * service releases its request (using {@link ActionRequest#OP_DEACTIVATE}).
+     * <p>This method allows multiple system services to safely request an action, such as
+     * scanning, advertising and transport attachment.
+     *
+     * <ul>
+     *   <li><b>Activation ({@link ActionRequest#OP_ACTIVATE}):</b>
+     *     <ul>
+     *       <li>If this is the <b>first</b> service to request the action, the request is
+     *       forwarded to the companion app. The caller must wait for the result
+     *       to be delivered to its {@link IOnActionResultListener}.</li>
+     *
+     *       <li>If other services request the action while the initial activation request is still
+     *       in flight, they will not trigger a new activation request to the app. Instead, they
+     *       will receive the same {@link ActionResult} via {@link IOnActionResultListener} as the
+     *       first caller once it arrives.</li>
+     *
+     *       <li>If a service requests an action that has already been successfully activated, its
+     *       {@link IOnActionResultListener} is immediately invoked with
+     *       {@link ActionResult#RESULT_ACTIVATED}.</li>
+     *     </ul>
+     *   </li>
+     *
+     *   <li><b>Deactivation ({@link ActionRequest#OP_DEACTIVATE}):</b>
+     *     <ul>
+     *       <li>If this is the <b>last</b> active service to request deactivation, the request is
+     *       forwarded to the companion app.</li>
+     *
+     *       <li>If a service requests deactivation while other services still require the action,
+     *       it will receive {@link IOnActionResultListener} callback once the companion confirms
+     *       the action is deactivated by calling
+     *       {@link #notifyActionResult(int, ActionResult)}.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
      *
      * @param request The {@link ActionRequest} to perform. Use
      *                {@link ActionRequest.Builder} to construct this object.
@@ -2359,6 +2392,8 @@ public final class CompanionDeviceManager {
      *                     "task_continuity_manager"). This name is used by the system to
      *                     differentiate requests from different callers.
      * @param associationIds The array of association IDs to target with this action.
+     *
+     * @see #setOnActionResultListener(int[], String, Executor, BiConsumer)
      * @hide
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)

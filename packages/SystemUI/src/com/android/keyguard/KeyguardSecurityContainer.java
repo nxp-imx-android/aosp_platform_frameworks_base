@@ -115,6 +115,7 @@ import com.android.systemui.statusbar.policy.UserSwitcherController;
 import com.android.systemui.user.data.source.UserRecord;
 import com.android.systemui.util.settings.GlobalSettings;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -747,9 +748,8 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
         mAlertDialog.show();
     }
 
-    void showTimeoutDialog(int userId, int timeoutMs, LockPatternUtils lockPatternUtils,
+    void showTimeoutDialog(int userId, Duration timeout, LockPatternUtils lockPatternUtils,
             SecurityMode securityMode) {
-        int timeoutInSeconds = timeoutMs / 1000;
         int messageId = 0;
 
         switch (securityMode) {
@@ -773,7 +773,7 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
         if (messageId != 0) {
             final String message = mContext.getString(messageId,
                     lockPatternUtils.getCurrentFailedPasswordAttempts(userId),
-                    timeoutInSeconds);
+                    timeout.toSeconds());
             showDialog(null, message);
         }
     }

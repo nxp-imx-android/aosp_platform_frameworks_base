@@ -22,7 +22,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.domain.interactor.shadeDisplayTypeRepository
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -30,8 +29,6 @@ import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.runner.RunWith
 
@@ -103,12 +100,4 @@ class ShadeDisplayTypeRepositoryTest : SysuiTestCase() {
 
             assertThat(type).isEqualTo(Display.TYPE_INTERNAL)
         }
-
-    private fun Kosmos.setDisplayType(displayId: Int, type: Int) {
-        runBlocking {
-            displayRepository.removeDisplay(displayId)
-            displayRepository.addDisplay(displayId, type = type)
-            displayRepository.emitDisplayChangeEvent(displayId)
-        }
-    }
 }

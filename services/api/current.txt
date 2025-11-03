@@ -147,7 +147,7 @@ package com.android.server.pm.pkg {
     method public boolean isBackupInForeground();
     method public boolean isClearUserDataAllowed();
     method public boolean isClearUserDataOnFailedRestoreAllowed();
-    method public boolean isCleartextTrafficAllowed();
+    method @Deprecated @FlaggedApi("android.security.deprecate_uses_cleartext_traffic") public boolean isCleartextTrafficAllowed();
     method public boolean isCoreApp();
     method public boolean isCrossProfile();
     method public boolean isDebuggable();

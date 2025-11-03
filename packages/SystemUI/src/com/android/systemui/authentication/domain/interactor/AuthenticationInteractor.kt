@@ -74,10 +74,6 @@ constructor(
      * Note: there may be other ways to unlock the device that "bypass" the need for this
      * authentication challenge (notably, biometrics like fingerprint or face unlock).
      *
-     * Note: by design, this is a [Flow] and not a [StateFlow]; a consumer who wishes to get a
-     * snapshot of the current authentication method without establishing a collector of the flow
-     * can do so by invoking [getAuthenticationMethod].
-     *
      * Note: this layer adds the synthetic authentication method of "swipe" which is special. When
      * the current authentication method is "swipe", the user does not need to complete any
      * authentication challenge to unlock the device; they just need to dismiss the lockscreen to
@@ -193,20 +189,6 @@ constructor(
         }
 
     /**
-     * Returns the currently-configured authentication method. This determines how the
-     * authentication challenge needs to be completed in order to unlock an otherwise locked device.
-     *
-     * Note: there may be other ways to unlock the device that "bypass" the need for this
-     * authentication challenge (notably, biometrics like fingerprint or face unlock).
-     *
-     * Note: by design, this is offered as a convenience method alongside [authenticationMethod].
-     * The flow should be used for code that wishes to stay up-to-date its logic as the
-     * authentication changes over time and this method should be used for simple code that only
-     * needs to check the current value.
-     */
-    suspend fun getAuthenticationMethod() = repository.getAuthenticationMethod()
-
-    /**
      * Attempts to authenticate the user and unlock the device. May trigger lockout or wipe the
      * user/profile/device data upon failure.
      *
@@ -228,7 +210,7 @@ constructor(
             throw IllegalArgumentException("Input was empty!")
         }
 
-        val authMethod = getAuthenticationMethod()
+        val authMethod = authenticationMethod.value
         if (shouldSkipAuthenticationAttempt(authMethod, tryAutoConfirm, input.size)) {
             return AuthenticationResult.SKIPPED
         }
@@ -255,9 +237,9 @@ constructor(
             authenticationResult.isDuplicate,
         )
 
-        if (authenticationResult.lockoutDurationMs > 0) {
+        if (authenticationResult.lockoutDuration.isPositive()) {
             // Lockout has been triggered.
-            repository.reportLockoutStarted(authenticationResult.lockoutDurationMs)
+            repository.reportLockoutStarted(authenticationResult.lockoutDuration)
         }
 
         _onAuthenticationResult.emit(false)

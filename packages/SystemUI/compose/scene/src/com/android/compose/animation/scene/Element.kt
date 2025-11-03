@@ -1131,20 +1131,28 @@ private fun isElementOpaqueWithDefaultScale(
         return true
     }
 
-    val isSharedElement = fromState != null && toState != null
-    if (isSharedElement && isSharedElementEnabled(element.key, transition)) {
-        return true
-    }
-
     val transformations = transition.transformationSpec.transformations(element.key, content.key)
     val previewTransformations =
         transition.previewTransformationSpec?.transformations(element.key, content.key)
+
+    val isSharedElement = fromState != null && toState != null
+    if (isSharedElement && isSharedElementEnabled(element.key, transition)) {
+        return (transformations == null ||
+            !transformations.hasSharedAlphaOrScaleTransformation()) &&
+            (previewTransformations == null ||
+                !previewTransformations.hasSharedAlphaOrScaleTransformation())
+    }
+
     return (transformations == null || !transformations.hasAlphaOrScaleTransformation()) &&
         (previewTransformations == null || !previewTransformations.hasAlphaOrScaleTransformation())
 }
 
 private fun ElementTransformations.hasAlphaOrScaleTransformation(): Boolean {
-    return alpha != null || sharedAlpha != null || scale != null || sharedDrawScale != null
+    return alpha != null || scale != null
+}
+
+private fun ElementTransformations.hasSharedAlphaOrScaleTransformation(): Boolean {
+    return sharedAlpha != null || sharedDrawScale != null
 }
 
 /**
@@ -1783,67 +1791,96 @@ private inline fun <T> interpolateSharedElement(
     if (!isSpecified(start)) return end
     if (!isSpecified(end)) return start
 
-    if (transformation != null && previewTransformation != null) {
-        error(
-            "Element ${element.debugName} has both a custom shared transformation and a shared " +
-                "preview transformation, which is not supported"
-        )
-    }
-
-    if (transformation != null) {
-        return when (transformation) {
-            is InterpolatedSharedPropertyTransformation ->
-                error(
-                    "Element ${element.debugName} has a SharedElementPropertyTransformation that " +
-                        "is a InterpolatedSharedPropertyTransformation, which is only supported " +
-                        "inside preview for shared elements."
-                )
-            is CustomSharedPropertyTransformation -> {
-                with(transformation) {
-                    transformationScope.transform(
-                        element,
-                        transition,
-                        transition.coroutineScope,
-                        start,
-                        end,
-                    )
-                }
-            }
-        }
-    }
-
-    if (previewTransformation != null) {
-        val previewValue =
-            when (previewTransformation) {
-                is CustomSharedPropertyTransformation -> {
-                    with(previewTransformation) {
-                        transformationScope.transform(
-                            element,
-                            transition,
-                            transition.coroutineScope,
-                            start,
-                            end,
-                        )
-                    }
-                }
-                is InterpolatedSharedPropertyTransformation -> {
-                    val previewTargetValue =
-                        with(previewTransformation) {
-                            transformationScope.targetPreviewValue(element, transition, start, end)
-                        }
-                    if (previewTargetValue == start) start
-                    else lerp(start, previewTargetValue, transition.previewProgress)
-                }
-            }
-
-        return if (transition.isInPreviewStage) {
-            previewValue
-        } else {
-            if (previewValue == end) end else lerp(previewValue, end, transition.progress)
-        }
-    }
-
     // Make sure we don't read progress if values are the same and we don't need to interpolate,
     // so we don't invalidate the phase where this is read.
-    return if (start == end) start else lerp(start, end, transition.progress)
+    if (previewTransformation == null && transformation == null) {
+        return if (start == end) start else lerp(start, end, transition.progress)
+    }
+
+    val previewValue =
+        if (previewTransformation != null && transition.previewTransformationSpec != null) {
+            val previewValue =
+                when (previewTransformation) {
+                    is CustomSharedPropertyTransformation -> {
+                        with(previewTransformation) {
+                            transformationScope.transform(
+                                element,
+                                transition,
+                                transition.coroutineScope,
+                                start,
+                                end,
+                            )
+                        }
+                    }
+                    is InterpolatedSharedPropertyTransformation -> {
+                        val previewTargetValue =
+                            with(previewTransformation) {
+                                transformationScope.targetPreviewValue(
+                                    element,
+                                    transition,
+                                    start,
+                                    end,
+                                )
+                            }
+                        if (previewTargetValue == start) start
+                        else lerp(start, previewTargetValue, transition.previewProgress)
+                    }
+                }
+
+            if (transition.isInPreviewStage) {
+                return previewValue
+            } else if (transformation == null) {
+                return if (previewValue == end) {
+                    end
+                } else {
+                    lerp(previewValue, end, transition.progress)
+                }
+            }
+
+            previewValue
+        } else {
+            null
+        }
+
+    when (transformation!!) {
+        is InterpolatedSharedPropertyTransformation ->
+            error(
+                "Element ${element.debugName} has a SharedElementPropertyTransformation that " +
+                    "is a InterpolatedSharedPropertyTransformation, which is only supported " +
+                    "inside preview for shared elements."
+            )
+        is CustomSharedPropertyTransformation -> {}
+    }
+
+    return with(transformation) {
+        when {
+            previewValue == null -> {
+                transformationScope.transform(
+                    element,
+                    transition,
+                    transition.coroutineScope,
+                    start,
+                    end,
+                )
+            }
+            transition.isToCurrentContent() -> {
+                transformationScope.transform(
+                    element,
+                    transition,
+                    transition.coroutineScope,
+                    previewValue,
+                    end,
+                )
+            }
+            else -> {
+                transformationScope.transform(
+                    element,
+                    transition,
+                    transition.coroutineScope,
+                    start,
+                    previewValue,
+                )
+            }
+        }
+    }
 }

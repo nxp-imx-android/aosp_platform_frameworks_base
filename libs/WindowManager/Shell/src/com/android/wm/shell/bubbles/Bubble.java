@@ -51,7 +51,6 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.BubbleIconFactory;
-import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.model.BubbleIcon;
@@ -725,40 +724,34 @@ public class Bubble implements BubbleViewProvider {
      * @param context the context for the bubble.
      * @param expandedViewManager the bubble expanded view manager.
      * @param taskViewFactory the task view factory used to create the task view for the bubble.
-     * @param positioner the bubble positioner.
      * @param stackView the view the bubble is added to, iff showing as floating.
      * @param layerView the layer the bubble is added to, iff showing in the bubble bar.
      * @param iconFactory the icon factory used to create images for the bubble.
+     * @param skipInflation whether to skip inflating expanded views. true for overflow bubbles.
+     * @param bubbleViewInfoTaskFactory factory for creating {@link BubbleViewInfoTask} jobs.
      */
     void inflate(BubbleViewInfoTask.Callback callback,
             Context context,
             BubbleExpandedViewManager expandedViewManager,
             BubbleTaskViewFactory taskViewFactory,
-            BubblePositioner positioner,
             @Nullable BubbleStackView stackView,
             @Nullable BubbleBarLayerView layerView,
             BubbleIconFactory iconFactory,
-            BubbleAppInfoProvider appInfoProvider,
             boolean skipInflation,
-            Executor mainExecutor,
-            Executor bgExecutor) {
+            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
         BubbleLog.v("Bubble.inflate() key=%s", getKey());
         if (mInflationTask != null && !mInflationTask.isFinished()) {
             mInflationTask.cancel();
         }
-        mInflationTask = new BubbleViewInfoTask(this,
+        mInflationTask = bubbleViewInfoTaskFactory.create(this,
                 context,
                 expandedViewManager,
                 taskViewFactory,
-                positioner,
                 stackView,
                 layerView,
                 iconFactory,
-                appInfoProvider,
                 skipInflation,
-                callback,
-                mainExecutor,
-                bgExecutor);
+                callback);
         if (mInflateSynchronously) {
             mInflationTask.startSync();
         } else {

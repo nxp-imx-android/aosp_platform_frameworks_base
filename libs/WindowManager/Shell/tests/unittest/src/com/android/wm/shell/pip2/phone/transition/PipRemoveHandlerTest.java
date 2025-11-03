@@ -26,6 +26,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -51,6 +52,7 @@ import androidx.test.filters.SmallTest;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
+import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
 
@@ -73,6 +75,7 @@ public class PipRemoveHandlerTest {
     @Mock private Context mMockContext;
     @Mock private PipBoundsState mMockPipBoundsState;
     @Mock private PipTransitionState mMockPipTransitionState;
+    @Mock private PipInteractionHandler mMockPipInteractionHandler;
     @Mock private PipSurfaceTransactionHelper mMockPipSurfaceTransactionHelper;
 
     @Mock private IBinder mMockTransitionToken;
@@ -87,7 +90,7 @@ public class PipRemoveHandlerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mPipRemoveHandler = new PipRemoveHandler(mMockContext, mMockPipSurfaceTransactionHelper,
-                mMockPipBoundsState, mMockPipTransitionState);
+                mMockPipBoundsState, mMockPipTransitionState, mMockPipInteractionHandler);
         mPipRemoveHandler.setPipAlphaAnimatorSupplier((context, pipSurfaceTransactionHelper,
                 leash, startTransaction, finishTransaction, direction) -> mMockPipAlphaAnimator);
     }
@@ -137,6 +140,10 @@ public class PipRemoveHandlerTest {
         verify(mMockPipTransitionState, times(1))
                 .setState(eq(PipTransitionState.EXITING_PIP));
 
+        // Check whether the jank cuj tag was triggered.
+        verify(mMockPipInteractionHandler, times(1)).begin(any(),
+                eq(PipInteractionHandler.INTERACTION_REMOVE_PIP));
+
         // Check that animator would be started and the right start/finishTx transforms are applied.
         verify(mMockPipAlphaAnimator, times(1)).start();
         verify(mStartTx, times(1)).setWindowCrop(eq(mPipLeash),
@@ -157,6 +164,10 @@ public class PipRemoveHandlerTest {
         // Verify state advancement requirement
         verify(mMockPipTransitionState, times(1))
                 .setState(eq(PipTransitionState.EXITING_PIP));
+
+        // Check whether the jank cuj tag was triggered.
+        verify(mMockPipInteractionHandler, times(1)).begin(any(),
+                eq(PipInteractionHandler.INTERACTION_REMOVE_PIP));
 
         // Check that animator isn't started, but the right start/finishTx transforms are applied.
         verify(mMockPipAlphaAnimator, never()).start();

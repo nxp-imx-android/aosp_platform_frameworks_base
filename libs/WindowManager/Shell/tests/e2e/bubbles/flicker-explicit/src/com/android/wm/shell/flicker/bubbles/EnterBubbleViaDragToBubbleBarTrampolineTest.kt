@@ -103,6 +103,7 @@ class EnterBubbleViaDragToBubbleBarTrampolineTest(navBar: NavBar) :
 
     @get:Rule(order = 2)
     val setUpRule: TestRule = RunOncePerParameterRule(
+        testClass = this::class,
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )

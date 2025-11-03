@@ -195,6 +195,17 @@ class ImplGeneratingAdapter(
             visible || options.annotationsToMakeVisible.contains(descriptor))
     }
 
+    private var redirectAnnotationAdded = false
+
+    private fun addRedirectAnnotation() {
+        if (redirectAnnotationAdded) {
+            return
+        }
+        redirectAnnotationAdded = true
+        this.visitAnnotation(HostStubGenProcessedAsRedirect.CLASS_DESCRIPTOR, true)
+            ?.visitEnd()
+    }
+
     var skipMemberModificationNestCount = 0
 
     /**
@@ -448,6 +459,7 @@ class ImplGeneratingAdapter(
                         access, name, descriptor,
                         forceCreateBody, innerVisitor
                     )
+                    addRedirectAnnotation()
                     return mvis.withAnnotation(
                         HostStubGenProcessedAsRedirect.CLASS_DESCRIPTOR,
                         policy.reason,

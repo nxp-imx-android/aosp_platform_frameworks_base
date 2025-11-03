@@ -191,14 +191,6 @@ flag {
 }
 
 flag {
-    name: "visual_interruptions_refactor"
-    namespace: "systemui"
-    description: "Enables the refactored version of the code to decide when notifications "
-        "HUN, bubble, pulse, or FSI."
-    bug: "261728888"
-}
-
-flag {
    name: "no_expansion_on_overscroll"
    namespace: "systemui"
    description: "Enable the fix where QS Expansion is set to zero on overscroll. This should"
@@ -871,13 +863,6 @@ flag {
 }
 
 flag {
-    name: "keyboard_shortcut_helper_rewrite"
-    namespace: "systemui"
-    description: "A new implementation of the keyboards shortcuts helper sheet."
-    bug: "327364197"
-}
-
-flag {
     name: "keyboard_touchpad_contextual_education"
     namespace: "systemui"
     description: "Allow showing education for physical keyboard and touchpad"
@@ -1039,16 +1024,6 @@ flag {
   namespace: "systemui"
   description: "Only listens to AppWidgetHost when the communal hub is showing"
   bug: "406044666"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "restrict_communal_shade_to_when_idle"
-  namespace: "systemui"
-  description: "Only allow for the shade to be pulled down over the hub when idle on the hub"
-  bug: "446291379"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
@@ -1726,10 +1701,24 @@ flag {
 }
 
 flag {
+    name: "new_screen_record_toolbar_selfie"
+    namespace: "systemui"
+    description: "Enables the selfie functionality in the new screen record"
+    bug: "427481098"
+}
+
+flag {
     name: "large_screen_sharing"
     namespace: "systemui"
     description: "Enables the new large screen window and tab sharing experience."
     bug: "430582532"
+}
+
+flag {
+    name: "large_screen_qs_inline_power_menu"
+    namespace: "systemui"
+    description: "Enables an inline power menu for the QS Panel on large screens."
+    bug: "454094385"
 }
 
 flag {

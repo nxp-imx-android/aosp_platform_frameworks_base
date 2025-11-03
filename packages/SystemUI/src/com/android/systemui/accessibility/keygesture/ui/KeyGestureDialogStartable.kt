@@ -17,9 +17,11 @@
 package com.android.systemui.accessibility.keygesture.ui
 
 import android.annotation.StringRes
+import android.content.Context
 import android.hardware.input.KeyGestureEvent
 import android.text.Annotation
 import android.text.Spanned
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -53,6 +55,7 @@ import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConf
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dialog.ui.composable.AlertDialogContent
+import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.ComponentSystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
@@ -66,6 +69,8 @@ import kotlinx.coroutines.launch
 class KeyGestureDialogStartable
 @Inject
 constructor(
+    private val context: Context,
+    private val displayRepository: DisplayRepository,
     private val interactor: KeyGestureDialogInteractor,
     private val dialogFactory: SystemUIDialogFactory,
     @Application private val mainScope: CoroutineScope,
@@ -179,8 +184,10 @@ constructor(
                 } else {
                     DefaultDialogDelegate(interactor)
                 }
+
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
                 ScreenReaderDialogDelegate(interactor)
+
             else -> DefaultDialogDelegate(interactor)
         }
     }
@@ -217,7 +224,8 @@ constructor(
         }
     }
 
-    private fun createDialog(keyGestureConfirmInfo: KeyGestureConfirmInfo?) {
+    @VisibleForTesting
+    fun createDialog(keyGestureConfirmInfo: KeyGestureConfirmInfo?) {
         // Ignore other type of first-time keyboard shortcuts while there is an existing dialog.
         // `currentDialog` will be reset when the dialog dismissal listener is called, which will be
         // executed asynchronously. Thus, to avoid race condition, we should check the nullable of
@@ -230,10 +238,26 @@ constructor(
             return
         }
 
+        var dialogContext = context
+
+        if (context.displayId != keyGestureConfirmInfo.displayId) {
+            val displayToMagnifyId = keyGestureConfirmInfo.displayId
+            val displayToMagnify = displayRepository.getDisplay(displayToMagnifyId)
+            if (displayToMagnify == null) {
+                Log.w(
+                    TAG,
+                    "Unable to open dialog on display $displayToMagnifyId: display not found - " +
+                        "will fallback to default display",
+                )
+            } else {
+                // Use the display context here so that the dialog shows up on the correct display
+                dialogContext = context.createDisplayContext(displayToMagnify)
+            }
+        }
         val delegate = getDialogDelegate(keyGestureConfirmInfo.keyGestureType)
 
         currentDialog =
-            dialogFactory.create { dialog ->
+            dialogFactory.create(context = dialogContext) { dialog ->
                 PlatformTheme {
                     AlertDialogContent(
                         title = { Text(text = keyGestureConfirmInfo.title) },
@@ -367,6 +391,7 @@ constructor(
     }
 
     companion object {
+        const val TAG = "KeyGestureDialogStartable"
         const val ICON_INLINE_CONTENT_ID = "iconInlineContentId"
     }
 }

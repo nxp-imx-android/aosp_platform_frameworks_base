@@ -25,7 +25,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.WindowContainerTransaction
@@ -107,7 +106,6 @@ class ShellCrashHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_SHELL_RESTART_BUBBLE_CLEANUP)
     fun init_bubbleTaskExists_convertsToUndefined() {
         val bubbleTask = createTaskInfo(1, windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(bubbleTask))

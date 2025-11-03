@@ -84,6 +84,12 @@ prebuilt_etc {
     src: "oem-defined-uids.xml",
 }
 
+prebuilt_etc {
+    name: "preinstalled-packages-app-lock-exempt.xml",
+    sub_dir: "sysconfig",
+    src: "preinstalled-packages-app-lock-exempt.xml",
+}
+
 // Privapp permission whitelist files
 
 prebuilt_etc {

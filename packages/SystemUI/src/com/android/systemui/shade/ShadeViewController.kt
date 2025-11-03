@@ -21,6 +21,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController
 import com.android.systemui.statusbar.phone.KeyguardStatusBarView
 import com.android.systemui.statusbar.phone.KeyguardStatusBarViewController
+import java.util.function.BiConsumer
 import java.util.function.Consumer
 
 /**
@@ -132,10 +133,10 @@ interface ShadeViewController {
 /** Manages listeners for when users begin expanding the shade from a HUN. */
 interface ShadeHeadsUpTracker {
     /** Add a listener for when the user starts expanding the shade from a HUN. */
-    fun addTrackingHeadsUpListener(listener: Consumer<ExpandableNotificationRow>)
+    fun addTrackingHeadsUpListener(listener: BiConsumer<ExpandableNotificationRow, String>)
 
     /** Remove a listener for when the user starts expanding the shade from a HUN. */
-    fun removeTrackingHeadsUpListener(listener: Consumer<ExpandableNotificationRow>)
+    fun removeTrackingHeadsUpListener(listener: BiConsumer<ExpandableNotificationRow, String>)
 
     /** Set the controller for the appearance of HUNs in the icon area and the header itself. */
     fun setHeadsUpAppearanceController(headsUpAppearanceController: HeadsUpAppearanceController?)

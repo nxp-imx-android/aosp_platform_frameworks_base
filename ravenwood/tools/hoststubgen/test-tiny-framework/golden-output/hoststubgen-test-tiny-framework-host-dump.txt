@@ -3729,6 +3729,8 @@ RuntimeVisibleAnnotations:
     android.hosttest.annotation.HostSideTestRedirectionClass(
       value="TinyFrameworkNative_host"
     )
+  x: #x()
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsRedirect
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.class
   Compiled from "TinyFrameworkNative_host.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNative_host
@@ -5917,6 +5919,8 @@ RuntimeVisibleAnnotations:
     )
   x: #x()
     android.hosttest.annotation.HostSideTestStaticInitializerKeep
+  x: #x()
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsRedirect
 ## Class: com/android/hoststubgen/test/tinyframework/exp/ExpC7_MethodAnnotations_withMethodExpPolicy.class
   Compiled from "MoreClasses.java"
 class com.android.hoststubgen.test.tinyframework.exp.ExpC7_MethodAnnotations_withMethodExpPolicy
@@ -6108,6 +6112,8 @@ RuntimeVisibleAnnotations:
     )
   x: #x()
     android.hosttest.annotation.HostSideTestStaticInitializerKeep
+  x: #x()
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsRedirect
 ## Class: com/android/hoststubgen/test/tinyframework/exp/ExpC8_Enum.class
   Compiled from "MoreClasses.java"
 final class com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum extends java.lang.Enum<com.android.hoststubgen.test.tinyframework.exp.ExpC8_Enum>
@@ -7078,6 +7084,8 @@ RuntimeVisibleAnnotations:
     )
   x: #x()
     android.hosttest.annotation.HostSideTestStaticInitializerKeep
+  x: #x()
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsRedirect
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/KeepC7_MethodAnnotations_withMethodExpPolicy.class
   Compiled from "MoreClassses.java"
 class com.android.hoststubgen.test.tinyframework.packagetest.KeepC7_MethodAnnotations_withMethodExpPolicy
@@ -7269,6 +7277,8 @@ RuntimeVisibleAnnotations:
     )
   x: #x()
     android.hosttest.annotation.HostSideTestStaticInitializerKeep
+  x: #x()
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsRedirect
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/RedirectTo.class
   Compiled from "MoreClassses.java"
 class com.android.hoststubgen.test.tinyframework.packagetest.RedirectTo

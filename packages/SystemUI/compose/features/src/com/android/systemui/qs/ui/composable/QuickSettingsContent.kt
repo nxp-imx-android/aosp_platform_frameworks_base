@@ -52,6 +52,7 @@ import kotlinx.coroutines.flow.filterNotNull
 fun ContentScope.QuickSettingsContent(
     viewModel: QuickSettingsContainerViewModel,
     mediaInRow: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     QuickSettingsPanelLayout(
         brightness =
@@ -114,7 +115,8 @@ fun ContentScope.QuickSettingsContent(
             },
         mediaInRow = mediaInRow,
         modifier =
-            Modifier.element(Elements.QuickSettingsContent)
+            modifier
+                .element(Elements.QuickSettingsContent)
                 .padding(horizontal = dimensionResource(id = R.dimen.qs_horizontal_margin))
                 .sysuiResTag("quick_settings_panel"),
     )

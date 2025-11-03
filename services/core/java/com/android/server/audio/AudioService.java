@@ -1468,7 +1468,7 @@ public class AudioService extends IAudioService.Stub
             mAudioPolicy.setEnableHardening(mShouldEnableAllHardening.get());
         });
         if (!mAudioPolicy.isServiceAvailable()) {
-            Log.wtf(TAG, "AudioPolicy not available on AudioService start!");
+            Log.e(TAG, "AudioPolicy not available on AudioService start!");
         }
 
         mPlatformType = AudioSystem.getPlatformType(context);
@@ -1928,7 +1928,7 @@ public class AudioService extends IAudioService.Stub
                 SubscriptionManager.class);
         if (subscriptionManager == null) {
             Log.e(TAG, "initExternalEventReceivers cannot create SubscriptionManager!");
-        } else {
+        } else if (android.os.Process.myUid() == 1000) {
             subscriptionManager.addOnSubscriptionsChangedListener(mSubscriptionChangedListener);
         }
 
@@ -7182,9 +7182,9 @@ public class AudioService extends IAudioService.Stub
         SetModeDeathHandler hdlr = getAudioModeOwnerHandler();
         if (hdlr != null) {
             return new AudioDeviceBroker.AudioModeInfo(
-                    hdlr.getMode(), hdlr.getPid(), hdlr.getUid());
+                    hdlr.getMode(), hdlr.getPid(), hdlr.getUid(), hdlr.getBinder());
         }
-        return new AudioDeviceBroker.AudioModeInfo(AudioSystem.MODE_NORMAL, 0 , 0);
+        return new AudioDeviceBroker.AudioModeInfo(AudioSystem.MODE_NORMAL, 0 , 0, null);
     }
 
     /**
@@ -7335,11 +7335,13 @@ public class AudioService extends IAudioService.Stub
         int mode = AudioSystem.MODE_NORMAL;
         int uid = 0;
         int pid = 0;
+        IBinder token = null;
         SetModeDeathHandler currentModeHandler = getAudioModeOwnerHandler();
         if (currentModeHandler != null) {
             mode = currentModeHandler.getMode();
             uid = currentModeHandler.getUid();
             pid = currentModeHandler.getPid();
+            token = currentModeHandler.getBinder();
         }
         if (DEBUG_MODE) {
             Log.v(TAG, "onUpdateAudioMode() new mode: " + mode + ", current mode: "
@@ -7393,7 +7395,7 @@ public class AudioService extends IAudioService.Stub
 
                 // when entering RINGTONE, IN_CALL or IN_COMMUNICATION mode, clear all SCO
                 // connections not started by the application changing the mode when pid changes
-                mDeviceBroker.postSetModeOwner(mode, pid, uid, signal);
+                mDeviceBroker.postSetModeOwner(mode, pid, uid, token, signal);
             } else {
                 // reset here to avoid sticky out of sync condition (would have been reset
                 // by AudioDeviceBroker processing MSG_L_SET_MODE_OWNER_SIGNAL message)
@@ -7984,9 +7986,6 @@ public class AudioService extends IAudioService.Stub
 
         final int uid = attributionSource.getUid();
         final int pid = attributionSource.getPid();
-        final int scoAudioMode =
-                (targetSdkVersion < Build.VERSION_CODES.JELLY_BEAN_MR2) ?
-                        BtHelper.SCO_MODE_VIRTUAL_CALL : BtHelper.SCO_MODE_UNDEFINED;
         final String eventSource = new StringBuilder("startBluetoothSco()")
                 .append(") from u/pid:").append(uid).append("/")
                 .append(pid).toString();
@@ -7995,10 +7994,9 @@ public class AudioService extends IAudioService.Stub
                 .setUid(uid)
                 .setPid(pid)
                 .set(MediaMetrics.Property.EVENT, "startBluetoothSco")
-                .set(MediaMetrics.Property.SCO_AUDIO_MODE,
-                        BtHelper.scoAudioModeToString(scoAudioMode))
+                .set(MediaMetrics.Property.SCO_AUDIO_MODE, "SCO_MODE_VIRTUAL_CALL")
                 .record();
-        startBluetoothScoInt(cb, attributionSource, scoAudioMode, eventSource);
+        startBluetoothScoInt(cb, attributionSource, eventSource);
 
     }
 
@@ -8022,18 +8020,16 @@ public class AudioService extends IAudioService.Stub
                 .setUid(uid)
                 .setPid(pid)
                 .set(MediaMetrics.Property.EVENT, "startBluetoothScoVirtualCall")
-                .set(MediaMetrics.Property.SCO_AUDIO_MODE,
-                        BtHelper.scoAudioModeToString(BtHelper.SCO_MODE_VIRTUAL_CALL))
+                .set(MediaMetrics.Property.SCO_AUDIO_MODE, "SCO_MODE_VIRTUAL_CALL")
                 .record();
-        startBluetoothScoInt(cb, attributionSource, BtHelper.SCO_MODE_VIRTUAL_CALL, eventSource);
+        startBluetoothScoInt(cb, attributionSource, eventSource);
     }
 
     void startBluetoothScoInt(IBinder cb, AttributionSource attributionSource,
-            int scoAudioMode, @NonNull String eventSource) {
+            @NonNull String eventSource) {
         MediaMetrics.Item mmi = new MediaMetrics.Item(MediaMetrics.Name.AUDIO_BLUETOOTH)
                 .set(MediaMetrics.Property.EVENT, "startBluetoothScoInt")
-                .set(MediaMetrics.Property.SCO_AUDIO_MODE,
-                        BtHelper.scoAudioModeToString(scoAudioMode));
+                .set(MediaMetrics.Property.SCO_AUDIO_MODE,"SCO_MODE_VIRTUAL_CALL");
 
         if (!checkAudioSettingsPermission("startBluetoothSco()") ||
                 !mSystemReady) {
@@ -8045,7 +8041,7 @@ public class AudioService extends IAudioService.Stub
         final long ident = Binder.clearCallingIdentity();
         try {
             mDeviceBroker.startBluetoothScoForClient(
-                    cb, attributionSource, scoAudioMode, isPrivileged, eventSource);
+                    cb, attributionSource, isPrivileged, eventSource);
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
@@ -8080,8 +8076,7 @@ public class AudioService extends IAudioService.Stub
                 .setUid(uid)
                 .setPid(pid)
                 .set(MediaMetrics.Property.EVENT, "stopBluetoothSco")
-                .set(MediaMetrics.Property.SCO_AUDIO_MODE,
-                        BtHelper.scoAudioModeToString(BtHelper.SCO_MODE_UNDEFINED))
+                .set(MediaMetrics.Property.SCO_AUDIO_MODE, "SCO_MODE_VIRTUAL_CALL")
                 .record();
     }
 

@@ -22,7 +22,6 @@ import static android.app.Notification.CATEGORY_EVENT;
 import static android.app.Notification.CATEGORY_MESSAGE;
 import static android.app.Notification.CATEGORY_REMINDER;
 import static android.app.Notification.FLAG_BUBBLE;
-import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_BADGE;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_FULL_SCREEN_INTENT;
@@ -38,6 +37,7 @@ import android.app.Notification;
 import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
 import android.app.NotificationManager.Policy;
+import android.app.PendingIntent;
 import android.app.Person;
 import android.app.RemoteInput;
 import android.app.RemoteInputHistoryItem;
@@ -77,6 +77,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotificationGuts;
 import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarModel;
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel;
+import com.android.systemui.statusbar.notification.shared.LaunchNewFsiOnUpdate;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -135,6 +136,7 @@ public final class NotificationEntry extends ListEntry {
     private IconPack mIcons = IconPack.buildEmptyPack(null);
     private boolean interruption;
     public int targetSdk;
+    private boolean mIsFullScreenIntentNewlyAdded;
     private long lastFullScreenIntentLaunchTime = NOT_LAUNCHED_YET;
     public CharSequence remoteInputText;
     public List<RemoteInputHistoryItem> remoteInputs = null;
@@ -200,6 +202,13 @@ public final class NotificationEntry extends ListEntry {
     //  NotificationRowContentBinderRefactor has been inlined.
     private PromotedNotificationContentModels mPromotedNotificationContentModels;
 
+    private static final boolean isFsiRequestedButDenied(StatusBarNotification sbn) {
+        if (sbn == null) {
+            return false;
+        }
+        return (sbn.getNotification().flags & Notification.FLAG_FSI_REQUESTED_BUT_DENIED) != 0;
+    }
+
     /**
      * True if both
      *  1) app provided full screen intent but does not have the permission to send it
@@ -207,8 +216,7 @@ public final class NotificationEntry extends ListEntry {
      */
     public boolean isStickyAndNotDemoted() {
 
-        final boolean fsiRequestedButDenied =  (getSbn().getNotification().flags
-                & Notification.FLAG_FSI_REQUESTED_BUT_DENIED) != 0;
+        final boolean fsiRequestedButDenied = isFsiRequestedButDenied(getSbn());
 
         if (!fsiRequestedButDenied && !mIsDemoted) {
             demoteStickyHun();
@@ -324,8 +332,42 @@ public final class NotificationEntry extends ListEntry {
                     + " doesn't match existing key " + getKey());
         }
 
+        trackFullScreenIntentChange(mSbn, sbn);
         mSbn = sbn;
         mBubbleMetadata = mSbn.getNotification().getBubbleMetadata();
+    }
+
+    public void trackFullScreenIntentChange(
+            @Nullable StatusBarNotification oldSbn,
+            @NonNull StatusBarNotification newSbn) {
+        if (!LaunchNewFsiOnUpdate.isEnabled()) { return; }
+        PendingIntent oldFullScreenIntent = oldSbn == null ? null
+                : oldSbn.getNotification().fullScreenIntent;
+        PendingIntent newFullScreenIntent = newSbn.getNotification().fullScreenIntent;
+        if (newFullScreenIntent == null) {
+            // if the FSI is absent, it can't be newly added.
+            mIsFullScreenIntentNewlyAdded = false;
+        } else if (oldFullScreenIntent == null && !isFsiRequestedButDenied(oldSbn)) {
+            // We only want to consider the FSI "newly added" if the app didn't set it before. But
+            // we may have previously removed the FSI because the app lacked the FSI permission, so
+            // we need to check for that flag on the old SBN as well.
+            // Only if neither indicator of a "previous FSI" is present, is this a newly added FSI.
+            mIsFullScreenIntentNewlyAdded = true;
+        }
+    }
+
+    public void markFullScreenIntentEvaluated() {
+        if (LaunchNewFsiOnUpdate.isUnexpectedlyInLegacyMode()) {
+            return;
+        }
+        mIsFullScreenIntentNewlyAdded = false;
+    }
+
+    public boolean isFullScreenIntentNewlyAdded() {
+        if (LaunchNewFsiOnUpdate.isUnexpectedlyInLegacyMode()) {
+            return false;
+        }
+        return mIsFullScreenIntentNewlyAdded;
     }
 
     /**
@@ -438,11 +480,15 @@ public final class NotificationEntry extends ListEntry {
     }
 
     public boolean isBundled() {
-        if (getRanking() == null || getRanking().getChannel() == null) {
-            Slog.wtfQuiet(TAG, "getRanking() or getRanking().getChannel() is null " + getKey());
+        if (getRanking() == null) {
+            Slog.wtfQuiet(TAG, "getRanking() is null " + getKey());
             return false;
         }
-        return SYSTEM_RESERVED_IDS.contains(getRanking().getChannel().getId());
+        if (getRanking().getChannel() == null) {
+            Slog.wtfQuiet(TAG, "getRanking().getChannel() is null " + getKey());
+            return false;
+        }
+        return getRanking().getChannel().isBundleChannel();
     }
 
     /*

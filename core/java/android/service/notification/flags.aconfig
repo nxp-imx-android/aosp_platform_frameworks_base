@@ -88,6 +88,16 @@ flag {
   bug: "387528442"
 }
 
+flag {
+  name: "listener_hint_exempt_packages"
+  namespace: "systemui"
+  description: "Exempt packages from Listener Hint restrictions in ZenModeHelper"
+  bug: "352023417"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
 # Start: API flags
 
 flag {

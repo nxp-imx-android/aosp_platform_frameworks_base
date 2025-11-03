@@ -16,18 +16,15 @@
 
 package android.security.advancedprotection;
 
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.security.Flags;
 
 /**
  * An advanced protection feature providing protections.
  * @hide
  */
-@FlaggedApi(Flags.FLAG_AAPM_API)
 @SystemApi
 public final class AdvancedProtectionFeature implements Parcelable {
     private final int mId;

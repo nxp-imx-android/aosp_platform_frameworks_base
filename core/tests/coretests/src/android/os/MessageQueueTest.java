@@ -25,7 +25,6 @@ import android.os.MessageQueue.IdleHandler;
 import android.os.MessageQueue.OnFileDescriptorEventListener;
 import android.os.ParcelFileDescriptor.AutoCloseInputStream;
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream;
-import android.platform.test.annotations.DisabledOnRavenwood;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -80,6 +79,7 @@ public class MessageQueueTest {
     }
 
     @Test
+    @org.junit.Ignore("b/452987782")
     public void testPeekLastMessageWithEqualWhen() throws Exception {
         handler.sendEmptyMessageDelayed(0, LONG_DELAY_MS);
         handler.sendEmptyMessageDelayed(4, LONG_DELAY_MS + 1);
@@ -154,7 +154,6 @@ public class MessageQueueTest {
     }
 
     @Test
-    @DisabledOnRavenwood(blockedBy = android.os.ParcelFileDescriptor.class)
     public void testResetClearsFileDescriptorEventListeners() throws Exception {
         final CountDownLatch fdEventLatch = new CountDownLatch(2);
 

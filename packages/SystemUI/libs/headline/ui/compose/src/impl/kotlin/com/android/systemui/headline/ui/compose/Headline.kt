@@ -16,16 +16,20 @@
 
 package com.android.systemui.headline.ui.compose
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -33,23 +37,34 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.approachLayout
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
+import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
+import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.headline.ui.viewmodel.HeadlineItem
 import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel.Companion.GoneScene
+import com.android.systemui.headline.ui.viewmodel.toHeadlineItemKey
+import kotlinx.coroutines.launch
 
 /** The top-level composable for the Headline UI. */
 @Composable
@@ -59,7 +74,11 @@ fun Headline(viewModel: HeadlineViewModel, modifier: Modifier = Modifier) {
         LocalTextStyle provides MaterialTheme.typography.labelMedium,
     ) {
         val items = viewModel.items
-        SceneTransitionLayout(viewModel.state, modifier) {
+        SceneTransitionLayout(
+            state = viewModel.state,
+            transitions = HeadlineTransitions,
+            modifier = modifier,
+        ) {
             scene(GoneScene) { GoneScene() }
 
             items.forEachIndexed { i, item ->
@@ -70,7 +89,7 @@ fun Headline(viewModel: HeadlineViewModel, modifier: Modifier = Modifier) {
                     key = item.key.toSceneKey(),
                     userActions = userActions(previousItem, nextItem),
                 ) {
-                    HeadlineItemScene(item, previousItem, nextItem)
+                    HeadlineItemScene(item, previousItem, nextItem, viewModel::onItemClicked)
                 }
             }
         }
@@ -78,48 +97,72 @@ fun Headline(viewModel: HeadlineViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun GoneScene(modifier: Modifier = Modifier) {
+private fun ContentScope.GoneScene(modifier: Modifier = Modifier) {
+    // Find the last item that is animated from/to the Gone scene, so that we can tag the dark
+    // circle using that item pill key and get the shared transition animation.
+    val lastGoneTransition = layoutState.currentTransitions.lastOrNull { it.isGoneTransition() }
+    val otherContent =
+        lastGoneTransition?.toContent?.takeIf { it != GoneScene } ?: lastGoneTransition?.fromContent
+    val elementKey = otherContent?.let { it as SceneKey }?.toHeadlineItemKey()?.toPillElementKey()
+
     // Draw the largest possible circle that is centered and fits the max parent constraints.
-    Box(modifier.fillMaxSize().drawBehind { drawCircle(Color.Black) })
+    Box(modifier.fillMaxSize()) {
+        Box(
+            Modifier.align(Alignment.Center)
+                .thenIf(elementKey != null) { Modifier.element(elementKey!!) }
+                .aspectRatio(1f)
+                .drawBehind { drawCircle(Color.Black) }
+        )
+    }
 }
 
 @Composable
-private fun HeadlineItemScene(
+private fun ContentScope.HeadlineItemScene(
     item: HeadlineItem,
     previousItem: HeadlineItem?,
     nextItem: HeadlineItem?,
+    onItemClicked: (HeadlineItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxWidth()) {
-        Box(Modifier.align(Alignment.Center)) {
+        Box(Modifier.align(Alignment.Center).padding(horizontal = DotIndicatorOffset)) {
             // Dot indicator before the pill.
-            previousItem?.let { previous ->
-                Box(
-                    Modifier.align(Alignment.CenterStart)
-                        .offset(-DotIndicatorOffset)
-                        .size(DotIndicatorSize)
-                        .background(Color.Black, CircleShape)
-                )
-            }
+            DotIndicator(
+                modifier = Modifier.align(Alignment.CenterStart).offset(-DotIndicatorOffset),
+                item = previousItem,
+                onClick = onItemClicked,
+            )
 
             // Dot indicator after the pill.
-            nextItem?.let { next ->
-                Box(
-                    Modifier.align(Alignment.CenterEnd)
-                        .offset(DotIndicatorOffset)
-                        .size(DotIndicatorSize)
-                        .background(Color.Black, CircleShape)
-                )
-            }
+            DotIndicator(
+                modifier = Modifier.align(Alignment.CenterEnd).offset(DotIndicatorOffset),
+                item = nextItem,
+                onClick = onItemClicked,
+            )
 
             // Pill.
             Box(
-                // TODO(b/449675581): Use expandable instead.
-                modifier = Modifier.clip(CircleShape).background(color = Color.Black)
+                // TODO(b/449675581): Use Modifier.expandable() instead once it is public.
+                modifier =
+                    Modifier.element(item.key.toPillElementKey())
+                        .clickable { onItemClicked(item) }
+                        .clip(CircleShape)
+                        .background(color = Color.Black)
             ) {
                 HeadlinePill(
-                    startContent = { HeadlineItemContents(item.startContents) },
-                    endContent = { HeadlineItemContents(item.endContents, isReversed = true) },
+                    startContent = {
+                        HeadlineItemContents(
+                            key = item.key.toStartContentElementKey(),
+                            contents = item.startContents,
+                        )
+                    },
+                    endContent = {
+                        HeadlineItemContents(
+                            key = item.key.toEndContentElementKey(),
+                            contents = item.endContents,
+                            isReversed = true,
+                        )
+                    },
                 )
             }
         }
@@ -141,6 +184,44 @@ private fun userActions(
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private fun ContentScope.DotIndicator(
+    item: HeadlineItem?,
+    onClick: (HeadlineItem) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    fun targetValue(isShown: Boolean) = if (isShown) 1f else 0f
+
+    // Make sure that the indicator never instantly (dis)appears, even when the STL is idle. This
+    // makes sure that the indicator nicely animates out when the live activity next to the current
+    // one is removed.
+    val isShown = item != null
+    val alpha = remember { Animatable(targetValue(isShown)) }
+    val scale = remember { Animatable(targetValue(isShown)) }
+    val motionScheme = MaterialTheme.motionScheme
+    LaunchedEffect(isShown) {
+        val targetValue = targetValue(isShown)
+        launch { alpha.animateTo(targetValue, motionScheme.defaultEffectsSpec()) }
+        scale.animateTo(targetValue, motionScheme.defaultSpatialSpec())
+    }
+
+    Box(
+        modifier
+            .thenIf(item != null) {
+                Modifier.element(item!!.key.toPillElementKey()).clickable { onClick(item) }
+            }
+            .size(DotIndicatorSize)
+            .drawBehind {
+                drawCircle(
+                    color = Color.Black,
+                    radius = size.minDimension / 2f * scale.value,
+                    alpha = alpha.value,
+                )
+            }
+    )
+}
+
+@Composable
 private fun HeadlinePill(
     startContent: @Composable () -> Unit,
     endContent: @Composable () -> Unit,
@@ -158,10 +239,7 @@ private fun HeadlinePill(
         val horizontalPadding = 8.dp.roundToPx()
         val centerSize = constraints.maxHeight
         val maxChildWidth =
-            ((constraints.maxWidth - centerSize) / 2 -
-                    horizontalPadding -
-                    DotIndicatorOffset.roundToPx())
-                .coerceAtLeast(0)
+            ((constraints.maxWidth - centerSize) / 2 - horizontalPadding).coerceAtLeast(0)
         val minChildWidth =
             (centerSize - DotIndicatorSize.roundToPx() / 2).coerceIn(0, maxChildWidth)
         val childConstraints =
@@ -186,8 +264,14 @@ private fun HeadlinePill(
 }
 
 @Composable
-private fun HeadlineItemContents(contents: List<HeadlineItemContent>, isReversed: Boolean = false) {
+private fun ContentScope.HeadlineItemContents(
+    key: ElementKey,
+    contents: List<HeadlineItemContent>,
+    modifier: Modifier = Modifier,
+    isReversed: Boolean = false,
+) {
     Row(
+        modifier = modifier.noResizeContentDuringTransitions(layoutState, isReversed).element(key),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = if (isReversed) Arrangement.End else Arrangement.Start,
     ) {
@@ -210,6 +294,45 @@ private fun HeadlineItemContents(contents: List<HeadlineItemContent>, isReversed
                     )
                 }
                 is HeadlineItemContent.Icon -> Icon(content.icon, content.contentDescription)
+            }
+        }
+    }
+}
+
+/**
+ * A modifier that ensures that the content inside the pill is not resized during transitions, to
+ * avoid text and icons shrinking because the pill container is getting smaller. This is better both
+ * visually and performance wise, as it avoid unnecessarily remeasuring and reflowing text.
+ */
+private fun Modifier.noResizeContentDuringTransitions(
+    layoutState: SceneTransitionLayoutState,
+    isReversed: Boolean,
+): Modifier {
+    return approachLayout(isMeasurementApproachInProgress = { layoutState.isTransitioning() }) {
+        measurable,
+        constraints ->
+        if (isLookingAhead) {
+            return@approachLayout measurable.measure(constraints).run {
+                layout(width, height) { place(0, 0) }
+            }
+        }
+
+        val placeable = measurable.measure(lookaheadConstraints)
+        check(placeable.width == lookaheadSize.width) {
+            "HeadlineItemContents.width != lookaheadWidth"
+        }
+        check(placeable.height == lookaheadSize.height) {
+            "HeadlineItemContents.height != lookaheadHeight"
+        }
+        val size = constraints.constrain(lookaheadSize)
+        layout(size.width, size.height) {
+            if (isReversed) {
+                placeable.placeRelative(
+                    size.width - placeable.width,
+                    (size.height - lookaheadSize.height) / 2,
+                )
+            } else {
+                placeable.placeRelative(0, (size.height - lookaheadSize.height) / 2)
             }
         }
     }

@@ -130,6 +130,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrim
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState;
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView;
+import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel.HeightSuppressionState;
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.policy.ScrollAdapter;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
@@ -612,8 +613,16 @@ public class NotificationStackScrollLayout
     @Nullable private SplitShadeStateController mSplitShadeStateController = null;
     private boolean mIsSmallLandscapeLockscreenEnabled = false;
 
-    /** Suppress the stackEndHeight updates. */
-    private boolean mSuppressHeightUpdates;
+    /**
+     * Suppress the stackEndHeight updates for UI stability.
+     * <p>
+     * None: No height updates suppressed.
+     * EndHeightOnly: This replaces the getQsExpansionFraction() <= 0 check when updating stack end
+     * height.
+     * All: Suppress the stack height updates. Including stackEndHeight, stackHeight, and
+     * expandedHeight.
+     */
+    private HeightSuppressionState mSuppressHeightState = HeightSuppressionState.None;
     private boolean mIsOnLockscreen;
 
     /** Pass splitShadeStateController to view and update split shade */
@@ -1772,11 +1781,10 @@ public class NotificationStackScrollLayout
      * True when
      * 1) Unlock hint is running
      * 2) Swiping up on lockscreen or flinging down after swipe up
-     * 3) When transiting between the expanded QS and the single Shade.
      */
     private boolean shouldSkipHeightUpdate() {
         if (SceneContainerFlag.isEnabled()) {
-            return mSuppressHeightUpdates;
+            return mSuppressHeightState == HeightSuppressionState.All;
         } else {
             return mAmbientState.isOnKeyguard()
                     && (mAmbientState.isSwipingUp()
@@ -1821,7 +1829,7 @@ public class NotificationStackScrollLayout
         final float oldStackHeight = mAmbientState.getInterpolatedStackHeight();
         if (SceneContainerFlag.isEnabled()) {
             final float endHeight;
-            if (!shouldSkipHeightUpdate()) {
+            if (mSuppressHeightState == HeightSuppressionState.None) {
                 endHeight = updateStackEndHeight();
             } else {
                 endHeight = mAmbientState.getStackEndHeight();
@@ -1844,7 +1852,8 @@ public class NotificationStackScrollLayout
         }
     }
 
-    private float updateStackEndHeight() {
+    @VisibleForTesting
+    float updateStackEndHeight() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
         final float height;
         if (mMaxDisplayedNotifications != -1) {
@@ -1921,7 +1930,8 @@ public class NotificationStackScrollLayout
         }
     }
 
-    private void updateExpandedHeight(float expandFraction) {
+    @VisibleForTesting
+    void updateExpandedHeight(float expandFraction) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         float expandedHeight = expandFraction * getHeight();
         setIsExpanded(expandedHeight > 0);
@@ -4014,10 +4024,11 @@ public class NotificationStackScrollLayout
         if (!SceneContainerFlag.isEnabled()) {
             return false;
         }
-
-        return !mScrollViewFields.interactive
-                // NSSL refuse gesture if it started outside of the touchable bounds
-                || isOutBoundsDownEvent(ev);
+        // When the shade is closed but a HUN is visible (over home screen), we might need to handle
+        // this touch event as a HUN gesture even if this is outside interactive bounds
+        // or NSSL is not interactive.
+        final boolean acceptOutsideHun = !mAmbientState.isShadeExpanded() && mTopHeadsUpRow != null;
+        return !acceptOutsideHun && (!mScrollViewFields.interactive || isOutBoundsDownEvent(ev));
     }
 
     /**
@@ -5846,10 +5857,12 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void suppressHeightUpdates(boolean suppress) {
+    public void suppressHeightUpdates(HeightSuppressionState suppressionState) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        boolean forceUpdate = (!suppress && mSuppressHeightUpdates);
-        mSuppressHeightUpdates = suppress;
+        // Force update the heights if the new suppression state is more lenient than the current to
+        // avoid wrong state caused by race conditions.
+        final boolean forceUpdate = mSuppressHeightState.forceUpdateWhenChangeTo(suppressionState);
+        mSuppressHeightState = suppressionState;
 
         if (forceUpdate) {
             setExpandFraction(mAmbientState.getExpansionFraction());

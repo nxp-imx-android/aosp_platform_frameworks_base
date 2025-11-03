@@ -20,7 +20,6 @@ import android.app.Instrumentation
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
-import android.view.KeyEvent
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
@@ -46,12 +45,13 @@ abstract class UnlockIntoDesktopFromLockScreen(
     @Before
     fun setup() {
         testApp.enterDesktopMode(wmHelper, device)
-        device.executeShellCommand("input keyevent ${KeyEvent.KEYCODE_LOCK}")
+        device.sleep()
     }
 
     @Test
     open fun unlockIntoDesktopFromLockScreen() {
-        device.executeShellCommand("input keyevent ${KeyEvent.KEYCODE_MENU}")
+        device.wakeUp()
+        device.pressMenu()
         wmHelper
             .StateSyncBuilder()
             .withFreeformApp(simpleApp.componentMatcher)

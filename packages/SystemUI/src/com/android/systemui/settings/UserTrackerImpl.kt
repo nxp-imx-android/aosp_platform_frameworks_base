@@ -293,10 +293,7 @@ internal constructor(
         Assert.isNotMainThread()
 
         try {
-            val profiles = userManager.getProfiles(userId)
-            synchronized(mutex) {
-                userProfiles = profiles.map { UserInfo(it) } // save a "deep" copy
-            }
+            val (_, profiles) = setUserIdInternal(userId)
             notifySubscribers { callback, _ -> callback.onProfilesChanged(profiles) }
         } catch (e: SecurityException) {
             Log.e(TAG, "Unable to process profile change", e)

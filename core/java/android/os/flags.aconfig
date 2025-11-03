@@ -177,6 +177,13 @@ flag {
 }
 
 flag {
+    name: "binder_proxy_use_executor_map"
+    namespace: "system_performance"
+    description: "Whether to use mFrozenStateChangeCallbackExecutors in BinderProxy."
+    bug: "454431919"
+}
+
+flag {
     name: "bluetooth_bugreport_mode"
     is_exported: true
     namespace: "bluetooth"
@@ -467,6 +474,13 @@ flag {
 }
 
 flag {
+    namespace: "system_performance"
+    name: "native_looper_skip_epoll_wait_for_zero_timeout_holdback"
+    description: "Holdback for skipping epoll_wait if pollOnce is called with a timeout of 0."
+    bug: "448455908"
+}
+
+flag {
      namespace: "system_performance"
      name: "parcel_marshall_bytebuffer"
      is_exported: true
@@ -480,6 +494,20 @@ flag {
      name: "perfetto_sdk_tracing"
      description: "Tracing using Perfetto SDK."
      bug: "303199244"
+}
+
+flag {
+    namespace: "system_performance"
+    name: "perfetto_sdk_tracing_disable_app_registration_sharding"
+    description: "Disables sharding for Perfetto SDK tracing app registration, allowing all apps to register. This flag is intended for local debugging only and will never be enabled in the field."
+    bug: "303199244"
+}
+
+flag {
+    namespace: "system_performance"
+    name: "perfetto_sdk_tracing_enable_app_registration"
+    description: "Enables applications to register with Perfetto SDK tracing."
+    bug: "303199244"
 }
 
 flag {

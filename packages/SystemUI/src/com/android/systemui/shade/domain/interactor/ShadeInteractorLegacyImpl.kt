@@ -17,7 +17,6 @@
 package com.android.systemui.shade.domain.interactor
 
 import android.graphics.Rect
-import com.android.app.tracing.FlowTracing.traceAsCounter
 import com.android.compose.animation.scene.TransitionKey
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -38,6 +37,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 
@@ -84,7 +84,6 @@ constructor(
                 }
             }
             .distinctUntilChanged()
-            .traceAsCounter("panel_expansion") { (it * 100f).toInt() }
             .stateIn(scope, SharingStarted.Eagerly, 0f)
 
     @Deprecated("Do not use. isNotificationsExpanded is only relevant in SceneContainer")
@@ -106,6 +105,10 @@ constructor(
             SharingStarted.Eagerly,
             false,
         )
+
+    @Deprecated("consider using isAnyExpanded instead")
+    override val isAnyExpansionGreaterThanZero: StateFlow<Boolean> =
+        anyExpansion.map { it > 0f }.stateIn(scope, SharingStarted.Eagerly, false)
 
     override val isUserInteractingWithShade: Flow<Boolean> =
         combine(

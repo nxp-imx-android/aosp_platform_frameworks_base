@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"选择要分享的应用"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"共享音频"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"共享应用窗口"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"共享时，屏幕上的内容会公开可见"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"窗口截图"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"录制窗口"</string>
@@ -367,8 +369,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"传感器已关闭"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"清除所有通知。"</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"通知"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Google 助理"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{此群组内还有 # 条通知。}other{此群组内还有 # 条通知。}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"屏幕锁定为横屏模式。"</string>
@@ -605,7 +606,7 @@
     <string name="keyguard_indication_charging_time_fast" msgid="8390311020603859480">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • 正在快速充电 • 将于 <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>后充满"</string>
     <string name="keyguard_indication_charging_time_slowly" msgid="301936949731705417">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • 正在慢速充电 • 将于 <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>后充满"</string>
     <string name="keyguard_indication_charging_time_dock" msgid="3149328898931741271">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • 正在充电 • 将于 <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>后充满"</string>
-    <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"锁屏微件"</string>
+    <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"锁屏界面上的微件"</string>
     <string name="accessibility_announcement_communal_widget_added" msgid="6911593106099328271">"“<xliff:g id="WIDGET_NAME">%1$s</xliff:g>”微件已添加至锁定屏幕"</string>
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"向左滑动即可启动公共教程"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"自定义"</string>
@@ -629,7 +630,7 @@
     <string name="work_mode_turn_on" msgid="907813741770247267">"解除暂停"</string>
     <string name="accessibility_action_label_close_communal_hub" msgid="6790396569621032333">"关闭锁定屏幕上的微件"</string>
     <string name="accessibility_action_label_edit_widgets" msgid="3821868581348322346">"自定义微件"</string>
-    <string name="accessibility_content_description_for_communal_hub" msgid="1670220840599380118">"锁屏微件"</string>
+    <string name="accessibility_content_description_for_communal_hub" msgid="1670220840599380118">"锁屏界面上的微件"</string>
     <string name="accessibility_action_label_select_widget" msgid="8897281501387398191">"选择微件"</string>
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"移除微件"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"放置所选微件"</string>
@@ -710,8 +711,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"静音"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"通知"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"对话"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"重要通知"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"清除所有静音通知"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"打开通知设置"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{无通知}=1{{mode}暂停了通知}=2{{mode}和另外 1 种模式暂停了通知}other{{mode}和另外 # 种模式暂停了通知}}"</string>
@@ -974,7 +974,7 @@
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
     <string name="keyboard_key_back" msgid="4185420465469481999">"返回"</string>
     <string name="keyboard_key_tab" msgid="4592772350906496730">"Tab"</string>
-    <string name="keyboard_key_space" msgid="6980847564173394012">"空格"</string>
+    <string name="keyboard_key_space" msgid="6980847564173394012">"空格键"</string>
     <string name="keyboard_key_enter" msgid="8633362970109751646">"Enter"</string>
     <string name="keyboard_key_backspace" msgid="4095278312039628074">"退格"</string>
     <string name="keyboard_key_media_play_pause" msgid="8389984232732277478">"播放/暂停"</string>
@@ -1151,29 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"电源菜单"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"第 <xliff:g id="ID_1">%1$d</xliff:g> 页，共 <xliff:g id="ID_2">%2$d</xliff:g> 页"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要开启<xliff:g id="ID_1">%1$s</xliff:g>吗？"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"操作 "<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用<xliff:g id="ID_3">^3</xliff:g>的键盘快捷键。<xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"再次按下“操作”+ <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> 即可启用<xliff:g id="ID_3">%3$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"要开启“<xliff:g id="ID_1">%1$s</xliff:g>”的键盘快捷键吗？"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"不开启"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"开启快捷键"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> 键盘快捷键已开启"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"“操作”"<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用“<xliff:g id="ID_3">^3</xliff:g>”无障碍功能的键盘快捷键。这项功能可以快速放大界面上的内容。放大功能开启后，同时按下“操作”"<annotation id="action_key_icon">"图标"</annotation>"、<xliff:g id="ID_4">^1</xliff:g> 以及“+”或“-”键可以调整缩放级别。"</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"停用快捷键"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"保持开启"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"“操作”"<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用 <xliff:g id="ID_3">^3</xliff:g> 的键盘快捷键。<xliff:g id="ID_4">^3</xliff:g> 是一款屏幕阅读器，可大声朗读屏幕上的内容。对于查看界面有困难的用户，这项功能非常实用。此功能可能会改变设备的工作方式。"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"开启键盘快捷键后，您将允许 TalkBack 完全控制您的设备。"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"如果需要使用无障碍功能，您可以将完全控制权限授予应用，但大多数应用并不适合获得此权限。"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"查看和控制屏幕"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"此功能可以读出屏幕上的所有内容，并在其他应用上层显示内容。"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"查看和执行操作"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"此功能可以跟踪您与应用或硬件传感器的互动，并代表您与应用互动。"</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"同时按下“操作”"<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 即可开启无障碍功能“<xliff:g id="ID_3">^3</xliff:g>”。开启该功能后，您无需动手就能控制设备。"</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"无障碍"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"完成"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"锁定屏幕"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"正在关机…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"查看处理步骤"</string>
@@ -1740,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"前往下一页"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"自动填充"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"展开"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

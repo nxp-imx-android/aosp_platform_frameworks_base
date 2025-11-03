@@ -16,6 +16,7 @@
 
 package android.security.net.config;
 
+import static android.security.Flags.encryptedClientHelloConfiguration;
 import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_DISABLED;
 import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_ENABLED;
 import static android.security.NetworkSecurityPolicy.DOMAIN_ENCRYPTION_MODE_REQUIRED;
@@ -60,12 +61,12 @@ public final class NetworkSecurityConfig {
     static final long DEFAULT_ENABLE_CERTIFICATE_TRANSPARENCY = 407952621L;
 
     /**
-     * Corresponds to the IntDef defined in {@link
-     * android.security.NetworkSecurityPolicy.DomainEncryptionMode}.
-     *
-     * @hide
+     * Enable Encrypted Client Hello by default on all TLS connections in Network Security Config.
+     * Apps can still opt-out via their Network Security Config.
      */
-    public static final int DEFAULT_DOMAIN_ENCRYPTION_MODE = DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    static final long ENABLE_DEFAULT_ENCRYPTED_CLIENT_HELLO = 419020719L;
 
     private static final AtomicReference<Boolean>
             sCertificateTransparencyVerificationRequiredDefault = new AtomicReference<>();
@@ -237,6 +238,19 @@ public final class NetworkSecurityConfig {
     }
 
     /**
+     * Returns the default domain encryption mode. The value depends on the platform version and on
+     * the app target sdk level.
+     *
+     * @hide
+     */
+    static int defaultDomainEncryptionMode() {
+        return (CompatChanges.isChangeEnabled(ENABLE_DEFAULT_ENCRYPTED_CLIENT_HELLO)
+                        && encryptedClientHelloConfiguration())
+                ? DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC
+                : DOMAIN_ENCRYPTION_MODE_DISABLED;
+    }
+
+    /**
      * Return a {@link Builder} for the default {@code NetworkSecurityConfig}.
      *
      * <p>The default configuration has the following properties:
@@ -306,7 +320,7 @@ public final class NetworkSecurityConfig {
         private boolean mCertificateTransparencyVerificationRequired =
                 certificateTransparencyVerificationRequiredDefault();
         private boolean mCertificateTransparencyVerificationRequiredSet = false;
-        private int mDomainEncryptionMode = DEFAULT_DOMAIN_ENCRYPTION_MODE;
+        private int mDomainEncryptionMode = defaultDomainEncryptionMode();
         private boolean mDomainEncryptionModeSet = false;
         private Builder mParentBuilder;
 
@@ -446,7 +460,7 @@ public final class NetworkSecurityConfig {
                         case "required" -> DOMAIN_ENCRYPTION_MODE_REQUIRED;
                         case "enabled" -> DOMAIN_ENCRYPTION_MODE_ENABLED;
                         case "opportunistic" -> DOMAIN_ENCRYPTION_MODE_OPPORTUNISTIC;
-                        default -> DEFAULT_DOMAIN_ENCRYPTION_MODE;
+                        default -> defaultDomainEncryptionMode();
                     };
             mDomainEncryptionModeSet = true;
             return this;
@@ -465,7 +479,7 @@ public final class NetworkSecurityConfig {
                 return mParentBuilder.getDomainEncryptionMode();
             }
 
-            return DEFAULT_DOMAIN_ENCRYPTION_MODE;
+            return defaultDomainEncryptionMode();
         }
 
         public NetworkSecurityConfig build() {

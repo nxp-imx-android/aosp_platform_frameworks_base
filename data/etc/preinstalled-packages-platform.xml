@@ -152,4 +152,9 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="SYSTEM" />
     </install-in-user-type>
 
+    <!--E2EE ContactKeys Provider (E2eeContactKeysProvider)  -->
+    <install-in-user-type package="com.android.providers.contactkeys">
+        <install-in user-type="FULL" />
+    </install-in-user-type>
+
 </config>

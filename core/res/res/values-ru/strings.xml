@@ -643,6 +643,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Приложение сможет передавать данные на устройства Wi‑Fi рядом, подключаться к ним и определять их примерное местоположение."</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"доступ к устройствам в локальной сети"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Приложение получит доступ к устройствам в локальной сети."</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"относительное местоположение устройств поблизости"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Приложение сможет определять относительное местоположение устройств поблизости."</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Сведения о предпочтительном платежном сервисе NFC"</string>
@@ -762,7 +766,7 @@
     <string name="face_acquired_insufficient" msgid="6889245852748492218">"Невозможно создать модель лица. Повторите попытку."</string>
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Слишком светло. Сделайте освещение менее ярким."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Недостаточно света"</string>
-    <string name="face_acquired_too_close" msgid="4453646176196302462">"Переместите телефон дальше от лица"</string>
+    <string name="face_acquired_too_close" msgid="4453646176196302462">"Отодвиньте телефон дальше от лица"</string>
     <string name="face_acquired_too_far" msgid="2922278214231064859">"Переместите телефон ближе к лицу"</string>
     <string name="face_acquired_too_high" msgid="8278815780046368576">"Переместите телефон выше"</string>
     <string name="face_acquired_too_low" msgid="4075391872960840081">"Переместите телефон ниже"</string>
@@ -1045,7 +1049,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Введите PIN-код"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Неверный PIN-код."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Для разблокировки нажмите \"Меню\", а затем 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Экстренная служба"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Нет сигнала"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Экран заблокирован."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Нажмите \"Меню\", чтобы разблокировать экран или вызвать службу экстренной помощи."</string>
@@ -1279,8 +1282,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Выполнить действие"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Открыть в приложении"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Открыть с помощью приложения \"%1$s\""</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"Открыть приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Открыть"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Открывать ссылки <xliff:g id="HOST">%1$s</xliff:g> с помощью:"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Открывать ссылки с помощью:"</string>

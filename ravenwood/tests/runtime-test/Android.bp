@@ -15,6 +15,10 @@ android_ravenwood_test {
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
         "androidx.test.rules",
+        "hoststubgen-helper-runtime",
+        "ow2-asm",
+        "guava",
+        "truth",
     ],
     srcs: [
         "test/**/*.java",

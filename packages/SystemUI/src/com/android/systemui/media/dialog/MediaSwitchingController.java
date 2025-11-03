@@ -446,7 +446,7 @@ public class MediaSwitchingController
         }
     }
 
-    Drawable getAppSourceIconFromPackage() {
+    private @Nullable Drawable getAppSourceIconFromPackage() {
         if (TextUtils.isEmpty(mPackageName)) {
             return null;
         }
@@ -577,7 +577,16 @@ public class MediaSwitchingController
         return mIsGroupListCollapsed;
     }
 
-    IconCompat getNotificationSmallIcon() {
+    @Nullable
+    Drawable getAppIcon() {
+        Drawable icon = getNotificationSmallIcon();
+        if (icon == null) {
+            icon = getAppSourceIconFromPackage();
+        }
+        return icon;
+    }
+
+    private @Nullable Drawable getNotificationSmallIcon() {
         if (TextUtils.isEmpty(mPackageName)) {
             return null;
         }
@@ -589,7 +598,7 @@ public class MediaSwitchingController
                 if (icon == null) {
                     break;
                 }
-                return IconCompat.createFromIcon(icon);
+                return icon.loadDrawable(mContext);
             }
         }
         return null;

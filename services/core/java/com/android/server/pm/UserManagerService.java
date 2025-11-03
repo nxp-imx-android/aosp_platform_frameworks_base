@@ -1491,7 +1491,7 @@ public class UserManagerService extends IUserManager.Stub {
         synchronized (mUsersLock) {
             if (mBootUser != UserHandle.USER_NULL) {
                 final UserData userData = mUsers.get(mBootUser);
-                if (userData != null && userData.info.supportsSwitchToByUser()) {
+                if (userData != null && userData.info.supportsSwitchTo()) {
                     Slogf.i(LOG_TAG, "Using provided boot user: %d", mBootUser);
                     return mBootUser;
                 } else {
@@ -5172,18 +5172,6 @@ public class UserManagerService extends IUserManager.Stub {
         Slogf.i(LOG_TAG, "Setting temporary activities allowlist for %s to %s", userType,
                 componentNames);
         allowlist.setTemporaryAllowlist(componentNames);
-    }
-
-    boolean isActivityAllowlisted(@NonNull String userType, @NonNull ComponentName activity) {
-        final UserActivitiesAllowlist allowlist = getActivitiesAllowlist(userType);
-        if (allowlist == null) {
-            if (DBG) {
-                Slogf.d(LOG_TAG, "Allowing %s because allowlist for %s is not set",
-                        ComponentName.flattenToShortString(activity), userType);
-            }
-            return true;
-        }
-        return allowlist.isAllowed(activity);
     }
 
     @Nullable UserActivitiesAllowlist getActivitiesAllowlist(@NonNull String userType) {
@@ -9272,9 +9260,8 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public boolean isActivityAllowlistedForHsu(ComponentName activity) {
-            return UserManagerService.this
-                    .isActivityAllowlisted(UserManager.USER_TYPE_SYSTEM_HEADLESS, activity);
+        public UserActivitiesAllowlist getActivitiesAllowlist(String userType) {
+            return UserManagerService.this.getActivitiesAllowlist(userType);
         }
 
         @Override
@@ -9489,14 +9476,13 @@ public class UserManagerService extends IUserManager.Stub {
         }
         return android.multiuser.Flags.disallowRemovingLastAdminUser()
                 && getContextResources().getBoolean(R.bool.config_disallowRemovingLastAdminUser)
-                // For HSUM, the headless system user is currently flagged as an admin user now.
-                // Thus we must exclude it when checking for the last admin user, and only consider
-                // full admin users.
-                // TODO(b/419105275): Investigate not making HSU an admin.
                 && isLastFullAdminUserLU(userInfo);
     }
 
-    /** Returns if the user is the last admin user that is a full user. */
+    /**
+     * Returns if the user is the last admin user that is a full user.
+     * (Only full users can be admins, but we demand that it be full too, just in case.)
+     */
     @GuardedBy("mUsersLock")
     @VisibleForTesting
     boolean isLastFullAdminUserLU(UserInfo userInfo) {

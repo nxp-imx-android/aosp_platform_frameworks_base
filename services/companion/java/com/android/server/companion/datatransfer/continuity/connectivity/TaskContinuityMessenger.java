@@ -19,6 +19,7 @@ package com.android.server.companion.datatransfer.continuity.connectivity;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.companion.CompanionDeviceManager;
 import android.companion.AssociationInfo;
 import android.content.Context;
@@ -57,8 +58,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     public interface Listener {
         void onAssociationConnected(@NonNull AssociationInfo associationInfo);
 
-        void onAssociationDisconnected(
-                int associationId, @NonNull Collection<AssociationInfo> connectedAssociations);
+        void onAssociationDisconnected(int associationId);
 
         void onMessageReceived(int associationId, @NonNull TaskContinuityMessage message);
     }
@@ -125,6 +125,11 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     @NonNull
     public ConnectedAssociationStore getConnectedAssociationStore() {
         return mConnectedAssociationStore;
+    }
+
+    @Nullable
+    public AssociationInfo getAssociationInfo(int associationId) {
+        return mConnectedAssociationStore.getConnectedAssociationById(associationId);
     }
 
     public enum SendMessageResult {
@@ -200,14 +205,10 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
     }
 
     @Override
-    public void onTransportDisconnected(
-            int associationId, @NonNull Collection<AssociationInfo> connectedAssociations) {
-
-        Objects.requireNonNull(connectedAssociations);
-
+    public void onTransportDisconnected(int associationId) {
         synchronized (mListeners) {
             for (Listener listener : mListeners) {
-                listener.onAssociationDisconnected(associationId, connectedAssociations);
+                listener.onAssociationDisconnected(associationId);
             }
         }
     }

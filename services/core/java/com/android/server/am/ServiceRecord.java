@@ -1166,9 +1166,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         updateFgsHasNotificationPermission();
 
         if (android.os.Flags.nativeFrameworkPrototype()) {
-            // TODO(b/431902161): Add a stable way to distinguish native services.
-            // TODO(b/431901625): Consider supporting non-isolated native services.
-            mIsNativeIsolated = name.getShortClassName().contains(".NativeService")
+            mIsNativeIsolated = ((sInfo.flags & ServiceInfo.FLAG_NATIVE_SERVICE) != 0)
                 && ((sInfo.flags & ServiceInfo.FLAG_ISOLATED_PROCESS) != 0);
         }
     }

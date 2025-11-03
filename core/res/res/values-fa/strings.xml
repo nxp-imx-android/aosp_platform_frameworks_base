@@ -641,6 +641,10 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"‏به برنامه اجازه می‌دهد در دستگاه‌های Wi-Fi اطراف تبلیغ کند، به آن‌ها متصل شود، و موقعیت نسبی آن‌ها را تشخیص دهد"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"به دستگاه های شبکه محلی دسترسی داشته باشید"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"به برنامه اجازه می دهد تا به دستگاه های شبکه محلی دسترسی پیدا کند"</string>
+    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
+    <skip />
+    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
+    <skip />
     <string name="permlab_ranging" msgid="2854543350668593390">"تعیین موقعیت نسبی بین دستگاه‌های اطراف"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"به برنامه اجازه داده می‌شود موقعیت نسبی بین دستگاه‌های اطراف را تعیین کند"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"‏اطلاعات ترجیحی سرویس پرداخت NFC"</string>
@@ -1043,7 +1047,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"برای بازکردن قفل، پین را تایپ کنید"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"پین کد اشتباه است."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"برای بازگشایی قفل، منو را فشار دهید و سپس 0 را فشار دهید."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"شماره اضطراری"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"بدون سرویس"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"صفحه قفل شد."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"برای بازکردن قفل یا انجام تماس اضطراری روی «منو» فشار دهید."</string>
@@ -1277,8 +1280,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"تکمیل عملکرد"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"باز کردن با"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"‏باز کردن با %1$s"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"باز کردن «<xliff:g id="APP_NAME">%1$s</xliff:g>»"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"باز کردن"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"باز کردن پیوندهای <xliff:g id="HOST">%1$s</xliff:g> با"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"باز کردن پیوندها با"</string>

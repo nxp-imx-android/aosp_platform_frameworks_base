@@ -557,11 +557,6 @@
   <java-symbol type="color" name="shade_panel_fg" />
   <java-symbol type="color" name="shade_panel_bg" />
   <java-symbol type="color" name="shade_panel_scrim" />
-  <java-symbol type="color" name="surface_effect_0" />
-  <java-symbol type="color" name="surface_effect_1" />
-  <java-symbol type="color" name="surface_effect_2" />
-  <java-symbol type="color" name="surface_effect_3" />
-  <java-symbol type="color" name="surface_effect_0_fallback" />
   <java-symbol type="color" name="tab_indicator_text_v4" />
 
   <java-symbol type="dimen" name="accessibility_touch_slop" />
@@ -853,6 +848,9 @@
   <java-symbol type="string" name="lockscreen_emergency_call" />
   <java-symbol type="string" name="lockscreen_return_to_call" />
   <java-symbol type="string" name="long_press_power_to_turn_off_tv_toast" />
+  <java-symbol type="string" name="supervision_blocked_app_title" />
+  <java-symbol type="string" name="supervision_blocked_app_content" />
+  <java-symbol type="string" name="supervision_unblocked_app_content" />
   <java-symbol type="string" name="tv_watchdog_notification_channel_name" />
   <java-symbol type="string" name="tv_watchdog_notification_title" />
   <java-symbol type="string" name="tv_watchdog_notification_content" />
@@ -1583,6 +1581,7 @@
   <java-symbol type="drawable" name="ic_feedback_downrank" />
 
   <java-symbol type="drawable" name="ic_account_circle" />
+  <java-symbol type="drawable" name="ic_account_child_invert" />
   <java-symbol type="drawable" name="material_ic_account_circle" />
   <java-symbol type="drawable" name="ic_dual_screen" />
   <java-symbol type="drawable" name="ic_thermostat" />
@@ -3817,6 +3816,7 @@
   <java-symbol type="array" name="config_convert_to_emergency_number_map" />
 
   <java-symbol type="array" name="config_priorityOnlyDndExemptPackages" />
+  <java-symbol type="array" name="config_listenerHintsExemptPackages" />
 
   <!-- Screen-size-dependent modes for picker dialogs. -->
   <java-symbol type="integer" name="time_picker_mode" />
@@ -4182,6 +4182,7 @@
   <java-symbol type="string" name="config_defaultWellbeingPackage" />
   <java-symbol type="string" name="config_defaultContentCaptureService" />
   <java-symbol type="string" name="config_defaultContentProtectionService" />
+  <java-symbol type="string" name="config_dynamicInstrumentationEventConsumer" />
   <java-symbol type="string" name="config_defaultAugmentedAutofillService" />
   <java-symbol type="string" name="config_defaultTranslationService" />
   <java-symbol type="string" name="config_defaultAppPredictionService" />
@@ -4800,6 +4801,9 @@
 
   <!-- For app process exit info tracking -->
   <java-symbol type="integer" name="config_app_exit_info_history_list_size" />
+
+  <!-- For app process start info tracking -->
+  <java-symbol type="integer" name="config_app_start_info_history_list_size" />
 
   <java-symbol type="array" name="config_defaultImperceptibleKillingExemptionPkgs" />
   <java-symbol type="array" name="config_defaultImperceptibleKillingExemptionProcStates" />
@@ -5829,6 +5833,11 @@
   <java-symbol name="customColorUnderSurface" type="color"/>
   <java-symbol name="customColorWeatherTemp" type="color"/>
   <java-symbol name="customColorWidgetBackground" type="color"/>
+  <java-symbol name="customColorSurfaceEffect0" type="color"/>
+  <java-symbol name="customColorSurfaceEffect1" type="color"/>
+  <java-symbol name="customColorSurfaceEffect2" type="color"/>
+  <java-symbol name="customColorSurfaceEffect3" type="color"/>
+  <java-symbol name="customColorSurfaceEffect0Fallback" type="color"/>
 
   <java-symbol name="system_brand_a_light" type="color"/>
   <java-symbol name="system_brand_b_light" type="color"/>
@@ -5846,6 +5855,11 @@
   <java-symbol name="system_shade_active_light" type="color"/>
   <java-symbol name="system_shade_disabled_light" type="color"/>
   <java-symbol name="system_shade_inactive_light" type="color"/>
+  <java-symbol name="system_surface_effect_0_light" type="color"/>
+  <java-symbol name="system_surface_effect_0_fallback_light" type="color"/>
+  <java-symbol name="system_surface_effect_1_light" type="color"/>
+  <java-symbol name="system_surface_effect_2_light" type="color"/>
+  <java-symbol name="system_surface_effect_3_light" type="color"/>
   <java-symbol name="system_theme_app_light" type="color"/>
   <java-symbol name="system_theme_app_ring_light" type="color"/>
   <java-symbol name="system_theme_notif_light" type="color"/>
@@ -5869,12 +5883,20 @@
   <java-symbol name="system_shade_active_dark" type="color"/>
   <java-symbol name="system_shade_disabled_dark" type="color"/>
   <java-symbol name="system_shade_inactive_dark" type="color"/>
+  <java-symbol name="system_surface_effect_0_dark" type="color"/>
+  <java-symbol name="system_surface_effect_0_fallback_dark" type="color"/>
+  <java-symbol name="system_surface_effect_1_dark" type="color"/>
+  <java-symbol name="system_surface_effect_2_dark" type="color"/>
+  <java-symbol name="system_surface_effect_3_dark" type="color"/>
   <java-symbol name="system_theme_app_dark" type="color"/>
   <java-symbol name="system_theme_app_ring_dark" type="color"/>
   <java-symbol name="system_theme_notif_dark" type="color"/>
   <java-symbol name="system_under_surface_dark" type="color"/>
   <java-symbol name="system_weather_temp_dark" type="color"/>
   <java-symbol name="system_widget_background_dark" type="color"/>
+
+  <!--Manually added materialColor* tokens-->
+  <java-symbol name="materialColorSemanticRedContainerHigh" type="color"/>
 
   <java-symbol type="attr" name="actionModeUndoDrawable" />
   <java-symbol type="attr" name="actionModeRedoDrawable" />
@@ -6191,6 +6213,7 @@
   <java-symbol type="drawable" name="ic_zen_mode_type_schedule_time" />
   <java-symbol type="drawable" name="ic_zen_mode_type_theater" />
   <java-symbol type="drawable" name="ic_zen_mode_type_special_dnd" />
+  <java-symbol type="drawable" name="ic_zen_mode_icon_train" />
 
   <!-- System notification for background user sound -->
   <java-symbol type="string" name="bg_user_sound_notification_title_alarm" />

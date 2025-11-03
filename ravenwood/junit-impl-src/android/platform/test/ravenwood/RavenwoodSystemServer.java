@@ -17,14 +17,18 @@
 package android.platform.test.ravenwood;
 
 import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.isExperimentalApiEnabled;
-import static android.platform.test.ravenwood.RavenwoodProxyHelper.newProxy;
+import static android.platform.test.ravenwood.RavenwoodProxyHelper.newExperimentalProxy;
 import static android.platform.test.ravenwood.RavenwoodProxyHelper.sDefaultHandler;
 import static android.platform.test.ravenwood.RavenwoodProxyHelper.sNotImplementedHandler;
 
 import android.app.IActivityClientController;
+import android.app.IActivityManager;
 import android.app.IActivityTaskManager;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.IContentService;
+import android.content.IIntentSender;
 import android.hardware.display.IDisplayManager;
 import android.hardware.input.IInputManager;
 import android.os.IUserManager;
@@ -32,6 +36,8 @@ import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.ravenwood.example.BlueManager;
 import android.ravenwood.example.RedManager;
+import android.service.dreams.DreamService;
+import android.service.dreams.IDreamManager;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.view.Display;
@@ -144,6 +150,15 @@ public class RavenwoodSystemServer {
         ServiceManager.addService(Context.AUTOFILL_MANAGER_SERVICE,
                 IAutoFillManager_ravenwood.sIBinder.asBinder());
 
+        ServiceManager.addService(Context.ACTIVITY_SERVICE,
+                IActivityManager_ravenwood.sIBinder.asBinder());
+
+        ServiceManager.addService(ContentResolver.CONTENT_SERVICE_NAME,
+                IContentService_ravenwood.sIBinder.asBinder());
+
+        ServiceManager.addService(DreamService.DREAM_SERVICE,
+                IDreamManager_ravenwood.sIBinder.asBinder());
+
         WindowManagerGlobal.setWindowManagerServiceForSystemProcess(
                 IWindowManager_ravenwood.sIBinder);
     }
@@ -182,7 +197,7 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IUserManager_ravenwood";
 
         public static final IUserManager sIBinder =
-                newProxy(IUserManager.class, (proxy, method, args) -> {
+                newExperimentalProxy(IUserManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getUserRestrictionSources" -> Collections.emptyList();
                         case "isHeadlessSystemUserMode" -> false;
@@ -199,7 +214,7 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IDisplayManager_ravenwood";
 
         public static final IDisplayManager sIBinder =
-                newProxy(IDisplayManager.class, (proxy, method, args) -> {
+                newExperimentalProxy(IDisplayManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getDisplayInfo" -> new DisplayInfo();
                         case "getDisplayIds" -> new int[]{Display.DEFAULT_DISPLAY};
@@ -227,7 +242,7 @@ public class RavenwoodSystemServer {
         }
 
         public static final IInputManager sIBinder =
-                newProxy(IInputManager.class, (proxy, method, args) -> {
+                newExperimentalProxy(IInputManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getInputDeviceIds" -> new int[]{KeyCharacterMap.VIRTUAL_KEYBOARD};
                         case "getInputDevice" -> getDefaultInputDevice(); // TODO Cache it?
@@ -247,13 +262,14 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IWindowManager_ravenwood";
 
         public static final IWindowManager sIBinder =
-                newProxy(IWindowManager.class, (proxy, method, args) -> {
+                newExperimentalProxy(IWindowManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "openSession" -> IWindowSession_ravenwood.sIBinder;
                         case "getWindowInsets",
                              "hasNavigationBar",
                              "setInTouchModeOnAllDisplays",
-                             "syncInputTransactions" ->
+                             "syncInputTransactions",
+                             "attachWindowContextToDisplayArea" ->
                                 sDefaultHandler.invoke(proxy, method, args);
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
                     };
@@ -267,7 +283,7 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IWindowSession_ravenwood";
 
         public static final IWindowSession sIBinder =
-                newProxy(IWindowSession.class, (proxy, method, args) -> {
+                newExperimentalProxy(IWindowSession.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "addToDisplayAsUser",
                              "onRectangleOnScreenRequested",
@@ -289,7 +305,7 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IActivityTaskManager_ravenwood";
 
         public static final IActivityClientController sACC =
-                newProxy(IActivityClientController.class, (proxy, method, args) -> {
+                newExperimentalProxy(IActivityClientController.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "finishActivity", "setTaskDescription" -> true;
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
@@ -297,7 +313,7 @@ public class RavenwoodSystemServer {
                 });
 
         public static final IActivityTaskManager sIBinder =
-                newProxy(IActivityTaskManager.class, (proxy, method, args) -> {
+                newExperimentalProxy(IActivityTaskManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "getActivityClientController" -> sACC;
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
@@ -312,7 +328,7 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IInputMethodManager_ravenwood";
 
         public static final IInputMethodManager sIBinder =
-                newProxy(IInputMethodManager.class, (proxy, method, args) -> {
+                newExperimentalProxy(IInputMethodManager.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
                         case "addClient",
                              "getImeTrackerService",
@@ -330,6 +346,49 @@ public class RavenwoodSystemServer {
         private static final String TAG = "IAutoFillManager_ravenwood";
 
         public static final IAutoFillManager sIBinder =
-                newProxy(IAutoFillManager.class, sNotImplementedHandler);
+                newExperimentalProxy(IAutoFillManager.class, sNotImplementedHandler);
+    }
+
+    /**
+     * Minimal implementation of {@link IActivityManager} to allow experimental APIs to work.
+     */
+    public static class IActivityManager_ravenwood {
+        private static final String TAG = "IActivityManager_ravenwood";
+
+        public static final IActivityManager sIBinder =
+                newExperimentalProxy(IActivityManager.class, (proxy, method, args) -> {
+                    return switch (method.getName()) {
+                        case "getIntentSenderWithFeature" ->
+                                newExperimentalProxy(IIntentSender.class, sNotImplementedHandler);
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
+                });
+    }
+
+    /**
+     * Minimal implementation of {@link IContentService} to allow experimental APIs to work.
+     */
+    public static class IContentService_ravenwood {
+        private static final String TAG = "IContentService_ravenwood";
+
+        public static final IContentService sIBinder =
+                newExperimentalProxy(IContentService.class, (proxy, method, args) -> {
+                    return switch (method.getName()) {
+                        case "registerContentObserver",
+                             "unregisterContentObserver" ->
+                                sDefaultHandler.invoke(proxy, method, args);
+                        default -> sNotImplementedHandler.invoke(proxy, method, args);
+                    };
+                });
+    }
+
+    /**
+     * Minimal implementation of {@link IDreamManager} to allow experimental APIs to work.
+     */
+    public static class IDreamManager_ravenwood {
+        private static final String TAG = "IDreamManager_ravenwood";
+
+        public static final IDreamManager sIBinder =
+                newExperimentalProxy(IDreamManager.class, sNotImplementedHandler);
     }
 }

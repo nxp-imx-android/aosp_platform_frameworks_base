@@ -36,4 +36,7 @@ object ScreenCaptureRecordFeaturesInteractor {
 
     val isMarkupAvailable: Boolean
         get() = Flags.newScreenRecordToolbarMarkup()
+
+    val isSelfieAvailable: Boolean
+        get() = Flags.newScreenRecordToolbarSelfie()
 }

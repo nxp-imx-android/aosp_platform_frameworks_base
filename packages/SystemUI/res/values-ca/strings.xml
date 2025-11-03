@@ -170,6 +170,8 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selecciona una aplicació per compartir"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Comparteix l\'àudio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Comparteix la finestra de l\'aplicació"</string>
+    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <skip />
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"El contingut de la pantalla és visible quan la comparteixes"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fes una captura de pantalla de la finestra"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Grava la finestra"</string>
@@ -367,8 +369,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Sensors desactivats"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Esborra totes les notificacions."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notificacions"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notificació més a l\'interior.}many{# notificacions més a l\'interior.}other{# notificacions més a l\'interior.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"La pantalla està bloquejada en orientació horitzontal."</string>
@@ -710,8 +711,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Silenciat"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notificacions"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Converses"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"Destacat"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Esborra totes les notificacions silencioses"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Obre la configuració de notificacions"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{No hi ha cap notificació}=1{{mode} ha posat en pausa les notificacions}=2{{mode} i un altre mode han posat en pausa les notificacions}many{{mode} i # de modes més han posat en pausa les notificacions}other{{mode} i # modes més han posat en pausa les notificacions}}"</string>
@@ -1151,29 +1151,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menú d\'engegada"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Pàgina <xliff:g id="ID_1">%1$d</xliff:g> (<xliff:g id="ID_2">%2$d</xliff:g> en total)"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Vols activar <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"La tecla de drecera "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> serveix per utilitzar <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Torna a prémer Acció+<xliff:g id="ID_1">%1$s</xliff:g>+<xliff:g id="ID_2">%2$s</xliff:g> per activar <xliff:g id="ID_3">%3$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Vols activar les tecles de drecera de <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"No activis"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activa la drecera"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Les tecles de drecera per a <xliff:g id="ID_1">%1$s</xliff:g> s\'han activat"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"Les tecles de drecera "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> serveixen per utilitzar <xliff:g id="ID_3">^3</xliff:g>, una funció d\'accessibilitat. Això et permet ampliar ràpidament la pantalla per fer el contingut més gran. Un cop activada l\'ampliació, prem la "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_4">^1</xliff:g> i \"+\" o \"-\" per ajustar el zoom."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactiva la drecera"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantén activada"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"Les tecles de drecera "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> serveixen per utilitzar <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> és un lector de pantalla que et permet escoltar els elements en veu alta. Pot ser útil per a persones amb dificultats per veure la pantalla. Això podria canviar el funcionament del dispositiu."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"En activar les tecles de drecera, permetràs que TalkBack controli el teu dispositiu completament."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"El control total és adequat per a les aplicacions que t\'ajuden amb l\'accessibilitat, però no per a la majoria de les aplicacions."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Visualitza i controla la pantalla"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Pot llegir tot el contingut de la pantalla i mostrar contingut per sobre d\'altres aplicacions."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Visualitza accions i duu-les a terme"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Pot fer un seguiment de les teves interaccions amb una aplicació o un sensor de maquinari, i interaccionar amb aplicacions en nom teu."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Si prems la "<annotation id="action_key_icon">"icona"</annotation>" d\'acció+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>, s\'activarà <xliff:g id="ID_3">^3</xliff:g>, una funció d\'accessibilitat. Et permet controlar el dispositiu amb mans lliures."</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accessibilitat"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Fet"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueig"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"S\'està apagant…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Mostra els passos de manteniment"</string>
@@ -1740,4 +1741,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navega fins a la pàgina següent"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"emplenament automàtic"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"desplegar"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

@@ -16,7 +16,6 @@
 
 package com.android.systemui.volume
 
-import android.content.applicationContext
 import android.content.packageManager
 import android.content.pm.ApplicationInfo
 import com.android.systemui.kosmos.Kosmos
@@ -45,7 +44,6 @@ val Kosmos.localMediaRepositoryFactory by
 val Kosmos.mediaOutputActionsInteractor by
     Kosmos.Fixture {
         MediaOutputActionsInteractor(
-            applicationContext,
             applicationCoroutineScope,
             testDispatcher,
             mediaOutputDialogManager,

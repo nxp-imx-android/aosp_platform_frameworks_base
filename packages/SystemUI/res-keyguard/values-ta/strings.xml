@@ -88,10 +88,8 @@
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"நம்பகமான ஏஜெண்ட் கிடைக்கவில்லை"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"தவறான பின் மூலம் பலமுறை முயன்றுவிட்டீர்கள்"</string>
     <string name="kg_primary_auth_duplicate_guess_pin" msgid="5834891656916692329">"அந்தப் பின்னை முன்பே முயன்றுவிட்டீர்கள். வேறொன்றை முயலவும்."</string>
-    <!-- no translation found for kg_primary_auth_duplicate_guess_pattern (3827593245962385968) -->
-    <skip />
-    <!-- no translation found for kg_primary_auth_duplicate_guess_password (3153406042812407458) -->
-    <skip />
+    <string name="kg_primary_auth_duplicate_guess_pattern" msgid="3827593245962385968">"இந்தப் பேட்டர்னை ஏற்கெனவே முயன்றுவிட்டீர்கள். வேறொன்றை முயலவும்."</string>
+    <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"இந்தக் கடவுச்சொல்லை ஏற்கெனவே முயன்றுவிட்டீர்கள். வேறொன்றை முயலவும்."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"தவறான பேட்டர்ன் மூலம் பலமுறை முயன்றுவிட்டீர்கள்"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"தவறான கடவுச்சொல் மூலம் பலமுறை முயன்றுவிட்டீர்கள்"</string>
     <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"தவறான பின் மூலம் பலமுறை முயன்றுவிட்டீர்கள்\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> இல் மேலும் அறிக"</string>
@@ -123,7 +121,7 @@
     <string name="kg_password_pin_failed" msgid="5136259126330604009">"சிம் பின் செயல்பாடு தோல்வியடைந்தது!"</string>
     <string name="kg_password_puk_failed" msgid="6778867411556937118">"சிம் PUK செயல்பாடு தோல்வியடைந்தது!"</string>
     <string name="accessibility_ime_switch_button" msgid="9082358310194861329">"உள்ளீட்டு முறையை மாற்றும்"</string>
-    <string name="airplane_mode" msgid="2528005343938497866">"விமானப் பயன்முறை"</string>
+    <string name="airplane_mode" msgid="2528005343938497866">"விமான மோட்"</string>
     <string name="kg_prompt_reason_restart_pattern" msgid="3321211830602827742">"சாதனம் மீண்டும் தொடங்கியதால் பேட்டர்ன் தேவை"</string>
     <string name="kg_prompt_reason_restart_pin" msgid="2672166323886110512">"சாதனம் மீண்டும் தொடங்கியதால் பின் தேவை"</string>
     <string name="kg_prompt_reason_restart_password" msgid="3967993994418885887">"சாதனம் மீண்டும் தொடங்கியதால் கடவுச்சொல் தேவை"</string>

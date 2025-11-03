@@ -642,6 +642,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permet à l\'appli de déterminer la position approximative des appareils Wi‑Fi à proximité, de les afficher et de s\'y connecter"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"Accès aux appareils du réseau local"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Autorise l\'appli à accéder aux appareils du réseau local"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"utiliser l\'interface de rebouclage"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Permet à l\'appli d\'interagir avec d\'autres applis par le biais de l\'interface de rebouclage"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"déterminer l\'emplacement relatif entre des appareils à proximité"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Autorisez l\'appli à déterminer l\'emplacement relatif entre des appareils à proximité"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informations sur le service de paiement NFC préféré"</string>
@@ -1012,7 +1014,7 @@
     <string name="imProtocolIcq" msgid="2410325380427389521">"ICQ"</string>
     <string name="imProtocolJabber" msgid="7919269388889582015">"Jabber"</string>
     <string name="imProtocolNetMeeting" msgid="4985002408136148256">"NetMeeting"</string>
-    <string name="orgTypeWork" msgid="8684458700669564172">"Bureau"</string>
+    <string name="orgTypeWork" msgid="8684458700669564172">"Travail"</string>
     <string name="orgTypeOther" msgid="5450675258408005553">"Autre"</string>
     <string name="orgTypeCustom" msgid="1126322047677329218">"Personnalisé"</string>
     <string name="relationTypeCustom" msgid="282938315217441351">"Personnalisée"</string>
@@ -1044,7 +1046,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Saisissez le code PIN pour déverrouiller le clavier."</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Le code PIN est erroné."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Pour déverrouiller le clavier, appuyez sur \"Menu\" puis sur 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Numéro d\'urgence"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Aucun service"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Écran verrouillé"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Appuyez sur \"Menu\" pour déverrouiller le téléphone ou appeler un numéro d\'urgence"</string>
@@ -1278,8 +1279,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Terminer l\'action"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Ouvrir avec"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Ouvrir avec %1$s"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"Ouvrir <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Ouvrir"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Ouvrir les liens <xliff:g id="HOST">%1$s</xliff:g> avec"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Ouvrir les liens avec"</string>

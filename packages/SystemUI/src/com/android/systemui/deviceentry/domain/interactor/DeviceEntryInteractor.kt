@@ -257,18 +257,18 @@ constructor(
                         )
                 }
             } else {
-                if (sceneBackInteractor.get().backStack.value.peek() != null) {
-                    // If there is a back stack, replacing the Lockscreen scene at the bottom of the
-                    // stack triggers device entry without necessarily dismissing the current scene.
+                val willAnimateToGone =
+                    keyguardDismissActionInteractor.get().willAnimateDismissActionOnLockscreen.value
+                if (
+                    !willAnimateToGone && sceneBackInteractor.get().backStack.value.peek() != null
+                ) {
+                    // If we don't need to animate to Scenes.Gone, and there's a back stack,
+                    // replacing the Lockscreen scene at the bottom of the stack triggers device
+                    // entry without animating a transition away from the current scene.
                     sceneBackInteractor.get().replaceLockscreenSceneOnBackStack()
                 } else {
                     val transitionKey =
-                        if (
-                            keyguardDismissActionInteractor
-                                .get()
-                                .willAnimateDismissActionOnLockscreen
-                                .value
-                        ) {
+                        if (willAnimateToGone) {
                             KeyguardTransitionKeys.WithAnimationOverLockscreen
                         } else {
                             null
@@ -291,9 +291,9 @@ constructor(
      * Returns `true` if the device currently requires authentication before entry is granted;
      * `false` if the device can be entered without authenticating first.
      */
-    suspend fun isAuthenticationRequired(): Boolean {
+    fun isAuthenticationRequired(): Boolean {
         return !deviceUnlockedInteractor.get().deviceUnlockStatus.value.isUnlocked &&
-            authenticationInteractor.get().getAuthenticationMethod().isSecure
+            authenticationInteractor.get().authenticationMethod.value.isSecure
     }
 
     /**

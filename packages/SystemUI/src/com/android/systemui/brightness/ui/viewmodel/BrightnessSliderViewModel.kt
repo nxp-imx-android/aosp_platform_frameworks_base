@@ -35,7 +35,7 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.res.R
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor
 import com.android.systemui.settings.brightness.ui.BrightnessWarningToast
-import com.android.systemui.utils.PolicyRestriction
+import com.android.systemui.util.policy.PolicyRestriction
 import dagger.Lazy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory

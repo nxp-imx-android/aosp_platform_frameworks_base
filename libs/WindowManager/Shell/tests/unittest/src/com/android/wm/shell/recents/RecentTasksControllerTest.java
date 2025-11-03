@@ -71,6 +71,7 @@ import android.view.SurfaceControl;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -135,7 +136,8 @@ public class RecentTasksControllerTest extends ShellTestCase {
     @Mock
     private UserManager mUserManager;
     private FakeDesktopState mDesktopState;
-
+    @Mock
+    private DesktopModeCompatPolicy mDesktopModeCompatPolicy;
     private ShellTaskOrganizer mShellTaskOrganizer;
     private RecentTasksController mRecentTasksController;
     private RecentTasksController mRecentTasksControllerReal;
@@ -163,7 +165,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
         mRecentTasksControllerReal = new RecentTasksController(mContext, mShellInit,
                 mShellController, mShellCommandHandler, mTaskStackListener, mActivityTaskManager,
                 Optional.of(mDesktopUserRepositories), mTaskStackTransitionObserver,
-                mMainExecutor, mDesktopState);
+                mMainExecutor, mDesktopState, mDesktopModeCompatPolicy);
         mRecentTasksController = spy(mRecentTasksControllerReal);
         mShellTaskOrganizer = new ShellTaskOrganizer(mShellInit, mShellCommandHandler,
                 mRootTaskDisplayAreaOrganizer, null /* sizeCompatUI */, Optional.empty(),
@@ -575,8 +577,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void onTaskAdded_desktopModeRunningAppsEnabled_triggersOnRunningTaskAppeared()
             throws Exception {
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
@@ -589,20 +590,6 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS)
-    public void onTaskAdded_desktopModeRunningAppsDisabled_doesNotTriggerOnRunningTaskAppeared()
-            throws Exception {
-        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
-        RunningTaskInfo taskInfo = makeRunningTaskInfo(/* taskId= */10);
-
-        mRecentTasksControllerReal.onTaskAdded(taskInfo);
-
-        verify(mRecentTasksListener, never()).onRunningTaskAppeared(any());
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
     public void onTaskAdded_orDesktopWallpaperActivity_doesNotTriggerOnRunningTaskAppeared()
             throws Exception {
         RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
@@ -614,8 +601,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void taskWindowingModeChanged_desktopRunningAppsEnabled_triggersOnRunningTaskChanged()
             throws Exception {
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
@@ -627,8 +613,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void taskInfoChanged_forDesktopWallpaperActivity_doesNotTriggerOnRunningTaskChanged()
             throws Exception {
         RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
@@ -641,21 +626,6 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS)
-    public void
-            taskWindowingModeChanged_desktopRunningAppsDisabled_doesNotTriggerOnRunningTaskChanged()
-            throws Exception {
-        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
-        RunningTaskInfo taskInfo = makeRunningTaskInfo(/* taskId= */10);
-
-        mRecentTasksControllerReal.onTaskRunningInfoChanged(taskInfo);
-
-        verify(mRecentTasksListener, never()).onRunningTaskChanged(any());
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
     public void onTaskRemoved_desktopModeRunningAppsEnabled_triggersOnRunningTaskVanished()
             throws Exception {
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
@@ -668,25 +638,11 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void onTaskRemoved_forDesktopWallpaperActivity_doesNotTriggerOnRunningTaskVanished()
             throws Exception {
         RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
-
-        mRecentTasksControllerReal.onTaskRemoved(taskInfo);
-
-        verify(mRecentTasksListener, never()).onRunningTaskVanished(any());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS)
-    public void onTaskRemoved_desktopModeRunningAppsDisabled_doesNotTriggerOnRunningTaskVanished()
-            throws Exception {
-        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
-        RunningTaskInfo taskInfo = makeRunningTaskInfo(/* taskId= */10);
 
         mRecentTasksControllerReal.onTaskRemoved(taskInfo);
 
@@ -941,7 +897,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
     public void getRecentTask_transparentAppInDesktopTask_addedToSameDesktopTask() {
         mDesktopState.setEnableMultipleDesktops(true);
         RecentTaskInfo task1 = makeTaskInfo(1);
-        task1.isTopActivityTransparent = true;
+        task1.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
         RecentTaskInfo task2 = makeTaskInfo(2);
         RecentTaskInfo task3 = makeTaskInfo(3);
         RecentTaskInfo task4 = makeTaskInfo(4);
@@ -949,8 +905,8 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
         int deskId = 1;
         when(mDesktopRepository.getActiveDeskId(anyInt())).thenReturn(deskId);
+        when(mDesktopModeCompatPolicy.isTransparentOverlay(task1)).thenReturn(true);
         when(mDesktopUserRepositories.getCurrent().isActiveTask(2)).thenReturn(true);
-        when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(1)).thenReturn(deskId);
         when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(2)).thenReturn(deskId);
 
         ArrayList<GroupedTaskInfo> recentTasks =
@@ -1012,6 +968,49 @@ public class RecentTasksControllerTest extends ShellTestCase {
         List<TaskInfo> deskTasks = deskGroup.getTaskInfoList();
         assertThat(deskTasks).hasSize(2);
         assertThat(deskTasks).containsExactly(task2, task3);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
+    public void getRecentTask_transparentAppInDifferentDesktopTask_notAddedToActiveDesk() {
+        mDesktopState.setEnableMultipleDesktops(true);
+        RecentTaskInfo task1 = makeTaskInfo(1);
+        task1.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        RecentTaskInfo task2 = makeTaskInfo(2);
+        RecentTaskInfo task3 = makeTaskInfo(3);
+        setRawList(task1, task2, task3);
+
+        int activeDeskId = 1;
+        int otherDeskId = 2;
+        when(mDesktopRepository.getActiveDeskId(anyInt())).thenReturn(activeDeskId);
+        // task1 is a transparent overlay
+        when(mDesktopModeCompatPolicy.isTransparentOverlay(task1)).thenReturn(true);
+        // task1 belongs to otherDeskId
+        when(mDesktopUserRepositories.getCurrent().isActiveTask(1)).thenReturn(true);
+        when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(1)).thenReturn(otherDeskId);
+        // task2 is on the activeDeskId
+        when(mDesktopUserRepositories.getCurrent().isActiveTask(2)).thenReturn(true);
+        when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(2)).thenReturn(activeDeskId);
+        // task3 is on otherDeskId
+        when(mDesktopUserRepositories.getCurrent().isActiveTask(3)).thenReturn(true);
+        when(mDesktopUserRepositories.getCurrent().getDeskIdForTask(3)).thenReturn(otherDeskId);
+
+        ArrayList<GroupedTaskInfo> recentTasks =
+                mRecentTasksController.getRecentTasks(MAX_VALUE, RECENT_IGNORE_UNAVAILABLE, 0);
+
+        assertThat(recentTasks).hasSize(2);
+
+        GroupedTaskInfo activeDeskGroup = recentTasks.get(0);
+        assertThat(activeDeskGroup.getDeskId()).isEqualTo(activeDeskId);
+        assertThat(activeDeskGroup.isBaseType(TYPE_DESK)).isTrue();
+        assertThat(activeDeskGroup.getTaskInfoList()).containsExactly(task2);
+
+        GroupedTaskInfo otherDeskGroup = recentTasks.get(1);
+        assertThat(otherDeskGroup.getDeskId()).isEqualTo(otherDeskId);
+        assertThat(otherDeskGroup.isBaseType(TYPE_DESK)).isTrue();
+        // task1 should be grouped with task3 because they are on the same non-active desk
+        assertThat(otherDeskGroup.getTaskInfoList()).containsExactly(task1, task3);
     }
 
     /**

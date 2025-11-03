@@ -93,6 +93,7 @@ class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
 
     @get:Rule(order = 1)
     val setUpRule = RunOncePerParameterRule(
+        testClass = this::class,
         wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar),
     )

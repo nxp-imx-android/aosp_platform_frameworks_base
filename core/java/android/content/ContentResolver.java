@@ -1940,6 +1940,20 @@ public abstract class ContentResolver implements ContentInterface {
         }
     }
 
+    /**
+     * @param uri The desired URI to open. This value cannot be null.
+     * @param mimeTypeFilter The mimetype of data the client desires. This can be a pattern such as
+     *                       *&#47;*, if the caller does not have specific type requirements;
+     *                       in this case the content provider will pick its best type matching
+     *                       the pattern. This value cannot be null.
+     * @param opts Additional provider-dependent options like {@link #EXTRA_SIZE} to indicate the
+     *             desired size of an image. Whether or not the provider will respect these options
+     *             is completely provider dependent. This value may be null.
+     * @param signal  A signal to cancel the operation in progress or null if none.
+     * @return Returns a new AssetFileDescriptor from which the client can read data of the
+     *         desired type. This value may be null.
+     * @throws FileNotFoundException
+     */
     @Override
     public final @Nullable AssetFileDescriptor openTypedAssetFile(@NonNull Uri uri,
             @NonNull String mimeTypeFilter, @Nullable Bundle opts,

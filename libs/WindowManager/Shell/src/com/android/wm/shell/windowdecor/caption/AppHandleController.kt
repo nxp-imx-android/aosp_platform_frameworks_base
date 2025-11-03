@@ -163,12 +163,6 @@ class AppHandleController(
     private val display
         get() = displayController.getDisplay(taskInfo.displayId)
 
-    private val inFullImmersive
-        get() =
-            desktopUserRepositories
-                .getProfile(taskInfo.userId)
-                .isTaskInFullImmersiveState(taskInfo.taskId)
-
     override fun relayout(
         params: RelayoutParams,
         parentContainer: SurfaceControl,
@@ -453,7 +447,7 @@ class AppHandleController(
                         onCloseMenuClickListener = { closeHandleMenu() },
                         onOutsideTouchListener = { closeHandleMenu() },
                         onHandleMenuClicked = { closeHandleMenu() },
-                        forceShowSystemBars = inFullImmersive,
+                        forceShowSystemBars = true,
                     )
                 }
         notifyCaptionStateChanged(captionLayoutResult)

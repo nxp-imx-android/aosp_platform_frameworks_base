@@ -120,6 +120,8 @@
     <public name="removed_runInPccSandbox"/>
     <!-- @FlaggedApi(android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA) -->
     <public name="userSelectable"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE) -->
+    <public name="nativeService"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">
@@ -191,7 +193,7 @@
   </staging-public-group>
 
   <staging-public-group type="array" first-id="0x019c0000">
-    <!-- @FlaggedApi(android.permission.flags.Flags.FLAG_WATCH_FACE_ROLE_ENABLED)
+    <!-- @FlaggedApi(android.permission.flags.Flags.FLAG_ACTIVE_WATCH_FACE_ROLE_ENABLED)
     @hide @SystemApi -->
     <public name="config_watchFacePermissions" />
   </staging-public-group>

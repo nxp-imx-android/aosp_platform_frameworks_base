@@ -64,12 +64,10 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             val authMethod by collectLastValue(underTest.authenticationMethod)
             runCurrent()
             assertThat(authMethod).isEqualTo(Pin)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(Pin)
 
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
 
             assertThat(authMethod).isEqualTo(Password)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(Password)
         }
 
     @Test
@@ -81,7 +79,6 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(None)
 
             assertThat(authMethod).isEqualTo(None)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(None)
         }
 
     @Test
@@ -250,7 +247,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.apply {
                 setAuthenticationMethod(Pin)
                 setAutoConfirmFeatureEnabled(true)
-                reportLockoutStarted(42)
+                reportLockoutStarted(42.milliseconds)
             }
 
             val correctPin = FakeAuthenticationRepository.DEFAULT_PIN
@@ -320,9 +317,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             assertThat(isAutoConfirmEnabled).isFalse()
 
             // Move the clock forward one more second, to completely finish the lockout period:
-            advanceTimeBy(
-                FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS.seconds.plus(1.seconds)
-            )
+            advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION + 1.seconds)
             assertThat(underTest.lockoutEndTime).isNull()
 
             // Auto-confirm is still disabled, because lockout occurred at least once in this
@@ -360,7 +355,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
                 .isEqualTo(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT)
 
             // Move the clock forward to finish the lockout period:
-            advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS.seconds)
+            advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION)
             assertThat(failedAuthenticationAttempts)
                 .isEqualTo(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT)
 
@@ -388,8 +383,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
             underTest.authenticate(listOf(5, 6, 7)) // Wrong PIN
 
             val expectedLockoutEndTime =
-                (testScope.currentTime + FakeAuthenticationRepository.LOCKOUT_DURATION_MS)
-                    .milliseconds
+                testScope.currentTime.milliseconds + FakeAuthenticationRepository.LOCKOUT_DURATION
             assertThat(underTest.lockoutEndTime).isEqualTo(expectedLockoutEndTime)
             assertThat(kosmos.fakeAuthenticationRepository.lockoutStartedReportCount).isEqualTo(1)
 
@@ -439,7 +433,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
                 remainingFailedAttempts--
                 if (underTest.lockoutEndTime != null) {
                     // If there's a lockout, wait it out:
-                    advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION_SECONDS.seconds)
+                    advanceTimeBy(FakeAuthenticationRepository.LOCKOUT_DURATION)
                 }
 
                 if (attemptIndex < LockPatternUtils.FAILED_ATTEMPTS_BEFORE_WIPE_GRACE) {

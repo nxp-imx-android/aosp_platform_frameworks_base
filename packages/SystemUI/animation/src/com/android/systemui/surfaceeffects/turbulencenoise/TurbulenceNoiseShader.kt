@@ -248,7 +248,7 @@ class TurbulenceNoiseShader(val baseType: Type = Type.SIMPLEX_NOISE) :
 
     /**
      * Sets the opacity of the effect. Not intended to set by the client as it is used for
-     * ease-in/out animations.
+     * fade-in/out animations.
      *
      * Expected value range is [1, 0].
      */

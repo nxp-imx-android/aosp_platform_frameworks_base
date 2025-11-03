@@ -132,9 +132,21 @@ java_sdk_library {
     permitted_packages: [
         "android.security",
     ],
+
+    // Disable when NSC implementation in Conscrypt is active.
+    enabled: select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: false,
+        default: true,
+    }),
 }
 
 platform_compat_config {
     name: "framework-network-security-config-compat-config",
     src: ":framework-network-security-config",
+
+    // Disable when NSC implementation in Conscrypt is active.
+    enabled: select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: false,
+        default: true,
+    }),
 }

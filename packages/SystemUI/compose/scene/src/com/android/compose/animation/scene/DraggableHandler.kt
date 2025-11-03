@@ -48,16 +48,13 @@ internal class DraggableHandler(
         get() = dragController?.isDrivingTransition == true
 
     /**
-     * The velocity threshold at which the intent of the user is to swipe up or down. It is the same
-     * as SwipeableV2Defaults.VelocityThreshold.
+     * The velocity threshold (in px/sec) to determine if a swipe gesture should commit to the new
+     * state or snap back to its original state.
      */
     internal val velocityThreshold: Float
-        get() = with(layoutImpl.density) { 125.dp.toPx() }
+        get() = with(layoutImpl.density) { layoutImpl.swipeDetector.velocityThreshold.toPx() }
 
-    /**
-     * The positional threshold at which the intent of the user is to swipe to the next scene. It is
-     * the same as SwipeableV2Defaults.PositionalThreshold.
-     */
+    /** The positional threshold at which the intent of the user is to swipe to the next scene. */
     internal val positionalThreshold
         get() = with(layoutImpl.density) { 56.dp.toPx() }
 

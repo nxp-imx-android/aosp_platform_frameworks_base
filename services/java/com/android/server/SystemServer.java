@@ -1849,8 +1849,7 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (!isWatch && !isTv && !isAutomotive
-                    && android.security.Flags.aapmApi()) {
+            if (!isWatch && !isTv && !isAutomotive) {
                 t.traceBegin("StartAdvancedProtectionService");
                 mSystemServiceManager.startService(AdvancedProtectionService.Lifecycle.class);
                 t.traceEnd();
@@ -2186,7 +2185,7 @@ public final class SystemServer implements Dumpable {
             mSystemServiceManager.startService(new FontManagerService.Lifecycle(context, safeMode));
             t.traceEnd();
 
-            if (!isWatch || !android.server.Flags.removeTextService()) {
+            if (!isWatch) {
                 t.traceBegin("StartTextServicesManager");
                 mSystemServiceManager.startService(TextServicesManagerService.Lifecycle.class);
                 t.traceEnd();

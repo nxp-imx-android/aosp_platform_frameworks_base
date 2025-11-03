@@ -81,7 +81,7 @@ constructor(
             .map { it.willAnimateOnLockscreen }
             .stateIn(
                 scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(),
+                started = SharingStarted.Eagerly,
                 initialValue = false,
             )
 

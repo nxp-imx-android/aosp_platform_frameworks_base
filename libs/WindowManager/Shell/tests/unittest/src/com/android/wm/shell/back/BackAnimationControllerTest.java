@@ -27,6 +27,7 @@ import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_QUICK_DOUBLE_BACK_SWIPES;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -60,6 +61,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.IRemoteAnimationRunner;
@@ -90,6 +94,7 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -103,6 +108,9 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidTestingRunner.class)
 public class BackAnimationControllerTest extends ShellTestCase {
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule =
+            DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private final TestShellExecutor mShellExecutor = new TestShellExecutor();
 
@@ -917,6 +925,46 @@ public class BackAnimationControllerTest extends ShellTestCase {
         mController.mBackGestureStarted = true;
         verifySystemBackBehavior(BackNavigationInfo.TYPE_CROSS_ACTIVITY,
                 mDefaultCrossActivityBackAnimation.getRunner());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_PREDICTIVE_BACK_QUICK_DOUBLE_BACK_SWIPES)
+    public void quickDoubleSwipe_startsSecondAnimationAfterFirstFinishes() throws RemoteException {
+        registerAnimation(BackNavigationInfo.TYPE_RETURN_TO_HOME);
+        createNavigationInfo(BackNavigationInfo.TYPE_RETURN_TO_HOME,
+                /* enableAnimation = */ true,
+                /* isAnimationCallback = */ false);
+
+        // Start and finish the first back gesture
+        triggerBackGesture();
+        verify(mActivityTaskManager).startBackNavigation(any(), any());
+        simulateRemoteAnimationStart();
+        releaseBackGesture();
+
+        // Verify that the first back navigation has started
+        verify(mAnimatorCallback).onBackStarted(any(BackMotionEvent.class));
+        verify(mBackAnimationRunner).onAnimationStart(anyInt(), any(), any(), any(), any());
+
+        reset(mAnimatorCallback);
+
+        // Start a second gesture before the first one has finished
+        triggerBackGesture();
+
+        ArgumentCaptor<Runnable> idleRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mTransitions).runOnIdle(idleRunnableCaptor.capture());
+
+        // Finish the first back navigation and trigger the idle callback.
+        simulateRemoteAnimationFinished();
+        idleRunnableCaptor.getValue().run();
+        mShellExecutor.flushAll();
+
+        // Check that startBackNavigation is called again and succeeds.
+        verify(mActivityTaskManager, times(2)).startBackNavigation(any(), any());
+
+        // Verify that the normal animation flow continues
+        simulateRemoteAnimationStart();
+        mShellExecutor.flushAll();
+        verify(mAnimatorCallback, atLeastOnce()).onBackStarted(any(BackMotionEvent.class));
     }
 
     private RemoteAnimationTarget[] createAppAnimationTargets(int openTaskId, int closeTaskId) {

@@ -293,3 +293,13 @@ flag {
     description: "Whether to log zram writeback events, regardless of whether the writeback is enabled."
     bug: "450670546"
 }
+
+flag {
+    name: "fgs_visibility_fix"
+    namespace: "backstage_power"
+    description: "Fix for foreground service visibility in Task Manager"
+    bug: "417784630"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

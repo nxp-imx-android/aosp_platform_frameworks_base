@@ -28,7 +28,6 @@ import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.window.flags.Flags
-import com.android.window.flags.Flags.FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
@@ -875,21 +874,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX)
-    fun mergeOtherTransition_flagDisabled_cancelAndEndNotYetRequested_doesNotInterruptStartDrag() {
-        val finishCallback = mock<Transitions.TransitionFinishCallback>()
-        val task = createTask()
-        defaultHandler.onTaskResizeAnimationListener = mock()
-        val startTransition = startDrag(defaultHandler, task, finishCallback = finishCallback)
-
-        mergeInterruptingTransition(mergeTarget = startTransition)
-
-        verify(finishCallback, never()).onTransitionFinished(anyOrNull())
-        verify(dragAnimator, never()).cancelAnimator()
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX)
     fun mergeOtherTransition_cancelAndEndNotYetRequested_interruptsStartDrag() {
         val finishCallback = mock<Transitions.TransitionFinishCallback>()
         val task = createTask()
@@ -907,7 +891,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX)
     fun mergeOtherTransition_cancelAndEndNotYetRequested_finishesStartAfterAnimation() {
         val finishCallback = mock<Transitions.TransitionFinishCallback>()
         val task = createTask()
@@ -922,7 +905,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX)
     fun mergeOtherTransition_endDragAlreadyMerged_doesNotInterruptStartDrag() {
         val startDragFinishCallback = mock<Transitions.TransitionFinishCallback>()
         val task = createTask()
@@ -941,7 +923,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX)
     fun startEndAnimation_otherTransitionInterruptedStartAfterEndRequest_finishImmediately() {
         val task1 = createTask()
         val startTransition = startDrag(defaultHandler, task1)
@@ -971,7 +952,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX)
     fun startDrag_otherTransitionInterruptedStartAfterEndRequested_animatesDragWhenReady() {
         val task1 = createTask()
         val startTransition = startDrag(defaultHandler, task1)
@@ -998,7 +978,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX)
     fun startCancelAnimation_otherTransitionInterruptingAfterCancelRequest_finishImmediately() {
         val task1 = createTask()
         val startTransition = startDrag(defaultHandler, task1)
@@ -1098,7 +1077,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
     fun startDrag_indicatorFlagEnabled_attachesIndicatorToTransitionRoot() {
         val task = createTask()
         val rootLeash = mock<SurfaceControl>()
@@ -1112,23 +1090,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
         verify(visualIndicator).reparentLeash(startTransaction, rootLeash)
         verify(visualIndicator).fadeInIndicator()
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
-    fun startDrag_indicatorFlagDisabled_doesNotAttachIndicatorToTransitionRoot() {
-        val task = createTask()
-        val rootLeash = mock<SurfaceControl>()
-        val startTransaction = mock<SurfaceControl.Transaction>()
-        startDrag(
-            defaultHandler,
-            task,
-            startTransaction = startTransaction,
-            transitionRootLeash = rootLeash,
-        )
-
-        verify(visualIndicator, never()).reparentLeash(any(), any())
-        verify(visualIndicator, never()).fadeInIndicator()
     }
 
     @Test
@@ -1374,4 +1335,3 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         const val SECONDARY_DISPLAY = 2
     }
 }
-

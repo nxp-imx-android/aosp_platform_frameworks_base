@@ -24,8 +24,6 @@ import android.provider.DeviceConfig
 import android.provider.DeviceConfig.NAMESPACE_PRIVACY
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.Flags
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
@@ -34,10 +32,11 @@ import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyItemController
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.util.time.SystemClock
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -47,19 +46,25 @@ import kotlinx.coroutines.flow.onEach
  * Listens for system events (battery, privacy, connectivity) and allows listeners to show status
  * bar animations when they happen
  */
-@SysUISingleton
 class SystemEventCoordinator
-@Inject
+@AssistedInject
 constructor(
     private val systemClock: SystemClock,
     private val batteryController: BatteryController,
     private val privacyController: PrivacyItemController,
-    private val avControlsChipInteractor: AvControlsChipInteractor,
-    private val context: Context,
-    @Application private val appScope: CoroutineScope,
+    @Assisted private val context: Context,
+    @Assisted private val scope: CoroutineScope,
     connectedDisplayInteractor: ConnectedDisplayInteractor,
     @SystemEventCoordinatorLog private val logBuffer: LogBuffer,
 ) {
+
+    @AssistedFactory
+    fun interface Factory {
+        fun create(context: Context, scope: CoroutineScope): SystemEventCoordinator
+    }
+
+    private val tag = "SystemEventCoordinator(displayId=${context.displayId})"
+
     private val onDisplayConnectedFlow = connectedDisplayInteractor.connectedDisplayAddition
     private val defaultCameraPackageName =
         context.resources.getString(R.string.config_cameraGesturePackage)
@@ -112,7 +117,7 @@ constructor(
         connectedDisplayCollectionJob =
             onDisplayConnectedFlow
                 .onEach { scheduler.onStatusEvent(connectedDisplayEvent) }
-                .launchIn(appScope)
+                .launchIn(scope)
     }
 
     private val batteryStateListener =
@@ -232,7 +237,7 @@ constructor(
                                     item.application.packageName == defaultCameraPackageName
                             if (isCameraMicExempt) {
                                 logBuffer.log(
-                                    TAG,
+                                    tag,
                                     LogLevel.DEBUG,
                                     {
                                         str1 = item.application.packageName
@@ -262,7 +267,7 @@ constructor(
                                 now - lastAnimationTime < DEBOUNCE_TIME_LOCATION
                         ) {
                             logBuffer.log(
-                                TAG,
+                                tag,
                                 LogLevel.DEBUG,
                                 {
                                     str1 = item.application.packageName
@@ -305,4 +310,3 @@ constructor(
 private const val DEBOUNCE_TIME = 3000L
 @VisibleForTesting const val DEBOUNCE_TIME_LOCATION = 600_000L // 10 minutes.
 private const val CHIP_ANIMATION_ENABLED = "privacy_chip_animation_enabled"
-private const val TAG = "SystemEventCoordinator"

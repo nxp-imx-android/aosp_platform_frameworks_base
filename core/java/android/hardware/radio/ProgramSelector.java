@@ -490,7 +490,7 @@ public final class ProgramSelector implements Parcelable {
      *
      * @param type type of identifier.
      * @return identifier value, if found.
-     * @throws IllegalArgumentException, if not found.
+     * @throws IllegalArgumentException if not found.
      */
     public long getFirstId(@IdentifierType int type) {
         if (mPrimaryId.getType() == type) return mPrimaryId.getValue();

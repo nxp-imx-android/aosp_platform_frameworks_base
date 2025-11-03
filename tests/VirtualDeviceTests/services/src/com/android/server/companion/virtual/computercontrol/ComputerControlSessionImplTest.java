@@ -42,6 +42,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -131,7 +132,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 @Presubmit
@@ -219,6 +219,8 @@ public class ComputerControlSessionImplTest {
     private UserHandle mUserHandle;
     @Mock
     private IntentSender mIntentSender;
+    @Mock
+    private ComputerControlAllowlistController mAllowlistController;
 
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
@@ -300,6 +302,7 @@ public class ComputerControlSessionImplTest {
                 mVirtualAudioDevice);
         when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
         when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
+        when(mAllowlistController.isPackageAutomatable(anyString())).thenReturn(true);
     }
 
     @After
@@ -366,20 +369,7 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_USER_RESTRICTION)
-    public void createSession_setsAllowedUsers() throws Exception {
-        createComputerControlSession(mDefaultParams);
-
-        verify(mVirtualDeviceFactory).createVirtualDevice(
-                eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
-        assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
-                .getAllowedUsers()).isEqualTo(Set.of(UserHandle.of(USER_ID)));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
-    public void createSession_blockInputAndScreenshots_doesNotSetAllowedUsers() throws Exception {
+    public void createSession_doesNotSetAllowedUsers() throws Exception {
         createComputerControlSession(mDefaultParams);
 
         verify(mVirtualDeviceFactory).createVirtualDevice(
@@ -423,32 +413,7 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @DisableFlags({Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void createSession_noActivityPolicy() throws Exception {
-        createComputerControlSession(mDefaultParams);
-
-        verify(mVirtualDevice, never()).setDevicePolicy(eq(POLICY_TYPE_ACTIVITY), anyInt());
-        verify(mVirtualDevice).addActivityPolicyExemption(
-                argThat(new MatchesActivityPolicyExemption(PERMISSION_CONTROLLER_PACKAGE)));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
-    public void createSession_strictActivityPolicy() throws Exception {
-        createComputerControlSession(mDefaultParams);
-
-        verify(mVirtualDevice).setDevicePolicy(POLICY_TYPE_ACTIVITY, DEVICE_POLICY_CUSTOM);
-        for (String expected : TARGET_PACKAGE_NAMES) {
-            verify(mVirtualDevice).addActivityPolicyExemption(
-                    argThat(new MatchesActivityPolicyExemption(expected)));
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
-    public void createSession_blockInputAndScreenshots_noActivityPolicy() throws Exception {
         createComputerControlSession(mDefaultParams);
 
         verify(mVirtualDevice, never()).setDevicePolicy(eq(POLICY_TYPE_ACTIVITY), anyInt());
@@ -485,7 +450,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_SHOW_TOUCHES)
     public void createSession_setsForceShowTouchesOnDisplay() {
         createComputerControlSession(mDefaultParams);
         verify(mInputManagerInternal).setForceShowTouchesOnDisplay(VIRTUAL_DISPLAY_ID, true);
@@ -503,22 +467,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACTIVITY_POLICY_STRICT)
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
-    public void launchApplication_strictActivityPolicy_addsExemption() throws RemoteException {
-        createComputerControlSession(mDefaultParams);
-        when(mOwnerPackageManager.queryIntentActivities(any(), any()))
-                .thenReturn(List.of(new ResolveInfo()));
-
-        mSession.launchApplication(UNDECLARED_TARGET_PACKAGE, TARGET_CLASS);
-
-        verify(mVirtualDevice).addActivityPolicyExemption(
-                argThat(new MatchesActivityPolicyExemption(UNDECLARED_TARGET_PACKAGE)));
-        assertLaunchedApplication(UNDECLARED_TARGET_PACKAGE);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS)
     public void launchApplication_doesNotAddExemption() throws Exception {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any()))
@@ -535,6 +483,17 @@ public class ComputerControlSessionImplTest {
     public void launchApplication_noLaunchIntent_throws() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any())).thenReturn(List.of());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
+    }
+
+    @Test
+    public void launchApplication_packageNotAllowlisted_throws() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        when(mOwnerPackageManager.queryIntentActivities(any(), any()))
+                .thenReturn(List.of(new ResolveInfo()));
+        when(mAllowlistController.isPackageAutomatable(anyString())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class,
                 () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
@@ -770,7 +729,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
     public void onSecureWindowShown_entersBlockedState()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -784,7 +742,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
     public void onSecureWindowHidden_exitsBlockedState()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -801,8 +758,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void onActivityLaunchRequested_whenActivityIsBlocked_entersBlockedState()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -817,8 +772,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void onTopActivityChanged_toAllowedPackage_exitsBlockedState() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -835,8 +788,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void onTopActivityChanged_toDisallowedPackage_doesNotExitBlockedState()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -854,8 +805,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void blockedState_activityBlockReasonIsPreferred() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -883,8 +832,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void blockedState_activityBlockReasonIsPreferred_reverseOrder() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -914,7 +861,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
     public void cannotEnterBlockedState_afterSessionIsClosed() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         verify(mVirtualDevice).addActivityListener(any(),
@@ -943,8 +889,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void blockedState_updatesDisplaySurface() throws Exception {
         createComputerControlSession(mDefaultParams);
         clearInvocations(mVirtualDisplay);
@@ -956,8 +900,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void activeState_allowsAllInteractions() throws Exception {
         createComputerControlSession(mDefaultParams);
 
@@ -986,8 +928,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE,
-            Flags.FLAG_COMPUTER_CONTROL_BLOCK_INPUT_AND_SCREENSHOTS})
     public void blockedState_allowsNoInteractions() throws Exception {
         createComputerControlSession(mDefaultParams);
 
@@ -1047,8 +987,8 @@ public class ComputerControlSessionImplTest {
         DisplayManagerGlobal displayManagerGlobal = new DisplayManagerGlobal(mDisplayManager);
         displayManagerGlobal.disableLocalDisplayInfoCaches();
         mSession = new ComputerControlSessionImpl(
-                mContext, displayManagerGlobal, mViewConfiguration, globalSessionTimeoutDurationMs,
-                () -> mTransaction, mAppToken, params,
+                mContext, displayManagerGlobal, mAllowlistController, mViewConfiguration,
+                globalSessionTimeoutDurationMs, () -> mTransaction, mAppToken, params,
                 new AttributionSource(UserHandle.getUid(USER_ID, 0), "com.package", "tag"),
                 mVirtualDeviceFactory, mOnClosedListener);
     }

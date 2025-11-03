@@ -447,13 +447,8 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
                 object = ((BiFunction<Class<?>, Class<?>[], ?>) object).apply(clazz, itemTypes);
             } catch (BadParcelableException e) {
                 if (sShouldDefuse) {
-                    if (Flags.wtfBundleDefuse()) {
-                        Slog.wtf(TAG, "Failed to parse item " + mMap.keyAt(i) + ", returning null.",
-                                e);
-                    } else {
-                        Log.w(TAG, "Failed to parse item " + mMap.keyAt(i) + ", returning null.",
-                                e);
-                    }
+                    Slog.wtf(TAG, "Failed to parse item " + mMap.keyAt(i) + ", returning null.",
+                            e);
                     if (Flags.deprecateBundleDefuse()) {
                         throw e;
                     }
@@ -517,11 +512,7 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
                     /* lazy */ ownsParcel, this, numLazyValues);
         } catch (BadParcelableException e) {
             if (sShouldDefuse) {
-                if (Flags.wtfBundleDefuse()) {
-                    Slog.wtf(TAG, "Failed to parse Bundle, but defusing quietly", e);
-                } else {
-                    Log.w(TAG, "Failed to parse Bundle, but defusing quietly", e);
-                }
+                Slog.wtf(TAG, "Failed to parse Bundle, but defusing quietly", e);
                 if (Flags.deprecateBundleDefuse()) {
                     throw e;
                 }

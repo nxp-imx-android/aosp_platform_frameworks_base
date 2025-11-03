@@ -946,7 +946,6 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
                         synchronized (mLock) {
                             mSupportedSads = supportedSadsDone;
                         }
-                        notifyArcStatusToAudioService(false, new ArrayList<>());
                         synchronized (mLock) {
                             notifyArcStatusToAudioService(true, mSupportedSads);
                         }

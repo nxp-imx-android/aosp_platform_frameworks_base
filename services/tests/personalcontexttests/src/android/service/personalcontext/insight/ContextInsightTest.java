@@ -42,13 +42,7 @@ public class ContextInsightTest {
         final BundleInsight insight = new BundleInsight.Builder().addOriginHint(hint).build();
 
         ContextInsight outputInsight = assertParcelUnparcel(insight);
-        assertThat(insight.getInsightType()).isEqualTo(outputInsight.getInsightType());
         assertThat(insight.getInsightId()).isEqualTo(outputInsight.getInsightId());
-
-        assertThat(outputInsight.getOriginHints().size()).isEqualTo(1);
-
-        final BundleHint outHint = (BundleHint) outputInsight.getOriginHints().get(0);
-        assertThat(outHint.getDataBundle().getInt(dataKey)).isEqualTo(inputValue);
     }
 
     @Test

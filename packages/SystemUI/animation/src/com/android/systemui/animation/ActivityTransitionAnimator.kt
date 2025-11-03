@@ -2343,7 +2343,6 @@ constructor(
                             try {
                                 if (startTransaction != null) {
                                     startTransaction.reparent(window.leash, viewRoot.surfaceControl)
-                                    startTransaction.apply()
                                 } else {
                                     SurfaceControl.Transaction().use {
                                         it.reparent(window.leash, viewRoot.surfaceControl).apply()
@@ -2356,9 +2355,9 @@ constructor(
                             }
                         }
 
-                        if (startTransaction != null) {
+                        startTransaction?.let {
                             // Calling applyStateToWindow() here avoids skipping a frame when taking
-                            // over an animation.
+                            // over an animation. This call also applies the start transaction.
                             applyStateToWindow(
                                 window,
                                 createAnimatorState(),

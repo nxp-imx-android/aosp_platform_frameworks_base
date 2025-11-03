@@ -103,7 +103,7 @@ class InputDeviceRemapperTests {
                 eq(intArrayOf(KeyEvent.KEYCODE_2)),
             )
         assertEquals(
-            mInputDeviceRemapper.getKeyRemapping(/* userId= */ 0, device.identifier),
+            mInputDeviceRemapper.getKeyRemappings(/* userId= */ 0, device.identifier),
             mapOf(KeyEvent.KEYCODE_1 to KeyEvent.KEYCODE_2),
         )
     }
@@ -154,13 +154,13 @@ class InputDeviceRemapperTests {
 
         verify(native).setKeyRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
         assertEquals(
-            mInputDeviceRemapper.getKeyRemapping(/* userId= */ 0, device.identifier),
+            mInputDeviceRemapper.getKeyRemappings(/* userId= */ 0, device.identifier),
             mapOf<Int, Int>(),
         )
     }
 
     @Test
-    fun testClearAllKeyRemapping() {
+    fun testClearAllKeyRemappings() {
         setupControllerRemapper()
         val deviceId = 1
         val device = createDevice(deviceId, vendorId = 123, productId = 456)
@@ -173,11 +173,11 @@ class InputDeviceRemapperTests {
         addInputDevice(deviceId, device.descriptor, device)
         reset(native)
 
-        mInputDeviceRemapper.clearAllKeyRemapping(/* userId= */ 0, device.identifier)
+        mInputDeviceRemapper.clearAllKeyRemappings(/* userId= */ 0, device.identifier)
 
         verify(native).setKeyRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
         assertEquals(
-            mInputDeviceRemapper.getKeyRemapping(/* userId= */ 0, device.identifier),
+            mInputDeviceRemapper.getKeyRemappings(/* userId= */ 0, device.identifier),
             mapOf<Int, Int>(),
         )
     }

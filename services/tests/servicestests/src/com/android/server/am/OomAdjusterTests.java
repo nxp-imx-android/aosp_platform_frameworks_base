@@ -99,9 +99,10 @@ public class OomAdjusterTests {
                 }
             };
             final OomAdjuster.Callback callback = mock(OomAdjuster.Callback.class);
+            final OomAdjuster.StateGetter stateGetter = mock(OomAdjuster.StateGetter.class);
             sService.mProcessStateController = new ProcessStateController
                     .Builder(sService, sService.mProcessList, null,
-                    sService.mConstants.createOomConstants(), callback)
+                    sService.mConstants.createOomConstants(), callback, stateGetter)
                     .setOomAdjusterInjector(injector)
                     .build();
             sService.mOomAdjuster = sService.mProcessStateController.getOomAdjuster();

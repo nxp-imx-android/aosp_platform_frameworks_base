@@ -641,6 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"ಹತ್ತಿರದ ವೈ -ಫೈ ಸಾಧನಗಳ ಸಂಬಂಧಿತ ಸ್ಥಾನವನ್ನು ಸೂಚಿಸಲು, ಕನೆಕ್ಟ್ ಮಾಡಲು ಮತ್ತು ನಿರ್ಧರಿಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"ಸ್ಥಳೀಯ ನೆಟ್‌ವರ್ಕ್ ಸಾಧನಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡುತ್ತದೆ"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ಸ್ಥಳೀಯ ನೆಟ್‌ವರ್ಕ್ ಸಾಧನಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ಲೂಪ್‌ಬ್ಯಾಕ್ ಇಂಟರ್‌ಫೇಸ್ ಅನ್ನು ಬಳಸಿ"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ಲೂಪ್‌ಬ್ಯಾಕ್ ಇಂಟರ್‌ಫೇಸ್ ಮೂಲಕ ಇತರ ಆ್ಯಪ್‌ಗಳ ಜೊತೆ ಸಂವಹನ ನಡೆಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"ಸಮೀಪದ ಸಾಧನಗಳ ನಡುವಿನ ಸಂಬಂಧಿತ ಸ್ಥಾನವನ್ನು ನಿರ್ಧರಿಸಿ"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ಸಮೀಪದಲ್ಲಿರುವ ಸಾಧನಗಳ ನಡುವಿನ ಸಂಬಂಧಿತ ಸ್ಥಾನವನ್ನು ನಿರ್ಧರಿಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸಿ"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ಆದ್ಯತೆಯ NFC ಪಾವತಿ ಸೇವಾ ಮಾಹಿತಿ"</string>
@@ -1043,7 +1045,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು ಪಿನ್‌ ಟೈಪ್‌ ಮಾಡಿ"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ತಪ್ಪಾದ ಪಿನ್‌ ಕೋಡ್."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು, ಮೆನು ನಂತರ 0 ಒತ್ತಿರಿ."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"ತುರ್ತು ಸಂಖ್ಯೆ"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"ಯಾವುದೇ ಸೇವೆಯಿಲ್ಲ"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದೆ."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಮೆನು ಒತ್ತಿರಿ ಇಲ್ಲವೇ ತುರ್ತು ಕರೆಯನ್ನು ಮಾಡಿ."</string>
@@ -1277,8 +1278,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"ಕ್ರಿಯೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"ಇದರ ಮೂಲಕ ತೆರೆಯಿರಿ"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s ಜೊತೆಗೆ ತೆರೆಯಿರಿ"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"ತೆರೆಯಿರಿ"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"ಇವುಗಳ ಮೂಲಕ <xliff:g id="HOST">%1$s</xliff:g> ಲಿಂಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"ಇವುಗಳ ಮೂಲಕ ಲಿಂಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ"</string>

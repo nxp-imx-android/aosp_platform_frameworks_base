@@ -79,16 +79,6 @@ flag {
 
 flag {
     namespace: "haptics"
-    name: "vibration_scale_bounds_fix_enabled"
-    description: "Enables audio-coupled haptics vibration scale bounds fix"
-    bug: "427912736"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "haptics"
     name: "haptic_pcm_generation"
     description: "Enables the feature to generate Haptic PCM from vibration effects"
     bug: "417649629"

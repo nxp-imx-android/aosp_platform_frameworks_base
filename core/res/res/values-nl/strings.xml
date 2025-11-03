@@ -641,6 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Hiermee kan de app uitzenden, verbindingen maken en de relatieve positie bepalen van wifi-apparaten in de buurt"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"toegang tot apparaten in het lokale netwerk"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Hiermee krijgt de app toegang tot apparaten in het lokale netwerk"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"loopback-interface gebruiken"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Hiermee kan de app interactie hebben met andere apps via de loopback-interface"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"relatieve positie tussen apparaten in de buurt bepalen"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Sta toe dat de app de relatieve positie tussen apparaten in de buurt bepaalt"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Informatie over voorkeursservice voor NFC-betaling"</string>
@@ -1043,7 +1045,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Typ pincode om te ontgrendelen"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Onjuiste pincode."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Druk op \'Menu\' en vervolgens op 0 om te ontgrendelen."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Alarmnummer"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Geen service"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Scherm vergrendeld."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Druk op \'Menu\' om te ontgrendelen of noodoproep te plaatsen."</string>
@@ -1277,8 +1278,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Actie voltooien"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Openen met"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Openen met %1$s"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"<xliff:g id="APP_NAME">%1$s</xliff:g> openen"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Openen"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Links van <xliff:g id="HOST">%1$s</xliff:g> openen met"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Links openen met"</string>
@@ -1711,7 +1711,7 @@
     <string name="activity_chooser_view_see_all" msgid="3917045206812726099">"Alles tonen"</string>
     <string name="activity_chooser_view_dialog_title_default" msgid="8880731437191978314">"Een activiteit kiezen"</string>
     <string name="share_action_provider_share_with" msgid="1904096863622941880">"Delen met"</string>
-    <string name="sending" msgid="206925243621664438">"Verzenden..."</string>
+    <string name="sending" msgid="206925243621664438">"Sturen..."</string>
     <string name="launchBrowserDefault" msgid="6328349989932924119">"Browser starten?"</string>
     <string name="SetupCallDefault" msgid="5581740063237175247">"Gesprek accepteren?"</string>
     <string name="activity_resolver_use_always" msgid="5575222334666843269">"Altijd"</string>

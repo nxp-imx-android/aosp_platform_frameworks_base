@@ -22,6 +22,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALI
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.hardware.flags.Flags.suspendSensorEventDeliveryOnFrozenPid;
 
 import android.companion.virtual.VirtualDeviceManager;
 import android.compat.Compatibility;
@@ -33,8 +34,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
+import android.hardware.sensor.ISensorClientListener;
 import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.MemoryFile;
 import android.os.MessageQueue;
@@ -105,6 +108,7 @@ public class SystemSensorManager extends SensorManager {
 
     private static native int nativeSetOperationParameter(
             long nativeInstance, int handle, int type, float[] floatValues, int[] intValues);
+    private static native void nativeRegisterClientListener(long nativeInstance, IBinder listener);
 
     private static final Object sLock = new Object();
     @GuardedBy("sLock")
@@ -145,6 +149,10 @@ public class SystemSensorManager extends SensorManager {
 
     private Optional<Boolean> mHasHighSamplingRateSensorsPermission = Optional.empty();
 
+    private final ISensorClientListener mSensorClientListener = new ISensorClientListener.Stub() {
+        // This is an empty implementation, as the service only needs the Binder object.
+    };
+
     /** @hide */
     public SystemSensorManager(Context context, Looper mainLooper) {
         synchronized (sLock) {
@@ -161,7 +169,10 @@ public class SystemSensorManager extends SensorManager {
         mNativeInstance = nativeCreate(context.getOpPackageName());
         mIsPackageDebuggable = (0 != (appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE));
 
-        // initialize the sensor list
+        if (suspendSensorEventDeliveryOnFrozenPid()) {
+            nativeRegisterClientListener(mNativeInstance, mSensorClientListener.asBinder());
+        }
+       // initialize the sensor list
         if (getSensorPolicy(mContext.getDeviceId()) == DEVICE_POLICY_CUSTOM) {
             createRuntimeSensorListLocked(mContext.getDeviceId());
         } else {

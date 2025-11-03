@@ -131,6 +131,11 @@ class PackageUserStateDefault implements PackageUserStateInternal {
     }
 
     @Override
+    public boolean isAppLockEnabled() {
+        return false;
+    }
+
+    @Override
     public boolean isVirtualPreload() {
         return false;
     }

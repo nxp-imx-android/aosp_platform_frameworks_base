@@ -172,12 +172,8 @@
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"En un navegador"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"Aceptar"</string>
     <string name="desktop_windowing_app_to_web_education_text" msgid="1599668769538703570">"Abre rápidamente apps en tu navegador aquí"</string>
-    <!-- no translation found for open_by_default_splash_dialog_title_text (2645214455870859991) -->
-    <skip />
-    <!-- no translation found for open_by_default_splash_dialog_checkbox_text (7367791478473586694) -->
-    <skip />
-    <!-- no translation found for open_by_default_splash_dialog_browser_text (4439951040200685938) -->
-    <skip />
-    <!-- no translation found for open_by_default_splash_dialog_app_text (2680408983754147907) -->
-    <skip />
+    <string name="open_by_default_splash_dialog_title_text" msgid="2645214455870859991">"¿Cómo quieres abrir los vínculos de &lt;b&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"Recordar mi elección"</string>
+    <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Abrir en el navegador"</string>
+    <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Permanecer en la app"</string>
 </resources>

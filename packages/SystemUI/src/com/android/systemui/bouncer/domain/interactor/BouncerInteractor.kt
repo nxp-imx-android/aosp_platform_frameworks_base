@@ -39,6 +39,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.ActiveUnlockInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
 import com.android.systemui.log.SessionTracker
+import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -197,8 +198,8 @@ constructor(
      * may authenticate the device before the user has the opportunity to enter their
      * pin/pattern/password. Else, false.
      */
-    suspend fun passiveAuthMaySucceedBeforeFullyShowingBouncer(): Boolean {
-        return authenticationInteractor.getAuthenticationMethod() != Sim &&
+    fun passiveAuthMaySucceedBeforeFullyShowingBouncer(): Boolean {
+        return authenticationInteractor.authenticationMethod.value != Sim &&
             (deviceEntryFaceAuthInteractor.canFaceAuthRun() ||
                 activeUnlockInteractor.canRunActiveUnlock.value)
     }
@@ -206,6 +207,10 @@ constructor(
     /** Notifies that the user has places down a pointer, not necessarily dragging just yet. */
     fun onDown() {
         falsingInteractor.avoidGesture()
+    }
+
+    fun isFalseBackgroundTap(): Boolean {
+        return falsingInteractor.isFalseTap(FalsingManager.MODERATE_PENALTY)
     }
 
     /**
@@ -288,7 +293,7 @@ constructor(
             return AuthenticationResult.SKIPPED
         }
 
-        if (authenticationInteractor.getAuthenticationMethod() == Sim) {
+        if (authenticationInteractor.authenticationMethod.value == Sim) {
             // SIM is authenticated in SimBouncerInteractor.
             return AuthenticationResult.SKIPPED
         }
@@ -309,7 +314,7 @@ constructor(
             _onIncorrectBouncerInput.emit(Unit)
         }
 
-        if (authenticationInteractor.getAuthenticationMethod() in setOf(Pin, Password, Pattern)) {
+        if (authenticationInteractor.authenticationMethod.value in setOf(Pin, Password, Pattern)) {
             if (authResult == AuthenticationResult.SUCCEEDED) {
                 uiEventLogger.log(BouncerUiEvent.BOUNCER_PASSWORD_SUCCESS)
             } else if (authResult == AuthenticationResult.FAILED) {

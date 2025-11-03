@@ -23,6 +23,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALI
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.content.Context.DEVICE_ID_INVALID;
+import static android.hardware.devicestate.feature.flags.Flags.deviceStatePropertyMigration;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
@@ -67,8 +68,6 @@ import android.hardware.camera2.utils.ConcurrentCameraIdCombination;
 import android.hardware.camera2.utils.ExceptionUtils;
 import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
-import android.hardware.devicestate.feature.flags.FeatureFlags;
-import android.hardware.devicestate.feature.flags.FeatureFlagsImpl;
 import android.hardware.display.DisplayManager;
 import android.os.Binder;
 import android.os.Handler;
@@ -234,17 +233,15 @@ public final class CameraManager {
         private ArrayList<WeakReference<DeviceStateListener>> mDeviceStateListeners =
                 new ArrayList<>();
         private boolean mFoldedDeviceState;
-        private final FeatureFlags mDeviceStateManagerFlags;
 
         public FoldStateListener(Context context) {
             mFoldedDeviceStates = context.getResources().getIntArray(
                     com.android.internal.R.array.config_foldedDeviceStates);
-            mDeviceStateManagerFlags = new FeatureFlagsImpl();
         }
 
         private synchronized void handleStateChange(DeviceState state) {
             final boolean folded;
-            if (mDeviceStateManagerFlags.deviceStatePropertyMigration()) {
+            if (deviceStatePropertyMigration()) {
                 folded = state.hasProperty(
                         DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY);
             } else {

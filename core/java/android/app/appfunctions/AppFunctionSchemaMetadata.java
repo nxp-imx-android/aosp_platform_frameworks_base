@@ -21,6 +21,8 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.Objects;
 
@@ -31,7 +33,21 @@ import java.util.Objects;
  * information about a specific, SDK-provided schema.
  */
 @FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
-public class AppFunctionSchemaMetadata {
+public final class AppFunctionSchemaMetadata implements Parcelable {
+    @NonNull
+    public static final Creator<AppFunctionSchemaMetadata> CREATOR =
+            new Creator<AppFunctionSchemaMetadata>() {
+                @Override
+                public AppFunctionSchemaMetadata createFromParcel(Parcel in) {
+                    return new AppFunctionSchemaMetadata(in);
+                }
+
+                @Override
+                public AppFunctionSchemaMetadata[] newArray(int size) {
+                    return new AppFunctionSchemaMetadata[size];
+                }
+            };
+
     @NonNull private final String mCategory;
     @NonNull private final String mName;
     private final long mVersion;
@@ -49,6 +65,12 @@ public class AppFunctionSchemaMetadata {
         mCategory = requireNonNull(schemaCategory);
         mName = requireNonNull(schemaName);
         mVersion = schemaVersion;
+    }
+
+    private AppFunctionSchemaMetadata(Parcel in) {
+        mCategory = requireNonNull(in.readString8());
+        mName = requireNonNull(in.readString8());
+        mVersion = in.readLong();
     }
 
     /**
@@ -98,5 +120,17 @@ public class AppFunctionSchemaMetadata {
                 + "schemaVersion="
                 + mVersion
                 + ")";
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString8(mCategory);
+        dest.writeString8(mName);
+        dest.writeLong(mVersion);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 }

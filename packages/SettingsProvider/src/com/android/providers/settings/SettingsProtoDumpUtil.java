@@ -1844,6 +1844,9 @@ class SettingsProtoDumpUtil {
                 Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS,
                 SecureSettingsProto.Accessibility.ACCESSIBILITY_TOP_ROW_KEY_TARGETS);
         dumpSetting(s, p,
+                Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS,
+                SecureSettingsProto.Accessibility.ACCESSIBILITY_QUICK_ACCESS_TARGETS);
+        dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CAPABILITY,
                 SecureSettingsProto.Accessibility.ACCESSIBILITY_MAGNIFICATION_CAPABILITY);
         dumpSetting(s, p,

@@ -2735,7 +2735,8 @@ public class KeyValueBackupTaskTest  {
                         /* userInitiated */ false,
                         nonIncremental,
                         mBackupEligibilityRules,
-                        mObserver);
+                        mObserver,
+                        /* monitor= */ null);
         mBackupManager.setUp(mBackupHandler, task);
         return task;
     }

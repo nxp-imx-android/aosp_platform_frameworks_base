@@ -329,6 +329,14 @@ public final class ActivityThread extends ClientTransactionHandler
 
     /** @hide */
     public static final String TAG = "ActivityThread";
+
+    // TODO(b/303199244): This is a temporary allowlist for early field data collection.
+    // It will be replaced by a sharding config in the future.
+    private static final Set<String> PERFETTO_TRACING_ALLOWLIST = new ArraySet<>(Arrays.asList(
+            "com.google.android.youtube",
+            "com.whatsapp"
+    ));
+
     static final boolean localLOGV = false;
     static final boolean DEBUG_MESSAGES = false;
     /** @hide */
@@ -582,8 +590,9 @@ public final class ActivityThread extends ClientTransactionHandler
     final ArrayMap<ProviderKey, ProviderClientRecord> mProviderMap = new ArrayMap<>();
     @UnsupportedAppUsage
     final ArrayMap<IBinder, ProviderRefCount> mProviderRefCountMap = new ArrayMap<>();
+    @VisibleForTesting
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    final ArrayMap<IBinder, ProviderClientRecord> mLocalProviders = new ArrayMap<>();
+    public final ArrayMap<IBinder, ProviderClientRecord> mLocalProviders = new ArrayMap<>();
     @UnsupportedAppUsage
     final ArrayMap<ComponentName, ProviderClientRecord> mLocalProvidersByName = new ArrayMap<>();
 
@@ -868,7 +877,8 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    static final class ProviderClientRecord {
+    @VisibleForTesting
+    public static final class ProviderClientRecord {
         final String[] mNames;
         @UnsupportedAppUsage
         final IContentProvider mProvider;
@@ -877,7 +887,8 @@ public final class ActivityThread extends ClientTransactionHandler
         @UnsupportedAppUsage
         final ContentProviderHolder mHolder;
 
-        ProviderClientRecord(String[] names, IContentProvider provider,
+        @VisibleForTesting
+        public ProviderClientRecord(String[] names, IContentProvider provider,
                 ContentProvider localProvider, ContentProviderHolder holder) {
             mNames = names;
             mProvider = provider;
@@ -1457,6 +1468,19 @@ public final class ActivityThread extends ClientTransactionHandler
             ApplicationSharedMemory.setInstance(instance);
 
             setCoreSettings(coreSettings);
+
+            // Register the app for tracing as early as possible
+            if (android.os.Flags.perfettoSdkTracingEnableAppRegistration()) {
+                // TODO(b/303199244): This is a temporary solution for Perfetto SDK tracing rollout.
+                // Tracing is enabled only for apps in a specific allowlist. The sharding can be
+                // disabled for local debugging via the
+                // 'perfetto_sdk_tracing_disable_app_registration_sharding' flag, allowing all apps
+                // to register. This flag will never be enabled in the field.
+                if (android.os.Flags.perfettoSdkTracingDisableAppRegistrationSharding() ||
+                    PERFETTO_TRACING_ALLOWLIST.contains(appInfo.packageName)) {
+                    Trace.registerWithPerfetto();
+                }
+            }
 
             AppBindData data = new AppBindData();
             data.processName = processName;
@@ -4690,7 +4714,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
-        if (android.tracing.Flags.imetrackerProtolog()) {
+        if (android.tracing.Flags.surfaceControlRegistryProtolog()) {
             ProtoLog.init();
         }
 
@@ -7133,7 +7157,13 @@ public final class ActivityThread extends ClientTransactionHandler
         }
     }
 
-    private void updateDeviceIdForNonUIContexts(int deviceId) {
+    /**
+     * Updates the deviceId for the non UI Contexts (Application, Service, ContentProvider)
+     * belonging to the same process
+     * @param deviceId The new value to be set for the deviceId of the non UI Contexts
+     */
+    @VisibleForTesting
+    public void updateDeviceIdForNonUIContexts(int deviceId) {
         // Invalid device id is treated as a no-op.
         if (deviceId == Context.DEVICE_ID_INVALID) {
             return;

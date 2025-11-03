@@ -205,8 +205,7 @@ public final class ServiceBindingOomAdjPolicyTest {
                 any());
         doReturn(false).when(mAms.mAtmInternal).hasSystemAlertWindowPermission(anyInt(), anyInt(),
                 any());
-        doNothing().when(mAms.mAppProfiler).updateLowMemStateLSP(anyInt(), anyInt(),
-                anyInt(), anyLong());
+        doNothing().when(mAms.mAppProfiler).updateLowMemStateLSP(anyInt(), anyInt(), anyLong());
 
         mCurrentCallingUid = TEST_APP1_UID;
         mCurrentCallingPid = TEST_APP1_PID;

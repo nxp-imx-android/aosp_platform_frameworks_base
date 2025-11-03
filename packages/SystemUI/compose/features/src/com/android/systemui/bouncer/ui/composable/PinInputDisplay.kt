@@ -72,7 +72,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.animation.Easings
-import com.android.compose.modifiers.size
 import com.android.compose.modifiers.thenIf
 import com.android.keyguard.PinShapeAdapter
 import com.android.systemui.bouncer.shared.constants.PinBouncerConstants
@@ -405,7 +404,7 @@ private class PinInputRow(val shapeAnimations: ShapeAnimations) {
      * The function return immediately, playing the animations in the background.
      *
      * Removed entries have to be [prune]d once the exit animation completes, [hasUnusedEntries] can
-     * be used in a [SnapshotFlow] to discover when its time to do so.
+     * be used in a [snapshotFlow] to discover when it's time to do so.
      */
     fun updateDigits(updated: List<Digit>, scope: CoroutineScope) {
         val incoming = updated.minus(entries.map { it.digit }.toSet()).toList()

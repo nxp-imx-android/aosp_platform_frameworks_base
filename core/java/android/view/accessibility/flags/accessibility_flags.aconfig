@@ -182,13 +182,6 @@ flag {
 }
 
 flag {
-    name: "ignore_unimportant_root"
-    namespace: "accessibility"
-    description: "findViewByAccessibilityId will return null if the id matches the root but the root is unimportant."
-    bug: "407099631"
-}
-
-flag {
     name: "indeterminate_range_info"
     namespace: "accessibility"
     description: "Creates a way to create an INDETERMINATE RangeInfo"
@@ -242,6 +235,13 @@ flag {
 }
 
 flag {
+    name: "quick_access_shortcut_type"
+    namespace: "accessibility"
+    description: "Add a new QUICK_ACCESS accessibility shortcut type used by the Quick Access dialog"
+    bug: "455679688"
+}
+
+flag {
     name: "reduce_window_content_changed_event_throttle"
     namespace: "accessibility"
     description: "Reduces the throttle of AccessibilityEvent of TYPE_WINDOW_CONTENT_CHANGED"
@@ -253,6 +253,13 @@ flag {
     namespace: "accessibility"
     description: "Remove a check for a hovered child that prevents touch events from being delegated to non-direct descendants"
     bug: "304770837"
+}
+
+flag {
+    name: "request_rectangle_deprecate_legacy_apis"
+    namespace: "accessibility"
+    description: "Deprecate legacy requestRectangleOnScreen APIs that do not pass the source parameter"
+    bug: "455950272"
 }
 
 flag {

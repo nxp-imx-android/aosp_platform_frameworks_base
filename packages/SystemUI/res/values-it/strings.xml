@@ -170,6 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Seleziona un\'app da condividere"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Condividi audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Condividi finestra dell\'app"</string>
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Condividi scheda"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Durante la condivisione, i contenuti dello schermo sono visibili"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Acquisisci screenshot della finestra"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Registra la finestra"</string>
@@ -367,8 +368,7 @@
     <string name="accessibility_sensors_off_active" msgid="2619725434618911551">"Opzione Sensori disattivati attiva"</string>
     <string name="accessibility_clear_all" msgid="970525598287244592">"Cancella tutte le notifiche."</string>
     <string name="accessibility_notification_bell" msgid="7149451526721220526">"Notifiche"</string>
-    <!-- no translation found for accessibility_status_bar_assistant_icon (1174898709836451013) -->
-    <skip />
+    <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistente"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# altra notifica nel gruppo.}many{Altre # di notifiche nel gruppo.}other{Altre # notifiche nel gruppo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Lo schermo è bloccato in orientamento orizzontale."</string>
@@ -710,8 +710,7 @@
     <string name="notification_section_header_gentle" msgid="6804099527336337197">"Notifiche silenziose"</string>
     <string name="notification_section_header_alerting" msgid="5581175033680477651">"Notifiche"</string>
     <string name="notification_section_header_conversations" msgid="821834744538345661">"Conversazioni"</string>
-    <!-- no translation found for notification_section_header_highlights (1671475076192152483) -->
-    <skip />
+    <string name="notification_section_header_highlights" msgid="1671475076192152483">"In evidenza"</string>
     <string name="accessibility_notification_section_header_gentle_clear_all" msgid="6490207897764933919">"Cancella tutte le notifiche silenziose"</string>
     <string name="accessibility_notification_section_header_open_settings" msgid="6235202417954844004">"Apri impostazioni di notifica"</string>
     <string name="modes_suppressing_shade_text" msgid="6037581130837903239">"{count,plural,offset:1 =0{Nessuna notifica}=1{Notifica messa in pausa da {mode}}=2{Notifiche messe in pausa da {mode} e un\'altra modalità}many{Notifiche messe in pausa da {mode} e # di modalità}other{Notifiche messe in pausa da {mode} e altre # modalità}}"</string>
@@ -1151,29 +1150,30 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu del tasto di accensione"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Pagina <xliff:g id="ID_1">%1$d</xliff:g> di <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Attivare <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"L\'azione "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> è la scorciatoia da tastiera per utilizzare <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="1298171063228024716">"Premi di nuovo Azione + <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> per attivare <xliff:g id="ID_3">%3$s</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
+    <skip />
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Attivare la scorciatoia da tastiera per <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Non attivare"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Attiva la scorciatoia"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Scorciatoia da tastiera <xliff:g id="ID_1">%1$s</xliff:g> attivata"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="582920726242272572">"L\'azione "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> è la scorciatoia da tastiera per utilizzare <xliff:g id="ID_3">^3</xliff:g>, una funzione di accessibilità. In questo modo, puoi aumentare rapidamente lo zoom sullo schermo per ingrandire i contenuti. Quando l\'ingrandimento è attivo, premi l\'azione "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_4">^1</xliff:g> e \"+\" o \"-\" per regolare lo zoom."</string>
+    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
+    <skip />
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Disattiva scorciatoia"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mantieni attiva"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="389338862762665003">"L\'azione "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> è la scorciatoia da tastiera per utilizzare <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^3</xliff:g> è uno screen reader che ti consente di ascoltare gli elementi letti ad alta voce. Questa funzionalità può essere utile a chi ha difficoltà a vedere lo schermo. Questa operazione potrebbe modificare il funzionamento del dispositivo."</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_heading (5958960812509429136) -->
+    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_message (2026368922103788492) -->
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Se attivi la scorciatoia da tastiera, consenti a TalkBack di avere il controllo totale del tuo dispositivo."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Il controllo totale è appropriato per le app che rispondono alle tue esigenze di accessibilità, ma non per gran parte delle app."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Visualizza e controlla lo schermo"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Può leggere i contenuti presenti sullo schermo e mostrare i contenuti su altre app."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Visualizza ed esegui azioni"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Può tenere traccia delle tue interazioni con un\'app o un sensore hardware e interagire con app per tuo conto."</string>
+    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
     <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading (5346128898440400425) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message (5810348116536082139) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading (6032379987970298008) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message (4565304881759944542) -->
-    <skip />
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="7934170819801013870">"Se premi Azione "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> viene attivata <xliff:g id="ID_3">^3</xliff:g>, una funzione di accessibilità. In questo modo puoi controllare il tuo dispositivo con i comandi vocali."</string>
+    <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accessibilità"</string>
+    <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Fine"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Schermata di blocco"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arresto in corso…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Leggi le misure da adottare"</string>
@@ -1740,4 +1740,6 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"vai alla pagina successiva"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"compila automaticamente"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"espandi"</string>
+    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
+    <skip />
 </resources>

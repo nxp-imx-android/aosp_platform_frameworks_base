@@ -92,6 +92,10 @@ import android.os.incremental.IncrementalManager;
 import android.os.storage.StorageManager;
 import android.os.storage.VolumeInfo;
 import android.permission.PermissionManager;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodSupported;
 import android.ravenwood.annotation.RavenwoodSupported.SupportType;
 import android.telephony.TelephonyManager;
 import android.telephony.UiccCardInfo;
@@ -141,7 +145,7 @@ import java.util.function.Function;
  * <a href="/training/basics/intents/package-visibility">manage package visibility</a>.
  * </p>
  */
-@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@RavenwoodKeepPartialClass
 public abstract class PackageManager {
     private static final String TAG = "PackageManager";
 
@@ -155,7 +159,7 @@ public abstract class PackageManager {
      * This exception is thrown when a given package, application, or component
      * name cannot be found.
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public static class NameNotFoundException extends AndroidException {
         public NameNotFoundException() {
         }
@@ -331,6 +335,44 @@ public abstract class PackageManager {
      */
     public static final String PROPERTY_ANDROID_SAFETY_LABEL =
             "android.content.PROPERTY_ANDROID_SAFETY_LABEL";
+
+    /**
+     * Service level {@link android.content.pm.PackageManager.Property} tag for native services
+     * specifying the name of the library to be loaded to the process that hosts the service.
+     * If not specified, the system tries to load {@code libmain.so}.
+     *
+     * <p>Example:
+     * <pre>
+     * &lt;service android:isolatedProcess="true"
+                   android:nativeService="true"&gt;
+     *   &lt;property
+     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME"
+     *     android:value="libnativeservice.so"/&gt;
+     * &lt;/service&gt;
+     * </pre>
+     */
+    @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
+    public static final String PROPERTY_NATIVE_SERVICE_LIB_NAME =
+            "android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME";
+
+    /**
+     * Service level {@link android.content.pm.PackageManager.Property} tag for native services
+     * specifying the symbol name of the entry point function for the service. If not specified,
+     * the system executes {@code ANativeService_onCreate}.
+     *
+     * <p>Example:
+     * <pre>
+     * &lt;service android:isolatedProcess="true"
+                   android:nativeService="true"&gt;
+     *   &lt;property
+     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME"
+     *     android:value="native_service_createService"/&gt;
+     * &lt;/service&gt;
+     * </pre>
+     */
+    @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
+    public static final String PROPERTY_NATIVE_SERVICE_FUNC_NAME =
+            "android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME";
 
     /**
      * A property value set within the manifest.
@@ -5216,13 +5258,22 @@ public abstract class PackageManager {
 
     /**
      * Extra field name used with {@link #ACTION_SET_APP_LOCK} for the new App Lock state to be set
-     * after successful authentication. This should be a boolean, where {@code true} means App Lock
-     * should be enabled, and {@code false} means that App Lock should be disabled.
+     * after successful authentication and {@link #ACTION_PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED}
+     * for the App Lock state that was just updated. This should be a boolean, where {@code true}
+     * means App Lock should be enabled, and {@code false} means that App Lock should be disabled.
      *
      * @hide
      */
     public static final String EXTRA_APP_LOCK_NEW_STATE =
             "android.content.pm.extra.APP_LOCK_NEW_STATE";
+
+    /**
+     * Broadcast action: Package's App Lock enabled state has changed.
+     *
+     * @hide
+     */
+    public static final String ACTION_PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED =
+            "android.content.pm.action.PACKAGE_APP_LOCK_ENABLED_STATE_CHANGED";
 
     /**
      * The action used to request that the user approve a permission request
@@ -5821,7 +5872,7 @@ public abstract class PackageManager {
      * application info.
      * @hide
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public static class Flags {
         final long mValue;
         protected Flags(long value) {
@@ -5836,7 +5887,7 @@ public abstract class PackageManager {
      * Specific flags used for retrieving package info. Example:
      * {@code PackageManager.getPackageInfo(packageName, PackageInfoFlags.of(0)}
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public final static class PackageInfoFlags extends Flags {
         private PackageInfoFlags(@PackageInfoFlagsBits long value) {
             super(value);
@@ -5850,7 +5901,7 @@ public abstract class PackageManager {
     /**
      * Specific flags used for retrieving application info.
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public final static class ApplicationInfoFlags extends Flags {
         private ApplicationInfoFlags(@ApplicationInfoFlagsBits long value) {
             super(value);
@@ -5864,7 +5915,7 @@ public abstract class PackageManager {
     /**
      * Specific flags used for retrieving component info.
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public final static class ComponentInfoFlags extends Flags {
         private ComponentInfoFlags(@ComponentInfoFlagsBits long value) {
             super(value);
@@ -5878,7 +5929,7 @@ public abstract class PackageManager {
     /**
      * Specific flags used for retrieving resolve info.
      */
-    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+    @RavenwoodKeepWholeClass
     public final static class ResolveInfoFlags extends Flags {
         private ResolveInfoFlags(@ResolveInfoFlagsBits long value) {
             super(value);
@@ -5899,7 +5950,7 @@ public abstract class PackageManager {
      * {@link Context#getPackageManager}
      */
     @Deprecated
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public PackageManager() {}
 
     /**
@@ -7818,6 +7869,7 @@ public abstract class PackageManager {
      *
      * @return Returns true if the devices supports the feature, else false.
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationPackageManager")
     public abstract boolean hasSystemFeature(@NonNull String featureName);
 
     /**
@@ -7829,6 +7881,7 @@ public abstract class PackageManager {
      *
      * @return Returns true if the devices supports the feature, else false.
      */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationPackageManager")
     public abstract boolean hasSystemFeature(@NonNull String featureName, int version);
 
     /**
@@ -8594,8 +8647,7 @@ public abstract class PackageManager {
      *             found on the system.
      */
     @NonNull
-    @android.ravenwood.annotation.RavenwoodSupported(
-            type = SupportType.SUBCLASS, subclass = "RavenwoodPackageManager")
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationPackageManager")
     public abstract InstrumentationInfo getInstrumentationInfo(@NonNull ComponentName className,
             @InstrumentationInfoFlags int flags) throws NameNotFoundException;
 
@@ -10568,10 +10620,10 @@ public abstract class PackageManager {
      * cannot be set, either because App Lock is not supported for that package, or because it is
      * already set to that value.
      *
-     * <p> Before calling this API to avoid getting a null {@link PendingIntent), callers should
+     * <p> Before calling this API to avoid getting a null {@link PendingIntent} callers should
      * first verify that App Lock is supported for the specified package by first checking
      * {@link ApplicationInfo#isAppLockSupported}, or if it's already at the target state for that
-     * package by checking {@link ApplicationInfo#isAppLockEnabled}. The {@link PendingIntent)
+     * package by checking {@link ApplicationInfo#isAppLockEnabled}. The {@link PendingIntent}
      * resolves to
      * an activity, which allows the user to enroll a device credential if one isn't enrolled, and
      * then requires authentication before setting the App Lock enablement state as enabled or

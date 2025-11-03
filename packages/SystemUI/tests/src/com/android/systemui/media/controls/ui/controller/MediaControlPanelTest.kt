@@ -129,8 +129,6 @@ private const val SESSION_KEY = "SESSION_KEY"
 private const val SESSION_ARTIST = "SESSION_ARTIST"
 private const val SESSION_TITLE = "SESSION_TITLE"
 private const val DISABLED_DEVICE_NAME = "DISABLED_DEVICE_NAME"
-private const val REC_APP_NAME = "REC APP NAME"
-private const val APP_NAME = "APP_NAME"
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -242,7 +240,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
         val icon = context.getDrawable(R.drawable.ic_android)
         whenever(packageManager.getApplicationIcon(anyString())).thenReturn(icon)
         whenever(packageManager.getApplicationIcon(any<ApplicationInfo>())).thenReturn(icon)
-        whenever(packageManager.getApplicationInfo(eq(PACKAGE), anyInt()))
+        whenever(packageManager.getApplicationInfoAsUser(eq(PACKAGE), anyInt(), anyInt()))
             .thenReturn(applicationInfo)
         whenever(packageManager.getApplicationLabel(any())).thenReturn(PACKAGE)
         context.setMockPackageManager(packageManager)
@@ -1809,7 +1807,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
             clock.advanceTime(
                 MediaControlPanel.TURBULENCE_NOISE_PLAY_DURATION +
-                    TurbulenceNoiseAnimationConfig.DEFAULT_EASING_DURATION_IN_MILLIS.toLong()
+                    TurbulenceNoiseAnimationConfig.DEFAULT_FADING_DURATION_IN_MILLIS.toLong()
             )
 
             assertThat(turbulenceNoiseView.visibility).isEqualTo(View.INVISIBLE)
@@ -1841,7 +1839,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
             clock.advanceTime(
                 MediaControlPanel.TURBULENCE_NOISE_PLAY_DURATION +
-                    TurbulenceNoiseAnimationConfig.DEFAULT_EASING_DURATION_IN_MILLIS.toLong()
+                    TurbulenceNoiseAnimationConfig.DEFAULT_FADING_DURATION_IN_MILLIS.toLong()
             )
 
             assertThat(loadingEffectView.visibility).isEqualTo(View.INVISIBLE)
@@ -2011,6 +2009,24 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         player.setPageRightEnabled(true)
         assertThat(viewHolder.pageRight.isEnabled).isTrue()
+    }
+
+    @Test
+    fun loadAppIconFromUser() {
+        val secondAppInfo = mock(ApplicationInfo::class.java)
+        val secondAppIcon = context.getDrawable(R.drawable.ic_media_next)
+        whenever(packageManager.getApplicationInfoAsUser(eq(PACKAGE), anyInt(), eq(2)))
+            .thenReturn(secondAppInfo)
+        whenever(packageManager.getApplicationIcon(eq(secondAppInfo))).thenReturn(secondAppIcon)
+
+        val secondMedia = mediaData.copy(userId = 2, resumption = true)
+        player.attachPlayer(viewHolder)
+        player.bindPlayer(secondMedia, PACKAGE)
+
+        bgExecutor.runAllReady()
+        mainExecutor.runAllReady()
+
+        assertThat(appIcon.drawable).isEqualTo(secondAppIcon)
     }
 
     private fun getColorIcon(color: Int): Icon {

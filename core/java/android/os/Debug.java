@@ -2851,6 +2851,14 @@ public final class Debug
     public static native long getDmabufHeapTotalExportedKb();
 
     /**
+     * Return total DMA-BUF size referenced by all processes.
+     * @return a non-negative value or -1 on error.
+     *
+     * @hide
+     */
+    public static native long getDmabufUserspaceKb();
+
+    /**
      * Return memory size in kilobytes allocated for DMA-BUF heap pools or -1 if
      * /sys/kernel/dma_heap/total_pools_kb could not be read.
      *

@@ -24,13 +24,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureParametersInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
 class DirectoryPickerActivity
 @Inject
-constructor(private val interactor: LargeScreenCaptureParametersInteractor) : ComponentActivity() {
+constructor(
+    private val interactor: LargeScreenCaptureParametersInteractor,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
+) : ComponentActivity() {
 
     private lateinit var directoryPickerLauncher: ActivityResultLauncher<Uri?>
 
@@ -57,6 +62,11 @@ constructor(private val interactor: LargeScreenCaptureParametersInteractor) : Co
         if (savedInstanceState == null) {
             directoryPickerLauncher.launch(null)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record())
     }
 
     companion object {

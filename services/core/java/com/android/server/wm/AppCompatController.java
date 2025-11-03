@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.server.wm;
 
 import android.annotation.NonNull;
@@ -51,6 +52,8 @@ class AppCompatController {
     private final AppCompatSandboxingPolicy mSandboxingPolicy;
     @NonNull
     private final AppCompatDisplayCompatModePolicy mDisplayCompatModePolicy;
+    @NonNull
+    private final AppCompatResourceOverlayPolicy mResourceOverlayPolicy;
 
     AppCompatController(@NonNull WindowManagerService wmService,
                         @NonNull ActivityRecord activityRecord) {
@@ -76,6 +79,7 @@ class AppCompatController {
                 mAppCompatOverrides);
         mSandboxingPolicy = new AppCompatSandboxingPolicy(activityRecord);
         mDisplayCompatModePolicy = new AppCompatDisplayCompatModePolicy(activityRecord);
+        mResourceOverlayPolicy = new AppCompatResourceOverlayPolicy(activityRecord);
     }
 
     @NonNull
@@ -166,6 +170,11 @@ class AppCompatController {
     @NonNull
     AppCompatDisplayCompatModePolicy getDisplayCompatModePolicy() {
         return mDisplayCompatModePolicy;
+    }
+
+    @NonNull
+    AppCompatResourceOverlayPolicy getResourceOverlayPolicy() {
+        return mResourceOverlayPolicy;
     }
 
     @NonNull

@@ -1178,7 +1178,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             return true;
         }
         if (((mAttrs.privateFlags & PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY) != 0
-                && mSession.canCreateSystemApplicationOverlay())) {
+                && mSession.canCreateSystemApplicationOverlay(this))) {
             return true;
         }
         return false;
@@ -3109,7 +3109,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         if (baseType == TYPE_APPLICATION_OVERLAY && mAttrs.isSystemApplicationOverlay()
-                && mSession.canCreateSystemApplicationOverlay()) {
+                && mSession.canCreateSystemApplicationOverlay(this)) {
             return;
         }
 
@@ -3374,7 +3374,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return isPublicPresentation() || mAttrs.type == TYPE_PRIVATE_PRESENTATION;
     }
 
-    private boolean isOnVirtualDisplay() {
+    boolean isOnVirtualDisplay() {
         return getDisplayContent().mDisplay.getType() == Display.TYPE_VIRTUAL;
     }
 

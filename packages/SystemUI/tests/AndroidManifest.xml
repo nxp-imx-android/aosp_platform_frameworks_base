@@ -190,7 +190,8 @@
             android:name="com.android.systemui.notetask.shortcut.LaunchNoteTaskActivity"
             android:exported="false"
             android:permission="com.android.systemui.permission.SELF"
-            android:excludeFromRecents="true" />
+            android:excludeFromRecents="true"
+            tools:replace="android:exported" />
 
         <activity
             android:name="com.android.systemui.logcat.LogAccessDialogActivityTest$DialogTestable"
@@ -202,7 +203,8 @@
             android:name="com.android.systemui.notetask.LaunchNotesRoleSettingsTrampolineActivity"
             android:exported="false"
             android:permission="com.android.systemui.permission.SELF"
-            android:excludeFromRecents="true" >
+            android:excludeFromRecents="true"
+            tools:replace="android:exported" >
             <intent-filter>
                 <action android:name="com.android.systemui.action.MANAGE_NOTES_ROLE_FROM_QUICK_AFFORDANCE" />
                 <category android:name="android.intent.category.DEFAULT" />

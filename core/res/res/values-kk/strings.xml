@@ -641,6 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Қолданба маңайдағы Wi‑Fi құрылғыларына жарнама беріп, оларға қосылып, шамамен орналасқан жерін анықтай алады."</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"жергілікті желілік құрылғыларға кіру"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Қолданбаға жергілікті желілік құрылғыларға кіруге мүмкіндік береді"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"кері байланыс интерфейсін пайдалану"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Қолданбаға кері байланыс интерфейсі арқылы басқа қолданбалармен әрекеттесуге рұқсат береді."</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"маңайдағы құрылғылардың салыстырмалы орнын анықтау"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Қолданбаның маңайдағы құрылғылардың салыстырмалы орнын анықтауына рұқсат береді."</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Таңдаулы NFC төлеу қызметі туралы ақпарат"</string>
@@ -1043,7 +1045,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Бекітпесін ашу үшін PIN кодын теріңіз"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Қате PIN код"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Бекітпесін ашу үшін Мәзір, одан кейін 0 пернесін түртіңіз."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Төтенше жағдай нөмірі"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Қызмет жоқ"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Экран бекітілген."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Бекітпесін ашу үшін немесе төтенше қоңырауды табу үшін Мәзір тармағын басыңыз."</string>
@@ -1277,8 +1278,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Әрекетті аяқтау"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Басқаша ашу"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s қолданбасымен ашу"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасын ашу"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Ашу"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"<xliff:g id="HOST">%1$s</xliff:g> сілтемелерін келесімен ашу:"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Сілтемелерді келесімен ашу:"</string>

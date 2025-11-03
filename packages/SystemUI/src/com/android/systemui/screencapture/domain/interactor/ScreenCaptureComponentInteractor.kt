@@ -103,7 +103,9 @@ constructor(
     private fun isCaptureInProgress(type: ScreenCaptureType): Flow<Boolean> {
         return when (type) {
             ScreenCaptureType.RECORD ->
-                screenRecordingServiceInteractor.status.map { it is ScreenRecordingStatus.Started }
+                screenRecordingServiceInteractor.status.map {
+                    it is ScreenRecordingStatus.Started || it is ScreenRecordingStatus.Starting
+                }
             ScreenCaptureType.SHARE_SCREEN -> flowOf(false)
             ScreenCaptureType.CAST -> flowOf(false)
         }

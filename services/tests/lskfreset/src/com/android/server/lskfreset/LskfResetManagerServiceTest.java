@@ -16,12 +16,18 @@
 
 package com.android.server.lskfreset;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.app.lskfreset.ILskfResetManager;
 import android.app.lskfreset.ILskfResetSession;
 import android.app.lskfreset.flags.Flags;
 import android.content.Context;
+import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
@@ -33,9 +39,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
 @RunWith(AndroidJUnit4.class)
 public class LskfResetManagerServiceTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    private static final UserHandle TEST_USER_0 = UserHandle.getUserHandleForUid(1000);
+    private static final UserHandle TEST_USER_1 = UserHandle.getUserHandleForUid(1001);
 
     private Context mContext;
     private LskfResetManagerService mService;
@@ -58,7 +70,112 @@ public class LskfResetManagerServiceTest {
     @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
     public void testCreateSession() throws Exception {
         ILskfResetManager manager = mService.getBinderService();
-        ILskfResetSession session = manager.createLskfResetSession(0);
+        ILskfResetSession session = manager.createLskfResetSession(TEST_USER_0);
         assertNotNull(session);
+        assertTrue(mService.isSessionActive(session));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testCloseSession() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+        ILskfResetSession session0 = manager.createLskfResetSession(TEST_USER_0);
+        ILskfResetSession session1 = manager.createLskfResetSession(TEST_USER_1);
+        assertTrue(mService.isSessionActive(session0));
+        assertTrue(mService.isSessionActive(session1));
+        session0.close();
+        assertFalse(mService.isSessionActive(session0));
+        assertTrue(mService.isSessionActive(session1));
+        session1.close();
+        assertFalse(mService.isSessionActive(session0));
+        assertFalse(mService.isSessionActive(session1));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testDoubleCloseSessionFails() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+        ILskfResetSession session = manager.createLskfResetSession(TEST_USER_0);
+        assertTrue(mService.isSessionActive(session));
+        session.close();
+        assertFalse(mService.isSessionActive(session));
+        assertThrows(IllegalStateException.class, () -> session.close());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testCreateParallelSessions() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+
+        final int numThreads = 10;
+        CountDownLatch createLatch = new CountDownLatch(numThreads);
+        CountDownLatch closeLatch = new CountDownLatch(numThreads);
+        for (int i = 0; i < numThreads; ++i) {
+            Thread thread =
+                    new Thread(
+                            () -> {
+                                try {
+                                    ILskfResetSession session;
+                                    try {
+                                        session = manager.createLskfResetSession(TEST_USER_0);
+                                        assertTrue(mService.isSessionActive(session));
+                                    } finally {
+                                        createLatch.countDown();
+                                    }
+                                    createLatch.await();
+                                    session.close();
+                                    assertFalse(mService.isSessionActive(session));
+                                } catch (Exception e) {
+                                    fail("Unexpected exception: " + e.getMessage());
+                                } finally {
+                                    closeLatch.countDown();
+                                }
+                            });
+            thread.start();
+        }
+        closeLatch.await();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testCloseParallelSessions() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+        ILskfResetSession session = manager.createLskfResetSession(TEST_USER_0);
+
+        final int numThreads = 10;
+
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failureCount = new AtomicInteger(0);
+        CountDownLatch closeLatch = new CountDownLatch(numThreads);
+        for (int i = 0; i < numThreads; ++i) {
+            Thread thread =
+                    new Thread(
+                            () -> {
+                                try {
+                                    session.close();
+                                    successCount.incrementAndGet();
+                                } catch (IllegalStateException unused) {
+                                    failureCount.incrementAndGet();
+                                } catch (Exception e) {
+                                    fail("Unexpected exception: " + e.getMessage());
+                                } finally {
+                                    closeLatch.countDown();
+                                }
+                            });
+            thread.start();
+        }
+        closeLatch.await();
+        assertEquals(successCount.get(), 1);
+        assertEquals(failureCount.get(), numThreads - 1);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_LSKF_RESET_MANAGER)
+    public void testSessionDeath() throws Exception {
+        ILskfResetManager manager = mService.getBinderService();
+        ILskfResetSession session = manager.createLskfResetSession(TEST_USER_0);
+        assertTrue(mService.isSessionActive(session));
+        mService.killSession(session);
+        assertFalse(mService.isSessionActive(session));
     }
 }

@@ -23,10 +23,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import androidx.test.filters.SmallTest;
 
@@ -38,10 +36,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-@DisabledOnRavenwood(blockedBy = Parcel.class)
 public class AidlTest {
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule();
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();

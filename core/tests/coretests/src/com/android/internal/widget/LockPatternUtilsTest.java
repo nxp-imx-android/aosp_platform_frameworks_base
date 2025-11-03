@@ -61,7 +61,6 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 
@@ -89,8 +88,6 @@ import java.util.function.Supplier;
 @SmallTest
 @DisabledOnRavenwood(blockedBy = LockPatternUtils.class)
 public class LockPatternUtilsTest {
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule();
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 

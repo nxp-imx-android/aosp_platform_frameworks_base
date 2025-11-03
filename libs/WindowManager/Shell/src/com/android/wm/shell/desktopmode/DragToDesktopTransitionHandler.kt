@@ -32,7 +32,6 @@ import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
-import android.window.DesktopModeFlags.ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
@@ -548,9 +547,7 @@ sealed class DragToDesktopTransitionHandler(
         val taskChange = state.draggedTaskChange ?: error("Expected non-null task change.")
         val taskInfo = taskChange.taskInfo ?: error("Expected non-null task info.")
 
-        if (DesktopModeFlags.ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX.isTrue) {
-            attachIndicatorToTransitionRoot(state, info, taskInfo, startTransaction)
-        }
+        attachIndicatorToTransitionRoot(state, info, taskInfo, startTransaction)
         startTransaction.apply()
 
         if (state.cancelState == CancelState.NO_CANCEL) {
@@ -622,9 +619,6 @@ sealed class DragToDesktopTransitionHandler(
         finishCallback: Transitions.TransitionFinishCallback,
         state: TransitionState,
     ): Boolean {
-        if (!ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX.isTrue) {
-            return false
-        }
         val isCancelDragToDesktop =
             info.type == TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP &&
                 transition == state.cancelTransitionToken
@@ -796,9 +790,6 @@ sealed class DragToDesktopTransitionHandler(
         state.cancelTransitionToken != null || state.endTransitionToken != null
 
     private fun interruptStartTransition(state: TransitionState) {
-        if (!ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX.isTrue) {
-            return
-        }
         if (isCancelOrEndTransitionRequested(state)) {
             logV("interruptStartTransition, bookend requested -> finish start transition")
             // Finish the start-drag transition, we will finish the overall transition properly when

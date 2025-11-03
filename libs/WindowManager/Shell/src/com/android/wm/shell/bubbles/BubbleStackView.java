@@ -2688,9 +2688,7 @@ public class BubbleStackView extends FrameLayout
             stopMonitoringSwipeUpGesture();
         }
 
-        if (Flags.fixBubblesExpandedSysuiFlag()) {
-            mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
-        }
+        mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
 
         if (shouldExpand == mIsExpanded) {
             return;
@@ -2705,9 +2703,6 @@ public class BubbleStackView extends FrameLayout
             ProtoLog.d(WM_SHELL_BUBBLES, "running on ime hidden");
             if (!isAttachedToWindow()) {
                 Log.w(TAG, "onImeHidden runnable running but we're not attached.");
-            }
-            if (!Flags.fixBubblesExpandedSysuiFlag()) {
-                mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
             }
             if (wasExpanded) {
                 animateCollapse();
@@ -4037,8 +4032,10 @@ public class BubbleStackView extends FrameLayout
             mSurfaceSynchronizer.syncSurfaceAndRun(() -> {
                 // Remove other bubbles from the container after the new bubble is ready, so
                 // that the focus won't fall into the non-bubbled activity behind.
-                mExpandedViewContainer.removeViews(
-                        0, mExpandedViewContainer.getChildCount() - 1);
+                if (mExpandedViewContainer.getChildCount() > 1) {
+                    mExpandedViewContainer.removeViews(
+                            0, mExpandedViewContainer.getChildCount() - 1);
+                }
                 mMainExecutor.execute(() -> animateSwitchBubbles(isJumpcutBubbleSwitching, onEnd));
             });
         }

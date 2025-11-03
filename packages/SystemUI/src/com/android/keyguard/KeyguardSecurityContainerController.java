@@ -110,6 +110,7 @@ import dagger.Lazy;
 import kotlinx.coroutines.Job;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
 
@@ -252,9 +253,9 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         }
 
         @Override
-        public void reportUnlockAttempt(int userId, boolean success, int timeoutMs,
+        public void reportUnlockAttempt(int userId, boolean success, Duration timeout,
                 boolean isDuplicate) {
-            if (timeoutMs == 0 && !success) {
+            if (timeout.isZero() && !success) {
                 mBouncerMessageInteractor.onPrimaryAuthIncorrectAttempt(isDuplicate);
             }
             int bouncerSide = SysUiStatsLog.KEYGUARD_BOUNCER_PASSWORD_ENTERED__SIDE__DEFAULT;
@@ -285,7 +286,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                 SysUiStatsLog.write(SysUiStatsLog.KEYGUARD_BOUNCER_PASSWORD_ENTERED,
                         SysUiStatsLog.KEYGUARD_BOUNCER_PASSWORD_ENTERED__RESULT__FAILURE,
                         bouncerSide);
-                reportFailedUnlockAttempt(userId, timeoutMs);
+                reportFailedUnlockAttempt(userId, timeout);
             }
             mMetricsLogger.write(new LogMaker(MetricsEvent.BOUNCER)
                     .setType(success ? MetricsEvent.TYPE_SUCCESS : MetricsEvent.TYPE_FAILURE));
@@ -1209,7 +1210,11 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                 }, mFalsingA11yDelegate, mBouncerInteractor.get());
     }
 
-    public void reportFailedUnlockAttempt(int userId, int timeoutMs) {
+    /**
+     * Reports a failed unlock attempt and the associated timeout for the given user to services.
+     * May also show messages to the user.
+     */
+    public void reportFailedUnlockAttempt(int userId, Duration timeout) {
         // +1 for this time
         final int failedAttempts = mLockPatternUtils.getCurrentFailedPasswordAttempts(userId) + 1;
 
@@ -1234,10 +1239,10 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                     userId, expiringUser, mainUser, remainingBeforeWipe, failedAttempts);
         }
         mLockPatternUtils.reportFailedPasswordAttempt(userId);
-        if (timeoutMs > 0) {
-            mLockPatternUtils.reportPasswordLockout(timeoutMs, userId);
+        if (timeout.isPositive()) {
+            mLockPatternUtils.reportPasswordLockout(timeout, userId);
             if (!com.android.systemui.Flags.revampedBouncerMessages()) {
-                mView.showTimeoutDialog(userId, timeoutMs, mLockPatternUtils,
+                mView.showTimeoutDialog(userId, timeout, mLockPatternUtils,
                         mSecurityModel.getSecurityMode(userId));
             }
         }

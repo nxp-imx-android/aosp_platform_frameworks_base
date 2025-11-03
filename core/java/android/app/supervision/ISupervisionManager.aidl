@@ -41,5 +41,7 @@ interface ISupervisionManager {
     oneway void unregisterSupervisionListener(in ISupervisionListener listener);
     List<Policy> getPolicies(int userId);
     void setPolicy(int userId, in Policy policy);
+    boolean canLaunchPinRecovery(int userId);
     List<ResolveInfo> querySupervisionApprovalActivities(int userId);
+    boolean hasValidRecoveryMethod(int userId);
 }

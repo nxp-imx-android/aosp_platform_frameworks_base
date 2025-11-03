@@ -165,6 +165,9 @@ public abstract class CallRedirectionService extends Service {
      * changes are required to the phone number or/and {@link PhoneAccountHandle} for the outgoing
      * call. Telecom will cancel the call if the implemented {@link CallRedirectionService}
      * replies Telecom a handle for an emergency number.
+     * <p>
+     * Note: The {@code targetPhoneAccount} can only be used to place a call via a
+     * {@link PhoneAccount} with {@link PhoneAccount#CAPABILITY_SIM_SUBSCRIPTION}.
      *
      * <p>This can only be called from implemented
      * {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)}. The response corresponds to the
@@ -201,6 +204,9 @@ public abstract class CallRedirectionService extends Service {
      * also shows that number to the user.
      * <p>
      * This is useful for apps which perform number rewriting to add dialing prefixes and the like.
+     * <p>
+     * Note: The {@code targetPhoneAccount} can only be used to place a call via a
+     * {@link PhoneAccount} with {@link PhoneAccount#CAPABILITY_SIM_SUBSCRIPTION}.
      *
      * @param alternateUri the alternate number to place the call to and to show to the user.
      * @param targetPhoneAccount the {@link PhoneAccountHandle} to use when placing the call.
@@ -209,7 +215,7 @@ public abstract class CallRedirectionService extends Service {
      *                     response was sent with a true flag of allowInteractiveResponse via
      *                     {@link #onPlaceCall(Uri, PhoneAccountHandle, boolean)}
      */
-    @FlaggedApi(Flags.FLAG_PLACE_CALL_TO_ALTERNATE_NUMBER)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_PLACE_CALL_TO_ALTERNATE_NUMBER)
     public final void placeCallToAlternateNumber(@NonNull Uri alternateUri,
                                                  @NonNull PhoneAccountHandle targetPhoneAccount,
                                                  boolean confirmFirst) {

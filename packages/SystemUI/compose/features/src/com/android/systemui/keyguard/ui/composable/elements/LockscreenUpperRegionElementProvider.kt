@@ -102,8 +102,10 @@ constructor(
 
         @Composable
         protected fun LockscreenScope<ContentScope>.Notifications(modifier: Modifier = Modifier) {
-            Column(modifier = modifier.fillMaxHeight()) {
+            Box(modifier = modifier.fillMaxHeight().then(context.burnInModifier)) {
                 AODNotifications()
+                // Make the Notification section overlap with the AOD icons,
+                // to avoid jumps while animating them in.
                 AnimatedVisibility(viewModel.isNotificationStackActive) {
                     LockscreenElement(Notifications.Stack)
                 }

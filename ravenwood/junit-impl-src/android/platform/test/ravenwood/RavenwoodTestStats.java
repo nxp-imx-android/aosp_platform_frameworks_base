@@ -270,6 +270,7 @@ public class RavenwoodTestStats {
             if (RAVENWOOD_VERBOSE_LOGGING) {
                 Log.d(TAG, "testSuiteFinished: " + description);
             }
+            RavenwoodExperimentalApiChecker.dumpExperimentalApiUsage();
         }
 
         @Override

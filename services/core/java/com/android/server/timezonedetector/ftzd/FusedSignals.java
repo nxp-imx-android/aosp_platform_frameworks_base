@@ -73,25 +73,25 @@ public final class FusedSignals {
     private final Map<@Origin Integer, OriginInfo> mOrigins;
 
     /**
-     * Creates a copy of another {@link FusedTimeZone}.
+     * Creates a copy of another {@link FusedSignals}.
      *
-     * @param other the {@link FusedTimeZone} to copy
+     * @param other the {@link FusedSignals} to copy
      */
     public static FusedSignals copy(FusedSignals other) {
         return new FusedSignals(other.mZoneId, other.mZoneIdCandidates, other.mOrigins);
     }
 
     /**
-     * Creates a copy of another {@link FusedTimeZone} without the origin information.
+     * Creates a copy of another {@link FusedSignals} without the origin information.
      *
-     * @param other the {@link FusedTimeZone} to copy
+     * @param other the {@link FusedSignals} to copy
      */
     public static FusedSignals copyWithoutOrigins(FusedSignals other) {
         return new FusedSignals(other.mZoneId, other.mZoneIdCandidates, new ArrayMap<>());
     }
 
     /**
-     * Creates a new {@link FusedTimeZone} with a single time zone ID and an optional origin.
+     * Creates a new {@link FusedSignals} with a single time zone ID and an optional origin.
      *
      * @param zoneId the primary time zone ID
      * @param origin the initial origin, or {@code null} if none
@@ -101,7 +101,7 @@ public final class FusedSignals {
     }
 
     /**
-     * Creates a new {@link FusedTimeZone} with a list of candidate time zone IDs and an optional
+     * Creates a new {@link FusedSignals} with a list of candidate time zone IDs and an optional
      * origin. The first ID in the list is treated as the primary time zone.
      *
      * @param zoneIdCandidates a list of candidate time zone IDs
@@ -158,7 +158,7 @@ public final class FusedSignals {
      *
      * @param origin the origin to update
      * @param quality the quality score
-     * @return this {@link FusedTimeZone} instance for chaining
+     * @return this {@link FusedSignals} instance for chaining
      */
     public FusedSignals setQualityForOrigin(@Origin int origin, @Quality int quality) {
         if (mOrigins.containsKey(origin)) {
@@ -219,7 +219,7 @@ public final class FusedSignals {
     /**
      * Removes all origin information from this time zone.
      *
-     * @return this {@link FusedTimeZone} instance for chaining
+     * @return this {@link FusedSignals} instance for chaining
      */
     public FusedSignals clearOrigins() {
         mOrigins.clear();
@@ -230,7 +230,7 @@ public final class FusedSignals {
      * Removes a specific origin from this time zone.
      *
      * @param origin the origin to remove
-     * @return this {@link FusedTimeZone} instance for chaining
+     * @return this {@link FusedSignals} instance for chaining
      */
     public FusedSignals removeOrigin(@Origin int origin) {
         mOrigins.remove(origin);

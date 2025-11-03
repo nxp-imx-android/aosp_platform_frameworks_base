@@ -597,7 +597,7 @@ final class InstallPackageHelper {
             Slog.i(PackageManagerService.TAG,
                     "Update" + (pkgSetting.isSystem() ? " system" : "")
                             + " package " + pkgName
-                            + " code path from " + pkgSetting.getPathString()
+                            + " code path from " + oldPkgSetting.getPathString()
                             + " to " + pkgSetting.getPathString()
                             + "; Retain data and using new");
         }
@@ -931,10 +931,7 @@ final class InstallPackageHelper {
             }
         } else {
             // No restore possible, or the Backup Manager was mysteriously not available.
-            // we don't need to wait for restore to complete before closing the freezer,
-            // so we can close the freezer right away.
             // Also just fire the post-install work request directly.
-            request.closeFreezer();
             if (DEBUG_INSTALL) Log.v(TAG, "No restore - queue post-install for " + token);
 
             Trace.asyncTraceBegin(TRACE_TAG_PACKAGE_MANAGER, "postInstall", token);
@@ -4661,9 +4658,23 @@ final class InstallPackageHelper {
     }
 
     private static boolean hasLauncherEntry(ParsedPackage parsedPackage) {
+        return hasLauncherEntry(parsedPackage.getActivities());
+    }
+
+    /**
+     * Checks whether a launcher entry exists within the given list of activities that are
+     * associated with a {@link ParsedPackage} or {@link AndroidPackage}.
+     *
+     * <p>An activity is considered a launcher entry if it is enabled, exported, and has an intent
+     * filter with the {@link android.content.Intent#CATEGORY_LAUNCHER} category.
+     *
+     * @param activities a list of activities retrieved from either a {@link ParsedPackage} or
+     *                   {@link AndroidPackage}
+     * @return {@code true} if a launcher entry is found, otherwise {@code false}
+     */
+    static boolean hasLauncherEntry(List<ParsedActivity> activities) {
         final HashSet<String> categories = new HashSet<>();
         categories.add(Intent.CATEGORY_LAUNCHER);
-        final List<ParsedActivity> activities = parsedPackage.getActivities();
         for (int indexActivity = 0; indexActivity < activities.size(); indexActivity++) {
             final ParsedActivity activity = activities.get(indexActivity);
             if (!activity.isEnabled() || !activity.isExported()) {

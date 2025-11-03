@@ -282,3 +282,11 @@ flag {
     description: "Enables game controller remapping"
     bug: "435503326"
 }
+
+flag {
+    name: "scale_gesture_detector_use_events_classification"
+    namespace: "input"
+    description: "Enables ScaleGestureDetector to use motion events classification"
+    bug: "331164772"
+}
+

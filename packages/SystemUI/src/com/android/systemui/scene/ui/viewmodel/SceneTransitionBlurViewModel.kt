@@ -25,12 +25,14 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.systemui.window.shared.model.BlurEffect
@@ -38,12 +40,19 @@ import com.android.systemui.window.ui.BlurChoreographer
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Named
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
  * View model that maps [TransitionState] to blur radius that needs to applied to the window's
  * background (e.g. the wallpaper, other activities visible behind NotificationShadeWindow).
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @Stable
 class SceneTransitionBlurViewModel
 @AssistedInject
@@ -54,6 +63,8 @@ constructor(
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val blurConfig: BlurConfig,
+    private val shadeInteractor: ShadeInteractor,
+    private val deviceEntryInteractor: DeviceEntryInteractor,
 ) : HydratedActivatable(false) {
 
     private val ignoredSceneChanges: Set<SceneKey> = setOf(Scenes.Shade, Scenes.QuickSettings)
@@ -75,9 +86,30 @@ constructor(
         windowRootViewBlurInteractor.onBlurApplied(blurEffect.radius.toInt())
     }
 
+    private val isPersistentEarlyWakeupRequired: Flow<Boolean> =
+        windowRootViewBlurInteractor.isBlurCurrentlySupported
+            .flatMapLatest { blurSupported ->
+                if (blurSupported) {
+                    combine(
+                        deviceEntryInteractor.isDeviceEntered,
+                        shadeInteractor.isUserInteracting,
+                        shadeInteractor.isAnyExpanded,
+                    ) { isDeviceEntered, userDraggingShade, anyExpanded ->
+                        !isDeviceEntered || userDraggingShade || anyExpanded
+                    }
+                } else {
+                    flowOf(false)
+                }
+            }
+            .distinctUntilChanged()
+
     override suspend fun onActivated() {
         blurChoreographer.registerOnBlurAppliedListener(::onBlurApplied)
         windowRootViewBlurInteractor.registerShadeBlurChangedListener(::applyBlur)
+
+        isPersistentEarlyWakeupRequired.collect {
+            blurChoreographer.setPersistentEarlyWakeup(it)
+        }
     }
 
     override suspend fun onDeactivated() {
@@ -94,6 +126,7 @@ constructor(
 
                 is TransitionState.Transition.ReplaceOverlay ->
                     transitionState.toBlurRadius(transitionProgress)
+
                 is TransitionState.Transition.ShowOrHideOverlay ->
                     transitionState.toBlurRadius(transitionProgress)
             }
@@ -147,10 +180,13 @@ constructor(
                     when {
                         state.fromScene == Scenes.Lockscreen && state.toScene == Scenes.Communal ->
                             state.progress * BLUR_SCALE_COMMUNAL
+
                         state.fromScene == Scenes.Communal ->
                             (1 - state.progress) * BLUR_SCALE_COMMUNAL
+
                         else -> 0f
                     }
+
             state is TransitionState.Idle && state.currentScene == Scenes.Communal -> 0.95f
             else -> 1.0f
         }

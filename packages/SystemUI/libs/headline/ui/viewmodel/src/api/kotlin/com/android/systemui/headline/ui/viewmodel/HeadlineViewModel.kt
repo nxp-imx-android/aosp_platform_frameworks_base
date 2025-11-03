@@ -40,6 +40,12 @@ interface HeadlineViewModel {
      */
     val items: List<HeadlineItem>
 
+    /**
+     * Called when an item is clicked, whether it was shown as the current item/scene/pill or shown
+     * as a dot indicator.
+     */
+    fun onItemClicked(item: HeadlineItem)
+
     companion object {
         /**
          * A special scene that indicates that Headline should be collapsed and should not show any

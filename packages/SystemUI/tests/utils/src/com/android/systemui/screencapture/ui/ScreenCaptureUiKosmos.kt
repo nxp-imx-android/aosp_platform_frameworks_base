@@ -43,7 +43,6 @@ val Kosmos.screenCaptureUiFactory by
                         ScreenCaptureType.entries.associateWith {
                             screenCaptureUiComponentBuilder(it)
                         },
-                    defaultBuilder = { error("Provide one instead") },
                     dialogFactory = systemUIDialogFactory,
                 )
         }

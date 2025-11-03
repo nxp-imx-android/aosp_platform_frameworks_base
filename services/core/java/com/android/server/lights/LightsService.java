@@ -22,9 +22,11 @@ import android.hardware.light.HwLight;
 import android.hardware.light.HwLightState;
 import android.hardware.light.ILights;
 import android.hardware.light.LightType;
+import android.hardware.lights.ColorSequence;
 import android.hardware.lights.ILightsManager;
 import android.hardware.lights.Light;
 import android.hardware.lights.LightState;
+import android.hardware.lights.MultiLightEffect;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -149,6 +151,21 @@ public class LightsService extends SystemService {
                 }
                 return new LightState(light.getColor());
             }
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
+        @Override
+        public void setLightEffect(IBinder token, MultiLightEffect effect) {
+            setLightEffect_enforcePermission();
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
+        @Override
+        public ColorSequence getLightSequence(int lightId)
+                throws RemoteException {
+            getLightSequence_enforcePermission();
+
+            return null;
         }
 
         @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)

@@ -42,7 +42,6 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
     Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
-    Flags.FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE,
 )
 abstract class MoveToNextDisplayProjected {
     private val tapl = LauncherInstrumentation()

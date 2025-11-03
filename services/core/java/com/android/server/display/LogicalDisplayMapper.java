@@ -26,6 +26,7 @@ import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_
 import static android.hardware.devicestate.DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP;
 import static android.hardware.devicestate.DeviceState.PROPERTY_POWER_CONFIGURATION_TRIGGER_WAKE;
 import static android.hardware.devicestate.DeviceStateManager.INVALID_DEVICE_STATE;
+import static android.hardware.devicestate.feature.flags.Flags.deviceStatePropertyMigration;
 import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.display.DeviceStateToLayoutMap.STATE_DEFAULT;
@@ -42,8 +43,6 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
-import android.hardware.devicestate.feature.flags.FeatureFlags;
-import android.hardware.devicestate.feature.flags.FeatureFlagsImpl;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -230,7 +229,6 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     private boolean mInteractive;
     private final DisplayManagerFlags mFlags;
     private final SyntheticModeManager mSyntheticModeManager;
-    private final FeatureFlags mDeviceStateManagerFlags;
     private final Context mContext;
     private final DisplayGroupAllocator mDisplayGroupAllocator;
     private final Predicate<DisplayInfo> mIsDisplayAllowedInTopology;
@@ -275,7 +273,6 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         mDeviceStateToLayoutMap = deviceStateToLayoutMap;
         mFlags = flags;
         mSyntheticModeManager = syntheticModeManager;
-        mDeviceStateManagerFlags = new FeatureFlagsImpl();
         mDisplayGroupAllocator = displayGroupAllocator;
         mIsDisplayAllowedInTopology = isDisplayAllowedInTopology;
     }
@@ -671,7 +668,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
      */
     private boolean shouldDeviceBeWoken(DeviceState pendingState, DeviceState currentState,
             boolean isInteractive, boolean isBootCompleted) {
-        if (mDeviceStateManagerFlags.deviceStatePropertyMigration()) {
+        if (deviceStatePropertyMigration()) {
             if (currentState.hasProperties(PROPERTY_EMULATED_ONLY)
                     && !pendingState.hasProperties(PROPERTY_EMULATED_ONLY)) {
                 // Do not wake the device, since this transition may occur due to the user pressing
@@ -712,7 +709,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
      */
     private boolean shouldDeviceBePutToSleep(DeviceState pendingState, DeviceState currentState,
             boolean isInteractive, boolean isBootCompleted) {
-        if (mDeviceStateManagerFlags.deviceStatePropertyMigration()) {
+        if (android.hardware.devicestate.feature.flags.Flags.deviceStatePropertyMigration()) {
             return (pendingState.hasProperty(PROPERTY_POWER_CONFIGURATION_TRIGGER_SLEEP) || (
                     pendingState.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED)
                             && mDeviceStateToLayoutMap.get(pendingState.getIdentifier())

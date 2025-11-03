@@ -6,6 +6,7 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.classifier.domain.interactor.falsingInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
@@ -39,7 +40,7 @@ import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractor
 import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractorFaked
 import com.android.systemui.wallpapers.ui.viewmodel.wallpaperViewModel
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
-import com.android.systemui.window.ui.BlurChoreographer
+import com.android.systemui.window.ui.FakeBlurChoreographer
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.mockito.kotlin.mock
 
@@ -91,7 +92,7 @@ val Kosmos.sceneContainerViewModel by Fixture {
         .apply { setTransitionState(transitionState) }
 }
 
-val Kosmos.blurChoreographer by Fixture { mock<BlurChoreographer>() }
+val Kosmos.fakeBlurChoreographer by Fixture { FakeBlurChoreographer() }
 
 val Kosmos.sceneTransitionBlurViewModel by Fixture {
     SceneTransitionBlurViewModel(
@@ -100,7 +101,9 @@ val Kosmos.sceneTransitionBlurViewModel by Fixture {
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
         keyguardTransitionInteractor = keyguardTransitionInteractor,
         blurConfig = blurConfig,
-        blurChoreographer = blurChoreographer,
+        blurChoreographer = fakeBlurChoreographer,
+        shadeInteractor = shadeInteractor,
+        deviceEntryInteractor = deviceEntryInteractor,
     )
 }
 

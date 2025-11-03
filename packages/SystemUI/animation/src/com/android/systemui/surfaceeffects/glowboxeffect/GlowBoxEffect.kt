@@ -27,7 +27,7 @@ import com.android.systemui.surfaceeffects.utils.MathUtils.lerp
 class GlowBoxEffect(
     private var config: GlowBoxConfig,
     private val paintDrawCallback: PaintDrawCallback,
-    private val stateChangedCallback: AnimationStateChangedCallback? = null
+    private val stateChangedCallback: AnimationStateChangedCallback? = null,
 ) {
     private val glowBoxShader =
         GlowBoxShader().apply {
@@ -56,44 +56,44 @@ class GlowBoxEffect(
             return
         }
 
-        playEaseIn()
+        playFadeIn()
     }
 
-    /** Finishes the animation with ease out. */
+    /** Finishes the animation with fade out. */
     fun finish(force: Boolean = false) {
-        // If it's playing ease out, cancel immediately.
-        if (force && state == AnimationState.EASE_OUT) {
+        // If it's playing fade out, cancel immediately.
+        if (force && state == AnimationState.FADE_OUT) {
             animator?.cancel()
             return
         }
 
-        // If it's playing either ease in or main, fast-forward to ease out.
-        if (state == AnimationState.EASE_IN || state == AnimationState.MAIN) {
+        // If it's playing either fade in or main, fast-forward to fade out.
+        if (state == AnimationState.FADE_IN || state == AnimationState.MAIN) {
             animator?.pause()
-            playEaseOut()
+            playFadeOut()
         }
 
-        // At this point, animation state should be ease out. Cancel it if force is true.
+        // At this point, animation state should be fade out. Cancel it if force is true.
         if (force) {
             animator?.cancel()
         }
     }
 
-    private fun playEaseIn() {
-        if (state == AnimationState.EASE_IN) {
+    private fun playFadeIn() {
+        if (state == AnimationState.FADE_IN) {
             return
         }
-        state = AnimationState.EASE_IN
+        state = AnimationState.FADE_IN
         stateChangedCallback?.onStart()
 
         animator =
             ValueAnimator.ofFloat(0f, 1f).apply {
-                duration = config.easeInDuration
+                duration = config.fadeInDuration
                 addUpdateListener {
                     val progress = it.animatedValue as Float
                     glowBoxShader.setCenter(
                         lerp(config.startCenterX, config.endCenterX, progress),
-                        lerp(config.startCenterY, config.endCenterY, progress)
+                        lerp(config.startCenterY, config.endCenterY, progress),
                     )
 
                     draw()
@@ -121,25 +121,25 @@ class GlowBoxEffect(
 
                 doOnEnd {
                     animator = null
-                    playEaseOut()
+                    playFadeOut()
                 }
 
                 start()
             }
     }
 
-    private fun playEaseOut() {
-        if (state == AnimationState.EASE_OUT) return
-        state = AnimationState.EASE_OUT
+    private fun playFadeOut() {
+        if (state == AnimationState.FADE_OUT) return
+        state = AnimationState.FADE_OUT
 
         animator =
             ValueAnimator.ofFloat(0f, 1f).apply {
-                duration = config.easeOutDuration
+                duration = config.fadeOutDuration
                 addUpdateListener {
                     val progress = it.animatedValue as Float
                     glowBoxShader.setCenter(
                         lerp(config.endCenterX, config.startCenterX, progress),
-                        lerp(config.endCenterY, config.startCenterY, progress)
+                        lerp(config.endCenterY, config.startCenterY, progress),
                     )
 
                     draw()
@@ -160,25 +160,26 @@ class GlowBoxEffect(
     }
 
     /**
-     * The animation state of the effect. The animation state transitions as follows: [EASE_IN] ->
-     * [MAIN] -> [EASE_OUT] -> [NOT_PLAYING].
+     * The animation state of the effect. The animation state transitions as follows: [FADE_IN] ->
+     * [MAIN] -> [FADE_OUT] -> [NOT_PLAYING].
      */
     enum class AnimationState {
-        EASE_IN,
+        FADE_IN,
         MAIN,
-        EASE_OUT,
+        FADE_OUT,
         NOT_PLAYING,
     }
 
     interface AnimationStateChangedCallback {
         /**
          * Triggered when the animation starts, specifically when the states goes from
-         * [AnimationState.NOT_PLAYING] to [AnimationState.EASE_IN].
+         * [AnimationState.NOT_PLAYING] to [AnimationState.FADE_IN].
          */
         fun onStart()
+
         /**
          * Triggered when the animation ends, specifically when the states goes from
-         * [AnimationState.EASE_OUT] to [AnimationState.NOT_PLAYING].
+         * [AnimationState.FADE_OUT] to [AnimationState.NOT_PLAYING].
          */
         fun onEnd()
     }

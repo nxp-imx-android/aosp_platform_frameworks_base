@@ -641,6 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Nagbibigay-daan sa app na i-advertise ang, kumonekta sa, at tukuyin ang nauugnay na posisyon ng mga kalapit na Wi‑Fi device"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"i-access ang mga local network device"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Pinapayagan ang app na i-access ang mga local network device"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"gamitin ang loopback interface"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Nagbibigay-daan sa app na makipag-interact sa iba pang app sa pamamagitan ng loopback interface"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"alamin ang relative position sa kalapit na device"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Payagan ang app na alamin ang relatibong posisyon sa pagitan ng mga kalapit na device"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Impormasyon sa Gustong NFC na Serbisyo sa Pagbabayad"</string>
@@ -1043,7 +1045,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"I-type ang PIN upang i-unlock"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Maling PIN code."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Upang i-unlock, pindutin ang Menu pagkatapos ay 0."</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Pang-emergency na numero"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Walang serbisyo"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Naka-lock ang screen."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Pindutin ang Menu upang i-unlock o magsagawa ng pang-emergency na tawag."</string>
@@ -1277,8 +1278,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"Gawin ang pagkilos"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"Buksan gamit ang"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"Buksan gamit ang %1$s"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"Buksan ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"Buksan"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"Buksan ang mga link ng <xliff:g id="HOST">%1$s</xliff:g> gamit ang"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"Buksan ang mga link gamit ang"</string>

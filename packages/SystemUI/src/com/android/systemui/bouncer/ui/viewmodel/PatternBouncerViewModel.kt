@@ -19,6 +19,7 @@ package com.android.systemui.bouncer.ui.viewmodel
 import android.content.Context
 import android.util.TypedValue
 import android.view.View
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationPatternCoordinate
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
@@ -37,7 +38,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /** Holds UI state and handles user input for the pattern bouncer UI. */
 class PatternBouncerViewModel
@@ -80,6 +80,8 @@ constructor(
     /** Whether the pattern itself should be rendered visibly. */
     val isPatternVisible: StateFlow<Boolean> = interactor.isPatternVisible
 
+    override val _readyToTryAuthenticate = MutableStateFlow(false)
+
     override val authenticationMethod = AuthenticationMethodModel.Pattern
 
     override val lockoutMessageId = R.string.kg_too_many_failed_pattern_attempts_dialog_message
@@ -88,7 +90,13 @@ constructor(
         coroutineScope {
             launch { super.onActivated() }
             launch {
-                selectedDotSet.map { it.toList() }.collect { selectedDotList.value = it.toList() }
+                selectedDotSet
+                    .map { it.toList() }
+                    .collect {
+                        // Single-dot patterns are treated as errors.
+                        _readyToTryAuthenticate.value = (it.size > 1)
+                        selectedDotList.value = it.toList()
+                    }
             }
             awaitCancellation()
         }

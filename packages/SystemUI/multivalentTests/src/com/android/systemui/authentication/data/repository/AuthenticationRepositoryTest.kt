@@ -106,29 +106,21 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             runCurrent()
             dispatchBroadcast()
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Pin)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(AuthenticationMethodModel.Pin)
 
             setSecurityModeAndDispatchBroadcast(KeyguardSecurityModel.SecurityMode.Pattern)
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Pattern)
-            assertThat(underTest.getAuthenticationMethod())
-                .isEqualTo(AuthenticationMethodModel.Pattern)
 
             setSecurityModeAndDispatchBroadcast(KeyguardSecurityModel.SecurityMode.None)
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.None)
-            assertThat(underTest.getAuthenticationMethod())
-                .isEqualTo(AuthenticationMethodModel.None)
 
             currentSecurityMode = KeyguardSecurityModel.SecurityMode.SimPin
             mobileConnectionsRepository.fake.isAnySimSecure.value = true
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Sim)
-            assertThat(underTest.getAuthenticationMethod()).isEqualTo(AuthenticationMethodModel.Sim)
 
             setSecurityModeAndDispatchBroadcast(
                 KeyguardSecurityModel.SecurityMode.SecureLockDeviceBiometricAuth
             )
             assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Biometric)
-            assertThat(underTest.getAuthenticationMethod())
-                .isEqualTo(AuthenticationMethodModel.Biometric)
         }
 
     @Test
@@ -179,11 +171,8 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
     fun lockoutEndTime() =
         testScope.runTest {
             val lockoutEnd = clock.elapsedRealtime().milliseconds + 30.seconds
-            whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[0].id))
-                .thenReturn(lockoutEnd.inWholeMilliseconds)
             whenever(lockPatternUtils.getLockoutEndTime(USER_INFOS[0].id))
                 .thenReturn(lockoutEnd.toJavaDuration())
-            whenever(lockPatternUtils.getLockoutAttemptDeadline(USER_INFOS[1].id)).thenReturn(0)
             whenever(lockPatternUtils.getLockoutEndTime(USER_INFOS[1].id))
                 .thenReturn(0.seconds.toJavaDuration())
 
@@ -210,7 +199,7 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             val hasLockoutOccurred by collectLastValue(underTest.hasLockoutOccurred)
             assertThat(hasLockoutOccurred).isFalse()
 
-            underTest.reportLockoutStarted(1000)
+            underTest.reportLockoutStarted(1.seconds)
             assertThat(hasLockoutOccurred).isTrue()
 
             clock.setElapsedRealtime(clock.elapsedRealtime() + 60.seconds.inWholeMilliseconds)

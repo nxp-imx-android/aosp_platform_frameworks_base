@@ -641,6 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"付近の Wi-Fi デバイスについて、情報の表示、接続、相対位置の確認をアプリに許可します"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"ローカル ネットワーク デバイスへのアクセス"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"ローカル ネットワーク デバイスへのアクセスをアプリに許可します"</string>
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ループバック インターフェースを使用する"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ループバック インターフェースを介して他のアプリとやり取りすることをこのアプリに許可します"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"付近のデバイス間の相対位置の特定"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"付近のデバイス間の相対位置の特定をアプリに許可します"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"優先される NFC お支払いサービスの情報"</string>
@@ -1043,7 +1045,6 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"ロックを解除するにはPINを入力"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PINコードが正しくありません。"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"MENU、0キーでロック解除"</string>
-    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"緊急通報番号"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"通信サービスはありません"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"画面ロック中"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"MENUキーでロック解除(または緊急通報)"</string>
@@ -1277,8 +1278,7 @@
     <string name="whichApplicationLabel" msgid="7852182961472531728">"アクションを実行"</string>
     <string name="whichViewApplication" msgid="5733194231473132945">"アプリで開く"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$sで開く"</string>
-    <!-- no translation found for open_app_name (6114096770130122912) -->
-    <skip />
+    <string name="open_app_name" msgid="6114096770130122912">"<xliff:g id="APP_NAME">%1$s</xliff:g> を開く"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"開く"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"<xliff:g id="HOST">%1$s</xliff:g> のリンクを開くブラウザ / アプリの選択"</string>
     <string name="whichOpenLinksWith" msgid="1120936181362907258">"リンクを開くブラウザの選択"</string>
@@ -2099,7 +2099,7 @@
     <string name="work_mode_off_title" msgid="6367463960165135829">"仕事用アプリの停止解除"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"停止解除"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"緊急通報"</string>
-    <string name="set_up_screen_lock_title" msgid="8346083801616474030">"画面ロックの設定"</string>
+    <string name="set_up_screen_lock_title" msgid="8346083801616474030">"画面ロックを設定"</string>
     <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"画面ロックを設定"</string>
     <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"プライベート スペースには画面ロックの設定が必要です"</string>
     <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"プライベート スペースを削除するには、このデバイスに画面ロックを設定してください"</string>

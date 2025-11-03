@@ -415,6 +415,16 @@ flag {
 }
 
 flag {
+    name: "predictive_back_quick_double_back_swipes"
+    namespace: "windowing_frontend"
+    description: "Allow quick double predictive back system animations"
+    bug: "455759359"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "sleep_wake_transitions"
     namespace: "windowing_frontend"
     description: "Make the rest of sleep/wake situations into transitions."
@@ -439,6 +449,16 @@ flag {
     namespace: "windowing_frontend"
     description: "Always promote existenceChanged state to parent."
     bug: "452214913"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "virtual_display_can_create_system_application_overlay"
+    namespace: "windowing_frontend"
+    description: "Virtual display owners can create system application overlays"
+    bug: "432521645"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

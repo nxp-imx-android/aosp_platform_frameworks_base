@@ -86,7 +86,10 @@
                         app:layout_constraintHeight_max="220dp"
                         app:layout_constraintHeight_min="200dp"
                         android:scrollbars="vertical"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@+id/border_bottom"
+                        android:layout_marginBottom="6dp" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/permission_list"
@@ -95,7 +98,10 @@
                         android:scrollbars="vertical"
                         android:fadeScrollbars="false"
                         app:layout_constraintHeight_max="220dp"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@+id/border_bottom"
+                        android:layout_marginBottom="6dp" />
 
                     <ProgressBar
                         android:id="@+id/progress_bar"

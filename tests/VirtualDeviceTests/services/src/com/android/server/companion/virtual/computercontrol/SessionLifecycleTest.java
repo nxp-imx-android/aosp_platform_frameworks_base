@@ -30,16 +30,12 @@ import android.companion.virtual.computercontrol.IComputerControlLifecycleCallba
 import android.companion.virtual.computercontrol.LifecycleState.Active;
 import android.companion.virtual.computercontrol.LifecycleState.Blocked;
 import android.companion.virtual.computercontrol.LifecycleState.Closed;
-import android.companion.virtualdevice.flags.Flags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -52,8 +48,6 @@ public class SessionLifecycleTest {
 
     private static final String TEST_PKG = "com.test.pkg";
 
-    @Rule
-    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private IComputerControlLifecycleCallback mRemoteCallback;
     @Mock
@@ -109,7 +103,6 @@ public class SessionLifecycleTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
     public void updateLifecycle_secureWindowVisibility_controlsBlockedState() throws Exception {
         initializeCallbacksAndReset();
 
@@ -128,7 +121,6 @@ public class SessionLifecycleTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
     public void updateLifecycle_blockedActivityVisibility_controlsBlockedState() throws Exception {
         initializeCallbacksAndReset();
 
@@ -148,7 +140,6 @@ public class SessionLifecycleTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
     public void updateLifecycle_withBlockedActivityAndSecureWindow_entersBlockedState()
             throws Exception {
         initializeCallbacksAndReset();
@@ -166,7 +157,6 @@ public class SessionLifecycleTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_BLOCKED_STATE)
     public void updateLifecycle_blockReasonCanChange() throws Exception {
         initializeCallbacksAndReset();
 

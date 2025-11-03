@@ -16,8 +16,6 @@
 
 package com.android.server.display.feature;
 
-import static com.android.window.flags.Flags.FLAG_ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG;
-
 import android.content.Context;
 import android.os.Build;
 import android.os.SystemProperties;
@@ -58,10 +56,6 @@ public class DisplayManagerFlags {
     private final FlagState mPowerThrottlingClamperFlagState = new FlagState(
             Flags.FLAG_ENABLE_POWER_THROTTLING_CLAMPER,
             Flags::enablePowerThrottlingClamper);
-
-    private final FlagState mSmallAreaDetectionFlagState = new FlagState(
-            com.android.graphics.surfaceflinger.flags.Flags.FLAG_ENABLE_SMALL_AREA_DETECTION,
-            com.android.graphics.surfaceflinger.flags.Flags::enableSmallAreaDetection);
 
     private final FlagState mSyncedResolutionSwitch = new FlagState(
             com.android.graphics.surfaceflinger.flags.Flags.FLAG_SYNCED_RESOLUTION_SWITCH,
@@ -131,11 +125,6 @@ public class DisplayManagerFlags {
     private final FlagState mEnableDisplayContentModeManagementFlagState = new FlagState(
             Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
             DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT::isTrue
-    );
-
-    private final FlagState mEnableUpdatedDisplayConnectionDialogFlagState = new FlagState(
-            FLAG_ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG,
-            DesktopExperienceFlags.ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG::isTrue
     );
 
     private final FlagState mSubscribeGranularDisplayEvents = new FlagState(
@@ -237,10 +226,6 @@ public class DisplayManagerFlags {
         return mDisplayOffloadFlagState.isEnabled();
     }
 
-    public boolean isSmallAreaDetectionEnabled() {
-        return mSmallAreaDetectionFlagState.isEnabled();
-    }
-
     public boolean isSyncedResolutionSwitchEnabled() {
         return mSyncedResolutionSwitch.isEnabled();
     }
@@ -327,10 +312,6 @@ public class DisplayManagerFlags {
 
     public boolean isDisplayContentModeManagementEnabled() {
         return mEnableDisplayContentModeManagementFlagState.isEnabled();
-    }
-
-    public boolean isUpdatedDisplayConnectionDialogEnabled() {
-        return mEnableUpdatedDisplayConnectionDialogFlagState.isEnabled();
     }
 
     /**
@@ -436,7 +417,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
-        pw.println(" " + mSmallAreaDetectionFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
         pw.println(" " + mFastHdrTransitions);
         pw.println(" " + mSensorBasedBrightnessThrottling);
@@ -463,7 +443,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
-        pw.println(" " + mEnableUpdatedDisplayConnectionDialogFlagState);
         pw.println(" " + mIsLoggingForDisplayEventsEnabled);
         pw.println(" " + mIsMinmodeCapBrightnessEnabled);
         pw.println(" " + mSyntheticModesV2);

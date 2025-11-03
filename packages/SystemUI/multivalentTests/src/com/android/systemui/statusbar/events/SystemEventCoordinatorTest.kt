@@ -34,7 +34,6 @@ import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyItemController
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argThat
@@ -67,7 +66,6 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Mock lateinit var batteryController: BatteryController
     @Mock lateinit var privacyController: PrivacyItemController
-    @Mock lateinit var avControlsChipInteractor: AvControlsChipInteractor
     @Mock lateinit var scheduler: SystemStatusAnimationScheduler
 
     private lateinit var systemEventCoordinator: SystemEventCoordinator
@@ -97,7 +95,6 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
                     fakeSystemClock,
                     batteryController,
                     privacyController,
-                    avControlsChipInteractor,
                     context,
                     TestScope(UnconfinedTestDispatcher()),
                     connectedDisplayInteractor,

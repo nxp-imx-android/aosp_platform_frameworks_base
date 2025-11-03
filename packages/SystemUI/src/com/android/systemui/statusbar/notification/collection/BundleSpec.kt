@@ -38,7 +38,7 @@ data class BundleSpec(
      * This is the id / [type] that identifies the bundle when calling APIs of
      * [android.app.INotificationManager]
      */
-    @Adjustment.Types val bundleType: Int,
+    val bundleType: Int,
 ) {
     companion object {
         val PROMOTIONS =

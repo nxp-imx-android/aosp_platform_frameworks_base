@@ -3170,14 +3170,12 @@ public class InputManagerService extends IInputManager.Stub
             @InputManager.ControllerButton int fromButton, int toKeyCode) {
         super.remapControllerButton_enforcePermission();
         if (!isControllerButton(fromButton)) {
-            throw new IllegalArgumentException(
-                    "Invalid controller fromButton provided for remapping: "
-                            + KeyEvent.keyCodeToString(fromButton));
+            throw new IllegalArgumentException("fromButton " + KeyEvent.keyCodeToString(fromButton)
+                    + " is not a valid controller button");
         }
         if (!KeyEvent.isGamepadButton(toKeyCode)) {
-            throw new IllegalArgumentException(
-                    "Invalid controller toKeyCode for remapping: " + KeyEvent.keyCodeToString(
-                            toKeyCode));
+            throw new IllegalArgumentException("toKeyCode " + KeyEvent.keyCodeToString(toKeyCode)
+                    + " is not a valid gamepad button");
         }
         mInputDeviceRemapper.remapKey(userId, identifier, fromButton, toKeyCode);
     }
@@ -3189,28 +3187,27 @@ public class InputManagerService extends IInputManager.Stub
             @InputManager.ControllerButton int fromButton) {
         super.removeControllerButtonRemapping_enforcePermission();
         if (!isControllerButton(fromButton)) {
-            throw new IllegalArgumentException(
-                    "Invalid controller fromButton provided for remapping: "
-                            + KeyEvent.keyCodeToString(fromButton));
+            throw new IllegalArgumentException("fromButton " + KeyEvent.keyCodeToString(fromButton)
+                    + " is not a valid controller button");
         }
         mInputDeviceRemapper.removeKeyRemapping(userId, identifier, fromButton);
     }
 
     @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
     @Override // Binder call
-    public void clearAllControllerButtonRemapping(@UserIdInt int userId,
+    public void clearAllControllerButtonRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
-        super.clearAllControllerButtonRemapping_enforcePermission();
-        mInputDeviceRemapper.clearAllKeyRemapping(userId, identifier);
+        super.clearAllControllerButtonRemappings_enforcePermission();
+        mInputDeviceRemapper.clearAllKeyRemappings(userId, identifier);
     }
 
     @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
     @NonNull
     @Override // Binder call
-    public Map<Integer, Integer> getControllerButtonRemapping(@UserIdInt int userId,
+    public Map<Integer, Integer> getControllerButtonRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
-        super.getControllerButtonRemapping_enforcePermission();
-        return mInputDeviceRemapper.getKeyRemapping(userId, identifier);
+        super.getControllerButtonRemappings_enforcePermission();
+        return mInputDeviceRemapper.getKeyRemappings(userId, identifier);
     }
 
     @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
@@ -4374,10 +4371,10 @@ public class InputManagerService extends IInputManager.Stub
 
     private boolean isControllerButton(int locationCode) {
         return switch (locationCode) {
-            case InputManager.ControllerButton.CONTROLLER_BUTTON_SOUTH,
-                 InputManager.ControllerButton.CONTROLLER_BUTTON_EAST,
-                 InputManager.ControllerButton.CONTROLLER_BUTTON_NORTH,
-                 InputManager.ControllerButton.CONTROLLER_BUTTON_WEST,
+            case InputManager.ControllerButton.CONTROLLER_BUTTON_A,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_B,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_X,
+                 InputManager.ControllerButton.CONTROLLER_BUTTON_Y,
                  InputManager.ControllerButton.CONTROLLER_BUTTON_L1,
                  InputManager.ControllerButton.CONTROLLER_BUTTON_R1,
                  InputManager.ControllerButton.CONTROLLER_BUTTON_L2,

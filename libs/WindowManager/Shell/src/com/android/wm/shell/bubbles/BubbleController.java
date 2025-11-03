@@ -104,7 +104,6 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserver;
 import com.android.wm.shell.bubbles.fold.BubblesUnfoldListener;
@@ -244,10 +243,10 @@ public class BubbleController implements ConfigurationChangeListener,
     private final BubbleExpandedViewManager mExpandedViewManager;
     private final ResizabilityChecker mResizabilityChecker;
     private final HomeIntentProvider mHomeIntentProvider;
-    private final BubbleAppInfoProvider mAppInfoProvider;
     private final Lazy<Optional<SplitScreenController>> mSplitScreenController;
     private final BubblesFoldLockSettingsObserver mFoldLockSettingsObserver;
     private final BubbleSessionTracker mSessionTracker;
+    private final BubbleViewInfoTask.Factory mBubbleViewInfoTaskFactory;
     private final BubbleShellCommandHandler mBubbleShellCommandHandler;
 
     // Used to post to main UI thread
@@ -384,11 +383,11 @@ public class BubbleController implements ConfigurationChangeListener,
             IWindowManager wmService,
             ResizabilityChecker resizabilityChecker,
             HomeIntentProvider homeIntentProvider,
-            BubbleAppInfoProvider appInfoProvider,
             Lazy<Optional<SplitScreenController>> splitScreenController,
             Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
             BubblesFoldLockSettingsObserver foldLockSettingsObserver,
-            BubbleSessionTracker sessionTracker) {
+            BubbleSessionTracker sessionTracker,
+            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
         BubbleLog.addLogger(new BubbleProtoLog());
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
@@ -444,10 +443,10 @@ public class BubbleController implements ConfigurationChangeListener,
         mExpandedViewManager = BubbleExpandedViewManager.fromBubbleController(this);
         mResizabilityChecker = resizabilityChecker;
         mHomeIntentProvider = homeIntentProvider;
-        mAppInfoProvider = appInfoProvider;
         mSplitScreenController = splitScreenController;
         mFoldLockSettingsObserver = foldLockSettingsObserver;
         mSessionTracker = sessionTracker;
+        mBubbleViewInfoTaskFactory = bubbleViewInfoTaskFactory;
         mBubbleShellCommandHandler = new BubbleShellCommandHandler(this);
         shellInit.addInitCallback(this::onInit, this);
 
@@ -1390,28 +1389,22 @@ public class BubbleController implements ConfigurationChangeListener,
                     mContext,
                     mExpandedViewManager,
                     mBubbleTaskViewFactory,
-                    mBubblePositioner,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
-                    mAppInfoProvider,
                     false /* skipInflation */,
-                    mMainExecutor,
-                    mBackgroundExecutor);
+                    mBubbleViewInfoTaskFactory);
         }
         for (Bubble b : mBubbleData.getOverflowBubbles()) {
             b.inflate(null /* callback */,
                     mContext,
                     mExpandedViewManager,
                     mBubbleTaskViewFactory,
-                    mBubblePositioner,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
-                    mAppInfoProvider,
                     true /* skipInflation */,
-                    mMainExecutor,
-                    mBackgroundExecutor);
+                    mBubbleViewInfoTaskFactory);
         }
     }
 
@@ -1469,10 +1462,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
     private void setSysuiProxy(Bubbles.SysuiProxy proxy) {
         mSysuiProxy = proxy;
-        if (Flags.fixBubblesExpandedSysuiFlag()) {
-            // In case we crashed inform system that bubble bar is collapsed.
-            mSysuiProxy.onStackExpandChanged(/* shouldExpand = */ false);
-        }
+        // In case we crashed inform system that bubble bar is collapsed.
+        mSysuiProxy.onStackExpandChanged(/* shouldExpand = */ false);
     }
 
     @VisibleForTesting
@@ -2132,14 +2123,11 @@ public class BubbleController implements ConfigurationChangeListener,
                         mContext,
                         mExpandedViewManager,
                         mBubbleTaskViewFactory,
-                        mBubblePositioner,
                         mStackView,
                         mLayerView,
                         mBubbleIconFactory,
-                        mAppInfoProvider,
                         true /* skipInflation */,
-                        mMainExecutor,
-                        mBackgroundExecutor);
+                        mBubbleViewInfoTaskFactory);
             });
             return null;
         });
@@ -2249,14 +2237,11 @@ public class BubbleController implements ConfigurationChangeListener,
                     mContext,
                     mExpandedViewManager,
                     mBubbleTaskViewFactory,
-                    mBubblePositioner,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
-                    mAppInfoProvider,
                     false /* skipInflation */,
-                    mMainExecutor,
-                    mBackgroundExecutor);
+                    mBubbleViewInfoTaskFactory);
         }
         if (mBubbleData.isShowingOverflow()) {
             BubbleOverflow bubbleOverflow = mBubbleData.getOverflow();
@@ -2353,14 +2338,11 @@ public class BubbleController implements ConfigurationChangeListener,
                 mContext,
                 mExpandedViewManager,
                 mBubbleTaskViewFactory,
-                mBubblePositioner,
                 mStackView,
                 mLayerView,
                 mBubbleIconFactory,
-                mAppInfoProvider,
                 false /* skipInflation */,
-                mMainExecutor,
-                mBackgroundExecutor);
+                mBubbleViewInfoTaskFactory);
     }
 
     /**

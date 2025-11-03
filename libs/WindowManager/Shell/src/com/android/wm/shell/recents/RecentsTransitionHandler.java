@@ -43,6 +43,7 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TR
 import static com.android.wm.shell.transition.Transitions.TRANSIT_PIP_BOUNDS_CHANGE;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
+import static com.android.wm.shell.Flags.addOneOffHandlerLeashes;
 
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
@@ -807,8 +808,20 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return false;
             }
 
+            Transitions.TransitionFinishCallback wrappedCallback = finishCB;
+            if (addOneOffHandlerLeashes()) {
+                // Provide handler-specific leashes to make sure that animations remain contained to
+                // the scope of ownership of the handler. This is only necessary because we are
+                // handing the animation off to a remote, over which we have no control.
+                mTransitions.getLeashManager().setUpLeashes(mTransition, info, t);
+                wrappedCallback = wct -> {
+                    finishCB.onTransitionFinished(wct);
+                    mTransitions.getLeashManager().cleanUp(mTransition);
+                };
+            }
+
             mInfo = info;
-            mFinishCB = finishCB;
+            mFinishCB = wrappedCallback;
             mFinishTransaction = finishT;
             mPausingTasks = new ArrayList<>();
             mPausingDesk = null;
@@ -881,19 +894,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         // the pausing apps.
                         t.setLayer(target.leash, layer);
                     } else if (taskInfo != null && taskInfo.topActivityType == ACTIVITY_TYPE_HOME) {
-                        if (DesktopExperienceFlags
-                                .ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX.isTrue()) {
-                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                    "  hiding home taskId=%d", taskInfo.taskId);
-                            // Hide the Home task (Launcher) so that it doesn't cause a flicker by
-                            // appearing before the animation itself starts.
-                            // TODO: b/399160023 remove this when we stop using transition-type
-                            //  checks in transition utils.
-                            t.setAlpha(target.leash, 0f);
-                        } else {
-                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                    "  not handling home taskId=%d", taskInfo.taskId);
-                        }
+                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                "  hiding home taskId=%d", taskInfo.taskId);
+                        // Hide the Home task (Launcher) so that it doesn't cause a flicker by
+                        // appearing before the animation itself starts.
+                        // TODO: b/399160023 remove this when we stop using transition-type
+                        //  checks in transition utils.
+                        t.setAlpha(target.leash, 0f);
                     } else if (TransitionUtil.isOpeningType(change.getMode())) {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  adding opening leaf taskId=%d", taskInfo.taskId);

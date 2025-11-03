@@ -24,6 +24,7 @@ import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
+import java.time.Duration
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -157,8 +158,8 @@ class CredentialInteractorImplTest : SysuiTestCase() {
             .thenReturn(result)
         whenever(lockPatternUtils.verifyGatekeeperPasswordHandle(anyLong(), anyLong(), eq(USER_ID)))
             .thenReturn(result)
-        whenever(lockPatternUtils.setLockoutAttemptDeadline(anyInt(), anyInt())).thenAnswer {
-            systemClock.elapsedRealtime() + (it.arguments[1] as Int)
+        whenever(lockPatternUtils.setLockoutAttemptDeadline(anyInt(), any())).thenAnswer {
+            Duration.ofMillis(systemClock.elapsedRealtime()).plus(it.arguments[1] as Duration)
         }
 
         // wrap in an async block so the test can advance the clock if throttling credential
@@ -186,10 +187,10 @@ class CredentialInteractorImplTest : SysuiTestCase() {
             val failedResult = last as? CredentialStatus.Fail.Error
             assertThat(failedResult).isNotNull()
             assertThat(failedResult!!.remainingAttempts)
-                .isEqualTo(if (result.timeout > 0) null else MAX_ATTEMPTS - usedAttempts - 1)
+                .isEqualTo(if (result.timeout.isPositive) null else MAX_ATTEMPTS - usedAttempts - 1)
             assertThat(failedResult.urgentMessage).isNull()
 
-            if (result.timeout > 0) { // failed and throttled
+            if (result.timeout.isPositive) { // failed and throttled
                 // messages are in the throttled errors, so the final Error.error is empty
                 assertThat(failedResult.error).isEmpty()
                 assertThat(statusList).isNotEmpty()

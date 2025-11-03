@@ -41,4 +41,13 @@ public class Annotation {
         }
     )
     public @interface Presentation {}
+
+    /**@hide*/
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "VERIFICATION_STATUS_", value = {
+            Connection.VERIFICATION_STATUS_NOT_VERIFIED,
+            Connection.VERIFICATION_STATUS_PASSED,
+            Connection.VERIFICATION_STATUS_FAILED
+    })
+    public @interface VerificationStatus {}
 }

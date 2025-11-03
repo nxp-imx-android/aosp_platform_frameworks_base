@@ -224,14 +224,6 @@ public class MediaOutputDialog extends SystemUIDialog
     }
 
     @Override
-    public void onConfigurationChanged(Configuration configuration) {
-        super.onConfigurationChanged(configuration);
-        if (mOnDialogEventListener != null) {
-            mOnDialogEventListener.onConfigurationChanged(this, configuration);
-        }
-    }
-
-    @Override
     public void dismiss() {
         // TODO(287191450): remove this once expensive binder calls are removed from refresh().
         // Due to these binder calls on the UI thread, calling refresh() during dismissal causes
@@ -249,6 +241,9 @@ public class MediaOutputDialog extends SystemUIDialog
     @Override
     public void stop() {
         mMediaSwitchingController.stop();
+        if (mOnDialogEventListener != null) {
+            mOnDialogEventListener.onStop(this);
+        }
     }
 
     @VisibleForTesting
@@ -265,7 +260,6 @@ public class MediaOutputDialog extends SystemUIDialog
         mMediaSwitchingController.setRefreshing(true);
         // Update header icon
         final IconCompat headerIcon = mMediaSwitchingController.getHeaderIcon();
-        final IconCompat appSourceIcon = mMediaSwitchingController.getNotificationSmallIcon();
         boolean colorSetUpdated = false;
         if (headerIcon != null) {
             Icon icon = headerIcon.toIcon(mContext);
@@ -296,15 +290,12 @@ public class MediaOutputDialog extends SystemUIDialog
 
         if (!mIncludePlaybackAndAppMetadata) {
             mAppResourceIcon.setVisibility(View.GONE);
-        } else if (appSourceIcon != null) {
-            Icon appIcon = appSourceIcon.toIcon(mContext);
-            mAppResourceIcon.setColorFilter(
-                    mMediaSwitchingController.getColorScheme().getSecondary());
-            mAppResourceIcon.setImageIcon(appIcon);
         } else {
-            Drawable appIconDrawable = mMediaSwitchingController.getAppSourceIconFromPackage();
-            if (appIconDrawable != null) {
-                mAppResourceIcon.setImageDrawable(appIconDrawable);
+            Drawable appIcon = mMediaSwitchingController.getAppIcon();
+            if (appIcon != null) {
+                mAppResourceIcon.setColorFilter(
+                        mMediaSwitchingController.getColorScheme().getSecondary());
+                mAppResourceIcon.setImageDrawable(appIcon);
             } else {
                 mAppResourceIcon.setVisibility(View.GONE);
             }
@@ -498,12 +489,12 @@ public class MediaOutputDialog extends SystemUIDialog
         }
     }
 
-    /** Callback for configuration changes. */
+    /** Callback for dialog events. */
     public interface OnDialogEventListener {
-        /** Will be called inside onConfigurationChanged. */
-        void onConfigurationChanged(@NonNull Dialog dialog, @NonNull Configuration newConfig);
-
         /** Will be called when the dialog is created. */
         void onCreate(@NonNull Dialog dialog);
+
+        /** Will be called when the dialog is stopping. */
+        void onStop(@NonNull Dialog dialog);
     }
 }
