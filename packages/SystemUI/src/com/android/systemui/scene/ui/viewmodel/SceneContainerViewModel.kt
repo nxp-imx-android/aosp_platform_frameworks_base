@@ -397,7 +397,7 @@ constructor(
             when (content) {
                 Overlays.Bouncer -> Classifier.BOUNCER_SWIPE
                 Scenes.Gone -> Classifier.UNLOCK
-                Scenes.Shade,
+                Scenes.Shade -> Classifier.SHADE_DRAG
                 Overlays.NotificationsShade -> Classifier.NOTIFICATION_DRAG_DOWN
                 Scenes.QuickSettings,
                 Overlays.QuickSettingsShade -> Classifier.QUICK_SETTINGS
