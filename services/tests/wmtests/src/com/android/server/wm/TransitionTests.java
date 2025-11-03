@@ -16,6 +16,8 @@
 
 package com.android.server.wm;
 
+import static android.app.FullscreenRequestHandler.REMOTE_CALLBACK_RESULT_KEY;
+import static android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_SUPPORTED;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
@@ -69,6 +71,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
@@ -89,6 +92,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -117,7 +121,6 @@ import com.android.internal.graphics.ColorUtils;
 import com.android.server.wm.TransitionController.OnStartCollect;
 import com.android.window.flags.Flags;
 
-import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -1615,6 +1618,23 @@ public class TransitionTests extends WindowTestsBase {
         transition2.addTransitionEndedListener(transitionEndedListener);
         transition2.abort();
         verify(transitionEndedListener).run();
+    }
+
+    @Test
+    public void testPendingFullscreenRequest_fallbackResultReportedOnTransitStart()
+            throws RemoteException {
+        final TransitionController controller = new TestTransitionController(mAtm);
+        controller.setSyncEngine(mWm.mSyncEngine);
+        final ITransitionPlayer player = new ITransitionPlayer.Default();
+        controller.registerTransitionPlayer(player, null /* playerProc */);
+        final ObservedRemoteCallback callback = mock(ObservedRemoteCallback.class);
+        final Transition transition = controller.createTransition(TRANSIT_OPEN);
+        transition.addPendingFullscreenRequest(callback);
+
+        transition.start();
+
+        verify(callback).sendFallbackResult(argThat((b) ->
+                b.getInt(REMOTE_CALLBACK_RESULT_KEY) == RESULT_FAILED_NOT_SUPPORTED), any());
     }
 
     @Test
