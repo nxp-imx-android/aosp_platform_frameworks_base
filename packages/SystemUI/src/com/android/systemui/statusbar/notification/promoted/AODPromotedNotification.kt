@@ -645,9 +645,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateTimeAndChronometer(content: PromotedNotificationContentModel) {
-        setTextViewColor(time, SecondaryText)
-        setTextViewColor(chronometer, SecondaryText)
-
         if (content.time is When.Time) {
             time?.setTime(content.time.currentTimeMillis)
         }
@@ -660,7 +657,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         } else {
             chronometer?.stop()
         }
-
+        setTextViewColor(time, SecondaryText)
+        setTextViewColor(chronometer, SecondaryText)
         time?.isVisible = (content.time is When.Time)
         chronometer?.isVisible = (content.time is When.Chronometer)
     }
