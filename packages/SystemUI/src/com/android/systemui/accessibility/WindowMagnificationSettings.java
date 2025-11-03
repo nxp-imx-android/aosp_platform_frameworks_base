@@ -537,10 +537,10 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
                 mMagnifyTypingView.setVisibility(View.VISIBLE);
 
-                if (!full_screen) {
-                    selectedButtonIndex =
-                            windowMagnificationFrameSizePrefs.getIndexForCurrentDensity();
-                }
+                selectedButtonIndex =
+                        full_screen
+                                ? MagnificationSize.FULLSCREEN
+                                : windowMagnificationFrameSizePrefs.getIndexForCurrentDensity();
                 break;
 
             case ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN:
