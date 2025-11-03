@@ -358,7 +358,7 @@ class IconManagerTest : SysuiTestCase() {
             n.style = messagingStyle
         } else {
             val bundle = Bundle()
-            messagingStyle.addExtras(bundle, false, 0) // Set extras but not EXTRA_TEMPLATE
+            messagingStyle.addExtras(bundle, false) // Set extras but not EXTRA_TEMPLATE
             n.addExtras(bundle)
         }
 
