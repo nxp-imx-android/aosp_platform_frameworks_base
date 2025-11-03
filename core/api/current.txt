@@ -21301,6 +21301,7 @@ package android.hardware.display {
 
   public static interface DisplayManager.DisplayListener {
     method public void onDisplayAdded(int);
+    method @FlaggedApi("com.android.server.display.feature.flags.display_listener_snapshot") public default void onDisplayAddedSnapshot(@NonNull int[]);
     method public void onDisplayChanged(int);
     method public void onDisplayRemoved(int);
   }

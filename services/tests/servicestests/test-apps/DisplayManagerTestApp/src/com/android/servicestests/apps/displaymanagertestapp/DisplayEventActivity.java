@@ -27,6 +27,7 @@ import android.os.Messenger;
 import android.os.Process;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.Display;
 
 /**
  * A simple activity manipulating displays and listening to corresponding display events
@@ -43,6 +44,7 @@ public class DisplayEventActivity extends Activity {
     private static final int DISPLAY_ADDED = 1;
     private static final int DISPLAY_CHANGED = 2;
     private static final int DISPLAY_REMOVED = 3;
+    private static final int DISPLAY_SNAPSHOT = 4;
 
     private int mExpectedDisplayCount;
     private int mSeenDisplayCount;
@@ -72,6 +74,10 @@ public class DisplayEventActivity extends Activity {
             @Override
             public void onDisplayChanged(int displayId) {
                 callback(displayId, DISPLAY_CHANGED);
+            }
+            @Override
+            public void onDisplayAddedSnapshot(int[] added) {
+                callback(Display.INVALID_DISPLAY, DISPLAY_SNAPSHOT);
             }
         };
         Handler handler = new Handler(Looper.getMainLooper());

@@ -2204,6 +2204,26 @@ public final class DisplayManager {
         @TestApi
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         default void onDisplayDisconnected(int displayId) { }
+
+        /**
+         * Called when a display connected snapshot is received. Invoked once, upon display listener
+         * registration.
+         *
+         * @param connected The ids of the logical displays that are connected.
+         * @hide
+         */
+        @TestApi
+        @FlaggedApi(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+        default void onDisplayConnectedSnapshot(@NonNull int[] connected) { }
+
+        /**
+         * Called when a display added snapshot is received. Invoked once, upon display listener
+         * registration.
+         *
+         * @param added The ids of the logical displays that are added.
+         */
+        @FlaggedApi(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+        default void onDisplayAddedSnapshot(@NonNull int[] added) { }
     }
 
     /**
