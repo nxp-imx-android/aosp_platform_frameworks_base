@@ -39,6 +39,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.util.MathUtils;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -794,6 +795,7 @@ class WallpaperController {
     }
 
     void adjustWallpaperWindows() {
+        Trace.traceBegin(Trace.TRACE_TAG_WINDOW_MANAGER, "adjustWallpaperWindows");
         // First find top-most window that has asked to be on top of the wallpaper;
         // all wallpapers go behind it.
         findWallpaperTarget();
@@ -844,6 +846,7 @@ class WallpaperController {
 
         ProtoLog.d(WM_DEBUG_WALLPAPER, "Wallpaper target=%s prev=%s",
                 mWallpaperTarget, mPrevWallpaperTarget);
+        Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
     }
 
     boolean processWallpaperDrawPendingTimeout() {
