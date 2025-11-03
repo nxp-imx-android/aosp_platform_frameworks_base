@@ -132,7 +132,7 @@ class AppCompatDisplayCompatModePolicy {
         }
         mDisplayChangedWithoutRestart = true;
 
-        if (android.companion.virtualdevice.flags.Flags.computerControlConfigChangeOverride()) {
+        if (android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
             VirtualDeviceManagerInternal vdmInternal =
                     LocalServices.getService(VirtualDeviceManagerInternal.class);
             if (vdmInternal != null) {
@@ -252,7 +252,7 @@ class AppCompatDisplayCompatModePolicy {
     }
 
     private int getComputerControlDisplayCompatModeConfigMask() {
-        if (!android.companion.virtualdevice.flags.Flags.computerControlConfigChangeOverride()) {
+        if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
             return 0;
         }
 
