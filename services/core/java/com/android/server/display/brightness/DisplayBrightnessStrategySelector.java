@@ -129,12 +129,7 @@ public class DisplayBrightnessStrategySelector {
         mAutomaticBrightnessStrategy = injector.getAutomaticBrightnessStrategy(context, displayId,
                                 mDisplayManagerFlags);
         mAutoBrightnessFallbackStrategy = injector.getAutoBrightnessFallbackStrategy();
-        if (flags.isDisplayOffloadEnabled()) {
-            mOffloadBrightnessStrategy = injector
-                    .getOffloadBrightnessStrategy(mDisplayManagerFlags);
-        } else {
-            mOffloadBrightnessStrategy = null;
-        }
+        mOffloadBrightnessStrategy = injector.getOffloadBrightnessStrategy(mDisplayManagerFlags);
         mFallbackBrightnessStrategy = injector.getFallbackBrightnessStrategy();
         mDisplayBrightnessStrategies = new DisplayBrightnessStrategy[]{mInvalidBrightnessStrategy,
                 mScreenOffBrightnessStrategy, mDozeBrightnessStrategy, mFollowerBrightnessStrategy,
@@ -284,8 +279,7 @@ public class DisplayBrightnessStrategySelector {
             DisplayManagerInternal.DisplayOffloadSession displayOffloadSession,
             boolean useNormalBrightnessForDoze) {
         mAllowAutoBrightnessWhileDozing = mAllowAutoBrightnessWhileDozingConfig;
-        if (!useNormalBrightnessForDoze && mDisplayManagerFlags.isDisplayOffloadEnabled()
-                && displayOffloadSession != null) {
+        if (!useNormalBrightnessForDoze && displayOffloadSession != null) {
             mAllowAutoBrightnessWhileDozing &= displayOffloadSession.allowAutoBrightnessInDoze();
         }
     }

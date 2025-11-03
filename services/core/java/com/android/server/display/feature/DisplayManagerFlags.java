@@ -41,10 +41,6 @@ public class DisplayManagerFlags {
     // 'adb shell setprop persist.log.tag.DisplayManagerFlags DEBUG && adb reboot'
     private static final boolean DEBUG = DebugUtils.isDebuggable(TAG);
 
-    private final FlagState mDisplayOffloadFlagState = new FlagState(
-            Flags.FLAG_ENABLE_DISPLAY_OFFLOAD,
-            Flags::enableDisplayOffload);
-
     private final FlagState mDisplayTopology = new FlagState(
             Flags.FLAG_DISPLAY_TOPOLOGY,
             DesktopExperienceFlags.DISPLAY_TOPOLOGY::isTrue);
@@ -219,11 +215,6 @@ public class DisplayManagerFlags {
 
     public boolean isDisplayTopologyEnabled() {
         return mDisplayTopology.isEnabled();
-    }
-
-    /** Returns whether displayoffload is enabled on not */
-    public boolean isDisplayOffloadEnabled() {
-        return mDisplayOffloadFlagState.isEnabled();
     }
 
     public boolean isSyncedResolutionSwitchEnabled() {
@@ -413,7 +404,6 @@ public class DisplayManagerFlags {
     public void dump(PrintWriter pw) {
         pw.println("DisplayManagerFlags:");
         pw.println("--------------------");
-        pw.println(" " + mDisplayOffloadFlagState);
         pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
