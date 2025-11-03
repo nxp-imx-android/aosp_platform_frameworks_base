@@ -7266,10 +7266,11 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public List<DynamicBundle> getDynamicBundles(INotificationListener token) {
+        public List<DynamicBundle> getDynamicBundles(INotificationListener token, UserHandle user) {
             if (token == null) {
                 checkCallerIsSystemOrSystemUiOrShell();
             } else {
+                user = Binder.getCallingUserHandle();
                 final long identity = Binder.clearCallingIdentity();
                 try {
                     synchronized (mNotificationLock) {
@@ -7279,8 +7280,7 @@ public class NotificationManagerService extends SystemService {
                     Binder.restoreCallingIdentity(identity);
                 }
             }
-            return new ArrayList<>(mAssistants.getDynamicBundles(
-                    Binder.getCallingUserHandle().getIdentifier()));
+            return new ArrayList<>(mAssistants.getDynamicBundles(user.getIdentifier()));
         }
 
         @Override

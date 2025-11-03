@@ -35,6 +35,7 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
         BundleRepository(
             titleText = spec.titleText,
             bundleIcon = spec.icon,
+            summaryTextRes = spec.summaryTextRes,
             summaryText = spec.summaryText,
             bundleType = spec.bundleType,
         )

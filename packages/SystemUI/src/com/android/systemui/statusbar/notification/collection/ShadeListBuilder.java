@@ -73,6 +73,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CollectionReadyForBuildListener;
+import com.android.systemui.statusbar.notification.shared.NmContextualDisplay;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt;
 import com.android.systemui.util.Assert;
@@ -810,6 +811,15 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             }
         }
         // Add all BundleEntries to the list. They will be pruned later if they are empty.
+        if (NmContextualDisplay.isEnabled()) {
+            // maybe sure we pick up new dynamic bundles if they'd been added since the last run
+            final List<BundleSpec> allBundleSpecs = mNotifBundler.getBundleSpecs();
+            for (BundleSpec bundleSpec : allBundleSpecs) {
+                if (!mIdToBundleEntry.containsKey(bundleSpec.getKey())) {
+                    mIdToBundleEntry.put(bundleSpec.getKey(), new BundleEntry(bundleSpec));
+                }
+            }
+        }
         final Collection<BundleEntry> allBundles = mIdToBundleEntry.values();
         for (final BundleEntry bundle : allBundles) {
             bundle.setParent(ROOT_ENTRY);
