@@ -729,7 +729,7 @@ public final class EmergencyNumber implements Parcelable, Comparable<EmergencyNu
             for (int j = 0; j < i; j++) {
                 if (areSameEmergencyNumbers(emergencyNumberList.get(i),
                         emergencyNumberList.get(j), mergeServiceCategoriesAndUrns)) {
-                    Rlog.e(LOG_TAG, "Found unexpected duplicate numbers "
+                    Rlog.d(LOG_TAG, "Found unexpected duplicate numbers "
                             + emergencyNumberList.get(i)
                             + " vs " + emergencyNumberList.get(j));
                     // Set the merged emergency number in the current position
