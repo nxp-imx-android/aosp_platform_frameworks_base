@@ -16,25 +16,31 @@
 
 package com.android.systemui.globalactions.domain.interactor
 
+import android.content.pm.UserInfo
+import android.os.UserManager
+import android.os.userManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.kosmos.testScope
-import com.android.systemui.testKosmos
+import com.android.systemui.globalactions.globalActionsManager
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.testKosmosNew
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class GlobalActionsInteractorTest : SysuiTestCase() {
     private lateinit var underTest: GlobalActionsInteractor
-    private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
+    private val kosmos = testKosmosNew()
 
     @Before
     fun setup() {
@@ -43,10 +49,9 @@ class GlobalActionsInteractorTest : SysuiTestCase() {
 
     @Test
     fun OnDismissed() {
-        testScope.runTest {
+        kosmos.runTest {
             val isVisible by collectLastValue(underTest.isVisible)
             underTest.onDismissed()
-            runCurrent()
 
             assertThat(isVisible).isFalse()
         }
@@ -54,12 +59,67 @@ class GlobalActionsInteractorTest : SysuiTestCase() {
 
     @Test
     fun OnShown() {
-        testScope.runTest {
+        kosmos.runTest {
             val isVisible by collectLastValue(underTest.isVisible)
             underTest.onShown()
-            runCurrent()
 
             assertThat(isVisible).isTrue()
         }
     }
+
+    @Test
+    fun shutdown() =
+        kosmos.runTest {
+            underTest.shutdown()
+
+            verify(globalActionsManager).shutdown()
+        }
+
+    @Test
+    fun reboot_noSafeMode() =
+        kosmos.runTest {
+            underTest.reboot(false)
+
+            verify(globalActionsManager).reboot(false)
+        }
+
+    @Test
+    fun reboot_safeMode_allowed() =
+        kosmos.runTest {
+            val user = UserInfo(10, "Test", 0)
+            fakeUserRepository.setUserInfos(listOf(user))
+            fakeUserRepository.setSelectedUserInfo(user)
+            whenever(
+                    userManager.hasUserRestrictionForUser(
+                        UserManager.DISALLOW_SAFE_BOOT,
+                        user.userHandle,
+                    )
+                )
+                .thenReturn(false)
+
+            val result = underTest.reboot(true)
+
+            assertThat(result).isTrue()
+            verify(globalActionsManager).reboot(true)
+        }
+
+    @Test
+    fun reboot_safeMode_disallowed() =
+        kosmos.runTest {
+            val user = UserInfo(10, "Test", 0)
+            fakeUserRepository.setUserInfos(listOf(user))
+            fakeUserRepository.setSelectedUserInfo(user)
+            whenever(
+                    userManager.hasUserRestrictionForUser(
+                        UserManager.DISALLOW_SAFE_BOOT,
+                        user.userHandle,
+                    )
+                )
+                .thenReturn(true)
+
+            val result = underTest.reboot(true)
+
+            assertThat(result).isFalse()
+            verify(globalActionsManager, never()).reboot(any())
+        }
 }
