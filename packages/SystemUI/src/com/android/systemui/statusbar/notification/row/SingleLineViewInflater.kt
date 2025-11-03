@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.row
 
-import android.app.Flags
 import android.app.Notification
 import android.app.Notification.MessagingStyle
 import android.app.Person
@@ -190,7 +189,7 @@ object SingleLineViewInflater {
         val senderName =
             systemUiContext.resources.getString(
                 R.string.conversation_single_line_name_display,
-                if (Flags.cleanUpSpansAndNewLines()) name?.toString() else name,
+                name?.toString(), // Drop any spans
             )
 
         // We need to find back-up values for those texts if they are needed and empty
