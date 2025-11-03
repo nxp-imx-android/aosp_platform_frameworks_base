@@ -925,7 +925,6 @@ public final class PhoneAccount implements Parcelable {
          * {@link PhoneAccount}s registered by this package.
          * @return The Builder used to set up the new PhoneAccount.
          */
-        @FlaggedApi(Flags.FLAG_SIMULTANEOUS_CALLING_INDICATIONS)
         public @NonNull Builder setSimultaneousCallingRestriction(
                 @NonNull Set<PhoneAccountHandle> handles) {
             if (handles == null) {
@@ -944,7 +943,6 @@ public final class PhoneAccount implements Parcelable {
          * @return The Builder used to set up the new PhoneAccount.
          * @see #setSimultaneousCallingRestriction(Set)
          */
-        @FlaggedApi(Flags.FLAG_SIMULTANEOUS_CALLING_INDICATIONS)
         public @NonNull Builder clearSimultaneousCallingRestriction() {
             mSimultaneousCallingRestriction = null;
             return this;
@@ -1237,7 +1235,6 @@ public final class PhoneAccount implements Parcelable {
      * and this method is called. Whether or not there is a restriction can be checked using
      * {@link #hasSimultaneousCallingRestriction()}.
      */
-    @FlaggedApi(Flags.FLAG_SIMULTANEOUS_CALLING_INDICATIONS)
     public @NonNull Set<PhoneAccountHandle> getSimultaneousCallingRestriction() {
         if (mSimultaneousCallingRestriction == null) {
             throw new IllegalStateException("This method can not be called if there is no "
@@ -1255,7 +1252,6 @@ public final class PhoneAccount implements Parcelable {
      * @see #getSimultaneousCallingRestriction() for more information on how the sinultaneous
      * calling restriction works.
      */
-    @FlaggedApi(Flags.FLAG_SIMULTANEOUS_CALLING_INDICATIONS)
     public boolean hasSimultaneousCallingRestriction() {
         return mSimultaneousCallingRestriction != null;
     }

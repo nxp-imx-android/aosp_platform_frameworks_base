@@ -645,7 +645,6 @@ public class TelephonyCallback {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SIMULTANEOUS_CALLING_INDICATIONS)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @SystemApi
     public static final int EVENT_SIMULTANEOUS_CELLULAR_CALLING_SUBSCRIPTIONS_CHANGED = 41;
@@ -1496,7 +1495,6 @@ public class TelephonyCallback {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SIMULTANEOUS_CALLING_INDICATIONS)
     @SystemApi
     public interface SimultaneousCellularCallingSupportListener {
         /**
