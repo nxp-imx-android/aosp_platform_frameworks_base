@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.ui
 
+import android.content.applicationContext
 import android.view.Display
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
@@ -36,6 +37,7 @@ val Kosmos.screenCaptureUiFactory by
         object : ScreenCaptureUi.Factory {
             override fun create(display: Display, type: ScreenCaptureType): ScreenCaptureUi =
                 ScreenCaptureUi(
+                    appContext = applicationContext,
                     display = display,
                     type = type,
                     viewModelFactory = screenCaptureUiViewModelFactory,
