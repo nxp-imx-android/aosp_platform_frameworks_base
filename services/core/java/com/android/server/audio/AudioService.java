@@ -80,7 +80,6 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import static com.android.media.audio.Flags.absVolumePrioritizesAbsDevice;
 import static com.android.media.audio.Flags.absVolumeStreamAlwaysMax;
 import static com.android.media.audio.Flags.alarmMinVolumeZero;
-import static com.android.media.audio.Flags.asDeviceConnectionFailure;
 import static com.android.media.audio.Flags.audioStreamBtScoCleanup;
 import static com.android.media.audio.Flags.deferWearPermissionUpdates;
 import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
@@ -5624,8 +5623,6 @@ public class AudioService extends IAudioService.Stub
     }
 
     private void dumpFlags(PrintWriter pw) {
-        pw.println("\tcom.android.media.audio.as_device_connection_failure:"
-                + asDeviceConnectionFailure());
         pw.println("\tandroid.media.audio.assistant_volume_control:"
                 + assistantVolumeControl());
         pw.println("\tandroid.media.audio.autoPublicVolumeApiHardening:"
