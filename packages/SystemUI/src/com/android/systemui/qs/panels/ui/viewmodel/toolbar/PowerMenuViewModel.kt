@@ -21,6 +21,7 @@ import com.android.systemui.globalactions.ui.viewmodel.GlobalActionUiState
 import com.android.systemui.globalactions.ui.viewmodel.GlobalActionViewModel
 import com.android.systemui.globalactions.ui.viewmodel.LockGlobalActionViewModel
 import com.android.systemui.globalactions.ui.viewmodel.LogoutGlobalActionViewModel
+import com.android.systemui.globalactions.ui.viewmodel.ShutdownGlobalActionViewModel
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
@@ -41,6 +42,7 @@ class PowerMenuViewModel
 constructor(
     lockFactory: LockGlobalActionViewModel.Factory,
     logoutFactory: LogoutGlobalActionViewModel.Factory,
+    shutdownFactory: ShutdownGlobalActionViewModel.Factory,
     interactor: GlobalActionsInteractor,
     @PowerMenuLog logBuffer: LogBuffer,
 ) : HydratedActivatable() {
@@ -52,7 +54,7 @@ constructor(
      * order.. The Power Menu has a fixed ordering of actions that should not be changed.
      */
     private val actions: List<GlobalActionViewModel> =
-        listOf(lockFactory.create(), logoutFactory.create())
+        listOf(lockFactory.create(), logoutFactory.create(), shutdownFactory.create())
 
     /**
      * The list of global actions that are currently available to be displayed to the user. The

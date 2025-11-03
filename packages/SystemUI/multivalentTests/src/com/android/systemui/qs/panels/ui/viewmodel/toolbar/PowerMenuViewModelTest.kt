@@ -124,6 +124,16 @@ class PowerMenuViewModelTest : SysuiTestCase() {
             assertThat(underTest.items.map { it.key }).contains(GlobalActionType.LOGOUT)
         }
 
+    @Test
+    fun items_shutdownEnabled_containsShutdownAction() =
+        kosmos.runTest {
+            // GIVEN shutdown is possible
+            globalActionsRepository.possibleGlobalActions = listOf(GlobalActionType.POWER)
+
+            // THEN items contains the shutdown action
+            assertThat(underTest.items.map { it.key }).contains(GlobalActionType.POWER)
+        }
+
     private fun Kosmos.setUnlocked(isUnlocked: Boolean) {
         fakeDeviceEntryRepository.deviceUnlockStatus.value =
             DeviceUnlockStatus(isUnlocked = isUnlocked, deviceUnlockSource = null)
