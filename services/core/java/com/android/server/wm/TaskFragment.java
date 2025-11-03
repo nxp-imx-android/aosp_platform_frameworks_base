@@ -1561,8 +1561,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             return false;
         }
 
-        next.delayedResume = false;
-
         if (!skipPause && !mRootWindowContainer.allPausedActivitiesComplete()) {
             // If we aren't skipping pause, then we have to wait for currently pausing activities.
             ProtoLog.v(WM_DEBUG_STATES, "resumeTopActivity: Skip resume: some activity pausing.");
