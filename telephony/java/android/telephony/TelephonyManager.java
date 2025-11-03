@@ -6205,7 +6205,6 @@ public class TelephonyManager {
      * @throws SecurityException if the caller does not have the required permission/privileges
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SUPPORT_ISIM_RECORD)
     @SystemApi
     @RequiresPermission(android.Manifest.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
@@ -6296,7 +6295,6 @@ public class TelephonyManager {
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SUPPORT_ISIM_RECORD)
     @SystemApi
     @RequiresPermission(value = Manifest.permission.READ_PRIVILEGED_PHONE_STATE, conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
@@ -8553,7 +8551,6 @@ public class TelephonyManager {
      * @deprecated use {@link #getImsPcscfAddresses()} instead.
      */
     @Deprecated
-    @FlaggedApi(Flags.FLAG_SUPPORT_ISIM_RECORD)
     @UnsupportedAppUsage
     public String[] getIsimPcscf() {
         try {
@@ -8579,7 +8576,6 @@ public class TelephonyManager {
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SUPPORT_ISIM_RECORD)
     @SystemApi
     @RequiresPermission(value = Manifest.permission.READ_PRIVILEGED_PHONE_STATE, conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
@@ -8905,7 +8901,6 @@ public class TelephonyManager {
      * @deprecated Use {@link #getSimServiceTable(int, Executor, OutcomeReceiver)} instead.
      */
     @Deprecated
-    @FlaggedApi(Flags.FLAG_SUPPORT_ISIM_RECORD)
     @Nullable
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
@@ -8941,7 +8936,6 @@ public class TelephonyManager {
      * @param callback callback object to which the result will be delivered.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SUPPORT_ISIM_RECORD)
     @SystemApi
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
