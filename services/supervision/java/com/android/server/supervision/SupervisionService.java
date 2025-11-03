@@ -37,6 +37,7 @@ import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.role.OnRoleHoldersChangedListener;
@@ -61,6 +62,7 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.content.pm.UserInfo;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PersistableBundle;
@@ -114,6 +116,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @VisibleForTesting
     static final String ACTION_CONFIRM_SUPERVISION_CREDENTIALS =
             "android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS";
+
+    @VisibleForTesting static final String SETTINGS_PACKAGE_NAME = "com.android.settings";
 
     @VisibleForTesting
     static final List<String> SYSTEM_ENTITIES =
@@ -227,7 +231,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
         final Intent intent = new Intent(ACTION_CONFIRM_SUPERVISION_CREDENTIALS);
         // explicitly set the package for security
-        intent.setPackage("com.android.settings");
+        intent.setPackage(SETTINGS_PACKAGE_NAME);
 
         return intent;
     }
@@ -523,8 +527,19 @@ public class SupervisionService extends ISupervisionManager.Stub {
                                 : R.string.supervision_unblocked_app_content,
                         appLabel);
 
-        Notification notification =
-                new Notification.Builder(mInjector.context, SystemNotificationChannels.DEVICE_ADMIN)
+        final Intent intent =
+                hidden
+                        ? new Intent(Settings.ACTION_SUPERVISION_SETTINGS)
+                                .setPackage(SETTINGS_PACKAGE_NAME)
+                        : mInjector.getPackageManager().getLaunchIntentForPackage(packageName);
+
+        final Bundle extras = new Bundle();
+        extras.putString(
+                Notification.EXTRA_SUBSTITUTE_APP_NAME,
+                mInjector.context.getString(R.string.notification_channel_parental_controls));
+        final Notification notification =
+                new Notification.Builder(
+                                mInjector.context, SystemNotificationChannels.PARENTAL_CONTROLS)
                         .setSmallIcon(R.drawable.ic_account_child_invert)
                         .setTicker(title)
                         .setColor(
@@ -532,11 +547,26 @@ public class SupervisionService extends ISupervisionManager.Stub {
                                         R.color.system_notification_accent_color))
                         .setContentTitle(title)
                         .setContentText(text)
+                        .setContentIntent(createActivityPendingIntent(intent, userId))
+                        .setExtras(extras)
                         .build();
         mInjector
                 .getNotificationManager()
                 .notifyAsUser(
                         /* tag= */ packageName, /* id= */ 0, notification, UserHandle.of(userId));
+    }
+
+    private PendingIntent createActivityPendingIntent(Intent intent, int userId) {
+        if (intent == null) {
+            return null;
+        }
+        return PendingIntent.getActivityAsUser(
+                mInjector.context,
+                /* requestCode= */ 0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE,
+                /* options= */ null,
+                UserHandle.of(userId));
     }
 
     /**

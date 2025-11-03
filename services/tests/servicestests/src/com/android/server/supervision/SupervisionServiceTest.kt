@@ -21,6 +21,7 @@ import android.app.Activity
 import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManagerInternal
 import android.app.role.OnRoleHoldersChangedListener
@@ -79,6 +80,7 @@ import com.android.server.appbinding.AppServiceConnection
 import com.android.server.appbinding.finders.SupervisionAppServiceFinder
 import com.android.server.pm.UserManagerInternal
 import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
+import com.android.server.supervision.SupervisionService.SETTINGS_PACKAGE_NAME
 import com.android.server.supervision.SupervisionUserData.PolicyData
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -606,7 +608,7 @@ class SupervisionServiceTest {
         val intent =
             checkNotNull(service.createConfirmSupervisionCredentialsIntent(context.getUserId()))
         assertThat(intent.getAction()).isEqualTo(ACTION_CONFIRM_SUPERVISION_CREDENTIALS)
-        assertThat(intent.getPackage()).isEqualTo("com.android.settings")
+        assertThat(intent.getPackage()).isEqualTo(SETTINGS_PACKAGE_NAME)
     }
 
     @Test
@@ -1019,7 +1021,11 @@ class SupervisionServiceTest {
         simulatePackageDisappeared(PACKAGE_NAME, USER_ID)
 
         // A notification is sent since the app is hidden.
-        verifyApplicationHiddenNotification(PACKAGE_NAME, hidden = true)
+        verifyApplicationHiddenNotification(
+            PACKAGE_NAME,
+            hidden = true,
+            expectedIntent = getSupervisionSettingsIntent(),
+        )
     }
 
     @Test
@@ -1045,6 +1051,7 @@ class SupervisionServiceTest {
     fun setPolicy_packagePolicyUnblocked_sendsNotification() {
         // The app will not be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = false)
+        val launchIntent = mockPackageLaunchIntent(PACKAGE_NAME)
 
         // The policy is set to unblocked.
         setAndVerifyPackageBlockedPolicy(enabled = false)
@@ -1052,7 +1059,26 @@ class SupervisionServiceTest {
         simulatePackageAppeared(PACKAGE_NAME, USER_ID)
 
         // A notification is sent since the app is unhidden.
-        verifyApplicationHiddenNotification(PACKAGE_NAME, hidden = false)
+        verifyApplicationHiddenNotification(
+            PACKAGE_NAME,
+            hidden = false,
+            expectedIntent = launchIntent,
+        )
+    }
+
+    @Test
+    fun setPolicy_packagePolicyUnblocked_noAppIntent_notificationHasNoIntent() {
+        // The app will not be hidden after the policy is set.
+        setApplicationHiddenSetting(PACKAGE_NAME, hidden = false)
+        mockPackageLaunchIntent(PACKAGE_NAME, launchIntent = null)
+
+        // The policy is set to unblocked.
+        setAndVerifyPackageBlockedPolicy(enabled = false)
+        // After the policy is set, the app is unhidden.
+        simulatePackageAppeared(PACKAGE_NAME, USER_ID)
+
+        // A notification is sent since the app is unhidden.
+        verifyApplicationHiddenNotification(PACKAGE_NAME, hidden = false, expectedIntent = null)
     }
 
     @Test
@@ -1177,7 +1203,11 @@ class SupervisionServiceTest {
         return policy
     }
 
-    private fun verifyApplicationHiddenNotification(packageName: String, hidden: Boolean) {
+    private fun verifyApplicationHiddenNotification(
+        packageName: String,
+        hidden: Boolean,
+        expectedIntent: Intent?,
+    ) {
         val notificationCaptor = argumentCaptor<Notification>()
         verify(mockNotificationManager)
             .notifyAsUser(
@@ -1187,6 +1217,10 @@ class SupervisionServiceTest {
                 eq(UserHandle.of(USER_ID)),
             )
         val notification = notificationCaptor.firstValue
+        assertThat(notification.channelId)
+            .isEqualTo(
+                com.android.internal.notification.SystemNotificationChannels.PARENTAL_CONTROLS
+            )
         assertThat(notification.extras.getString(Notification.EXTRA_TITLE))
             .isEqualTo(context.getString(R.string.supervision_blocked_app_title))
         val expectedText =
@@ -1196,6 +1230,35 @@ class SupervisionServiceTest {
                 context.getString(R.string.supervision_unblocked_app_content, "Test App")
             }
         assertThat(notification.extras.getString(Notification.EXTRA_TEXT)).isEqualTo(expectedText)
+        assertThat(notification.extras.getString(Notification.EXTRA_SUBSTITUTE_APP_NAME))
+            .isEqualTo(context.getString(R.string.notification_channel_parental_controls))
+
+        if (expectedIntent == null) {
+            assertThat(notification.contentIntent).isNull()
+        } else {
+            val expectedPendingIntent =
+                PendingIntent.getActivityAsUser(
+                    context,
+                    0,
+                    expectedIntent,
+                    PendingIntent.FLAG_IMMUTABLE,
+                    null,
+                    UserHandle.of(USER_ID),
+                )
+            assertThat(notification.contentIntent).isEqualTo(expectedPendingIntent)
+        }
+    }
+
+    private fun mockPackageLaunchIntent(
+        packageName: String,
+        launchIntent: Intent? = Intent("android.intent.action.MAIN").setPackage(packageName),
+    ): Intent? {
+        whenever(mockPackageManager.getLaunchIntentForPackage(packageName)).thenReturn(launchIntent)
+        return launchIntent
+    }
+
+    private fun getSupervisionSettingsIntent(): Intent {
+        return Intent(Settings.ACTION_SUPERVISION_SETTINGS).setPackage(SETTINGS_PACKAGE_NAME)
     }
 
     private fun simulatePackageAppeared(packageName: String, userId: Int) {
