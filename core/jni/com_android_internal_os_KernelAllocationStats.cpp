@@ -164,6 +164,25 @@ static jobjectArray KernelAllocationStats_getDmabufAllocations(JNIEnv *env, jobj
     return ret;
 }
 
+static jint KernelAllocationStats_getDmabufSizeForProcessKb(JNIEnv* /* env */, jobject, jint pid) {
+    android::dmabufinfo::DmabufPerBufferStats stats;
+    if (!GetDmabufPerBufferStats(stats)) {
+        return -1;
+    }
+
+    std::vector<DmaBuffer> buffers;
+    if (!android::dmabufinfo::ReadDmaBufInfo(pid, buffers, stats)) {
+        return -1;
+    }
+
+    long totalSize = 0;
+    for (const auto& buffer : buffers) {
+        totalSize += buffer.size();
+    }
+
+    return totalSize / 1024;
+}
+
 static jobject KernelAllocationStats_getGpuAllocations(JNIEnv *env) {
     std::unordered_map<uint32_t, uint64_t> out;
     meminfo::ReadPerProcessGpuMem(&out);
@@ -186,6 +205,8 @@ static jobject KernelAllocationStats_getGpuAllocations(JNIEnv *env) {
 static const JNINativeMethod methods[] = {
         {"getDmabufAllocations", "()[Lcom/android/internal/os/KernelAllocationStats$ProcessDmabuf;",
          (void *)KernelAllocationStats_getDmabufAllocations},
+        {"getDmabufSizeForProcessKb", "(I)I",
+         (void *)KernelAllocationStats_getDmabufSizeForProcessKb},
         {"getGpuAllocations", "()[Lcom/android/internal/os/KernelAllocationStats$ProcessGpuMem;",
          (void *)KernelAllocationStats_getGpuAllocations},
 };
