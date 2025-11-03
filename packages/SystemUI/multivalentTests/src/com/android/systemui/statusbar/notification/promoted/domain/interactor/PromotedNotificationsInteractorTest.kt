@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.notification.promoted.domain.interactor
 
 import android.app.Notification.FLAG_FOREGROUND_SERVICE
 import android.app.Notification.FLAG_ONGOING_EVENT
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -34,7 +33,6 @@ import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildOngoingCallEntry
 import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
@@ -52,7 +50,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(StatusBarRootModernization.FLAG_NAME)
 class PromotedNotificationsInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

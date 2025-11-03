@@ -46,7 +46,6 @@ import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
@@ -1117,7 +1116,6 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 addAll(
                     FlagsParameterization.allCombinationsOf(
                         StatusBarCallChipUseIsHidden.FLAG_NAME,
-                        StatusBarRootModernization.FLAG_NAME,
                         StatusBarChipsReturnAnimations.FLAG_NAME,
                     )
                 )

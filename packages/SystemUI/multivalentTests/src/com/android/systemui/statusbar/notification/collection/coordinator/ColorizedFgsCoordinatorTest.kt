@@ -23,7 +23,6 @@ import android.app.PendingIntent
 import android.app.Person
 import android.content.Intent
 import android.graphics.Color
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -37,7 +36,6 @@ import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionR
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.collection.buildEntry
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildOngoingCallEntry
@@ -241,7 +239,6 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME)
     fun comparatorPutsCallBeforeOther() =
         kosmos.runTest {
             // GIVEN a call and a promoted ongoing notification

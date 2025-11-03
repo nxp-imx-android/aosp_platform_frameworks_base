@@ -35,7 +35,6 @@ import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.MobileIconCarrierIdOverridesFake
 import com.android.systemui.statusbar.core.NewStatusBarIcons
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
@@ -845,7 +844,7 @@ class MobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun netTypeBackground_notNullWhenPrioritizedCapabilities_newIcons() =
         testScope.runTest {
             createAndSetViewModel()
@@ -859,7 +858,7 @@ class MobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @DisableFlags(NewStatusBarIcons.FLAG_NAME)
     fun netTypeBackground_notNullWhenPrioritizedCapabilities_oldIcons() =
         testScope.runTest {
             createAndSetViewModel()

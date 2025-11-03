@@ -30,13 +30,10 @@ object RudimentaryBattery {
     /** Aconfig flag for percent-outside-battery */
     const val FLAG_NAME = Flags.FLAG_STATUS_BAR_RUDIMENTARY_BATTERY
 
-    /** Is the refactor enabled. Dependency on [StatusBarRootModernization] */
+    /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() =
-            Flags.statusBarRudimentaryBattery() &&
-                StatusBarRootModernization.isEnabled &&
-                NewStatusBarIcons.isEnabled
+        get() = Flags.statusBarRudimentaryBattery() && NewStatusBarIcons.isEnabled
 
     /** A token used for dependency declaration */
     val token: FlagToken

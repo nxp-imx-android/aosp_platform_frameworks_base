@@ -19,8 +19,6 @@ package com.android.systemui.statusbar.window
 import android.content.testableContext
 import android.view.fakeWindowManager
 import android.view.windowManagerService
-import com.android.systemui.concurrency.fakeExecutor
-import com.android.systemui.fragments.fragmentService
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.statusbar.layout.statusBarContentInsetsProvider
@@ -40,9 +38,7 @@ val Kosmos.statusBarWindowControllerImpl by
             mockStatusBarConfigurationController,
             windowManagerService,
             statusBarContentInsetsProvider,
-            fragmentService,
             Optional.empty(),
-            fakeExecutor,
             logcatLogBuffer(name = "StatusBarWindowControllerImpl"),
             statusBarWindowControllerImplDisplayId,
         )

@@ -31,7 +31,6 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.statusbar.connectivity.ui.mobileContextProvider
 import com.android.systemui.statusbar.core.NewStatusBarIcons
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
@@ -69,7 +68,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun dualSim_filtersOutNonDualConnections() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf()
@@ -86,7 +85,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun dualSim_filtersOutNonCellularIcons() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1)
@@ -105,7 +104,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun dualSim_tracksActiveSubId() =
         kosmos.runTest {
             // Active sub id is null, order is unchanged
@@ -124,7 +123,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun contentDescription_requiresBothIcons() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf()
@@ -141,7 +140,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun contentDescription_tracksBars() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
@@ -160,7 +159,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun contentDescription_hasActiveIconFirst() =
         kosmos.runTest {
             // Active sub id is null, order is unchanged
@@ -179,7 +178,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun contentDescription_tracksVisibility() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
@@ -190,7 +189,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun mobileContext_tracksConnections() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf()
@@ -201,7 +200,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun mobileContext_tracksPrimaryConnection() =
         kosmos.runTest {
             val contextSub1 = mock(Context::class.java)
@@ -219,7 +218,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun roaming_primaryConnectionIsRoaming_true() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
@@ -232,7 +231,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun roaming_secondaryConnectionIsRoaming_false() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
@@ -245,7 +244,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun activityInVisible_tracksPrimaryConnection() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
@@ -279,7 +278,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun activityOutVisible_tracksPrimaryConnection() =
         kosmos.runTest {
             fakeMobileIconsInteractor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
