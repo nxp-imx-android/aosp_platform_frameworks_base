@@ -6393,4 +6393,7 @@
 
   <!-- The location button render service component name -->
   <java-symbol type="string" name="config_locationButtonRenderService" />
+
+  <!-- Whether user information setup is enabled in SuW. -->
+  <java-symbol type="bool" name="config_enableUserInfoSetupInSuw" />
 </resources>
