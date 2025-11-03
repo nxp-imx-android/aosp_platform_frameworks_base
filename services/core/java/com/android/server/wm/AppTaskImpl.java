@@ -510,45 +510,4 @@ class AppTaskImpl extends IAppTask.Stub {
             }
         }, WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS);
     }
-
-    /**
-     * {@link IRemoteCallback} decorator to observe whether base callback was called.
-     */
-    private static final class ObservedRemoteCallback extends IRemoteCallback.Stub {
-
-        private boolean mAnyResultSent = false;
-        private final IRemoteCallback mCallback;
-
-        private ObservedRemoteCallback(IRemoteCallback callback) {
-            mCallback = callback;
-        }
-
-        /**
-         * Sends a {@code data} as a fallback callback execution, only if callback was not already
-         * invoked, otherwise it's a no-op.
-         *
-         * @param onFallback executed if fallback is actually triggered
-         */
-        void sendFallbackResult(Bundle data, Runnable onFallback) throws RemoteException {
-            synchronized (this) {
-                if (!mAnyResultSent) {
-                    onFallback.run();
-                    sendResult(data);
-                }
-            }
-        }
-
-        @Override
-        public void sendResult(Bundle data) throws RemoteException {
-            synchronized (this) {
-                if (mAnyResultSent) {
-                    Slog.w(TAG, "Attempted to invoke callback more than once. Skipping sending"
-                            + " result with bundle=" + data);
-                    return;
-                }
-                mAnyResultSent = true;
-                mCallback.sendResult(data);
-            }
-        }
-    }
 }
