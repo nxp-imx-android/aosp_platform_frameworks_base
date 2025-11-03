@@ -299,7 +299,7 @@ public final class MessageQueue {
      * Call after {@link #incrementMptrRefs()} to release the ref on mPtr.
      */
     private void decrementMptrRefs() {
-        long oldVal = (long) sMptrRefCount.getAndAdd(this, -1);
+        long oldVal = (long) sMptrRefCount.getAndAdd(this, -1L);
         // If quitting and we were the last ref, wake up looper thread
         if (oldVal - 1 == MPTR_TEARDOWN_MASK) {
             LockSupport.unpark(mLooperThread);
