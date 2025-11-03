@@ -24,7 +24,6 @@ import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
-import android.text.TextUtils
 import android.util.Log
 import android.util.Size
 import android.view.NotificationHeaderView
@@ -483,7 +482,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateHeader(content, collapsed = false, null)
         updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
 
-        val hasTitle = !TextUtils.isEmpty(content.title)
+        val hasTitle = !content.title.isNullOrEmpty()
         altTitle?.text = content.title
         altTitle?.isVisible = hasTitle
         appNameTextDivider?.isVisible = altTitle != null && hasTitle
@@ -522,7 +521,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                 }
                 is Metric.Text -> {
                     metricView.textValue?.isVisible = true
-                    metricView.textValue?.let { it.text = metric.metricValue }
+                    metricView.textValue?.text = metric.metricValue
                 }
             }
         }
@@ -533,12 +532,12 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         collapsed: Boolean,
         headerTitleView: TextView?,
     ) {
-        val hasTitleInHeader = headerTitleView != null && content.title != null
-        val hasSubText = content.subText != null
+        val hasTitleInHeader = headerTitleView != null && !content.title.isNullOrEmpty()
+        val hasSubText = !content.subText.isNullOrEmpty()
 
         // Determine if the notification has no content *below* the header/top line
-        val hasTextBelowHeader = content.text != null
-        val hasTitleBelowHeader = content.title != null && headerTitleView == null
+        val hasTextBelowHeader = !content.text.isNullOrEmpty()
+        val hasTitleBelowHeader = !content.title.isNullOrEmpty() && headerTitleView == null
 
         val isSingleLine = !hasTitleBelowHeader && !hasTextBelowHeader
 
@@ -569,9 +568,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         hideAppName: Boolean,
         hideTitle: Boolean,
     ) {
-        val hasAppName = content.appName != null && !hideAppName
-        val hasSubText = content.subText != null
-        val hasHeader = content.title != null && !hideTitle
+        val hasAppName = !content.appName.isNullOrEmpty() && !hideAppName
+        val hasSubText = !content.subText.isNullOrEmpty()
+        val hasHeader = !content.title.isNullOrEmpty() && !hideTitle
         val hasTimeOrChronometer = content.time != null
 
         val hasTextBeforeSubText = hasAppName
@@ -609,8 +608,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         hideTitle: Boolean,
         hideAppName: Boolean,
     ) {
-        val hasTitle = content.title != null && !hideTitle
-        val hasAppName = content.appName != null && !hideAppName
+        val hasTitle = !content.title.isNullOrEmpty() && !hideTitle
+        val hasAppName = !content.appName.isNullOrEmpty() && !hideAppName
         val hasTimeOrChronometer = content.time != null
         val hasVerification =
             !content.verificationIcon.isNullOrEmpty() || content.verificationText != null
