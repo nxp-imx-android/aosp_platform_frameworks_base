@@ -17,7 +17,6 @@
 package com.android.server.audio;
 
 import static com.android.server.utils.EventLogger.Event.ALOGI;
-import static com.android.server.utils.EventLogger.Event.ALOGW;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -28,7 +27,6 @@ import android.media.AudioRecordingConfiguration;
 import android.media.AudioSystem;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.function.TriFunction;
@@ -77,7 +75,7 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
     public synchronized RouteClient removeClient(IBinder token) {
         RouteClient client = null;
         // really Java..
-        for (int i = mClients.size() - 1; i >= 0; i++) {
+        for (int i = mClients.size() - 1; i >= 0; i--) {
             if (mClients.get(i).getToken().equals(token)) {
                 token.unlinkToDeath(this, 0);
                 client = mClients.remove(i);
