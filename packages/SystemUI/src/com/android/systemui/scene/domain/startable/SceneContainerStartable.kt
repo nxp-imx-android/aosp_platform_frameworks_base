@@ -466,6 +466,7 @@ constructor(
                                     )
                         }
                     val isOnLockscreen = renderedScenes.contains(Scenes.Lockscreen)
+                    val isOnShade = renderedScenes.contains(Scenes.Shade)
                     val isAlternateBouncerVisible = alternateBouncerInteractor.isVisibleState()
                     val isOnPrimaryBouncer = Overlays.Bouncer in renderedOverlays
                     if (!deviceUnlockStatus.isUnlocked) {
@@ -598,6 +599,31 @@ constructor(
                                     )
                                 else -> SwitchSceneCommand.NoOp
                             }
+                        isOnShade -> {
+                            val unlockSourceDismissesLockscreen =
+                                deviceUnlockStatus.deviceUnlockSource?.dismissesLockscreen == true
+                            val unlockSourceIsFingerPrint =
+                                deviceUnlockStatus.deviceUnlockSource is
+                                    DeviceUnlockSource.Fingerprint
+                            when {
+                                // This represents the case when the fingerprint will cause the
+                                // device to enter while the shade is expanded.
+                                unlockSourceDismissesLockscreen && unlockSourceIsFingerPrint ->
+                                    SwitchSceneCommand.SwitchToScene(
+                                        targetSceneKey = Scenes.Gone,
+                                        loggingReason =
+                                            "device was entered while in shade by using the" +
+                                                " Fingerprint",
+                                    )
+                                else -> {
+                                    // Remain in the shade but replace the Lockscreen scene from
+                                    // the bottom of the navigation with the Gone scene since the
+                                    // device is unlocked.
+                                    sceneBackInteractor.replaceLockscreenSceneOnBackStack()
+                                    SwitchSceneCommand.NoOp
+                                }
+                            }
+                        }
                         // Not on lockscreen or bouncer, so remain in the current scene but since
                         // unlocked, replace the Lockscreen scene from the bottom of the navigation
                         // back stack with the Gone scene.
