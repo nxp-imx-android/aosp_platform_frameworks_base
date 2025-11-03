@@ -17,7 +17,6 @@
 package android.net.wifi.sharedconnectivity.app;
 
 import android.annotation.CallbackExecutor;
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -35,8 +34,10 @@ import android.net.wifi.sharedconnectivity.service.ISharedConnectivityCallback;
 import android.net.wifi.sharedconnectivity.service.ISharedConnectivityService;
 import android.net.wifi.sharedconnectivity.service.SharedConnectivityService;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.IInterface;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserManager;
 import android.text.TextUtils;
@@ -72,6 +73,8 @@ import java.util.concurrent.Executor;
 public class SharedConnectivityManager {
     private static final String TAG = SharedConnectivityManager.class.getSimpleName();
     private static final boolean DEBUG = false;
+    private static final int RECOVER_MAXIMUM_RETRY_COUNT = 10;
+    private static final long RECOVER_DELAYED_TIME_IN_MS = 10000L;
 
     private static final class SharedConnectivityCallbackProxy extends
             ISharedConnectivityCallback.Stub {
@@ -189,6 +192,11 @@ public class SharedConnectivityManager {
     private final String mIntentAction;
     private ServiceConnection mServiceConnection;
     private UserManager mUserManager;
+    private Handler mMainHandler;
+
+    private int mRetryCredit = RECOVER_MAXIMUM_RETRY_COUNT;
+    // This field is used for reflection during testing, since creating an API needs approval.
+    private long mDelayedTimeInMs = RECOVER_DELAYED_TIME_IN_MS;
 
     /**
      * Creates a new instance of {@link SharedConnectivityManager}.
@@ -235,13 +243,14 @@ public class SharedConnectivityManager {
         mServicePackageName = servicePackageName;
         mIntentAction = serviceIntentAction;
         mUserManager = context.getSystemService(UserManager.class);
+        mMainHandler = new Handler(Looper.getMainLooper());
     }
 
     private void bind() {
         mServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                if (DEBUG) Log.i(TAG, "onServiceConnected");
+                Log.i(TAG, "onServiceConnected");
                 mService = ISharedConnectivityService.Stub.asInterface(service);
                 synchronized (mProxyDataLock) {
                     if (!mCallbackProxyCache.isEmpty()) {
@@ -255,20 +264,21 @@ public class SharedConnectivityManager {
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
-                if (DEBUG) Log.i(TAG, "onServiceDisconnected");
-                mService = null;
+                Log.i(TAG, "onServiceDisconnected");
                 synchronized (mProxyDataLock) {
-                    if (!mCallbackProxyCache.isEmpty()) {
-                        mCallbackProxyCache.values().forEach(
-                                SharedConnectivityCallbackProxy::onServiceDisconnected);
-                        mCallbackProxyCache.clear();
-                    }
                     if (!mProxyMap.isEmpty()) {
                         mProxyMap.values().forEach(
                                 SharedConnectivityCallbackProxy::onServiceDisconnected);
+                        // Since service is disconnected, move callback from mProxyMap
+                        // back to mCallbackProxyCache.
+                        mCallbackProxyCache.putAll(mProxyMap);
                         mProxyMap.clear();
                     }
                 }
+                // When service disconnected, invoke unbind() to clear connection cache.
+                unbind();
+                // Schedule to reconnect to the remote service.
+                scheduleConnect();
             }
         };
 
@@ -276,13 +286,26 @@ public class SharedConnectivityManager {
                 new Intent().setPackage(mServicePackageName).setAction(mIntentAction),
                 mServiceConnection, Context.BIND_AUTO_CREATE);
         if (!result) {
-            if (DEBUG) Log.i(TAG, "bindService failed");
-            mServiceConnection = null;
-            if (mUserManager != null && !mUserManager.isUserUnlocked()) {  // In direct boot mode
+            // No matter what the returned valus is, we should call unbind() to
+            // release the connection.
+            unbind();
+
+            if (mUserManager != null && !mUserManager.isUserUnlocked()) {
+                Log.i(TAG, "bindService failed, register user unlock");
+                // In direct boot mode, register receiver as the trigger point.
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(Intent.ACTION_USER_UNLOCKED);
                 mContext.registerReceiver(mBroadcastReceiver, intentFilter);
             } else {
+                if (mRetryCredit > 0) {
+                    Log.i(TAG, "bindService failed, schedule to retry, mRetryCredit="
+                               + mRetryCredit);
+                    mRetryCredit--;
+                    // Schedule to retry the connection attempt to the remote service.
+                    scheduleConnect();
+                    return;
+                }
+                Log.i(TAG, "bindService failed, no more retry credit");
                 synchronized (mProxyDataLock) {
                     if (!mCallbackProxyCache.isEmpty()) {
                         mCallbackProxyCache.keySet().forEach(
@@ -293,14 +316,39 @@ public class SharedConnectivityManager {
                     }
                 }
             }
+        } else {
+            Log.i(TAG, "bindService success");
+            // Sets to default value when bindService succeed.
+            mRetryCredit = RECOVER_MAXIMUM_RETRY_COUNT;
         }
+    }
+
+    private void scheduleConnect() {
+        if (DEBUG) Log.i(TAG, "scheduleConnect");
+        mMainHandler.postDelayed(
+                () -> {
+                    boolean shouldRebind;
+                    synchronized (mProxyDataLock) {
+                        shouldRebind = !mCallbackProxyCache.isEmpty();
+                    }
+                    Log.i(TAG, "scheduleConnect: shouldRebind=" + shouldRebind);
+                    if (shouldRebind) {
+                        bind();
+                    }
+                },
+                mDelayedTimeInMs);
     }
 
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            context.unregisterReceiver(mBroadcastReceiver);
-            bind();
+            if (Intent.ACTION_USER_UNLOCKED.equals(intent.getAction())) {
+                Log.i(TAG, "onReceive: ACTION_USER_UNLOCKED");
+                context.unregisterReceiver(mBroadcastReceiver);
+                bind();
+            } else {
+                Log.w(TAG, "onReceive: unexpected action, value=" + intent.getAction());
+            }
         }
     };
 
@@ -346,6 +394,7 @@ public class SharedConnectivityManager {
 
     private void unbind() {
         if (mServiceConnection != null) {
+            Log.i(TAG, "unbind");
             mContext.unbindService(mServiceConnection);
             mServiceConnection = null;
             mService = null;
@@ -379,6 +428,7 @@ public class SharedConnectivityManager {
             return;
         }
 
+        Log.i(TAG, "registerCallback: callback=" + callback);
         SharedConnectivityCallbackProxy proxy =
                 new SharedConnectivityCallbackProxy(executor, callback);
         if (mService == null) {
@@ -421,6 +471,7 @@ public class SharedConnectivityManager {
             // This is fine, it means the receiver was never registered or was already unregistered.
         }
 
+        Log.i(TAG, "unregisterCallback: callback=" + callback);
         if (mService == null) {
             boolean shouldUnbind;
             synchronized (mProxyDataLock) {
@@ -465,12 +516,14 @@ public class SharedConnectivityManager {
     public boolean connectHotspotNetwork(@NonNull HotspotNetwork network) {
         Objects.requireNonNull(network, "Hotspot network cannot be null");
 
-        if (mService == null) {
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return false;
         }
 
         try {
-            mService.connectHotspotNetwork(network);
+            if (DEBUG) Log.i(TAG, "connectHotspotNetwork");
+            service.connectHotspotNetwork(network);
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in connectHotspotNetwork", e);
             return false;
@@ -490,12 +543,16 @@ public class SharedConnectivityManager {
     @RequiresPermission(anyOf = {android.Manifest.permission.NETWORK_SETTINGS,
             android.Manifest.permission.NETWORK_SETUP_WIZARD})
     public boolean disconnectHotspotNetwork(@NonNull HotspotNetwork network) {
-        if (mService == null) {
+        Objects.requireNonNull(network, "hotspot network cannot be null");
+
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return false;
         }
 
         try {
-            mService.disconnectHotspotNetwork(network);
+            if (DEBUG) Log.i(TAG, "disconnectHotspotNetwork");
+            service.disconnectHotspotNetwork(network);
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in disconnectHotspotNetwork", e);
             return false;
@@ -517,12 +574,14 @@ public class SharedConnectivityManager {
     public boolean connectKnownNetwork(@NonNull KnownNetwork network) {
         Objects.requireNonNull(network, "Known network cannot be null");
 
-        if (mService == null) {
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return false;
         }
 
         try {
-            mService.connectKnownNetwork(network);
+            if (DEBUG) Log.i(TAG, "connectKnownNetwork");
+            service.connectKnownNetwork(network);
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in connectKnownNetwork", e);
             return false;
@@ -542,12 +601,14 @@ public class SharedConnectivityManager {
     public boolean forgetKnownNetwork(@NonNull KnownNetwork network) {
         Objects.requireNonNull(network, "Known network cannot be null");
 
-        if (mService == null) {
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return false;
         }
 
         try {
-            mService.forgetKnownNetwork(network);
+            if (DEBUG) Log.i(TAG, "forgetKnownNetwork");
+            service.forgetKnownNetwork(network);
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in forgetKnownNetwork", e);
             return false;
@@ -565,12 +626,14 @@ public class SharedConnectivityManager {
     @SuppressWarnings("NullableCollection")
     @Nullable
     public List<HotspotNetwork> getHotspotNetworks() {
-        if (mService == null) {
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return null;
         }
 
         try {
-            return mService.getHotspotNetworks();
+            if (DEBUG) Log.i(TAG, "getHotspotNetworks");
+            return service.getHotspotNetworks();
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in getHotspotNetworks", e);
         }
@@ -587,12 +650,14 @@ public class SharedConnectivityManager {
     @SuppressWarnings("NullableCollection")
     @Nullable
     public List<KnownNetwork> getKnownNetworks() {
-        if (mService == null) {
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return null;
         }
 
         try {
-            return mService.getKnownNetworks();
+            if (DEBUG) Log.i(TAG, "getKnownNetworks");
+            return service.getKnownNetworks();
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in getKnownNetworks", e);
         }
@@ -609,12 +674,14 @@ public class SharedConnectivityManager {
             android.Manifest.permission.NETWORK_SETUP_WIZARD})
     @Nullable
     public SharedConnectivitySettingsState getSettingsState() {
-        if (mService == null) {
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return null;
         }
 
         try {
-            return mService.getSettingsState();
+            if (DEBUG) Log.i(TAG, "getSettingsState");
+            return service.getSettingsState();
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in getSettingsState", e);
         }
@@ -632,12 +699,14 @@ public class SharedConnectivityManager {
             android.Manifest.permission.NETWORK_SETUP_WIZARD})
     @Nullable
     public HotspotNetworkConnectionStatus getHotspotNetworkConnectionStatus() {
-        if (mService == null) {
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return null;
         }
 
         try {
-            return mService.getHotspotNetworkConnectionStatus();
+            if (DEBUG) Log.i(TAG, "getHotspotNetworkConnectionStatus");
+            return service.getHotspotNetworkConnectionStatus();
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in getHotspotNetworkConnectionStatus", e);
         }
@@ -655,12 +724,14 @@ public class SharedConnectivityManager {
             android.Manifest.permission.NETWORK_SETUP_WIZARD})
     @Nullable
     public KnownNetworkConnectionStatus getKnownNetworkConnectionStatus() {
-        if (mService == null) {
+        ISharedConnectivityService service = mService;
+        if (service == null) {
             return null;
         }
 
         try {
-            return mService.getKnownNetworkConnectionStatus();
+            if (DEBUG) Log.i(TAG, "getKnownNetworkConnectionStatus");
+            return service.getKnownNetworkConnectionStatus();
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in getKnownNetworkConnectionStatus", e);
         }
