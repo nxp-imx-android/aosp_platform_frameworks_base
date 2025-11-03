@@ -368,6 +368,31 @@ public class InfoMediaManagerTest {
         assertThat(mInfoMediaManager.mMediaDevices.get(3).getId()).isEqualTo(TEST_ID_4);
     }
 
+    @Test
+    public void onRouteListingPreferenceUpdated_refreshesDeviceList() {
+        ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT",
+                Build.VERSION_CODES.UPSIDE_DOWN_CAKE);
+
+        when(mRoutingController.getSelectedRoutes())
+                .thenReturn(List.of(TEST_SELECTED_SYSTEM_ROUTE));
+
+        mInfoMediaManager.registerCallback(mCallback);
+        clearInvocations(mCallback);
+
+        RouteListingPreference routeListingPreference = new RouteListingPreference.Builder()
+                .setItems(ImmutableList.of())
+                .setUseSystemOrdering(true)
+                .build();
+        when(mRouter2.getRouteListingPreference()).thenReturn(routeListingPreference);
+
+        // Simulate the RouteListingPreference update from MediaRouter2.
+        // This should trigger notifyRouteListingPreferenceUpdated -> refreshDevices ->
+        // dispatchDeviceListAdded.
+        mInfoMediaManager.mRouteListingPreferenceCallback.accept(routeListingPreference);
+
+        verify(mCallback).onDeviceListAdded(any());
+    }
+
     private RouteListingPreference setUpPreferenceList(boolean useSystemOrdering) {
         ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT",
                 Build.VERSION_CODES.UPSIDE_DOWN_CAKE);
