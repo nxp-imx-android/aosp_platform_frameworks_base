@@ -236,6 +236,21 @@ public final class RecordingActivityMonitor implements AudioSystem.AudioRecordin
         return false;
     }
 
+    /**
+     * @return uids which have an active playback configuration
+     */
+    public int[] getRecordingActiveUids() {
+        synchronized (mRecordStates) {
+            return mRecordStates
+                .stream()
+                .filter(x -> x.isActiveConfiguration() && !x.getConfig().isClientSilenced())
+                .mapToInt(x -> x.getConfig().getClientUid())
+                .sorted()
+                .distinct()
+                .toArray();
+        }
+    }
+
     private void dispatchCallbacks(List<AudioRecordingConfiguration> configs) {
         if (configs == null) { // null means "no changes"
             return;
