@@ -16,7 +16,9 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.annotation.Nullable;
 import android.annotation.NonNull;
+import android.app.PendingIntent;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -32,17 +34,21 @@ public final class ComputerControlSessionParams implements Parcelable {
 
     private final String mName;
     private final List<String> mTargetPackageNames;
+    private final PendingIntent mPreviewIntent;
 
     private ComputerControlSessionParams(
-            @NonNull String name, @NonNull List<String> targetPackageNames) {
+            @NonNull String name, @NonNull List<String> targetPackageNames,
+            @Nullable PendingIntent previewIntent) {
         mName = name;
         mTargetPackageNames = targetPackageNames;
+        mPreviewIntent = previewIntent;
     }
 
     private ComputerControlSessionParams(Parcel parcel) {
         mName = parcel.readString8();
         mTargetPackageNames = new ArrayList<>();
         parcel.readStringList(mTargetPackageNames);
+        mPreviewIntent = parcel.readTypedObject(PendingIntent.CREATOR);
     }
 
     /** Returns the name of this computer control session. */
@@ -57,6 +63,15 @@ public final class ComputerControlSessionParams implements Parcelable {
         return mTargetPackageNames;
     }
 
+    /**
+     * Returns the intent launched when the user wants to preview the automation, or null if none is
+     * set.
+     */
+    @Nullable
+    public PendingIntent getPreviewIntent() {
+        return mPreviewIntent;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -66,6 +81,7 @@ public final class ComputerControlSessionParams implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString8(mName);
         dest.writeStringList(mTargetPackageNames);
+        dest.writeTypedObject(mPreviewIntent, flags);
     }
 
     @NonNull
@@ -87,6 +103,7 @@ public final class ComputerControlSessionParams implements Parcelable {
     public static final class Builder {
         private String mName;
         private List<String> mTargetPackageNames;
+        private PendingIntent mPreviewIntent;
 
         /**
          * Sets the name of this computer control session.
@@ -115,9 +132,24 @@ public final class ComputerControlSessionParams implements Parcelable {
         @NonNull
         public Builder setTargetPackageNames(@NonNull List<String> targetPackageNames) {
             if (targetPackageNames == null || targetPackageNames.isEmpty()) {
-                throw new IllegalArgumentException("targetPackageNames must not be empty");
+                throw new IllegalArgumentException("Target package names must not be empty");
             }
             mTargetPackageNames = targetPackageNames;
+            return this;
+        }
+
+        /**
+         * Sets the intent to launch the preview UI for this session.
+         *
+         * @param previewIntent The intent to launch the preview UI.
+         * @return This builder.
+         */
+        @NonNull
+        public Builder setPreviewIntent(@NonNull PendingIntent previewIntent) {
+            if (previewIntent == null) {
+                throw new IllegalArgumentException("Preview intent must not be null");
+            }
+            mPreviewIntent = previewIntent;
             return this;
         }
 
@@ -133,9 +165,9 @@ public final class ComputerControlSessionParams implements Parcelable {
                 throw new IllegalArgumentException("Name must be set");
             }
             if (mTargetPackageNames == null || mTargetPackageNames.isEmpty()) {
-                throw new IllegalArgumentException("TargetPackageNames must be set");
+                throw new IllegalArgumentException("Target package names must be set");
             }
-            return new ComputerControlSessionParams(mName, mTargetPackageNames);
+            return new ComputerControlSessionParams(mName, mTargetPackageNames, mPreviewIntent);
         }
     }
 }
