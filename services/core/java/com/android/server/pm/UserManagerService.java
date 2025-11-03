@@ -3930,7 +3930,7 @@ public class UserManagerService extends IUserManager.Stub {
             throw new SecurityException("Non-system caller");
         }
         return UserRestrictionsUtils.isSettingRestrictedForUser(mContext, setting, userId,
-                value, callingUid);
+                value, callingUid, mDeviceOwnerUserId);
     }
 
     @Override
@@ -4116,7 +4116,8 @@ public class UserManagerService extends IUserManager.Stub {
             @Override
             public void run() {
                 UserRestrictionsUtils.applyUserRestrictions(
-                        mContext, userId, newRestrictionsFinal, prevRestrictionsFinal);
+                        mContext, userId, newRestrictionsFinal, prevRestrictionsFinal,
+                        mDeviceOwnerUserId);
 
                 final UserRestrictionsListener[] listeners;
                 synchronized (mUserRestrictionsListeners) {
