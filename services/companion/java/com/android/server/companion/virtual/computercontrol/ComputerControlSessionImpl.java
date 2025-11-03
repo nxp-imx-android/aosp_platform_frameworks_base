@@ -21,6 +21,7 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_EMPTY;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
 
 import android.annotation.IntRange;
@@ -132,6 +133,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     static final float LONG_PRESS_TIMEOUT_MULTIPLIER = 1.5f;
     @VisibleForTesting
     static final long KEY_EVENT_DELAY_MS = 10L;
+    // The session will be closed whenever the display remains empty for this timeout period.
+    // This timeout is used to avoid closing the session immediately upon the display being empty
+    // to allow for transient cases of emptiness, like when an Activity is launched in a new task
+    // while the current task is finished.
+    @VisibleForTesting
+    static final long CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS = 100L;
 
     // Vendor and Product IDs for Computer Control virtual input devices.
     // These values are likely unique within the VIRTUAL bus type, but they are not
@@ -218,6 +225,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
     private ScheduledFuture<?> mCloseSessionFuture;
+    private ScheduledFuture<?> mDisplayEmptyScheduledAction;
     @Nullable
     private Surface mClientSurface;
 
@@ -428,6 +436,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     public void handOverApplications() {
         Binder.withCleanCallingIdentity(
                 () -> moveAllTasks(mVirtualDisplayId, mMainDisplayId));
+        close(CLOSE_REASON_SESSION_EMPTY);
     }
 
     @Override
@@ -713,6 +722,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 .build();
     }
 
+    private void cancelDisplayEmptyScheduledAction() {
+        final var action = mDisplayEmptyScheduledAction;
+        if (action != null) {
+            action.cancel(false);
+        }
+    }
+
     private class ComputerControlActivityListener implements VirtualDeviceManager.ActivityListener {
         @Override
         public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity) {}
@@ -721,6 +737,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public void onTopActivityChanged(int displayId, @NonNull ComponentName topActivity,
                 @UserIdInt int userId) {
             Slog.v(TAG, "Top activity changed to " + topActivity + " for user " + userId);
+            cancelDisplayEmptyScheduledAction();
 
             if (topActivity.getPackageName().equals(CUSTOM_BLOCKED_APP_PACKAGE)) {
                 return;
@@ -742,6 +759,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 config.mBlockingActivityPackage = null;
                 config.mSecureWindowPackage = null;
             });
+            cancelDisplayEmptyScheduledAction();
+            // Close the session if the display remains empty after the timeout.
+            mDisplayEmptyScheduledAction = mScheduler.schedule(
+                    () -> close(CLOSE_REASON_SESSION_EMPTY),
+                    CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS);
         }
 
         @Override

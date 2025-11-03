@@ -25,8 +25,10 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_EMPTY;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
 
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.LONG_PRESS_TIMEOUT_MULTIPLIER;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_DPAD;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_TOUCHSCREEN;
@@ -111,6 +113,7 @@ import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.testutils.StubTransaction;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
@@ -179,6 +182,8 @@ public class ComputerControlSessionImplTest {
     private InputMethodManagerInternal mInputMethodManagerInternal;
     @Mock
     private InputManagerInternal mInputManagerInternal;
+    @Mock
+    private ActivityTaskManagerInternal mActivityTaskManagerInternal;
     @Mock
     private ViewConfiguration mViewConfiguration;
     @Mock
@@ -262,6 +267,7 @@ public class ComputerControlSessionImplTest {
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
         LocalServices.addService(InputMethodManagerInternal.class, mInputMethodManagerInternal);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
+        LocalServices.addService(ActivityTaskManagerInternal.class, mActivityTaskManagerInternal);
         ViewConfiguration.setInstanceForTesting(mContext, mViewConfiguration);
 
         when(mUserManagerInternal.getMainDisplayAssignedToUser(anyInt()))
@@ -864,6 +870,44 @@ public class ComputerControlSessionImplTest {
                                 .allMatch((i) -> (i == 0)));
             }
         }
+    }
+
+    @Test
+    public void handOverApplications_closesSession() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.handOverApplications();
+
+        verify(mLifecycleCallback).onClosed(CLOSE_REASON_SESSION_EMPTY);
+    }
+
+    @Test
+    public void displayEmpty_closesSessionAfterTimeout() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+
+        activityListener.onDisplayEmpty(VIRTUAL_DISPLAY_ID);
+
+        verify(mLifecycleCallback, never()).onClosed(anyInt());
+        verify(mLifecycleCallback, timeout(CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS * 2)).onClosed(
+                CLOSE_REASON_SESSION_EMPTY);
+    }
+
+    @Test
+    public void transientDisplayEmpty_doesNotCloseSession() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+
+        activityListener.onDisplayEmpty(VIRTUAL_DISPLAY_ID);
+        activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+
+        verify(mLifecycleCallback,
+                timeout(CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS * 2).times(0))
+                .onClosed(anyInt());
     }
 
     /** A default way to enter the blocked state to test block state functionality. */
