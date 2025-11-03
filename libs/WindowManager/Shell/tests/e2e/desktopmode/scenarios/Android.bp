@@ -88,9 +88,6 @@ test_module_config {
         "com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest",
         "com.android.wm.shell.functional.TabTearingDesktopWindowingLimitTest",
         "com.android.wm.shell.functional.TabTearingTest",
-        "com.android.wm.shell.functional.UnmaximizeAppWindowTest",
-        "com.android.wm.shell.functional.UnminimizeAppFromAllAppsTest",
-        "com.android.wm.shell.functional.UnminimizeAppFromTaskbarTest",
         "com.android.wm.shell.functional.appcompat.DialogStaysInsideDesktopAppTest",
         "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
         "com.android.wm.shell.functional.appcompat.ShowAppDialogInDesktopModeTest",
@@ -141,6 +138,7 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.ToggleFullscreenViaFullscreenKeyTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.maximize.MaximizeUnfocusedAppWindowTest",
+        "com.android.wm.shell.functional.maximize.UnmaximizeAppWindowTest",
         "com.android.wm.shell.functional.mediaprojection.StartAppMediaProjectionResizeAndDragTest",
         "com.android.wm.shell.functional.mediaprojection.StartAppMediaProjectionWithMaxDesktopWindowsTest",
         "com.android.wm.shell.functional.mediaprojection.StartScreenRecordingAppSelectorFromQSTest",
@@ -149,6 +147,8 @@ test_module_config {
         "com.android.wm.shell.functional.minimize.MinimizeAutoPipAppWindowTest",
         "com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenTest",
         "com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenViaIntentTest",
+        "com.android.wm.shell.functional.minimize.UnminimizeAppFromAllAppsTest",
+        "com.android.wm.shell.functional.minimize.UnminimizeAppFromTaskbarTest",
         "com.android.wm.shell.functional.multiinstance.LaunchNewInstanceFromAppWindowMenuTest",
         "com.android.wm.shell.functional.multiinstance.ManageOpenInstancesTest",
         "com.android.wm.shell.functional.overview.ClearOpenAppsFromOverviewTest",
@@ -291,27 +291,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.TabTearingTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-UnmaximizeAppWindowTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.UnmaximizeAppWindowTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-UnminimizeAppFromAllAppsTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.UnminimizeAppFromAllAppsTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-UnminimizeAppFromTaskbarTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.UnminimizeAppFromTaskbarTest"],
 }
 
 test_module_config {
@@ -658,6 +637,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-maximize-UnmaximizeAppWindowTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.maximize.UnmaximizeAppWindowTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-mediaprojection-StartAppMediaProjectionResizeAndDragTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -711,6 +697,20 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenViaIntentTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-minimize-UnminimizeAppFromAllAppsTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.minimize.UnminimizeAppFromAllAppsTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-minimize-UnminimizeAppFromTaskbarTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.minimize.UnminimizeAppFromTaskbarTest"],
 }
 
 test_module_config {
