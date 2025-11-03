@@ -21,6 +21,7 @@ import static android.content.UriRelativeFilter.FRAGMENT;
 import static android.content.UriRelativeFilterGroup.ACTION_ALLOW;
 import static android.content.UriRelativeFilterGroup.ACTION_BLOCK;
 import static android.content.pm.ApplicationInfo.PRIVATE_FLAG_EXT_ALLOWLISTED_FOR_HIDDEN_APIS;
+import static android.content.pm.PermissionInfo.NO_TARGET_SDK_VERSION;
 import static android.os.PatternMatcher.PATTERN_ADVANCED_GLOB;
 import static android.os.PatternMatcher.PATTERN_LITERAL;
 import static android.os.PatternMatcher.PATTERN_PREFIX;
@@ -1435,6 +1436,7 @@ public class PackageParserTest {
 
         ParsedPermissionImpl permission = new ParsedPermissionImpl();
         permission.setParsedPermissionGroup(new ParsedPermissionGroupImpl());
+        permission.setRequiresGeneralPurposeTargetSdkVersion(NO_TARGET_SDK_VERSION);
 
         ((ParsedPackage) pkg.setBaseRevisionCode(100)
                 .setHardwareAccelerated(true)
