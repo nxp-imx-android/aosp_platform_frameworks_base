@@ -179,8 +179,8 @@ final class DynamicAppFunctionRegistry {
             return;
         }
 
-        // TODO(b/447127837): report error in case caller died while executing app function
         try {
+            safeExecuteAppFunctionCallback.attachOnDeathListener(executor.asBinder());
             executor.execute(
                     request,
                     getICancellationCallback(cancellationTransport),
