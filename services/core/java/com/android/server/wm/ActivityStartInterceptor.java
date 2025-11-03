@@ -40,6 +40,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.KeyguardManager;
@@ -596,7 +597,25 @@ class ActivityStartInterceptor {
         mRInfo = mSupervisor.resolveIntent(mIntent, mResolvedType, mUserId, 0,
                 mRealCallingUid, mRealCallingPid);
         mAInfo = mSupervisor.resolveActivity(mIntent, mRInfo, mStartFlags, null /*profilerInfo*/);
+        mInTask = null;
         return true;
+    }
+
+    static boolean shouldInterceptStartActivityFromRecents(
+            @NonNull ActivityTaskSupervisor supervisor,
+            @NonNull TaskInfo taskInfo,
+            @NonNull String callingPackage,
+            @NonNull ActivityOptions options) {
+        // TODO(b/456665032): handle other interceptions here too.
+        if (!android.companion.virtualdevice.flags.Flags.automatedAppLaunchInterception()) {
+            return false;
+        }
+        return supervisor.createAutomatedAppLaunchWarningIntent(
+                        taskInfo.baseIntent.getComponent().getPackageName(),
+                        taskInfo.userId,
+                        callingPackage,
+                        options.getLaunchDisplayId())
+                != null;
     }
 
     private void normalizeHomeIntent() {
