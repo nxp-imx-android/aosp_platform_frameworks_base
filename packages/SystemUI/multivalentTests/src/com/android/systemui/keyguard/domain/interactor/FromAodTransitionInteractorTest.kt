@@ -208,63 +208,6 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableSceneContainer
-    fun testTransitionToOccluded_onWakeUp_ifPowerButtonGestureDetectedAfterFinishedInAod_fromGone() =
-        testScope.runTest {
-            val isGone by
-                collectLastValue(
-                    kosmos.keyguardTransitionInteractor.isFinishedIn(Scenes.Gone, GONE)
-                )
-            powerInteractor.setAwakeForTest()
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.AOD,
-                to = KeyguardState.GONE,
-                testScope,
-            )
-            runCurrent()
-
-            // Make sure we're GONE.
-            assertEquals(true, isGone)
-
-            // Get all the way to AOD
-            powerInteractor.onStartedGoingToSleep(PowerManager.GO_TO_SLEEP_REASON_MIN)
-            transitionRepository.sendTransitionSteps(
-                from = KeyguardState.GONE,
-                to = KeyguardState.AOD,
-                testScope = testScope,
-            )
-
-            // Detect a power gesture and then wake up.
-            reset(transitionRepository)
-            powerInteractor.onCameraLaunchGestureDetected()
-            powerInteractor.setAwakeForTest()
-            advanceTimeBy(100) // account for debouncing
-
-            // We should go to OCCLUDED - we came from GONE, but we finished in AOD, so this is no
-            // longer an insecure camera launch and it would be bad if we unlocked now.
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.AOD, to = KeyguardState.OCCLUDED)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableSceneContainer
-    fun testWakeAndUnlock_transitionsToGone_onlyAfterDismissCallPostWakeup() =
-        testScope.runTest {
-            kosmos.fakeKeyguardRepository.setBiometricUnlockState(
-                BiometricUnlockMode.WAKE_AND_UNLOCK
-            )
-            powerInteractor.setAwakeForTest()
-            runCurrent()
-
-            underTest.dismissAod()
-
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.AOD, to = KeyguardState.GONE)
-        }
-
-    @Test
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     @DisableSceneContainer
     fun testWakeAndUnlock_transitionsToGone_evenIfBouncerShows() =
@@ -284,24 +227,6 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
 
             underTest.dismissAod()
             advanceTimeBy(100) // account for debouncing
-
-            assertThat(transitionRepository)
-                .startedTransition(from = KeyguardState.AOD, to = KeyguardState.GONE)
-        }
-
-    @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
-    @DisableSceneContainer
-    fun testWakeAndUnlock_transitionsToGone_evenIfBouncerShows_wmStateRefactor() =
-        testScope.runTest {
-            kosmos.fakeKeyguardRepository.setBiometricUnlockState(
-                BiometricUnlockMode.WAKE_AND_UNLOCK
-            )
-            runCurrent()
-            bouncerRepository.setPrimaryShow(true)
-            runCurrent()
-            powerInteractor.setAwakeForTest()
-            runCurrent()
 
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.AOD, to = KeyguardState.GONE)
@@ -550,7 +475,7 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
             // Start waking up
             powerInteractor.onStartedWakingUp(
                 PowerManager.WAKE_REASON_POWER_BUTTON,
-                /* powerButtonLaunchGestureTriggeredOnWakeUp = */ false
+                /* powerButtonLaunchGestureTriggeredOnWakeUp = */ false,
             )
             runCurrent()
 
@@ -567,7 +492,10 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
         }
 
     @Test
-    @DisableFlags(FLAG_WAKEFULNESS_FOR_ANIMATIONS, FLAG_KEYGUARD_WM_STATE_REFACTOR) // Test legacy path
+    @DisableFlags(
+        FLAG_WAKEFULNESS_FOR_ANIMATIONS,
+        FLAG_KEYGUARD_WM_STATE_REFACTOR,
+    ) // Test legacy path
     fun testTransition_flagOff_triggersOnStartingToWake() =
         testScope.runTest {
             // We start in AOD and asleep (from setup())
@@ -575,7 +503,7 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
             // Start waking up
             powerInteractor.onStartedWakingUp(
                 PowerManager.WAKE_REASON_POWER_BUTTON,
-                /* powerButtonLaunchGestureTriggeredOnWakeUp = */ false
+                /* powerButtonLaunchGestureTriggeredOnWakeUp = */ false,
             )
             runCurrent()
 
@@ -585,5 +513,4 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.AOD, to = KeyguardState.LOCKSCREEN)
         }
-
 }
