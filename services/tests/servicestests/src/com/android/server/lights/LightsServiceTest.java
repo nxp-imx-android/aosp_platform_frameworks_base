@@ -32,6 +32,7 @@ import android.content.Context;
 import android.hardware.light.HwLight;
 import android.hardware.light.HwLightState;
 import android.hardware.light.ILights;
+import android.hardware.light.LightType;
 import android.hardware.lights.Light;
 import android.hardware.lights.LightState;
 import android.hardware.lights.LightsManager;
@@ -48,6 +49,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
@@ -114,6 +118,59 @@ public class LightsServiceTest {
 
         // When lights are listed, only the 4 MICROPHONE lights should be visible.
         assertThat(manager.getLights().size()).isEqualTo(4);
+    }
+
+    /** Verifies that all system-only light types are filtered from the LightsManager API. */
+    @Test
+    public void testGetLights_filtersAllSystemLightTypes() {
+        // A HAL that reports one of each light type, to test filtering.
+        final ILights hal = new ILights.Stub() {
+            @Override
+            public void setLightState(int id, HwLightState state) {
+            }
+
+            @Override
+            public HwLight[] getLights() {
+                return new HwLight[]{
+                        // System lights that should be filtered
+                        fakeHwLight(1, LightType.BACKLIGHT, 1),
+                        fakeHwLight(2, LightType.KEYBOARD, 1),
+                        fakeHwLight(3, LightType.BUTTONS, 1),
+                        fakeHwLight(4, LightType.BATTERY, 1),
+                        fakeHwLight(5, LightType.NOTIFICATIONS, 1),
+                        fakeHwLight(6, LightType.ATTENTION, 1),
+                        fakeHwLight(7, LightType.BLUETOOTH, 1),
+                        fakeHwLight(8, LightType.WIFI, 1),
+                        // Non-system lights that should be available to apps
+                        fakeHwLight(9, LightsManager.LIGHT_TYPE_MICROPHONE, 1),
+                        // A light with a type that is not defined in LightType, but is not a system
+                        // light
+                        fakeHwLight(100, 100, 1)
+                };
+            }
+
+            @Override
+            public int getInterfaceVersion() {
+                return this.VERSION;
+            }
+
+            @Override
+            public String getInterfaceHash() {
+                return this.HASH;
+            }
+        };
+
+        LightsService service = new LightsService(mContext, () -> hal, Looper.getMainLooper());
+        LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
+
+        // When lights are listed
+        List<Light> availableLights = manager.getLights();
+        List<Integer> availableLightIds = availableLights.stream()
+                .map(Light::getId)
+                .collect(Collectors.toList());
+
+        // Then only the non-system lights should be available
+        assertThat(availableLightIds).containsExactly(9, 100);
     }
 
     @Test
