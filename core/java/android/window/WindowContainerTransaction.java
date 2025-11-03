@@ -488,6 +488,29 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
+     * Sets/removes the reparent leaf task flag for this {@code windowContainer} when the relaunch
+     * is from home.
+     * When this is set, the server side will try to reparent the leaf task to task display area
+     * if the leaf task is reused during the activity launch. This operation only support on the
+     * organized root task.
+     *
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setReparentLeafTaskIfRelaunchFromHome(
+            @NonNull WindowContainerToken windowContainer,
+            boolean reparentLeafTaskIfRelaunchFromHome) {
+        final HierarchyOp hierarchyOp =
+                new HierarchyOp.Builder(
+                        HierarchyOp.HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME)
+                        .setContainer(windowContainer.asBinder())
+                        .setReparentLeafTaskIfRelaunchFromHome(reparentLeafTaskIfRelaunchFromHome)
+                        .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
      * Defers client-facing configuration changes for activities in `container` until the end of
      * the transition animation. The configuration will still be applied to the WMCore hierarchy
      * at the normal time (beginning); so, special consideration must be made for this in the
@@ -547,8 +570,6 @@ public final class WindowContainerTransaction implements Parcelable {
      *
      * @param container The window container of the task that the exclusion state is set on.
      * @param forceExcluded  {@code true} to force exclude the task, {@code false} otherwise.
-     * @throws IllegalStateException if the flag {@link Flags#FLAG_EXCLUDE_TASK_FROM_RECENTS} is
-     *                               not enabled.
      * @hide
      */
     @NonNull
@@ -2105,6 +2126,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN = 27;
         public static final int HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE = 28;
         public static final int HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE = 29;
+        public static final int HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME = 30;
 
         @IntDef(prefix = {"HIERARCHY_OP_TYPE_"}, value = {
                 HIERARCHY_OP_TYPE_REPARENT,
@@ -2137,6 +2159,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN,
                 HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE,
                 HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE,
+                HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface HierarchyOpType {
@@ -2215,6 +2238,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mAlwaysOnTop;
 
         private boolean mReparentLeafTaskIfRelaunch;
+        private boolean mReparentLeafTaskIfRelaunchFromHome;
 
         private boolean mIsTrimmableFromRecents;
 
@@ -2423,6 +2447,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mShortcutInfo = copy.mShortcutInfo;
             mAlwaysOnTop = copy.mAlwaysOnTop;
             mReparentLeafTaskIfRelaunch = copy.mReparentLeafTaskIfRelaunch;
+            mReparentLeafTaskIfRelaunchFromHome = copy.mReparentLeafTaskIfRelaunchFromHome;
             mIsTrimmableFromRecents = copy.mIsTrimmableFromRecents;
             mExcludeInsetsTypes = copy.mExcludeInsetsTypes;
             mForciblyShowingInsetsTypes = copy.mForciblyShowingInsetsTypes;
@@ -2454,6 +2479,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mShortcutInfo = in.readTypedObject(ShortcutInfo.CREATOR);
             mAlwaysOnTop = in.readBoolean();
             mReparentLeafTaskIfRelaunch = in.readBoolean();
+            mReparentLeafTaskIfRelaunchFromHome = in.readBoolean();
             mIsTrimmableFromRecents = in.readBoolean();
             mExcludeInsetsTypes = in.readInt();
             mForciblyShowingInsetsTypes = in.readInt();
@@ -2536,6 +2562,10 @@ public final class WindowContainerTransaction implements Parcelable {
 
         public boolean isReparentLeafTaskIfRelaunch() {
             return mReparentLeafTaskIfRelaunch;
+        }
+
+        public boolean isReparentLeafTaskIfRelaunchFromHome() {
+            return mReparentLeafTaskIfRelaunchFromHome;
         }
 
         @Nullable
@@ -2622,6 +2652,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 case HIERARCHY_OP_TYPE_CLEAR_ADJACENT_ROOTS: return "clearAdjacentRoots";
                 case HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH:
                     return "setReparentLeafTaskIfRelaunch";
+                case HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME:
+                    return "setReparentLeafTaskIfRelaunchFromHome";
                 case HIERARCHY_OP_TYPE_ADD_TASK_FRAGMENT_OPERATION:
                     return "addTaskFragmentOperation";
                 case HIERARCHY_OP_TYPE_MOVE_PIP_ACTIVITY_TO_PINNED_TASK:
@@ -2718,6 +2750,11 @@ public final class WindowContainerTransaction implements Parcelable {
                             .append(" reparentLeafTaskIfRelaunch= ")
                             .append(mReparentLeafTaskIfRelaunch);
                     break;
+                case HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME:
+                    sb.append("container= ").append(mContainer)
+                            .append(" reparentLeafTaskIfRelaunchFromHome= ")
+                            .append(mReparentLeafTaskIfRelaunchFromHome);
+                    break;
                 case HIERARCHY_OP_TYPE_ADD_TASK_FRAGMENT_OPERATION:
                     sb.append("fragmentToken= ").append(mContainer)
                             .append(" operation= ").append(mTaskFragmentOperation);
@@ -2792,6 +2829,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeTypedObject(mShortcutInfo, flags);
             dest.writeBoolean(mAlwaysOnTop);
             dest.writeBoolean(mReparentLeafTaskIfRelaunch);
+            dest.writeBoolean(mReparentLeafTaskIfRelaunchFromHome);
             dest.writeBoolean(mIsTrimmableFromRecents);
             dest.writeInt(mExcludeInsetsTypes);
             dest.writeInt(mForciblyShowingInsetsTypes);
@@ -2877,6 +2915,7 @@ public final class WindowContainerTransaction implements Parcelable {
             private boolean mAlwaysOnTop;
 
             private boolean mReparentLeafTaskIfRelaunch;
+            private boolean mReparentLeafTaskIfRelaunchFromHome;
 
             private boolean mIsTrimmableFromRecents;
 
@@ -2983,6 +3022,12 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
+            Builder setReparentLeafTaskIfRelaunchFromHome(
+                    boolean reparentLeafTaskIfRelaunchFromHome) {
+                mReparentLeafTaskIfRelaunchFromHome = reparentLeafTaskIfRelaunchFromHome;
+                return this;
+            }
+
             Builder setShortcutInfo(@Nullable ShortcutInfo shortcutInfo) {
                 mShortcutInfo = shortcutInfo;
                 return this;
@@ -3059,6 +3104,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 hierarchyOp.mBounds = mBounds;
                 hierarchyOp.mIncludingParents = mIncludingParents;
                 hierarchyOp.mReparentLeafTaskIfRelaunch = mReparentLeafTaskIfRelaunch;
+                hierarchyOp.mReparentLeafTaskIfRelaunchFromHome =
+                        mReparentLeafTaskIfRelaunchFromHome;
                 hierarchyOp.mIsTrimmableFromRecents = mIsTrimmableFromRecents;
                 hierarchyOp.mExcludeInsetsTypes = mExcludeInsetsTypes;
                 hierarchyOp.mForciblyShowingInsetsTypes = mForciblyShowingInsetsTypes;

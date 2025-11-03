@@ -19,8 +19,10 @@ package com.android.server.wm;
 import static android.app.TaskInfo.SELF_MOVABLE_ALLOWED;
 import static android.app.TaskInfo.SELF_MOVABLE_DEFAULT;
 import static android.app.TaskInfo.SELF_MOVABLE_DENIED;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY;
 import static android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID;
@@ -38,6 +40,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 import android.content.Intent;
@@ -46,6 +49,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.window.ITaskOrganizer;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 import android.window.WindowContainerTransaction.HierarchyOp;
@@ -202,7 +206,6 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertEquals(WINDOWING_MODE_FREEFORM, task.getWindowingMode());
         assertEquals(desktopOrganizer.getDefaultDesktopTaskBounds(), task.getBounds());
     }
-
 
     @Test
     public void testDesktopMode_moveTaskToFullscreen() {
@@ -464,6 +467,26 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         applyTransaction(wct);
 
         assertFalse(task.mLaunchNextToBubble);
+    }
+
+    @Test
+    public void testSetReparentLeafTaskIfRelaunchFromHome() {
+        final Task rootTask =
+                createTask(mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+        rootTask.mCreatedByOrganizer = true;
+        rootTask.mTaskOrganizer = mock(ITaskOrganizer.class);
+        final WindowContainerToken token = rootTask.mRemoteToken.toWindowContainerToken();
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setReparentLeafTaskIfRelaunchFromHome(token, true);
+        applyTransaction(wct);
+
+        assertTrue(rootTask.mReparentLeafTaskIfRelaunchFromHome);
+
+        wct.setReparentLeafTaskIfRelaunchFromHome(token, false);
+        applyTransaction(wct);
+
+        assertFalse(rootTask.mReparentLeafTaskIfRelaunchFromHome);
     }
 
     @Test
