@@ -25,6 +25,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.ParcelUuid;
+import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.ContextInsight;
@@ -35,7 +36,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,25 +82,12 @@ public abstract class InsightRendererService extends Service {
     public static final String SERVICE_INTERFACE =
             "android.service.personalcontext.renderer.InsightRendererService";
 
-    private final BinderService mCurrentBinder;
-
-    /**
-     * Construct a new {@link InsightRendererService}.
-     */
-    public InsightRendererService() {
-        mCurrentBinder = new BinderService(this);
-    }
+    private UUID mComponentId = null;
 
     @Nullable
     @Override
     public final IBinder onBind(@Nullable Intent intent) {
-        if (intent != null && SERVICE_INTERFACE.equals(intent.getAction())) {
-            return mCurrentBinder;
-        }
-        Log.w(
-                TAG,
-                "Tried to bind to wrong intent (should be " + SERVICE_INTERFACE + "): " + intent);
-        return null;
+        return new Binder(this);
     }
 
     /**
@@ -108,72 +95,80 @@ public abstract class InsightRendererService extends Service {
      *
      * A {@link RenderToken} uniquely identifies this renderer to the personal context engine.
      * Triggers can include a {@link RenderToken} in hints to indicate that insights containing
-     * those hints are meant to be rendered by the renderer that minted that token.
+     * those hints are meant to be rendered by the renderer that minted that token. This method
+     * will throw an error if it is called before {@link #onConnected} is called.
      *
      * @return a token that uniquely identifies this renderer
      */
     @NonNull
-    @SuppressWarnings("OnNameExpected")
     public final RenderToken mintRenderToken() {
-        return mCurrentBinder.mintRenderToken();
+        if (mComponentId == null) {
+            throw new IllegalStateException(
+                    "RenderTokens can not be minted until after onConnected has been called");
+        }
+        return new RenderToken.RenderTokenBuilder().setRendererComponentId(mComponentId).build();
+    }
+
+    private void configure(UUID componentId) {
+        mComponentId = componentId;
+        onConnected();
+    }
+
+    /** Called when the renderer has been configured and is ready to receive insights. */
+    public void onConnected() {
+        // Default implementation does nothing.
     }
 
     /**
-     * This method is called to inform the renderer subclass that it has been registered. The
-     * renderer should return a {@link RendererFilter} that will be used to filter the insights that
-     * this renderer's {@link #onRender(List, boolean)} method will be called with.
+     * The renderer should return a {@link RendererFilter} that will be used to filter the insights
+     * that this renderer's {@link #onRender(ContextInsight)} method will be called with.
+     *
+     * The result of this method will be cached and re-used between service bindings. If the filter
+     * returned by this method changes, the changes will be ignored.
      *
      * @return a filter that restricts the {@link ContextInsight}s this renderer will receive
      */
     @NonNull
-    public abstract RendererFilter onRegistered();
+    public abstract RendererFilter onInitializeFilter();
 
     /**
-     * This method will be called when the given list of {@link ContextInsight}s needs to be
-     * rendered. isFirst will be true if this is the first renderer service to render these
-     * insights.
+     * This method will be called when the given {@link ContextInsight} needs to be rendered.
      *
-     * @param insights the list of {@link ContextInsight}s to renderer
-     * @param isFirst true if this renderer is the first renderer to receive these insights
+     * @param insight the {@link ContextInsight} to renderer
      */
-    public abstract void onRender(@NonNull List<ContextInsight> insights, boolean isFirst);
+    public abstract void onRender(@NonNull ContextInsight insight);
 
-    private static final class BinderService extends IInsightRenderer.Stub {
-        private UUID mComponentId;
+    private static final class Binder extends IInsightRenderer.Stub {
         private final WeakReference<InsightRendererService> mService;
 
-        BinderService(InsightRendererService service) {
+        Binder(InsightRendererService service) {
             mService = new WeakReference<>(service);
         }
 
-        @Override
-        public void render(List<ContextInsightWrapper> insights, boolean alreadyRendered) {
+        private InsightRendererService getServiceOrThrow() throws RemoteException {
             final InsightRendererService service = mService.get();
             if (service == null) {
-                return;
+                RemoteException error = new RemoteException("Service is no longer available");
+                Log.e(TAG, "Service is no longer available", error);
+                throw error;
+            } else {
+                return service;
             }
-
-            final List<ContextInsight> unwrappedInsights = new ArrayList<>();
-            insights.forEach(wrappedInsight ->
-                    unwrappedInsights.add(wrappedInsight.getContextInsight()));
-            service.onRender(unwrappedInsights, alreadyRendered);
         }
 
         @Override
-        public void configure(ParcelUuid componentId) {
-            final InsightRendererService service = mService.get();
-            if (service == null) {
-                return;
-            }
-
-            mComponentId = componentId.getUuid();
-            service.onRegistered();
+        public void render(ContextInsightWrapper insight) throws RemoteException {
+            getServiceOrThrow().onRender(insight.getContextInsight());
         }
 
         @Override
-        public RenderToken mintRenderToken() {
-            return new RenderToken.RenderTokenBuilder()
-                    .setRendererComponentId(mComponentId).build();
+        public void configure(ParcelUuid componentId) throws RemoteException {
+            getServiceOrThrow().configure(componentId.getUuid());
+        }
+
+        @Override
+        public void getFilter(IGetFilterCallback callback) throws RemoteException {
+            callback.updateFilter(getServiceOrThrow().onInitializeFilter());
         }
     }
 }

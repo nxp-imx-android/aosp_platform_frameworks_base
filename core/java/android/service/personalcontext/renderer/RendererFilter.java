@@ -21,7 +21,7 @@ import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
-import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.Token;
 import android.service.personalcontext.insight.ContextInsight;
 import android.util.ArraySet;
 
@@ -29,64 +29,74 @@ import androidx.annotation.NonNull;
 
 import com.google.android.collect.Sets;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Filter for insight renderers to indicate which insights they want to receive.
+ * Filter for insight renderers to indicate which insights they want to receive. Create a filter via
+ * the {@link RendererFilter.Builder} or use {@link RendererFilter#REQUIRE_RENDER_TOKEN} if your
+ * renderer should only ever be invoked with a {@link android.service.personalcontext.RenderToken}.
  *
  * @hide
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 @SystemApi
 public final class RendererFilter implements Parcelable {
-    @ContextInsight.InsightType
-    private final Set<Integer> mValidInsightTypes;
-    @ContextHint.HintType
-    private final Set<Integer> mValidHintTypes;
-    private final boolean mIncludeRenderedInsights;
+    /**
+     * Pre-built {@link RendererFilter} that only allows insights with a RenderToken attached.
+     */
+    public static final RendererFilter REQUIRE_RENDER_TOKEN =
+            new Builder().addAllowedInsightToken(new Token()).build();
 
-    private RendererFilter(
-            @ContextInsight.InsightType Set<Integer> validInsightTypes,
-            @ContextHint.HintType Set<Integer> validHintTypes,
-            boolean includeRenderedInsights
-    ) {
-        mValidInsightTypes = validInsightTypes;
-        mValidHintTypes = validHintTypes;
-        mIncludeRenderedInsights = includeRenderedInsights;
+    private final Set<String> mAllowedClasses;
+    private final Set<Token> mAllowedTokens;
+    private final Set<Token> mRequiredTokens;
+
+    /** @hide */
+    public RendererFilter(
+            Collection<String> allowedClasses,
+            Collection<Token> allowedTokens,
+            Collection<Token> requiredTokens) {
+        mAllowedClasses = new HashSet<>(allowedClasses);
+        mAllowedTokens = new HashSet<>(allowedTokens);
+        mRequiredTokens = new HashSet<>(requiredTokens);
     }
 
     @SuppressWarnings({"unchecked"})
     private RendererFilter(Parcel in) {
-        mValidInsightTypes = (Set<Integer>) in.readArraySet(Integer.class.getClassLoader());
-        mValidHintTypes = (Set<Integer>) in.readArraySet(Integer.class.getClassLoader());
-        mIncludeRenderedInsights = in.readByte() != 0;
+        final ArrayList<Token> allowedTokens = new ArrayList<>();
+        final ArrayList<Token> requiredTokens = new ArrayList<>();
+
+        mAllowedClasses = (Set<String>) in.readArraySet(/* classLoader= */ null);
+        in.readTypedList(allowedTokens, Token.CREATOR);
+        in.readTypedList(requiredTokens, Token.CREATOR);
+        mAllowedTokens = new HashSet<>(allowedTokens);
+        mRequiredTokens = new HashSet<>(requiredTokens);
     }
 
-    /**
-     * @return an unmodifiable {@code Set} of valid insight types
-     */
-    @NonNull
-    @ContextInsight.InsightType
-    public Set<Integer> getValidInsightTypes() {
-        return Collections.unmodifiableSet(mValidInsightTypes);
-    }
+    /** @hide */
+    public boolean isInterestedInInsight(ContextInsight insight) {
+        // If we allow tokens, make sure the insight has at least one of the allowed tokens.
+        if (!mAllowedTokens.isEmpty()
+                && Collections.disjoint(mAllowedTokens, insight.getTokens())) {
+            return false;
+        }
 
-    /**
-     * @return an unmodifiable {@code Set} of valid hint types
-     */
-    @NonNull
-    @ContextHint.HintType
-    public Set<Integer> getValidHintTypes() {
-        return Collections.unmodifiableSet(mValidHintTypes);
-    }
+        // If we require tokens, make sure the insight has all of the required tokens.
+        if (!mRequiredTokens.isEmpty() && !insight.getTokens().containsAll(mRequiredTokens)) {
+            return false;
+        }
 
-    /**
-     * @return {@code true} if this renderer should receive insights that have already been
-     * rendered by another renderer
-     */
-    public boolean shouldIncludeRenderedInsights() {
-        return mIncludeRenderedInsights;
+        // If we allow classes, make sure the insight is one of the allowed classes.
+        if (!mAllowedClasses.isEmpty() && !mAllowedClasses.contains(insight.getClass().getName())) {
+            return false;
+        }
+
+        // All checks passed.
+        return true;
     }
 
     @Override
@@ -96,12 +106,12 @@ public final class RendererFilter implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeArraySet(new ArraySet<>(mValidInsightTypes));
-        dest.writeArraySet(new ArraySet<>(mValidHintTypes));
-        dest.writeByte((byte) (mIncludeRenderedInsights ? 1 : 0));
+        dest.writeArraySet(new ArraySet<>(mAllowedClasses));
+        dest.writeTypedList(new ArrayList<>(mAllowedTokens));
+        dest.writeTypedList(new ArrayList<>(mRequiredTokens));
     }
 
-    @android.annotation.NonNull
+    @NonNull
     public static final Creator<RendererFilter> CREATOR =
             new Creator<>() {
                 @Override
@@ -115,58 +125,60 @@ public final class RendererFilter implements Parcelable {
                 }
             };
 
-    /** Builder for a renderer filter. */
+    /** Builder for a {@link RendererFilter}. */
     public static final class Builder {
-        @ContextInsight.InsightType
-        private final Set<Integer> mValidInsightTypes = Sets.newHashSet();
-        @ContextHint.HintType
-        private final Set<Integer> mValidHintTypes = Sets.newHashSet();
-        private boolean mIncludeRenderedInsights = false;
-
-        /** Creates a new builder to build a renderer filter. */
-        public Builder() {
-        }
+        private final Set<String> mAllowedClasses = Sets.newHashSet();
+        private final Set<Token> mAllowedTokens = Sets.newHashSet();
+        private final Set<Token> mRequiredTokens = Sets.newHashSet();
 
         /**
-         * Add a valid insight type to the filter. An empty set of valid insight types means that
-         * all insight types will be sent to the renderer. If a renderer wishes to restrict the
-         * insight types it sees, then it should add those types using this method. By default,
-         * the set of valid insight types is empty.
+         * Create a new instance of the Builder.
          */
+        public Builder() { }
+
+        /**
+         * Adds a valid insight class to the filter. By default the filter will allow all insights
+         * to be sent to the renderer, regardless of class. Adding one or more valid classes changes
+         * the filter so that each insight sent to the renderer will be one of those types.
+         */
+        @SuppressWarnings("MissingGetterMatchingBuilder")
         @NonNull
-        public Builder addValidInsightType(@ContextInsight.InsightType int insightType) {
-            mValidInsightTypes.add(insightType);
+        public Builder addAllowedInsightClass(
+                @NonNull Class<? extends ContextInsight> insightClass) {
+            mAllowedClasses.add(insightClass.getName());
             return this;
         }
 
         /**
-         * Add a valid hint type to the filter. An empty set of valid hint types means that all hint
-         * types will be sent to the renderer. If a render wishes to restrict the hint types it
-         * sees, then it should add those types using this method. By default, the set of valid hint
-         * types is empty.
+         * Adds a valid insight token to the filter. By default the filter will allow all insights
+         * to be sent to the renderer, regardless of tokens. Adding one or more allowed tokens
+         * changes the filter so that each insight sent to the renderer will have at least one of
+         * those tokens attached to it.
          */
+        @SuppressWarnings("MissingGetterMatchingBuilder")
         @NonNull
-        public Builder addValidHintType(@ContextHint.HintType int hintType) {
-            mValidHintTypes.add(hintType);
+        public Builder addAllowedInsightToken(@NonNull Token insightToken) {
+            mAllowedTokens.add(insightToken);
             return this;
         }
 
         /**
-         * Set whether the filter should include rendered insights. The default is 'false',
-         * indicating that already rendered insights should not be included in the list of insights
-         * sent to the renderer.
+         * Adds a required insight token to the filter. By default the filter will allow all
+         * insights to be sent to the renderer, regardless of tokens. Adding one or more required
+         * tokens changes the filter so that each insight sent to the renderer will have at all of
+         * those tokens attached to it.
          */
+        @SuppressWarnings("MissingGetterMatchingBuilder")
         @NonNull
-        public Builder setShouldIncludeRenderedInsights(boolean includeRenderedInsights) {
-            mIncludeRenderedInsights = includeRenderedInsights;
+        public Builder addRequiredInsightToken(@NonNull Token insightToken) {
+            mRequiredTokens.add(insightToken);
             return this;
         }
 
-        /** Build a return a new RendererFilter. */
+        /** Builds the new RendererFilter. */
         @NonNull
         public RendererFilter build() {
-            return new RendererFilter(
-                    mValidInsightTypes, mValidHintTypes, mIncludeRenderedInsights);
+            return new RendererFilter(mAllowedClasses, mAllowedTokens, mRequiredTokens);
         }
     }
 }

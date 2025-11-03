@@ -16,6 +16,7 @@
 
 package com.android.server.personalcontext.component.client;
 
+import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.IBinder;
@@ -23,14 +24,15 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.renderer.IGetFilterCallback;
 import android.service.personalcontext.renderer.IInsightRenderer;
+import android.service.personalcontext.renderer.RendererFilter;
 import android.util.Slog;
 
 import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.component.Renderer;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,8 +42,24 @@ import java.util.UUID;
  */
 public class ServiceClientRenderer
         extends BaseServiceClientComponent<IInsightRenderer> implements Renderer {
+    private RendererFilter mFilter = RendererFilter.REQUIRE_RENDER_TOKEN;
+
     public ServiceClientRenderer(Context context, UUID componentId, ServiceInfo serviceInfo) {
         super(context, componentId, serviceInfo);
+
+        runWithBinder(binder -> {
+            try {
+                binder.getFilter(new IGetFilterCallback.Stub() {
+                    @PermissionManuallyEnforced
+                    @Override
+                    public void updateFilter(RendererFilter filter) {
+                        mFilter = filter;
+                    }
+                });
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to get renderer filter", e);
+            }
+        });
     }
 
     @Override
@@ -56,16 +74,14 @@ public class ServiceClientRenderer
 
     @Override
     public boolean isInterestedInInsight(ContextInsight insight) {
-        // TODO(b/452425147): Implement this to use a filter in the package's manifest.
-        // For now this runs each insight through every renderer.
-        return true;
+        return mFilter.isInterestedInInsight(insight);
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, boolean isFirst) {
+    public void render(@NonNull ContextInsight insight) {
         runWithBinder(binder -> {
             try {
-                binder.render(List.of(new ContextInsightWrapper(insight)), isFirst);
+                binder.render(new ContextInsightWrapper(insight));
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to render insight", e);
             }

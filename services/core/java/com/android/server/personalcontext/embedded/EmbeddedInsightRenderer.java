@@ -86,7 +86,7 @@ public class EmbeddedInsightRenderer implements Renderer {
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, boolean isFirst) {
+    public void render(@NonNull ContextInsight insight) {
         final InsightSurfaceClientInfo client = clientFromInsight(insight);
         if (client == null) {
             logDebug("no client found for insight [" + insight + "]");

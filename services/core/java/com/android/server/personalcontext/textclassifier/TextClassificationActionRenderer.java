@@ -52,7 +52,7 @@ public class TextClassificationActionRenderer implements Renderer {
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, boolean alreadyRendered) {
+    public void render(@NonNull ContextInsight insight) {
         ActionableInsight actionableInsight = getIfActionableInsight(insight);
         if (actionableInsight == null) {
             if (DEBUG) {

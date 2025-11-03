@@ -30,5 +30,5 @@ public interface Renderer extends Component {
     boolean isInterestedInInsight(ContextInsight insight);
 
     /** Renders an insight. */
-    void render(@NonNull ContextInsight insight, boolean isFirst);
+    void render(@NonNull ContextInsight insight);
 }
