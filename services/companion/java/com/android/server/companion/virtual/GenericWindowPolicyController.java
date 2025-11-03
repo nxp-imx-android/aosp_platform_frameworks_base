@@ -167,6 +167,8 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
     private boolean mShowTasksInHostDeviceRecents;
     @Nullable private final ComponentName mCustomHomeComponent;
 
+    private final boolean mLocalDeviceOnly;
+
     /**
      * Creates a window policy controller that is generic to the different use cases of virtual
      * device.
@@ -189,6 +191,8 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
      *   {@code null}, then the system-default secondary home activity will be used. This is only
      *   applicable to displays that support home activities, i.e. they're created with the relevant
      *   virtual display flag.
+     * @param localDeviceOnly Whether it is guaranteed that the display contents will never be
+     *   streamed to a remote device.
      */
     GenericWindowPolicyController(
             @NonNull AttributionSource attributionSource,
@@ -201,7 +205,8 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
             @NonNull ActivityListener activityListener,
             @NonNull Set<String> displayCategories,
             boolean showTasksInHostDeviceRecents,
-            @Nullable ComponentName customHomeComponent) {
+            @Nullable ComponentName customHomeComponent,
+            boolean localDeviceOnly) {
         super();
         mAttributionSource = attributionSource;
         mAllowedUsers = allowedUsers;
@@ -214,6 +219,7 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
         mDisplayCategories = displayCategories;
         mShowTasksInHostDeviceRecents = showTasksInHostDeviceRecents;
         mCustomHomeComponent = customHomeComponent;
+        mLocalDeviceOnly = localDeviceOnly;
     }
 
     /**
@@ -334,7 +340,8 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
             logActivityLaunchBlocked("Mirror virtual displays cannot contain activities.");
             return false;
         }
-        if (!mIsSecureDisplay && (activityInfo.flags & FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES) == 0) {
+        if (!mIsSecureDisplay && (activityInfo.flags & FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES) == 0
+                && !mLocalDeviceOnly) {
             logActivityLaunchBlocked("Display requires android:canDisplayOnRemoteDevices=true");
             return false;
         }
