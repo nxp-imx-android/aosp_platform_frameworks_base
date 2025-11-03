@@ -66,6 +66,9 @@
     },
     {
       "name": "CtsStrictJavaPackagesTestCases"
+    },
+    {
+      "name": "CameraServicesTests"
     }
   ],
   "postsubmit-managedprofile-stress": [
@@ -100,6 +103,9 @@
    },
    {
      "name": "PackageManagerServiceServerTests_Presubmit"
+   },
+   {
+     "name": "CameraServicesTests"
    }
  ],
   "wear-cts-presubmit": [
