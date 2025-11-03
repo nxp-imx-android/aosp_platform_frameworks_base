@@ -7,6 +7,7 @@ package android {
     field public static final String ACCESS_BROADCAST_RADIO = "android.permission.ACCESS_BROADCAST_RADIO";
     field public static final String ACCESS_BROADCAST_RESPONSE_STATS = "android.permission.ACCESS_BROADCAST_RESPONSE_STATS";
     field public static final String ACCESS_CACHE_FILESYSTEM = "android.permission.ACCESS_CACHE_FILESYSTEM";
+    field @FlaggedApi("android.permission.flags.interact_cellbroadcast_permission_enabled") public static final String ACCESS_CELL_BROADCAST = "android.permission.ACCESS_CELL_BROADCAST";
     field @FlaggedApi("android.companion.association_verification") public static final String ACCESS_COMPANION_INFO = "android.permission.ACCESS_COMPANION_INFO";
     field @FlaggedApi("android.companion.trusted_devices") public static final String ACCESS_COMPANION_MESSAGE_PCC = "android.permission.ACCESS_COMPANION_MESSAGE_PCC";
     field public static final String ACCESS_CONTEXTUAL_SEARCH = "android.permission.ACCESS_CONTEXTUAL_SEARCH";
@@ -195,7 +196,6 @@ package android {
     field public static final String INTENT_FILTER_VERIFICATION_AGENT = "android.permission.INTENT_FILTER_VERIFICATION_AGENT";
     field public static final String INTERACT_ACROSS_USERS = "android.permission.INTERACT_ACROSS_USERS";
     field public static final String INTERACT_ACROSS_USERS_FULL = "android.permission.INTERACT_ACROSS_USERS_FULL";
-    field @FlaggedApi("android.permission.flags.interact_cellbroadcast_permission_enabled") public static final String INTERACT_CELL_BROADCAST = "android.permission.INTERACT_CELL_BROADCAST";
     field public static final String INTERNAL_SYSTEM_WINDOW = "android.permission.INTERNAL_SYSTEM_WINDOW";
     field public static final String INVOKE_CARRIER_SETUP = "android.permission.INVOKE_CARRIER_SETUP";
     field public static final String KEYPHRASE_ENROLLMENT_APPLICATION = "android.permission.KEYPHRASE_ENROLLMENT_APPLICATION";
