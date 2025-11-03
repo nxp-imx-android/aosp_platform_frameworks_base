@@ -585,6 +585,7 @@ class BubbleControllerBubbleBarTest {
             { false },
             sessionTracker,
             bubbleViewInfoTaskFactory,
+            mock<BubbleHelper>(),
         )
     }
 

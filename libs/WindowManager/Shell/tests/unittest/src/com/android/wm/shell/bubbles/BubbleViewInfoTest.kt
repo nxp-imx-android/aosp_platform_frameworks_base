@@ -170,6 +170,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 { false },
                 bubbleSessionTracker,
                 mock<BubbleViewInfoTask.Factory>(),
+                mock<BubbleHelper>(),
             )
 
         val bubbleStackViewManager = BubbleStackViewManager.fromBubbleController(bubbleController)

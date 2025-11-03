@@ -170,6 +170,7 @@ import com.android.wm.shell.bubbles.BubbleDataRepository;
 import com.android.wm.shell.bubbles.BubbleEducationController;
 import com.android.wm.shell.bubbles.BubbleEntry;
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.bubbles.BubbleOverflow;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.BubbleStackView;
@@ -337,6 +338,8 @@ public class BubblesTest extends SysuiTestCase {
     private BubbleLogger mBubbleLogger;
     @Mock
     private BubbleSessionTracker mSessionTracker;
+    @Mock
+    private BubbleHelper mBubbleHelper;
     @Mock
     private BubbleEducationController mEducationController;
     @Mock
@@ -567,7 +570,8 @@ public class BubblesTest extends SysuiTestCase {
                 mHomeIntentProvider,
                 Optional.empty(),
                 mSessionTracker,
-                bubbleViewInfoTaskFactory);
+                bubbleViewInfoTaskFactory,
+                mBubbleHelper);
         mBubbleController.setExpandListener(mBubbleExpandListener);
         spyOn(mBubbleController);
 

@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.bubbles;
 
-import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_DELETED;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_UPDATED;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
@@ -37,7 +36,6 @@ import static com.android.wm.shell.bubbles.Bubbles.DISMISS_PACKAGE_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_SHORTCUT_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_CHANGED;
 import static com.android.wm.shell.bubbles.logging.BubbleSessionTracker.getBubblePackageForLogging;
-import static com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR;
 
@@ -89,7 +87,6 @@ import android.window.IMultitaskingController;
 import android.window.IMultitaskingControllerCallback;
 import android.window.ScreenCaptureInternal;
 import android.window.ScreenCaptureInternal.SynchronousScreenCaptureListener;
-import android.window.TaskOrganizer;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -256,9 +253,9 @@ public class BubbleController implements ConfigurationChangeListener,
 
     private final BubbleLogger mLogger;
     private final BubbleData mBubbleData;
+    private final BubbleHelper mBubbleHelper;
     @Nullable private BubbleStackView mStackView;
     @Nullable private BubbleBarLayerView mLayerView;
-    @Nullable private ActivityManager.RunningTaskInfo mAppBubbleRootTaskInfo;
     private BubbleIconFactory mBubbleIconFactory;
     private final BubblePositioner mBubblePositioner;
     private Bubbles.SysuiProxy mSysuiProxy;
@@ -387,7 +384,8 @@ public class BubbleController implements ConfigurationChangeListener,
             Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
             BubblesFoldLockSettingsObserver foldLockSettingsObserver,
             BubbleSessionTracker sessionTracker,
-            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
+            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
+            BubbleHelper bubbleHelper) {
         BubbleLog.addLogger(new BubbleProtoLog());
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
@@ -448,6 +446,7 @@ public class BubbleController implements ConfigurationChangeListener,
         mSessionTracker = sessionTracker;
         mBubbleViewInfoTaskFactory = bubbleViewInfoTaskFactory;
         mBubbleShellCommandHandler = new BubbleShellCommandHandler(this);
+        mBubbleHelper = bubbleHelper;
         shellInit.addInitCallback(this::onInit, this);
 
         if (unfoldProgressProvider.isPresent() && Flags.enableBubbleBar()) {
@@ -638,43 +637,6 @@ public class BubbleController implements ConfigurationChangeListener,
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to register Bubble multitasking delegate.", e);
             }
-        }
-
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
-            // Create a root-task in WM Core. The app bubble tasks will be positioned as the leaf
-            // tasks under this root-task.
-            // The app bubble should be dismissed with proper transition (such as need to convert
-            // it to fullscreen) if the bubble task is no longer be a leaf task under this leaf
-            // task.
-            mTaskOrganizer.createRootTask(
-                    new TaskOrganizer.CreateRootTaskRequest()
-                            .setName("Bubbles")
-                            .setDisplayId(mContext.getDisplayId())
-                            .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW),
-                    new ShellTaskOrganizer.TaskListener() {
-                        @Override
-                        public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo,
-                                SurfaceControl leash) {
-                            if (mAppBubbleRootTaskInfo != null) {
-                                return;
-                            }
-                            mAppBubbleRootTaskInfo = taskInfo;
-                            mBubbleTransitions.mTaskViewTransitions.setTaskViewRootTaskInfo(
-                                    taskInfo);
-
-                            final WindowContainerTransaction wct = new WindowContainerTransaction();
-                            wct.reorder(taskInfo.token, false /* onTop */);
-                            wct.setInterceptBackPressedOnTaskRoot(taskInfo.token,
-                                    true /* interceptBackPressed */);
-                            wct.setTaskForceExcludedFromRecents(taskInfo.token,
-                                    true /* forceExcluded */);
-                            wct.setDisablePip(taskInfo.token, true /* disablePip */);
-                            wct.setDisableLaunchAdjacent(taskInfo.token,
-                                    true /* disableLaunchAdjacent */);
-                            wct.setForceTranslucent(taskInfo.token, true /* forceTranslucent */);
-                            mTaskOrganizer.applyTransaction(wct);
-                        }
-                    });
         }
     }
 
@@ -1495,26 +1457,10 @@ public class BubbleController implements ConfigurationChangeListener,
         return bubble != null && bubble.getCurrentTransition() == null;
     }
 
-    /** Returns whether the given task should be an App Bubble */
+    /** @deprecated User {@link BubbleHelper#isAppBubbleTask} instead. */
+    @Deprecated
     public boolean shouldBeAppBubble(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
-            return mAppBubbleRootTaskInfo != null
-                    && taskInfo.parentTaskId == mAppBubbleRootTaskInfo.taskId;
-        }
-
-        // Skip treating the task as an app bubble if it's transitioning from bubble to split.
-        // In BubblesTransitionObserver#removeBubbleIfLaunchingToSplit, a WCT is applied to set
-        // LaunchNextToBubble=false. Then TaskViewTaskController#notifyTaskRemovalStarted is called,
-        // which triggers this check. However, the isAppBubble flag is only updated during the next
-        // Task#fillTaskInfo by the WM core, so the flag we are currently processing is still true.
-        // Later, TaskViewTransitions#onExternalDone unblocks the animation. Without this check,
-        // DefaultMixedHandler could misinterpret the OPEN change as a bubble-enter transition,
-        // incorrectly re-creating the bubble instead of completing the split-screen transition.
-        if (isBubbleToSplit(taskInfo, mSplitScreenController)) {
-            return false;
-        }
-
-        return taskInfo.isAppBubble;
+        return mBubbleHelper.isAppBubbleTask(taskInfo);
     }
 
     /** @return the bubble in the stack that matches the provided taskInfo. */
@@ -3054,19 +3000,17 @@ public class BubbleController implements ConfigurationChangeListener,
         return mLayerView;
     }
 
-    @Nullable
-    public ActivityManager.RunningTaskInfo getAppBubbleRootTaskInfo() {
-        return mAppBubbleRootTaskInfo;
-    }
-
+    /** @deprecated User {@link BubbleHelper#getAppBubbleRootTaskToken} instead. */
+    @Deprecated
     @Nullable
     public WindowContainerToken getAppBubbleRootTaskToken() {
-        return mAppBubbleRootTaskInfo != null ? mAppBubbleRootTaskInfo.token : null;
+        return mBubbleHelper.getAppBubbleRootTaskToken();
     }
 
-    @Nullable
+    /** @deprecated User {@link BubbleHelper#isAppBubbleRootTask} instead. */
+    @Deprecated
     public boolean isAppBubbleRootTask(int taskId) {
-        return mAppBubbleRootTaskInfo != null && mAppBubbleRootTaskInfo.taskId == taskId;
+        return mBubbleHelper.isAppBubbleRootTask(taskId);
     }
 
     /**
@@ -3927,10 +3871,14 @@ public class BubbleController implements ConfigurationChangeListener,
                 return null;
             }
 
+            final WindowContainerToken rootTaskToken = mBubbleHelper.getAppBubbleRootTaskToken();
+            if (rootTaskToken == null) {
+                throw new IllegalStateException("Bubble root task was not created yet");
+            }
             final WindowContainerTransaction wct = new WindowContainerTransaction();
             if (visible) {
                 wct.reorder(taskView.getTaskInfo().token, true /* onTop */);
-                wct.setAlwaysOnTop(mAppBubbleRootTaskInfo.token, true /* alwaysOnTop */);
+                wct.setAlwaysOnTop(rootTaskToken, true /* alwaysOnTop */);
                 return wct;
             }
 
@@ -3952,8 +3900,8 @@ public class BubbleController implements ConfigurationChangeListener,
             }
 
             if (hideRootTask) {
-                wct.setAlwaysOnTop(mAppBubbleRootTaskInfo.token, false /* alwaysOnTop */);
-                wct.reorder(mAppBubbleRootTaskInfo.token, false /* onTop */);
+                wct.setAlwaysOnTop(rootTaskToken, false /* alwaysOnTop */);
+                wct.reorder(rootTaskToken, false /* onTop */);
             }
             return wct;
         }
