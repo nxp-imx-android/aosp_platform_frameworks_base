@@ -19,12 +19,13 @@ package android.service.personalcontext;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.UserHandleAware;
 import android.content.Context;
+import android.os.ParcelUuid;
 import android.os.RemoteException;
+import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsight;
@@ -32,7 +33,7 @@ import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
 
 import java.util.List;
-
+import java.util.UUID;
 /**
  * Client facing access to the PersonalContext service.
  *
@@ -99,6 +100,49 @@ public final class PersonalContextManager {
     public void publishInsight(@NonNull List<ContextInsight> insights) {
         try {
             mService.publishInsight(ContextInsightWrapper.wrapList(insights), mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Registers a client to receive embedded surfaces.
+     *
+     * @param clientInfo the {@link InsightSurfaceClientInfo} object for the client
+     * @param hints a list of {@link ContextHint}s from the client used to trigger a new refiner
+     *              workflow
+     * @return a UUID that can be used to unregister the client, or {@code null} if registration
+     *         failed
+     *
+     * @hide
+     */
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    @Nullable
+    public UUID registerInsightSurfaceClient(
+            @NonNull InsightSurfaceClientInfo clientInfo, @NonNull List<ContextHint> hints) {
+        final ParcelUuid id;
+        try {
+            id = mService.registerInsightSurfaceClient(
+                    ContextHintWrapper.wrapList(hints), clientInfo, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+        return id != null ? id.getUuid() : null;
+    }
+
+    /**
+     * Unregisters an embedded insight surface client.
+     *
+     * @param id the UUID of the client to unregister
+     *
+     * @hide
+     */
+    @UserHandleAware(
+            requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    public void unregisterInsightSurfaceClient(UUID id) {
+        try {
+            mService.unregisterInsightSurfaceClient(new ParcelUuid(id), mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

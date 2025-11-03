@@ -17,6 +17,7 @@
 package com.android.server.personalcontext;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -107,7 +108,7 @@ public class PersonalContextManagerServiceTest {
         ContextComponentManager systemManager =
                 mService.getComponentManagerForUser(UserHandle.USER_SYSTEM);
         assertThat(systemManager).isNotNull();
-        assertThat(systemManager.getRenderers()).hasSize(1);
+        assertThat(systemManager.getRenderers()).hasSize(2);
     }
 
     @Test
