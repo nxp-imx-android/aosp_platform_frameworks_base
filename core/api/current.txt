@@ -13617,7 +13617,7 @@ package android.content.pm {
     method public boolean hasParentSessionId();
     method public boolean isActive();
     method public boolean isApplicationEnabledSettingPersistent();
-    method @FlaggedApi("android.content.pm.sdk_dependency_installer") public boolean isAutoInstallDependenciesEnabled();
+    method @Deprecated @FlaggedApi("android.content.pm.sdk_dependency_installer_deprecation") public boolean isAutoInstallDependenciesEnabled();
     method public boolean isCommitted();
     method public boolean isMultiPackage();
     method public boolean isPreApprovalRequested();
@@ -13651,7 +13651,7 @@ package android.content.pm {
     method public void setAppLabel(@Nullable CharSequence);
     method public void setAppPackageName(@Nullable String);
     method public void setApplicationEnabledSettingPersistent();
-    method @FlaggedApi("android.content.pm.sdk_dependency_installer") public void setAutoInstallDependenciesEnabled(boolean);
+    method @Deprecated @FlaggedApi("android.content.pm.sdk_dependency_installer_deprecation") public void setAutoInstallDependenciesEnabled(boolean);
     method @Deprecated public void setAutoRevokePermissionsMode(boolean);
     method public void setDontKillApp(boolean);
     method @FlaggedApi("android.content.pm.verification_service") public void setExtensionParams(@NonNull android.os.PersistableBundle);

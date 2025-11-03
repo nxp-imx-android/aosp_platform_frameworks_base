@@ -225,9 +225,11 @@ public class PackageInstaller {
      * Intent action to be sent to the implementer of
      * {@link android.content.pm.dependencyinstaller.DependencyInstallerService}.
      *
+     * @deprecated The automatic dependency installation feature is no longer supported.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SDK_DEPENDENCY_INSTALLER)
+    @FlaggedApi(Flags.FLAG_SDK_DEPENDENCY_INSTALLER_DEPRECATION)
+    @Deprecated
     @SystemApi
     public static final String ACTION_INSTALL_DEPENDENCY =
             "android.content.pm.action.INSTALL_DEPENDENCY";
@@ -4037,8 +4039,11 @@ public class PackageInstaller {
          *                                      SDK or static shared library dependencies,
          *                                      {@code false} to disable and fail immediately if
          *                                      dependencies aren't already installed.
+         *
+         * @deprecated The automatic dependency installation feature is no longer supported.
          */
-        @FlaggedApi(Flags.FLAG_SDK_DEPENDENCY_INSTALLER)
+        @Deprecated
+        @FlaggedApi(Flags.FLAG_SDK_DEPENDENCY_INSTALLER_DEPRECATION)
         public void setAutoInstallDependenciesEnabled(boolean enableAutoInstallDependencies) {
             isAutoInstallDependenciesEnabled = enableAutoInstallDependencies;
         }
@@ -5008,8 +5013,11 @@ public class PackageInstaller {
          * be automatically installed even if this method returns true.
          *
          * @return true if the dependencies will be auto-installed, false otherwise.
+         *
+         * @deprecated The automatic dependency installation feature is no longer supported.
          */
-        @FlaggedApi(Flags.FLAG_SDK_DEPENDENCY_INSTALLER)
+        @Deprecated
+        @FlaggedApi(Flags.FLAG_SDK_DEPENDENCY_INSTALLER_DEPRECATION)
         public boolean isAutoInstallDependenciesEnabled() {
             return isAutoInstallingDependenciesEnabled;
         }
