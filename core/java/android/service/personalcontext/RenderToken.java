@@ -23,6 +23,7 @@ import android.service.personalcontext.hint.ContextHint;
 
 import androidx.annotation.NonNull;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -92,6 +93,21 @@ public final class RenderToken implements Parcelable {
             return new RenderToken[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RenderToken)) return false;
+
+        final RenderToken other = (RenderToken) o;
+        return Objects.equals(mId, other.mId)
+                && Objects.equals(mRendererComponentId, other.mRendererComponentId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mId, mRendererComponentId);
+    }
 
     /**
      * Builder used to create a {@link RenderToken}.

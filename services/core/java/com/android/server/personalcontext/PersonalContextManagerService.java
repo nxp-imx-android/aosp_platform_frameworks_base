@@ -163,8 +163,7 @@ public class PersonalContextManagerService extends SystemService {
                             userContext,
                             getLocalService(NotificationManagerInternal.class),
                             userContext.getPackageManager());
-            final EmbeddedInsightRenderer embeddedInsightRenderer =
-                    new EmbeddedInsightRenderer(userContext);
+            final EmbeddedInsightRenderer embeddedInsightRenderer = new EmbeddedInsightRenderer();
             mUserStates.put(userId,
                     new UserState(
                             componentManager,
@@ -277,20 +276,20 @@ public class PersonalContextManagerService extends SystemService {
         return userState != null ? userState.componentManager() : null;
     }
 
-    private UUID registerInsightSurfaceClient(
+    private void registerInsightSurfaceClient(
             int userId, Set<ContextHint> clientHints, InsightSurfaceClientInfo clientInfo) {
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
-            return null;
+            return;
         }
 
-        final UUID id =
-                userState.embeddedInsightRenderer.registerInsightSurfaceClient(clientInfo);
         final RenderToken renderToken =
-                userState.embeddedInsightRenderer.getRenderTokenForClient(clientInfo);
-        final Set<ContextHint> hints = new HashSet<>(clientHints);
-        startRefinerWorkflow(userId, hints, renderToken);
-        return id;
+                userState.embeddedInsightRenderer.registerInsightSurfaceClient(clientInfo);
+        if (renderToken == null) {
+            Slog.e(TAG, "No render token for client " + clientInfo.getId());
+            return;
+        }
+        startRefinerWorkflow(userId, clientHints, renderToken);
     }
 
     private void unregisterInsightSurfaceClient(int userId, UUID id) {
@@ -360,32 +359,27 @@ public class PersonalContextManagerService extends SystemService {
 
             // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
-                    () -> {
-                        getService()
-                                .startInsightWorkflow(
-                                        userId,
-                                        ContextInsightWrapper.unwrapInto(
-                                                insights, new HashSet<>()));
-                    });
+                    () -> getService()
+                            .startInsightWorkflow(
+                                    userId,
+                                    ContextInsightWrapper.unwrapInto(
+                                            insights, new HashSet<>())));
         }
 
         @PermissionManuallyEnforced
         @Override
-        public ParcelUuid registerInsightSurfaceClient(
+        public void registerInsightSurfaceClient(
                 List<ContextHintWrapper> clientHints,
                 InsightSurfaceClientInfo clientInfo,
                 int userId) {
             verifyUser(userId);
 
             // TODO(b/450547433): Add security checks.
-            return Binder.withCleanCallingIdentity(
-                    () -> {
-                        final UUID id = getService().registerInsightSurfaceClient(
-                                userId,
-                                ContextHintWrapper.unwrapInto(clientHints, new HashSet<>()),
-                                clientInfo);
-                        return id != null ? new ParcelUuid(id) : null;
-                    });
+            Binder.withCleanCallingIdentity(
+                    () -> getService().registerInsightSurfaceClient(
+                            userId,
+                            ContextHintWrapper.unwrapInto(clientHints, new HashSet<>()),
+                            clientInfo));
         }
 
         @PermissionManuallyEnforced

@@ -33,7 +33,7 @@ import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.util.Log;
 
 import java.util.List;
-import java.util.UUID;
+
 /**
  * Client facing access to the PersonalContext service.
  *
@@ -111,38 +111,35 @@ public final class PersonalContextManager {
      * @param clientInfo the {@link InsightSurfaceClientInfo} object for the client
      * @param hints a list of {@link ContextHint}s from the client used to trigger a new refiner
      *              workflow
-     * @return a UUID that can be used to unregister the client, or {@code null} if registration
-     *         failed
      *
      * @hide
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     @Nullable
-    public UUID registerInsightSurfaceClient(
+    public void registerInsightSurfaceClient(
             @NonNull InsightSurfaceClientInfo clientInfo, @NonNull List<ContextHint> hints) {
-        final ParcelUuid id;
         try {
-            id = mService.registerInsightSurfaceClient(
+            mService.registerInsightSurfaceClient(
                     ContextHintWrapper.wrapList(hints), clientInfo, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-        return id != null ? id.getUuid() : null;
     }
 
     /**
      * Unregisters an embedded insight surface client.
      *
-     * @param id the UUID of the client to unregister
+     * @param clientInfo of the client to be unregistered
      *
      * @hide
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public void unregisterInsightSurfaceClient(UUID id) {
+    public void unregisterInsightSurfaceClient(@NonNull InsightSurfaceClientInfo clientInfo) {
         try {
-            mService.unregisterInsightSurfaceClient(new ParcelUuid(id), mContext.getUserId());
+            mService.unregisterInsightSurfaceClient(
+                    new ParcelUuid(clientInfo.getId()), mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

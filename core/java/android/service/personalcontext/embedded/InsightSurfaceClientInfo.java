@@ -158,6 +158,18 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     }
 
     /**
+     * Get the client's {@link IEmbeddedInsightSurfaceCallback}.
+     *
+     * @return the client's {@link IEmbeddedInsightSurfaceCallback}
+     *
+     * @hide
+     */
+    @NonNull
+    public IEmbeddedInsightSurfaceCallback getCallback() {
+        return mCallback;
+    }
+
+    /**
      * Sends the given {@link SurfaceControlViewHost.SurfacePackage} to the client.
      *
      * @param surfacePackage the created {@link SurfaceControlViewHost.SurfacePackage}

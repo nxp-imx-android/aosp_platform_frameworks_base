@@ -16,46 +16,66 @@
 
 package com.android.server.personalcontext.embedded;
 
-import android.content.Context;
+import android.os.RemoteException;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.ContextInsight;
+import android.util.Log;
+import android.util.Slog;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.personalcontext.component.Renderer;
 
+import java.util.List;
 import java.util.UUID;
 
 /** @hide */
 public class EmbeddedInsightRenderer implements Renderer {
-    private final UUID mComponentId = UUID.randomUUID();
+    private static final String TAG = "EmbeddedInsightRenderer";
 
-    public EmbeddedInsightRenderer(Context context) {
+    private final UUID mComponentId = UUID.randomUUID();
+    private final ClientRegistry mClientRegistry = new ClientRegistry();
+
+    public EmbeddedInsightRenderer() {
     }
 
     /**
-     * Register an insight surface client and return a UUID that can be used to unregister the
+     * Register an insight surface client and return the {@link RenderToken} associated with that
      * client.
      */
-    public UUID registerInsightSurfaceClient(InsightSurfaceClientInfo clientInfo) {
-        return UUID.randomUUID();
+    public RenderToken registerInsightSurfaceClient(InsightSurfaceClientInfo clientInfo) {
+        logDebug("registering insight surface client, id=" + clientInfo.getId());
+
+        final RenderToken clientRenderToken = new RenderToken.RenderTokenBuilder()
+                .setRendererComponentId(mComponentId)
+                .build();
+        mClientRegistry.addClient(clientInfo, clientRenderToken);
+
+        // Link the client to death so we can unregister it if it dies.
+        try {
+            clientInfo.getCallback().asBinder().linkToDeath(() -> {
+                logDebug("client has died: " + clientInfo.getId());
+                unregisterInsightSurfaceClient(clientInfo.getId());
+            }, 0);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+
+        return clientRenderToken;
+    }
+
+    /** Return the renderer's registered clients. */
+    @VisibleForTesting
+    public List<InsightSurfaceClientInfo> getClients() {
+        return mClientRegistry.getClients();
     }
 
     /** Unregister the insight surface client with the given id. */
     public void unregisterInsightSurfaceClient(UUID id) {
-    }
-
-    /**
-     * Get the render token for the given client.
-     *
-     * @param clientInfo the client to get the render token for
-     * @return the render token for the given client, or {@code null} if the client does not exist
-     */
-    @Nullable
-    public RenderToken getRenderTokenForClient(InsightSurfaceClientInfo clientInfo) {
-        return null;
+        logDebug("unregistering insight surface client, id=" + id);
+        mClientRegistry.removeClient(id);
     }
 
     @Override
@@ -66,10 +86,29 @@ public class EmbeddedInsightRenderer implements Renderer {
     }
 
     @Override
-    public void render(@NonNull ContextInsight insight, boolean isFirst) {}
+    public void render(@NonNull ContextInsight insight, boolean isFirst) {
+        final InsightSurfaceClientInfo client = clientFromInsight(insight);
+        if (client == null) {
+            logDebug("no client found for insight [" + insight + "]");
+        }
+    }
 
     @Override
     public UUID getComponentId() {
         return mComponentId;
+    }
+
+    private InsightSurfaceClientInfo clientFromInsight(ContextInsight insight) {
+        if (mClientRegistry.isEmpty()) {
+            return null;
+        }
+
+        return mClientRegistry.getClientForRenderToken(insight.getRenderToken());
+    }
+
+    private static void logDebug(String msg) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, msg);
+        }
     }
 }
