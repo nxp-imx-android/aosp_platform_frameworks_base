@@ -551,11 +551,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 new DesktopModeOnTaskResizeAnimationListener());
         mDesktopTasksController.setOnTaskRepositionAnimationListener(
                 new DesktopModeOnTaskRepositionAnimationListener());
-        if (DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue()
-                || DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
-            mRecentsTransitionHandler.addTransitionStateListener(
-                    new DesktopModeRecentsTransitionStateListener());
-        }
+        mRecentsTransitionHandler.addTransitionStateListener(
+                new DesktopModeRecentsTransitionStateListener());
         mDisplayController.addDisplayChangingController(mOnDisplayChangingListener);
         if (mShellDesktopState.canEnterDesktopModeOrShowAppHandle()
                 && Flags.enableDesktopWindowingAppHandleEducation()) {

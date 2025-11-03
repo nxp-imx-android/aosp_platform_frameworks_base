@@ -58,8 +58,6 @@ public enum DesktopModeFlags {
             Flags::enableDesktopIndicatorInSeparateThreadBugfix, true),
     ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX(
             Flags::enableDesktopOpeningDeeplinkMinimizeAnimationBugfix, true),
-    ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX(
-            Flags::enableDesktopRecentsTransitionsCornersBugfix, true),
     ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX(
             Flags::enableDesktopTabTearingMinimizeAnimationBugfix, true),
     ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER(
