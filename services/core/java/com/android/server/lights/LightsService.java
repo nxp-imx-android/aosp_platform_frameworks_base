@@ -251,10 +251,11 @@ public class LightsService extends SystemService {
          */
         private void invalidateLightStatesLocked() {
             final Map<Integer, LightState> states = new HashMap<>();
-            for (int i = mSessions.size() - 1; i >= 0; i--) {
+            for (int i = 0; i < mSessions.size(); i++) {
                 SparseArray<LightState> requests = mSessions.get(i).mRequests;
                 for (int j = 0; j < requests.size(); j++) {
-                    states.put(requests.keyAt(j), requests.valueAt(j));
+                    // Add the light state if a higher priority session is not using the light.
+                    states.putIfAbsent(requests.keyAt(j), requests.valueAt(j));
                 }
             }
             for (int i = 0; i < mLightsById.size(); i++) {
