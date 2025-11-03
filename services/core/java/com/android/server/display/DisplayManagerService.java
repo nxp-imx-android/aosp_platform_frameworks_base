@@ -4830,11 +4830,11 @@ public final class DisplayManagerService extends SystemService {
             if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
                 // The client is not visible to the user and is not a system service, so do nothing.
                 if (Flags.sendNonRrCallbacksWhenInBackground()) {
-                    if ((eventMask & DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED)
-                            != 0) {
-                        eventMask =
-                                eventMask ^ DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
-                    }
+
+                    // Remove the DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED from the
+                    // mask
+                    eventMask = eventMask
+                            & ~DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
                     if (extraLogging(mPackageName)) {
                         Slog.i(TAG,
                                 "Not sending refresh rate event because the pid is not in "
@@ -5145,23 +5145,43 @@ public final class DisplayManagerService extends SystemService {
                     for (int i = 0; i < pendingDisplayEvents.length; i++) {
                         Event event = pendingDisplayEvents[i];
                         if (event instanceof PendingDisplayEvent displayEvent) {
-                            if (DEBUG) {
+                            int eventMask = displayEvent.eventMask;
+                            if (extraLogging(mPackageName)) {
                                 Slog.d(TAG, "Send pending display event #" + i + " "
                                         + displayEvent.displayId + "/"
-                                        + displayEvent.eventMask + " to " + mUid + "/" + mPid);
+                                        + eventMask + " to " + mUid + "/" + mPid);
                             }
 
-                            if (!shouldReceiveRefreshRateWithChangeUpdate(displayEvent.eventMask)) {
-                                continue;
+                            if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
+                                if (Flags.sendNonRrCallbacksWhenInBackground()) {
+                                    if ((eventMask
+                                            & DisplayManagerGlobal
+                                            .EVENT_DISPLAY_REFRESH_RATE_CHANGED)
+                                            != 0) {
+                                        eventMask =
+                                                eventMask
+                                                        ^ DisplayManagerGlobal
+                                                        .EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+                                    }
+                                    if (eventMask == 0) {
+                                        continue;
+                                    }
+                                } else {
+                                    continue;
+                                }
                             }
-
                             transmitDisplayEvents(displayEvent.displayId, displayEvent.eventMask);
                         } else if (event instanceof PendingSnapshotEvent snapshotEvent) {
-                            if (DEBUG) {
+                            if (extraLogging(mPackageName)) {
                                 Slog.d(TAG, "Send pending snapshot event to " + mUid
                                         + "/" + mPid);
                             }
                             transmitSnapshotEvent(snapshotEvent);
+                        } else {
+                            if (extraLogging(mPackageName)) {
+                                Slog.d(TAG, "Dropping the pending events " + mUid
+                                        + "/" + mPid);
+                            }
                         }
                     }
                 }
