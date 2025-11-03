@@ -24,4 +24,5 @@ flag {
     namespace: "android_sdk"
     description: "Introduce the constant to represent Android C (Build.VERSION_CODES.CINNAMON_BUN)"
     bug: "448647067"
+    is_exported: true
 }
