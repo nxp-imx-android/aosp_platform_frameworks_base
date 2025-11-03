@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selecione um app para compartilhar"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Compartilhar áudio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Compartilhar janela do app"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Compartilhar guia"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Durante o compartilhamento, o conteúdo da sua tela fica visível"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fazer captura de tela da janela"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Gravar janela"</string>
@@ -256,8 +255,8 @@
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Mais opções"</string>
     <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Verificar de outra forma"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verificar de outra forma"</string>
-    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Gerenciar a Confirmação de Identidade"</string>
-    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Saiba mais sobre a Confirmação de Identidade."</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Gerenciar a confirmação de identidade"</string>
+    <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Saiba mais sobre a confirmação de identidade."</string>
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"A confirmação de identidade está ativada e só pode confirmar sua identidade com sua impressão digital ou seu rosto. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"Analisando risco…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Indisponível"</string>
@@ -563,7 +562,7 @@
     <string name="zen_mode_on" msgid="9085304934016242591">"Ativado"</string>
     <string name="zen_mode_on_with_details" msgid="7416143430557895497">"Ativado • <xliff:g id="TRIGGER_DESCRIPTION">%1$s</xliff:g>"</string>
     <string name="zen_mode_off" msgid="1736604456618147306">"Desativado"</string>
-    <string name="zen_mode_set_up" msgid="8231201163894922821">"Não definido"</string>
+    <string name="zen_mode_set_up" msgid="8231201163894922821">"Não definida"</string>
     <string name="zen_mode_no_manual_invocation" msgid="1769975741344633672">"Gerenciar nas configurações"</string>
     <string name="zen_mode_active_modes" msgid="1625850411578488856">"{count,plural, =0{Nenhum ativo}=1{{mode} ativo}one{# modo ativo}many{# de modos ativos}other{# modos ativos}}"</string>
     <string name="zen_modes_multiple_on_title" msgid="4918235362988982304">"<xliff:g id="NUMBER">%d</xliff:g> modos"</string>
@@ -1151,28 +1150,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu liga/desliga"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Página <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ativar <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"O atalho do teclado para usar o <xliff:g id="ID_4">^4</xliff:g> é o "<annotation id="action_key_icon">"ícone"</annotation>" de <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Pressione <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> de novo para ativar o <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Ativar o atalho do teclado para <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Não ativar"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Ativar atalho"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> atalho do teclado ativado"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"O atalho do teclado para usar o recurso de acessibilidade <xliff:g id="ID_4">^4</xliff:g> é o "<annotation id="action_key_icon">"ícone"</annotation>" de <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Com ele, você aumenta o zoom na tela para ampliar o conteúdo. Depois de ativar a ampliação, pressione o <xliff:g id="ID_5">^1</xliff:g>ícone"<annotation id="action_key_icon">" de ação + "</annotation>" + <xliff:g id="ID_6">^2</xliff:g> \"+\" ou \"-\" para ajustar o zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desativar atalho"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Deixar ativada"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"O atalho do teclado para usar o <xliff:g id="ID_4">^4</xliff:g> é o "<annotation id="action_key_icon">"ícone"</annotation>" de <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. O <xliff:g id="ID_5">^4</xliff:g> é um leitor de tela que fala itens em voz alta. Ele pode ser útil para pessoas com dificuldade de ver a tela. Esse recurso pode mudar o funcionamento do dispositivo."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ao ativar o atalho do teclado, você permite que o TalkBack tenha controle total do dispositivo."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"O controle total é adequado para apps que ajudam você com as necessidades de acessibilidade, mas não para a maioria dos apps."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Ver e controlar tela"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Pode ler todo o conteúdo na tela e mostrar conteúdo sobreposto a outros apps."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Ver e realizar ações"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Pode monitorar suas interações com um app ou um sensor de hardware e interagir com apps em seu nome."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Pressionar o "<annotation id="action_key_icon">"ícone"</annotation>" de <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ativa o <xliff:g id="ID_4">^4</xliff:g>, um recurso de acessibilidade. Com ele, você controla o dispositivo por comandos de voz."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Acessibilidade"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Concluir"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Tela de bloqueio"</string>
@@ -1735,12 +1729,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Deslize do canto superior esquerdo para baixo para abrir as notificações"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Deslize de cima para baixo no canto direito para abrir as Configurações Rápidas"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Voltar"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Acessibilidade"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Voltar"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Avançar"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navegar para a próxima página"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"preencher automaticamente"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"abrir"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

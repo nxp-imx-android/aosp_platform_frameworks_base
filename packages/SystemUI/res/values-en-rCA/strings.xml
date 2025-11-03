@@ -1729,11 +1729,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Swipe from the top left to open notifications"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Swipe from the top right to open Quick Settings"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Back"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Accessibility"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Previous"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Next"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigate to the next page"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofill"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"expand"</string>
-    <string name="notification_animated_action_content_description" msgid="3798244023514868301">"Magic Cue %1$s"</string>
 </resources>

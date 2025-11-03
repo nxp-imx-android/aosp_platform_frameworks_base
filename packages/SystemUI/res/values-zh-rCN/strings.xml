@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"选择要分享的应用"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"共享音频"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"共享应用窗口"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"分享标签页"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"共享时，屏幕上的内容会公开可见"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"窗口截图"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"录制窗口"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"从左上方向下滑动可打开通知栏"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"从右上方向下滑动可打开快捷设置"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"返回"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"无障碍"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"上一页"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"下一页"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"前往下一页"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"自动填充"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"展开"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

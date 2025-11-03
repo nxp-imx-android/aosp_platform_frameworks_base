@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Paylaşmak için bir uygulama seçin"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Sesi paylaş"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Uygulama penceresini paylaşın"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Sekmeyi paylaş"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Paylaşım sırasında ekranınızdaki içerikler görünür"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Pencerenin ekran görüntüsünü al"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Pencereyi kaydet"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Bildirimleri açmak için sol üstten kaydırın"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Hızlı Ayarlar\'ı açmak için sağ üstten kaydırın"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Geri"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Erişilebilirlik"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Önceki"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Sonraki"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"sonraki sayfaya git"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"otomatik doldur"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"genişlet"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

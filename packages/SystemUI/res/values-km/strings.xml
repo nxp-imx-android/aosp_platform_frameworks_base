@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"ជ្រើសរើសកម្មវិធីដើម្បីចែករំលែក"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ស្ដាប់សំឡេងរួមគ្នា"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"បង្ហាញវិនដូកម្មវិធី"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ចែករំលែកផ្ទាំង"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"នៅពេលបង្ហាញ អ្នកផ្សេងអាចមើលឃើញខ្លឹមសារអេក្រង់របស់អ្នក"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ថតរូបអេក្រង់វិនដូ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ថត​វិនដូ"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"អូសពីខាងឆ្វេងផ្នែកខាងលើដើម្បីបើកការជូនដំណឹង"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"អូសពីខាងស្ដាំផ្នែកខាងលើដើម្បីបើកការកំណត់រហ័ស"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ថយក្រោយ"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"ភាពងាយស្រួល"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"មុន"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"បន្ទាប់"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"រុក​រក​ទៅ​ទំព័រ​បន្ទាប់"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"បំពេញស្វ័យប្រវត្តិ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ពង្រីក"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>
