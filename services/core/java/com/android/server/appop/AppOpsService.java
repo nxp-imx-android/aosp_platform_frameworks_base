@@ -4235,9 +4235,10 @@ public class AppOpsService extends IAppOpsService.Stub {
 
         boolean isRestricted = false;
         synchronized (this) {
-            // Edit is false, as dry run shouldn't make any changes
-            final Ops ops = getOpsLocked(uid, packageName, attributionTag,
-                    pvr.isAttributionTagValid, pvr.bypass, /* edit */ false);
+            // Edit is true (so we create the Ops object if needed), but attribution tag is given as
+            // null, so we don't cache any information about it.
+            final Ops ops = getOpsLocked(uid, packageName, null,
+                    pvr.isAttributionTagValid, pvr.bypass, /* edit */ true);
             if (ops == null) {
                 if (DEBUG) {
                     Slog.d(TAG, "startOperation: no op for code " + code + " uid " + uid
