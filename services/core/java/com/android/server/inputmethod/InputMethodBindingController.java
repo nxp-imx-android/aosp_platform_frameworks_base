@@ -60,7 +60,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.annotations.GuardedBy;
@@ -516,14 +515,34 @@ final class InputMethodBindingController {
 
     /** Returns whether the bound IME supports Stylus Handwriting. */
     @GuardedBy("ImfLock.class")
-    boolean supportsStylusHandwriting() {
+    boolean getSupportsStylusHandwriting() {
         return mSupportsStylusHw;
     }
 
-    /** Returns whether the bound IME supports connectionless Stylus Handwriting sessions. */
+    /**
+     * Sets whether the latest bound IME supports Stylus Handwriting.
+     *
+     * @param supports whether the latest bound IME supports Stylus Handwriting.
+     */
     @GuardedBy("ImfLock.class")
-    boolean supportsConnectionlessStylusHandwriting() {
+    void setSupportsStylusHandwriting(boolean supports) {
+        mSupportsStylusHw = supports;
+    }
+
+    /** Returns whether the latest bound IME supports connectionless Stylus Handwriting. */
+    @GuardedBy("ImfLock.class")
+    boolean getSupportsConnectionlessStylusHandwriting() {
         return mSupportsConnectionlessStylusHw;
+    }
+
+    /**
+     * Sets whether the latest bound IME supports connectionless Stylus Handwriting.
+     *
+     * @param supports whether the latest bound IME supports connectionless Stylus Handwriting.
+     */
+    @GuardedBy("ImfLock.class")
+    void setSupportsConnectionlessStylusHandwriting(boolean supports) {
+        mSupportsConnectionlessStylusHw = supports;
     }
 
     /**
@@ -619,47 +638,33 @@ final class InputMethodBindingController {
         @Override
         public void onServiceConnected(@NonNull ComponentName name, @NonNull IBinder service) {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.onServiceConnected");
-            synchronized (ImfLock.class) {
-                if (mCurIme != null && Flags.warmWorkProfileIme()) {
-                    // IME was bound, binding became inactive and now active again without unbinding
-                    // so the IME can be re-used.
-                    return;
+            try {
+                synchronized (ImfLock.class) {
+                    if (mCurIme != null && Flags.warmWorkProfileIme()) {
+                        // IME was bound, binding became inactive and now active again without
+                        // unbinding so the IME can be re-used.
+                        return;
+                    }
+                    // If IME is unbound before this callback, the intent becomes null.
+                    if (mCurImeIntent != null && name.equals(mCurImeIntent.getComponent())) {
+                        mCurIme = IInputMethodInvoker.create(
+                                IInputMethod.Stub.asInterface(service));
+                        mCurImeUid = getPackageUid(name.getPackageName());
+                        if (DEBUG) {
+                            Slog.v(TAG, "Initializing IME with token: " + mCurToken
+                                    + " on display: " + mCurDisplayId);
+                        }
+                        mService.initializeImeLocked(mCurIme, mCurToken, mUserId);
+                        mService.onImeConnected(mCurImeId, mCurImeUid, mUserId);
+                        mAutofillController.performOnCreateInlineSuggestionsRequest();
+                    }
                 }
-                // If IME is unbound before this callback, the intent becomes null.
-                if (mCurImeIntent != null && name.equals(mCurImeIntent.getComponent())) {
-                    mCurIme = IInputMethodInvoker.create(IInputMethod.Stub.asInterface(service));
-                    mCurImeUid = getPackageUid(name.getPackageName());
-                    final InputMethodInfo curImi = InputMethodSettingsRepository.get(mUserId)
-                            .getMethodMap().get(mCurImeId);
-                    final boolean supportsStylusHwChanged =
-                            mSupportsStylusHw != curImi.supportsStylusHandwriting();
-                    mSupportsStylusHw = curImi.supportsStylusHandwriting();
-                    if (supportsStylusHwChanged) {
-                        InputMethodManager.invalidateLocalStylusHandwritingAvailabilityCaches();
-                    }
-                    final boolean supportsConnectionlessStylusHwChanged =
-                            mSupportsConnectionlessStylusHw
-                                    != curImi.supportsConnectionlessStylusHandwriting();
-                    if (supportsConnectionlessStylusHwChanged) {
-                        mSupportsConnectionlessStylusHw =
-                                curImi.supportsConnectionlessStylusHandwriting();
-                        InputMethodManager
-                                .invalidateLocalConnectionlessStylusHandwritingAvailabilityCaches();
-                    }
-                    if (DEBUG) {
-                        Slog.v(TAG, "Initializing IME with token: " + mCurToken + " on display: "
-                                + mCurDisplayId);
-                    }
-                    mService.initializeImeLocked(mCurIme, mCurToken, mUserId);
-                    mService.onImeConnected(mCurImeUid, mUserId);
-                    mAutofillController.performOnCreateInlineSuggestionsRequest();
+            } finally {
+                Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+                if (mLatchForTesting != null) {
+                    mLatchForTesting.countDown(); // Notify the finish to tests
+                    mLatchForTesting = null;
                 }
-            }
-            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-
-            if (mLatchForTesting != null) {
-                mLatchForTesting.countDown(); // Notify the finish to tests
-                mLatchForTesting = null;
             }
         }
 
@@ -1060,22 +1065,7 @@ final class InputMethodBindingController {
 
         mWindowManagerInternal.setImeWindowToken(mCurToken, mCurDisplayId);
 
-        final InputMethodInfo curImi = InputMethodSettingsRepository.get(mUserId)
-                .getMethodMap().get(mCurImeId);
-        final boolean supportsStylusHwChanged =
-                mSupportsStylusHw != curImi.supportsStylusHandwriting();
-        mSupportsStylusHw = curImi.supportsStylusHandwriting();
-        if (supportsStylusHwChanged) {
-            InputMethodManager.invalidateLocalStylusHandwritingAvailabilityCaches();
-        }
-        final boolean supportsConnectionlessStylusHwChanged =
-                mSupportsConnectionlessStylusHw
-                        != curImi.supportsConnectionlessStylusHandwriting();
-        if (supportsConnectionlessStylusHwChanged) {
-            mSupportsConnectionlessStylusHw = curImi.supportsConnectionlessStylusHandwriting();
-            InputMethodManager.invalidateLocalConnectionlessStylusHandwritingAvailabilityCaches();
-        }
-        mService.onImeConnected(mCurImeUid, mUserId);
+        mService.onImeConnected(mCurImeId, mCurImeUid, mUserId);
         mAutofillController.performOnCreateInlineSuggestionsRequest();
     }
 

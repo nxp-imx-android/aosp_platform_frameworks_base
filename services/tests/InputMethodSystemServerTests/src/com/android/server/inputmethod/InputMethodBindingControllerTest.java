@@ -24,6 +24,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -303,6 +304,11 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
      *                               before it was made inactive.
      */
     private void verifySetActiveWhileBound(boolean wasBoundBeforeInactive) {
+        final InputMethodInfo info;
+        synchronized (ImfLock.class) {
+            info = InputMethodSettingsRepository.get(mUserId).getMethodMap().get(TEST_IME_ID);
+        }
+        assertThat(info).isNotNull();
         mInstrumentation.runOnMainSync(() -> {
             synchronized (ImfLock.class) {
                 mBindingController.setActive();
@@ -340,7 +346,8 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurIme()).isNotNull();
             final int curImeUid = mBindingController.getCurImeUid();
             assertThat(curImeUid).isNotEqualTo(Process.INVALID_UID);
-            verify(mInputMethodManagerService, times(2)).onImeConnected(eq(curImeUid), eq(mUserId));
+            verify(mInputMethodManagerService, times(2)).onImeConnected(eq(info.getId()),
+                    eq(curImeUid), eq(mUserId));
         }
     }
 
@@ -379,7 +386,7 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurImeUid()).isEqualTo(Process.INVALID_UID);
             final int numConnect = wasUnbound ? 1 : 0;
             verify(mInputMethodManagerService, times(numConnect)).onImeConnected(
-                    anyInt() /* imeUid */, anyInt() /* userId */);
+                    anyString() /* imeId */, anyInt() /* imeUid */, anyInt() /* userId */);
         }
     }
 
@@ -444,8 +451,8 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurIme()).isNotNull();
             final int curImeUid = mBindingController.getCurImeUid();
             assertThat(curImeUid).isNotEqualTo(Process.INVALID_UID);
-            verify(mInputMethodManagerService, times(numBinds)).onImeConnected(eq(curImeUid),
-                    eq(mUserId));
+            verify(mInputMethodManagerService, times(numBinds)).onImeConnected(eq(info.getId()),
+                    eq(curImeUid), eq(mUserId));
         }
     }
 
@@ -497,8 +504,8 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
             assertThat(mBindingController.getCurIme()).isNull();
             final int curImeUid = mBindingController.getCurImeUid();
             assertThat(curImeUid).isEqualTo(Process.INVALID_UID);
-            verify(mInputMethodManagerService, never()).onImeConnected(anyInt() /* imeUid */,
-                    anyInt() /* userId */);
+            verify(mInputMethodManagerService, never()).onImeConnected(anyString() /* imeId */,
+                    anyInt() /* imeUid */, anyInt() /* userId */);
         }
     }
 
