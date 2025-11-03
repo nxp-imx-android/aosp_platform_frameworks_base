@@ -41,7 +41,6 @@ class NormalAppLayerHandler(
         val triggerTask = request.triggerTask ?: return null
         val windowingLayerChange = request.windowingLayerChange ?: return null
 
-        // TODO(b/449681882): It can be TO_FRONT or OPEN.
         if (!windowingLayerChange.isNormalLayerRequest(triggerTask)) {
             return null
         }
@@ -79,6 +78,11 @@ class NormalAppLayerHandler(
         @JvmStatic
         internal fun logW(message: String, vararg args: Any?) {
             ProtoLog.w(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
+        }
+
+        @JvmStatic
+        internal fun logE(message: String, vararg args: Any?) {
+            ProtoLog.e(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
         }
     }
 }

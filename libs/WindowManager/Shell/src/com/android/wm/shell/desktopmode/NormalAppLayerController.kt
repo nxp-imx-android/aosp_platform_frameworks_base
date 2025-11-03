@@ -17,36 +17,84 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.TaskInfo
 import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
 import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
+import android.app.TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE
 import android.os.Bundle
 import android.os.IBinder
 import android.os.IRemoteCallback
 import android.os.RemoteException
+import android.view.SurfaceControl
+import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.desktopmode.NormalAppLayerHandler.Companion.logE
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler.Companion.logV
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler.Companion.logW
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
+import com.android.wm.shell.pinnedlayer.phone.isNotPinned
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.LAYER_SWITCH
+import com.android.wm.shell.shared.desktopmode.DesktopState
+import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TransitionObserver
 
 /**
  * A class responsible for managing
  * [android.app.ActivityManager.AppTask.WINDOWING_LAYER_NORMAL_APP].
  *
- * Normal layer is a layer where apps' windows are launched by default and it really depends in
- * which mode the display is in, e.g. when display is in desktop windowing mode than normal layer is
- * a [com.android.wm.shell.desktopmode.data.Desk] or when the display is touch-first - normal layer
- * is a TDA that contains fullscreen tasks.
+ * Normal layer on the Shell side is pretty loose - everything that is not on the pinned layer is on
+ * the normal layer. That allows to keep API consistent, because we don't need to send layer updates
+ * since the only source to change the layer - pinning or unpinning the window.
  */
 class NormalAppLayerController(
+    shellInit: ShellInit,
+    private val transitions: Transitions,
     private val userRepositories: DesktopUserRepositories,
     private val desktopTasksController: DesktopTasksController?,
-) {
+    private val pinnedLayerController: PinnedLayerController,
+    private val desktopState: DesktopState,
+) : TransitionObserver {
+
+    private val activeTransitions = mutableMapOf<IBinder, MutableSet<ActiveTransition>>()
+
+    init {
+        shellInit.addInitCallback(this::onInit, this)
+    }
+
+    private fun onInit() {
+        transitions.registerObserver(this)
+    }
+
+    override fun onTransitionReady(
+        transition: IBinder,
+        info: TransitionInfo,
+        startTransaction: SurfaceControl.Transaction,
+        finishTransaction: SurfaceControl.Transaction,
+    ) {
+        val activeTransitions = activeTransitions.remove(transition).orEmpty()
+        activeTransitions.forEach { (task, callback) ->
+            val isOnNormalLayer = isOnNormalLayer(task)
+
+            logV(
+                "onTransitionReady: Normal layer request for task=%s in transition=%s: " +
+                    "isOnNormalLayer=%b",
+                task,
+                transition,
+                isOnNormalLayer,
+            )
+            if (callback != null) {
+                val result = if (isOnNormalLayer) RESULT_APPROVED else RESULT_FAILED_BAD_STATE
+                sendWindowingLayerResult(result, callback)
+            }
+        }
+    }
 
     /**
      * Schedules a given task to be moved to a normal app layer.
      *
-     * It's expected that a caller uses this method in scope of the existing transition, preferably
-     * in scope of [com.android.wm.shell.transition.Transitions.TransitionHandler.handleRequest].
+     * Moving to normal layer will either do nothing when the window is already on the normal layer
+     * or move the window to the desk of current task's display.
      *
      * @param transition a transition token in which scope moving should be done.
      * @param taskInfo a target task to be moved to the normal layer.
@@ -64,15 +112,36 @@ class NormalAppLayerController(
         val wct = WindowContainerTransaction()
         val desktopRepository = userRepositories.getProfile(taskInfo.userId)
 
-        // TODO(b/449681882): Add isPinned and a log for pinned + DW as unsupported state.
-        if (desktopTasksController != null) {
+        val isDesktopModeSupportedOnDevice = desktopTasksController != null
+        val isDesktopModeSupportedOnDisplay =
+            desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)
+        val isTaskPinned = pinnedLayerController.isPinned(taskInfo.taskId)
+        val isDesktopWindow = desktopRepository.isActiveTask(taskInfo.taskId)
+        logV(
+            "Checking moving to the desk: taskId=%s, displayId=%s " +
+                "isDesktopModeSupportedOnDevice=%b isDesktopModeSupportedOnDisplay=%b, " +
+                "isTaskPinned=%b, isDesktopWindow=%b",
+            taskInfo.taskId,
+            taskInfo.displayId,
+            isDesktopModeSupportedOnDevice,
+            isDesktopModeSupportedOnDisplay,
+            isTaskPinned,
+            isDesktopWindow,
+        )
+
+        val isMovingToDesktop =
+            isDesktopModeSupportedOnDevice &&
+                isDesktopModeSupportedOnDisplay &&
+                isTaskPinned &&
+                !isDesktopWindow
+        if (isMovingToDesktop) {
             val displayId = taskInfo.displayId
             val deskId = desktopRepository.getActiveDeskId(displayId)
             if (deskId != null) {
-                logV("Normal layer is an active desk=%s", deskId)
+                logV("Normal layer is an active desk with id=%s", deskId)
                 desktopTasksController.moveTaskToDesk(
-                    deskId = deskId,
                     taskId = taskInfo.taskId,
+                    deskId = deskId,
                     userId = taskInfo.userId,
                     wct = wct,
                     transitionSource = LAYER_SWITCH,
@@ -93,13 +162,42 @@ class NormalAppLayerController(
             }
         }
 
-        // TODO(b/449681882): Save windowing layer request callback to notify about the result.
-        // TODO(b/449681882): Check isNotPinned (== isNormalLayer) and approve
-        if (callback != null) {
-            sendWindowingLayerResult(RESULT_APPROVED, callback)
+        if (isTaskPinned && isDesktopWindow) {
+            logE(
+                "Pinned task=%s can't be a desktop window in a Desk. " +
+                    "Skipping moving to the normal layer.",
+                taskInfo,
+            )
         }
 
+        // Always send a transition, even if we do not move pinned window to the normal layer due
+        // to not supported DW or invalid state, the callback must be dispatched.
+        createMoveToNormalTransition(transition, taskInfo, callback)
         return wct
+    }
+
+    private fun createMoveToNormalTransition(
+        transition: IBinder,
+        taskInfo: TaskInfo,
+        callback: IRemoteCallback?,
+    ) {
+        val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
+        transitions += ActiveTransition(taskInfo, callback)
+    }
+
+    /**
+     * Checks whether current [android.app.TaskInfo] is on normal app layer.
+     *
+     * A task is positioned on a normal layer when it's not positioned on other layers, e.g. it is
+     * not pinned. This provides a guarantee that the layer can only be changed only via the API
+     * call.
+     *
+     * @param taskInfo a [android.app.TaskInfo].
+     * @return `true` when task is on the normal layer, `false` otherwise.
+     * @see android.app.ActivityManager.AppTask.requestWindowingLayer
+     */
+    fun isOnNormalLayer(taskInfo: TaskInfo): Boolean {
+        return pinnedLayerController.isNotPinned(taskInfo.taskId)
     }
 
     private fun sendWindowingLayerResult(result: Int, callback: IRemoteCallback) {
@@ -111,4 +209,6 @@ class NormalAppLayerController(
             logW("Failed to invoke callback", e)
         }
     }
+
+    private data class ActiveTransition(val task: TaskInfo, val callback: IRemoteCallback? = null)
 }

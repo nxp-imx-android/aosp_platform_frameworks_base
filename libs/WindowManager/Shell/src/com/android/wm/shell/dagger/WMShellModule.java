@@ -2103,12 +2103,18 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static Optional<NormalAppLayerController> provideNormalAppLayerController(
+            ShellInit shellInit,
+            Transitions transitions,
             Optional<DesktopTasksController> desktopTasksController,
-            Optional<DesktopUserRepositories> desktopUserRepositoriesOptional) {
+            Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
+            Optional<PinnedLayerController> pinnedLayerController,
+            DesktopState desktopState) {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                     new NormalAppLayerController(
-                            desktopUserRepositoriesOptional.get(), desktopTasksController.get()));
+                            shellInit, transitions, desktopUserRepositoriesOptional.get(),
+                            desktopTasksController.get(), pinnedLayerController.get(),
+                            desktopState));
         }
         return Optional.empty();
     }
