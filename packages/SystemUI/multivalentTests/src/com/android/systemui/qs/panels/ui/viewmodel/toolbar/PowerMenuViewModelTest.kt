@@ -134,6 +134,43 @@ class PowerMenuViewModelTest : SysuiTestCase() {
             assertThat(underTest.items.map { it.key }).contains(GlobalActionType.POWER)
         }
 
+    @Test
+    fun items_restartEnabled_containsRestartAction() =
+        kosmos.runTest {
+            // GIVEN restart is possible
+            globalActionsRepository.possibleGlobalActions = listOf(GlobalActionType.RESTART)
+
+            // THEN items contains the restart action
+            assertThat(underTest.items.map { it.key }).contains(GlobalActionType.RESTART)
+        }
+
+    @Test
+    fun items_orderedCorrectly() =
+        kosmos.runTest {
+            // GIVEN all actions are possible.
+            globalActionsRepository.possibleGlobalActions =
+                listOf(
+                    GlobalActionType.POWER,
+                    GlobalActionType.LOGOUT,
+                    GlobalActionType.LOCK,
+                    GlobalActionType.RESTART,
+                )
+            // GIVEN all necessary conditions are met for them to be available
+            fakeUserRepository.setUserManagerLogoutEnabled(true)
+            setUnlocked(true)
+            switchToScene(Scenes.Gone)
+
+            // THEN items are in the fixed order: Lock -> Logout -> Restart -> Power
+            assertThat(underTest.items.map { it.key })
+                .containsExactly(
+                    GlobalActionType.LOCK,
+                    GlobalActionType.LOGOUT,
+                    GlobalActionType.RESTART,
+                    GlobalActionType.POWER,
+                )
+                .inOrder()
+        }
+
     private fun Kosmos.setUnlocked(isUnlocked: Boolean) {
         fakeDeviceEntryRepository.deviceUnlockStatus.value =
             DeviceUnlockStatus(isUnlocked = isUnlocked, deviceUnlockSource = null)
