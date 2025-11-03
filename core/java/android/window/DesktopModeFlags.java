@@ -64,8 +64,6 @@ public enum DesktopModeFlags {
             Flags::enableDesktopRecentsTransitionsCornersBugfix, true),
     ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX(
             Flags::enableDesktopTabTearingMinimizeAnimationBugfix, true),
-    ENABLE_DESKTOP_TRAMPOLINE_CLOSE_ANIMATION_BUGFIX(
-            Flags::enableDesktopTrampolineCloseAnimationBugfix, true),
     ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER(
             Flags::enableDesktopWallpaperActivityForSystemUser, true),
     ENABLE_DESKTOP_WINDOWING_APP_TO_WEB(Flags::enableDesktopWindowingAppToWeb, true),
