@@ -36,11 +36,15 @@ class MultiDisplayDragMoveIndicatorController(
         mutableMapOf<Int, MutableMap<Int, MultiDisplayDragMoveIndicatorSurface>>()
 
     /**
-     * Called during drag move, which started at [startDisplayId] and currently at
-     * [currentDisplayid]. Updates the position and visibility of the drag move indicators for the
-     * [taskInfo] based on [boundsDp] on the destination displays ([displayIds]) as the dragged
-     * window moves. [transactionSupplier] provides a [SurfaceControl.Transaction] for applying
-     * changes to the indicator surfaces.
+     * Updates the position and visibility of drag move indicators for a single task.
+     *
+     * @param boundsDp the current bounds of the dragged task
+     * @param currentDisplayId the ID of the display the drag is currently at
+     * @param startDisplayId the ID of the display the drag started at
+     * @param taskLeash the surface representing the task being dragged
+     * @param taskInfo the task being dragged
+     * @param displayIds contains the IDs of the displays to show drag move indicators on
+     * @param transaction is used to apply updates to indicator surfaces
      */
     fun onDragMove(
         boundsDp: RectF,
@@ -49,11 +53,10 @@ class MultiDisplayDragMoveIndicatorController(
         taskLeash: SurfaceControl,
         taskInfo: RunningTaskInfo,
         displayIds: Set<Int>,
-        transactionSupplier: () -> SurfaceControl.Transaction,
+        transaction: SurfaceControl.Transaction,
     ) {
         val startDisplayDpi =
             displayController.getDisplayLayout(startDisplayId)?.densityDpi() ?: return
-        val transaction = transactionSupplier()
         for (displayId in displayIds) {
             val allowDropToDisplay =
                 if (
@@ -117,7 +120,6 @@ class MultiDisplayDragMoveIndicatorController(
                     dragIndicatorsForTask[displayId] = newIndicator
                 }
         }
-        transaction.apply()
     }
 
     /**

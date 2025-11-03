@@ -116,9 +116,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) {
-            transaction
-        }
+            transaction,
+        )
 
         verify(indicatorSurfaceFactory, never()).create(any(), any())
     }
@@ -136,9 +135,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) {
-            transaction
-        }
+            transaction,
+        )
 
         verify(indicatorSurfaceFactory).create(eq(displayContext0), eq(taskLeash))
         verify(indicatorSurface0)
@@ -168,9 +166,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) {
-            transaction
-        }
+            transaction,
+        )
 
         verify(indicatorSurfaceFactory, never()).create(eq(displayContext1), any())
     }
@@ -188,9 +185,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) {
-            transaction
-        }
+            transaction,
+        )
 
         verify(indicatorSurfaceFactory).create(eq(displayContext0), eq(taskLeash))
         verify(indicatorSurfaceFactory).create(eq(displayContext1), eq(taskLeash))
@@ -222,9 +218,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) {
-            transaction
-        }
+            transaction,
+        )
 
         verify(indicatorSurface0)
             .relayout(
@@ -259,9 +254,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             taskLeash,
             taskInfo,
             displayIds = setOf(0, 1),
-        ) {
-            transaction
-        }
+            transaction,
+        )
 
         // Drag the second task to create an indicator on one display
         controller.onDragMove(
@@ -271,9 +265,8 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
             taskLeash2,
             taskInfo2,
             displayIds = setOf(0, 1),
-        ) {
-            transaction
-        }
+            transaction,
+        )
 
         // Verify indicators for both tasks are created
         verify(indicatorSurfaceFactory).create(eq(displayContext0), eq(taskLeash))

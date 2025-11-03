@@ -307,7 +307,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     windowDecoration.taskSurface,
                     windowDecoration.taskInfo,
                     displayIds,
-                    transactionSupplier,
+                    t,
                 )
                 if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
                     // Move the original task surface off-screen to hide it. A mirrored surface is
