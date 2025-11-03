@@ -279,12 +279,12 @@ static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, const format_type_t forma
         auto assets = AssetsProvider::CreateWithOverride(ZipAssetsProvider::Create(path.c_str(),
                                                                                    property_flags),
                                                          std::move(loader_assets));
-        apk_assets = ApkAssets::Load(std::move(assets), flag_func, property_flags);
+        apk_assets = ApkAssets::Load(std::move(assets), std::move(flag_func), property_flags);
         break;
     }
     case FORMAT_IDMAP:
-      apk_assets = ApkAssets::LoadOverlay(path.c_str(), property_flags);
-      break;
+        apk_assets = ApkAssets::LoadOverlay(path.c_str(), std::move(flag_func), property_flags);
+        break;
     case FORMAT_ARSC:
         apk_assets =
                 ApkAssets::LoadTable(AssetsProvider::CreateAssetFromFile(path.c_str()),
