@@ -315,6 +315,23 @@ package android.location {
     field public static final int ADR_STATE_RESET = 2; // 0x2
     field public static final int ADR_STATE_UNKNOWN = 0; // 0x0
     field public static final int ADR_STATE_VALID = 1; // 0x1
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_A = "A";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_B = "B";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_C = "C";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_D = "D";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_E = "E";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_I = "I";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_L = "L";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_M = "M";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_N = "N";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_P = "P";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_Q = "Q";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_S = "S";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_UNKNOWN = "UNKNOWN";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_W = "W";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_X = "X";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_Y = "Y";
+    field @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public static final String CODE_TYPE_Z = "Z";
     field @NonNull public static final android.os.Parcelable.Creator<android.location.GnssMeasurement> CREATOR;
     field public static final int MULTIPATH_INDICATOR_DETECTED = 1; // 0x1
     field public static final int MULTIPATH_INDICATOR_NOT_DETECTED = 2; // 0x2
@@ -445,13 +462,19 @@ package android.location {
     method @FloatRange(from=0, to=63) public float getBasebandCn0DbHz(@IntRange(from=0) int);
     method @FloatRange(from=0) public float getCarrierFrequencyHz(@IntRange(from=0) int);
     method @FloatRange(from=0, to=63) public float getCn0DbHz(@IntRange(from=0) int);
+    method @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") @NonNull public String getCodeType(@IntRange(from=0) int);
     method public int getConstellationType(@IntRange(from=0) int);
+    method @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") @IntRange(from=0) public long getElapsedRealtimeNanos(@IntRange(from=0) int);
+    method @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") @FloatRange(from=0.0f) public double getElapsedRealtimeUncertaintyNanos(@IntRange(from=0) int);
     method @FloatRange(from=0xffffffa6, to=90) public float getElevationDegrees(@IntRange(from=0) int);
     method @IntRange(from=0) public int getSatelliteCount();
     method @IntRange(from=1, to=206) public int getSvid(@IntRange(from=0) int);
     method public boolean hasAlmanacData(@IntRange(from=0) int);
     method public boolean hasBasebandCn0DbHz(@IntRange(from=0) int);
     method public boolean hasCarrierFrequencyHz(@IntRange(from=0) int);
+    method @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public boolean hasCodeType(@IntRange(from=0) int);
+    method @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public boolean hasElapsedRealtimeNanos(@IntRange(from=0) int);
+    method @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") public boolean hasElapsedRealtimeUncertaintyNanos(@IntRange(from=0) int);
     method public boolean hasEphemerisData(@IntRange(from=0) int);
     method public boolean usedInFix(@IntRange(from=0) int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -469,6 +492,7 @@ package android.location {
   public static final class GnssStatus.Builder {
     ctor public GnssStatus.Builder();
     method @NonNull public android.location.GnssStatus.Builder addSatellite(int, @IntRange(from=1, to=200) int, @FloatRange(from=0, to=63) float, @FloatRange(from=0xffffffa6, to=90) float, @FloatRange(from=0, to=360) float, boolean, boolean, boolean, boolean, @FloatRange(from=0) float, boolean, @FloatRange(from=0, to=63) float);
+    method @FlaggedApi("android.location.flags.support_codetype_in_gnss_status") @NonNull public android.location.GnssStatus.Builder addSatellite(int, @IntRange(from=1, to=200) int, @FloatRange(from=0, to=63) float, @FloatRange(from=0xffffffa6, to=90) float, @FloatRange(from=0, to=360) float, boolean, boolean, boolean, boolean, @FloatRange(from=0) float, boolean, @FloatRange(from=0, to=63) float, boolean, @NonNull String, boolean, @IntRange(from=0) long, boolean, @FloatRange(from=0) double);
     method @NonNull public android.location.GnssStatus build();
     method @NonNull public android.location.GnssStatus.Builder clearSatellites();
   }
