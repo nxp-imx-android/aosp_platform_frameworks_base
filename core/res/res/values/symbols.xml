@@ -5885,6 +5885,45 @@
   <java-symbol name="system_weather_temp_dark" type="color"/>
   <java-symbol name="system_widget_background_dark" type="color"/>
 
+  <java-symbol name="semanticGreenContainerLow" type="color"/>
+  <java-symbol name="semanticGreenOnContainerLow" type="color"/>
+  <java-symbol name="semanticGreenContainer" type="color"/>
+  <java-symbol name="semanticGreenOnContainer" type="color"/>
+  <java-symbol name="semanticGreenOnContainerVariant" type="color"/>
+  <java-symbol name="semanticGreenContainerHigh" type="color"/>
+  <java-symbol name="semanticGreenOnContainerHigh" type="color"/>
+  <java-symbol name="semanticGreenOnSurface" type="color"/>
+  <java-symbol name="semanticGreenOnSurfaceVariant" type="color"/>
+  <java-symbol name="semanticGreenSurfaceContainerLow" type="color"/>
+  <java-symbol name="semanticGreenSurfaceContainer" type="color"/>
+  <java-symbol name="semanticGreenSurfaceContainerHigh" type="color"/>
+  <java-symbol name="semanticGreenSurfaceContainerHighest" type="color"/>
+  <java-symbol name="semanticYellowContainerLow" type="color"/>
+  <java-symbol name="semanticYellowOnContainerLow" type="color"/>
+  <java-symbol name="semanticYellowContainer" type="color"/>
+  <java-symbol name="semanticYellowOnContainer" type="color"/>
+  <java-symbol name="semanticYellowContainerHigh" type="color"/>
+  <java-symbol name="semanticYellowOnContainerHigh" type="color"/>
+  <java-symbol name="semanticYellowOnSurface" type="color"/>
+  <java-symbol name="semanticYellowOnSurfaceVariant" type="color"/>
+  <java-symbol name="semanticYellowSurfaceContainerLow" type="color"/>
+  <java-symbol name="semanticYellowSurfaceContainer" type="color"/>
+  <java-symbol name="semanticYellowSurfaceContainerHigh" type="color"/>
+  <java-symbol name="semanticYellowSurfaceContainerHighest" type="color"/>
+  <java-symbol name="semanticRedContainerLow" type="color"/>
+  <java-symbol name="semanticRedOnContainerLow" type="color"/>
+  <java-symbol name="semanticRedContainer" type="color"/>
+  <java-symbol name="semanticRedOnContainer" type="color"/>
+  <java-symbol name="semanticRedOnContainerVariant" type="color"/>
+  <java-symbol name="semanticRedContainerHigh" type="color"/>
+  <java-symbol name="semanticRedOnContainerHigh" type="color"/>
+  <java-symbol name="semanticRedOnSurface" type="color"/>
+  <java-symbol name="semanticRedOnSurfaceVariant" type="color"/>
+  <java-symbol name="semanticRedSurfaceContainerLow" type="color"/>
+  <java-symbol name="semanticRedSurfaceContainer" type="color"/>
+  <java-symbol name="semanticRedSurfaceContainerHigh" type="color"/>
+  <java-symbol name="semanticRedSurfaceContainerHighest" type="color"/>
+
   <java-symbol type="attr" name="actionModeUndoDrawable" />
   <java-symbol type="attr" name="actionModeRedoDrawable" />
 
