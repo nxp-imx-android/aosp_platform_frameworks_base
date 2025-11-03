@@ -641,10 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Uygulamanın reklam sunmasına, bağlanmasına ve yakındaki kablosuz cihazların göreli konumunu belirlemesine izin verir"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"yerel ağ cihazlarına erişme"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Uygulamanın yerel ağ cihazlarına erişmesine izin verir"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"loopback arayüzünü kullanma"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Uygulamanın, loopback arayüzünden diğer uygulamalarla etkileşimde bulunmasına izin verir"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"yakındaki cihazların göreli konumunu belirleme"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Uygulamanın, yakındaki cihazların birbirine göre konumunu belirlemesine izin verin"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Tercih Edilen NFC Ödeme Hizmeti Bilgileri"</string>
@@ -2611,4 +2609,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Sistem Kaynağı Uyarıları"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Aşırı Kaynak Kullanımı"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\"<xliff:g id="APP_NAME">%1$s</xliff:g>\" uygulaması çok fazla kaynak kullanıyor."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

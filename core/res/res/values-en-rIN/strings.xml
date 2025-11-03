@@ -641,10 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Allows the app to advertise, connect and determine the relative position of nearby Wi‑Fi devices"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"access local network devices"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Allows the app to access local network devices"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"use loopback interface"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Allows the app to interact with other apps over loopback interface"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"determine relative position between nearby devices"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Allow the app to determine relative position between nearby devices"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Preferred NFC payment service information"</string>
@@ -2611,4 +2609,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"System resource alerts"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Resource overuse"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"App \'<xliff:g id="APP_NAME">%1$s</xliff:g> is using too many resources\'."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

@@ -641,10 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Разрешава на приложението да рекламира, да се свързва и да определя относителната позиция на устройствата с Wi-Fi в близост"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"достъп до устройствата в локалната мрежа"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Разрешава на приложението да осъществява достъп до устройствата в локалната мрежа"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"използване на интерфейса за обратна връзка"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Разрешава на приложението да взаимодейства с други приложения чрез интерфейса за обратна връзка"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"опр. на относителната позиция м/у у-вата в близост"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Разрешаване на приложението да определя относителната позиция между устройствата в близост"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Информация за предпочитаната услуга за плащане чрез NFC"</string>
@@ -2611,4 +2609,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Сигнали за системните ресурси"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Прекомерно използване на ресурсите"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Приложението „<xliff:g id="APP_NAME">%1$s</xliff:g>“ използва твърде много ресурси."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

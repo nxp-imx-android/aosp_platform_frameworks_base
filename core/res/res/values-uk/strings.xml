@@ -643,10 +643,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Додаток може виявляти пристрої Wi‑Fi поблизу, підключатися до них і визначати їх відносне розташування"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"отримувати доступ до пристроїв у локальній мережі"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Дозволяє додатку отримувати доступ до пристроїв у локальній мережі"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"використовувати інтерфейс Loopback"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Дозволяє додатку взаємодіяти з іншими додатками через інтерфейс Loopback"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"визначати відстань між пристроями поблизу"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Із цим дозволом додаток може визначати відстань між розташованими поблизу пристроями"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Використання інформації з платіжного NFC-сервісу"</string>
@@ -2613,4 +2611,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Сповіщення про системні ресурси"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Надмірне використання ресурсів"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Додаток <xliff:g id="APP_NAME">%1$s</xliff:g> використовує забагато ресурсів."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

@@ -1635,7 +1635,7 @@
     <string name="sync_really_delete" msgid="5657871730315579051">"アイテムを削除する"</string>
     <string name="sync_undo_deletes" msgid="5786033331266418896">"削除を元に戻す"</string>
     <string name="sync_do_nothing" msgid="4528734662446469646">"今は何もしない"</string>
-    <string name="choose_account_label" msgid="5557833752759831548">"アカウントの選択"</string>
+    <string name="choose_account_label" msgid="5557833752759831548">"アカウントを選択"</string>
     <string name="add_account_label" msgid="4067610644298737417">"アカウントを追加"</string>
     <string name="add_account_button_label" msgid="322390749416414097">"アカウントを追加"</string>
     <string name="number_picker_increment_button" msgid="7621013714795186298">"進めます"</string>
@@ -2609,4 +2609,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"システム リソースのアラート"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"リソースの過剰使用"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」アプリが使用しているリソースが多すぎます。"</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

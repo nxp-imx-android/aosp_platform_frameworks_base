@@ -642,10 +642,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Permet à l\'appli de diffuser des annonces, de se connecter et de déterminer la position relative des appareils Wi-Fi à proximité"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"accéder aux appareils du réseau local"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Permet à l\'appli d\'accéder aux appareils du réseau local"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"utiliser l\'interface de bouclage"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Permet à l\'appli d\'interagir avec d\'autres applis sur l\'interface de bouclage"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"Dét. position relative entre appareils à proximité"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Autorisez l\'appli à déterminer la position relative entre des appareils à proximité"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Information sur le service préféré de paiement CCP"</string>
@@ -2612,4 +2610,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertes relatives aux ressources système"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Utilisation excessive des ressources"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"L\'appli « <xliff:g id="APP_NAME">%1$s</xliff:g> utilise trop de ressources »."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>
