@@ -2075,8 +2075,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
      * Updates callbacks when strong auth requirements change.
      */
     public class StrongAuthTracker extends LockPatternUtils.StrongAuthTracker {
-        public StrongAuthTracker(Context context) {
-            super(context);
+        public StrongAuthTracker(Context context, Looper looper) {
+            super(context, looper);
         }
 
         public boolean isUnlockingWithBiometricAllowed(boolean isStrongBiometric) {
@@ -2274,7 +2274,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         mUserTracker = userTracker;
         mTelephonyListenerManager = telephonyListenerManager;
         mDeviceProvisioned = isDeviceProvisionedInSettingsDb();
-        mStrongAuthTracker = new StrongAuthTracker(context);
+        mStrongAuthTracker = new StrongAuthTracker(context, mainLooper);
         mBackgroundExecutor = backgroundExecutor;
         mMainExecutor = mainExecutor;
         mBroadcastDispatcher = broadcastDispatcher;
