@@ -44722,6 +44722,7 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT = "carrier_roaming_ntn_connect_type_int";
     field public static final String KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT = "carrier_roaming_ntn_emergency_call_to_satellite_handover_type_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_ROAMING_SATELLITE_DEFAULT_SERVICES_INT_ARRAY = "carrier_roaming_satellite_default_services_int_array";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final String KEY_CARRIER_ROAMING_SATELLITE_T911_TO_ESOS_HANDOVER_SUPPORTED_BOOL = "carrier_roaming_satellite_t911_to_esos_handover_supported_bool";
     field public static final String KEY_CARRIER_SERVICE_NAME_STRING_ARRAY = "carrier_service_name_array";
     field public static final String KEY_CARRIER_SERVICE_NUMBER_STRING_ARRAY = "carrier_service_number_array";
     field public static final String KEY_CARRIER_SETTINGS_ACTIVITY_COMPONENT_NAME_STRING = "carrier_settings_activity_component_name_string";
