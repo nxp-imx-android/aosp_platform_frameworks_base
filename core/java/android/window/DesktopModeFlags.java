@@ -50,8 +50,6 @@ public enum DesktopModeFlags {
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS(
             Flags::enableCaptionCompatInsetForceConsumptionAlways, true),
     ENABLE_DESKTOP_APP_HANDLE_ANIMATION(Flags::enableDesktopAppHandleAnimation, true),
-    ENABLE_DESKTOP_APP_LAUNCH_ALTTAB_TRANSITIONS_BUGFIX(
-            Flags::enableDesktopAppLaunchAlttabTransitionsBugfix, true),
     ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX(Flags::enableDesktopAppLaunchTransitionsBugfix,
             true),
     ENABLE_DESKTOP_CLOSE_SHORTCUT_BUGFIX(Flags::enableDesktopCloseShortcutBugfix, false),
