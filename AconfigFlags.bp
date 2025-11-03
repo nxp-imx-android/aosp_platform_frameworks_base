@@ -29,6 +29,7 @@ aconfig_declarations_group {
         "android.app.assist.flags-aconfig-java",
         "android.app.contentrestriction.flags-aconfig-java",
         "android.app.contextualsearch.flags-aconfig-java",
+        "android.app.contentsafety-aconfig-java",
         "android.app.flags-aconfig-java",
         "android.app.jank.flags-aconfig-java",
         "android.app.ondeviceintelligence-aconfig-java",

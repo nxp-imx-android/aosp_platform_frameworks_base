@@ -159,6 +159,7 @@ android_app {
         "android.systemserver.flags-aconfig",
         "android.app.appfunctions.flags-aconfig",
         "android.app.contentrestriction.flags-aconfig",
+        "android.app.contentsafety-aconfig",
         "android.app.contextualsearch.flags-aconfig",
         "android.app.flags-aconfig",
         "android.app.privatecompute.flags-aconfig",
