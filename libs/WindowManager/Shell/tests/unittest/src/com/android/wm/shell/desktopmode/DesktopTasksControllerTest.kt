@@ -163,6 +163,7 @@ import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
+import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
 import com.android.wm.shell.pip2.phone.PipScheduler
 import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.recents.RecentTasksController
@@ -330,6 +331,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var lockTaskChangeListener: LockTaskChangeListener
     @Mock private lateinit var launcherApps: LauncherApps
     @Mock private lateinit var transitionStateHolder: TransitionStateHolder
+    @Mock private lateinit var fullscreenDisconnectHandler: FullscreenDisconnectHandler
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -506,6 +508,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 shellInit = shellInit,
                 splitScreenController = Optional.of(splitScreenController),
                 desktopTasksController = Optional.of(controller),
+                fullscreenDisconnectHandler = Optional.of(fullscreenDisconnectHandler),
             )
 
         shellInit.init()
@@ -10396,8 +10399,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun onDisplayDisconnect_desktopModeSupported_emptyDeskRemoved() {
         val defaultDisplayTask = setUpFreeformTask()
         val transition = Binder()
+        val secondDisplayLayout = mock(DisplayLayout::class.java)
+        whenever(displayController.getDisplayLayout(SECOND_DISPLAY)).thenReturn(secondDisplayLayout)
         taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
         taskRepository.setActiveDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        whenever(desksOrganizer.removeDesk(wctCaptor.capture(), anyInt(), anyInt())).thenAnswer {
+            wctCaptor.firstValue.removeTask(mock(WindowContainerToken::class.java))
+        }
 
         performDisplayDisconnectTransition(
             transition = transition,
@@ -10483,6 +10492,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 defaultDisplayTask.taskId
             }
         whenever(focusTransitionObserver.globallyFocusedTaskId).thenReturn(focusedTaskId)
+        whenever(fullscreenDisconnectHandler.onDisplayDisconnect(anyInt(), anyInt()))
+            .thenReturn(WindowContainerTransaction())
         var preserveRequested = false
         controller.preserveDisplayRequestHandler = PreserveDisplayRequestHandler {
             preserveRequested = true
