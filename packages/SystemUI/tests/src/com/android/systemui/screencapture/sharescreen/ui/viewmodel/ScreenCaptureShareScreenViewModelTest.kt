@@ -21,10 +21,12 @@ import android.app.WaitResult
 import android.content.ComponentName
 import android.content.Intent
 import android.content.testableContext
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.app.activityTaskManager
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -34,6 +36,8 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.displayViewModelFactory
+import com.android.systemui.screencapture.common.ui.viewmodel.displaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTaskViewModelFactory
 import com.android.systemui.screencapture.common.ui.viewmodel.recentTasksViewModel
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ShareScreenUiInteractor
@@ -43,10 +47,13 @@ import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
 @SmallTest
@@ -67,13 +74,25 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        runBlocking {
+            kosmos.displayRepository.emit(
+                setOf(
+                    mock<Display> {
+                        on { displayId } doReturn 0
+                        on { name } doReturn "default display"
+                    }
+                )
+            )
+        }
         viewModel.activateIn(kosmos.testScope)
 
         // Setup the interactor for all tests.
         kosmos.shareScreenUiInteractor.initialize(
-            mediaProjection = mock(),
-            reviewGrantedConsentRequired = false,
+            reviewGrantedConsentRequired = true,
             hostUserHandle = mock(),
+            uid = 100,
+            packageName = context.packageName,
+            initialDisplayId = 0,
         )
     }
 
@@ -87,7 +106,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onShareClicked_hidesUiAndShowsChipAndCallsInteractor() =
+    fun onShareClicked_appTarget_sharingApproved() =
         kosmos.runTest {
             val isChipVisible by
                 collectLastValue(kosmos.shareScreenPrivacyIndicatorInteractor.isChipVisible)
@@ -137,11 +156,36 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             // Verify chip is shown
             assertThat(isChipVisible).isTrue()
             // Verify the sharing state is updated to [Approved].
-            assertThat(sharingState).isEqualTo(ShareScreenUiInteractor.SharingState.Approved)
+            assertThat(sharingState)
+                .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun onShareClicked_displayTarget_sharingApproved() =
+        kosmos.runTest {
+            val target = ScreenCaptureTarget.Fullscreen(displayId = 42)
+            val fakeAndroidDisplay =
+                mock<Display> {
+                    on { displayId } doReturn 42
+                    on { name } doReturn "test display"
+                }
+            kosmos.displayRepository.emit(setOf(fakeAndroidDisplay))
+            viewModel.setTargetViewModel(target)
+
+            val display = kosmos.displaysViewModel.targets.value!!.first()
+            val fakeDisplayViewModel = displayViewModelFactory.create(display)
+            kosmos.displaysViewModel.setSelectedTarget(fakeDisplayViewModel)
+
+            viewModel.onShareClicked()
+
+            val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
+            assertThat(sharingState)
+                .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
         }
 
     @Test
-    fun onCloseClicked_callsInteractor() =
+    fun onCloseClicked_sharingDenied() =
         kosmos.runTest {
             val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
             viewModel.onCloseClicked()
