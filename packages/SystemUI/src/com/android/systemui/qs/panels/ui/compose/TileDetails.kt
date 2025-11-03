@@ -83,7 +83,6 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                     min = TileDetailsDefaults.DetailsMinHeight,
                     max = TileDetailsDefaults.DetailsMaxHeight,
                 )
-                .background(color = colors.onPrimary)
     ) {
         CompositionLocalProvider(
             value = LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant
