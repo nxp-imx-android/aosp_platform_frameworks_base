@@ -69,6 +69,12 @@ import java.util.Set;
 public class PolicyDefinitionMap {
     static final String TAG = "PolicyDefinitionMap";
     private final Map<String, PolicyDefinition<?>> mPolicyDefinitions;
+
+    /**
+     * The set of {@link PolicyDefinition} instances that represent "generic" policies. These
+     * policies are not tied to a single, fixed key but can have multiple instances, often
+     * distinguished by an additional key (e.g., package name for application restrictions).
+     */
     private final Set<PolicyDefinition<?>> mGenericPolicyDefinitions;
 
     /**
