@@ -3438,7 +3438,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             userData.mCurStatsToken = null;
 
             maybeReportToolType(userId);
-            performShowIme(windowToken, statsToken, reason, userData);
+            performShowIme(curIme, windowToken, statsToken, reason, userData);
             visibilityStateComputer.setInputShown(true);
             return true;
         } else {
@@ -3451,32 +3451,31 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     /**
      * Performs showing IME on top of the given window.
      *
+     * @param ime            the interface used to make calls on the IME to be shown.
      * @param showInputToken a token that represents the requester to show IME
      * @param statsToken     the token tracking the current IME request
      * @param reason         the reason for requesting to show IME
      * @param userData       the data of the target user when performing show IME
      */
     @GuardedBy("ImfLock.class")
-    void performShowIme(IBinder showInputToken, @NonNull ImeTracker.Token statsToken,
-            @SoftInputShowHideReason int reason, UserData userData) {
-        final IInputMethodInvoker curIme = userData.mBindingController.getCurIme();
-        if (curIme != null) {
-            ProtoLog.v(IMMS_DEBUG, "Calling %s.showSoftInput(%s) for reason: %s", curIme,
-                    showInputToken, InputMethodDebug.softInputDisplayReasonToString(reason));
-            // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
-            if (curIme.showSoftInput(statsToken)) {
-                if (DEBUG_IME_VISIBILITY) {
-                    EventLog.writeEvent(IMF_SHOW_IME,
-                            statsToken.getTag(),
-                            Objects.toString(userData.mImeBindingState.mFocusedWindow),
-                            InputMethodDebug.softInputDisplayReasonToString(reason),
-                            InputMethodDebug.softInputModeToString(
-                                    userData.mImeBindingState.mFocusedWindowSoftInputMode));
-                }
-                // TODO(b/419459695): Check if we still need to pass the input token
-                onShowHideSoftInputRequested(true /* show */, showInputToken, reason,
-                        statsToken, userData.mUserId);
+    void performShowIme(@NonNull IInputMethodInvoker ime, IBinder showInputToken,
+            @NonNull ImeTracker.Token statsToken, @SoftInputShowHideReason int reason,
+            @NonNull UserData userData) {
+        ProtoLog.v(IMMS_DEBUG, "Calling %s.showSoftInput(%s) for reason: %s", ime,
+                showInputToken, InputMethodDebug.softInputDisplayReasonToString(reason));
+        // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
+        if (ime.showSoftInput(statsToken)) {
+            if (DEBUG_IME_VISIBILITY) {
+                EventLog.writeEvent(IMF_SHOW_IME,
+                        statsToken.getTag(),
+                        Objects.toString(userData.mImeBindingState.mFocusedWindow),
+                        InputMethodDebug.softInputDisplayReasonToString(reason),
+                        InputMethodDebug.softInputModeToString(
+                                userData.mImeBindingState.mFocusedWindowSoftInputMode));
             }
+            // TODO(b/419459695): Check if we still need to pass the input token
+            onShowHideSoftInputRequested(true /* show */, showInputToken, reason, statsToken,
+                    userData.mUserId);
         }
     }
 
@@ -3543,13 +3542,13 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final var visibilityStateComputer = userData.mVisibilityStateComputer;
 
         // There is a chance that IMM#hideSoftInput() is called in a transient state where
-        // IMMS#InputShown is already updated to be true whereas the user's ImeWindowVis is still
-        // waiting to be updated with the new value sent from IME process.  Even in such a transient
-        // state historically we have accepted an incoming call of IMM#hideSoftInput() from the
-        // application process as a valid request, and have even promised such a behavior with CTS
-        // since Android Eclair.  That's why we need to accept IMM#hideSoftInput() even when only
-        // IMMS#InputShown indicates that the software keyboard is shown.
-        // TODO(b/246309664): Clean up IMMS#mImeWindowVis
+        // ImeVisibilityStateComputer#mInputShown is already updated to be true whereas the user's
+        // ImeWindowVis is still waiting to be updated with the new value sent from IME process.
+        // Even in such a transient state historically we have accepted an incoming call of
+        // IMM#hideSoftInput() from the application process as a valid request, and have even
+        // promised such a behavior with CTS since Android Eclair. That's why we need to accept
+        // IMM#hideSoftInput() even when only ImeVisibilityStateComputer#mInputShown indicates that
+        // the software keyboard is shown.
         final IInputMethodInvoker curIme = bindingController.getCurIme();
         final boolean shouldHideSoftInput = curIme != null
                 && (visibilityStateComputer.isInputShown()
@@ -3559,12 +3558,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             visibilityStateComputer.requestImeVisibility(windowToken, false);
         }
         if (shouldHideSoftInput) {
-            // The IME will report its visible state again after the following message finally
-            // delivered to the IME process as an IPC.  Hence the inconsistency between
-            // IMMS#mInputShown and the user's ImeWindowVis should be resolved spontaneously in
-            // the final state.
+            // The IME will report its visible state again after the call reaches the IME process as
+            // an IPC. Hence the inconsistency between ImeVisibilityStateComputer#mInputShown and
+            // the user's ImeWindowVis should be resolved spontaneously in the final state.
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_SHOULD_HIDE);
-            performHideIme(windowToken, statsToken, reason, userData);
+            performHideIme(curIme, windowToken, statsToken, reason, userData);
         } else {
             ImeTracker.forLogging().onCancelled(statsToken, ImeTracker.PHASE_SERVER_SHOULD_HIDE);
         }
@@ -3580,36 +3578,31 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     /**
      * Performs hiding IME to the given window
      *
+     * @param ime            the interface used to make calls on the IME to hide.
      * @param hideInputToken a token that represents the requester to hide IME
      * @param statsToken     the token tracking the current IME request
      * @param reason         the reason for requesting to hide IME
      * @param userData       the data of the target user when performing show IME
      */
     @GuardedBy("ImfLock.class")
-    void performHideIme(IBinder hideInputToken, @NonNull ImeTracker.Token statsToken,
-            @SoftInputShowHideReason int reason, UserData userData) {
-        final IInputMethodInvoker curIme = userData.mBindingController.getCurIme();
-        if (curIme != null) {
-            // The IME will report its visible state again after the following message finally
-            // delivered to the IME process as an IPC.  Hence the inconsistency between
-            // IMMS#mInputShown and IMMS#mImeWindowVis should be resolved spontaneously in
-            // the final state.
-            ProtoLog.v(IMMS_DEBUG, "Calling %s.hideSoftInput(%s) for reason: %s", curIme,
-                    hideInputToken, InputMethodDebug.softInputDisplayReasonToString(reason));
-            // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
-            if (curIme.hideSoftInput(statsToken)) {
-                if (DEBUG_IME_VISIBILITY) {
-                    EventLog.writeEvent(IMF_HIDE_IME,
-                            statsToken.getTag(),
-                            Objects.toString(userData.mImeBindingState.mFocusedWindow),
-                            InputMethodDebug.softInputDisplayReasonToString(reason),
-                            InputMethodDebug.softInputModeToString(
-                                    userData.mImeBindingState.mFocusedWindowSoftInputMode));
-                }
-                // TODO(b/419459695): Check if we still need to pass the input token
-                onShowHideSoftInputRequested(false /* show */, hideInputToken, reason,
-                        statsToken, userData.mUserId);
+    void performHideIme(@NonNull IInputMethodInvoker ime, IBinder hideInputToken,
+            @NonNull ImeTracker.Token statsToken, @SoftInputShowHideReason int reason,
+            @NonNull UserData userData) {
+        ProtoLog.v(IMMS_DEBUG, "Calling %s.hideSoftInput(%s) for reason: %s", ime,
+                hideInputToken, InputMethodDebug.softInputDisplayReasonToString(reason));
+        // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
+        if (ime.hideSoftInput(statsToken)) {
+            if (DEBUG_IME_VISIBILITY) {
+                EventLog.writeEvent(IMF_HIDE_IME,
+                        statsToken.getTag(),
+                        Objects.toString(userData.mImeBindingState.mFocusedWindow),
+                        InputMethodDebug.softInputDisplayReasonToString(reason),
+                        InputMethodDebug.softInputModeToString(
+                                userData.mImeBindingState.mFocusedWindowSoftInputMode));
             }
+            // TODO(b/419459695): Check if we still need to pass the input token
+            onShowHideSoftInputRequested(false /* show */, hideInputToken, reason, statsToken,
+                    userData.mUserId);
         }
     }
 
