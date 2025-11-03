@@ -37,7 +37,6 @@ import static android.service.notification.NotificationListenerService.REASON_AP
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 
 import static com.android.server.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUP_CONVERSATIONS;
-import static com.android.server.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS;
 import static com.android.server.notification.GroupHelper.AGGREGATE_GROUP_KEY;
 import static com.android.server.notification.GroupHelper.BASE_FLAGS;
 
@@ -1774,7 +1773,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveChildNotification_summaryForceGrouped() {
         // Check that removing all child notifications from a group will trigger empty summary
         // force grouping re-evaluation
@@ -1830,7 +1828,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveChildNotification_groupBecomesSingleton() {
         // Check that removing child notifications from a group will trigger singleton force
         // grouping re-evaluation
@@ -1896,7 +1893,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveAllGroupNotifications_noForceGrouping() {
         // Check that removing all notifications from a group will not trigger any force grouping
         // re-evaluation
@@ -1943,7 +1939,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveAllGroupChildNotifications_emptySummaryCanceled() {
         // Check that removing all notifications from a group will not trigger any force grouping
         // re-evaluation
@@ -1986,7 +1981,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveAllGroupChildNotifications_emptySummaryCanceledAndCached() {
         // Check that removing all notifications from a group will not trigger any force grouping
         // re-evaluation
@@ -2085,7 +2079,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_cleanupUngrouped() {
         final String pkg = "package";
         // Post notification w/o group in a valid section
@@ -2121,7 +2114,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_afterAutogroup_isUngrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2164,7 +2156,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_onRemoved_isUngrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2207,7 +2198,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateToUngroupableSection_afterForceGrouping_isUngrouped() {
         final String pkg = "package";
         final String groupName = "testGroup";
@@ -2254,7 +2244,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRepostWithNewChannel_afterAutogrouping_isRegrouped() {
         final String pkg = "package";
         final List<NotificationRecord> notificationList = new ArrayList<>();
@@ -2314,7 +2303,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRepostWithNewChannel_afterForceGrouping_isRegrouped() {
         final String pkg = "package";
         final String groupName = "testGroup";
@@ -2774,8 +2762,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testSingletonGroupsRegrouped_notificationBundledBeforeDelayTimeout() {
         // Check that singleton group notifications are regrouped if classification is done
         // before onNotificationPostedWithDelay
@@ -2849,8 +2836,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION,
-            FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    @EnableFlags({FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
     public void testSingletonGroupsRegrouped_notificationBundledAfterDelayTimeout() {
         // Check that singleton group notifications are regrouped if classification is done
         // after onNotificationPostedWithDelay
@@ -3702,7 +3688,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testNoGroup_singletonGroup_underLimit() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -3722,31 +3707,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         verifyNoMoreInteractions(mCallback);
     }
 
-
     @Test
-    @DisableFlags(Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS)
-    public void testAddAggregateSummary_singletonGroup_disableFlag() {
-        final List<NotificationRecord> notificationList = new ArrayList<>();
-        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
-        final String pkg = "package";
-        // Post singleton groups, above forced group limit
-        for (int i = 0; i < AUTOGROUP_SINGLETONS_AT_COUNT; i++) {
-            NotificationRecord summary = getNotificationRecord(pkg, i,
-                    String.valueOf(i), UserHandle.SYSTEM, "testGrp "+i, true);
-            notificationList.add(summary);
-            NotificationRecord child = getNotificationRecord(pkg, i + 42,
-                    String.valueOf(i + 42), UserHandle.SYSTEM, "testGrp "+i, false);
-            notificationList.add(child);
-            summaryByGroup.put(summary.getGroupKey(), summary);
-            mGroupHelper.onNotificationPostedWithDelay(child, notificationList, summaryByGroup);
-            mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
-        }
-        // FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS is disabled => don't force group
-        verifyNoMoreInteractions(mCallback);
-    }
-
-    @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testAddAggregateSummary_singletonGroups() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -3785,7 +3746,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testAddAggregateSummary_summaryTriggers_singletonGroups() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -3834,7 +3794,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testCancelCachedSummary_singletonGroups() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
@@ -3868,7 +3827,6 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testRemoveCachedSummary_singletonGroups_removeChildren() {
         final List<NotificationRecord> notificationList = new ArrayList<>();
         final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();

@@ -10048,10 +10048,8 @@ public class NotificationManagerService extends SystemService {
                     }
                 } else {
                     // No notification was found => maybe it was canceled by forced grouping
-                    if (Flags.notificationForceGroupSingletons()) {
-                        mGroupHelper.maybeCancelGroupChildrenForCanceledSummary(mPkg, mTag,
-                                mId, mUserId, mReason);
-                    }
+                    mGroupHelper.maybeCancelGroupChildrenForCanceledSummary(mPkg, mTag,
+                            mId, mUserId, mReason);
 
                     // No notification was found, assume that it is snoozed and cancel it.
                     if (mReason != REASON_SNOOZED) {
@@ -10328,24 +10326,20 @@ public class NotificationManagerService extends SystemService {
                         return false;
                     }
 
-                    if (Flags.notificationForceGroupSingletons()) {
-                        // Check if this is an updated for a summary for an aggregated sparse
-                        // group and remove it because that summary has been canceled
-                        if (mGroupHelper.isUpdateForCanceledSummary(r)) {
-                            if (DBG) {
-                                Log.w(TAG,
-                                        "Suppressing notification because summary was canceled: "
-                                                + r);
-                            }
-
-                            String groupKey = r.getGroupKey();
-                            NotificationRecord groupSummary = mSummaryByGroupKey.get(groupKey);
-                            if (groupSummary != null && groupSummary.getKey()
-                                    .equals(r.getKey())) {
-                                mSummaryByGroupKey.remove(groupKey);
-                            }
-                            return false;
+                    // Check if this is an updated for a summary for an aggregated sparse
+                    // group and remove it because that summary has been canceled
+                    if (mGroupHelper.isUpdateForCanceledSummary(r)) {
+                        if (DBG) {
+                            Log.w(TAG,
+                                    "Suppressing notification because summary was canceled: "
+                                            + r);
                         }
+                        String groupKey = r.getGroupKey();
+                        NotificationRecord groupSummary = mSummaryByGroupKey.get(groupKey);
+                        if (groupSummary != null && groupSummary.getKey().equals(r.getKey())) {
+                            mSummaryByGroupKey.remove(groupKey);
+                        }
+                        return false;
                     }
 
 
