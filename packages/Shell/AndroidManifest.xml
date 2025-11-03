@@ -367,6 +367,7 @@
     <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_MEDICAL" />
     <uses-permission android:name="android.permission.REQUEST_COMPANION_SELF_MANAGED" />
     <uses-permission android:name="android.permission.USE_COMPANION_TRANSPORTS" />
+    <uses-permission android:name="android.permission.ACCESS_COMPANION_MESSAGE_PCC" />
     <uses-permission android:name="android.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE" />
     <uses-permission android:name="android.permission.DELIVER_COMPANION_MESSAGES" />
     <uses-permission android:name="android.permission.ACCESS_COMPANION_INFO" />
