@@ -22,6 +22,7 @@ import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
+import static android.window.DesktopExperienceFlags.ENABLE_INTERACTIVE_PICTURE_IN_PICTURE;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 
@@ -111,7 +112,12 @@ public class FocusTransitionObserver {
                             ? (task != null && leafTasks.contains(task.taskId))
                             : task != null;
             if (updateTaskFocus) {
-                if (change.hasFlags(FLAG_MOVED_TO_TOP) || change.getMode() == TRANSIT_OPEN) {
+                if (ENABLE_INTERACTIVE_PICTURE_IN_PICTURE.isTrue() && task.isFocused) {
+                    // With ENABLE_INTERACTIVE_PICTURE_IN_PICTURE enabled, transitions include
+                    // task with global focus (if changed).
+                    updateFocusedTaskPerDisplay(task, task.displayId);
+                }
+                else if (change.hasFlags(FLAG_MOVED_TO_TOP) || change.getMode() == TRANSIT_OPEN) {
                     updateFocusedTaskPerDisplay(task, task.displayId);
                 } else {
                     // Update focus assuming that any task moved to another display is focused in

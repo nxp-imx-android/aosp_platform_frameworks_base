@@ -117,6 +117,7 @@ import com.android.internal.graphics.ColorUtils;
 import com.android.server.wm.TransitionController.OnStartCollect;
 import com.android.window.flags.Flags;
 
+import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -3518,6 +3519,47 @@ public class TransitionTests extends WindowTestsBase {
                 info.getChanges().stream()
                         .noneMatch(change -> (change.getFlags() & FLAG_ALWAYS_ON_TOP) == 1));
         assertEquals(TRANSIT_CHANGE, info.getChanges().get(0).getMode());
+        player.finish();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE)
+    public void testFocusChange() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        controller.setFullReadyTrackingForTest(true);
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_CHANGE, controller);
+
+        // Create two activities and focus on the first one.
+        final ActivityRecord activity1 = createActivityRecord(mDisplayContent);
+        final ActivityRecord activity2 = createActivityRecord(mDisplayContent);
+        mDisplayContent.mFocusedApp = activity1;
+
+        // Start collecting to get a snapshot before changing the focus.
+        controller.moveToCollecting(transition);
+        transition.collect(activity2.getTask());
+
+        // Change focus and proceed with transition
+        mDisplayContent.mFocusedApp = activity2;
+        controller.requestStartTransition(transition, activity2.getTask(),
+            null /* remote */, null /* display */);
+
+        // Make a transition ready manually with a test condition. This will force
+        // TransitionController to collect order changes.
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        transition.mReadyTracker.add(testCondition);
+        transition.mReadyTracker.meet(testCondition);
+        player.start();
+
+        // Make sure there is only focus change without any moves to top.
+        final TransitionInfo info = player.mLastReady;
+        assertEquals(1, info.getChanges().size());
+        final TransitionInfo.Change change = info.getChanges().get(0);
+        assertTrue(change.getTaskInfo().isFocused);
+        assertEquals(activity2.getTask().mTaskId, change.getTaskInfo().taskId);
+        assertTrue(
+                info.getChanges().stream()
+                        .noneMatch(c -> (c.getFlags() & FLAG_MOVED_TO_TOP) == 1));
         player.finish();
     }
 
