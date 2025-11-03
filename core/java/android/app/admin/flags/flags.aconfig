@@ -577,3 +577,10 @@ flag {
   description: "Making sure that the existing `adb shell cmd role set-bypassing-role-qualification` command is protected against abuse on MUM devices."
   bug: "451571955"
 }
+
+flag {
+  name: "introduce_generic_provisioning_error"
+  namespace: "enterprise"
+  description: "Add a generic provisioning error for forward compatibility."
+  bug: "458352522"
+}

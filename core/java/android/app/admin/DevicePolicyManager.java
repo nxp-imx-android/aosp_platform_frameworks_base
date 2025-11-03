@@ -3036,6 +3036,19 @@ public class DevicePolicyManager {
     public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED = 19;
 
     /**
+     * Result code for {@link #checkProvisioningPrecondition}.
+     *
+     * <p>A generic error that is returned by {@link #checkProvisioningPrecondition} if none of
+     * the more specific error code applies. Clients should always handle this error code for
+     * forward compatibility reasons.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_INTRODUCE_GENERIC_PROVISIONING_ERROR)
+    public static final int STATUS_OTHER_PROVISIONING_ERROR = 20;
+
+    /**
      * Result codes for {@link #checkProvisioningPrecondition} indicating all the provisioning pre
      * conditions.
      *
@@ -3051,7 +3064,7 @@ public class DevicePolicyManager {
             STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS,
             STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED, STATUS_HEADLESS_ONLY_SYSTEM_USER,
             STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER,
-            STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED
+            STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED, STATUS_OTHER_PROVISIONING_ERROR,
     })
     public @interface ProvisioningPrecondition {}
 
