@@ -4414,4 +4414,13 @@ public class ApplicationPackageManager extends PackageManager {
         }
         sQueryIntentActivitiesCache.invalidateCache();
     }
+
+    @Override
+    public int getAppUidForPccUid(int pccUid) {
+        try {
+            return mPM.getAppUidForPccUid(pccUid);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
 }

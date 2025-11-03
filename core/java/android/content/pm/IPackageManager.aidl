@@ -860,4 +860,6 @@ interface IPackageManager {
     String getPageSizeCompatWarningMessage(in String packageName);
 
     List<String> getAllApexDirectories();
+
+    int getAppUidForPccUid(int pccUid);
 }
