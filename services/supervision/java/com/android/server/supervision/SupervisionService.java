@@ -45,6 +45,7 @@ import android.app.supervision.ISupervisionListener;
 import android.app.supervision.ISupervisionManager;
 import android.app.supervision.PackagePolicy;
 import android.app.supervision.Policy;
+import android.app.supervision.PolicyKey;
 import android.app.supervision.SupervisionManager;
 import android.app.supervision.SupervisionManagerInternal;
 import android.app.supervision.SupervisionRecoveryInfo;
@@ -87,6 +88,7 @@ import com.android.server.appbinding.AppBindingService;
 import com.android.server.appbinding.AppServiceConnection;
 import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.supervision.SupervisionUserData.PolicyData;
 import com.android.server.utils.Slogf;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -350,7 +352,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public List<Policy> getPolicies(@UserIdInt int userId) {
-        return new ArrayList<>(mSupervisionSettings.getUserData(userId).policies.values());
+        return mSupervisionSettings.getUserData(userId).policies.getPolicies();
     }
 
     @Override
@@ -410,8 +412,16 @@ public class SupervisionService extends ISupervisionManager.Stub {
         String packageName = policy.getPackageName();
         int restrictionType = policy.getRestrictionType();
         switch (restrictionType) {
-            case PackagePolicy.RESTRICTION_TYPE_BLOCKED ->
-                    setApplicationHiddenForUser(userId, packageName, policy.isEnabled());
+            case PackagePolicy.RESTRICTION_TYPE_BLOCKED -> {
+                setApplicationHiddenForUser(userId, packageName, policy.isEnabled());
+                synchronized (getLockObject()) {
+                    PolicyData policyData =
+                            getUserDataLocked(userId).policies.get(policy.getPolicyKey());
+                    if (policyData != null) {
+                        policyData.hasPendingNotification = true;
+                    }
+                }
+            }
             default ->
                     Slogf.w(
                             SupervisionLog.TAG,
@@ -1104,20 +1114,33 @@ public class SupervisionService extends ISupervisionManager.Stub {
                             .getPackageManager()
                             .getApplicationHiddenSettingAsUser(packageName, UserHandle.of(userId));
 
-            final SupervisionUserData data = mSupervisionSettings.getUserData(userId);
-            for (Policy policy : (Collection<Policy>) data.policies.values()) {
-                switch (policy) {
-                    case PackagePolicy pp -> {
-                        if (pp.getPackageName().equals(packageName)
-                                && pp.getRestrictionType() == PackagePolicy.RESTRICTION_TYPE_BLOCKED
-                                && pp.isEnabled() == isHidden) {
-                            postApplicationHiddenNotification(userId, packageName, isHidden);
-                            // We found the matching policy, no need to check others.
-                            return;
-                        }
-                    }
-                    default -> {}
+            boolean shouldPostNotification = false;
+            synchronized (getLockObject()) {
+                final SupervisionUserData data = getUserDataLocked(userId);
+                final PolicyKey policyKey =
+                        PolicyKey.builder()
+                                .setType(Policy.PACKAGE_POLICY_IDENTIFIER)
+                                .setPackageName(packageName)
+                                .build();
+                final PolicyData policyData = data.policies.get(policyKey);
+
+                if (policyData == null) {
+                    return;
                 }
+
+                if (policyData.policy instanceof PackagePolicy pp) {
+                    if (policyData.hasPendingNotification
+                            && pp.getRestrictionType() == PackagePolicy.RESTRICTION_TYPE_BLOCKED
+                            && pp.isEnabled() == isHidden) {
+                        shouldPostNotification = true;
+                        policyData.hasPendingNotification = false;
+                    }
+                }
+            }
+
+            // Post the notification if needed, after releasing the lock.
+            if (shouldPostNotification) {
+                postApplicationHiddenNotification(userId, packageName, isHidden);
             }
         }
     }
