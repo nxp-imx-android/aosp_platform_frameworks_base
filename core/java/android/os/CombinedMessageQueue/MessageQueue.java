@@ -2690,7 +2690,7 @@ public final class MessageQueue {
                 // If we're quitting then we're not allowed to increment the ref count.
                 return false;
             }
-            if (sMptrRefCount.compareAndSet(this, oldVal, oldVal + 1)) {
+            if (sMptrRefCount.compareAndSet(this, oldVal, oldVal + 1L)) {
                 // Successfully incremented the ref count without quitting.
                 return true;
             }
