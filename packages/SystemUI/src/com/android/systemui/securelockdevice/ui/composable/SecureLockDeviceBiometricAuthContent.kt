@@ -72,7 +72,6 @@ import com.android.compose.modifiers.height
 import com.android.compose.modifiers.width
 import com.android.internal.jank.Cuj
 import com.android.internal.jank.InteractionJankMonitor
-import com.android.systemui.Flags.bpColors
 import com.android.systemui.biometrics.BiometricAuthIconAssets
 import com.android.systemui.bouncer.shared.model.SecureLockDeviceBouncerActionButtonModel
 import com.android.systemui.deviceentry.ui.binder.UdfpsAccessibilityOverlayBinder
@@ -292,7 +291,7 @@ private fun BiometricIconLottie(
 
     LottieAnimation(
         composition = lottie,
-        dynamicProperties = LottieColorUtils.getDynamicProperties(bpColors()),
+        dynamicProperties = LottieColorUtils.getDynamicProperties(true),
         modifier =
             modifier
                 .graphicsLayer { rotationZ = iconState.rotation }
