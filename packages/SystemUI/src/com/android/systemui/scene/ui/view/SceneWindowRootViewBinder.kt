@@ -109,7 +109,7 @@ object SceneWindowRootViewBinder {
             view.viewModel(
                 traceName = "SceneWindowRootViewBinder",
                 minWindowLifecycleState = WindowLifecycleState.ATTACHED,
-                factory = { viewModelFactory.create(view, motionEventHandlerReceiver) },
+                factory = { viewModelFactory.create(motionEventHandlerReceiver) },
             ) { viewModel ->
                 try {
                     view.initOnBackPressedDispatcherOwner(

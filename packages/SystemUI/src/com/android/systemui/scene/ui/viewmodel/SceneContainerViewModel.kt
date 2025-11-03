@@ -18,7 +18,6 @@ package com.android.systemui.scene.ui.viewmodel
 
 import android.content.res.Resources
 import android.view.MotionEvent
-import android.view.View
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -89,7 +88,6 @@ constructor(
     val clock: KeyguardClockViewModel,
     val dualShadeEducationalTooltipsViewModelFactory: DualShadeEducationalTooltipsViewModel.Factory,
     val animateQsTilesViewModelFactory: AnimateQsTilesViewModel.Factory,
-    @Assisted view: View,
     @Assisted private val motionEventHandlerReceiver: (MotionEventHandler?) -> Unit,
     private val sceneTransitionBlurViewModelFactory: SceneTransitionBlurViewModel.Factory,
 ) : ExclusiveActivatable() {
@@ -103,7 +101,7 @@ constructor(
     /** Whether the container is visible. */
     val isVisible: Boolean by hydrator.hydratedStateOf("isVisible", sceneInteractor.isVisible)
 
-    val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create(view)
+    val hapticsViewModel: SceneContainerHapticsViewModel = hapticsViewModelFactory.create()
 
     private val dualShadeGestureSplitRatio =
         resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
@@ -434,8 +432,7 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            view: View,
-            motionEventHandlerReceiver: (MotionEventHandler?) -> Unit,
+            motionEventHandlerReceiver: (MotionEventHandler?) -> Unit
         ): SceneContainerViewModel
     }
 }
