@@ -15,6 +15,7 @@ android_library {
         "SettingsLibDataStore",
         "androidx.annotation_annotation",
         "androidx.fragment_fragment",
+        "settingslib_catalyst_flags_lib",
     ],
     kotlincflags: ["-Xjvm-default=all"],
     optimize: {

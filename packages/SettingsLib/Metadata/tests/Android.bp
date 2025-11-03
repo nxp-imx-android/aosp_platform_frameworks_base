@@ -17,12 +17,18 @@ android_robolectric_test {
     static_libs: [
         "SettingsLibMetadata",
         "SettingsLibPreference-testutils",
+        "SettingsLib-robo-testutils",
+        "androidx.test.core",
         "androidx.test.ext.junit",
         "kotlin-parcelize-runtime",
+        "settingslib_catalyst_flags_lib",
+        "flag-junit",
+        "kotlinx_coroutines_test",
         "mockito-robolectric-prebuilt", // mockito deps order matters!
         "mockito-kotlin2",
         "truth",
         "kotlin-test",
+        "testng", // TODO: remove once JUnit on Android provides assertThrows
     ],
     associates: ["SettingsLibMetadata"],
     coverage_libs: ["SettingsLibMetadata"],

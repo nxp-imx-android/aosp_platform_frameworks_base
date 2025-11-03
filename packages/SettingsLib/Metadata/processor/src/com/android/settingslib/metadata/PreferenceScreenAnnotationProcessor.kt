@@ -40,6 +40,10 @@ class PreferenceScreenAnnotationProcessor : AbstractProcessor() {
         processingEnv.elementUtils.getTypeElement("android.content.Context").asType()
     }
 
+    private val keyParametersType: TypeMirror by lazy {
+        processingEnv.elementUtils.getTypeElement("com.android.settingslib.metadata.KeyParameters").asType()
+    }
+
     private var options: Map<String, Any?>? = null
     private lateinit var annotationElement: TypeElement
     private lateinit var optionsElement: TypeElement
@@ -86,57 +90,115 @@ class PreferenceScreenAnnotationProcessor : AbstractProcessor() {
             error("@$ANNOTATION_NAME must be added to $PREFERENCE_SCREEN_METADATA subclass", this)
             return
         }
-        fun reportConstructorError() =
+
+        fun reportConstructorError(msg: String = "") =
             error(
-                "Must have only one public constructor: constructor(), " +
-                    "constructor(Context), constructor(Bundle) or constructor(Context, Bundle)",
+                "Error processing constructors for $qualifiedName: $msg\n" +
+                        "Allowed public constructors: constructor(), constructor(Context), " +
+                        "constructor(Bundle), constructor(Context, Bundle), " +
+                        "constructor(KeyParameters), or constructor(Context, KeyParameters)",
                 this,
             )
-        val constructor = findConstructor()
-        if (constructor == null || constructor.parameters.size > 2) {
-            reportConstructorError()
+
+        val constructors = findAllPublicConstructors()
+        if (constructors.isEmpty()) {
+            reportConstructorError("No public constructors found.")
             return
         }
-        val constructorHasContextParameter = constructor.hasParameter(0, contextType)
-        var index = if (constructorHasContextParameter) 1 else 0
+
+        var constructorHasContextParameter = false // For the selected constructor
+
+        var ctorWithBundle: ExecutableElement? = null
+        var ctorWithKeyParams: ExecutableElement? = null
+        var ctorSimple: ExecutableElement? = null
+
+        for (constructor in constructors) {
+            val params = constructor.parameters
+            when (params.size) {
+                0 -> ctorSimple = constructor
+                1 -> {
+                    if (constructor.hasParameter(0, contextType)) {
+                        ctorSimple = constructor
+                        constructorHasContextParameter = true
+                    } else if (constructor.hasParameter(0, bundleType)) ctorWithBundle = constructor
+                    else if (constructor.hasParameter(0, keyParametersType)) ctorWithKeyParams = constructor
+                    else {
+                        reportConstructorError("Invalid single argument constructor.")
+                        return
+                    }
+                }
+                2 -> {
+                    if (!constructor.hasParameter(0, contextType)) {
+                        reportConstructorError("Two-argument constructor must have Context as the first argument.")
+                        return
+                    }
+                    if (constructor.hasParameter(1, bundleType)) ctorWithBundle = constructor
+                    else if (constructor.hasParameter(1, keyParametersType)) ctorWithKeyParams = constructor
+                    else {
+                        reportConstructorError("Invalid second argument in constructor.")
+                        return
+                    }
+                }
+                else -> {
+                    reportConstructorError("Constructors can have at most 2 arguments.")
+                    return
+                }
+            }
+        }
+
         val annotation = annotationMirrors.single { it.isElement(annotationElement) }
         val key = annotation.fieldValue<String>("value")!!
         val overlay = annotation.fieldValue<Boolean>("overlay") == true
         val parameterized = annotation.fieldValue<Boolean>("parameterized") == true
         var parametersHasContextParameter = false
+        var keyParametersHasContextParameter = false
+        var hasKeyParametersMethod = false
+        var hasGetParametersSchemaMethod = false
+
         if (parameterized) {
-            val parameters = findParameters()
-            if (parameters == null) {
+            val parametersMethod = findParameters() // This finds the static parameters() method
+            if (parametersMethod == null) {
                 error("require a static 'parameters()' or 'parameters(Context)' method", this)
                 return
             }
-            parametersHasContextParameter = parameters
-            if (constructor.hasParameter(index, bundleType)) {
-                index++
-            } else {
-                error(
-                    "Parameterized screen constructor must be" +
-                        "constructor(Bundle) or constructor(Context, Bundle)",
-                    this,
-                )
+            parametersHasContextParameter = parametersMethod
+
+            val keyParametersMethod = findKeyParametersMethod()
+            hasKeyParametersMethod = keyParametersMethod != null
+            keyParametersHasContextParameter = keyParametersMethod == true
+
+            hasGetParametersSchemaMethod = findGetParametersSchemaMethod()
+
+            if (ctorWithBundle == null && ctorWithKeyParams == null) {
+                reportConstructorError("Parameterized screen must have a constructor accepting Bundle or KeyParameters.")
                 return
             }
+            // Determine context presence from the ctors found
+            constructorHasContextParameter = ctorWithBundle?.hasParameter(0, contextType) == true || ctorWithKeyParams?.hasParameter(0, contextType) == true
+        } else { // Not parameterized
+            if (ctorWithBundle != null || ctorWithKeyParams != null) {
+                reportConstructorError("Non-parameterized screen cannot have Bundle or KeyParameters constructor.")
+                return
+            }
+            constructorHasContextParameter = ctorSimple?.parameters?.isNotEmpty() == true
         }
-        if (index == constructor.parameters.size) {
-            screens.add(
-                Screen(
-                    key,
-                    overlay,
-                    parameterized,
-                    annotation.fieldValue<Boolean>("parameterizedMigration") == true,
-                    qualifiedName.toString(),
-                    constructorHasContextParameter,
-                    parametersHasContextParameter,
-                )
+
+        screens.add(
+            Screen(
+                key,
+                overlay,
+                parameterized,
+                annotation.fieldValue<Boolean>("parameterizedMigration") == true,
+                qualifiedName.toString(),
+                constructorHasContextParameter,
+                ctorWithBundle != null,
+                ctorWithKeyParams != null,
+                parametersHasContextParameter,
+                hasKeyParametersMethod,
+                keyParametersHasContextParameter,
+                hasGetParametersSchemaMethod,
             )
-        } else {
-            reportConstructorError()
-        }
+        )
     }
 
     private fun codegen() {
@@ -161,10 +223,13 @@ class PreferenceScreenAnnotationProcessor : AbstractProcessor() {
             it.write("import android.os.Bundle;\n")
             it.write("import $PACKAGE.FixedArrayMap;\n")
             it.write("import $PACKAGE.FixedArrayMap.OrderedInitializer;\n")
+            it.write("import $PACKAGE.KeyParameters;\n")
+            it.write("import $PACKAGE.KeyParametersSchema;\n")
             it.write("import $PACKAGE.$PREFERENCE_SCREEN_METADATA;\n")
             it.write("import $PACKAGE.$FACTORY;\n")
             it.write("import $PACKAGE.$PARAMETERIZED_FACTORY;\n")
             it.write("import kotlinx.coroutines.flow.Flow;\n")
+            it.write("import kotlinx.coroutines.flow.FlowKt;\n")
             it.write("\n// Generated by annotation processor for @$ANNOTATION_NAME\n")
             it.write("public final class $outputClass {\n")
             it.write("  private $outputClass() {}\n\n")
@@ -173,26 +238,70 @@ class PreferenceScreenAnnotationProcessor : AbstractProcessor() {
             it.write("    return new FixedArrayMap<>($size, $outputClass::init);\n")
             it.write("  }\n\n")
             fun Screen.write() {
-                it.write("    screens.put(\"$key\", ")
+                it.write(" screens.put(\"$key\", ")
                 if (parameterized) {
                     it.write("new $PARAMETERIZED_FACTORY() {\n")
-                    it.write("      @Override public PreferenceScreenMetadata create")
+                    // Bundle create method
+                    it.write(" @Override public PreferenceScreenMetadata create")
                     it.write("(Context context, Bundle args) {\n")
-                    it.write("        return new $klass(")
-                    if (constructorHasContextParameter) it.write("context, ")
-                    it.write("args);\n")
-                    it.write("      }\n\n")
-                    it.write("      @Override public Flow<Bundle> parameters(Context context) {\n")
-                    it.write("        return $klass.parameters(")
+                    if (constructorHasBundleParameter) {
+                        it.write(" return new $klass(")
+                        if (constructorHasContextParameter) it.write("context, ")
+                        it.write("args);\n")
+                    } else {
+                        it.write(" // Constructor with Bundle not found, potentially delegate\n")
+                        it.write(" return createWithKeyParameters(context, $klass.parametersSchema.prepare(args));\n")
+                    }
+                    it.write(" }\n\n")
+
+                    // KeyParameters create method
+                    it.write(" @Override public PreferenceScreenMetadata createWithKeyParameters")
+                    it.write("(Context context, KeyParameters args) {\n")
+                    if (constructorHasKeyParametersParameter) {
+                        it.write(" return new $klass(")
+                        if (constructorHasContextParameter) it.write("context, ")
+                        it.write("args);\n")
+                    } else {
+                        it.write(" // Constructor with KeyParameters not found, potentially delegate\n")
+                        it.write(" return create(context, args.toBundle());\n")
+                    }
+                    it.write(" }\n\n")
+
+                    // Bundle parameters method
+                    it.write(" @Override public Flow parameters(Context context) {\n")
+                    it.write(" return $klass.parameters(")
                     if (parametersHasContextParameter) it.write("context")
                     it.write(");\n")
-                    it.write("      }\n")
+                    it.write(" }\n\n")
+
+                    // KeyParameters keyParameters method
+                    it.write(" @Override public Flow keyParameters(Context context) {\n")
+                    // TODO (b/457182494): This check should be removed once all the parameterized screen have been migrated.
+                    if (hasKeyParametersMethod) {
+                        it.write(" return $klass.keyParameters(")
+                        if (keyParametersHasContextParameter) it.write("context")
+                        it.write(");\n")
+                    } else {
+                        it.write(" return FlowKt.emptyFlow();\n")
+                    }
+                    it.write(" }\n")
+
+                    // KeyParametersSchema getParametersSchema method
+                    it.write(" @Override public KeyParametersSchema getParametersSchema() {\n")
+                    // TODO (b/457182494): This check should be removed once all the parameterized screen have been migrated.
+                    if (hasGetParametersSchemaMethod) {
+                        it.write("   return $klass.getParametersSchema();\n")
+                    } else {
+                        it.write("   return KeyParametersSchema.Companion.getEMPTY();\n")
+                    }
+                    it.write(" }\n\n")
+
                     if (parameterizedMigration) {
-                        it.write("\n      @Override public boolean acceptEmptyArguments()")
+                        it.write("\n @Override public boolean acceptEmptyArguments()")
                         it.write(" { return true; }\n")
                     }
-                    it.write("    });")
-                } else {
+                    it.write(" });")
+                } else { // Not parameterized
                     it.write("context -> new $klass(")
                     if (constructorHasContextParameter) it.write("context")
                     it.write("));")
@@ -247,19 +356,92 @@ class PreferenceScreenAnnotationProcessor : AbstractProcessor() {
         return constructor
     }
 
+    private fun TypeElement.findAllPublicConstructors(): List<ExecutableElement> {
+        return enclosedElements.filter {
+            it.kind == ElementKind.CONSTRUCTOR && it.modifiers.contains(Modifier.PUBLIC)
+        }.map { it as ExecutableElement }
+    }
+
     private fun TypeElement.findParameters(): Boolean? {
-        for (element in enclosedElements) {
-            if (element.kind != ElementKind.METHOD) continue
-            if (!element.modifiers.contains(Modifier.PUBLIC)) continue
-            if (!element.modifiers.contains(Modifier.STATIC)) continue
-            if (!element.simpleName.contentEquals("parameters")) return null
-            val parameters = (element as ExecutableElement).parameters
-            if (parameters.isEmpty()) return false
-            if (parameters.size == 1 && parameters[0].asType().isSameType(contextType)) return true
-            error("parameters method should have no parameter or a Context parameter", element)
-            return null
+        val methods = enclosedElements.filter {
+            it.kind == ElementKind.METHOD &&
+                    it.modifiers.contains(Modifier.PUBLIC) &&
+                    it.modifiers.contains(Modifier.STATIC) &&
+                    it.simpleName.contentEquals("parameters")
+        }.map { it as ExecutableElement }
+
+        if (methods.isEmpty()) return null
+
+        var foundMatch: Boolean? = null
+
+        for (method in methods) {
+            val parameters = method.parameters
+            if (parameters.isEmpty()) {
+                if (foundMatch != null) {
+                    error("Found multiple valid static 'parameters' methods", this)
+                    return null // Ambiguous
+                }
+                foundMatch = false // parameters()
+            } else if (parameters.size == 1 && parameters[0].asType().isSameType(contextType)) {
+                if (foundMatch != null) {
+                    error("Found multiple valid static 'parameters' methods", this)
+                    return null // Ambiguous
+                }
+                foundMatch = true // parameters(Context)
+            }
         }
-        return null
+
+        if (foundMatch == null) {
+            error("Found 'parameters' methods, but none with signature () or (Context)", this)
+        }
+
+        return foundMatch
+    }
+
+    private fun TypeElement.findKeyParametersMethod(): Boolean? {
+        val methods = enclosedElements.filter {
+            it.kind == ElementKind.METHOD &&
+                    it.modifiers.contains(Modifier.PUBLIC) &&
+                    it.modifiers.contains(Modifier.STATIC) &&
+                    it.simpleName.contentEquals("keyParameters")
+        }.map { it as ExecutableElement }
+
+        if (methods.isEmpty()) return null
+
+        var foundMatch: Boolean? = null
+
+        for (method in methods) {
+            val parameters = method.parameters
+            if (parameters.isEmpty()) {
+                if (foundMatch != null) {
+                    error("Found multiple valid static 'keyParameters' methods", this)
+                    return null // Ambiguous
+                }
+                foundMatch = false // keyParameters()
+            } else if (parameters.size == 1 && parameters[0].asType().isSameType(contextType)) {
+                if (foundMatch != null) {
+                    error("Found multiple valid static 'keyParameters' methods", this)
+                    return null // Ambiguous
+                }
+                foundMatch = true // keyParameters(Context)
+            }
+        }
+
+        if (foundMatch == null) {
+            error("Found 'keyParameters' methods, but none with signature () or (Context)", this)
+        }
+
+        return foundMatch
+    }
+
+    private fun TypeElement.findGetParametersSchemaMethod(): Boolean {
+        return enclosedElements.any {
+            it.kind == ElementKind.METHOD &&
+                    it.modifiers.contains(Modifier.PUBLIC) &&
+                    it.modifiers.contains(Modifier.STATIC) &&
+                    it.simpleName.contentEquals("getParametersSchema") &&
+                    (it as ExecutableElement).parameters.isEmpty()
+        }
     }
 
     private fun ExecutableElement.hasParameter(index: Int, typeMirror: TypeMirror) =
@@ -281,7 +463,12 @@ class PreferenceScreenAnnotationProcessor : AbstractProcessor() {
         val parameterizedMigration: Boolean,
         val klass: String,
         val constructorHasContextParameter: Boolean,
+        val constructorHasBundleParameter: Boolean,
+        val constructorHasKeyParametersParameter: Boolean,
         val parametersHasContextParameter: Boolean,
+        val hasKeyParametersMethod: Boolean,
+        val keyParametersHasContextParameter: Boolean,
+        val hasGetParametersSchemaMethod: Boolean,
     ) : Comparable<Screen> {
         override fun compareTo(other: Screen): Int {
             val diff = key.compareTo(other.key)
