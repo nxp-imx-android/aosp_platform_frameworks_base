@@ -35,13 +35,3 @@ flag {
   description: "Enable wallpaper support in connected displays"
   bug: "366461618"
 }
-
-flag {
-  name: "always_rebind_user_set_wallpaper"
-    namespace: "systemui"
-    description: "Always rebind wallpapers after a change via WallpaperManager API"
-    bug: "438411848"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
