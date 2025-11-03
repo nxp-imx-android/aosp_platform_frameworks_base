@@ -89,6 +89,16 @@ flag {
 }
 
 flag {
+  name: "enable_brightness_clamping_for_bedtime"
+  namespace: "wear_frameworks"
+  description: "Whether to apply brightness clamping for bedtime"
+  bug: "452941348"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "listener_hint_exempt_packages"
   namespace: "systemui"
   description: "Exempt packages from Listener Hint restrictions in ZenModeHelper"
