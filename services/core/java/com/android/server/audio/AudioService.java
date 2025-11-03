@@ -9311,6 +9311,15 @@ public class AudioService extends IAudioService.Stub
                 newDevice, previousDevice, info, "AudioService"));
     }
 
+    /**
+     * See AudioManager.handleBluetoothHfpAudioDisconnected(...)
+     */
+    @android.annotation.EnforcePermission(BLUETOOTH_STACK)
+    public void handleBluetoothHfpAudioDisconnected(BluetoothDevice device, int reason) {
+        handleBluetoothHfpAudioDisconnected_enforcePermission();
+        mDeviceBroker.postBluetoothHfpAudioDisconnected(device, reason);
+    }
+
     /** only public for mocking/spying, do not call outside of AudioService */
     @VisibleForTesting
     public void setMusicMute(boolean mute) {

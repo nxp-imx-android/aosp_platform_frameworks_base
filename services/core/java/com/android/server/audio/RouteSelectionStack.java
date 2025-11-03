@@ -90,6 +90,13 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
         return client;
     }
 
+    public synchronized void removeClientPreference(Predicate<AudioDeviceAttributes> pred) {
+        for (var client : mClients) {
+            client.setDevice(client.getDevice().filter(pred.negate()));
+        }
+        mLogger.enqueueAndSlog("removeClientPreference: " + getStackStateString(), ALOGI);
+    }
+
     /**
      * Returns the communication client with the highest priority:
      * - 1) the client which is currently also controlling the audio mode

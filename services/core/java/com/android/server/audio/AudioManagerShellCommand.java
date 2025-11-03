@@ -22,6 +22,10 @@ import static android.media.AudioManager.ADJUST_UNMUTE;
 
 import android.Manifest;
 import android.annotation.RequiresPermission;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
@@ -120,6 +124,8 @@ class AudioManagerShellCommand extends ShellCommand {
                 return getPreferredInputDevice();
             case "set-preferred-input-device":
                 return setPreferredInputDevice();
+            case "hfp-audio-disconnect":
+                return hfpAudioDisconnect();
         }
         return 0;
     }
@@ -213,6 +219,9 @@ class AudioManagerShellCommand extends ShellCommand {
                 + " AudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)");
         pw.println("  get-preferred-input-device AUDIO_SOURCE");
         pw.println("    Returns the preferred input audio device for AUDIO_SOURCE");
+        pw.println("  hfp-audio-disconnect REASON [ADDRESS]");
+        pw.println("    Disconnects HFP audio for device with ADDRESS for REASON. If ADDRESS is not"
+                + " provided, the active device will be used.");
     }
 
     private int setSurroundFormatEnabled() {
@@ -520,6 +529,43 @@ class AudioManagerShellCommand extends ShellCommand {
             connectedDevices.add(convertAudioDeviceTypeToString(device.getType()));
         }
         getOutPrintWriter().println(connectedDevices);
+        return 0;
+    }
+
+    private int hfpAudioDisconnect() {
+        final int reason;
+        try {
+            reason = readIntArg();
+        } catch (IllegalArgumentException e) {
+            return 1;
+        }
+
+        final String deviceAddress = getNextArg();
+
+        final var btManager = mService.mContext.getSystemService(BluetoothManager.class);
+
+        final var btAdapter = btManager.getAdapter();
+        if (btAdapter == null) {
+            getErrPrintWriter().println("Error: Bluetooth is not supported on this device");
+            return 1;
+        }
+
+        BluetoothDevice device = null;
+        if (deviceAddress != null) {
+            if (!BluetoothAdapter.checkBluetoothAddress(deviceAddress)) {
+                getErrPrintWriter().println("Error: invalid device address");
+                return 1;
+            }
+
+            device = btAdapter.getRemoteDevice(deviceAddress);
+        } else {
+            var devices = btAdapter.getActiveDevices(BluetoothProfile.HEADSET);
+            device = !devices.isEmpty() ? devices.get(0) : null;
+        }
+
+        mService.handleBluetoothHfpAudioDisconnected(device, reason);
+        getOutPrintWriter().println("Successfully sent hfp audio disconnect for "
+                + (deviceAddress != null ? deviceAddress : "active device"));
         return 0;
     }
 

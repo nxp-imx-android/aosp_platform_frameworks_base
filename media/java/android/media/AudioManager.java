@@ -22,6 +22,7 @@ import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.media.audio.Flags.FLAG_ASSISTANT_VOLUME_CONTROL;
 import static android.media.audio.Flags.FLAG_AUDIO_FOCUS_DESKTOP;
 import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
+import static android.media.audio.Flags.FLAG_BT_AUDIO_DISCONNECT_API;
 import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
 import static android.media.audio.Flags.FLAG_GUARD_STREAM_VOLUME_APIS;
@@ -7102,6 +7103,89 @@ public class AudioManager {
         final IAudioService service = getService();
         try {
             service.handleBluetoothActiveDeviceChanged(newDevice, previousDevice, info);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * The remote (HF) device initiated a SCO disconnection (typically upon a user request
+     * to transfer audio back to the AG).
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_BT_AUDIO_DISCONNECT_API)
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    public static final int HFP_AUDIO_DISCONNECT_REMOTE_INITIATED = 1;
+
+    /**
+     * The remote (HF) device failed to negotiate a codec within the specified timeout duration.
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_BT_AUDIO_DISCONNECT_API)
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    public static final int HFP_AUDIO_DISCONNECT_CODEC_NEGOTIATION_FAILED = 2;
+
+    /**
+     * The HFP state machine failed to be in a 'primed' state (ongoing call, virtual call, or voice
+     * rec (BVRA)) prior to SCO streaming beginning.
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_BT_AUDIO_DISCONNECT_API)
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    public static final int HFP_AUDIO_DISCONNECT_PRECONDITION_FAILED = 3;
+
+    /**
+     * Generic error code representing an unspecified low-level failure in the native bluetooth
+     * stack that results in a disconnection event.
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_BT_AUDIO_DISCONNECT_API)
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    public static final int HFP_AUDIO_DISCONNECT_INTERNAL_ERROR = 4;
+
+    /** @hide */
+    @IntDef(flag = false, prefix = "HFP_AUDIO_DISCONNECT_REASON_", value = {
+            HFP_AUDIO_DISCONNECT_REMOTE_INITIATED,
+            HFP_AUDIO_DISCONNECT_CODEC_NEGOTIATION_FAILED,
+            HFP_AUDIO_DISCONNECT_PRECONDITION_FAILED,
+            HFP_AUDIO_DISCONNECT_INTERNAL_ERROR,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HfpAudioDisconnectReason {}
+
+    /**
+     * Notifies the audio system that the Bluetooth SCO audio connection for the given HFP device
+     * has been unexpectedly de-established (after routing implies SCO should be established).
+     *
+     * <p>This method is intended to be called by the Bluetooth system service to inform the audio
+     * framework of events like connection failures, timeouts, or remote-initiated SCO link
+     * terminations that were not a direct result of an audio framework (and ultimately Audio HAL
+     * mediated) routing change. This method should only be called in the case that SCO is managed
+     * by audio {@link #isScoManagedByAudio()}.
+     *
+     * <p>The audio framework will use this notification to update selected audio routing.
+     *
+     * <p>This API has no effect on the set of routable devices ({@link getCommunicationDevices})
+     *
+     * @param device The {@link BluetoothDevice} representing the Bluetooth headset
+     *               for which SCO was de-established.
+     * @param reason The reason code indicating why the SCO connection was de-established.
+     *               Used for informative purposes, has no effect on the post-condition.
+     *
+     * @hide
+     */
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    @FlaggedApi(FLAG_BT_AUDIO_DISCONNECT_API)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_STACK)
+    public void handleBluetoothHfpAudioDisconnected(@NonNull BluetoothDevice device,
+            @HfpAudioDisconnectReason int reason) {
+        final IAudioService service = getService();
+        try {
+            service.handleBluetoothHfpAudioDisconnected(device, reason);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
