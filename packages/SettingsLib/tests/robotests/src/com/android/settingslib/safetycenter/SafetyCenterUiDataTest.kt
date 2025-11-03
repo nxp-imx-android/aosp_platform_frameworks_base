@@ -45,7 +45,15 @@ class SafetyCenterUiDataTest {
         severity: Int,
         title: String = "Issue $id",
     ): SafetyCenterIssue {
-        return SafetyCenterIssue.Builder(id, title, "Summary $id", user, sourceIds, "type_$id")
+        return SafetyCenterIssue.Builder(
+                id,
+                title,
+                "Summary $id",
+                user,
+                sourceIds,
+                "type_$id",
+                "source_issue_id_$id",
+            )
             .setSeverityLevel(severity)
             .build()
     }
