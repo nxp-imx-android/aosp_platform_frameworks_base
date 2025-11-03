@@ -250,6 +250,7 @@ public class Instrumentation {
      *         If true is returned, the system will proceed as if the exception
      *         didn't happen.
      */
+    @RavenwoodKeep
     public boolean onException(Object obj, Throwable e) {
         return false;
     }
@@ -260,6 +261,7 @@ public class Instrumentation {
      * @param resultCode Current success/failure of instrumentation. 
      * @param results Any results to send back to the code that started the instrumentation.
      */
+    @RavenwoodIgnore(reason = "mWatcher not used on Ravenwood")
     public void sendStatus(int resultCode, Bundle results) {
         if (mWatcher != null) {
             try {
