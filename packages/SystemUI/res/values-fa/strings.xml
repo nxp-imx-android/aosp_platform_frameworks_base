@@ -59,7 +59,7 @@
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"دستگاه دیگری درخواست کرده است زبان سیستم تغییر کند"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"تغییر زبان"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"حفظ زبان فعلی"</string>
-    <string name="share_wifi_button_text" msgid="1285273973812029240">"‏اشتراک‌گذاری Wi‑Fi"</string>
+    <string name="share_wifi_button_text" msgid="1285273973812029240">"‏هم‌رسانی کردن Wi‑Fi"</string>
     <string name="add_network_button_text" msgid="4046392140897987570">"افزودن شبکه"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"اشکال‌زدایی بی‌سیم در این شبکه مجاز شود؟"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"‏نام شبکه (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nنشانی Wi‑Fi (BSSID)‎\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"برنامه‌ای را برای هم‌رسانی انتخاب کنید."</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"هم‌رسانی صدا"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"هم‌رسانی پنجره برنامه"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"هم‌رسانی کردن زبانه"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"هنگام هم‌رسانی، محتوای صفحه‌نمایش شما قابل‌مشاهده است"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"نماگرفت پنجره"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"پنجره ضبط"</string>
@@ -258,7 +257,7 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"درستی‌سنجی با روشی دیگر"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"مدیریت «احراز هویت»"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"درباره «احراز هویت» بیشتر بدانید"</string>
-    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"‏بررسی هویت روشن است و فقط با اثر انگشت یا چهره شما را تایید می‌کند. %1$s"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"‏«احراز هویت» روشن است و فقط با اثر انگشت یا چهره شما را تایید می‌کند. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"درحال ارزیابی مخاطرات…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"دردسترس نیست"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استفاده از پین"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"برای باز کردن «اعلان‌ها»، از بالا سمت چپ تند بکشید"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"برای باز کردن «تنظیمات فوری»، از بالا سمت راست تند بکشید"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"برگشتن"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"دسترس‌پذیری"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"قبلی"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"بعدی"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"پیمایش کردن به صفحه بعد"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"تکمیل خودکار"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ازهم باز کردن"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

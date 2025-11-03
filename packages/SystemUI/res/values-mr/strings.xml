@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"शेअर करण्यासाठी ॲप निवडा"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ऑडिओ शेअर करा"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"अ‍ॅप विंडो शेअर करा"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"टॅब शेअर करा"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"शेअर करताना, तुमच्या स्क्रीनवरील आशय दृश्यमान असतो"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विंडोचा स्क्रीनशॉट घ्या"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विंडो रेकॉर्ड करा"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"नोटिफिकेशन उघडण्यासाठी सर्वात वरती डावीकडून स्‍वाइप करा"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"क्विक सेटिंग्ज उघडण्यासाठी सर्वात वरती डावीकडून स्‍वाइप करा"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"मागे जा"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"अ‍ॅक्सेसिबिलिटी"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"मागील"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"पुढील"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"पुढील पेजवर नेव्हिगेट करा"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ऑटोफिल"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"विस्तार करा"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

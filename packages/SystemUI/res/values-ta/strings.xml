@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"பகிர ஓர் ஆப்ஸைத் தேர்ந்தெடுங்கள்"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ஆடியோவைப் பகிர்தல்"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ஆப்ஸ் சாளரத்தைப் பகிர்தல்"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"பிரிவைப் பகிர்தல்"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"பகிரும்போது, உங்கள் திரையில் உள்ள உள்ளடக்கத்தைப் பிறரால் பார்க்க முடியும்"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"சாளரத்தை ஸ்கிரீன்ஷாட் எடுக்கும்"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"சாளரத்தை ரெக்கார்டு செய்யும்"</string>
@@ -497,7 +496,7 @@
     <string name="custom" msgid="3337456985275158299">"பிரத்தியேகம்"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"பிரத்தியேக டிரேஸ் அமைப்புகள்"</string>
     <string name="restore_default" msgid="5259420807486239755">"இயல்புக்கு மீட்டெடு"</string>
-    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"ஒற்றைக் கைப் பயன்முறை"</string>
+    <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"ஒற்றைக் கை மோட்"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"செவித்துணைக் கருவிகள்"</string>
     <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"செயலில் உள்ளது"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"இணைக்கப்படவில்லை"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"அறிவிப்புகளைத் திறக்க மேல் இடதுபுறத்தில் இருந்து ஸ்வைப் செய்யலாம்"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"விரைவு அமைப்புகளைத் திறக்க மேல் வலதுபுறத்தில் இருந்து ஸ்வைப் செய்யுங்கள்"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"பின்செல்"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"மாற்றுத்திறன் வசதி"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"முந்தையது"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"அடுத்து"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"அடுத்த பக்கத்திற்குச் செல்லும்"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"தானாக நிரப்பும்"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"விரிவாக்கும்"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

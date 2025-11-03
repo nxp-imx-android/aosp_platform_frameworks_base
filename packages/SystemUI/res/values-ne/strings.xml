@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"सेयर गर्न कुनै एप चयन गर्नुहोस्"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"अडियो सेयर गर्नुहोस्"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"एपको विन्डो सेयर गर्नुहोस्"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ट्याब सेयर गर्नुहोस्"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"तपाईंले स्क्रिन सेयर गर्दा तपाईंको स्क्रिनमा भएका सामग्री देखिन्छन्"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विन्डोको स्क्रिनसट लिनुहोस्"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विन्डो रेकर्ड गर्नुहोस्"</string>
@@ -621,7 +620,7 @@
     <string name="edit_widget" msgid="9030848101135393954">"विजेट सम्पादन गर्नुहोस्"</string>
     <string name="button_to_remove_widget" msgid="3948204829181214098">"हटाउनुहोस्"</string>
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"विजेट हाल्नुहोस्"</string>
-    <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"पूरा भयो"</string>
+    <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"भयो"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"विजेट हाल्नुहोस्"</string>
     <string name="title_for_empty_state_cta" msgid="3515697043504449320">"आफ्नो डिभाइस अनलक नगरिकनै आफूलाई मन पर्ने एपका विजेटहरू तुरुन्तै एक्सेस गर्नुहोस्।"</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"लक स्क्रिनमा कुनै विजेट देखाउने हो?"</string>
@@ -1591,7 +1590,7 @@
     <string name="privacy_dialog_title" msgid="5201413527644766025">"माइक्रोफोन, क्यामेरा र लोकेसन"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"एपको हालसालैको प्रयोग"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"हालसालै एक्सेस गर्ने एप हेर्नुहोस्"</string>
-    <string name="privacy_dialog_done_button" msgid="4504330708531434263">"पूरा भयो"</string>
+    <string name="privacy_dialog_done_button" msgid="4504330708531434263">"भयो"</string>
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"एक्स्पान्ड गर्नुहोस् र विकल्पहरू देखाउनुहोस्"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"कोल्याप्स गर्नुहोस्"</string>
     <string name="privacy_dialog_close_app_button" msgid="8006250171305878606">"यो एप बन्द गर्नुहोस्"</string>
@@ -1630,7 +1629,7 @@
     <string name="shortcut_helper_content_description_plus_icon" msgid="6152683734278299020">"प्लस आइकन"</string>
     <string name="shortcut_helper_customize_button_text" msgid="3124983502748069338">"कस्टमाइज गर्नुहोस्"</string>
     <string name="shortcut_helper_reset_button_text" msgid="2548243844050633472">"रिसेट गर्नुहोस्"</string>
-    <string name="shortcut_helper_done_button_text" msgid="7249905942125386191">"पूरा भयो"</string>
+    <string name="shortcut_helper_done_button_text" msgid="7249905942125386191">"भयो"</string>
     <string name="shortcut_helper_content_description_expand_icon" msgid="1084435697860417390">"\"एक्स्पान्ड गर्नुहोस्\" आइकन"</string>
     <string name="shortcut_helper_key_combinations_or_separator" msgid="7082902112102125540">"वा"</string>
     <string name="shortcut_helper_key_combinations_and_conjunction" msgid="6138186504075880224">"प्लस"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"नोटिफिकेसनहरू खोल्न सिरानको बायाँतिरबाट तलतिर स्वाइप गर्नुहोस्"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"द्रुत सेटिङ खोल्न सिरानको दायाँतिरबाट तलतिर स्वाइप गर्नुहोस्"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"पछाडि"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"सर्वसुलभता"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"अघिल्लो"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"अर्को"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"अर्को पेजमा जानुहोस्"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"स्वतः भर्नुहोस्"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"एक्स्पान्ड गर्नुहोस्"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

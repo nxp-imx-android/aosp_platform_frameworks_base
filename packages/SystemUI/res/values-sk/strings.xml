@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Výber aplikácie na zdieľanie"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Zdieľanie zvuku"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Zdieľanie okna aplikácie"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Zdieľanie karty"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Pri zdieľaní je vidieť obsah vašej obrazovky"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Vytvoriť snímku okna"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Okno nahrávania"</string>
@@ -1590,7 +1589,7 @@
     <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Pripojené k externej obrazovke"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofón, kamera a poloha"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Nedávne použitie aplikáciami"</string>
-    <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Zobraziť nedávny prístup"</string>
+    <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Zobraziť nedávne prístupy"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Hotovo"</string>
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"Rozbaliť a zobraziť možnosti"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"Zbaliť"</string>
@@ -1600,7 +1599,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Spravovať prístup"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Využíva telefonický hovor"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Nedávno využil telefonický hovor"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Využíva <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Používa aplikácia <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Nedávno využila aplikácia <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Využíva <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Nedávno využila aplikácia <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Upozornenia otvoríte potiahnutím z ľavého horného rohu"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Rýchle nastavenia otvoríte potiahnutím z pravého horného rohu"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Späť"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Dostupnosť"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Naspäť"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Ďalej"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"prejsť na ďalšiu stránku"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatické dopĺňanie"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"rozbalenie"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

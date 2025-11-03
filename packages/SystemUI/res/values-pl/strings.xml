@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Wybierz aplikację do udostępniania"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Udostępnij dźwięk"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Udostępnij okno aplikacji"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Udostępnij kartę"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Podczas udostępniania widoczna jest zawartość ekranu"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Zrób zrzut okna"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Nagrywaj okno"</string>
@@ -1600,7 +1599,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Zarządzaj dostępem"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Używany podczas rozmowy telefonicznej"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Ostatnio używany podczas rozmowy telefonicznej"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Uprawnienie używane przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Ostatnio używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Ostatnio używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Przesuń palcem z lewego górnego rogu ekranu, aby otworzyć powiadomienia"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Przesuń palcem z prawego górnego rogu ekranu, aby otworzyć Szybkie ustawienia"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Wstecz"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Ułatwienia dostępu"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Wstecz"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Dalej"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"przejść do następnej strony"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autouzupełnianie"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"rozwinięcie"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

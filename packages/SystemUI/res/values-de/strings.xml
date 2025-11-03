@@ -170,8 +170,7 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"App zum Teilen auswählen"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Audioinhalte freigeben"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"App-Fenster teilen"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
-    <skip />
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Tab teilen"</string>
     <string name="screen_share_disclaimer" msgid="3953761426122528262">"Wenn du deinen Bildschirm freigibst, sind die Inhalte darauf sichtbar"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Screenshot des Fensters erstellen"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Fenster aufnehmen"</string>
@@ -381,7 +380,7 @@
     <string name="quick_settings_modes_label" msgid="879156359479504244">"Modi"</string>
     <string name="quick_settings_bluetooth_label" msgid="7018763367142041481">"Bluetooth"</string>
     <string name="quick_settings_bluetooth_detail_empty_text" msgid="5760239584390514322">"Keine gekoppelten Geräte verfügbar"</string>
-    <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Zum Verbinden oder Trennen eines Geräts tippen"</string>
+    <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Tippe auf ein Gerät, um es zu verbinden oder zu trennen"</string>
     <string name="pair_new_bluetooth_devices" msgid="4601767620843349645">"Neues Gerät koppeln"</string>
     <string name="see_all_bluetooth_devices" msgid="1761596816620200433">"Alle anzeigen"</string>
     <string name="turn_on_bluetooth" msgid="5681370462180289071">"Bluetooth verwenden"</string>
@@ -644,7 +643,7 @@
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Sperrbildschirm-Widgets"</string>
     <string name="communal_widgets_disclaimer_text" msgid="7363411191173297965">"Wenn du eine App mit einem Widget öffnen möchtest, musst du deine Identität bestätigen. Beachte auch, dass jeder die Widgets sehen kann, auch wenn dein Gerät gesperrt ist. Einige Widgets sind möglicherweise nicht für den Sperrbildschirm vorgesehen, sodass es unsicher sein kann, sie hier hinzuzufügen."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Ok"</string>
-    <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"Schaltfläche „Bildschirmschoner anzeigen“"</string>
+    <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"Button „Bildschirmschoner anzeigen“"</string>
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"Hub-Modus entdecken"</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Du kannst während des Ladevorgangs auf deine bevorzugten Widgets und Bildschirmschoner zugreifen."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Los gehts"</string>
@@ -1735,12 +1734,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Zum Öffnen von Benachrichtigungen von links oben nach unten wischen"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Zum Öffnen der Schnelleinstellungen von rechts oben nach unten wischen"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Zurück"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Bedienungshilfen"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Zurück"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Weiter"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"zur nächsten Seite zu gehen"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatisch ausfüllen"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"maximieren"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>
