@@ -692,13 +692,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_windowing_hsum"
-    namespace: "lse_desktop_experience"
-    description: "Enables HSUM on desktop mode."
-    bug: "366397912"
-}
-
-flag {
     name: "enable_desktop_windowing_immersive_handle_hiding"
     namespace: "lse_desktop_experience"
     description: "Hides the App Handle when in fullscreen immersive mode"

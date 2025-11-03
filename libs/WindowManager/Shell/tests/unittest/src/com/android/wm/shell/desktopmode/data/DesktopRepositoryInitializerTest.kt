@@ -24,7 +24,6 @@ import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_HSUM
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
 import com.android.window.flags.Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
@@ -127,7 +126,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @Test
     @EnableFlags(
         FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_DESKTOP_WINDOWING_HSUM,
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun initWithPersistence_multipleUsers_addedCorrectly() =
@@ -282,7 +280,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @Test
     @EnableFlags(
         FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_DESKTOP_WINDOWING_HSUM,
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun initWithPersistence_deskRecreationFailed_deskNotAdded() =
@@ -316,7 +313,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @Test
     @EnableFlags(
         FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-        FLAG_ENABLE_DESKTOP_WINDOWING_HSUM,
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun initWithPersistence_defaultDisplayDoesNotSupportDesks_deskNotAdded() =
