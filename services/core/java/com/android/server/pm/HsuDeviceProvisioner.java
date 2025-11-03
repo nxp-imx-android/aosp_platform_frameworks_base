@@ -55,9 +55,6 @@ final class HsuDeviceProvisioner extends ContentObserver {
     private final PackageManager mPm;
     private final UserManagerService mUms;
 
-    private @UserIdInt int mSettingsSourceUserId = UserHandle.USER_NULL;
-    private @UserIdInt int mBootUserId = UserHandle.USER_NULL;
-
     /**
      * Constructs a new HsuDeviceProvisioner.
      *
@@ -82,7 +79,11 @@ final class HsuDeviceProvisioner extends ContentObserver {
      */
     public void init() {
         if (isDeviceProvisioned()) {
-            copySecureSettingFromFirstAdmin();
+            //TODO(b/446947591):Remove check after OTA launch
+            if (mPm.isDeviceUpgrading()) {
+                Slogf.i(TAG, "Device is upgrading, copying secure settings from first admin user.");
+                copySecureSettingFromFirstAdmin();
+            }
             return;
         }
 
@@ -104,7 +105,7 @@ final class HsuDeviceProvisioner extends ContentObserver {
             mContentResolver.unregisterContentObserver(this);
             disableSetupWizardHomeForSystemUser();
             // Copy settings from the Real user to the system user.
-            copySecureSettingFromSourceUser();
+            copySecureSettingFromFirstAdmin();
         }
     }
 
@@ -123,8 +124,8 @@ final class HsuDeviceProvisioner extends ContentObserver {
     }
 
     @VisibleForTesting
-    void copySecureSettingFromSourceUser() {
-        copySecureSettingFromSourceUser(Settings.Secure.BUGREPORT_IN_POWER_MENU,
+    void copySecureSettingFromSourceUser(@UserIdInt int userId) {
+        copySecureSettingFromSourceUser(userId, Settings.Secure.BUGREPORT_IN_POWER_MENU,
                 /* defaultValue= */ 0);
     }
 
@@ -136,16 +137,12 @@ final class HsuDeviceProvisioner extends ContentObserver {
             return;
         }
         int firstUserId = users.get(0).id;
-        setSettingsSourceUser(firstUserId);
-        copySecureSettingFromSourceUser();
+        copySecureSettingFromSourceUser(firstUserId);
     }
 
-    private void copySecureSettingFromSourceUser(String settingName, int defaultValue) {
-        if (mSettingsSourceUserId == UserHandle.USER_NULL) {
-            Slogf.w(TAG, "copySecureSettingFromSourceUser called before source user was set");
-            return;
-        }
-        if (mSettingsSourceUserId == UserHandle.USER_SYSTEM) {
+    private void copySecureSettingFromSourceUser(
+             @UserIdInt int userId, String settingName, int defaultValue) {
+        if (userId == UserHandle.USER_SYSTEM) {
             if (DEBUG) {
                 Slogf.d(TAG, "Skipping copySecureSettingFromSourceUser for %s: "
                         + "source user is system user", settingName);
@@ -154,9 +151,9 @@ final class HsuDeviceProvisioner extends ContentObserver {
         }
         int settingValue =
                 Settings.Secure.getIntForUser(
-                        mContentResolver, settingName, defaultValue, mSettingsSourceUserId);
+                        mContentResolver, settingName, defaultValue, userId);
         Slogf.i(TAG, "copySecureSettingFromSourceUser (userId=%d): %s, value=%d",
-                mSettingsSourceUserId, settingName, settingValue);
+                userId, settingName, settingValue);
         Settings.Secure.putIntForUser(
                 mContentResolver, settingName, settingValue, UserHandle.USER_SYSTEM);
     }
@@ -195,13 +192,5 @@ final class HsuDeviceProvisioner extends ContentObserver {
                     setupWizardHomeComponent.flattenToString());
             }
         }
-    }
-
-    /**
-     * Sets the user ID of the user to copy settings from.
-     */
-    void setSettingsSourceUser(@UserIdInt int sourceUserId) {
-        mSettingsSourceUserId = sourceUserId;
-        Slogf.i(TAG, "Settings Source User set %d", mSettingsSourceUserId);
     }
 }

@@ -444,7 +444,7 @@ public final class HsumBootUserInitializer {
     void observeDeviceProvisioning() {
         // TODO(b/446947591): Remove the cast once Flags.hsuDeviceProvisioner() is completely
         // pushed.
-        if (mDeviceProvisionedObserver instanceof HsuDeviceProvisioner) {
+        if (Flags.hsuDeviceProvisioner()) {
             ((HsuDeviceProvisioner) mDeviceProvisionedObserver).init();
             return;
         }
@@ -503,12 +503,6 @@ public final class HsumBootUserInitializer {
             // for the system user to record the last entered foreground time. Therefore explicitly
             // set the time now.
             mUms.setLastEnteredForegroundTimeToNow(bootUserId);
-        }
-        // TODO(b/446947591): Remove the cast once Flags.hsuDeviceProvisioner() is completely
-        // pushed.
-        // Sets the boot user to eventually copy secure settings to system user.
-        if (mDeviceProvisionedObserver instanceof HsuDeviceProvisioner) {
-            ((HsuDeviceProvisioner) mDeviceProvisionedObserver).setSettingsSourceUser(bootUserId);
         }
         final boolean started = mAms.startUserInForegroundWithListener(bootUserId,
                 /* unlockListener= */ null);

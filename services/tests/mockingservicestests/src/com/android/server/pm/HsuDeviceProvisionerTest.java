@@ -79,7 +79,6 @@ public final class HsuDeviceProvisionerTest {
 
     private static final @UserIdInt int ADMIN_USER_ID = 8;
     private static final @UserIdInt int ANOTHER_ADMIN_USER_ID = 15;
-    private static final @UserIdInt int MAIN_USER_ID = 4;
 
     @Rule public final Expect expect = Expect.create();
     @Rule
@@ -152,9 +151,8 @@ public final class HsuDeviceProvisionerTest {
     @Test
     public void testOnChange_provisioned_copyBugreportInPowerMenu_RealUser() {
         mockIsDeviceProvisioned(true);
-        mFixture.setSettingsSourceUser(MAIN_USER_ID);
-        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, MAIN_USER_ID);
-
+        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, ADMIN_USER_ID);
+        mockGetUsers(mAdminUser, mAnotherAdminUser);
         mFixture.onChange(true);
 
         verifySettingCopiedForUser(BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
@@ -163,7 +161,6 @@ public final class HsuDeviceProvisionerTest {
     @Test
     public void testOnChange_provisioned_copyBugreportInPowerMenu_NoUser() {
         mockIsDeviceProvisioned(true);
-        mFixture.setSettingsSourceUser(USER_NULL);
 
         mFixture.onChange(true);
 
@@ -173,7 +170,6 @@ public final class HsuDeviceProvisionerTest {
     @Test
     public void testOnChange_provisioned_copyBugreportInPowerMenu_SystemUser() {
         mockIsDeviceProvisioned(true);
-        mFixture.setSettingsSourceUser(USER_SYSTEM);
 
         mFixture.onChange(true);
 
@@ -181,8 +177,9 @@ public final class HsuDeviceProvisionerTest {
     }
 
     @Test
-    public void testInit_provisioned_copySettingsFromAdmin() {
+    public void testInit_provisioned_copySettingsFromAdmin_deviceUpgrading() {
         mockIsDeviceProvisioned(true);
+        mockIsDeviceUpgrading(true);
         mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, ADMIN_USER_ID);
         mockGetUsers(mAdminUser, mAnotherAdminUser);
 
@@ -191,9 +188,35 @@ public final class HsuDeviceProvisionerTest {
         verifySettingCopiedForUser(BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
     }
 
+    @Test
+    public void testInit_provisioned_dontCopySettingsFromAdmin_deviceNotUpgrading() {
+        mockIsDeviceProvisioned(true);
+        mockIsDeviceUpgrading(false);
+        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, ADMIN_USER_ID);
+        mockGetUsers(mAdminUser, mAnotherAdminUser);
+
+        mFixture.init();
+
+        verifySettingNotCopied(BUGREPORT_IN_POWER_MENU);
+    }
+
+    @Test
+    public void testInit_provisioned_noAdminAvailable() {
+        mockIsDeviceProvisioned(true);
+
+        mFixture.init();
+
+        verifySettingNotCopied(BUGREPORT_IN_POWER_MENU);
+    }
+
     private void mockIsDeviceProvisioned(boolean value) {
         Log.v(TAG, "mockIsDeviceProvisioned(" + value + ")");
         doReturn(value ? 1 : 0).when(() -> Settings.Global.getInt(any(), eq(DEVICE_PROVISIONED)));
+    }
+
+    private void mockIsDeviceUpgrading(boolean value) {
+        Log.v(TAG, "mockIsDeviceUpgrading(" + value + ")");
+        when(mMockPackageManager.isDeviceUpgrading()).thenReturn(value);
     }
 
     private void mockSettingValue(String settingName, int value, @UserIdInt int userId) {
