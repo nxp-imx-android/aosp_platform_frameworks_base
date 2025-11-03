@@ -1147,6 +1147,16 @@
                 android:protectionLevel="signature|privileged|vendorPrivileged"
                 android:featureFlag="android.media.tv.flags.media_quality_fw"/>
 
+    <!-- Allows an application to act as Private Compute Services, which allows
+         the application to communicate with Private Compute Core components.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    -->
+    <permission
+        android:name="android.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.app.privatecompute.flags.enable_pcc_framework_support" />
+
     <!--
         @SystemApi
         @FlaggedApi("android.media.tv.flags.media_quality_fw")

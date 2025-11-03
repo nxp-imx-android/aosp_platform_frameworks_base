@@ -161,6 +161,7 @@ android_app {
         "android.app.contentrestriction.flags-aconfig",
         "android.app.contextualsearch.flags-aconfig",
         "android.app.flags-aconfig",
+        "android.app.privatecompute.flags-aconfig",
         "android.appwidget.flags-aconfig",
         "android.companion.virtualdevice.flags-aconfig",
         "android.content.flags-aconfig",
