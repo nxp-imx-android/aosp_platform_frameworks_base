@@ -641,10 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"වෙළඳ දැන්වීම් පළ කිරීමට, සම්බන්ධ වීමට සහ අවට ඇති Wi-Fi උපාංගවල සාපේක්ෂ පිහිටීම නිර්ණය කිරීමට යෙදුමට ඉඩ දෙයි"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"දේශීය ජාල උපාංග වෙත ප්‍රවේශ වීම"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"යෙදුමට දේශීය ජාල උපාංග වෙත ප්‍රවේශ වීමට ඉඩ දෙයි"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"ලූප්බැක් අතුරු මුහුණත භාවිතා කරන්න"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"යෙදුමට ලූප්බැක් අතුරු මුහුණත හරහා වෙනත් යෙදුම් සමග අන්තර් ක්‍රියා කිරීමට ඉඩ දෙයි"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"අවට උපාංග අතර සාපේක්ෂ පිහිටීම තීරණය කරන්න"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"අවට උපාංග අතර සාපේක්ෂ පිහිටීම තීරණය කිරීමට යෙදුමට ඉඩ දෙන්න"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"කැමති NFC ගෙවීම් සේවා තොරතුරු"</string>
@@ -2611,4 +2609,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"පද්ධති සම්පත් ඇඟවීම්"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"සම්පත් අධික භාවිතය"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"යෙදුම ‘<xliff:g id="APP_NAME">%1$s</xliff:g> ඕනෑවට වඩා සම්පත් භාවිතා කරයි.\""</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

@@ -2609,4 +2609,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"System Resource Alerts"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Resource Overuse"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"App \'<xliff:g id="APP_NAME">%1$s</xliff:g> is using too many resources.\""</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

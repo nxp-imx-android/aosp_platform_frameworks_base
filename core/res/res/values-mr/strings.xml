@@ -641,10 +641,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"ॲपला जाहिरात करण्याची, कनेक्ट करण्याची आणि जवळपासच्या वाय-फाय डिव्हाइसचे संबंधित स्थान निर्धारित करण्याची परवानगी देते"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"लोकल नेटवर्क डिव्हाइस अ‍ॅक्सेस करा"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"अ‍ॅपला लोकल नेटवर्क डिव्हाइस अ‍ॅक्सेस करण्याची अनुमती देते"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"लूपबॅक इंटरफेस वापरा"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"अ‍ॅपला लूपबॅक इंटरफेसद्वारे इतर अ‍ॅप्सशी संवाद साधण्याची अनुमती देते"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"जवळपासच्या डिव्हाइसदरम्यान संबंधित स्थान निश्चित करा"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"ॲपला जवळच्या डिव्हाइसदरम्यानचे संबंधित स्थान निर्धारित करण्याची अनुमती द्या"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"प्राधान्यकृत NFC पेमेंट सेवा माहिती"</string>
@@ -2611,4 +2609,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"सिस्टीम स्त्रोत अलर्ट"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"स्रोतांचा अतिवापर"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\"‘<xliff:g id="APP_NAME">%1$s</xliff:g>\' अ‍ॅप खूप जास्त स्रोत वापरत आहे.\""</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>
