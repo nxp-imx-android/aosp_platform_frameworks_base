@@ -16,16 +16,13 @@
 
 package android.service.personalcontext.insight;
 
-import static android.service.personalcontext.insight.ContextInsight.INSIGHT_TYPE_ACTIONABLE;
-
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.Intent;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
-
-import com.android.internal.util.Preconditions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,19 +31,19 @@ import java.util.Objects;
 /** An insight that contains information about an action and how to invoke it. */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ActionableInsight extends ContextInsight {
-    private static final String KEY_ACTION_INTENT = "key_action_intent";
+    private static final String KEY_ACTION_DETAILS = "key_action_details";
     private static final String KEY_DISPLAY_DETAILS = "key_display_details";
 
+    private final InsightActionDetails mActionDetails;
     private final InsightDisplayDetails mDisplayDetails;
-    private final Intent mActionIntent;
 
-    /** Private constructor used by the builder. */
+    /** Private constructor. Used by the builder. */
     private ActionableInsight(
             @NonNull List<ContextHint> originHints,
-            @NonNull Intent actionIntent,
+            @NonNull InsightActionDetails actionDetails,
             @NonNull InsightDisplayDetails displayDetails) {
         super(originHints);
-        mActionIntent = actionIntent;
+        mActionDetails = actionDetails;
         mDisplayDetails = displayDetails;
     }
 
@@ -59,7 +56,7 @@ public final class ActionableInsight extends ContextInsight {
         final Bundle insightData = b.getBundle(KEY_INSIGHT_DATA);
         Objects.requireNonNull(insightData, "Bundle must contain insight data");
 
-        mActionIntent = insightData.getParcelable(KEY_ACTION_INTENT, Intent.class);
+        mActionDetails = insightData.getParcelable(KEY_ACTION_DETAILS, InsightActionDetails.class);
         mDisplayDetails =
                 insightData.getParcelable(KEY_DISPLAY_DETAILS, InsightDisplayDetails.class);
     }
@@ -67,7 +64,7 @@ public final class ActionableInsight extends ContextInsight {
     @Override
     Bundle toBundleImpl() {
         final Bundle b = new Bundle();
-        b.putParcelable(KEY_ACTION_INTENT, mActionIntent);
+        b.putParcelable(KEY_ACTION_DETAILS, mActionDetails);
         b.putParcelable(KEY_DISPLAY_DETAILS, mDisplayDetails);
         return b;
     }
@@ -79,13 +76,13 @@ public final class ActionableInsight extends ContextInsight {
         if (!super.equals(o)) return false;
 
         ActionableInsight that = (ActionableInsight) o;
-        return Objects.equals(mActionIntent, that.mActionIntent)
+        return Objects.equals(mActionDetails, that.mActionDetails)
                 && Objects.equals(mDisplayDetails, that.mDisplayDetails);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), mActionIntent, mDisplayDetails);
+        return Objects.hash(super.hashCode(), mActionDetails, mDisplayDetails);
     }
 
     @Override
@@ -93,8 +90,8 @@ public final class ActionableInsight extends ContextInsight {
         return "ActionableInsight{"
                 + "mDisplayDetails="
                 + mDisplayDetails
-                + ", mActionIntent="
-                + mActionIntent
+                + ", mActionDetails="
+                + mActionDetails
                 + ", "
                 + super.toString()
                 + '}';
@@ -102,8 +99,6 @@ public final class ActionableInsight extends ContextInsight {
 
     /**
      * Returns the display details of the actionable insight.
-     *
-     * @return the display details of the actionable insight.
      */
     @NonNull
     public InsightDisplayDetails getDisplayDetails() {
@@ -111,13 +106,23 @@ public final class ActionableInsight extends ContextInsight {
     }
 
     /**
-     * Returns the intent to be invoked when the actionable insight triggers.
-     *
-     * @return the intent representing the action to be invoked.
+     * Returns the action details of the actionable insight. Action details contain information
+     * (such as an {@Intent}) that can be used when the insight triggers.
      */
     @NonNull
+    public InsightActionDetails getActionDetails() {
+        return mActionDetails;
+    }
+
+    /**
+     * Returns the intent to be invoked when the actionable insight triggers, or null if the action
+     * details does not contain an intent.
+     * @deprecated get the intent from {@link InsightActionDetails}
+     */
+    @Deprecated
+    @Nullable
     public Intent createActionIntent() {
-        return new Intent(mActionIntent);
+        return mActionDetails.createActionIntent();
     }
 
     /** @hide */
@@ -129,24 +134,24 @@ public final class ActionableInsight extends ContextInsight {
 
     /** Builder for {@link ActionableInsight}. */
     public static final class Builder {
-        List<ContextHint> mOriginHints = new ArrayList<>();
-        private final Intent mActionIntent;
+        private List<ContextHint> mOriginHints = new ArrayList<>();
+        private final InsightActionDetails mActionDetails;
         private final InsightDisplayDetails mDisplayDetails;
 
         /**
          * Creates a new builder for an actionable insight. By default, no hints are present. They
          * can be added using {@link #setOriginHints(List)}.
          *
-         * @param actionIntent the intent to be invoked when the actionable insight is clicked.
+         * @param actionDetails the action details of the actionable insight.
          * @param displayDetails the display details of the actionable insight.
          */
         public Builder(
-                @NonNull Intent actionIntent,
+                @NonNull InsightActionDetails actionDetails,
                 @NonNull InsightDisplayDetails displayDetails) {
-            Preconditions.checkNotNull(actionIntent, "actionIntent is null");
-            Preconditions.checkNotNull(displayDetails, "displayDetails is null");
+            Objects.requireNonNull(actionDetails, "actionDetails is null");
+            Objects.requireNonNull(displayDetails, "displayDetails is null");
 
-            mActionIntent = actionIntent;
+            mActionDetails = actionDetails;
             mDisplayDetails = displayDetails;
         }
 
@@ -163,7 +168,7 @@ public final class ActionableInsight extends ContextInsight {
          */
         @NonNull
         public ActionableInsight build() {
-            return new ActionableInsight(mOriginHints, mActionIntent, mDisplayDetails);
+            return new ActionableInsight(mOriginHints, mActionDetails, mDisplayDetails);
         }
     }
 }
