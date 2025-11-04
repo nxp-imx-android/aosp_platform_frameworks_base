@@ -41,7 +41,9 @@ import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import java.util.function.Consumer
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -108,9 +110,14 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
             .thenReturn(smInternal)
     }
 
+    @After
+    fun tearDown() {
+        availableFeatures.clear()
+    }
+
     @Test
     @Throws(Exception::class)
-    fun setPackageAppLockEnabled_systemConfigExemptApp_false(
+    fun setPackageAppLockEnabled_systemConfigExemptApp(
         @TestParameter currentEnabledState: Boolean,
         @TestParameter newEnabledState: Boolean,
     ) {
@@ -127,7 +134,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState,
                 Process.SYSTEM_UID
             )
-        ).isFalse()
+        ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as exempt apps cannot have App Lock
         // enabled.
         if (currentEnabledState) {
@@ -139,7 +146,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
 
     @Test
     @Throws(Exception::class)
-    fun setPackageAppLockEnabled_headlessApp_false(
+    fun setPackageAppLockEnabled_headlessApp(
         @TestParameter currentEnabledState: Boolean,
         @TestParameter newEnabledState: Boolean,
     ) {
@@ -159,7 +166,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState,
                 Process.SYSTEM_UID
             )
-        ).isFalse()
+        ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as headless apps cannot have App
         // Lock enabled.
         if (currentEnabledState) {
@@ -190,7 +197,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState,
                 Process.SYSTEM_UID
             )
-        ).isFalse()
+        ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as profile users cannot have App
         // Lock enabled.
         if (currentEnabledState) {
@@ -202,7 +209,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
 
     @Test
     @Throws(Exception::class)
-    fun setPackageAppLockEnabled_profileUser_false(
+    fun setPackageAppLockEnabled_profileUser(
         @TestParameter currentEnabledState: Boolean,
         @TestParameter newEnabledState: Boolean,
     ) {
@@ -220,7 +227,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState,
                 Process.SYSTEM_UID
             )
-        ).isFalse()
+        ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as profile users cannot have App
         // Lock enabled.
         if (currentEnabledState) {
@@ -232,7 +239,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
 
     @Test
     @Throws(Exception::class)
-    fun setPackageAppLockEnabled_supervisedUser_false(
+    fun setPackageAppLockEnabled_supervisedUser(
         @TestParameter currentEnabledState: Boolean,
         @TestParameter newEnabledState: Boolean,
     ) {
@@ -251,7 +258,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState,
                 Process.SYSTEM_UID
             )
-        ).isFalse()
+        ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as supervised users cannot have App
         // Lock enabled.
         if (currentEnabledState) {
@@ -280,7 +287,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState,
                 Process.SYSTEM_UID
             )
-        ).isFalse()
+        ).isEqualTo(!newEnabledState)
         // Disk write occurs only if the current state was true, as App Lock is not supported on
         // insecure devices.
         if (currentEnabledState) {
@@ -292,7 +299,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
 
     @Test
     @Throws(Exception::class)
-    fun setPackageAppLockEnabled_invalidUid_false_noDiskWrite(
+    fun setPackageAppLockEnabled_invalidUid_throwsSecurityException_noDiskWrite(
         @TestParameter currentEnabledState: Boolean,
         @TestParameter newEnabledState: Boolean,
     ) {
@@ -301,7 +308,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
             currentEnabledState
         )
 
-        assertThat(
+        assertFailsWith<SecurityException> {
             appLockPackageHelper.setPackageAppLockEnabled(
                 this::mockSnapshot,
                 TEST_PACKAGE_NAME,
@@ -309,13 +316,13 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState,
                 Process.INVALID_UID
             )
-        ).isFalse()
+        }
         verifyNoWriteOrPackageUpdate()
     }
 
     @Test
     @Throws(Exception::class)
-    fun setPackageAppLockEnabled_appUid_false_noDiskWrite(
+    fun setPackageAppLockEnabled_appUid_throwsSecurityException_noDiskWrite(
         @TestParameter currentEnabledState: Boolean,
         @TestParameter newEnabledState: Boolean,
     ) {
@@ -324,7 +331,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
             currentEnabledState
         )
 
-        assertThat(
+        assertFailsWith<SecurityException> {
             appLockPackageHelper.setPackageAppLockEnabled(
                 this::mockSnapshot,
                 TEST_PACKAGE_NAME,
@@ -332,7 +339,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState, /* callingUid= */
                 12345
             )
-        ).isFalse()
+        }
         verifyNoWriteOrPackageUpdate()
     }
 
@@ -344,6 +351,9 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
     ) {
         val targetState = appLockSupportedForSecureDevice && newEnabledState
         val expectDiskWrite = currentEnabledState != targetState
+        // The value gets successfully set to the desired state if the desired state is false, or if
+        // if the desired state is true for a supported, secure device
+        val successfullySet = !newEnabledState || appLockSupportedForSecureDevice
         setupTestForSetPackageAppLockEnabled(
             deviceSecure = true,
             currentEnabledState
@@ -364,7 +374,7 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
                 newEnabledState,
                 Process.SYSTEM_UID,
             )
-        ).isEqualTo(appLockSupportedForSecureDevice)
+        ).isEqualTo(successfullySet)
         if (expectDiskWrite) {
             verifyDiskWriteAndPackageUpdate(targetState)
         } else {
@@ -554,7 +564,6 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         availableFeatures.put(feature, FeatureInfo())
     }
 
-
     private fun setupTestForSetPackageAppLockEnabled(
         deviceSecure: Boolean,
         currentEnabledState: Boolean,
@@ -579,7 +588,6 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         private const val TEST_PACKAGE_NAME = "testpackagename"
         private const val EXEMPT_PACKAGE_NAME = "exempt.package.name"
         private const val TEST_USER_ID = 1
-        private const val INVALID_USER_ID = -1
         private fun createActivity(
             packageName: String, filters: Array<IntentFilter>
         ): ParsedActivity {

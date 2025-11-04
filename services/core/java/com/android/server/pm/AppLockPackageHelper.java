@@ -62,12 +62,15 @@ public final class AppLockPackageHelper {
     private static ArraySet<String> sAppLockExemptPackages = null;
 
     @VisibleForTesting
+    @SuppressWarnings("StaticAssignmentInConstructor") // Test constructor only
     AppLockPackageHelper(Context context, PackageManagerService packageManagerService,
             BroadcastHelper broadcastHelper, Injector injector) {
         mContext = context;
         mPms = packageManagerService;
         mBroadcastHelper = broadcastHelper;
         mInjector = injector;
+        // Reset the static cached value to ensure that each test starts with a clean slate.
+        sIsSupportedDeviceForAppLock = null;
     }
 
     public AppLockPackageHelper(Context context, PackageManagerService packageManagerService,
@@ -257,18 +260,21 @@ public final class AppLockPackageHelper {
     /**
      * Sets the App Lock enablement state for a given package and user.
      *
+     * <p>If the caller is neither {@link Process#SYSTEM_UID} nor {@link Process#ROOT_UID} this
+     * method will throw a {@link SecurityException} since only the system is allowed to change the
+     * App Lock enabled state.
+     *
      * <p>This method will write the new state to disk if the caller has the necessary
      * permissions and the new enablement state is different from the current state.
      *
-     * <p>If the caller is neither {@link Process#SYSTEM_UID} nor {@link Process#ROOT_UID} this
-     * method will do nothing and return {@code false}.
+     * <p>If the caller is trying to disable App Lock for an app that currently has App Lock enabled
+     * this method will disable App Lock and return {@code true}. This will happen even if App Lock
+     * is not supported for an app, since unsupported apps should not have App Lock enabled.
      *
-     * <p>If App Lock state can't be changed, either because
-     * {@link #isAppLockSupported(String, int, Computer)} is false or because the device is not
-     * currently secured with a device credential (e.g., PIN, pattern, or password), this method
-     * will not set the target App Lock state and will return {@code false}. Additionally, if the
-     * app currently has App Lock enabled, this method will also disable App Lock for the app,
-     * because the conditions to keep App Lock enabled are no longer satisfied.
+     * <p>If the caller is trying to enable App Lock but it can't be enabled, either because
+     * {@link #isAppLockSupported(String, int, Computer)} is {@code false} or because the device is
+     * not currently secured with a device credential (e.g., PIN, pattern, or password), this method
+     * will not set the target App Lock state and will return {@code false}.
      *
      * <p>If the App Lock state is already set to the desired value, and the caller is permitted to
      * make this change, this method will do nothing and return {@code true}.
@@ -280,14 +286,14 @@ public final class AppLockPackageHelper {
      * @param callingUid  The Uid of the caller
      * @return {@code true} if the App Lock enablement state was set to the passed in value for the
      *                      package and user, {@code false} otherwise
+     * @throws SecurityException if the caller is neither {@link Process#SYSTEM_UID} nor
+     * {@link Process#ROOT_UID}
      */
     public boolean setPackageAppLockEnabled(@NonNull Supplier<Computer> snapshotSupplier,
             String packageName, int userId, boolean enabled, int callingUid) {
         if (callingUid != Process.SYSTEM_UID && callingUid != Process.ROOT_UID) {
-            if (DEBUG) {
-                Slog.d(TAG, "setPackageAppLockEnabled can only be called by the system");
-            }
-            return false;
+            throw new SecurityException(
+                    "setPackageAppLockEnabled can only be called by the system");
         }
 
         Computer snapshot = snapshotSupplier.get();
@@ -304,7 +310,7 @@ public final class AppLockPackageHelper {
             if (currentEnabled) {
                 writeAppLockStateToDisk(packageName, userId, /* enabled= */ false);
             }
-            return false;
+            return !enabled;
         }
 
         if (enabled != currentEnabled) {
