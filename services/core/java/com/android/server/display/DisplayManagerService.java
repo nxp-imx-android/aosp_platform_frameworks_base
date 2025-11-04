@@ -5154,15 +5154,11 @@ public final class DisplayManagerService extends SystemService {
 
                             if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
                                 if (Flags.sendNonRrCallbacksWhenInBackground()) {
-                                    if ((eventMask
-                                            & DisplayManagerGlobal
-                                            .EVENT_DISPLAY_REFRESH_RATE_CHANGED)
-                                            != 0) {
-                                        eventMask =
-                                                eventMask
-                                                        ^ DisplayManagerGlobal
-                                                        .EVENT_DISPLAY_REFRESH_RATE_CHANGED;
-                                    }
+                                    // Remove the DisplayManagerGlobal
+                                    // .EVENT_DISPLAY_REFRESH_RATE_CHANGED from the mask
+                                    eventMask = eventMask
+                                            & ~DisplayManagerGlobal
+                                            .EVENT_DISPLAY_REFRESH_RATE_CHANGED;
                                     if (eventMask == 0) {
                                         continue;
                                     }
@@ -5170,7 +5166,7 @@ public final class DisplayManagerService extends SystemService {
                                     continue;
                                 }
                             }
-                            transmitDisplayEvents(displayEvent.displayId, displayEvent.eventMask);
+                            transmitDisplayEvents(displayEvent.displayId, eventMask);
                         } else if (event instanceof PendingSnapshotEvent snapshotEvent) {
                             if (extraLogging(mPackageName)) {
                                 Slog.d(TAG, "Send pending snapshot event to " + mUid
