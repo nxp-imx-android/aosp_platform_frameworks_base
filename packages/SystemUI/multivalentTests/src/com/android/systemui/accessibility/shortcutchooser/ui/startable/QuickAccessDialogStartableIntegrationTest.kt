@@ -73,20 +73,19 @@ class QuickAccessDialogStartableIntegrationTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
     fun start_someShortcutsEnabled() =
         kosmos.runTest {
-            // These fake target names come from FakeAccessibilityShortcutsRepository.
-            listOf(
-                    "fakeTargetNameForTalkBack",
-                    "fakeTargetNameForMagnification",
-                    "fakeTargetNameForVoiceAccess",
-                )
-                .forEach { targetName ->
-                    verify(accessibilityShortcutsRepository)
-                        .enableShortcutsForTargets(
-                            eq(true),
-                            eq(QuickAccessDialogInteractor.SHORTCUT_TYPE),
-                            eq(targetName),
+            verify(accessibilityShortcutsRepository)
+                .enableShortcutsForTargets(
+                    eq(true),
+                    eq(QuickAccessDialogInteractor.SHORTCUT_TYPE),
+                    eq(
+                        // These fake target names come from FakeAccessibilityShortcutsRepository.
+                        setOf(
+                            "fakeTargetNameForTalkBack",
+                            "fakeTargetNameForMagnification",
+                            "fakeTargetNameForVoiceAccess",
                         )
-                }
+                    ),
+                )
         }
 
     @Test

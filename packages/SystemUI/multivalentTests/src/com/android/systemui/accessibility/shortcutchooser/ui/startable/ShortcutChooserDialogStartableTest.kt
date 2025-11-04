@@ -140,7 +140,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             composeTestRule.onNodeWithTag(talkbackTargetName).performClick()
             composeTestRule.waitForIdle()
             assertThat(repository.areShortcutsEnabled).isTrue()
-            assertThat(repository.enabledShortcutTargetName).isEqualTo(talkbackTargetName)
+            assertThat(repository.enabledShortcutTargetNames).isEqualTo(setOf(talkbackTargetName))
             // [AccessibilityManager.enableShortcutsForTargets] will automatically update the
             // selected list in production code; in the fake repository, we have to manually to
             // update the fake list.
@@ -168,10 +168,11 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             // Select two targets on EditDialog, e.g. Talkback and Magnification.
             composeTestRule.onNodeWithTag(talkbackTargetName).performClick()
             composeTestRule.waitForIdle()
-            assertThat(repository.enabledShortcutTargetName).isEqualTo(talkbackTargetName)
+            assertThat(repository.enabledShortcutTargetNames).isEqualTo(setOf(talkbackTargetName))
             composeTestRule.onNodeWithTag(magnificationTargetName).performClick()
             composeTestRule.waitForIdle()
-            assertThat(repository.enabledShortcutTargetName).isEqualTo(magnificationTargetName)
+            assertThat(repository.enabledShortcutTargetNames)
+                .isEqualTo(setOf(magnificationTargetName))
             // [AccessibilityManager.enableShortcutsForTargets] will automatically update the
             // selected list in production code; in the fake repository, we have to manually to
             // update the fake list.
