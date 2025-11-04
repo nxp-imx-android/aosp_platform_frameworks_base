@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.api
 
+import android.graphics.Rect
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
@@ -24,7 +25,11 @@ import com.android.wm.shell.repository.MemoryRepositoryImpl
 import javax.inject.Inject
 
 /** Represents the state shared between all the components. */
-class CompatUISharedState(val taskId: Int = -1)
+class CompatUISharedState(
+    val taskId: Int = -1,
+    val stableBounds: Rect? = null,
+    val areParentBoundsChanged: Boolean = false,
+)
 
 /** [GenericRepository] with information shared with multiple [CompatUIComponent]s. */
 @WMSingleton
