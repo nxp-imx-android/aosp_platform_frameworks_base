@@ -140,13 +140,20 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      */
     public static final int CLOSE_REASON_SESSION_TIMED_OUT = 3;
 
+    /**
+     * Close reason indicating that the session became empty.
+     */
+    public static final int CLOSE_REASON_SESSION_EMPTY = 4;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "CLOSE_REASON_", value = {
             CLOSE_REASON_UNKNOWN,
             CLOSE_REASON_CALLER_INITIATED,
             CLOSE_REASON_USER_INITIATED,
-            CLOSE_REASON_SESSION_TIMED_OUT})
+            CLOSE_REASON_SESSION_TIMED_OUT,
+            CLOSE_REASON_SESSION_EMPTY,
+    })
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionCloseReason {
     }

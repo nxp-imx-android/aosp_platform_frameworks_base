@@ -18,12 +18,15 @@ package com.android.server.companion.virtual.computercontrol;
 
 import android.annotation.RequiresNoPermission;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
+import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.gui.DropInputMode;
+import android.util.Slog;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 
 import com.android.server.input.InputManagerInternal;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -35,28 +38,64 @@ import java.util.function.Supplier;
  * view all content in that mirror surface.
  */
 final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
+    private static final String TAG = InteractiveMirrorImpl.class.getSimpleName();
 
     private final DisplayInfo mDisplayInfo;
+    // The mirror of the VirtualDisplay, used to control sensitive parameters of the surface.
+    // NOTE: This must NOT be sent to the client app, and must remain in system_server.
     private final SurfaceControl mMirrorSurface;
+    // The parent leash of the mirror that can be safely sent to the client app to be embedded
+    // in its MirrorView.
+    private final SurfaceControl mMirrorLeash;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final InputManagerInternal mInputManagerInternal;
+    private final Consumer<InteractiveMirrorImpl> mOnCloseListener;
 
     InteractiveMirrorImpl(SurfaceControl mirrorSurface,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
-            InputManagerInternal inputManagerInternal) {
+            InputManagerInternal inputManagerInternal, Consumer<InteractiveMirrorImpl> onClose) {
         mMirrorSurface = mirrorSurface;
         mTransactionSupplier = transactionSupplier;
         mDisplayInfo = displayInfo;
         mInputManagerInternal = inputManagerInternal;
+        mMirrorLeash = new SurfaceControl.Builder()
+                .setName("InteractiveMirrorImpl#mMirrorLeash$" + mMirrorSurface.hashCode())
+                .setContainerLayer()
+                .build();
+        mOnCloseListener = onClose;
+
+        Slog.v(TAG, "Creating interactive mirror with surface: " + mirrorSurface);
+        initialize();
+    }
+
+    private void initialize() {
+        try (var transaction = mTransactionSupplier.get()) {
+            transaction
+                    .reparent(mMirrorSurface, mMirrorLeash)
+                    .show(mMirrorLeash);
+            setInteractiveWithTransaction(InteractiveMirror.DEFAULT_INTERACTIVE, transaction);
+            transaction.apply();
+        }
+    }
+
+    /** Return the mirror leash that can be safely sent to the client app. */
+    public SurfaceControl getMirrorLeash() {
+        return mMirrorLeash;
     }
 
     @RequiresNoPermission
     @Override
     public void setInteractive(boolean interactive) {
         try (var transaction = mTransactionSupplier.get()) {
-            transaction.setDropInputMode(mMirrorSurface,
-                    interactive ? DropInputMode.NONE : DropInputMode.ALL).apply();
+            setInteractiveWithTransaction(interactive, transaction);
+            transaction.apply();
         }
+    }
+
+    private void setInteractiveWithTransaction(boolean interactive,
+            SurfaceControl.Transaction transaction) {
+        transaction.setDropInputMode(mMirrorSurface,
+                interactive ? DropInputMode.NONE : DropInputMode.ALL);
     }
 
     @RequiresNoPermission
@@ -77,6 +116,17 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     @RequiresNoPermission
     @Override
     public void close() {
-        mMirrorSurface.release();
+        try (var transaction = mTransactionSupplier.get()) {
+            closeWithTransaction(transaction);
+            transaction.apply();
+        }
+    }
+
+    void closeWithTransaction(SurfaceControl.Transaction transaction) {
+        Slog.v(TAG, "Closing interactive mirror with surface: " + mMirrorSurface);
+        transaction
+                .reparent(mMirrorSurface, null)
+                .reparent(mMirrorLeash, null);
+        mOnCloseListener.accept(this);
     }
 }

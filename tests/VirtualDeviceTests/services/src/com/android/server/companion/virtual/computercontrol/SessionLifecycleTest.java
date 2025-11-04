@@ -19,6 +19,7 @@ package com.android.server.companion.virtual.computercontrol;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -26,6 +27,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import android.companion.virtual.computercontrol.ComputerControlSession;
@@ -89,13 +91,33 @@ public class SessionLifecycleTest {
     }
 
     @Test
-    public void updateLifecycle_entersClosedState() {
+    public void updateLifecycle_entersClosedState() throws Exception {
         initializeCallbacksAndReset();
 
         final var state = mLifecycle.updateLifecycleState(
                 (config) -> config.mClosed = new Closed(CLOSE_REASON_CALLER_INITIATED));
         assertThat(state).isInstanceOf(Closed.class);
         assertThat(((Closed) state).reason).isEqualTo(CLOSE_REASON_CALLER_INITIATED);
+        verify(mRemoteCallback).onClosed(CLOSE_REASON_CALLER_INITIATED);
+        verify(mLocalCallback).onClosed(CLOSE_REASON_CALLER_INITIATED);
+    }
+
+    @Test
+    public void updateLifecycle_cannotChangeCloseReason() throws Exception {
+        initializeCallbacksAndReset();
+        mLifecycle.updateLifecycleState(
+                (config) -> config.mClosed = new Closed(CLOSE_REASON_CALLER_INITIATED));
+        verify(mRemoteCallback).onClosed(CLOSE_REASON_CALLER_INITIATED);
+        verify(mLocalCallback).onClosed(CLOSE_REASON_CALLER_INITIATED);
+        Mockito.reset(mLocalCallback, mRemoteCallback);
+
+        final var state = mLifecycle.updateLifecycleState(
+                (config) -> config.mClosed = new Closed(CLOSE_REASON_SESSION_TIMED_OUT));
+
+        assertThat(state).isInstanceOf(Closed.class);
+        assertThat(((Closed) state).reason).isEqualTo(CLOSE_REASON_CALLER_INITIATED);
+        verify(mLocalCallback, never()).onClosed(anyInt());
+        verify(mRemoteCallback, never()).onClosed(anyInt());
     }
 
     @Test
