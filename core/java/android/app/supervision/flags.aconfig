@@ -64,18 +64,6 @@ flag {
   description: "Flag that enables the web content filters screen with Supervision settings entry point"
   bug: "395134536"
 }
-
-flag {
-  name: "enable_web_content_filters_screen_search_redirection"
-  is_exported: false
-  namespace: "supervision"
-  description: "Flag that enables the web content filters screen search redirection"
-  bug: "437389231"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
 flag {
   name: "enable_supervision_settings_ui_updates"
   is_exported: true
