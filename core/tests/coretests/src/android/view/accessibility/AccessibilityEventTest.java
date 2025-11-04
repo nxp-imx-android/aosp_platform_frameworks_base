@@ -58,7 +58,7 @@ public class AccessibilityEventTest {
 
     @Test
     public void testImportantForAccessibiity_getSetWorkAcrossParceling() {
-        AccessibilityEvent event = AccessibilityEvent.obtain();
+        AccessibilityEvent event = new AccessibilityEvent();
         event.setImportantForAccessibility(true);
         assertTrue(copyEventViaParcel(event).isImportantForAccessibility());
 
@@ -69,7 +69,7 @@ public class AccessibilityEventTest {
     @Test
     public void testSouceNodeId_getSetWorkAcrossParceling() {
         final long sourceNodeId = 0x1234567890ABCDEFL;
-        AccessibilityEvent event = AccessibilityEvent.obtain();
+        AccessibilityEvent event = new AccessibilityEvent();
         event.setSourceNodeId(sourceNodeId);
         assertEquals(sourceNodeId, copyEventViaParcel(event).getSourceNodeId());
     }
@@ -77,7 +77,7 @@ public class AccessibilityEventTest {
     @Test
     public void testSourceDisplayId_getSetWorkAcrossParceling() {
         final int sourceDisplayId = Display.DEFAULT_DISPLAY;
-        AccessibilityEvent event = AccessibilityEvent.obtain();
+        AccessibilityEvent event = new AccessibilityEvent();
         event.setDisplayId(sourceDisplayId);
         assertEquals(sourceDisplayId, copyEventViaParcel(event).getDisplayId());
     }
@@ -87,7 +87,7 @@ public class AccessibilityEventTest {
         final int windowChanges = AccessibilityEvent.WINDOWS_CHANGE_TITLE
                 | AccessibilityEvent.WINDOWS_CHANGE_ACTIVE
                 | AccessibilityEvent.WINDOWS_CHANGE_FOCUSED;
-        AccessibilityEvent event = AccessibilityEvent.obtain();
+        AccessibilityEvent event = new AccessibilityEvent();
         event.setWindowChanges(windowChanges);
         assertEquals(windowChanges, copyEventViaParcel(event).getWindowChanges());
     }
@@ -97,7 +97,7 @@ public class AccessibilityEventTest {
     public void testTextChangeTypes_getSetWorkAcrossParceling() {
         final int textChangeTypes = AccessibilityEvent.TEXT_CHANGE_TYPE_IN_COMPOSITION
                 | AccessibilityEvent.TEXT_CHANGE_TYPE_CONVERSION_SUGGESTION_SELECTED_BY_IME;
-        AccessibilityEvent event = AccessibilityEvent.obtain();
+        AccessibilityEvent event = new AccessibilityEvent();
         event.setTextChangeTypes(textChangeTypes);
         assertEquals(textChangeTypes, copyEventViaParcel(event).getTextChangeTypes());
     }
@@ -112,6 +112,33 @@ public class AccessibilityEventTest {
     public void dontForgetToUpdateA11yEventCtsParcelingTestWhenYouAddNewFields() {
         AccessibilityEventTest.assertNoNewNonStaticFieldsAdded(
                 AccessibilityEvent.class, A11Y_EVENT_NON_STATIC_FIELD_COUNT);
+    }
+
+    @Test
+    public void testAppendRecord_nonNull() throws Exception {
+        AccessibilityEvent event = new AccessibilityEvent();
+        AccessibilityRecord record = new AccessibilityRecord();
+        event.appendRecord(record);
+        assertEquals(1, event.getRecordCount());
+        assertEquals(record, event.getRecord(0));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PREVENT_A11Y_EVENT_NULL_RECORD)
+    public void testAppendRecord_nullRecord_flagEnabled() throws Exception {
+        AccessibilityEvent event = new AccessibilityEvent();
+        event.appendRecord(null);
+
+        // mRecords should not be initialized for a null record when the flag is on.
+        assertEquals(0, event.getRecordCount());
+
+        // Verify with an existing list
+        AccessibilityRecord nonNullRecord = new AccessibilityRecord();
+        event.appendRecord(nonNullRecord);
+        event.appendRecord(null);
+
+        assertEquals(1, event.getRecordCount());
+        assertEquals(nonNullRecord, event.getRecord(0));
     }
 
     private AccessibilityEvent copyEventViaParcel(AccessibilityEvent event) {
