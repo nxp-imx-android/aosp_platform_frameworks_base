@@ -417,6 +417,14 @@ flag {
 }
 
 flag {
+    name: "strongbox_properties_api"
+    namespace: "hardware_backed_security"
+    description: "Public API app developers use to check a device's Strongbox manufacturer and model."
+    is_exported: true
+    bug: "432311620"
+}
+
+flag {
     name: "supplemental_security_patches"
     is_exported: false
     namespace: "dynamic_spl"

@@ -34174,6 +34174,8 @@ package android.os {
     field @NonNull public static final String SKU;
     field @NonNull public static final String SOC_MANUFACTURER;
     field @NonNull public static final String SOC_MODEL;
+    field @FlaggedApi("android.os.strongbox_properties_api") @NonNull public static final String STRONGBOX_MANUFACTURER;
+    field @FlaggedApi("android.os.strongbox_properties_api") @NonNull public static final String STRONGBOX_MODEL;
     field public static final String[] SUPPORTED_32_BIT_ABIS;
     field public static final String[] SUPPORTED_64_BIT_ABIS;
     field public static final String[] SUPPORTED_ABIS;

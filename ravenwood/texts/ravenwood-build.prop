@@ -6,6 +6,8 @@ ro.board.first_api_level=1
 ro.product.first_api_level=1
 ro.soc.manufacturer=Android
 ro.soc.model=Ravenwood
+ro.strongbox.manufacturer=Android
+ro.strongbox.model=Ravenwood
 ro.debuggable=1
 
 persist.sys.locale=en-US
