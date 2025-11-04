@@ -8738,11 +8738,9 @@ public class NotificationManagerService extends SystemService {
             final int callingPid, final String tag, final int id, final Notification notification,
             int incomingUserId, boolean postSilently, boolean byForegroundService,
             boolean isAppProvided) {
-        if (Flags.logCachedPosts()) {
-            final int packageImportance = getPackageImportanceWithIdentity(callingUid);
-            if (packageImportance == IMPORTANCE_CACHED) {
-                mUiEventLogger.log(NOTIFICATION_POSTED_CACHED, callingUid, opPkg);
-            }
+        final int packageImportance = getPackageImportanceWithIdentity(callingUid);
+        if (packageImportance == IMPORTANCE_CACHED) {
+            mUiEventLogger.log(NOTIFICATION_POSTED_CACHED, callingUid, opPkg);
         }
         PostNotificationTracker tracker = acquireWakeLockForPost(pkg, callingUid);
         boolean enqueued = false;
