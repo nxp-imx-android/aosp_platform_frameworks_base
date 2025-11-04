@@ -63,7 +63,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.LayoutDirection
@@ -79,7 +78,6 @@ import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
-import com.android.internal.policy.SystemBarUtils
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
@@ -107,6 +105,7 @@ import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompo
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
 import com.android.systemui.util.composable.kairos.ActivatedKairosSpec
+import com.android.systemui.util.kotlin.toDp
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
@@ -128,20 +127,12 @@ object ShadeHeader {
     object Dimensions {
         @Deprecated(
             "Approximation of the collapsed shade header height, used in legacy shade transitions.",
-            replaceWith = ReplaceWith("StatusBarHeight"),
+            replaceWith = ReplaceWith("ShadeHeaderViewModel.statusBarHeightPx"),
         )
         val CollapsedHeightForTransitions = 48.dp
         val ExpandedHeight = 120.dp
         val ChipPaddingHorizontal = 6.dp
         val ChipPaddingVertical = 4.dp
-
-        val StatusBarHeight: Dp
-            @Composable
-            get() {
-                return with(LocalDensity.current) {
-                    SystemBarUtils.getStatusBarHeight(LocalContext.current).toDp()
-                }
-            }
     }
 
     object Colors {
@@ -184,6 +175,7 @@ fun ContentScope.CollapsedShadeHeader(
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
+        statusBarHeightPx = viewModel.statusBarHeightPx,
         modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
         startContent = {
             Row(
@@ -264,7 +256,11 @@ fun ContentScope.ExpandedShadeHeader(
 
     Box(modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root)) {
         if (viewModel.isPrivacyChipVisible) {
-            Box(modifier = Modifier.height(ShadeHeader.Dimensions.StatusBarHeight).fillMaxWidth()) {
+            Box(
+                modifier =
+                    Modifier.height(viewModel.statusBarHeightPx.toDp(LocalContext.current).dp)
+                        .fillMaxWidth()
+            ) {
                 PrivacyChip(
                     privacyList = viewModel.privacyItems,
                     onClick = viewModel::onPrivacyChipClicked,
@@ -344,6 +340,7 @@ fun ContentScope.OverlayShadeHeader(
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
+        statusBarHeightPx = viewModel.statusBarHeightPx,
         modifier = modifier,
         startContent = {
             Box(modifier = Modifier.padding(horizontal = horizontalPadding)) {
@@ -444,12 +441,12 @@ fun QuickSettingsOverlayHeader(viewModel: ShadeHeaderViewModel, modifier: Modifi
  */
 @Composable
 private fun CutoutAwareShadeHeader(
+    statusBarHeightPx: Int,
     modifier: Modifier = Modifier,
     startContent: @Composable () -> Unit,
     endContent: @Composable () -> Unit,
 ) {
     val cutoutProvider = LocalDisplayCutout.current
-    val statusBarHeight = ShadeHeader.Dimensions.StatusBarHeight
     Layout(
         modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
         contents = listOf(startContent, endContent),
@@ -468,7 +465,7 @@ private fun CutoutAwareShadeHeader(
 
         val screenWidth = constraints.maxWidth
         val width = max((screenWidth - cutoutWidth) / 2, 0)
-        val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeight.roundToPx())
+        val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeightPx)
         val childConstraints = Constraints.fixed(width, height)
 
         val startMeasurable = measurables[0][0]
