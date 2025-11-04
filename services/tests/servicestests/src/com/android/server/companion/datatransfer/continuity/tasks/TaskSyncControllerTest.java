@@ -188,9 +188,10 @@ public class TaskSyncControllerTest {
         mTaskSyncController.onRemoteTasksChanged(tasks);
         verify(mMockRemoteTaskListenerHolder).notifyListeners(remoteTasksCaptor.capture());
         assertThat(remoteTasksCaptor.getValue()).hasSize(1);
-        assertThat(remoteTasksCaptor.getValue().get(0).getId()).isEqualTo(1);
-        assertThat(remoteTasksCaptor.getValue().get(0).getSourceDeviceName())
+        assertThat(remoteTasksCaptor.getValue().get(0).getTaskId()).isEqualTo(1);
+        assertThat(remoteTasksCaptor.getValue().get(0).getAssociationDisplayName())
                 .isEqualTo("test_device");
-        assertThat(remoteTasksCaptor.getValue().get(0).getDeviceId()).isEqualTo(associationId);
+        assertThat(remoteTasksCaptor.getValue().get(0).getCompanionDeviceAssociationId())
+                .isEqualTo(associationId);
     }
 }

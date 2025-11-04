@@ -21,13 +21,10 @@ import static com.google.common.truth.Truth.assertThat;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.Test;
-
-import android.util.proto.ProtoOutputStream;
 import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoParseException;
+import android.util.proto.ProtoOutputStream;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -110,8 +107,8 @@ public class RemoteTaskInfoTest {
         int expectedId = 1;
         String expectedLabel = "test";
         long expectedLastActiveTime = 100;
-        String expectedDeviceName = "test_device";
-        int expectedDeviceId = 2;
+        String expectedAssociationDisplayName = "test_device";
+        int expectedAssociationId = 2;
         boolean expectedIsHandoffEnabled = true;
         RemoteTaskInfo remoteTaskInfo =
                 new RemoteTaskInfo(
@@ -122,14 +119,16 @@ public class RemoteTaskInfoTest {
                         expectedIsHandoffEnabled);
 
         // Convert to RemoteTask
-        RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(expectedDeviceId, expectedDeviceName);
+        RemoteTask remoteTask =
+                remoteTaskInfo.toRemoteTask(expectedAssociationId, expectedAssociationDisplayName);
 
         // Verify the fields
-        assertThat(remoteTask.getId()).isEqualTo(expectedId);
+        assertThat(remoteTask.getTaskId()).isEqualTo(expectedId);
         assertThat(remoteTask.getLabel()).isEqualTo(expectedLabel);
         assertThat(remoteTask.getLastUsedTimestampMillis()).isEqualTo(expectedLastActiveTime);
-        assertThat(remoteTask.getDeviceId()).isEqualTo(expectedDeviceId);
-        assertThat(remoteTask.getSourceDeviceName()).isEqualTo(expectedDeviceName);
+        assertThat(remoteTask.getCompanionDeviceAssociationId()).isEqualTo(expectedAssociationId);
+        assertThat(remoteTask.getAssociationDisplayName())
+                .isEqualTo(expectedAssociationDisplayName);
         assertThat(remoteTask.isHandoffEnabled()).isEqualTo(expectedIsHandoffEnabled);
     }
 }

@@ -16,14 +16,14 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
+import android.annotation.Nullable;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.graphics.drawable.Icon;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
-import java.io.IOException;
 
 public record RemoteTaskInfo(
         int id, String label, long lastUsedTimeMillis, byte[] taskIcon, boolean isHandoffEnabled) {
@@ -97,17 +97,16 @@ public record RemoteTaskInfo(
                 isHandoffEnabled());
     }
 
-    public RemoteTask toRemoteTask(int deviceId, String deviceName) {
+    public RemoteTask toRemoteTask(int associationId, @Nullable String associationDisplayName) {
         Icon taskIcon = null;
         if (taskIcon() != null && taskIcon().length > 0) {
             taskIcon = Icon.createWithData(taskIcon(), 0, taskIcon().length);
         }
 
-        return new RemoteTask.Builder(id())
+        return new RemoteTask.Builder(associationId, id())
                 .setLabel(label())
-                .setDeviceId(deviceId)
                 .setLastUsedTimestampMillis(lastUsedTimeMillis())
-                .setSourceDeviceName(deviceName)
+                .setAssociationDisplayName(associationDisplayName)
                 .setIcon(taskIcon)
                 .setHandoffEnabled(isHandoffEnabled())
                 .build();

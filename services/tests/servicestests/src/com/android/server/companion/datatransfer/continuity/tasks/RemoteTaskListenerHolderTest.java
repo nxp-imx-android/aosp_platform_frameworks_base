@@ -92,6 +92,6 @@ public class RemoteTaskListenerHolderTest {
     }
 
     private RemoteTask createRemoteTask(int id) {
-        return new RemoteTask.Builder(id).setDeviceId(100).build();
+        return new RemoteTask.Builder(id, 100).build();
     }
 }
