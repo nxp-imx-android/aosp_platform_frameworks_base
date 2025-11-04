@@ -2756,12 +2756,14 @@ public class SettingsProvider extends ContentProvider {
             int targetSdkVersion, String name) {
         // If the app targets Lollipop MR1 or older SDK we warn, otherwise crash.
         if (targetSdkVersion <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            if (Settings.System.PRIVATE_SETTINGS.contains(name)) {
-                Slog.w(LOG_TAG, "You shouldn't not change private system settings."
-                        + " This will soon become an error.");
-            } else {
-                Slog.w(LOG_TAG, "You shouldn't keep your settings in the secure settings."
-                        + " This will soon become an error.");
+            if (Build.IS_DEBUGGABLE) {
+                if (Settings.System.PRIVATE_SETTINGS.contains(name)) {
+                    Slog.w(LOG_TAG, "You shouldn't not change private system settings."
+                            + " This will soon become an error.");
+                } else {
+                    Slog.w(LOG_TAG, "You shouldn't keep your settings in the secure settings."
+                            + " This will soon become an error.");
+                }
             }
         } else {
             if (Settings.System.PRIVATE_SETTINGS.contains(name)) {
