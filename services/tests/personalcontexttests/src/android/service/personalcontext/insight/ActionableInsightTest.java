@@ -30,26 +30,28 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ActionableInsightTest {
     @Test
-    public void testParcelUnparcel() {
+    public void testIntentAction_ParcelUnparcel() {
+        final InsightActionDetails actionDetails =
+                new InsightActionDetails.Builder().setIntent(
+                        new Intent(Intent.ACTION_VIEW, Uri.parse("content://test")))
+                        .build();
         final InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title")
                         .setContentDescription("content description")
                         .build();
 
         final ActionableInsight originalInsight =
-                new ActionableInsight.Builder(
-                                new Intent(Intent.ACTION_VIEW, Uri.parse("content://test")),
-                                displayDetails)
-                        .build();
+                new ActionableInsight.Builder(actionDetails, displayDetails).build();
 
-        ContextInsight outputInsight =
+        final ContextInsight outputInsight =
                 ContextInsightTestUtils.assertParcelUnparcel(originalInsight);
 
         final ActionableInsight outputActionableInsight = (ActionableInsight) outputInsight;
 
         assertThat(outputActionableInsight.getDisplayDetails())
                 .isEqualTo(originalInsight.getDisplayDetails());
-        assertThat(outputActionableInsight.createActionIntent()
-        .filterEquals(originalInsight.createActionIntent())).isTrue();
+        assertThat(outputActionableInsight.getActionDetails())
+                .isEqualTo(originalInsight.getActionDetails());
     }
+
 }

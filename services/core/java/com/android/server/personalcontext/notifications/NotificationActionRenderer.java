@@ -144,7 +144,7 @@ public class NotificationActionRenderer implements Renderer {
     @Nullable
     private Notification.Action createNotificationAction(
             ActionableInsight insight, UserHandle user) {
-        final Intent actionIntent = insight.createActionIntent();
+        final Intent actionIntent = insight.getActionDetails().createActionIntent();
         final ActivityInfo activityInfo = getActivityInfo(actionIntent, user);
 
         if (activityInfo == null) {
