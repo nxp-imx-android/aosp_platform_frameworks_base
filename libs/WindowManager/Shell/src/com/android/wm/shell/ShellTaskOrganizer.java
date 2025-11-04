@@ -69,6 +69,7 @@ import com.android.wm.shell.compatui.api.CompatUIInfo;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonAppeared;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonClicked;
 import com.android.wm.shell.recents.RecentTasksController;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellInit;
@@ -136,6 +137,17 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             throw new IllegalStateException(
                     "This task listener doesn't support child surface reparent.");
         }
+
+        /**
+         * Invoked when a new TaskListener is found from the most recent TaskInfo.
+         *
+         * @return {code true} if the new listener should be used. {code false} otherwise.
+         */
+        default boolean onNewTaskListenerDetected(RunningTaskInfo taskInfo,
+                TaskListener newListener) {
+            return true;
+        }
+
         default void dump(@NonNull PrintWriter pw, String prefix) {};
     }
 
@@ -848,8 +860,8 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             mTasks.put(taskInfo.taskId, new TaskAppearedInfo(taskInfo, data.getLeash()));
             final boolean updated = updateTaskListenerIfNeeded(
                     taskInfo, data.getLeash(), oldListener, newListener);
-            if (!updated && newListener != null) {
-                newListener.onTaskInfoChanged(taskInfo);
+            if (!updated && oldListener != null) {
+                oldListener.onTaskInfoChanged(taskInfo);
             }
             notifyLocusVisibilityIfNeeded(taskInfo);
             if (updated || !taskInfo.equalsForCompatUi(data.getTaskInfo())) {
@@ -1005,10 +1017,22 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     private boolean updateTaskListenerIfNeeded(RunningTaskInfo taskInfo, SurfaceControl leash,
             TaskListener oldListener, TaskListener newListener) {
         if (oldListener == newListener) return false;
-        ProtoLog.v(WM_SHELL_TASK_ORG, "  Migrating from listener %s to %s",
-                oldListener, newListener);
-        // TODO: We currently send vanished/appeared as the task moves between types, but
-        //       we should consider adding a different mode-changed callback
+
+        // Notify the old listener (if any) that a new listener is found.
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble() && oldListener != null) {
+            final boolean shouldUpdate = oldListener.onNewTaskListenerDetected(taskInfo,
+                    newListener);
+            if (!shouldUpdate) {
+                ProtoLog.v(WM_SHELL_TASK_ORG, "  Abort updating listener %s to %s", oldListener,
+                        newListener);
+                newListener.onTaskVanished(taskInfo);
+                mTaskListeners.put(taskInfo.taskId, oldListener);
+                return false;
+            }
+        }
+
+        ProtoLog.v(WM_SHELL_TASK_ORG, "  Migrating from listener %s to %s", oldListener,
+                newListener);
         if (oldListener != null) {
             oldListener.onTaskVanished(taskInfo);
         }
