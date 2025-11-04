@@ -125,7 +125,15 @@ public abstract class SystemUIInitializer {
                     .setAppZoomOut(Optional.ofNullable(null))
                     .setAppHandles(Optional.ofNullable(null));
         }
-        builder.setRecentTasks(mWMComponent.getRecentTasks());
+
+        if (fromTest) {
+            builder = builder.setRecentTasks(Optional.ofNullable(null));
+        } else {
+            // Some components still needs to be initialized even if initializeComponents is false.
+            // For more details see: b/455061103.
+            builder = builder.setRecentTasks(mWMComponent.getRecentTasks());
+        }
+
         mSysUIComponent = builder.build();
 
         // Every other part of our codebase currently relies on Dependency, so we
