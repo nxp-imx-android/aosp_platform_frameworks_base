@@ -106,7 +106,10 @@ public class LightsService extends SystemService {
                 for (int i = 0; i < mLightsById.size(); i++) {
                     if (!mLightsById.valueAt(i).isSystemLight()) {
                         HwLight hwLight = mLightsById.valueAt(i).mHwLight;
-                        lights.add(new Light(hwLight.id, hwLight.ordinal, hwLight.type));
+                        Light.Builder lightBuilder =
+                                new Light.Builder(hwLight.id, hwLight.ordinal, hwLight.type);
+
+                        lights.add(lightBuilder.build());
                     }
                 }
                 return lights;
