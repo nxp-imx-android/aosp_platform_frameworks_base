@@ -136,20 +136,50 @@ class PinnedLayerHandler(
         finishTransaction: SurfaceControl.Transaction,
         finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean {
-        val transitions = pinnedLayerController.getActiveTransitions(transition)
-        var hasFinishedTransition = false
+        return animate(transition, info, startTransaction, finishTransaction, finishCallback).also {
+            pinnedLayerController.cleanup(transition)
+        }
+    }
+
+    private fun animate(
+        transition: IBinder,
+        info: TransitionInfo,
+        startTransaction: SurfaceControl.Transaction,
+        finishTransaction: SurfaceControl.Transaction,
+        finishCallback: Transitions.TransitionFinishCallback,
+    ): Boolean {
+        // TODO(b/449681882): Do not rely on transitions, introduce separate animations state.
+        val transitions = pinnedLayerController.getActiveTransitions(transition) ?: return false
+
+        val pinChange =
+            transitions
+                .asSequence()
+                .filterIsInstance<ActiveTransition.Pin>()
+                .mapNotNull { activePin ->
+                    info.changes.find { it.taskInfo?.token == activePin.taskInfo.token }
+                }
+                .firstOrNull()
+
+        pinChange?.let {
+            val animator =
+                PinnedLayerAnimator.createPinAnimator(
+                    it,
+                    startTransaction,
+                    finishTransaction,
+                    finishCallback,
+                )
+            animator.start()
+            return true
+        }
 
         // Should accept all the TransitionInfo.Change if there's an unpin transition.
         // Required to properly handle animation for mixed transitions with pip.
-        // TODO(b/449681882): Do not rely on transitions, introduce separate animations state.
         if (transitions.any { it is ActiveTransition.Unpin }) {
+            startTransaction.apply()
             finishCallback.onTransitionFinished(null)
-            hasFinishedTransition = true
+            return true
         }
-
-        pinnedLayerController.cleanup(transition)
-
-        return hasFinishedTransition
+        return false
     }
 
     override fun onTransitionConsumed(

@@ -43,8 +43,11 @@ import com.android.wm.shell.transition.Transitions
  * The controller is the main decider when the task is pinned and it's responsible for dispatching
  * callbacks.
  */
-class PinnedLayerController(shellInit: ShellInit, private val transitions: Transitions) :
-    Transitions.TransitionObserver {
+class PinnedLayerController(
+    shellInit: ShellInit,
+    private val transitions: Transitions,
+    private val presentationController: PinnedLayerPresentationController,
+) : Transitions.TransitionObserver {
 
     // Stores ids of pinned TaskInfo.
     private val pinnedTasks = mutableSetOf<Int>()
@@ -99,7 +102,8 @@ class PinnedLayerController(shellInit: ShellInit, private val transitions: Trans
         WindowContainerTransaction().apply {
             val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
             transitions += ActiveTransition.Pin(task, remoteCallback)
-            merge(getLayerPinnedWct(task.token), /* transfer= */ true)
+            val bounds = presentationController.getPinEntryDestinationBounds(task)
+            merge(getLayerPinnedWct(task.token, bounds), /* transfer= */ true)
 
             val pinnedTask = currentPinnedTask
             if (pinnedTask != null && pinnedTask.token != task.token) {
