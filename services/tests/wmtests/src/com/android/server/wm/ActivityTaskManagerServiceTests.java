@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.Manifest.permission.REPOSITION_SELF_WINDOWS;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
+import static android.content.pm.ActivityInfo.PERSIST_ACROSS_REBOOTS;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
@@ -66,6 +67,7 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.TaskDescription;
+import android.app.ActivityManagerInternal;
 import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
 import android.app.HandoffFailureCode;
@@ -1636,6 +1638,27 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         // pre-existing record) if some config was previously set.
         assertTrue(packageConfigUpdater.setLocales(LocaleList.getEmptyLocaleList())
                 .setNightMode(Configuration.UI_MODE_NIGHT_UNDEFINED).commit());
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testStopAndKillAppForUpdate_processWithActivities_stopsAndKillsProcess() {
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        activity.getTask().mHandlePackageUpdate = true;
+        activity.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        activity.app.addPackage(activity.packageName);
+        mAtm.mProcessMap.put(activity.app.getPid(), activity.app);
+        String packageName = activity.packageName;
+        int userId = activity.mUserId;
+        int appId = activity.app.mUid;
+        doReturn(true).when(mAtm).isCallerSystem(anyInt());
+
+        // When stopAndKillApp is called
+        mAtm.mInternal.stopAndKillAppForUpdate(packageName, userId, appId);
+        activity.activityStopped(null, null, null, "test");
+
+        verify(mAtm).onProcessReadyToBeKilled(activity.packageName, activity.app);
     }
 
     private WindowProcessController createWindowProcessController(String packageName,

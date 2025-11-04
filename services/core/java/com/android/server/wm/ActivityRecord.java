@@ -426,7 +426,7 @@ final class ActivityRecord extends WindowToken {
     // crashes if the UI thread was hung. We put this timeout one second behind
     // the ANR timeout so these situations will generate ANR instead of
     // Surface lost or other errors.
-    private static final int STOP_TIMEOUT = 11 * 1000;
+    static final int STOP_TIMEOUT = 11 * 1000;
 
     // How long we wait until giving up on an activity telling us it has
     // finished destroying itself.
@@ -6425,6 +6425,7 @@ final class ActivityRecord extends WindowToken {
             Slog.i(TAG, "Clear pending relaunch count on stopped " + this);
             clearRelaunching();
         }
+        app.onActivityStopped(this);
 
         if (finishing) {
             abortAndClearOptionsAnimation();

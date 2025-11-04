@@ -71,6 +71,7 @@ public enum WmProtoLogGroups implements IProtoLogGroup {
     WM_DEBUG_TPL(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_DEBUG_EMBEDDED_WINDOWS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_DEBUG_PRESENTATION(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
+    WM_DEBUG_PACKAGE_UPDATE(Consts.ENABLE_DEBUG, true, Consts.TAG_WM),
     TEST_GROUP(true, false, "WindowManagerProtoLogTest");
 
     private final boolean mEnabled;
