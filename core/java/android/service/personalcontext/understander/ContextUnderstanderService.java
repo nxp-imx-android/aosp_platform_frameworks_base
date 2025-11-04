@@ -27,7 +27,6 @@ import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
-import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.refiner.IRefineCallback;
@@ -98,7 +97,7 @@ public abstract class ContextUnderstanderService extends Service {
      *
      * @param hints new hints that this understander has not seen before
      */
-    public abstract void onUnderstand(@android.annotation.NonNull List<ContextHint> hints);
+    public abstract void onUnderstand(@NonNull List<ContextHintWithSignature> hints);
 
     /**
      * Feeds {@link ContextInsight}s into the Personal Context system.
@@ -152,7 +151,7 @@ public abstract class ContextUnderstanderService extends Service {
             // Report that hints were refined right away so that the core doesn't wait around.
             callback.onHintsRefined(Collections.emptyList());
 
-            getServiceOrThrow().onUnderstand(ContextHintWithSignature.unwrapList(inputHints));
+            getServiceOrThrow().onUnderstand(inputHints);
         }
     }
 }

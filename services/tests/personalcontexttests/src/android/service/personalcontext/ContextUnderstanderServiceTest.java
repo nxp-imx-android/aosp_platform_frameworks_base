@@ -81,7 +81,6 @@ public class ContextUnderstanderServiceTest {
         ArgumentCaptor<List> hintCaptor = ArgumentCaptor.forClass(List.class);
         verify(mService).onUnderstand(hintCaptor.capture());
 
-        assertThat(hintCaptor.getValue())
-                .containsExactlyElementsIn(ContextHintWithSignature.unwrapList(hints));
+        assertThat(hintCaptor.getValue()).containsExactlyElementsIn(hints);
     }
 }
