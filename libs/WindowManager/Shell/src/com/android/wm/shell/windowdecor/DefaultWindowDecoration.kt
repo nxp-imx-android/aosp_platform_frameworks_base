@@ -61,7 +61,6 @@ import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
-import com.android.wm.shell.desktopmode.DesktopModeEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
@@ -128,7 +127,6 @@ constructor(
     private val windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
     private val multiInstanceHelper: MultiInstanceHelper,
     private val windowDecorCaptionRepository: WindowDecorCaptionRepository,
-    private val desktopModeEventLogger: DesktopModeEventLogger,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val desktopState: DesktopState,
@@ -1037,7 +1035,6 @@ constructor(
                         },
                     taskOrganizer = taskOrganizer,
                     mainHandler = handler,
-                    mainExecutor = mainExecutor,
                     mainDispatcher = mainDispatcher,
                     mainScope = mainScope,
                     bgScope = bgScope,

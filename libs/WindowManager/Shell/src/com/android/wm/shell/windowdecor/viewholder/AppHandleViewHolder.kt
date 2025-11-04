@@ -56,6 +56,7 @@ import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystem
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.extension.identityHashCode
+import com.android.wm.shell.windowdecor.extension.throttleFirstClicks
 
 /**
  * A desktop mode window decoration used when the window is in full "focus" (i.e. fullscreen/split).
@@ -107,6 +108,9 @@ class AppHandleViewHolder(
 
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
+        captionHandle.throttleFirstClicks(CLICK_DELAY) { v ->
+            onCaptionButtonClickListener.onClick(v)
+        }
         captionHandle.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnClickListener(onCaptionButtonClickListener)
         if (!shouldAddStatusBarInputLayer) {
@@ -438,5 +442,6 @@ class AppHandleViewHolder(
 
     companion object {
         private const val TAG = "AppHandleViewHolder"
+        private const val CLICK_DELAY: Long = 500
     }
 }

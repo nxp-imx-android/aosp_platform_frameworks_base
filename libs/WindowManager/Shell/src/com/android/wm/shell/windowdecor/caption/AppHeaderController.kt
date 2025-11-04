@@ -48,7 +48,6 @@ import com.android.wm.shell.apptoweb.canShowAppLinks
 import com.android.wm.shell.apptoweb.isBrowserApp
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiInstanceHelper
-import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.CaptionState.AppHeader
@@ -86,7 +85,6 @@ import com.android.wm.shell.windowdecor.extension.requestingImmersive
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.HeaderData
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
-import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions
 import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -110,7 +108,6 @@ class AppHeaderController(
     private val decorationSurface: SurfaceControl,
     taskOrganizer: ShellTaskOrganizer,
     @ShellMainThread private val mainHandler: Handler,
-    @ShellMainThread private val mainExecutor: ShellExecutor,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
     @ShellMainThread private val mainScope: CoroutineScope,
     @ShellBackgroundThread bgScope: CoroutineScope,
@@ -169,6 +166,7 @@ class AppHeaderController(
     override val isMaximizeMenuActive: Boolean
         get() = maximizeMenu != null
 
+    private var handleMenuCreationJob: Job? = null
     override val isHandleMenuActive: Boolean
         get() = handleMenu != null
 
@@ -193,8 +191,7 @@ class AppHeaderController(
             DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
                 .isTrue ||
             DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
-    private val dimensions =
-        LargeAppHeaderDimensions(decorWindowContext.resources)
+    private val dimensions = LargeAppHeaderDimensions(decorWindowContext.resources)
 
     private var isMaximizeMenuHovered = false
     private var isAppHeaderMaximizeButtonHovered = false
@@ -491,23 +488,25 @@ class AppHeaderController(
 
     /** Updates app info and creates and displays handle menu window. */
     override fun createHandleMenu(minimumInstancesFound: Boolean) {
-        if (isHandleMenuActive) return
-        mainScope.launch {
-            val isBrowserApp = isBrowserApp()
-            val appToWebIntent =
-                if (canShowAppLinks(display, desktopState)) {
-                    appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
-                } else {
-                    // Skip request for assist content as it is only used for links, which are not
-                    // supported
-                    null
-                }
-            createHandleMenu(
-                openInAppOrBrowserIntent = appToWebIntent,
-                isBrowserApp = isBrowserApp,
-                minimumInstancesFound = minimumInstancesFound,
-            )
-        }
+        if (isHandleMenuActive || handleMenuCreationJob?.isActive == true) return
+        handleMenuCreationJob =
+            mainScope.launch {
+                val isBrowserApp = isBrowserApp()
+                val appToWebIntent =
+                    if (canShowAppLinks(display, desktopState)) {
+                        appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
+                    } else {
+                        // Skip request for assist content as it is only used for links, which are
+                        // not
+                        // supported
+                        null
+                    }
+                createHandleMenu(
+                    openInAppOrBrowserIntent = appToWebIntent,
+                    isBrowserApp = isBrowserApp,
+                    minimumInstancesFound = minimumInstancesFound,
+                )
+            }
     }
 
     /** Creates and shows the handle menu. */
