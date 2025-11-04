@@ -1040,16 +1040,6 @@ android_robolectric_test {
     strict_mode: false,
 }
 
-filegroup {
-    name: "SystemUI-tests-multivalent-dagger",
-    srcs: [
-        "multivalentTests/src/**/NotificationAlertsInteractorTest.kt",
-        "multivalentTests/src/**/NotificationsKeyguardInteractorTest.kt",
-        "multivalentTests/src/**/NotifPipelineChoreographerTest.kt",
-        "multivalentTests/src/**/KeyguardNotificationVisibilityProviderTest.java",
-    ],
-}
-
 android_ravenwood_test {
     name: "SystemUiRavenTests",
     manifest: "tests/AndroidManifest-base.xml",
@@ -1058,10 +1048,6 @@ android_ravenwood_test {
         ":SystemUI-tests-utils",
         ":SystemUI-tests-multivalent-monolith",
         ":SystemUI-tests-multivalent-pods",
-    ],
-    exclude_srcs: [
-        // TODO(b/429013941): kapt is way too slow, so disable them for now.
-        ":SystemUI-tests-multivalent-dagger",
     ],
     static_libs: [
         "SystemUI-application",
@@ -1084,7 +1070,11 @@ android_ravenwood_test {
         "--extra-packages",
         "com.android.systemui",
     ],
-    auto_gen_config: true,
+    enable_ksp: true,
+    plugins: ["dagger2-compiler"],
+    annotation_processor_flags: [
+        "dagger.useBindingGraphFix=ENABLED",
+    ],
     team: "trendy_team_ravenwood",
 }
 
