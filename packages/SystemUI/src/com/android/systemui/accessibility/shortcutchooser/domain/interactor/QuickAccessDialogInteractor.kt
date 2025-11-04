@@ -29,6 +29,7 @@ import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 
 @SysUISingleton
 class QuickAccessDialogInteractor
@@ -37,16 +38,18 @@ constructor(
     private val repository: AccessibilityShortcutsRepository,
     private val broadcastDispatcher: BroadcastDispatcher,
 ) {
-    val dialogRequest: Flow<QuickAccessDialogRequestModel?> =
-        broadcastDispatcher.broadcastFlow(
-            filter = IntentFilter().apply { addAction(ACTION) },
-            flags = Context.RECEIVER_EXPORTED,
-            permission = PERMISSION,
-        ) { intent, _ ->
-            processIntent(intent)
-        }
+    val dialogRequest: Flow<QuickAccessDialogRequestModel> =
+        broadcastDispatcher
+            .broadcastFlow(
+                filter = IntentFilter().apply { addAction(ACTION) },
+                flags = Context.RECEIVER_EXPORTED,
+                permission = PERMISSION,
+            ) { intent, _ ->
+                processIntent(intent)
+            }
+            .filterNotNull()
 
-    fun getAllAccessibilityTargets(): Flow<List<AccessibilityTargetModel>> =
+    val allAccessibilityTargets: Flow<List<AccessibilityTargetModel>> =
         repository.getAllAccessibilityTargets(SHORTCUT_TYPE)
 
     fun enableShortcutForAllTargets() =
