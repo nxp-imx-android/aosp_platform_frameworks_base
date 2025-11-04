@@ -935,6 +935,32 @@ public abstract class NotificationListenerService extends Service {
     }
 
     /**
+     * Deletes a conversation notification channel for a given package and user.
+     *
+     * <p>This method will throw a security exception if you don't have access to notifications
+     * for the given user.</p>
+     * <p>The caller must have {@link CompanionDeviceManager#getAssociations() an associated
+     * device} or be the notification assistant in order to use this method.
+     *
+     * @param pkg The package the channel belongs to.
+     * @param user The user the channel belongs to.
+     * @param channelId The ID of the conversation channel to be deleted.
+     */
+        @FlaggedApi(Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public final void deleteConversationNotificationChannel(
+            @NonNull String pkg, @NonNull UserHandle user, @NonNull String channelId) {
+        if (!isBound()) return;
+        try {
+            getNotificationInterface()
+                    .deleteConversationNotificationChannelFromPrivilegedListener(
+                            mWrapper, pkg, user, channelId);
+        } catch (RemoteException e) {
+            Log.v(TAG, "Unable to contact notification manager", e);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Updates a notification channel for a given package for a given user. This should only be used
      * to reflect changes a user has made to the channel via the listener's user interface.
      *
