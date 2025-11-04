@@ -2215,17 +2215,29 @@ public class SettingsProvider extends ContentProvider {
             }
             final boolean isPrivilegedApp = aInfo != null ? aInfo.isPrivilegedApp() : false;
             String mimeType = null;
+            final int uriUserId = ContentProvider.getUserIdFromUri(
+                    audioUri, /* defaultUserId= */ callingUserId);
+            // Ensure context matches the uriUserId; The wrong context may cause
+            // the ContentResolver to fail to obtain the MIME type.
+            Context context = getContext();
+            if (context.getUserId() != uriUserId
+                    && (isPrivilegedApp || callingUserId == uriUserId)) {
+                final long identity = Binder.clearCallingIdentity();
+                try {
+                    context = context.createContextAsUser(UserHandle.of(uriUserId), 0);
+                } finally {
+                    Binder.restoreCallingIdentity(identity);
+                }
+            }
             if (isPrivilegedApp) {
                 final long identity = Binder.clearCallingIdentity();
                 try {
-                    mimeType = getContext().getContentResolver().getType(audioUri);
+                    mimeType = context.getContentResolver().getType(audioUri);
                 } finally {
                     Binder.restoreCallingIdentity(identity);
                 }
             } else {
                 // Check if the URI has a userId and if it matches the callingUserId
-                final int uriUserId = ContentProvider.getUserIdFromUri(
-                        audioUri, /* defaultUserId= */ callingUserId);
                 if (callingUserId != uriUserId) {
                     Slog.e(LOG_TAG,
                             "mutateSystemSetting for setting: " + name + " URI: " + audioUri
@@ -2233,7 +2245,7 @@ public class SettingsProvider extends ContentProvider {
                                     + ") does not match calling userId (" + callingUserId + ")");
                     return false;
                 }
-                mimeType = getContext().getContentResolver().getType(audioUri);
+                mimeType = context.getContentResolver().getType(audioUri);
             }
             if (DEBUG) {
                 Slog.v(LOG_TAG, "isValidMediaUri mimeType: " + mimeType);
