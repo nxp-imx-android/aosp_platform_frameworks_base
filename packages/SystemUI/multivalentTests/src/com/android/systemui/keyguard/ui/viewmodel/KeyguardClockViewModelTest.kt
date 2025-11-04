@@ -45,6 +45,7 @@ import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
+import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.whenever
@@ -403,6 +404,20 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
             mockConfiguration.screenWidthDp = 411
             val result3 by collectLastValue(underTest.shouldDateWeatherBeBelowSmallClock)
             assertThat(result3).isTrue()
+        }
+
+    @Test
+    fun dateWeatherBelowSmallClock_hasNextAlarm_false() =
+        kosmos.runTest {
+            enableSplitShade()
+            mockConfiguration.fontScale = 1.0f
+            mockConfiguration.screenWidthDp = 694
+            val result by collectLastValue(underTest.shouldDateWeatherBeBelowSmallClock)
+            assertThat(result).isFalse()
+
+            kosmos.zenModeRepository.hasNextAlarm.value = true
+
+            assertThat(result).isTrue()
         }
 
     @Test
