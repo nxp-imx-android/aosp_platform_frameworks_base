@@ -236,6 +236,26 @@ class NotificationInfoTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_ALL)
+    fun testBindNotification_noAppSummarization() {
+        bindNotification()
+        val v = underTest.findViewById<TextView>(R.id.summarized_by)
+        assertThat(v.visibility).isEqualTo(GONE)
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_ALL)
+    fun testBindNotification_appSummarized() {
+        entry.sbn.notification.extras.putCharSequence(
+            Notification.EXTRA_APP_SUMMARIZATION, "hello")
+
+        bindNotification()
+        val v = underTest.findViewById<TextView>(R.id.summarized_by)
+        assertThat(v.visibility).isEqualTo(VISIBLE)
+        assertThat(v.text.toString()).contains("Summarized")
+    }
+
+    @Test
     fun testBindNotification_noDelegate() {
         bindNotification()
         val nameView = underTest.findViewById<TextView>(R.id.delegate_name)

@@ -436,4 +436,45 @@ public class PartialConversationInfoTest extends SysuiTestCase {
         // Verify that listener was triggered.
         assertThat(latch.getCount()).isEqualTo(0);
     }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_ALL)
+    public void testBindNotification_noAppSummarization() {
+        when(mMockPackageManager.getApplicationLabel(any())).thenReturn("Package");
+        mInfo.bindNotification(
+                mMockPackageManager,
+                mMockINotificationManager,
+                mChannelEditorDialogController,
+                TEST_PACKAGE_NAME,
+                mEntry.getRanking(),
+                mSbn,
+                null,
+                null,
+                true,
+                false);
+        View v = mInfo.findViewById(R.id.summarized_by);
+        assertThat(v.getVisibility()).isEqualTo(GONE);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_SUMMARIZATION_ALL)
+    public void testBindNotification_appSummarized() {
+        mEntry.getSbn().getNotification().extras.putCharSequence(
+                Notification.EXTRA_APP_SUMMARIZATION, "hello");
+
+        mInfo.bindNotification(
+                mMockPackageManager,
+                mMockINotificationManager,
+                mChannelEditorDialogController,
+                TEST_PACKAGE_NAME,
+                mEntry.getRanking(),
+                mSbn,
+                null,
+                null,
+                true,
+                false);
+        TextView v = mInfo.findViewById(R.id.summarized_by);
+        assertThat(v.getVisibility()).isEqualTo(VISIBLE);
+        assertThat(v.getText().toString()).contains("Summarized");
+    }
 }

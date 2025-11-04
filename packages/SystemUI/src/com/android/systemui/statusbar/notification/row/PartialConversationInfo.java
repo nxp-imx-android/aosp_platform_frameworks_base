@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.RemoteException;
 import android.service.notification.NotificationListenerService;
@@ -140,6 +141,7 @@ public class PartialConversationInfo extends LinearLayout implements
         bindPackage();
         // Delegate
         bindDelegate();
+        bindSummarizer();
     }
 
     private OnClickListener getSettingsOnClickListener() {
@@ -198,6 +200,20 @@ public class PartialConversationInfo extends LinearLayout implements
             delegateView.setVisibility(View.VISIBLE);
         } else {
             delegateView.setVisibility(View.GONE);
+        }
+    }
+
+    private void bindSummarizer() {
+        if (android.app.Flags.nmSummarizationAll()) {
+            TextView summarized = findViewById(R.id.summarized_by);
+            if (!TextUtils.isEmpty(mSbn.getNotification().getSummarizedContent())) {
+                summarized.setVisibility(VISIBLE);
+                summarized.setText(
+                        mContext.getString(R.string.notification_summarization_header, mAppName));
+                summarized.setTypeface(Typeface.create("variable-body-medium", Typeface.ITALIC));
+            } else {
+                summarized.setVisibility(GONE);
+            }
         }
     }
 
