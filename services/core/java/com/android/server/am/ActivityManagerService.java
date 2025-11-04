@@ -8142,8 +8142,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                         for (int provi = ppr.numberOfProviders() - 1; provi >= 0; provi--) {
                             ContentProviderRecord cpr = ppr.getProviderAt(provi);
 
-                            for (int i = cpr.connections.size() - 1; i >= 0; i--) {
-                                ContentProviderConnection conn = cpr.connections.get(i);
+                            for (int i = cpr.mConnections.size() - 1; i >= 0; i--) {
+                                ContentProviderConnection conn = cpr.mConnections.get(i);
                                 ProcessRecord client = conn.client;
                                 if (client.uid == clientUid) {
                                     return Boolean.TRUE;

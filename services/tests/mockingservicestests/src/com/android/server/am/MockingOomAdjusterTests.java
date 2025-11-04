@@ -4743,8 +4743,8 @@ public class MockingOomAdjusterTests {
             boolean hasExternalProviders) {
         ContentProviderRecord record = mock(ContentProviderRecord.class);
         mProcessStateController.addPublishedProvider(publisher, name, record);
-        record.proc = publisher;
-        setFieldValue(ContentProviderRecord.class, record, "connections",
+        record.mProc = publisher;
+        setFieldValue(ContentProviderRecord.class, record, "mConnections",
                 new ArrayList<ContentProviderConnection>());
         doCallRealMethod().when(record).getHostProcess();
         doCallRealMethod().when(record).numberOfConnections();
@@ -4757,14 +4757,14 @@ public class MockingOomAdjusterTests {
             ContentProviderRecord record) {
         ContentProviderConnection conn = spy(new ContentProviderConnection(record, client,
                 client.info.packageName, UserHandle.getUserId(client.uid)));
-        record.connections.add(conn);
+        record.mConnections.add(conn);
         mProcessStateController.addProviderConnection(client, conn);
         return conn;
     }
 
     private void unbindProvider(ProcessRecord client, ContentProviderRecord record,
             ContentProviderConnection conn) {
-        record.connections.remove(conn);
+        record.mConnections.remove(conn);
         mProcessStateController.removeProviderConnection(client, conn);
     }
 
