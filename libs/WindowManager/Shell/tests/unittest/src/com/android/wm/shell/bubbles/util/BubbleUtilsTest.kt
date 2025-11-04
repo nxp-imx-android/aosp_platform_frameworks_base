@@ -22,7 +22,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE
+import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction
@@ -57,7 +57,7 @@ class BubbleUtilsTest : ShellTestCase() {
     private val captionInsetsOwner = Binder()
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    @DisableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun testGetEnterBubbleTransaction(@TestParameter isAppBubble: Boolean) {
         val wctWithLaunchNextToBubble =
@@ -67,7 +67,7 @@ class BubbleUtilsTest : ShellTestCase() {
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    @DisableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun testGetEnterBubbleTransaction_reparentToTda(@TestParameter isAppBubble: Boolean) {
         val wctWithLaunchNextToBubble =
@@ -87,7 +87,7 @@ class BubbleUtilsTest : ShellTestCase() {
         )
     }
 
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun testRootBubbleGetEnterBubbleTransaction() {
         val isAppBubble = true

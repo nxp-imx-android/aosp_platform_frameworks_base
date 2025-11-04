@@ -745,7 +745,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     public void testTaskInfoHelper_fillAndReturnTop_flagDisabled_cookieAddedForOrganizedTask() {
         // Setup a task created by an organizer with an activity that has a launch cookie.
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
@@ -769,7 +769,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     public void testTaskInfoHelper_fillAndReturnTop_flagEnabled_notByOrganizer_cookieAdded() {
         // Setup a task NOT created by an organizer with an activity that has a launch cookie.
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(false).build();
@@ -793,7 +793,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     public void testTaskInfoHelper_fillAndReturnTop_flagEnabled_byOrganizer_cookieNotAdded() {
         // Setup a task created by an organizer with an activity that has a launch cookie.
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();

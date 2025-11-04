@@ -295,7 +295,7 @@ class BubbleTaskViewListenerTest {
 
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
-        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+        if (!com.android.window.flags.Flags.enableBubbleRootTask()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -536,7 +536,7 @@ class BubbleTaskViewListenerTest {
             wctCaptor.lastValue
         }
         val change = wct.changes[taskViewTaskToken.asBinder()]!!
-        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+        if (!com.android.window.flags.Flags.enableBubbleRootTask()) {
             assertThat(change.interceptBackPressed).isFalse()
         }
         assertThat(parentView.lastRemovedView).isEqualTo(mockTaskView)

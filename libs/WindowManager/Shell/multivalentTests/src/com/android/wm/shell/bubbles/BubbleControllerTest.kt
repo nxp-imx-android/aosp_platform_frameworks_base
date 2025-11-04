@@ -58,7 +58,7 @@ import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
-import com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE
+import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
@@ -489,7 +489,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.hasStableBubbleForTask(777)).isFalse()
     }
 
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun shouldBeAppBubble_parentTaskMatchesBubbleRootTask_returnsTrue() {
         val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 777)
@@ -498,7 +498,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isTrue()
     }
 
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun shouldBeAppBubble_parentTaskDoesNotMatchesBubbleRootTask_returnsFalse() {
         val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 123)
@@ -507,7 +507,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isFalse()
     }
 
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun testCreateRootTask() {
         val binder = mock<IBinder>()
@@ -538,7 +538,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(change.forceTranslucent).isTrue()
     }
 
-    @DisableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun shouldBeAppBubble_taskIsSplitting_returnsFalse() {
         val sideStageRootTask = 5
@@ -556,7 +556,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isFalse()
     }
 
-    @DisableFlags(FLAG_ROOT_TASK_FOR_BUBBLE)
+    @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun shouldBeAppBubble_isAppBubbleNotSplitting_returnsTrue() {
         val taskInfo = ActivityManager.RunningTaskInfo().apply { isAppBubble = true }

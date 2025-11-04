@@ -52,7 +52,7 @@ public class BubbleAnythingFlagHelper {
             return false;
         }
 
-        return com.android.window.flags.Flags.rootTaskForBubble();
+        return com.android.window.flags.Flags.enableBubbleRootTask();
     }
 
     /** Whether non-resizable activities are allowed in multi-window mode. */

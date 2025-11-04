@@ -3242,7 +3242,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     && mInfo.capturedLink == null) {
                 setCapturedLink(r);
             }
-            if (r.mLaunchCookie != null && (!com.android.window.flags.Flags.rootTaskForBubble()
+            if (r.mLaunchCookie != null && (!com.android.window.flags.Flags.enableBubbleRootTask()
                     || !mCreatedByOrganizer)) {
                 mInfo.addLaunchCookie(r.mLaunchCookie);
             }
