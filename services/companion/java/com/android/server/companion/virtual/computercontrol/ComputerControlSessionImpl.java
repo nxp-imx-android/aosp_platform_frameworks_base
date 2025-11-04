@@ -39,7 +39,6 @@ import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
-import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.companion.virtual.computercontrol.LifecycleState;
 import android.content.AttributionSource;
 import android.content.ComponentName;
@@ -85,6 +84,7 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -221,6 +221,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final Object mNotificationLock = new Object();
     @GuardedBy("mNotificationLock")
     private NotificationInfo mNotificationInfo = null;
+
+    @GuardedBy("mInteractiveMirrors")
+    private final List<InteractiveMirrorImpl> mInteractiveMirrors = new ArrayList<>();
 
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
@@ -496,19 +499,36 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     @Nullable
-    public IInteractiveMirror createInteractiveMirror(SurfaceControl outMirrorSurface)
-            throws RemoteException {
+    public IInteractiveMirror createInteractiveMirror(SurfaceControl outMirrorSurface) {
+        final var mirror = createInteractiveMirrorImpl();
+        if (mirror == null) {
+            return null;
+        }
+        synchronized (mInteractiveMirrors) {
+            mInteractiveMirrors.add(mirror);
+        }
+        outMirrorSurface.copyFrom(mirror.getMirrorLeash(),
+                "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
+        return mirror;
+    }
+
+    @Nullable
+    private InteractiveMirrorImpl createInteractiveMirrorImpl() {
+        // NOTE: The mirror surface must not be leaked to the client app!
         final var mirrorSurface =
                 mWindowManagerInternal.createMirrorForDisplayContent(mVirtualDisplayId);
         if (mirrorSurface == null) {
             return null;
         }
-        outMirrorSurface.copyFrom(mirrorSurface,
-                "ComputerControlSessionImpl#createInteractiveMirrorDisplay");
-        final var mirror = new InteractiveMirrorImpl(mirrorSurface, mTransactionSupplier,
-                mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal);
-        mirror.setInteractive(InteractiveMirror.DEFAULT_INTERACTIVE);
-        return mirror;
+        return new InteractiveMirrorImpl(mirrorSurface, mTransactionSupplier,
+                mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal,
+                this::onInteractiveMirrorClosed);
+    }
+
+    private void onInteractiveMirrorClosed(InteractiveMirrorImpl interactiveMirror) {
+        synchronized (mInteractiveMirrors) {
+            mInteractiveMirrors.remove(interactiveMirror);
+        }
     }
 
     @SuppressLint("WrongConstant")
@@ -590,9 +610,22 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAudioCapture.stopAudioCapture();
         mVirtualDevice.close(); // closes also the VirtualAudioDevice
         mAppToken.unlinkToDeath(this, 0);
+        closeInteractiveMirrors();
         mOnClosedListener.accept(this);
     }
 
+    private void closeInteractiveMirrors() {
+        synchronized (mInteractiveMirrors) {
+            try (var transaction = mTransactionSupplier.get()) {
+                // Closing a mirror modifies mInteractiveMirrors, so make a copy of the list.
+                final var mirrorsCopy = new ArrayList<>(mInteractiveMirrors);
+                for (int i = 0; i < mirrorsCopy.size(); i++) {
+                    mirrorsCopy.get(i).closeWithTransaction(transaction);
+                }
+                transaction.apply();
+            }
+        }
+    }
 
     private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step, int stepCount) {
         final double fraction = ((double) step) / stepCount;
