@@ -34,7 +34,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
-import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
@@ -51,14 +51,14 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
     @Nullable
     private final Integer mActiveDeskIdOnStart;
 
-    RecentsMixedTransition(int type, IBinder transition, Transitions player,
+    RecentsMixedTransition(@MixedTransitionType int type, IBinder transition, Transitions player,
             MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
             StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
             RecentsTransitionHandler recentsHandler, DesktopTasksController desktopTasksController,
-            BubbleTransitions bubbleTransitions, PinnedLayerController pinnedLayerController,
+            BubbleTransitions bubbleTransitions, PinnedLayerHandler pinnedLayerHandler,
             int displayId) {
         super(type, transition, player, mixedHandler, pipHandler, splitHandler, keyguardHandler,
-                bubbleTransitions, pinnedLayerController);
+                bubbleTransitions, pinnedLayerHandler);
         mRecentsHandler = recentsHandler;
         mDesktopTasksController = desktopTasksController;
         mLeftoversHandler = mRecentsHandler;
@@ -162,7 +162,7 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
                     != SPLIT_POSITION_UNDEFINED) {
                 return animateEnterPipFromSplit(this, info, startTransaction, finishTransaction,
                         finishCallback, mPlayer, mMixedHandler, mPipHandler, mSplitHandler,
-                        mPinnedLayerController, /*replacingPip*/ false);
+                        mPinnedLayerHandler, /*replacingPip*/ false);
             }
         }
 

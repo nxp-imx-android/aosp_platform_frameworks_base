@@ -180,6 +180,7 @@ import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
@@ -773,7 +774,7 @@ public abstract class WMShellModule {
             Optional<SplitScreenController> splitScreenOptional,
             @Nullable PipTransitionController pipTransitionController,
             PipScheduler pipScheduler,
-            Optional<PinnedLayerController> pinnedLayerController,
+            Optional<PinnedLayerHandler> pinnedLayerHandler,
             Optional<RecentsTransitionHandler> recentsTransitionHandler,
             KeyguardTransitionHandler keyguardTransitionHandler,
             Optional<DesktopTasksController> desktopTasksController,
@@ -787,7 +788,7 @@ public abstract class WMShellModule {
                 splitScreenOptional,
                 pipTransitionController,
                 PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipScheduler) : Optional.empty(),
-                pinnedLayerController.orElse(null),
+                pinnedLayerHandler.orElse(null),
                 recentsTransitionHandler,
                 keyguardTransitionHandler,
                 desktopTasksController,
