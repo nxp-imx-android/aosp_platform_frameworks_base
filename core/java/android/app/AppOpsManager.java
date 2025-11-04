@@ -3770,6 +3770,10 @@ public class AppOpsManager {
      * @hide
      */
     public static boolean opRestrictsRead(int op) {
+        // If the device has beeen downgraded, the app op info may not be present.
+        if (op >= sAppOpInfos.length) {
+            return true;
+        }
         return sAppOpInfos[op].restrictRead;
     }
 
