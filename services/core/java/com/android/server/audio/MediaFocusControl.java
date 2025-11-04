@@ -49,10 +49,8 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.utils.EventLogger;
 
 import java.io.PrintWriter;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1370,6 +1368,8 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
             case AudioAttributes.USAGE_EMERGENCY:
             case AudioAttributes.USAGE_SAFETY:
             case AudioAttributes.USAGE_UNKNOWN:
+            case AudioAttributes.USAGE_NOTIFICATION_VIBRATION:
+            case AudioAttributes.USAGE_RINGTONE_VIBRATION:
             default:
                 return 0;
         }
