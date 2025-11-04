@@ -20,7 +20,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.window.DesktopExperienceFlags.ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX;
 
-import static com.android.window.flags.Flags.enableCompatuiSysuiLauncherFix;
 import static com.android.wm.shell.compatui.impl.CompatUIRequestsKt.DISPLAY_COMPAT_SHOW_RESTART_DIALOG;
 
 import android.annotation.NonNull;
@@ -278,10 +277,6 @@ public class CompatUIController implements OnDisplaysChangedListener,
     }
 
     private void initActivityTransitionAnimator() {
-        if (!enableCompatuiSysuiLauncherFix()) {
-            return;
-        }
-
         mActivityTransitionAnimatorLazy.get().setCallback(
                 new ActivityTransitionAnimator.Callback() {
                     @Override
@@ -817,11 +812,6 @@ public class CompatUIController implements OnDisplaysChangedListener,
     /** Launch the user aspect ratio settings for the package of the given task. */
     void launchUserAspectRatioSettings(
             @NonNull Context context, @NonNull TaskInfo taskInfo, @Nullable View launchableView) {
-        if (!enableCompatuiSysuiLauncherFix()) {
-            launchUserAspectRatioSettingsNoAnimation(context, taskInfo);
-            return;
-        }
-
         final ActivityTransitionAnimator.Controller delegate =
                 ActivityTransitionAnimator.Controller.fromView(
                         launchableView, /* cujType */ null);

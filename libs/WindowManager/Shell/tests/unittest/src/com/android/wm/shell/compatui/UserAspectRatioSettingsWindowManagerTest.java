@@ -23,7 +23,6 @@ import static android.view.WindowInsets.Type.navigationBars;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.window.flags.Flags.FLAG_APP_COMPAT_UI_FRAMEWORK;
-import static com.android.window.flags.Flags.FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -42,7 +41,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper.RunWithLooper;
@@ -496,7 +494,6 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
     public void testCreateLayout_returnsParentLayout() {
         mWindowManager.mHasUserAspectRatioSettingsButton = true;
         final View result = mWindowManager.createLayout();
@@ -505,16 +502,6 @@ public class UserAspectRatioSettingsWindowManagerTest extends ShellTestCase {
     }
 
     @Test
-    @RequiresFlagsDisabled(FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
-    public void testCreateLayout_flagDisabled_returnsButtonLayout() {
-        mWindowManager.mHasUserAspectRatioSettingsButton = true;
-        final View result = mWindowManager.createLayout();
-
-        Assert.assertEquals(mLayout, result);
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
     public void testUpdateLayoutBounds_flagEnabled_setsFullscreenAndMargins() {
         mWindowManager.mHasUserAspectRatioSettingsButton = true;
         mWindowManager.createLayout(true /* canShow */);

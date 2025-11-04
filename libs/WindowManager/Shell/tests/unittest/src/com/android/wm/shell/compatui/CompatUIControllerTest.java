@@ -38,7 +38,6 @@ import android.app.ActivityManager.RunningTaskInfo;
 import android.app.TaskInfo;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.testing.AndroidTestingRunner;
@@ -834,7 +833,6 @@ public class CompatUIControllerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
     public void testLaunchUserAspectRatioSettings_animationStarted() {
         final TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -854,24 +852,5 @@ public class CompatUIControllerTest extends ShellTestCase {
         verify(mMockUserAspectRatioSettingsLayout).setIsAnimatingToHide(true);
         verify(mActivityTransitionAnimator).startIntentWithAnimation(any(), eq(true), isNull(),
                 eq(false), any());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_COMPATUI_SYSUI_LAUNCHER_FIX)
-    public void testLaunchUserAspectRatioSettings_noAnimation() {
-        final TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true);
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        doReturn(true).when(mCompatUIConfiguration).getHasSeenLetterboxEducation(anyInt());
-        doReturn(true).when(mMockUserAspectRatioSettingsLayout).createLayout(anyBoolean());
-
-        // Show the settings button.
-        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
-
-        // Launch the settings.
-        mController.launchUserAspectRatioSettings(mContext, taskInfo, null /* launchableView */);
-
-        verify(mMockUserAspectRatioSettingsLayout, never()).setIsAnimatingToHide(anyBoolean());
-        verify(mActivityTransitionAnimator, never()).startIntentWithAnimation(any(), anyBoolean(),
-                any(), anyBoolean(), any());
     }
 }
