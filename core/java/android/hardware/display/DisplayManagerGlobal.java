@@ -49,6 +49,7 @@ import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.Trace;
@@ -65,6 +66,7 @@ import android.view.Surface;
 import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.display.feature.flags.Flags;
 
 import java.lang.annotation.Retention;
@@ -170,6 +172,7 @@ public final class DisplayManagerGlobal {
 
     @UnsupportedAppUsage
     private final IDisplayManager mDm;
+    private final @Nullable DisplayManagerInternal mDmInternal;
 
     private DisplayManagerCallback mCallback;
     private @InternalEventFlag long mRegisteredInternalEventFlag = 0;
@@ -200,6 +203,11 @@ public final class DisplayManagerGlobal {
     public DisplayManagerGlobal(IDisplayManager dm) {
         mDisplayIdsCache = Flags.displayListenerSnapshot() ? new DisplayIdsCache() : null;
         mDm = dm;
+        if (Flags.displayInfoCopyOnWriteCacheEnabled() && Process.myUid() == Process.SYSTEM_UID) {
+            mDmInternal = LocalServices.getService(DisplayManagerInternal.class);
+        } else {
+            mDmInternal = null;
+        }
         initExtraLogging();
 
         try {
@@ -260,6 +268,12 @@ public final class DisplayManagerGlobal {
      */
     @UnsupportedAppUsage
     public DisplayInfo getDisplayInfo(int displayId) {
+        if (mDmInternal != null) {
+            if (DEBUG) {
+                Log.d(TAG, "getDisplayInfo: displayId=" + displayId + ", using internal service");
+            }
+            return mDmInternal.getDisplayInfo(displayId);
+        }
         synchronized (mLock) {
             return getDisplayInfoLocked(displayId);
         }
@@ -275,6 +289,10 @@ public final class DisplayManagerGlobal {
             info = mDisplayCache.query(displayId);
         } else {
             try {
+                if (DEBUG) {
+                    Log.d(TAG, "getDisplayInfo: displayId=" + displayId
+                            + ", package=" + ActivityThread.currentPackageName());
+                }
                 info = mDm.getDisplayInfo(displayId);
             } catch (RemoteException ex) {
                 ex.rethrowFromSystemServer();

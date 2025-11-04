@@ -442,3 +442,13 @@ flag {
           purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "display_info_copy_on_write_cache_enabled"
+    namespace: "display_manager"
+    description: "Enable copy on write cache for display info"
+    bug: "430010606"
+    metadata {
+          purpose: PURPOSE_BUGFIX
+    }
+}
