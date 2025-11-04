@@ -17,3 +17,10 @@ flag {
     description: "This flags the Contextual App Functions Feature."
     bug: "445901741"
 }
+
+flag {
+    name: "enable_dynamic_app_functions"
+    namespace: "app_function"
+    description: "This flags the Dynamic App Functions Feature."
+    bug: "445901741"
+}
