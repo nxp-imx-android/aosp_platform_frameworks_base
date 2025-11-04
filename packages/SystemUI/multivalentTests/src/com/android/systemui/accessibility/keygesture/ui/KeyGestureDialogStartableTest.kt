@@ -16,13 +16,21 @@
 
 package com.android.systemui.accessibility.keygesture.ui
 
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.ResolveInfo
+import android.content.pm.ServiceInfo
 import android.hardware.input.KeyGestureEvent
+import android.os.Build
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.view.KeyEvent
+import android.view.accessibility.accessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.hardware.input.Flags
@@ -62,7 +70,9 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
     private val Kosmos.underTest by
         Kosmos.Fixture {
             KeyGestureDialogStartable(
-                context,
+                context.apply {
+                    addMockSystemService(Context.ACCESSIBILITY_SERVICE, accessibilityManager)
+                },
                 fakeDisplayRepository,
                 interactor,
                 kosmos.systemUIDialogFactory,
@@ -272,6 +282,27 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
     }
 
     @Test
+    fun start_TalkbackAlreadyOn_showTalkBackDialog_noTtsPrompt() =
+        kosmos.runTest {
+            val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("TalkBackService"))
+            whenever(
+                    accessibilityManager.getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK
+                    )
+                )
+                .thenReturn(listOf(a11yServiceInfo))
+            val shortcutsRepository = kosmos.accessibilityShortcutsRepository
+            underTest.start()
+
+            sendIntentBroadcastForScreenReaderInMainThread(
+                KeyGestureDialogInteractor.LAUNCH_DIALOG_ACTION
+            )
+
+            assertThat(underTest.currentDialog!!.isShowing).isTrue()
+            assertThat(shortcutsRepository.ttsPrompt).isNull()
+        }
+
+    @Test
     fun start_screenReaderDialog_performsTtsPrompt() =
         kosmos.runTest {
             val shortcutsRepository = kosmos.accessibilityShortcutsRepository
@@ -415,9 +446,38 @@ class KeyGestureDialogStartableTest : SysuiTestCase() {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
             KeyEvent.META_META_ON or KeyEvent.META_ALT_ON,
             KeyEvent.KEYCODE_T,
-            "targetNameForScreenReader",
+            "com.android.test/.TalkBackService",
             displayId,
             intentAction,
         )
+    }
+
+    private fun getMockAccessibilityServiceInfo(featureName: String): AccessibilityServiceInfo {
+        val packageName = "com.android.test"
+        val className = featureName.replace(" ", "")
+        val componentName = ComponentName(packageName, "$packageName.$className")
+        val iconResId = 1
+
+        return AccessibilityServiceInfo().apply {
+            this.componentName = componentName
+            this.resolveInfo =
+                ResolveInfo().apply {
+                    this.serviceInfo =
+                        ServiceInfo().apply {
+                            this.applicationInfo =
+                                ApplicationInfo().apply {
+                                    this.packageName = packageName
+                                    this.icon = iconResId
+                                    this.targetSdkVersion = Build.VERSION_CODES.BAKLAVA
+                                }
+                            this.name = className
+                            this.packageName = packageName
+                            this.icon = iconResId
+                        }
+                    this.nonLocalizedLabel = featureName
+                    this.icon = iconResId
+                    this.iconResourceId = iconResId
+                }
+        }
     }
 }
