@@ -16,6 +16,7 @@
 
 package android.hardware.camera2.impl;
 
+import android.annotation.FlaggedApi;
 import android.hardware.ICameraService;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
@@ -34,6 +35,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceSpecificException;
 import android.view.Surface;
+
+import com.android.internal.camera.flags.Flags;
 
 /**
  * A wrapper around ICameraDeviceUser.
@@ -279,6 +282,18 @@ public class ICameraDeviceUserWrapper {
             throws CameraAccessException {
         try {
             mRemoteDevice.updateOutputConfiguration(streamId, config);
+        } catch (ServiceSpecificException e) {
+            throw ExceptionUtils.throwAsPublicException(e);
+        } catch (RemoteException e) {
+            throw ExceptionUtils.throwAsPublicException(e);
+        }
+    }
+
+    @FlaggedApi(Flags.FLAG_SEAMLESS_TRANSITIONS)
+    public void updateOutputConfigurations(int[] streamIds, OutputConfiguration[] configs)
+            throws CameraAccessException {
+        try {
+            mRemoteDevice.updateOutputConfigurations(streamIds, configs);
         } catch (ServiceSpecificException e) {
             throw ExceptionUtils.throwAsPublicException(e);
         } catch (RemoteException e) {
