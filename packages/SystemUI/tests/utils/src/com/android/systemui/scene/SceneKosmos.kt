@@ -1,7 +1,6 @@
 package com.android.systemui.scene
 
 import android.content.res.mainResources
-import android.view.View
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.classifier.domain.interactor.falsingInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
@@ -42,7 +41,6 @@ import com.android.systemui.wallpapers.ui.viewmodel.wallpaperViewModel
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.android.systemui.window.ui.FakeBlurChoreographer
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.mockito.kotlin.mock
 
 var Kosmos.sceneKeys by Fixture {
     listOf(
@@ -87,9 +85,7 @@ val Kosmos.transitionState by Fixture {
 }
 
 val Kosmos.sceneContainerViewModel by Fixture {
-    sceneContainerViewModelFactory
-        .create(mock<View>()) {}
-        .apply { setTransitionState(transitionState) }
+    sceneContainerViewModelFactory.create {}.apply { setTransitionState(transitionState) }
 }
 
 val Kosmos.fakeBlurChoreographer by Fixture { FakeBlurChoreographer() }
@@ -118,8 +114,7 @@ val Kosmos.sceneTransitionBlurViewModelFactory by Fixture {
 val Kosmos.sceneContainerViewModelFactory by Fixture {
     object : SceneContainerViewModel.Factory {
         override fun create(
-            view: View,
-            motionEventHandlerReceiver: (SceneContainerViewModel.MotionEventHandler?) -> Unit,
+            motionEventHandlerReceiver: (SceneContainerViewModel.MotionEventHandler?) -> Unit
         ): SceneContainerViewModel =
             SceneContainerViewModel(
                 resources = mainResources,
@@ -132,7 +127,6 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
                 remoteInputInteractor = remoteInputInteractor,
                 logger = sceneLogger,
                 hapticsViewModelFactory = sceneContainerHapticsViewModelFactory,
-                view = view,
                 motionEventHandlerReceiver = motionEventHandlerReceiver,
                 lightRevealScrim = lightRevealScrimViewModel,
                 wallpaperViewModel = wallpaperViewModel,
@@ -151,9 +145,8 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
 
 val Kosmos.sceneContainerHapticsViewModelFactory by Fixture {
     object : SceneContainerHapticsViewModel.Factory {
-        override fun create(view: View): SceneContainerHapticsViewModel {
+        override fun create(): SceneContainerHapticsViewModel {
             return SceneContainerHapticsViewModel(
-                view = view,
                 sceneInteractor = sceneInteractor,
                 shadeInteractor = shadeInteractor,
                 msdlPlayer = msdlPlayer,

@@ -21,7 +21,6 @@ import android.platform.test.annotations.EnableFlags
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_OUTSIDE
-import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.DefaultEdgeDetector
@@ -70,7 +69,6 @@ import org.mockito.kotlin.mock
 class SceneContainerViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val view = mock<View>()
 
     private lateinit var underTest: SceneContainerViewModel
 
@@ -80,7 +78,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     @Before
     fun setUp() {
         underTest =
-            kosmos.sceneContainerViewModelFactory.create(view) { motionEventHandler ->
+            kosmos.sceneContainerViewModelFactory.create { motionEventHandler ->
                 this@SceneContainerViewModelTest.motionEventHandler = motionEventHandler
             }
         activationJob = Job()
