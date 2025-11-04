@@ -19,7 +19,6 @@ package com.android.settingslib.spaprivileged.model.app
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
-import android.content.pm.FakeFeatureFlagsImpl
 import android.content.pm.Flags
 import android.content.pm.ModuleInfo
 import android.content.pm.PackageManager
@@ -283,10 +282,8 @@ class AppListRepositoryTest {
 
     @Test
     fun loadApps_archivedAppsEnabled() = runTest {
-        val fakeFlags = FakeFeatureFlagsImpl()
-        fakeFlags.setFlag(Flags.FLAG_ARCHIVING, true)
         mockInstalledApplications(listOf(NORMAL_APP, ARCHIVED_APP), ADMIN_USER_ID)
-        val repository = AppListRepositoryImpl(context, fakeFlags)
+        val repository = AppListRepositoryImpl(context)
         val appList = repository.loadApps(userId = ADMIN_USER_ID)
 
         assertThat(appList).containsExactly(NORMAL_APP, ARCHIVED_APP)
