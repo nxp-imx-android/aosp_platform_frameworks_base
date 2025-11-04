@@ -4232,7 +4232,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             }
         }
         while (widgetsInSameHost.size() >= MAX_NUMBER_OF_WIDGETS_PER_HOST) {
-            removeWidgetLocked(widgetsInSameHost.remove(0));
+            deleteAppWidgetLocked(widgetsInSameHost.removeFirst());
         }
     }
 
