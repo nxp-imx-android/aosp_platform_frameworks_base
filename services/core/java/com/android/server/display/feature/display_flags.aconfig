@@ -434,16 +434,6 @@ flag {
 }
 
 flag {
-    name: "send_non_rr_callbacks_when_in_background"
-    namespace: "display_manager"
-    description: "Continue sending non refresh rate events callbacks when the corresponding pid is not in the foreground"
-    bug: "449949226"
-    metadata {
-          purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "display_info_copy_on_write_cache_enabled"
     namespace: "display_manager"
     description: "Enable copy on write cache for display info"

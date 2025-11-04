@@ -5636,7 +5636,6 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SEND_NON_RR_CALLBACKS_WHEN_IN_BACKGROUND)
     public void testRefreshRateEventFilteredForBackgroundApp_WithFlagEnabled() throws Exception {
         when(mMockFlags.isRefreshRateEventForForegroundAppsEnabled()).thenReturn(true);
         // Setup DMS and a callback record
@@ -5666,7 +5665,6 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SEND_NON_RR_CALLBACKS_WHEN_IN_BACKGROUND)
     public void testOnlyRefreshRateEventFilteredForBackgroundApp_WithFlagEnabled()
             throws Exception {
         when(mMockFlags.isRefreshRateEventForForegroundAppsEnabled()).thenReturn(true);
