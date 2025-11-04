@@ -212,7 +212,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testDreamActivitiesForcedToFullscreenWithoutTask() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -237,7 +236,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testHomeActivitiesForcedToFullscreenWithoutTask() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -274,7 +272,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testSystemUIActivitiesForcedToFullscreenWithoutTask() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -315,7 +312,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testTransparentActivitiesWithPlatformSignatureForcedToFullscreenWithoutTask() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -352,7 +348,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testTransparentActivitiesWithPermissionForcedToFullscreenWithoutTask()
             throws PackageManager.NameNotFoundException {
         setupDesktopModeLaunchParamsModifier();
@@ -490,7 +485,6 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS)
     public void testReturnsDoneIfTaskNullLaunchInFreeform() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -507,8 +501,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testPreserveOrientationAndAspectRatioFromRecentsTaskRelaunch() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -722,8 +715,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testRespectOverrideTaskBoundsIfValid() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -741,8 +733,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testDontRespectOverrideTaskBoundsIfNotValid() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1981,8 +1972,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testFreeformWindowingModeAppliedIfSourceTaskExists() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -2000,8 +1990,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND})
     public void testInMultiDesk_requestFullscreen_returnDone() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -2027,8 +2016,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     public void testCalculate_desktopFirstPolicy_forcesFreeform() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
@@ -2051,8 +2039,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX)
     public void testCalculate_desktopFirstPolicy_taskNull_forcesFreeform() {
         setupDesktopModeLaunchParamsModifier();
@@ -2072,7 +2059,6 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX})
     public void testCalculate_desktopFirstPolicy_taskNull_activeDeskInvisibleHome_forceFreeform() {
         setupDesktopModeLaunchParamsModifier();
@@ -2096,7 +2082,6 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX})
     public void testCalculate_desktopFirstPolicy_taskNull_activeDeskVisibleHome_forceFreeform() {
         setupDesktopModeLaunchParamsModifier();
@@ -2124,7 +2109,6 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX})
     public void testCalculate_desktopFirstPolicy_taskNull_inactiveDeskVisibleHome_forceFreeform() {
         setupDesktopModeLaunchParamsModifier();
@@ -2144,7 +2128,6 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX})
     public void testCalculate_desktopFirstPolicy_taskNull_inactiveDeskInvisibleHome_fullscreen() {
         setupDesktopModeLaunchParamsModifier();
@@ -2160,8 +2143,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     public void testCalculate_desktopFirstPolicy_fullscreenRelaunch_bypassesPolicy() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
@@ -2180,8 +2162,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX)
     public void testCalculate_desktopFirstPolicy_fullscreenSourceTask_forcesFreeform() {
         setupDesktopModeLaunchParamsModifier();
@@ -2206,8 +2187,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     public void testCalculate_desktopFirstPolicy_taskNull_requestFullscreen_bypassesPolicy() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
@@ -2224,8 +2204,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     public void testCalculate_desktopFirstPolicy_requestFullscreen_bypassesPolicy() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();

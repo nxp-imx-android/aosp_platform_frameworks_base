@@ -191,8 +191,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX),
     ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
             Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS),
-    ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS(Flags::enableFreeformDisplayLaunchParams, true,
-            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS),
     ENABLE_FULLSCREEN_WINDOW_CONTROLS(Flags::enableFullscreenWindowControls, false,
             Flags.FLAG_ENABLE_FULLSCREEN_WINDOW_CONTROLS),
     ENABLE_INDEPENDENT_BACK_IN_PROJECTED(Flags::enableIndependentBackInProjected, true,

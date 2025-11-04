@@ -90,7 +90,6 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.Slog;
-import android.window.DesktopExperienceFlags;
 import android.window.ScreenCaptureInternal;
 
 import com.android.internal.R;
@@ -2822,9 +2821,7 @@ public class VoiceInteractionManagerService extends SystemService {
             final ActivityOptions opts = ActivityOptions.makeCustomTaskAnimation(mContext,
                     /* enterResId= */ 0, /* exitResId= */ 0, null, null, null);
             opts.setDisableStartingWindow(true);
-            if (DesktopExperienceFlags.ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
-                opts.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
-            }
+            opts.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
             int resultCode = mAtmInternal.startActivityWithScreenshot(launchIntent,
                     mContext.getPackageName(), Binder.getCallingUid(), Binder.getCallingPid(), null,
                     opts.toBundle(), userId);

@@ -30,8 +30,8 @@ import static android.content.Intent.FLAG_ACTIVITY_NO_USER_ACTION;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints;
 
+import static com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints;
 import static com.android.server.wm.ActivityTaskManagerInternal.ASSIST_KEY_CONTENT;
 import static com.android.server.wm.ActivityTaskManagerInternal.ASSIST_KEY_STRUCTURE;
 
@@ -81,7 +81,6 @@ import android.util.Log;
 import android.util.Slog;
 import android.view.Display;
 import android.view.IWindowManager;
-import android.window.DesktopExperienceFlags;
 import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 
 import com.android.internal.R;
@@ -453,9 +452,7 @@ public class ContextualSearchManagerService extends SystemService {
         opts.setDisableStartingWindow(true);
         final int displayId = getDisplayIdFromConfig(config);
         opts.setLaunchDisplayId(displayId);
-        if (DesktopExperienceFlags.ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
-            opts.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
-        }
+        opts.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
         return mAtmInternal.startActivityWithScreenshot(launchIntent,
                 mContext.getPackageName(), Binder.getCallingUid(), Binder.getCallingPid(), null,
                 opts.toBundle(), userId);
