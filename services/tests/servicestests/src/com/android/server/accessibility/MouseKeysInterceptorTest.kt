@@ -56,6 +56,8 @@ import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 
 /**
@@ -725,6 +727,33 @@ class MouseKeysInterceptorTest {
             assertThat(nextInterceptor.events).hasSize(1)
             verifyKeyEventsEqual(downEvent, nextInterceptor.events.poll()!!)
         }
+    }
+
+    @Test
+    fun whenMultipleInterceptorsCreated_virtualDeviceNamesAreUnique() {
+        val vdpCaptor = ArgumentCaptor.forClass(VirtualDeviceParams::class.java)
+        val vmcCaptor = ArgumentCaptor.forClass(VirtualMouseConfig::class.java)
+
+        setupMouseKeysInterceptor(usePrimaryKeys = true)
+        setupMouseKeysInterceptor(usePrimaryKeys = true)
+
+        verify(mockVirtualDeviceManagerInternal, times(2))
+            .createVirtualDevice(vdpCaptor.capture())
+        verify(mockVirtualDevice, times(2))
+            .createVirtualMouse(vmcCaptor.capture())
+
+        val mouseKeysVirtualDevicePrefix = "Mouse Keys Virtual Device ("
+        val firstName = vdpCaptor.allValues[0].name
+        val firstInputName = vmcCaptor.allValues[0].inputDeviceName
+        assertThat(firstName).isEqualTo(firstInputName)
+        assertThat(firstName).startsWith(mouseKeysVirtualDevicePrefix)
+
+        val secondName = vdpCaptor.allValues[1].name
+        val secondInputName = vmcCaptor.allValues[1].inputDeviceName
+        assertThat(secondName).isEqualTo(secondInputName)
+        assertThat(secondName).startsWith(mouseKeysVirtualDevicePrefix)
+
+        assertThat(firstName).isNotEqualTo(secondName)
     }
 
     private fun verifyRelativeEvents(expectedX: FloatArray, expectedY: FloatArray) {
