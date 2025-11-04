@@ -58,6 +58,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_ACCESS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
@@ -3511,6 +3512,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         if (android.view.accessibility.Flags.enableA11yTopRowShortcut()) {
             updateAccessibilityShortcutTargetsLocked(userState, TOP_ROW_KEY);
         }
+        if (android.view.accessibility.Flags.quickAccessShortcutType()) {
+            updateAccessibilityShortcutTargetsLocked(userState, QUICK_ACCESS);
+        }
         // Update the capabilities before the mode because we will check the current mode is
         // invalid or not..
         updateMagnificationCapabilitiesSettingsChangeLocked(userState);
@@ -3643,6 +3647,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         somethingChanged |= readAccessibilityShortcutTargetsLocked(userState, GESTURE);
         somethingChanged |= readAccessibilityShortcutTargetsLocked(userState, KEY_GESTURE);
         somethingChanged |= readAccessibilityShortcutTargetsLocked(userState, TOP_ROW_KEY);
+        somethingChanged |= readAccessibilityShortcutTargetsLocked(userState, QUICK_ACCESS);
         somethingChanged |= readAccessibilityButtonTargetComponentLocked(userState);
         somethingChanged |= readUserRecommendedUiTimeoutSettingsLocked(userState);
         somethingChanged |= readMagnificationModeForDefaultDisplayLocked(userState);
@@ -3801,6 +3806,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             @UserShortcutType int shortcutType) {
         if (!android.view.accessibility.Flags.enableA11yTopRowShortcut()
                 && shortcutType == TOP_ROW_KEY) {
+            return false;
+        }
+        if (!android.view.accessibility.Flags.quickAccessShortcutType()
+                && shortcutType == QUICK_ACCESS) {
             return false;
         }
         assertNoTapShortcut(shortcutType);
@@ -4242,6 +4251,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         shortcutTypes.add(GESTURE);
         shortcutTypes.add(KEY_GESTURE);
         shortcutTypes.add(TOP_ROW_KEY);
+        shortcutTypes.add(QUICK_ACCESS);
 
         final ComponentName serviceName = service.getComponentName();
         for (Integer shortcutType: shortcutTypes) {
@@ -6038,6 +6048,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         private final Uri mAccessibilityTopRowKeyTargetsUri = Settings.Secure.getUriFor(
                 Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS);
 
+        private final Uri mAccessibilityQuickAccessTargetsUri = Settings.Secure.getUriFor(
+                Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS);
+
         private final Uri mUserNonInteractiveUiTimeoutUri = Settings.Secure.getUriFor(
                 Settings.Secure.ACCESSIBILITY_NON_INTERACTIVE_UI_TIMEOUT_MS);
 
@@ -6117,6 +6130,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     mAccessibilityKeyGestureTargetsUri, false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(
                     mAccessibilityTopRowKeyTargetsUri, false, this, UserHandle.USER_ALL);
+            contentResolver.registerContentObserver(
+                    mAccessibilityQuickAccessTargetsUri, false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(
                     mUserNonInteractiveUiTimeoutUri, false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(
@@ -6219,6 +6234,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     }
                 } else if (mAccessibilityTopRowKeyTargetsUri.equals(uri)) {
                     if (readAccessibilityShortcutTargetsLocked(userState, TOP_ROW_KEY)) {
+                        onUserStateChangedLocked(userState);
+                    }
+                } else if (mAccessibilityQuickAccessTargetsUri.equals(uri)) {
+                    if (readAccessibilityShortcutTargetsLocked(userState, QUICK_ACCESS)) {
                         onUserStateChangedLocked(userState);
                     }
                 } else if (mUserNonInteractiveUiTimeoutUri.equals(uri)

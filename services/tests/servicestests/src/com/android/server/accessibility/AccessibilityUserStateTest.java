@@ -36,6 +36,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_ACCESS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
@@ -181,6 +182,7 @@ public class AccessibilityUserStateTest {
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), QUICK_SETTINGS);
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), KEY_GESTURE);
         mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), TOP_ROW_KEY);
+        mUserState.updateShortcutTargetsLocked(Set.of(componentNameString), QUICK_ACCESS);
         mUserState.updateA11yTilesInQsPanelLocked(
                 Set.of(AccessibilityShortcutController.COLOR_INVERSION_TILE_COMPONENT_NAME));
         mUserState.setTargetAssignedToAccessibilityButton(componentNameString);
@@ -210,6 +212,7 @@ public class AccessibilityUserStateTest {
         assertTrue(mUserState.getShortcutTargetsLocked(QUICK_SETTINGS).isEmpty());
         assertTrue(mUserState.getShortcutTargetsLocked(KEY_GESTURE).isEmpty());
         assertTrue(mUserState.getShortcutTargetsLocked(TOP_ROW_KEY).isEmpty());
+        assertTrue(mUserState.getShortcutTargetsLocked(QUICK_ACCESS).isEmpty());
         assertTrue(mUserState.getA11yQsTilesInQsPanel().isEmpty());
         assertNull(mUserState.getTargetAssignedToAccessibilityButton());
         assertFalse(mUserState.isTouchExplorationEnabledLocked());

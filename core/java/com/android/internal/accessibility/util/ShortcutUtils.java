@@ -29,6 +29,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_ACCESS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
@@ -216,8 +217,9 @@ public final class ShortcutUtils {
             case QUICK_SETTINGS -> Settings.Secure.ACCESSIBILITY_QS_TARGETS;
             case KEY_GESTURE -> Settings.Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS;
             case TOP_ROW_KEY -> Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS;
-            default -> throw new IllegalArgumentException(
-                    "Unsupported user shortcut type: " + type);
+            case QUICK_ACCESS -> Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS;
+            default ->
+                    throw new IllegalArgumentException("Unsupported user shortcut type: " + type);
         };
     }
 
@@ -234,14 +236,13 @@ public final class ShortcutUtils {
             case Settings.Secure.ACCESSIBILITY_GESTURE_TARGETS -> GESTURE;
             case Settings.Secure.ACCESSIBILITY_QS_TARGETS -> QUICK_SETTINGS;
             case Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_SERVICE -> HARDWARE;
-            case Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED ->
-                    TRIPLETAP;
+            case Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_ENABLED -> TRIPLETAP;
             case Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED ->
                     TWOFINGER_DOUBLETAP;
             case Settings.Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS -> KEY_GESTURE;
             case Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS -> TOP_ROW_KEY;
-            default -> throw new IllegalArgumentException(
-                    "Unsupported user shortcut key: " + key);
+            case Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS -> QUICK_ACCESS;
+            default -> throw new IllegalArgumentException("Unsupported user shortcut key: " + key);
         };
     }
 
