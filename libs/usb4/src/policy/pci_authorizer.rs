@@ -19,8 +19,6 @@ use kobject_uevent::ActionType;
 use log::{debug, error, info};
 use std::error::Error;
 use std::io::ErrorKind;
-use std::path::Path;
-use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 use uevent::netlink::{AsyncNetlinkKObjectUEventSocket, AsyncUEventSocket};
@@ -76,7 +74,7 @@ enum PciServiceEvent {
 
 /// Internal service that runs an async event loop for uevents and policy updates.
 struct PciAuthorizerTask {
-    uevent_socket: Arc<dyn AsyncUEventSocket>,
+    uevent_socket: Box<dyn AsyncUEventSocket>,
     event_receiver: mpsc::Receiver<PciServiceEvent>,
     event_sender: mpsc::Sender<PciServiceEvent>,
     sysfs_utils: SysfsUtils,
@@ -109,7 +107,7 @@ impl PciAuthorizerTask {
                 {
                     let path = uevent.devpath.as_path();
                     let relative_path = path.strip_prefix("/").unwrap();
-                    let full_path = Path::new("/sys/").join(relative_path);
+                    let full_path = self.sysfs_utils.add_sysfs_prefix(relative_path);
 
                     debug!("Authorizing dev for uevent path: {}", full_path.display());
 
@@ -325,7 +323,7 @@ pub struct PciAuthorizer {
 
 impl PciAuthorizer {
     /// Creates a new PciAuthorizer.
-    pub fn new(sysfs_utils: SysfsUtils, uevent_socket: Arc<dyn AsyncUEventSocket>) -> Self {
+    pub fn new(sysfs_utils: SysfsUtils, uevent_socket: Box<dyn AsyncUEventSocket>) -> Self {
         let (tx, rx) = mpsc::channel(MESSAGE_QUEUE_SIZE);
 
         let service_policy_data = PolicySourceData::default();
@@ -362,10 +360,10 @@ impl Default for PciAuthorizer {
     fn default() -> Self {
         let sysfs_utils = SysfsUtils::default();
         let uevent_socket_concrete =
-            Arc::new(AsyncNetlinkKObjectUEventSocket::create().expect(
+            Box::new(AsyncNetlinkKObjectUEventSocket::create().expect(
                 "Failed to create AsyncNetlinkKObjectUEventSocket in PciAuthorizer default",
             ));
-        let uevent_socket_trait: Arc<dyn AsyncUEventSocket> = uevent_socket_concrete;
+        let uevent_socket_trait: Box<dyn AsyncUEventSocket> = uevent_socket_concrete;
         Self::new(sysfs_utils, uevent_socket_trait)
     }
 }

@@ -31,6 +31,7 @@ pub struct SysfsUtils {
     tbt_devices_path: PathBuf,
     pci_devices_path: PathBuf,
     typec_path: PathBuf,
+    root: PathBuf,
 }
 
 impl SysfsUtils {
@@ -45,7 +46,13 @@ impl SysfsUtils {
             tbt_devices_path: root.join("sys/bus/thunderbolt/devices"),
             pci_devices_path: root.join("sys/bus/pci/devices"),
             typec_path: root.join("sys/class/typec"),
+            root,
         }
+    }
+
+    /// Prepends the root path and "sys" in front of the given path.
+    pub fn add_sysfs_prefix(&self, dev_path: &Path) -> PathBuf {
+        self.root.join("sys").join(dev_path)
     }
 
     /// Sets the "authorized" attribute for a given device path.
