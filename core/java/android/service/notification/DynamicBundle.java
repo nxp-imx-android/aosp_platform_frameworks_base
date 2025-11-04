@@ -36,6 +36,15 @@ import java.util.Objects;
 @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
 public final class DynamicBundle implements Parcelable {
 
+    /**
+     * @hide
+     */
+    public static final int DYNAMIC_RANGE_START = 100;
+    /**
+     * @hide
+     */
+    public static final int DYNAMIC_RANGE_END = 200;
+
     private final int mDynamicBundleType;
     private final String mBundleName;
 
@@ -46,7 +55,7 @@ public final class DynamicBundle implements Parcelable {
 
     private DynamicBundle(Parcel in) {
         mDynamicBundleType = in.readInt();
-        mBundleName = in.readString();
+        mBundleName = in.readString8();
     }
 
     public int getDynamicBundleType() {
@@ -86,7 +95,7 @@ public final class DynamicBundle implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mDynamicBundleType);
-        dest.writeString(mBundleName);
+        dest.writeString8(mBundleName);
     }
 
     public static final @NonNull Creator<DynamicBundle> CREATOR =

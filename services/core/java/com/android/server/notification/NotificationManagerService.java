@@ -7295,11 +7295,12 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public void createDynamicBundle(INotificationListener token, int dynamicBundleId,
+        public void createDynamicBundle(INotificationListener token, int dynamicBundleType,
                 String bundleName) {
             Preconditions.checkStringNotEmpty(bundleName);
-            Preconditions.checkArgumentInRange(
-                    dynamicBundleId, 100, 200, "Provided id outside of allowed range");
+            Preconditions.checkArgumentInRange(dynamicBundleType,
+                    DynamicBundle.DYNAMIC_RANGE_START, DynamicBundle.DYNAMIC_RANGE_END,
+                    "Provided id outside of allowed range");
 
             // limit length for legibility in the UI
             if (bundleName.length() > 25) {
@@ -7312,7 +7313,9 @@ public class NotificationManagerService extends SystemService {
                     mAssistants.checkServiceTokenLocked(token);
                 }
                 boolean created = mAssistants.createDynamicBundle(
-                        Binder.getCallingUserHandle().getIdentifier(), dynamicBundleId, bundleName);
+                        Binder.getCallingUserHandle().getIdentifier(),
+                        dynamicBundleType,
+                        bundleName);
                 if (created) {
                     // TODO (b/452679429): Add event log?
                     handleSavePolicyFile();
@@ -7860,24 +7863,17 @@ public class NotificationManagerService extends SystemService {
     }
 
     private String getClassificationChannelName(@UserIdInt int userId, int type) {
-        String label;
-        switch (type) {
-            case TYPE_PROMOTION:
-                label = getContext().getString(R.string.promotional_notification_channel_label);
-                break;
-            case TYPE_CONTENT_RECOMMENDATION:
-                label = getContext().getString(R.string.recs_notification_channel_label);
-                break;
-            case TYPE_NEWS:
-                label = getContext().getString(R.string.news_notification_channel_label);
-                break;
-            case TYPE_SOCIAL_MEDIA:
-                label = getContext().getString(R.string.social_notification_channel_label);
-                break;
-            default:
-                label = mAssistants.getDynamicBundleName(userId, type);
-        }
-        return label;
+        return switch (type) {
+            case TYPE_PROMOTION ->
+                    getContext().getString(R.string.promotional_notification_channel_label);
+            case TYPE_CONTENT_RECOMMENDATION ->
+                    getContext().getString(R.string.recs_notification_channel_label);
+            case TYPE_NEWS ->
+                    getContext().getString(R.string.news_notification_channel_label);
+            case TYPE_SOCIAL_MEDIA ->
+                    getContext().getString(R.string.social_notification_channel_label);
+            default -> mAssistants.getDynamicBundleName(userId, type);
+        };
     }
 
     @SuppressWarnings("GuardedBy")
@@ -12675,10 +12671,10 @@ public class NotificationManagerService extends SystemService {
 
         protected ComponentName mDefaultFromConfig = null;
 
-        // Map of user Id -> set of dynamic bundles created for that user. User profiles share
+        // Map of user Id -> [dynamic bundle id -> DynamicBundle] for that user. User profiles share
         // values with their parent user.
         @GuardedBy("mLock")
-        private Map<Integer, ArraySet<DynamicBundle>> mDynamicBundleMap = new ArrayMap<>();
+        private Map<Integer, ArrayMap<Integer,DynamicBundle>> mDynamicBundleMap = new ArrayMap<>();
 
         @Override
         protected void loadDefaultsFromConfig() {
@@ -13012,32 +13008,19 @@ public class NotificationManagerService extends SystemService {
             return out;
         }
 
-        protected boolean deleteDynamicBundle(int userId, int dynamicBundleType) {
+        protected boolean deleteDynamicBundle(@UserIdInt int userId, int dynamicBundleType) {
             if (!android.app.Flags.nmContextualDisplay()) {
                 return false;
             }
             // profile users share dynamic bundles with their parent user
             userId = getUserProfiles().getProfileParentId(userId, getContext());
             synchronized (mLock) {
-                mDynamicBundleMap.putIfAbsent(userId, new ArraySet<>());
-                ArraySet<DynamicBundle> dbSet = mDynamicBundleMap.get(userId);
-                DynamicBundle foundDb = null;
-                for (int i = dbSet.size() - 1; i >= 0; i--) {
-                    DynamicBundle db = dbSet.valueAt(i);
-                    if (db.getDynamicBundleType() == dynamicBundleType) {
-                        foundDb = db;
-                        break;
-                    }
-                }
-                if (foundDb != null) {
-                    dbSet.remove(foundDb);
-                    return true;
-                }
-                return false;
+                return mDynamicBundleMap.containsKey(userId)
+                        && mDynamicBundleMap.get(userId).remove(dynamicBundleType) != null;
             }
         }
 
-        protected boolean createDynamicBundle(int userId, int dynamicBundleType,
+        protected boolean createDynamicBundle(@UserIdInt int userId, int dynamicBundleType,
                 String bundleName) {
             if (!android.app.Flags.nmContextualDisplay()) {
                 return false;
@@ -13045,48 +13028,47 @@ public class NotificationManagerService extends SystemService {
             // profile users share dynamic bundles with their parent user
             userId = getUserProfiles().getProfileParentId(userId, getContext());
             synchronized (mLock) {
-                mDynamicBundleMap.putIfAbsent(userId, new ArraySet<>());
+                mDynamicBundleMap.putIfAbsent(userId, new ArrayMap<>());
                 DynamicBundle db = new DynamicBundle(dynamicBundleType, bundleName);
-                boolean added = mDynamicBundleMap.get(userId).add(db);
-                if (added) {
+                if (mDynamicBundleMap.get(userId).containsKey(dynamicBundleType)) {
+                    return false;
+                }
+                if (mDynamicBundleMap.get(userId).put(dynamicBundleType, db) == null) {
                     setAdjustmentTypeSupportedState(userId, KEY_TYPE, true);
                     setAssistantClassificationTypeState(userId, dynamicBundleType, true);
                 }
-                return added;
+                return true;
             }
         }
 
-        protected @Nullable String getDynamicBundleName(int userId, int dynamicBundleType) {
+        protected @Nullable String getDynamicBundleName(@UserIdInt int userId,
+                int dynamicBundleType) {
             if (!android.app.Flags.nmContextualDisplay()) {
                 return null;
             }
             // profile users share dynamic bundles with their parent user
             userId = getUserProfiles().getProfileParentId(userId, getContext());
             synchronized (mLock) {
-                Set<DynamicBundle> dbs = mDynamicBundleMap.get(userId);
-                if (dbs == null) {
+                DynamicBundle db = mDynamicBundleMap.getOrDefault(userId, new ArrayMap<>())
+                        .get(dynamicBundleType);
+                if (db == null) {
                     return null;
                 } else {
-                    String name = null;
-                    for (DynamicBundle db : dbs) {
-                        if (dynamicBundleType == db.getDynamicBundleType()) {
-                            name = db.getBundleName();
-                            break;
-                        }
-                    }
-                    return name;
+                    return db.getBundleName();
                 }
             }
         }
 
-        protected Set<DynamicBundle> getDynamicBundles(int userId) {
+        protected Set<DynamicBundle> getDynamicBundles(@UserIdInt int userId) {
             if (!android.app.Flags.nmContextualDisplay()) {
                 return new ArraySet<>();
             }
             // profile users share dynamic bundles with their parent user
             userId = getUserProfiles().getProfileParentId(userId, getContext());
             synchronized (mLock) {
-                return mDynamicBundleMap.getOrDefault(userId, new ArraySet<>());
+                Map<Integer, DynamicBundle> dbs =
+                        mDynamicBundleMap.getOrDefault(userId, new ArrayMap<>());
+                return new ArraySet<>(dbs.values());
             }
         }
 
@@ -13622,7 +13604,7 @@ public class NotificationManagerService extends SystemService {
 
                 if (android.app.Flags.nmContextualDisplay()) {
                     for (int user : mDynamicBundleMap.keySet()) {
-                        for (DynamicBundle db : mDynamicBundleMap.get(user)) {
+                        for (DynamicBundle db : mDynamicBundleMap.get(user).values()) {
                             out.startTag(null, TAG_BUNDLE);
                             out.attributeInt(null, ATT_USER_ID, user);
                             out.attributeInt(null, ATT_TYPE, db.getDynamicBundleType());

@@ -21,9 +21,11 @@ import android.app.NotificationChannel.PROMOTIONS_ID
 import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.app.INotificationManager
+import android.app.NotificationChannel
 import android.os.Build
 import android.os.SystemProperties
 import android.os.UserHandle
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.internal.R
 import com.android.systemui.dagger.qualifiers.Application
@@ -171,12 +173,18 @@ constructor(
                         val dynamicBundles = notificationManager.getDynamicBundles(
                                 null, userTracker.userHandle)
                         for (dynamicBundle in dynamicBundles) {
-                            val bundleSpec = BundleSpec(key = dynamicBundle.dynamicBundleType.toString(),
-                                titleText = R.string.promotional_notification_channel_label,
-                                summaryText = dynamicBundle.bundleName,
-                                icon = com.android.settingslib.R.drawable.ic_dynamic_bundle,
-                                bucket = dynamicBundle.dynamicBundleType,
-                                bundleType = dynamicBundle.dynamicBundleType,)
+                            val bundleSpec =
+                                BundleSpec(
+                                    key =
+                                        NotificationChannel.getChannelIdForBundleType(
+                                            dynamicBundle.dynamicBundleType
+                                        )!!,
+                                    titleText = R.string.promotional_notification_channel_label,
+                                    summaryText = dynamicBundle.bundleName,
+                                    icon = com.android.settingslib.R.drawable.ic_dynamic_bundle,
+                                    bucket = dynamicBundle.dynamicBundleType,
+                                    bundleType = dynamicBundle.dynamicBundleType,
+                                )
                             bundleSpecs.add(bundleSpec)
                         }
                         bundleIds = this.bundleSpecs.map { it.key }
@@ -365,8 +373,6 @@ constructor(
     companion object {
         @JvmField val TAG: String = "BundleCoordinator"
 
-        @JvmField var debugBundleLogs: Boolean = false
-
         /**
          * All notifications that contain this String in the key are bundled into the recommended
          * bundle such that bundle code can be easily and deterministically tested.
@@ -379,6 +385,8 @@ constructor(
             if (Build.IS_USERDEBUG || Build.IS_ENG)
                 SystemProperties.get("persist.debug.notification_bundle_ui_debug_app_name")
             else null
+
+        @JvmField var debugBundleLogs: Boolean = false
 
         @JvmStatic
         fun debugBundleLog(tag: String, stringLambda: () -> String) {
