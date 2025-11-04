@@ -1403,7 +1403,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case MULTI_PRESS_POWER_BRIGHTNESS_BOOST:
                 Slog.i(TAG, "Starting brightness boost.");
                 if (!interactive) {
-                    wakeUpFromWakeKey(displayId, eventTime, KEYCODE_POWER, /* isDown= */ false);
+                    wakeUpFromWakeKey(
+                            displayId,
+                            eventTime,
+                            KEYCODE_POWER,
+                            /* isDown= */ false,
+                            /* keyEventFlags= */ 0);
                 }
                 mPowerManager.boostScreenBrightness(eventTime);
                 break;
@@ -5558,13 +5563,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 event.getDisplayId(),
                 event.getEventTime(),
                 event.getKeyCode(),
-                event.getAction() == KeyEvent.ACTION_DOWN);
+                event.getAction() == KeyEvent.ACTION_DOWN,
+                event.getFlags());
     }
 
     private void wakeUpFromWakeKey(
-            int eventDisplayId, long eventTime, int keyCode, boolean isDown) {
+            int eventDisplayId, long eventTime, int keyCode, boolean isDown, int keyEventFlags) {
         final int displayId = useEventDisplayIdForKeyWakeup() ? eventDisplayId : DEFAULT_DISPLAY;
-        if (mWindowWakeUpPolicy.wakeUpFromKey(displayId, eventTime, keyCode, isDown)) {
+        if (mWindowWakeUpPolicy.wakeUpFromKey(
+                displayId, eventTime, keyCode, isDown, keyEventFlags)) {
             final boolean keyCanLaunchHome = keyCode == KEYCODE_HOME || keyCode == KEYCODE_POWER;
             // Start HOME with "reason" extra if sleeping for more than mWakeUpToLastStateTimeout
             if (shouldWakeUpWithHomeIntent() &&  keyCanLaunchHome) {
