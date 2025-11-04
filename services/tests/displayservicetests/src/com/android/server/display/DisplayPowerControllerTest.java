@@ -1230,6 +1230,67 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
+    public void testAutoBrightnessUnavailable_ExternalDisplay() {
+        Settings.System.putInt(mContext.getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS_MODE,
+                Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+
+        DisplayPowerRequest dpr = new DisplayPowerRequest();
+        dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.automaticBrightnessController).configure(
+                AutomaticBrightnessController.AUTO_BRIGHTNESS_ENABLED,
+                /* configuration= */ null, PowerManager.BRIGHTNESS_INVALID_FLOAT,
+                /* userChangedBrightness= */ false, /* adjustment= */ 0,
+                /* userChangedAutoBrightnessAdjustment= */ false, DisplayPowerRequest.POLICY_BRIGHT,
+                Display.STATE_ON, /* useNormalBrightnessForDoze= */ false,
+                /* shouldResetShortTermModel= */ false
+        );
+        clearInvocations(mHolder.automaticBrightnessController);
+
+        // The display becomes external
+        setUpDisplay(DISPLAY_ID, "new_unique_id", mHolder.display, mock(DisplayDevice.class),
+                mock(DisplayDeviceConfig.class), /* isEnabled= */ true);
+        mHolder.display.getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked().type =
+                Display.TYPE_EXTERNAL;
+        mHolder.display.getDisplayInfoLocked().type = Display.TYPE_EXTERNAL;
+        mHolder.dpc.onDisplayChanged(mHolder.hbmMetadata, Layout.NO_LEAD_DISPLAY);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.automaticBrightnessController, never()).configure(
+                /* state= */ anyInt(), /* configuration= */ any(), /* brightness= */ anyFloat(),
+                /* userChangedBrightness= */ anyBoolean(), /* adjustment= */ anyFloat(),
+                /* userChangedAutoBrightnessAdjustment= */ anyBoolean(),
+                /* displayPolicy= */ anyInt(), /* displayState= */ anyInt(),
+                /* useNormalBrightnessForDoze= */ anyBoolean(),
+                /* shouldResetShortTermModel= */ anyBoolean()
+        );
+        clearInvocations(mHolder.automaticBrightnessController);
+
+        // The display becomes internal
+        setUpDisplay(DISPLAY_ID, "new_unique_id", mHolder.display, mock(DisplayDevice.class),
+                mock(DisplayDeviceConfig.class), /* isEnabled= */ true);
+        mHolder.display.getPrimaryDisplayDeviceLocked().getDisplayDeviceInfoLocked().type =
+                Display.TYPE_INTERNAL;
+        mHolder.display.getDisplayInfoLocked().type = Display.TYPE_INTERNAL;
+        mHolder.dpc.onDisplayChanged(mHolder.hbmMetadata, Layout.NO_LEAD_DISPLAY);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mHolder.automaticBrightnessController).configure(
+                AutomaticBrightnessController.AUTO_BRIGHTNESS_ENABLED,
+                /* configuration= */ null, PowerManager.BRIGHTNESS_INVALID_FLOAT,
+                /* userChangedBrightness= */ false, /* adjustment= */ 0,
+                /* userChangedAutoBrightnessAdjustment= */ false, DisplayPowerRequest.POLICY_BRIGHT,
+                Display.STATE_ON, /* useNormalBrightnessForDoze= */ false,
+                /* shouldResetShortTermModel= */ false
+        );
+        clearInvocations(mHolder.automaticBrightnessController);
+    }
+
+    @Test
     public void testBrightnessNitsPersistWhenDisplayDeviceChanges() {
         float brightness = 0.3f;
         float nits = 500;
@@ -2476,6 +2537,7 @@ public final class DisplayPowerControllerTest {
             boolean isEnabled) {
         DisplayDeviceInfo deviceInfo = new DisplayDeviceInfo();
         deviceInfo.uniqueId = uniqueId;
+        deviceInfo.type = Display.TYPE_INTERNAL;
         setUpDisplay(displayId, deviceInfo, logicalDisplayMock, displayDeviceMock,
                 displayDeviceConfigMock, isEnabled, "display_name");
     }
@@ -2484,6 +2546,7 @@ public final class DisplayPowerControllerTest {
             LogicalDisplay logicalDisplayMock, DisplayDevice displayDeviceMock,
             DisplayDeviceConfig displayDeviceConfigMock, boolean isEnabled, String displayName) {
         DisplayInfo info = new DisplayInfo();
+        info.type = Display.TYPE_INTERNAL;
 
         when(logicalDisplayMock.getDisplayIdLocked()).thenReturn(displayId);
         when(logicalDisplayMock.getPrimaryDisplayDeviceLocked()).thenReturn(displayDeviceMock);
@@ -2560,6 +2623,7 @@ public final class DisplayPowerControllerTest {
             String uniqueId, boolean isEnabled, boolean isAutoBrightnessAvailable) {
         DisplayDeviceInfo deviceInfo = new DisplayDeviceInfo();
         deviceInfo.uniqueId = uniqueId;
+        deviceInfo.type = Display.TYPE_INTERNAL;
         return createDisplayPowerController(
                 displayId, deviceInfo, isEnabled, isAutoBrightnessAvailable);
     }

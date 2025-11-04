@@ -18,6 +18,7 @@ package com.android.server.display.brightness;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
@@ -634,6 +635,11 @@ public final class DisplayBrightnessControllerTest {
         verify(autoBrightnessFallbackStrategy).setupAutoBrightnessFallbackSensor(sensorManager,
                 displayDeviceConfig, handler, brightnessMappingStrategy, isDisplayEnabled,
                 leadDisplayId);
+
+        // Now reset auto-brightness
+        mDisplayBrightnessController.resetAutoBrightness();
+        assertNull(mDisplayBrightnessController.mAutomaticBrightnessController);
+        verify(mAutomaticBrightnessStrategy).setAutomaticBrightnessController(null);
     }
 
     @Test
