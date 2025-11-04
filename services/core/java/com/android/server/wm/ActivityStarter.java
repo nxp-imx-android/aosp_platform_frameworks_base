@@ -2500,7 +2500,7 @@ class ActivityStarter {
      * should only be launched once.
      */
     private int deliverToCurrentTopIfNeeded(Task topRootTask, NeededUriGrants intentGrants) {
-        final ActivityRecord top = topRootTask.topRunningNonDelayedActivityLocked(mNotTop);
+        final ActivityRecord top = topRootTask.topRunningActivity(mNotTop);
         final boolean dontStart = top != null
                 && top.mActivityComponent.equals(mStartActivity.mActivityComponent)
                 && top.mUserId == mStartActivity.mUserId
@@ -2804,7 +2804,6 @@ class ActivityStarter {
         final boolean canShowActivity = r.showToCurrentUser();
         if (!canShowActivity) Slog.w(TAG, "Can't resume non-current user r=" + r);
         if (!canShowActivity || mLaunchTaskBehind) {
-            r.delayedResume = true;
             mDoResume = false;
         } else {
             mDoResume = true;
@@ -2885,7 +2884,7 @@ class ActivityStarter {
             if (checkedCaller == null) {
                 Task topFocusedRootTask = mRootWindowContainer.getTopDisplayFocusedRootTask();
                 if (topFocusedRootTask != null) {
-                    checkedCaller = topFocusedRootTask.topRunningNonDelayedActivityLocked(mNotTop);
+                    checkedCaller = topFocusedRootTask.topRunningActivity(mNotTop);
                 }
             }
             if (checkedCaller == null
@@ -3126,7 +3125,7 @@ class ActivityStarter {
         if (mTargetRootTask.getDisplayArea() == mPreferredTaskDisplayArea) {
             final Task focusRootTask = mTargetRootTask.mDisplayContent.getFocusedRootTask();
             final ActivityRecord curTop = (focusRootTask == null)
-                    ? null : focusRootTask.topRunningNonDelayedActivityLocked(mNotTop);
+                    ? null : focusRootTask.topRunningActivity(mNotTop);
             final Task topTask = curTop != null ? curTop.getTask() : null;
             differentTopTask = topTask != intentTask
                     || (focusRootTask != null && topTask != focusRootTask.getTopMostTask())
