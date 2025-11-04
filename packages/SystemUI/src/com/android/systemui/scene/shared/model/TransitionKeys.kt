@@ -28,10 +28,10 @@ object TransitionKeys {
     val ToSplitShade = TransitionKey("GoneToSplitShade")
 
     /**
-     * Reference to a scene transition that can collapse the shade scene slightly faster than a
-     * normal collapse would.
+     * Reference to a scene transition that can expand/collapse the shade scene slightly faster than
+     * a normal transition would.
      */
-    val SlightlyFasterShadeCollapse = TransitionKey("SlightlyFasterShadeCollapse")
+    val SlightlyFasterShadeTransition = TransitionKey("SlightlyFasterShadeTransition")
 
     /** Reference to the Shade-to-Lockscreen transition with Always-on-Display enabled. */
     val ToAlwaysOnDisplay = TransitionKey("ToAlwaysOnDisplay")

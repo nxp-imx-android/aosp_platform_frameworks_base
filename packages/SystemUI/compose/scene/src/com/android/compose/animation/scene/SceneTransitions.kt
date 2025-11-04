@@ -118,6 +118,7 @@ internal constructor(
             from,
             to,
             cuj = null,
+            cujTag = null,
             previewTransformationSpec = defaultTransitionSpec?.previewTransformationSpec,
             reversePreviewTransformationSpec = null,
             transformationSpec =
@@ -154,6 +155,9 @@ internal interface TransitionSpec {
 
     /** The CUJ covered by this transition. */
     @CujType val cuj: Int?
+
+    /** The tag appended to the end of the CUJ for this transition. */
+    val cujTag: String?
 
     /**
      * Return a reversed version of this [TransitionSpec] for a transition going from [to] to
@@ -222,6 +226,7 @@ internal class TransitionSpecImpl(
     override val from: ContentKey?,
     override val to: ContentKey?,
     override val cuj: Int?,
+    override val cujTag: String?,
     private val previewTransformationSpec:
         ((TransitionState.Transition) -> TransformationSpecImpl)? =
         null,
@@ -236,6 +241,7 @@ internal class TransitionSpecImpl(
             from = to,
             to = from,
             cuj = cuj,
+            cujTag = cujTag,
             previewTransformationSpec = reversePreviewTransformationSpec,
             reversePreviewTransformationSpec = previewTransformationSpec,
             transformationSpec = { transition ->

@@ -41,7 +41,7 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.model.DualShadeEducationModel
 import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeCollapse
+import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
 import com.android.systemui.shade.domain.interactor.PrivacyChipInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -250,7 +250,7 @@ constructor(
         if (Overlays.NotificationsShade in currentOverlays) {
             shadeInteractor.collapseNotificationsShade(
                 loggingReason = loggingReason,
-                transitionKey = SlightlyFasterShadeCollapse,
+                transitionKey = SlightlyFasterShadeTransition,
             )
             if (launchClockActivityOnCollapse) {
                 clockInteractor.launchClockActivity()
@@ -268,7 +268,7 @@ constructor(
             if (Overlays.QuickSettingsShade in currentOverlays) {
                 shadeInteractor.collapseQuickSettingsShade(
                     loggingReason = loggingReason,
-                    transitionKey = SlightlyFasterShadeCollapse,
+                    transitionKey = SlightlyFasterShadeTransition,
                 )
             } else {
                 shadeInteractor.expandQuickSettingsShade(loggingReason)
@@ -276,7 +276,7 @@ constructor(
         } else {
             shadeInteractor.collapseEitherShade(
                 loggingReason = loggingReason,
-                transitionKey = SlightlyFasterShadeCollapse,
+                transitionKey = SlightlyFasterShadeTransition,
             )
         }
     }

@@ -62,8 +62,20 @@ constructor(
      *
      * Should be called exactly once each time a new transition starts.
      */
-    fun onTransitionStart(view: View, from: ContentKey, to: ContentKey, @CujType cuj: Int?) {
-        cuj.orCalculated(from, to) { nonNullCuj -> interactionJankMonitor.begin(view, nonNullCuj) }
+    fun onTransitionStart(
+        view: View,
+        from: ContentKey,
+        to: ContentKey,
+        @CujType cuj: Int?,
+        cujTag: String? = null,
+    ) {
+        cuj.orCalculated(from, to) { nonNullCuj ->
+            if (cujTag == null) {
+                interactionJankMonitor.begin(view, nonNullCuj)
+            } else {
+                interactionJankMonitor.begin(view, nonNullCuj, cujTag)
+            }
+        }
     }
 
     /**
