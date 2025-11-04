@@ -830,10 +830,7 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
-        @EnforcePermission(REQUEST_COMPANION_SELF_MANAGED)
         public void notifyActionResult(int associationId, @NonNull ActionResult result) {
-            notifyActionResult_enforcePermission();
-
             mActionRequestProcessor.processActionResult(associationId, result);
         }
 
