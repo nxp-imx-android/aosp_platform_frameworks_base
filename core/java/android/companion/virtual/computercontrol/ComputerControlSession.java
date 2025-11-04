@@ -580,6 +580,20 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
         }
     }
 
+    /**
+     * Sets the intent launched when the user wants to preview the automation, or null if none.
+     *
+     * <p>This overrides the intent set in {@link
+     * ComputerControlSessionParams.Builder#setPreviewIntent}.
+     */
+    public void setPreviewIntent(@Nullable PendingIntent previewIntent) {
+        try {
+            mSession.setPreviewIntent(previewIntent);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     @Override
     public void close() {
         try {

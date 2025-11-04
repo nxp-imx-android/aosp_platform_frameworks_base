@@ -29,6 +29,7 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
+import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
@@ -214,6 +215,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final Object mNotificationLock = new Object();
     @GuardedBy("mNotificationLock")
     private NotificationInfo mNotificationInfo = null;
+    private final Object mPreviewIntentLock = new Object();
+    @GuardedBy("mPreviewIntentLock")
+    private PendingIntent mPreviewIntent = null;
 
     private ScheduledFuture<?> mSwipeFuture;
     private ScheduledFuture<?> mInsertTextFuture;
@@ -247,6 +251,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAppToken = appToken;
         mParams = params;
         mAllowlistController = allowlistController;
+        mPreviewIntent = params.getPreviewIntent();
 
         mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
@@ -547,6 +552,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 throw new IllegalStateException("Notification info already set");
             }
             mNotificationInfo = new NotificationInfo(notificationId, notificationTag);
+        }
+    }
+
+    @Override
+    public void setPreviewIntent(@Nullable PendingIntent previewIntent) {
+        synchronized (mPreviewIntentLock) {
+            mPreviewIntent = previewIntent;
         }
     }
 
