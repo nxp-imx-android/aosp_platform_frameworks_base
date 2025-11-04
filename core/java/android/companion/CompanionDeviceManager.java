@@ -255,24 +255,16 @@ public final class CompanionDeviceManager {
     public static final String FEATURE_TASK_CONTINUITY = "task_continuity_manager";
 
     /**
-     * The feature name for the mode Sync.
+     * The feature name for the CrossDeviceSync.
      * @hide
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-    public static final String FEATURE_MODE_SYNC = "mode_sync";
-
-    /**
-     * The feature name for airplane mode sync.
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-    public static final String FEATURE_AIRPLANE_MODE_SYNC = "airplane_mode_sync";
+    public static final String FEATURE_CROSS_DEVICE_SYNC = "cross_device_sync";
 
     /** @hide */
     @StringDef(prefix = { "FEATURE_" }, value = {
             FEATURE_TASK_CONTINUITY,
-            FEATURE_MODE_SYNC,
-            FEATURE_AIRPLANE_MODE_SYNC,
+            FEATURE_CROSS_DEVICE_SYNC,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface FeatureName {}
