@@ -17,12 +17,9 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityTaskManager
-import android.app.WindowConfiguration
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
-import android.graphics.Rect
 import android.os.Binder
-import android.os.IBinder
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
@@ -79,10 +76,8 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
             lastParentTaskIdBeforePip = ActivityTaskManager.INVALID_TASK_ID
             userId = mockDesktopRepository.userId
         }
-    private val freeformParentTask =
-        createFreeformTask().apply { lastNonFullscreenBounds = FREEFORM_BOUNDS }
-    private val fullscreenParentTask =
-        createFullscreenTask().apply { lastNonFullscreenBounds = FREEFORM_BOUNDS }
+    private val freeformParentTask = createFreeformTask()
+    private val fullscreenParentTask = createFullscreenTask()
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
@@ -131,31 +126,34 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     }
 
     @Test
-    fun maybeUpdateParentInWct_inDesktop_addFreeformChangesToWct() {
+    fun maybeUpdateParentInWct_fullscreenParent_freeformChild_addFreeformChangesToWct() {
         val wct = WindowContainerTransaction()
+        whenever(mockPipDesktopState.getOutPipWindowingMode(isMultiActivityChild = any()))
+            .thenReturn(WINDOWING_MODE_FREEFORM)
 
         controller.maybeUpdateParentInWct(wct, fullscreenParentTask.taskId)
 
         val parentToken = fullscreenParentTask.token.asBinder()
         assertThat(wct.changes[parentToken]?.windowingMode).isEqualTo(WINDOWING_MODE_FREEFORM)
-        assertThat(findBoundsChange(wct, parentToken)).isEqualTo(FREEFORM_BOUNDS)
     }
 
     @Test
-    fun maybeUpdateParentInWct_notInDesktop_addFullscreenChangesToWct() {
+    fun maybeUpdateParentInWct_freeformParent_fullscreenChild_addFullscreenChangesToWct() {
         val wct = WindowContainerTransaction()
-        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(false)
+        whenever(mockPipDesktopState.getOutPipWindowingMode(isMultiActivityChild = any()))
+            .thenReturn(WINDOWING_MODE_FULLSCREEN)
 
         controller.maybeUpdateParentInWct(wct, freeformParentTask.taskId)
 
         val parentToken = freeformParentTask.token.asBinder()
         assertThat(wct.changes[parentToken]?.windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
-        assertThat(findBoundsChange(wct, parentToken)).isEqualTo(Rect())
     }
 
     @Test
-    fun maybeUpdateParentInWct_inDesktop_parentWindowingModeMatches_noWctChanges() {
+    fun maybeUpdateParentInWct_freeformParent_freeformChild_noWctChanges() {
         val wct = WindowContainerTransaction()
+        whenever(mockPipDesktopState.getOutPipWindowingMode(isMultiActivityChild = any()))
+            .thenReturn(WINDOWING_MODE_FREEFORM)
 
         controller.maybeUpdateParentInWct(wct, freeformParentTask.taskId)
 
@@ -163,9 +161,10 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     }
 
     @Test
-    fun maybeUpdateParentInWct_notInDesktop_parentWindowingModeMatches_noWctChanges() {
+    fun maybeUpdateParentInWct_fullscreenParent_fullscreenChild_noWctChanges() {
         val wct = WindowContainerTransaction()
-        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(false)
+        whenever(mockPipDesktopState.getOutPipWindowingMode(isMultiActivityChild = any()))
+            .thenReturn(WINDOWING_MODE_FULLSCREEN)
 
         controller.maybeUpdateParentInWct(wct, fullscreenParentTask.taskId)
 
@@ -177,7 +176,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     fun maybeReparentTaskToDesk_recentsAnimating_noAddMoveToDeskTaskChanges() {
         whenever(mockPipDesktopState.isRecentsAnimating()).thenReturn(true)
 
-        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
+        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId, isMultiActivityPip = false)
 
         verify(mockDesktopTasksController, never())
             .addMoveToDeskTaskChanges(wct = any(), task = any(), deskId = any())
@@ -188,10 +187,9 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     fun maybeReparentTaskToDesk_multiActivity_parentInDesk_addMoveTaskToFrontChanges() {
         val wct = WindowContainerTransaction()
         val parentTaskId = freeformParentTask.taskId
-        taskInfo.lastParentTaskIdBeforePip = parentTaskId
-        whenever(mockDesktopRepository.isActiveTask(parentTaskId)).thenReturn(true)
+        whenever(mockDesktopRepository.isActiveTaskInDesk(parentTaskId, DESK_ID)).thenReturn(true)
 
-        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
+        controller.maybeReparentTaskToDesk(wct, parentTaskId, isMultiActivityPip = true)
 
         verify(mockDesktopTasksController)
             .addMoveTaskToFrontChanges(wct = wct, deskId = DESK_ID, taskInfo = freeformParentTask)
@@ -202,10 +200,9 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     fun maybeReparentTaskToDesk_multiActivity_parentNotInDesk_addMoveToDeskTaskChanges() {
         val wct = WindowContainerTransaction()
         val parentTaskId = freeformParentTask.taskId
-        taskInfo.lastParentTaskIdBeforePip = parentTaskId
-        whenever(mockDesktopRepository.isActiveTask(parentTaskId)).thenReturn(false)
+        whenever(mockDesktopRepository.isActiveTaskInDesk(parentTaskId, DESK_ID)).thenReturn(false)
 
-        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
+        controller.maybeReparentTaskToDesk(wct, parentTaskId, isMultiActivityPip = true)
 
         verify(mockDesktopTasksController)
             .addMoveToDeskTaskChanges(wct = wct, task = freeformParentTask, deskId = DESK_ID)
@@ -217,7 +214,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         val wct = WindowContainerTransaction()
         whenever(mockDesktopRepository.getActiveDeskId(any())).thenReturn(null)
 
-        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
+        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId, isMultiActivityPip = false)
 
         verify(mockDesktopTasksController, never())
             .addMoveToDeskTaskChanges(wct = any(), task = any(), deskId = any())
@@ -228,7 +225,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     fun maybeReparentTaskToDesk_deskActive_addMoveToDeskTaskChanges() {
         val wct = WindowContainerTransaction()
 
-        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
+        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId, isMultiActivityPip = false)
 
         verify(mockDesktopTasksController)
             .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
@@ -242,7 +239,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         whenever(mockPipDesktopState.isDisplayDesktopFirst(any())).thenReturn(true)
         whenever(mockDesktopRepository.getDefaultDeskId(any())).thenReturn(DESK_ID)
 
-        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
+        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId, isMultiActivityPip = false)
 
         verify(mockDesktopTasksController)
             .addDeskActivationChanges(
@@ -352,20 +349,8 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         }
     }
 
-    private fun findBoundsChange(wct: WindowContainerTransaction, parentToken: IBinder): Rect? =
-        wct.changes.entries
-            .find { (token, change) ->
-                token == parentToken &&
-                    (change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0
-            }
-            ?.value
-            ?.configuration
-            ?.windowConfiguration
-            ?.bounds
-
     private companion object {
         const val DESK_ID = 1
-        val FREEFORM_BOUNDS = Rect(100, 100, 300, 300)
 
         @JvmStatic
         @Parameters(name = "{0}")

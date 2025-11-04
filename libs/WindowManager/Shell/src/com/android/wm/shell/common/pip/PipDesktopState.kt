@@ -48,7 +48,7 @@ class PipDesktopState(
         recentsTransitionHandler.addTransitionStateListener(
             object : RecentsTransitionStateListener {
                 override fun onTransitionStateChanged(@RecentsTransitionState state: Int) {
-                    logV(
+                    logD(
                         "Recents transition state changed: %s",
                         RecentsTransitionStateListener.stateToString(state),
                     )
@@ -106,7 +106,7 @@ class PipDesktopState(
         }
 
         val displayId = pipDisplayLayoutState.displayId
-        logV(
+        logD(
             "isPipInDesktopMode isAnyDeskActive=%b isDisplayDesktopFirst=%b",
             desktopUserRepositoriesOptional.get().current.isAnyDeskActive(displayId),
             rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId),
@@ -124,12 +124,22 @@ class PipDesktopState(
         RecentsTransitionStateListener.isAnimating(recentsTransitionState)
 
     /** Returns the windowing mode to restore to when resizing out of PIP direction. */
-    fun getOutPipWindowingMode(): Int {
+    fun getOutPipWindowingMode(isMultiActivityChild: Boolean = false): Int {
         val isInDesktop = isPipInDesktopMode()
         // Temporary workaround for b/409201669: Always expand to fullscreen if we're exiting PiP
         // in the middle of Recents animation from Desktop session.
         if (isRecentsAnimating() && isInDesktop) {
+            logD(
+                "getOutPipWindowingMode forcing WINDOWING_MODE_FULLSCREEN due to Recents animating",
+            )
             return WINDOWING_MODE_FULLSCREEN
+        }
+
+        // If we are resolving the windowing mode of a multi-activity PiP child and Desktop session
+        // is not active, set it to FULLSCREEN explicitly so we can update the parent's windowing
+        // mode if necessary
+        if (isMultiActivityChild) {
+            return if (isInDesktop) WINDOWING_MODE_UNDEFINED else WINDOWING_MODE_FULLSCREEN
         }
 
         // If we are exiting PiP while the device is in Desktop mode, the task should expand to
@@ -138,6 +148,10 @@ class PipDesktopState(
         //    flag is true, set windowing mode to UNDEFINED so it will resolve the windowing mode to
         //    the display or root desk's windowing mode (which is always FREEFORM).
         // 2) Otherwise, set windowing mode to FREEFORM.
+        logD(
+            "getOutPipWindowingMode isInDesktop=%b isDisplayInFreeform=%b",
+            isInDesktop, isDisplayInFreeform(),
+        )
         if (isInDesktop) {
             return if (isDisplayInFreeform()
                 || DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -158,8 +172,8 @@ class PipDesktopState(
     /** Returns the DisplayLayout associated with the display where PiP window is in. */
     fun getCurrentDisplayLayout(): DisplayLayout = pipDisplayLayoutState.displayLayout
 
-    private fun logV(msg: String, vararg arguments: Any?) {
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE, "%s: $msg", TAG, *arguments)
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE, "%s: $msg", TAG, *arguments)
     }
 
     companion object {

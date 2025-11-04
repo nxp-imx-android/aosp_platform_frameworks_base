@@ -143,10 +143,13 @@ public abstract class PipTransitionController implements Transitions.TransitionH
 
     /**
      * Called when the Shell wants to start an exit-via-expand from Pip transition/animation.
+     *
+     * @return the exit-via-expand transition that is started.
      */
-    public void startExpandTransition(
+    public IBinder startExpandTransition(
             WindowContainerTransaction wct, boolean toSplit, boolean hasFirstHandler) {
         // Default implementation does nothing.
+        return null;
     }
 
     /**

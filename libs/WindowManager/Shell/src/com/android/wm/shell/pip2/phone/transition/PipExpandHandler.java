@@ -53,6 +53,7 @@ import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
+import com.android.wm.shell.desktopmode.RunOnTransitStart;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
 import com.android.wm.shell.pip2.phone.PipInteractionHandler;
@@ -135,7 +136,15 @@ public class PipExpandHandler implements Transitions.TransitionHandler,
         // Launching the task while it's in PiP on another display
         if (isLaunchingPipActivityFromDifferentDisplay(request, taskInfo)) {
             mExitViaExpandTransition = transition;
-            return mPipScheduler.getExitPipViaExpandIntoDisplayTransaction(taskInfo.displayId);
+            final WindowContainerTransaction wct =
+                    mPipScheduler.getExitPipViaExpandIntoDisplayTransaction(taskInfo.displayId);
+
+            RunOnTransitStart desktopPipRunnable = mPipScheduler.augmentExitViaExpandWCT(wct);
+            if (desktopPipRunnable != null) {
+                desktopPipRunnable.invoke(transition);
+            }
+
+            return wct;
         }
         return null;
     }

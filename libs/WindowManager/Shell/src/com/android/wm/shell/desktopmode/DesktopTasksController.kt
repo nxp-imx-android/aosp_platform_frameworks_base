@@ -216,7 +216,9 @@ import kotlinx.coroutines.runBlocking
  * started outside of their control, and each of them wants to track the transition lifecycle
  * independently by cross-referencing the transition token with future ready-transitions.
  */
-typealias RunOnTransitStart = (IBinder) -> Unit
+fun interface RunOnTransitStart {
+    operator fun invoke(binder: IBinder)
+}
 
 /** Handles moving tasks in and out of desktop */
 class DesktopTasksController(
@@ -884,7 +886,7 @@ class DesktopTasksController(
                 )
             }
         }
-        return { transition ->
+        return RunOnTransitStart { transition ->
             for (runOnTransitStart in runOnTransitStartList) {
                 runOnTransitStart(transition)
             }
@@ -1226,7 +1228,7 @@ class DesktopTasksController(
         desksOrganizer.moveTaskToDesk(wct, deskId, task, minimized = minimized)
         taskBounds?.let { wct.setBounds(task.token, it) }
 
-        return { transition ->
+        return RunOnTransitStart { transition ->
             desksTransitionObserver.addPendingTransition(
                 DeskTransition.AddTaskToDesk(
                     token = transition,
@@ -1961,7 +1963,7 @@ class DesktopTasksController(
         } else {
             wct.reorder(task.token, /* onTop= */ false)
         }
-        return { transition ->
+        return RunOnTransitStart { transition ->
             desktopTasksLimiter.ifPresent {
                 it.addPendingMinimizeChange(
                     transition = transition,
@@ -4576,7 +4578,7 @@ class DesktopTasksController(
                         wct.reorder(task.token, true)
                         activationRunnable
                     } else {
-                        { transition: IBinder ->
+                        RunOnTransitStart { transition: IBinder ->
                             // The desk was already showing and we're launching a new Task - we
                             // might need to minimize another Task.
                             // TODO: b/32994943 - remove dead code when cleaning up
@@ -5189,7 +5191,7 @@ class DesktopTasksController(
             } else {
                 null
             }
-        return { transition ->
+        return RunOnTransitStart { transition ->
             deskCleanUpRunOnTransit?.invoke(transition)
             if (exitReason == ExitReason.CLIENT_REQUEST_ENTER_FULLSCREEN) {
                 addPendingClientEnterFullscreenFromDesktopTransition(
@@ -5460,7 +5462,7 @@ class DesktopTasksController(
         )
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             val taskIdToMinimize = bringDesktopAppsToFront(displayId, userId, wct, newTask?.taskId)
-            return { transition ->
+            return RunOnTransitStart { transition ->
                 // TODO: b/32994943 - remove dead code when cleaning up
                 //  task_limit_separate_transition flag
                 taskIdToMinimize?.let { minimizingTaskId ->
@@ -5537,7 +5539,7 @@ class DesktopTasksController(
                 switchingUser = switchingUser,
                 ExitReason.RETURN_HOME_OR_OVERVIEW,
             )
-        return { transition ->
+        return RunOnTransitStart { transition ->
             val activateDeskTransition =
                 if (newTaskIdInFront != null) {
                     DeskTransition.ActivateDeskWithTask(
@@ -5835,7 +5837,7 @@ class DesktopTasksController(
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.removeDesk(wct, deskId, userId)
-            return { transition ->
+            return RunOnTransitStart { transition ->
                 desksTransitionObserver.addPendingTransition(
                     DeskTransition.RemoveDesk(
                         token = transition,
@@ -5867,7 +5869,7 @@ class DesktopTasksController(
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return null
         if (deskId == null) return null
         desksOrganizer.deactivateDesk(wct, deskId)
-        return { transition ->
+        return RunOnTransitStart { transition ->
             desksTransitionObserver.addPendingTransition(
                 DeskTransition.DeactivateDesk(
                     token = transition,
