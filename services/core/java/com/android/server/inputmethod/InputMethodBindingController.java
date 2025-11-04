@@ -962,7 +962,7 @@ final class InputMethodBindingController {
      * Sets the bound IME as visible, raising its binding priority by creating the
      * {@link #mVisibleConnection} binding, or reconnects the IME if needed.
      *
-     * <p>If no IME is currently bound or in the process of binding, this re-binds it.
+     * <p>If no IME is currently bound or in the process of binding, this fails.
      *
      * <p>If the IME is not bound, but in the process of binding, this will reconnect the
      * {@link #mMainConnection} binding if at least {@link #TIME_TO_RECONNECT_MS} milliseconds
@@ -982,12 +982,10 @@ final class InputMethodBindingController {
         }
 
         if (mCurToken == null) {
-            // IME is not bound and not in the process of binding, re-bind it.
+            // IME is not bound and not in the process of binding.
             if (DEBUG) {
-                Slog.d(TAG, "setImeVisibleOrReconnect with no IME bound or in the process of"
-                        + " binding, re-binding.");
+                Slog.d(TAG, "setImeVisibleOrReconnect failed, no IME is bound");
             }
-            bindIme();
             return;
         }
 
@@ -1005,8 +1003,8 @@ final class InputMethodBindingController {
         } else {
             // It hasn't been too long since the binding was created.
             if (DEBUG) {
-                Slog.d(TAG, "setImeVisibleOrReconnect failed with main connection created, time"
-                        + " until reconnect: " + (TIME_TO_RECONNECT_MS - bindingDuration));
+                Slog.d(TAG, "setImeVisibleOrReconnect failed, IME was bound recently but not"
+                        + " connected yet");
             }
         }
     }
