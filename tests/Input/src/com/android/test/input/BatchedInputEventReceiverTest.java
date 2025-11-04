@@ -17,7 +17,10 @@
 package com.android.test.input;
 
 import static com.android.cts.input.inputeventmatchers.InputEventMatchersKt.withMotionAction;
+import static com.android.input.flags.Flags.FLAG_FIX_INPUT_ANR_BY_SEND_MESSAGE_EXCEPTION;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -25,6 +28,9 @@ import static org.mockito.Mockito.when;
 
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.view.BatchedInputEventReceiver;
 import android.view.Choreographer;
 import android.view.InputChannel;
@@ -45,6 +51,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class BatchedInputEventReceiverTest {
@@ -61,7 +70,7 @@ public class BatchedInputEventReceiverTest {
         private final BlockingQueueEventVerifier mVerifier;
 
         TestBatchedInputEventReceiver(InputChannel channel, Looper looper,
-                                      Choreographer choreographer) {
+                Choreographer choreographer) {
             super(channel, looper, choreographer);
             mVerifier = new BlockingQueueEventVerifier(mInputEvents);
         }
@@ -95,6 +104,10 @@ public class BatchedInputEventReceiverTest {
     @Rule
     public MockitoRule mMockitoJUnitRule = MockitoJUnit.rule();
 
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule =
+            DeviceFlagsValueProvider.createCheckFlagsRule();
+
     private final InputChannel[] mChannels = InputChannel.openInputChannelPair("TestChannel");
 
     // Use the custom class that exposes the Handler for posting Runnables
@@ -118,20 +131,17 @@ public class BatchedInputEventReceiverTest {
                 .build();
     }
 
+    private void awaitCountDownLatch(CountDownLatch latch) {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("CountDownLatch await was interrupted", e);
+        }
+    }
+
     @Before
     public void setUp() {
-        // Mocking Choreographer to run the posted callback immediately on the HandlerThread.
-        doAnswer(invocation -> {
-            mReceiverThread.getThreadHandler().post((Runnable) invocation.getArgument(1));
-            return null;
-        }).when(mMockChoreographer).postCallback(anyInt(), any(), any());
-
-        doAnswer(invocation -> {
-            mReceiverThread.getThreadHandler()
-                    .removeCallbacks((Runnable) invocation.getArgument(1));
-            return null;
-        }).when(mMockChoreographer).removeCallbacks(anyInt(), any(), any());
-
         // Set up frame times in the choreographer to increment on each request.
         // NOTE: These timestamps are used to determine whether batched events need to be processed.
         // Time stamps for events sent by tests need to be tweaked to account for choreographer time
@@ -166,6 +176,18 @@ public class BatchedInputEventReceiverTest {
     // disabled.
     @Test
     public void testKeepConsumingEventsAfterBatchingRestart() {
+        // Mocking Choreographer to run the posted callback immediately on the HandlerThread.
+        doAnswer(invocation -> {
+            mReceiverThread.getThreadHandler().post((Runnable) invocation.getArgument(1));
+            return null;
+        }).when(mMockChoreographer).postCallback(anyInt(), any(), any());
+
+        doAnswer(invocation -> {
+            mReceiverThread.getThreadHandler()
+                    .removeCallbacks((Runnable) invocation.getArgument(1));
+            return null;
+        }).when(mMockChoreographer).removeCallbacks(anyInt(), any(), any());
+
         int seq = 12;
         // Send ACTION_DOWN, and verify it gets handled by the receiver without batching.
         mSender.sendInputEvent(seq, getTestMouseMotionEvent(MotionEvent.ACTION_DOWN, 900L));
@@ -192,6 +214,64 @@ public class BatchedInputEventReceiverTest {
         mBatchedReceiver.assertReceivedMotion(withMotionAction(MotionEvent.ACTION_MOVE));
 
         mSender.assertReceivedFinishedSignal(seq + 3, true);
+
+        mSender.dispose();
+    }
+
+    // Simulates the situation where the socket is filled (e.g. when under high load) on the
+    // Receiver send buffer, which causes finished events to fail and return WOULD_BLOCK. This is
+    // important for testing that these failed events are successfully finished later by the caller,
+    // which would otherwise cause an ANR.
+    @RequiresFlagsEnabled(FLAG_FIX_INPUT_ANR_BY_SEND_MESSAGE_EXCEPTION)
+    @Test
+    public void testCancellationFillsFinishSocket() {
+        final int seq = 1;
+        long eventTime = lastChoreographerFrameTimeMs + 1000L;
+
+        // Send ACTION_DOWN event and verify it is received and finished.
+        mSender.sendInputEvent(seq, getTestMouseMotionEvent(MotionEvent.ACTION_DOWN, eventTime));
+        mBatchedReceiver.assertReceivedMotion(withMotionAction(MotionEvent.ACTION_DOWN));
+        mSender.assertReceivedFinishedSignal(seq, true);
+
+        // Build a set to verify the received finished events have the sequence numbers we expect
+        // in spite of any reordering which happens due to retries.
+        Set<Integer> finishableSeqs = new HashSet<>();
+
+        // Send 100 move messages to fill the socket - the exact number to fill the socket is 87 as
+        // determined by InputChannelTest.FinishedMessageCapacityInSocket, however, its useful to
+        // err on sending more messages in case InputMessage size  or SOCKET_BUFFER_SIZE ever
+        // increases.
+        final int moveMessages = 100;
+
+        CountDownLatch senderThreadLatch = new CountDownLatch(1);
+        mSenderThread.getThreadHandler().post(
+                () -> {
+                    for (int i = 1; i <= moveMessages; i++) {
+                        mSender.sendInputEvent(seq + i,
+                                getTestMouseMotionEvent(MotionEvent.ACTION_MOVE,
+                                        eventTime + i * 10L));
+                        finishableSeqs.add(seq + i);
+                    }
+                    mSender.sendInputEvent(
+                            seq + moveMessages + 1,
+                            getTestMouseMotionEvent(MotionEvent.ACTION_CANCEL,
+                                    eventTime + moveMessages * 10 + 10L)
+                    );
+                    finishableSeqs.add(seq + moveMessages + 1);
+                    mBatchedReceiver.assertReceivedMotion(
+                            withMotionAction(MotionEvent.ACTION_CANCEL));
+                    // Notify the main thread that the receiver has received the cancel event.
+                    senderThreadLatch.countDown();
+                }
+        );
+        awaitCountDownLatch(senderThreadLatch);
+
+        while (!finishableSeqs.isEmpty()) {
+            SpyInputEventSender.FinishedSignal signal = mSender.popFinishedSignal();
+            assertNotNull("Did not receive 'finished' event", signal);
+            assertTrue(finishableSeqs.remove(signal.getSeq()));
+        }
+        mSender.assertNoEvents();
 
         mSender.dispose();
     }
