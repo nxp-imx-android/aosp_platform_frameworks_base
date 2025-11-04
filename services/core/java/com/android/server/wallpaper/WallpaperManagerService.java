@@ -20,7 +20,6 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
-import static android.app.Flags.notifyKeyguardEvents;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
@@ -1581,9 +1580,6 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             new ActivityTaskManagerInternal.ScreenObserver() {
                 @Override
                 public void onKeyguardStateChanged(boolean isShowing) {
-                    if (!notifyKeyguardEvents()) {
-                        return;
-                    }
                     if (isShowing) {
                         notifyKeyguardAppearing();
                     } else {
@@ -2745,8 +2741,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     private void dispatchKeyguardCommand(String command) {
         synchronized (mLock) {
             for (WallpaperData data : getActiveWallpapers()) {
-                if (notifyKeyguardEvents() && !hasPermission(
-                        data, android.Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)) {
+                if (!hasPermission(data,
+                        android.Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)) {
                     continue;
                 }
 
