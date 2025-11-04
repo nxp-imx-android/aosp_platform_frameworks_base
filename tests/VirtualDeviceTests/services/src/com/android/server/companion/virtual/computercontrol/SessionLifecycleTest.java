@@ -23,6 +23,9 @@ import static android.companion.virtual.computercontrol.ComputerControlSession.C
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import android.companion.virtual.computercontrol.ComputerControlSession;
@@ -30,6 +33,7 @@ import android.companion.virtual.computercontrol.IComputerControlLifecycleCallba
 import android.companion.virtual.computercontrol.LifecycleState.Active;
 import android.companion.virtual.computercontrol.LifecycleState.Blocked;
 import android.companion.virtual.computercontrol.LifecycleState.Closed;
+import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -179,6 +183,40 @@ public class SessionLifecycleTest {
         assertThat(((Blocked) state).reason).isEqualTo(BLOCK_REASON_SECURE_CONTENT);
         verify(mLocalCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
         verify(mRemoteCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
+    }
+
+    @Test
+    public void initializeWithRemoteCallback_onActiveThrowsRemoteException_doesNotCrash()
+            throws Exception {
+        doThrow(new RemoteException()).when(mRemoteCallback).onActive();
+
+        mLifecycle.initializeWithRemoteCallback(mRemoteCallback);
+
+        verify(mLocalCallback).onActive();
+        verify(mRemoteCallback).onActive();
+    }
+
+    @Test
+    public void updateLifecycle_onBlockedThrowsRemoteException_doesNotCrash() throws Exception {
+        initializeCallbacksAndReset();
+        doThrow(new RemoteException()).when(mRemoteCallback).onBlocked(anyInt(), any());
+
+        mLifecycle.updateLifecycleState(config -> config.mSecureWindowPackage = TEST_PKG);
+
+        verify(mLocalCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
+        verify(mRemoteCallback).onBlocked(BLOCK_REASON_SECURE_CONTENT, TEST_PKG);
+    }
+
+    @Test
+    public void updateLifecycle_onClosedThrowsRemoteException_doesNotCrash() throws Exception {
+        initializeCallbacksAndReset();
+        doThrow(new RemoteException()).when(mRemoteCallback).onClosed(anyInt());
+
+        mLifecycle.updateLifecycleState(
+                config -> config.mClosed = new Closed(CLOSE_REASON_CALLER_INITIATED));
+
+        verify(mLocalCallback).onClosed(CLOSE_REASON_CALLER_INITIATED);
+        verify(mRemoteCallback).onClosed(CLOSE_REASON_CALLER_INITIATED);
     }
 
     private void initializeCallbacksAndReset() {
