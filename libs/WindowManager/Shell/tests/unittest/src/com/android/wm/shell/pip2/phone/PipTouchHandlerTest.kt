@@ -24,7 +24,9 @@ import android.view.InputDevice.SOURCE_MOUSE
 import android.view.InputDevice.SOURCE_TOUCHSCREEN
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_CANCEL
+import android.view.MotionEvent.ACTION_HOVER_ENTER
 import android.view.SurfaceControl
+import android.view.accessibility.AccessibilityManager
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.modules.utils.testing.ExtendedMockitoRule
@@ -96,6 +98,7 @@ class PipTouchHandlerTest : ShellTestCase() {
     private val mockPipDismissTargetHandler = mock<PipDismissTargetHandler>()
     private val mockPipResizeGestureHandler = mock<PipResizeGestureHandler>()
     private val mockPipInputConsumer = mock<PipInputConsumer>()
+    private val mockAccessibilityManager = mock<AccessibilityManager>()
 
     private lateinit var pipTouchHandler: PipTouchHandler
     private lateinit var pipTouchGesture: PipTouchGesture
@@ -147,6 +150,7 @@ class PipTouchHandlerTest : ShellTestCase() {
                 any(), any(), any(), any(), any(), any()
             )
         ).thenReturn(GLOBAL_BOUNDS)
+        pipTouchHandler.mAccessibilityManager = mockAccessibilityManager
     }
 
     @Test
@@ -230,6 +234,28 @@ class PipTouchHandlerTest : ShellTestCase() {
         pipTouchHandler.handleTouchEvent(mockMotionEvent)
 
         verify(mockPipDismissTargetHandler, never()).maybeConsumeMotionEvent(any())
+    }
+
+    @Test
+    fun handleTouchEvent_hoverEnter_isStashed_dontShowMenu() {
+        whenever(mockMotionEvent.action).thenReturn(ACTION_HOVER_ENTER)
+        whenever(mockAccessibilityManager.isTouchExplorationEnabled).thenReturn(false)
+        whenever(mockPipBoundsState.isStashed).thenReturn(true)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+
+        verify(mockMenuPhoneController, never()).showMenu(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun handleTouchEvent_hoverEnter_isNotStashed_showMenu() {
+        whenever(mockMotionEvent.action).thenReturn(ACTION_HOVER_ENTER)
+        whenever(mockAccessibilityManager.isTouchExplorationEnabled).thenReturn(false)
+        whenever(mockPipBoundsState.isStashed).thenReturn(false)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+
+        verify(mockMenuPhoneController).showMenu(any(), any(), any(), any(), any())
     }
 
     @Test

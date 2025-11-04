@@ -105,7 +105,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     private PipResizeGestureHandler mPipResizeGestureHandler;
     private final PipDisplayTransferHandler mPipDisplayTransferHandler;
     private final PhonePipMenuController mMenuController;
-    private final AccessibilityManager mAccessibilityManager;
+    @VisibleForTesting AccessibilityManager mAccessibilityManager;
     private final DisplayController mDisplayController;
 
     /**
@@ -605,7 +605,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 // If Touch Exploration is enabled, some a11y services (e.g. Talkback) is probably
                 // on and changing MotionEvents into HoverEvents.
                 // Let's not enable menu show/hide for a11y services.
-                if (!mAccessibilityManager.isTouchExplorationEnabled()) {
+                // Additioally, don't show PiP menu if the PiP is stashed.
+                if (!mAccessibilityManager.isTouchExplorationEnabled()
+                        && !mPipBoundsState.isStashed()) {
                     mTouchState.removeHoverExitTimeoutCallback();
                     mMenuController.showMenu(MENU_STATE_FULL, mPipBoundsState.getBounds(),
                             false /* allowMenuTimeout */, false /* willResizeMenu */,
