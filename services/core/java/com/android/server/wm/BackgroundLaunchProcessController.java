@@ -72,12 +72,6 @@ class BackgroundLaunchProcessController {
     @Overridable
     private static final long DEFAULT_RESCIND_BAL_FG_PRIVILEGES_BOUND_SERVICE = 261072174;
 
-    /** If enabled the callback is a noop and it is safe to skip calling it. */
-    @ChangeId
-    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.TIRAMISU)
-    @Overridable
-    private static final long CALLBACK_IS_NOOP = 447255745;
-
     /** It is {@link ActivityTaskManagerService#hasActiveVisibleWindow(int)}. */
     private final IntPredicate mUidHasActiveVisibleWindowPredicate;
 
@@ -216,8 +210,7 @@ class BackgroundLaunchProcessController {
                     return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token")
                             .allowNewTask();
                 }
-                if (!(Flags.balIgnoreCallback() && CompatChanges.isChangeEnabled(CALLBACK_IS_NOOP,
-                        packageName, UserHandle.getUserHandleForUid(uid)))) {
+                if (!Flags.balIgnoreCallback()) {
                     binderTokens.add(backgroundStartPrivileges.getOriginatingToken());
                 }
             }
