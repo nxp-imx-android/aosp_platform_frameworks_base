@@ -162,7 +162,7 @@ class AppPinnedController(
             Log.e(TAG, "Unable to find package name for the current window!")
             return null
         }
-        return Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        return Intent(Settings.ACTION_PICTURE_IN_PICTURE_SETTINGS).apply {
             setData(android.net.Uri.fromParts("package", packageName, null))
             setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
