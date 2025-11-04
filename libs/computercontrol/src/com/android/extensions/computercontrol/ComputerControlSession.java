@@ -320,9 +320,8 @@ public final class ComputerControlSession implements AutoCloseable {
         }
 
         /**
-         * Returns the intent launched when the user wants to preview the automation.
-         *
-         * <p>If null, the session owner's launcher activity will be used.
+         * Returns the intent launched when the user wants to preview the automation, or null if
+         * none is set.
          *
          * @see Builder#setPreviewIntent(PendingIntent)
          */
@@ -371,9 +370,12 @@ public final class ComputerControlSession implements AutoCloseable {
                 return this;
             }
 
-            /** Set an intent launched when the user wants to preview the automation. */
+            /**
+             * Set an intent launched when the user wants to preview the automation, or null if
+             * none.
+             */
             @NonNull
-            public Builder setPreviewIntent(@NonNull PendingIntent pendingIntent) {
+            public Builder setPreviewIntent(@Nullable PendingIntent pendingIntent) {
                 mPreviewIntent = pendingIntent;
                 return this;
             }

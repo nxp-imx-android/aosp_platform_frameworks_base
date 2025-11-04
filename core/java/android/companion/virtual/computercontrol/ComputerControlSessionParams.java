@@ -139,16 +139,13 @@ public final class ComputerControlSessionParams implements Parcelable {
         }
 
         /**
-         * Sets the intent to launch the preview UI for this session.
+         * Sets the intent launched when the user wants to preview the automation, or null if none.
          *
          * @param previewIntent The intent to launch the preview UI.
          * @return This builder.
          */
         @NonNull
-        public Builder setPreviewIntent(@NonNull PendingIntent previewIntent) {
-            if (previewIntent == null) {
-                throw new IllegalArgumentException("Preview intent must not be null");
-            }
+        public Builder setPreviewIntent(@Nullable PendingIntent previewIntent) {
             mPreviewIntent = previewIntent;
             return this;
         }
