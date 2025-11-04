@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import android.app.privatecompute.IPccService;
 import android.app.privatecompute.IResultCallback;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
@@ -40,10 +41,12 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.UserHandle;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.LocalServices;
 
@@ -68,6 +71,19 @@ public class PccSandboxManagerInternalTest {
     private static final int PCC_CLIENT_UID = 30001;
     private static final String CORRECT_CALLING_PACKAGE = "com.example.client";
     private static final String WRONG_CALLING_PACKAGE = "com.wrong.package";
+    // Example UIDs for different process types
+    private static final int PCC_UID_1 = Process.FIRST_PCC_UID;
+    private static final int PCC_UID_2 = Process.LAST_PCC_UID;
+    private static final int PCS_UID = 10199;
+    private static final int REGULAR_UID = 10200;
+
+    private static final String PCC_PACKAGE_1 = "com.pcc.package1";
+    private static final String PCC_PACKAGE_2 = "com.pcc.package2";
+    private static final String PCS_PACKAGE = "com.pcs.package";
+    private static final String REGULAR_PACKAGE = "com.regular.package";
+
+    @Mock
+    private PccSandboxManagerServiceImpl mMockPccSandboxManagerService;
 
     private PccSandboxManagerInternal mPccSandboxManagerInternal;
     private IBinder mRealBinder;
@@ -91,7 +107,9 @@ public class PccSandboxManagerInternalTest {
         when(mPackageManagerInternal.isSameApp(WRONG_CALLING_PACKAGE, testUid,
                 UserHandle.getUserId(testUid))).thenReturn(false);
 
-        mPccSandboxManagerInternal = new PccSandboxManagerInternal();
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        mPccSandboxManagerInternal = new PccSandboxManagerInternal(
+                context, mMockPccSandboxManagerService);
         mRealBinder = new IPccService.Stub() {
             @Override
             public void sendData(Bundle data, String packageName, IResultCallback callback) {
@@ -354,5 +372,54 @@ public class PccSandboxManagerInternalTest {
                 return false;
             }
         };
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_pccToPcc_isAllowed() {
+        boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                PCC_UID_1, PCC_PACKAGE_1, PCC_UID_2, PCC_PACKAGE_2);
+
+        assertTrue("Association between two PCC UIDs should be allowed", allowed);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_pccAndPcs_isAllowed()
+            throws android.os.RemoteException {
+        when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(PCS_UID)).thenReturn(true);
+
+        boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                PCC_UID_1, PCC_PACKAGE_1, PCS_UID, PCS_PACKAGE);
+        assertTrue("Association between a PCC UID and a PCS UID should be allowed", allowed);
+        allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+            PCS_UID, PCS_PACKAGE, PCC_UID_1, PCC_PACKAGE_1);
+        assertTrue("Association between a PCS UID and PCC UID should be allowed", allowed);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_pccToRegular_isDenied()
+            throws android.os.RemoteException {
+        when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(REGULAR_UID))
+                .thenReturn(false);
+
+        boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                PCC_UID_1, PCC_PACKAGE_1, REGULAR_UID, REGULAR_PACKAGE);
+
+        assertFalse("Association between a PCC UID and a regular UID should be denied", allowed);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testValidateAssociationAllowed_regularToPcc_isAllowed()
+            throws android.os.RemoteException {
+        when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(REGULAR_UID))
+                .thenReturn(false);
+
+        boolean allowed = mPccSandboxManagerInternal.validateAssociationAllowed(
+                REGULAR_UID, REGULAR_PACKAGE, PCC_UID_1, PCC_PACKAGE_1);
+
+        assertTrue("Association between a regular UID and a PCC UID should be allowed", allowed);
     }
 }

@@ -28,18 +28,21 @@ import com.android.server.SystemService;
  */
 public class PccSandboxManagerService extends SystemService {
     private final PccSandboxManagerServiceImpl mServiceImpl;
+    private final PccSandboxManagerInternal mInternal;
+    private final Context mContext;
 
     public PccSandboxManagerService(Context context) {
         super(context);
+        mContext = context;
         mServiceImpl = new PccSandboxManagerServiceImpl(context);
+        mInternal = new PccSandboxManagerInternal(mContext, mServiceImpl);
     }
 
     @Override
     public void onStart() {
         if (enablePccFrameworkSupport()) {
             publishBinderService(Context.PCC_SANDBOX_SERVICE, mServiceImpl);
-            LocalServices.addService(PccSandboxManagerInternal.class,
-                    new PccSandboxManagerInternal());
+            LocalServices.addService(PccSandboxManagerInternal.class, mInternal);
         }
     }
 }

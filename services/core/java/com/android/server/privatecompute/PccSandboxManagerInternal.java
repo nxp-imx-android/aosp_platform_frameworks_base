@@ -22,6 +22,7 @@ import android.annotation.RequiresNoPermission;
 import android.app.privatecompute.IPccService;
 import android.app.privatecompute.IResultCallback;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
 import android.os.BadParcelableException;
@@ -56,13 +57,26 @@ public final class PccSandboxManagerInternal {
     private static final String TAG = PccSandboxManagerInternal.class.getSimpleName();
 
     private final PackageManagerInternal mPackageManagerInternal;
+    private final Context mContext;
+    private final PccSandboxManagerServiceImpl mPccSandboxManagerService;
     private final Object mLock = new Object();
     @VisibleForTesting
     @GuardedBy("mLock")
     final Map<IBinder, PccServiceInfo> mPccServiceConnections = new ArrayMap<>();
 
-    public PccSandboxManagerInternal() {
+    public PccSandboxManagerInternal(
+            Context context, PccSandboxManagerServiceImpl pccSandboxManagerService) {
+        this.mContext = context;
+        mPccSandboxManagerService = pccSandboxManagerService;
         this.mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+    }
+
+    /**
+     * Returns {@code true} if the given UID belongs to a package that provides Private Compute
+     * services.
+     */
+    public boolean isPrivateComputeServicesUid(int uid) {
+        return mPccSandboxManagerService.isPrivateComputeServicesUid(uid);
     }
 
     /**
@@ -202,6 +216,40 @@ public final class PccSandboxManagerInternal {
 
     private boolean isTrustedClient(int clientUid) {
         return Process.isPrivateComputeCoreUid(clientUid) || clientUid == SYSTEM_UID;
+    }
+
+    /**
+     * Returns true if the package {@code callerPackage} running under user
+     * handle {@code callerUid} is allowed association with the package
+     * {@code targetPackage} running under user handle {@code targetUid}.
+     */
+    public boolean validateAssociationAllowed(
+            int callerUid, String callerPackage, int targetUid, String targetPackage) {
+        final boolean callerIsPcc = Process.isPrivateComputeCoreUid(callerUid);
+        final boolean targetIsPcc = Process.isPrivateComputeCoreUid(targetUid);
+
+
+        // PCC to PCC association is allowed.
+        if (callerIsPcc && targetIsPcc) {
+            return true;
+        }
+
+        // Allow non-PCC to PCC association, as one-way data flow will be
+        // enforced through other ActivityManager APIs.
+        if (!callerIsPcc && targetIsPcc) {
+            return true;
+        }
+
+        // Since this method is only called if either caller or target is PCC,
+        // if we're here, the caller is a PCC UID and the target is not.
+        // Allow PCC To PCS association.
+        if (isPrivateComputeServicesUid(targetUid)) {
+            return true;
+        }
+
+        // TODO(b/438430261): Allow PCC to trusted component association.
+
+        return false;
     }
 
     @VisibleForTesting
