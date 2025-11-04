@@ -3961,12 +3961,14 @@ public class NotificationStackScrollLayout
     }
 
     /**
-     * When an ACTION_DOWN event is outside of the NSSL's draw bounds, that means a gesture started
-     * outside of the NSSL's draw bounds. The NSSL will intercept the gesture from its children and
-     * refuse it by returning false in NSSL#onTouchEvent.
+     * When an ACTION_DOWN event is outside of the NSSL's scrim bounds, that means a gesture started
+     * outside of the NSSL's scrim bounds. The NSSL will intercept the gesture from its children and
+     * refuse it by returning false in NSSL#onTouchEvent to prevent any child or touch handler from
+     * processing it.
      *
      * @param ev A MotionEvent
-     * @return true when the event is an ACTION_DOWN event that's outside of the NSSL's draw bounds
+     * @return true when the event is an ACTION_DOWN or ACTION_POINTER_DOWN event that started
+     * outside of the NSSL's scrim bounds
      */
 
     private boolean isOutBoundsDownEvent(MotionEvent ev) {
@@ -3988,7 +3990,7 @@ public class NotificationStackScrollLayout
             final float x = ev.getX(pointerIndex);
             final float y = ev.getY(pointerIndex);
 
-            if (!isInDrawBounds(x, y)) {
+            if (outsideScrimBounds(x, y)) {
                 // onInterceptTouchEvent records the pointerId
                 mOutBoundsEventId = pointerId;
                 return true;
@@ -4014,27 +4016,33 @@ public class NotificationStackScrollLayout
         if (!SceneContainerFlag.isEnabled()) {
             return false;
         }
-        // When the shade is closed but a HUN is visible (over home screen), we might need to handle
-        // this touch event as a HUN gesture even if this is outside interactive bounds
-        // or NSSL is not interactive.
-        final boolean acceptOutsideHun = !mAmbientState.isShadeExpanded() && mTopHeadsUpRow != null;
-        return !acceptOutsideHun && (!mScrollViewFields.interactive || isOutBoundsDownEvent(ev));
+        return !mScrollViewFields.interactive || isOutBoundsDownEvent(ev);
     }
 
     /**
-     * Whether position [x, y] is within the draw bounds of the NSSL. Note that
-     * NSSL#setDrawBounds() should be called to set the draw bounds before calling this method.
+     * Whether position [x, y] is outside of the scrim bounds of the NSSL.
+     * Return false when the scrim bound is null.
      *
      * @param x x coordinate for the initial touch of the current gesture
      * @param y y coordinate for the initial touch of the current gesture
-     * @return Whether the position within the draw bounds of the NSSL.
+     * @return Whether the position is outside of the scrim bounds of the NSSL.
      */
-    private boolean isInDrawBounds(float x, float y) {
+    @VisibleForTesting
+    boolean outsideScrimBounds(float x, float y) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
             return false;
         }
-        RectF bounds = mAmbientState.getDrawBounds();
-        return bounds.contains(x, y);
+
+        ShadeScrimShape shape = mScrollViewFields.clippingShape;
+        if (shape == null) {
+            return false;
+        }
+        ShadeScrimBounds bounds = shape.getBounds();
+        Log.d("NSSL", "bounds=" + bounds.toString() + " x: " + x + " y: " + y);
+        return x < bounds.getLeft()
+                || x > bounds.getRight()
+                || y < bounds.getTop()
+                || y > bounds.getBottom();
     }
 
     /**
