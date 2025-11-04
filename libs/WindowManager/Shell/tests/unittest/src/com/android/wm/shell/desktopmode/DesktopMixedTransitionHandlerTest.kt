@@ -476,10 +476,7 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX)
     fun startAndAnimateLaunchTransition_withMinimizeChange_wrongTaskId_reparentsMinimizeChange() {
         val wct = WindowContainerTransaction()
         val launchingTask = createTask(WINDOWING_MODE_FREEFORM)

@@ -742,15 +742,7 @@ class DesktopMixedTransitionHandler(
         return if (launchTaskId != null) {
             // Launching a known task (probably from background or moving to front), so
             // specifically look for it.
-            val launchChange = findTaskChange(info, launchTaskId)
-            if (
-                DesktopModeFlags.ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX.isTrue &&
-                    launchChange == null
-            ) {
-                findLaunchChange(info)
-            } else {
-                launchChange
-            }
+            findTaskChange(info, launchTaskId) ?: findLaunchChange(info)
         } else {
             // Launching a new task, so the first opening freeform task.
             findLaunchChange(info)
