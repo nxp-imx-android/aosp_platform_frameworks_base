@@ -33,9 +33,6 @@ object TransitionKeys {
      */
     val SlightlyFasterShadeTransition = TransitionKey("SlightlyFasterShadeTransition")
 
-    /** Reference to the Shade-to-Lockscreen transition with Always-on-Display enabled. */
-    val ToAlwaysOnDisplay = TransitionKey("ToAlwaysOnDisplay")
-
     /** Reference to a content transition that should happen instantly, i.e. without animation. */
     val Instant = TransitionKey("Instant")
 }
