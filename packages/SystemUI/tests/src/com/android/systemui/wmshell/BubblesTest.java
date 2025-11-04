@@ -522,7 +522,7 @@ public class BubblesTest extends SysuiTestCase {
                 syncExecutor);
         mTaskViewRepository = new TaskViewRepository();
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mShellTaskOrganizer, mSyncQueue);
+                mShellTaskOrganizer, mSyncQueue, Optional.of(mBubbleHelper));
         mAppInfoProvider = new PackageManagerBubbleAppInfoProvider();
         mBubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
         BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory = new BubbleViewInfoTask.Factory() {

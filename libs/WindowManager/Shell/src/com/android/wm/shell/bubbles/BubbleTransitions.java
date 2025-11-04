@@ -20,11 +20,9 @@ import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_A
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
-import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.view.View.INVISIBLE;
 import static android.view.WindowManager.TRANSIT_CHANGE;
-import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
@@ -106,6 +104,7 @@ public class BubbleTransitions {
     @NonNull final TaskViewTransitions mTaskViewTransitions;
     @NonNull final Context mContext;
     @NonNull final BubbleViewInfoTask.Factory mBubbleViewInfoTaskFactory;
+    @NonNull final BubbleHelper mBubbleHelper;
 
     @VisibleForTesting
     // Map of a launch cookie (used to start an activity) to the associated transition handler
@@ -123,7 +122,8 @@ public class BubbleTransitions {
             @NonNull Transitions transitions, @NonNull ShellTaskOrganizer organizer,
             @NonNull TaskViewRepository repository, @NonNull BubbleData bubbleData,
             @NonNull TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
+            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
+            @NonNull BubbleHelper bubbleHelper) {
         mTransitions = transitions;
         mTaskOrganizer = organizer;
         mRepository = repository;
@@ -132,6 +132,7 @@ public class BubbleTransitions {
         mTaskViewTransitions = taskViewTransitions;
         mContext = context;
         mBubbleViewInfoTaskFactory = bubbleViewInfoTaskFactory;
+        mBubbleHelper = bubbleHelper;
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
@@ -340,58 +341,6 @@ public class BubbleTransitions {
     /** Starts a transition that converts a dragged bubble icon to a full screen task. */
     public BubbleTransition startDraggedBubbleIconToFullscreen(Bubble bubble, Point dropLocation) {
         return new DraggedBubbleIconToFullscreen(bubble, dropLocation);
-    }
-
-    /**
-     * Finds the Task that is entering Bubble. This can be either a Bubble Task that is becoming
-     * visible, or a visible Task that is changing to Bubble from other windowing mode.
-     */
-    @Nullable
-    public TransitionInfo.Change getEnterBubbleTask(@NonNull TransitionInfo info) {
-        for (int i = 0; i < info.getChanges().size(); i++) {
-            final TransitionInfo.Change chg = info.getChanges().get(i);
-            final ActivityManager.RunningTaskInfo taskInfo = chg.getTaskInfo();
-            // Exclude non-standard activity transition scenarios.
-            if (taskInfo == null || taskInfo.getActivityType() != ACTIVITY_TYPE_STANDARD) {
-                continue;
-            }
-            // Only process opening or change transitions.
-            if (!isOpeningMode(chg.getMode()) && chg.getMode() != TRANSIT_CHANGE) {
-                continue;
-            }
-            // Skip non-app-bubble tasks (e.g. a reused task in a bubble-to-fullscreen scenario).
-            if (!shouldBeAppBubble(taskInfo)) {
-                continue;
-            }
-            return chg;
-        }
-        return null;
-    }
-
-    /**
-     * Finds the Bubble Task that is closing.
-     * Note: this doesn't find move-to-back Task.
-     */
-    @Nullable
-    public TransitionInfo.Change getClosingBubbleTask(@NonNull TransitionInfo info) {
-        for (int i = 0; i < info.getChanges().size(); i++) {
-            final TransitionInfo.Change chg = info.getChanges().get(i);
-            final ActivityManager.RunningTaskInfo taskInfo = chg.getTaskInfo();
-            // Exclude non-standard activity transition scenarios.
-            if (taskInfo == null || taskInfo.getActivityType() != ACTIVITY_TYPE_STANDARD) {
-                continue;
-            }
-            // Only process closing transitions.
-            if (chg.getMode() != TRANSIT_CLOSE) {
-                continue;
-            }
-            // Skip non-app-bubble tasks (e.g., a reused task in a bubble-to-fullscreen scenario).
-            if (!shouldBeAppBubble(taskInfo)) {
-                continue;
-            }
-            return chg;
-        }
-        return null;
     }
 
     /**
@@ -661,6 +610,11 @@ public class BubbleTransitions {
             // inflation (the task view will be in the right bounds)
             mTaskViewTransitions.removePendingTransitions(tv.getController());
             mTaskViewTransitions.enqueueRunningExternal(tv.getController(), mTransition);
+            // TODO(b/456051408): this should not be needed after we support switch in root task
+            if (BubbleAnythingFlagHelper.enableRootTaskForBubble()
+                    && mBubble.getTaskView().isInitialized()) {
+                surfaceCreated();
+            }
         }
 
         @Override
@@ -991,8 +945,9 @@ public class BubbleTransitions {
                 @NonNull Transitions.TransitionFinishCallback finishCallback) {
             BubbleLog.d("JumpcutBubbleSwitchTransition.startAnimation()");
 
-            final TransitionInfo.Change enterBubbleTask = getEnterBubbleTask(info);
-            final TransitionInfo.Change closingBubbleTask = getClosingBubbleTask(info);
+            final TransitionInfo.Change enterBubbleTask = mBubbleHelper.getEnterBubbleTask(info);
+            final TransitionInfo.Change closingBubbleTask = mBubbleHelper.getClosingBubbleTask(
+                    info);
             mOpeningTaskInfo = enterBubbleTask.getTaskInfo();
             mFinishWct = new WindowContainerTransaction();
             mFinishT = finishTransaction;
@@ -1321,7 +1276,7 @@ public class BubbleTransitions {
 
         @Override
         public boolean canAnimateTransition(@NonNull TransitionInfo info) {
-            final TransitionInfo.Change enterBubbleTask = getEnterBubbleTask(info);
+            final TransitionInfo.Change enterBubbleTask = mBubbleHelper.getEnterBubbleTask(info);
             final Bubble bubble = enterBubbleTask != null
                     ? mBubbleData.getBubbleInStackWithTaskId(enterBubbleTask.getTaskInfo().taskId)
                     : null;

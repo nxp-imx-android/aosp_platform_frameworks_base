@@ -23,8 +23,8 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_LAUNCH_TWICE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK;
+import static com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_LAUNCH_TWICE;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction;
@@ -91,6 +91,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.UserType;
+import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -105,6 +106,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -155,16 +157,23 @@ public class BubbleTransitionsTest extends ShellTestCase {
     private WindowContainerToken mRootTaskToken;
     @Mock
     private PendingIntent mPendingIntent;
+    @Mock
+    private SplitScreenController mSplitScreenController;
+    @Mock
+    private BubbleRootTask mBubbleRootTask;
 
     private TaskViewTransitions mTaskViewTransitions;
     private TaskViewRepository mRepository;
     private BubbleTransitions mBubbleTransitions;
     private BubbleTaskViewFactory mTaskViewFactory;
+    private BubbleHelper mBubbleHelper;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mRepository = new TaskViewRepository();
+        mBubbleHelper = spy(new BubbleHelperImpl(
+                () -> mBubbleRootTask, () -> Optional.of(mSplitScreenController)));
         final ShellExecutor syncExecutor = new TestSyncExecutor();
 
         BubbleUserResolver bubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);
@@ -184,9 +193,10 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         when(mTransitions.getMainExecutor()).thenReturn(syncExecutor);
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mRepository, mTaskOrganizer,
-                mSyncQueue);
+                mSyncQueue, Optional.of(mBubbleHelper));
         mBubbleTransitions = new BubbleTransitions(mContext, mTransitions, mTaskOrganizer,
-                mRepository, mBubbleData, mTaskViewTransitions, bubbleViewInfoTaskFactory);
+                mRepository, mBubbleData, mTaskViewTransitions, bubbleViewInfoTaskFactory,
+                mBubbleHelper);
         mBubbleTransitions.setBubbleController(mBubbleController);
         mTaskViewFactory = () -> {
             TaskViewTaskController taskViewTaskController = new TaskViewTaskController(
@@ -227,6 +237,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble(
                 bubble, taskView, taskViewTaskController);
         doReturn(true).when(mBubbleController).shouldBeAppBubble(taskInfo);
+        doReturn(true).when(mBubbleHelper).isAppBubbleTask(taskInfo);
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             doReturn(mRootTaskBinder).when(mRootTaskToken).asBinder();
             doReturn(mRootTaskToken).when(mBubbleController).getAppBubbleRootTaskToken();
@@ -1391,72 +1402,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         // Now the queue should be empty
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
-    }
-
-    @Test
-    public void testGetEnterBubbleTask() {
-        final SurfaceControl leash = new SurfaceControl.Builder().setName("testLeash").build();
-        final ActivityManager.RunningTaskInfo taskInfo0 = setupAppBubble();
-        final ActivityManager.RunningTaskInfo taskInfo1 = setupAppBubble();
-
-        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
-        final TransitionInfo.Change openingBubble = new TransitionInfo.Change(
-                taskInfo0.token, leash);
-        openingBubble.setTaskInfo(taskInfo0);
-        openingBubble.setMode(TRANSIT_OPEN);
-        final TransitionInfo.Change closingBubble = new TransitionInfo.Change(
-                taskInfo1.token, leash);
-        closingBubble.setTaskInfo(taskInfo1);
-        closingBubble.setMode(TRANSIT_CLOSE);
-        info.addChange(closingBubble);
-        info.addChange(openingBubble);
-        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
-
-        assertThat(mBubbleTransitions.getEnterBubbleTask(info)).isEqualTo(openingBubble);
-    }
-
-    @Test
-    public void testGetClosingBubbleTask() {
-        final SurfaceControl leash = new SurfaceControl.Builder().setName("testLeash").build();
-        final ActivityManager.RunningTaskInfo taskInfo0 = setupAppBubble();
-        final ActivityManager.RunningTaskInfo taskInfo1 = setupAppBubble();
-
-        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
-        final TransitionInfo.Change openingBubble = new TransitionInfo.Change(
-                taskInfo0.token, leash);
-        openingBubble.setTaskInfo(taskInfo0);
-        openingBubble.setMode(TRANSIT_OPEN);
-        final TransitionInfo.Change closingBubble = new TransitionInfo.Change(
-                taskInfo1.token, leash);
-        closingBubble.setTaskInfo(taskInfo1);
-        closingBubble.setMode(TRANSIT_CLOSE);
-        info.addChange(openingBubble);
-        info.addChange(closingBubble);
-        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
-
-        assertThat(mBubbleTransitions.getClosingBubbleTask(info)).isEqualTo(closingBubble);
-    }
-
-    @Test
-    public void testGetClosingBubbleTask_excludeChangeAndToBack() {
-        final SurfaceControl leash = new SurfaceControl.Builder().setName("testLeash").build();
-        final ActivityManager.RunningTaskInfo taskInfo0 = setupAppBubble();
-        final ActivityManager.RunningTaskInfo taskInfo1 = setupAppBubble();
-
-        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
-        final TransitionInfo.Change openingBubble = new TransitionInfo.Change(
-                taskInfo0.token, leash);
-        openingBubble.setTaskInfo(taskInfo0);
-        openingBubble.setMode(TRANSIT_CHANGE);
-        final TransitionInfo.Change closingBubble = new TransitionInfo.Change(
-                taskInfo1.token, leash);
-        closingBubble.setTaskInfo(taskInfo1);
-        closingBubble.setMode(TRANSIT_TO_BACK);
-        info.addChange(openingBubble);
-        info.addChange(closingBubble);
-        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
-
-        assertThat(mBubbleTransitions.getClosingBubbleTask(info)).isNull();
     }
 
     @Test

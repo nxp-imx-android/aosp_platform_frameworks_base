@@ -315,10 +315,11 @@ public abstract class WMShellModule {
             @NonNull TaskViewRepository repository,
             @NonNull BubbleData bubbleData,
             @NonNull @Bubbles TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory
+            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
+            @NonNull BubbleHelper bubbleHelper
     ) {
         return new BubbleTransitions(context, transitions, organizer, repository,
-                bubbleData, taskViewTransitions, bubbleViewInfoTaskFactory);
+                bubbleData, taskViewTransitions, bubbleViewInfoTaskFactory, bubbleHelper);
     }
 
     @WMSingleton
@@ -329,9 +330,10 @@ public abstract class WMShellModule {
             @NonNull Transitions transitions,
             @NonNull TaskViewRepository repository,
             @NonNull ShellTaskOrganizer organizer,
-            SyncTransactionQueue syncQueue
+            SyncTransactionQueue syncQueue,
+            Optional<BubbleHelper> bubbleHelper
     ) {
-        return new TaskViewTransitions(transitions, repository, organizer, syncQueue);
+        return new TaskViewTransitions(transitions, repository, organizer, syncQueue, bubbleHelper);
     }
 
     @WMSingleton
@@ -805,6 +807,7 @@ public abstract class WMShellModule {
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
             BubbleTransitions bubbleTransitions,
+            BubbleHelper bubbleHelper,
             Transitions transitions) {
         return new DefaultMixedHandler(
                 shellInit,
@@ -818,7 +821,8 @@ public abstract class WMShellModule {
                 desktopTasksController,
                 unfoldHandler,
                 activityEmbeddingController,
-                bubbleTransitions);
+                bubbleTransitions,
+                bubbleHelper);
     }
 
     @WMSingleton

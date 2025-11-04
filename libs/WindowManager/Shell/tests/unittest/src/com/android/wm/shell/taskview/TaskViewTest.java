@@ -65,6 +65,7 @@ import androidx.test.filters.SmallTest;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestHandler;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.SyncTransactionQueue.TransactionRunnable;
@@ -85,6 +86,7 @@ import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Verifies {@link TaskView} behavior and its interactions with {@link TaskViewTaskController}.
@@ -133,6 +135,8 @@ public class TaskViewTest extends ShellTestCase {
     private TaskViewBase mTaskViewBase;
     @Mock
     private SurfaceHolder mSurfaceHolder;
+    @Mock
+    private BubbleHelper mBubbleHelper;
 
     private final SurfaceControl mLeash = new SurfaceControl.Builder().setName("test").build();
     private final ActivityManager.RunningTaskInfo mTaskInfo = new ActivityManager.RunningTaskInfo();
@@ -174,7 +178,7 @@ public class TaskViewTest extends ShellTestCase {
         }).when(mSyncQueue).runInSync(any());
 
         mTaskViewTransitions = spy(new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mOrganizer, mSyncQueue));
+                mOrganizer, mSyncQueue, Optional.of(mBubbleHelper)));
         mTaskViewTaskController = new TaskViewTaskController(mContext, mOrganizer,
                 mTaskViewTransitions, mSyncQueue);
         mTaskView = new TaskView(mContext, mTaskViewTransitions, mTaskViewTaskController);

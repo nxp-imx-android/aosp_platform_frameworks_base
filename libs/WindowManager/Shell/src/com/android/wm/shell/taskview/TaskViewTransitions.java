@@ -56,6 +56,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.TransitionUtil;
@@ -67,8 +68,8 @@ import com.android.wm.shell.transition.Transitions;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executor;
-import java.util.function.Predicate;
 
 /**
  * Handles Shell Transitions that involve TaskView tasks.
@@ -83,6 +84,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     private final ShellTaskOrganizer mTaskOrganizer;
     private final Executor mShellExecutor;
     private final SyncTransactionQueue mSyncQueue;
+    private final Optional<BubbleHelper> mBubbleHelper;
 
     /** A temp transaction used for quick things. */
     private final SurfaceControl.Transaction mTransaction = new SurfaceControl.Transaction();
@@ -140,12 +142,14 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     }
 
     public TaskViewTransitions(Transitions transitions, TaskViewRepository repository,
-            ShellTaskOrganizer taskOrganizer, SyncTransactionQueue syncQueue) {
+            ShellTaskOrganizer taskOrganizer, SyncTransactionQueue syncQueue,
+            Optional<BubbleHelper> bubbleHelper) {
         mTransitions = transitions;
         mTaskOrganizer = taskOrganizer;
         mShellExecutor = taskOrganizer.getExecutor();
         mSyncQueue = syncQueue;
         mTaskViewRepo = repository;
+        mBubbleHelper = bubbleHelper;
         // Defer registration until the first TaskView because we want this to be the "first" in
         // priority when handling requests.
         // TODO(210041388): register here once we have an explicit ordering mechanism.
@@ -729,7 +733,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             return false;
         }
 
-        if (isBubbleTrampoline(transitionInfo)) {
+        if (mBubbleHelper.isPresent() && mBubbleHelper.get().containsBubbleSwitch(transitionInfo)) {
+            // Bubble switching transition should be handled by BubbleTransitions
             PendingTransition pending = findPending(transition);
             if (pending != null) {
                 mPending.remove(pending);
@@ -1075,35 +1080,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         finishCallback.onTransitionFinished(wct);
         startNextTransition();
         return true;
-    }
-
-    private static boolean isBubbleTrampoline(TransitionInfo info) {
-        return hasOpeningAppBubble(info) && hasClosingAppBubble(info);
-    }
-
-    private static boolean hasOpeningAppBubble(TransitionInfo info) {
-        return containsChange(info, change ->
-                change.getTaskInfo() != null
-                        && change.getTaskInfo().isAppBubble
-                        && TransitionUtil.isOpeningType(change.getMode()));
-    }
-
-    private static boolean hasClosingAppBubble(TransitionInfo info) {
-        return containsChange(info, change ->
-                change.getTaskInfo() != null
-                        && change.getTaskInfo().isAppBubble
-                        && TransitionUtil.isClosingType(change.getMode()));
-    }
-
-    private static boolean containsChange(TransitionInfo info,
-            Predicate<TransitionInfo.Change> predicate) {
-        for (int i = 0; i < info.getChanges().size(); ++i) {
-            final TransitionInfo.Change chg = info.getChanges().get(i);
-            if (predicate.test(chg)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
