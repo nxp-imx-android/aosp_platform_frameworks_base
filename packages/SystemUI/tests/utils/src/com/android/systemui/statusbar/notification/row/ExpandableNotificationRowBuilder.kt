@@ -453,7 +453,6 @@ class ExpandableNotificationRowBuilder(
             mHeadsUpManager,
             mBindStage,
             Mockito.mock(OnExpandClickListener::class.java, STUB_ONLY),
-            Mockito.mock(CoordinateOnClickListener::class.java, STUB_ONLY),
             FalsingManagerFake(),
             mStatusBarStateController,
             mPeopleNotificationIdentifier,

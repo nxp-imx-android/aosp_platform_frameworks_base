@@ -25,10 +25,8 @@ import com.android.systemui.shared.notifications.data.repository.NotificationSet
 import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository.Companion.EXPAND_BUNDLE_AUTO
 import com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepository.Companion.EXPAND_BUNDLE_NEVER
 import com.android.systemui.shared.notifications.domain.interactor.NotificationSettingsInteractor
-import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
@@ -49,7 +47,6 @@ class RowAppearanceCoordinator
 @Inject
 constructor(
     @ShadeDisplayAware context: Context,
-    private var mAssistantFeedbackController: AssistantFeedbackController,
     private var mSectionStyleProvider: SectionStyleProvider,
     private val notificationSettingsInteractor: NotificationSettingsInteractor,
     @Application private val coroutineScope: CoroutineScope,
@@ -131,8 +128,6 @@ constructor(
                     (mAutoExpandFirstNotification && entry == entryToExpand))
             )
         }
-        // Show/hide the feedback icon
-        controller.setFeedbackIcon(mAssistantFeedbackController.getFeedbackIcon(entry.ranking))
     }
 
     private fun isBundleSystemExpanded(entry: BundleEntry) : Boolean {

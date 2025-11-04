@@ -72,7 +72,6 @@ import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
-import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.collection.BundleEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.BundleSpec;
@@ -646,52 +645,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         group.doLongClickCallback(0, 0);
         verify(listener, times(0)).onLongPress(eq(group), eq(0), eq(0),
                 any(NotificationMenuRowPlugin.MenuItem.class));
-    }
-
-    @Test
-    public void testFeedback_noHeader() throws Exception {
-        ExpandableNotificationRow groupRow = mKosmos.createRowGroup();
-
-        // public notification is custom layout - no header
-        groupRow.setSensitive(true, true);
-        groupRow.setOnFeedbackClickListener(null);
-        groupRow.setFeedbackIcon(null);
-    }
-
-    @Test
-    public void testFeedback_header() throws Exception {
-        ExpandableNotificationRow group = mKosmos.createRowGroup();
-
-        NotificationContentView publicLayout = mock(NotificationContentView.class);
-        group.setPublicLayout(publicLayout);
-        NotificationContentView privateLayout = mock(NotificationContentView.class);
-        group.setPrivateLayout(privateLayout);
-        NotificationChildrenContainer mockContainer = mock(NotificationChildrenContainer.class);
-        when(mockContainer.getNotificationChildCount()).thenReturn(1);
-        group.setChildrenContainer(mockContainer);
-
-        final boolean show = true;
-        final FeedbackIcon icon = new FeedbackIcon(
-                R.drawable.ic_feedback_alerted, R.string.notification_feedback_indicator_alerted);
-        group.setFeedbackIcon(icon);
-
-        verify(mockContainer, times(1)).setFeedbackIcon(icon);
-        verify(privateLayout, times(1)).setFeedbackIcon(icon);
-        verify(publicLayout, times(1)).setFeedbackIcon(icon);
-    }
-
-    @Test
-    public void testFeedbackOnClick() throws Exception {
-        ExpandableNotificationRow group = mKosmos.createRowGroup();
-
-        ExpandableNotificationRow.CoordinateOnClickListener l = mock(
-                ExpandableNotificationRow.CoordinateOnClickListener.class);
-        View view = mock(View.class);
-
-        group.setOnFeedbackClickListener(l);
-
-        group.getFeedbackOnClickListener().onClick(view);
-        verify(l, times(1)).onClick(any(), anyInt(), anyInt(), any());
     }
 
     @Test

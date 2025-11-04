@@ -458,9 +458,6 @@ public final class NotificationEntry extends ListEntry {
         return mRanking.getSnoozeCriteria();
     }
 
-    public int getUserSentiment() {
-        return mRanking.getUserSentiment();
-    }
 
     public int getSuppressedVisualEffects() {
         return mRanking.getSuppressedVisualEffects();

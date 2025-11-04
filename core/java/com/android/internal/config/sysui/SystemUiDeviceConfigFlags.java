@@ -47,11 +47,6 @@ public final class SystemUiDeviceConfigFlags {
      */
     public static final String NAS_MAX_SUGGESTIONS = "nas_max_suggestions";
 
-    /**
-     * Whether to enable feedback UI for Notification Assistant
-     */
-    public static final String ENABLE_NAS_FEEDBACK = "enable_nas_feedback";
-
     // Flags related to screenshot intelligence
 
     /**

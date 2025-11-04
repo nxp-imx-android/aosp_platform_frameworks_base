@@ -31,7 +31,6 @@ import android.os.UserManager
 import android.os.fakeExecutorHandler
 import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
-import android.service.notification.NotificationListenerService
 import android.testing.TestableLooper.RunWithLooper
 import android.util.ArraySet
 import android.view.View
@@ -65,7 +64,6 @@ import com.android.systemui.shade.ShadeController
 import com.android.systemui.shared.system.activityManagerWrapper
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationPresenter
-import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
@@ -160,7 +158,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
     @Mock private lateinit var bubblesManager: BubblesManager
     @Mock private lateinit var shadeController: ShadeController
     @Mock private lateinit var peopleSpaceWidgetManager: PeopleSpaceWidgetManager
-    @Mock private lateinit var assistantFeedbackController: AssistantFeedbackController
     @Mock private lateinit var notificationLockscreenUserManager: NotificationLockscreenUserManager
     @Mock private lateinit var statusBarStateController: StatusBarStateController
     @Mock private lateinit var headsUpManager: HeadsUpManager
@@ -221,7 +218,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 channelEditorDialogController,
                 packageDemotionInteractor,
                 contextTracker,
-                assistantFeedbackController,
                 Optional.of(bubblesManager),
                 UiEventLoggerFake(),
                 onUserInteractionCallback,
@@ -579,7 +575,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 /* isNonblockable = */ eq(false),
                 /* isDismissable = */ eq(false),
                 /* wasShownHighPriority = */ eq(true),
-                eq(assistantFeedbackController),
                 eq(metricsLogger),
                 any<View.OnClickListener>(),
             )
@@ -589,10 +584,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
     @Throws(Exception::class)
     fun testInitializeNotificationInfoView_PassesAlongProvisionedState() {
         val notificationInfoView: NotificationInfo = mock()
-        val row =
-            createTestNotificationRow() {
-                setUserSentiment(NotificationListenerService.Ranking.USER_SENTIMENT_NEGATIVE)
-            }
+        val row = createTestNotificationRow()
 
         val sbn = if (NotificationBundleUi.isEnabled) row.entryAdapter.sbn else row.entryLegacy.sbn
         val ranking =
@@ -625,7 +617,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 /* isNonblockable = */ eq(false),
                 /* isDismissable = */ eq(false),
                 /* wasShownHighPriority = */ eq(false),
-                eq(assistantFeedbackController),
                 eq(metricsLogger),
                 any<View.OnClickListener>(),
             )
@@ -666,7 +657,6 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 /* isNonblockable = */ eq(false),
                 /* isDismissable = */ eq(false),
                 /* wasShownHighPriority = */ eq(false),
-                eq(assistantFeedbackController),
                 eq(metricsLogger),
                 any<View.OnClickListener>(),
             )

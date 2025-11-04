@@ -1859,58 +1859,29 @@ public abstract class NotificationListenerService extends Service {
         @Retention(RetentionPolicy.SOURCE)
         public @interface UserSentiment {}
 
-        /**
-         * Notification was demoted in shade
-         * @hide
-         */
-        public static final int RANKING_DEMOTED = -1;
-        /**
-         * Notification was unchanged
-         * @hide
-         */
-        public static final int RANKING_UNCHANGED = 0;
-        /**
-         * Notification was promoted in shade
-         * @hide
-         */
-        public static final int RANKING_PROMOTED = 1;
-
-        /** @hide */
-        @IntDef(prefix = { "RANKING_" }, value = {
-                RANKING_PROMOTED, RANKING_DEMOTED, RANKING_UNCHANGED
-        })
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface RankingAdjustment {}
-
         private @NonNull String mKey;
         private int mRank = -1;
-        private boolean mIsAmbient;
         private boolean mMatchesInterruptionFilter;
         private int mVisibilityOverride;
         private int mSuppressedVisualEffects;
         private @NotificationManager.Importance int mImportance;
         private CharSequence mImportanceExplanation;
-        private float mRankingScore;
         // System specified group key.
         private String mOverrideGroupKey;
         // Notification assistant channel override.
         private NotificationChannel mChannel;
-        // Notification assistant people override.
-        private ArrayList<String> mOverridePeople;
         // Notification assistant snooze criteria.
         private ArrayList<SnoozeCriterion> mSnoozeCriteria;
         private boolean mShowBadge;
         private @UserSentiment int mUserSentiment = USER_SENTIMENT_NEUTRAL;
         private boolean mHidden;
         private long mLastAudiblyAlertedMs;
-        private boolean mNoisy;
         private ArrayList<Notification.Action> mSmartActions;
         private ArrayList<CharSequence> mSmartReplies;
         private boolean mCanBubble;
         private boolean mIsTextChanged;
         private boolean mIsConversation;
         private ShortcutInfo mShortcutInfo;
-        private @RankingAdjustment int mRankingAdjustment;
         private boolean mIsBubble;
         // Notification assistant importance suggestion
         private int mProposedImportance;
@@ -1931,29 +1902,24 @@ public abstract class NotificationListenerService extends Service {
             out.writeInt(PARCEL_VERSION);
             out.writeString(mKey);
             out.writeInt(mRank);
-            out.writeBoolean(mIsAmbient);
             out.writeBoolean(mMatchesInterruptionFilter);
             out.writeInt(mVisibilityOverride);
             out.writeInt(mSuppressedVisualEffects);
             out.writeInt(mImportance);
             out.writeCharSequence(mImportanceExplanation);
-            out.writeFloat(mRankingScore);
             out.writeString(mOverrideGroupKey);
             out.writeParcelable(mChannel, flags);
-            out.writeStringList(mOverridePeople);
             out.writeTypedList(mSnoozeCriteria, flags);
             out.writeBoolean(mShowBadge);
             out.writeInt(mUserSentiment);
             out.writeBoolean(mHidden);
             out.writeLong(mLastAudiblyAlertedMs);
-            out.writeBoolean(mNoisy);
             out.writeTypedList(mSmartActions, flags);
             out.writeCharSequenceList(mSmartReplies);
             out.writeBoolean(mCanBubble);
             out.writeBoolean(mIsTextChanged);
             out.writeBoolean(mIsConversation);
             out.writeParcelable(mShortcutInfo, flags);
-            out.writeInt(mRankingAdjustment);
             out.writeBoolean(mIsBubble);
             out.writeInt(mProposedImportance);
             out.writeBoolean(mSensitiveContent);
@@ -1972,29 +1938,24 @@ public abstract class NotificationListenerService extends Service {
             }
             mKey = in.readString();
             mRank = in.readInt();
-            mIsAmbient = in.readBoolean();
             mMatchesInterruptionFilter = in.readBoolean();
             mVisibilityOverride = in.readInt();
             mSuppressedVisualEffects = in.readInt();
             mImportance = in.readInt();
             mImportanceExplanation = in.readCharSequence(); // may be null
-            mRankingScore = in.readFloat();
             mOverrideGroupKey = in.readString(); // may be null
             mChannel = in.readParcelable(cl, android.app.NotificationChannel.class); // may be null
-            mOverridePeople = in.createStringArrayList();
             mSnoozeCriteria = in.createTypedArrayList(SnoozeCriterion.CREATOR);
             mShowBadge = in.readBoolean();
             mUserSentiment = in.readInt();
             mHidden = in.readBoolean();
             mLastAudiblyAlertedMs = in.readLong();
-            mNoisy = in.readBoolean();
             mSmartActions = in.createTypedArrayList(Notification.Action.CREATOR);
             mSmartReplies = in.readCharSequenceList();
             mCanBubble = in.readBoolean();
             mIsTextChanged = in.readBoolean();
             mIsConversation = in.readBoolean();
             mShortcutInfo = in.readParcelable(cl, android.content.pm.ShortcutInfo.class);
-            mRankingAdjustment = in.readInt();
             mIsBubble = in.readBoolean();
             mProposedImportance = in.readInt();
             mSensitiveContent = in.readBoolean();
@@ -2024,7 +1985,7 @@ public abstract class NotificationListenerService extends Service {
          * a notification that doesn't require the user's immediate attention.
          */
         public boolean isAmbient() {
-            return mIsAmbient;
+            return mImportance < NotificationManager.IMPORTANCE_LOW;
         }
 
         /**
@@ -2070,24 +2031,12 @@ public abstract class NotificationListenerService extends Service {
         }
 
         /**
-         * If the importance has been overridden by user preference, then this will be non-null,
-         * and should be displayed to the user.
+         * If the importance has been overridden by user preference, then this will be non-null.
          *
          * @return the explanation for the importance, or null if it is the natural importance
          */
         public CharSequence getImportanceExplanation() {
             return mImportanceExplanation;
-        }
-
-        /**
-         * Returns the ranking score provided by the {@link NotificationAssistantService} to
-         * sort the notifications in the shade
-         *
-         * @return the ranking score of the notification, range from -1 to 1
-         * @hide
-         */
-        public float getRankingScore() {
-            return mRankingScore;
         }
 
         /**
@@ -2146,17 +2095,6 @@ public abstract class NotificationListenerService extends Service {
         }
 
         /**
-         * If the {@link NotificationAssistantService} has added people to this notification, then
-         * this will be non-null.
-         * @hide
-         * @removed
-         */
-        @SystemApi
-        public List<String> getAdditionalPeople() {
-            return mOverridePeople;
-        }
-
-        /**
          * Returns snooze criteria provided by the {@link NotificationAssistantService}. If your
          * user interface displays options for snoozing notifications these criteria should be
          * displayed as well.
@@ -2207,6 +2145,17 @@ public abstract class NotificationListenerService extends Service {
         }
 
         /**
+         * If the {@link NotificationAssistantService} has added people to this notification, then
+         * this will be non-null.
+         * @hide
+         * @removed
+         */
+        @SystemApi
+        public List<String> getAdditionalPeople() {
+            return null;
+        }
+
+        /**
          * Returns whether the app that posted this notification is suspended, so this notification
          * should be hidden.
          *
@@ -2240,11 +2189,6 @@ public abstract class NotificationListenerService extends Service {
         /** @hide */
         public boolean isTextChanged() {
             return mIsTextChanged;
-        }
-
-        /** @hide */
-        public boolean isNoisy() {
-            return mNoisy;
         }
 
         /**
@@ -2285,31 +2229,22 @@ public abstract class NotificationListenerService extends Service {
         }
 
         /**
-         * Returns the intended transition to ranking passed by {@link NotificationAssistantService}
-         * @hide
-         */
-        public @RankingAdjustment int getRankingAdjustment() {
-            return mRankingAdjustment;
-        }
-
-        /**
          * @hide
          */
         @VisibleForTesting
         public void populate(String key, int rank, boolean matchesInterruptionFilter,
                 int visibilityOverride, int suppressedVisualEffects, int importance,
                 CharSequence explanation, String overrideGroupKey,
-                NotificationChannel channel, ArrayList<String> overridePeople,
+                NotificationChannel channel,
                 ArrayList<SnoozeCriterion> snoozeCriteria, boolean showBadge,
                 int userSentiment, boolean hidden, long lastAudiblyAlertedMs,
-                boolean noisy, ArrayList<Notification.Action> smartActions,
+                ArrayList<Notification.Action> smartActions,
                 ArrayList<CharSequence> smartReplies, boolean canBubble,
                 boolean isTextChanged, boolean isConversation, ShortcutInfo shortcutInfo,
-                int rankingAdjustment, boolean isBubble, int proposedImportance,
+                boolean isBubble, int proposedImportance,
                 boolean sensitiveContent, String summarization) {
             mKey = key;
             mRank = rank;
-            mIsAmbient = importance < NotificationManager.IMPORTANCE_LOW;
             mMatchesInterruptionFilter = matchesInterruptionFilter;
             mVisibilityOverride = visibilityOverride;
             mSuppressedVisualEffects = suppressedVisualEffects;
@@ -2317,20 +2252,17 @@ public abstract class NotificationListenerService extends Service {
             mImportanceExplanation = explanation;
             mOverrideGroupKey = overrideGroupKey;
             mChannel = channel;
-            mOverridePeople = overridePeople;
             mSnoozeCriteria = snoozeCriteria;
             mShowBadge = showBadge;
             mUserSentiment = userSentiment;
             mHidden = hidden;
             mLastAudiblyAlertedMs = lastAudiblyAlertedMs;
-            mNoisy = noisy;
             mSmartActions = smartActions;
             mSmartReplies = smartReplies;
             mCanBubble = canBubble;
             mIsTextChanged = isTextChanged;
             mIsConversation = isConversation;
             mShortcutInfo = shortcutInfo;
-            mRankingAdjustment = rankingAdjustment;
             mIsBubble = isBubble;
             mProposedImportance = proposedImportance;
             mSensitiveContent = sensitiveContent;
@@ -2361,20 +2293,17 @@ public abstract class NotificationListenerService extends Service {
                     other.mImportanceExplanation,
                     other.mOverrideGroupKey,
                     other.mChannel,
-                    other.mOverridePeople,
                     other.mSnoozeCriteria,
                     other.mShowBadge,
                     other.mUserSentiment,
                     other.mHidden,
                     other.mLastAudiblyAlertedMs,
-                    other.mNoisy,
                     other.mSmartActions,
                     other.mSmartReplies,
                     other.mCanBubble,
                     other.mIsTextChanged,
                     other.mIsConversation,
                     other.mShortcutInfo,
-                    other.mRankingAdjustment,
                     other.mIsBubble,
                     other.mProposedImportance,
                     other.mSensitiveContent,
@@ -2419,13 +2348,11 @@ public abstract class NotificationListenerService extends Service {
                     && Objects.equals(mImportanceExplanation, other.mImportanceExplanation)
                     && Objects.equals(mOverrideGroupKey, other.mOverrideGroupKey)
                     && Objects.equals(mChannel, other.mChannel)
-                    && Objects.equals(mOverridePeople, other.mOverridePeople)
                     && Objects.equals(mSnoozeCriteria, other.mSnoozeCriteria)
                     && Objects.equals(mShowBadge, other.mShowBadge)
                     && Objects.equals(mUserSentiment, other.mUserSentiment)
                     && Objects.equals(mHidden, other.mHidden)
                     && Objects.equals(mLastAudiblyAlertedMs, other.mLastAudiblyAlertedMs)
-                    && Objects.equals(mNoisy, other.mNoisy)
                     // Action.equals() doesn't exist so let's just compare list lengths
                     && ((mSmartActions == null ? 0 : mSmartActions.size())
                         == (other.mSmartActions == null ? 0 : other.mSmartActions.size()))
@@ -2436,7 +2363,6 @@ public abstract class NotificationListenerService extends Service {
                     // Shortcutinfo doesn't have equals either; use id
                     &&  Objects.equals((mShortcutInfo == null ? 0 : mShortcutInfo.getId()),
                     (other.mShortcutInfo == null ? 0 : other.mShortcutInfo.getId()))
-                    && Objects.equals(mRankingAdjustment, other.mRankingAdjustment)
                     && Objects.equals(mIsBubble, other.mIsBubble)
                     && Objects.equals(mProposedImportance, other.mProposedImportance)
                     && Objects.equals(mSensitiveContent, other.mSensitiveContent)

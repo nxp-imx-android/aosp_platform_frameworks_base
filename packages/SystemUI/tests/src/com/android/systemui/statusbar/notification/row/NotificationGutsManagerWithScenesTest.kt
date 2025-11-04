@@ -30,7 +30,6 @@ import android.os.Binder
 import android.os.fakeExecutorHandler
 import android.os.userManager
 import android.provider.Settings
-import android.service.notification.NotificationListenerService.Ranking
 import android.testing.TestableLooper.RunWithLooper
 import android.util.ArraySet
 import android.view.View
@@ -61,7 +60,6 @@ import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.shade.shadeControllerSceneImpl
 import com.android.systemui.shared.system.activityManagerWrapper
 import com.android.systemui.statusbar.NotificationPresenter
-import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
@@ -155,7 +153,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     @Mock private lateinit var contextTracker: UserContextProvider
     @Mock private lateinit var bubblesManager: BubblesManager
     @Mock private lateinit var peopleSpaceWidgetManager: PeopleSpaceWidgetManager
-    @Mock private lateinit var assistantFeedbackController: AssistantFeedbackController
 
     @Before
     fun setUp() {
@@ -191,7 +188,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 channelEditorDialogController,
                 packageDemotionInteractor,
                 contextTracker,
-                assistantFeedbackController,
                 Optional.of(bubblesManager),
                 UiEventLoggerFake(),
                 onUserInteractionCallback,
@@ -429,7 +425,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(false),
                 eq(false),
                 eq(true),
-                eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),
             )
@@ -439,7 +434,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     @Throws(Exception::class)
     fun testInitializeNotificationInfoView_PassesAlongProvisionedState() {
         val notificationInfoView = mock<NotificationInfo>()
-        val row = createTestNotificationRow() { setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE) }
+        val row = createTestNotificationRow()
 
         val sbn = if (NotificationBundleUi.isEnabled) row.entryAdapter.sbn else row.entryLegacy.sbn
         val ranking =
@@ -469,7 +464,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(false),
                 eq(false), /* wasShownHighPriority */
                 eq(false),
-                eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),
             )
@@ -508,7 +502,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(false),
                 eq(false), /* wasShownHighPriority */
                 eq(false),
-                eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),
             )

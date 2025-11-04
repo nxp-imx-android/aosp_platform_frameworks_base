@@ -167,9 +167,6 @@ import static android.service.notification.NotificationListenerService.REASON_SN
 import static android.service.notification.NotificationListenerService.REASON_TIMEOUT;
 import static android.service.notification.NotificationListenerService.REASON_UNAUTOBUNDLED;
 import static android.service.notification.NotificationListenerService.REASON_USER_STOPPED;
-import static android.service.notification.NotificationListenerService.Ranking.RANKING_DEMOTED;
-import static android.service.notification.NotificationListenerService.Ranking.RANKING_PROMOTED;
-import static android.service.notification.NotificationListenerService.Ranking.RANKING_UNCHANGED;
 import static android.service.notification.NotificationListenerService.Ranking.VISIBILITY_NO_OVERRIDE;
 import static android.service.notification.NotificationListenerService.TRIM_FULL;
 import static android.service.notification.NotificationListenerService.TRIM_LIGHT;
@@ -12462,22 +12459,17 @@ public class NotificationManagerService extends SystemService {
                     record.getImportanceExplanation(),
                     record.getSbn().getOverrideGroupKey(),
                     effectiveChannel,
-                    record.getPeopleOverride(),
                     record.getSnoozeCriteria(),
                     record.canShowBadge(),
                     record.getUserSentiment(),
                     record.isHidden(),
                     record.getLastAudiblyAlertedMs(),
-                    record.getSound() != null || record.getVibration() != null,
                     smartActions,
                     smartReplies,
                     record.canBubble(),
                     record.isTextChanged(),
                     record.isConversation(),
                     record.getShortcutInfo(),
-                    record.getRankingScore() == 0
-                            ? RANKING_UNCHANGED
-                            : (record.getRankingScore() > 0 ?  RANKING_PROMOTED : RANKING_DEMOTED),
                     record.getNotification().isBubbleNotification(),
                     record.getProposedImportance(),
                     hasSensitiveContent,

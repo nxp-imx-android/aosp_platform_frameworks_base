@@ -162,12 +162,8 @@ public class ConversationLayout extends FrameLayout
     private int mFacePileProtectionWidth;
     private int mFacePileProtectionWidthExpanded;
     private boolean mImportantConversation;
-    private View mFeedbackIcon;
-    private float mMinTouchSize;
-    private Icon mConversationIcon;
     private Icon mShortcutIcon;
     private View mAppNameDivider;
-    private final TouchDelegateComposite mTouchDelegate = new TouchDelegateComposite(this);
     private final ArrayList<MessagingLinearLayout.MessagingChild> mToRecycle = new ArrayList<>();
     private boolean mPrecomputedTextEnabled = false;
     @Nullable
@@ -213,8 +209,6 @@ public class ConversationLayout extends FrameLayout
         mConversationIconView = findViewById(R.id.conversation_icon);
         mConversationIconContainer = findViewById(R.id.conversation_icon_container);
         mIcon = findViewById(R.id.icon);
-        mFeedbackIcon = findViewById(com.android.internal.R.id.feedback);
-        mMinTouchSize = 48 * getResources().getDisplayMetrics().density;
         mImportanceRingView = findViewById(R.id.conversation_icon_badge_ring);
         mConversationIconBadge = findViewById(R.id.conversation_icon_badge);
         mConversationIconBadgeBg = findViewById(R.id.conversation_icon_badge_bg);
@@ -1559,31 +1553,6 @@ public class ConversationLayout extends FrameLayout
                 }
             });
         }
-        mTouchDelegate.clear();
-        if (mFeedbackIcon.getVisibility() == VISIBLE) {
-            float width = Math.max(mMinTouchSize, mFeedbackIcon.getWidth());
-            float height = Math.max(mMinTouchSize, mFeedbackIcon.getHeight());
-            final Rect feedbackTouchRect = new Rect();
-            feedbackTouchRect.left = (int) ((mFeedbackIcon.getLeft() + mFeedbackIcon.getRight())
-                    / 2.0f - width / 2.0f);
-            feedbackTouchRect.top = (int) ((mFeedbackIcon.getTop() + mFeedbackIcon.getBottom())
-                    / 2.0f - height / 2.0f);
-            feedbackTouchRect.bottom = (int) (feedbackTouchRect.top + height);
-            feedbackTouchRect.right = (int) (feedbackTouchRect.left + width);
-
-            getRelativeTouchRect(feedbackTouchRect, mFeedbackIcon);
-            mTouchDelegate.add(new TouchDelegate(feedbackTouchRect, mFeedbackIcon));
-        }
-
-        setTouchDelegate(mTouchDelegate);
-    }
-
-    private void getRelativeTouchRect(Rect touchRect, View view) {
-        ViewGroup viewGroup = (ViewGroup) view.getParent();
-        while (viewGroup != this) {
-            touchRect.offset(viewGroup.getLeft(), viewGroup.getTop());
-            viewGroup = (ViewGroup) viewGroup.getParent();
-        }
     }
 
     public MessagingLinearLayout getMessagingLinearLayout() {
@@ -1771,45 +1740,11 @@ public class ConversationLayout extends FrameLayout
     }
 
     @Nullable
-    public Icon getConversationIcon() {
-        return mConversationIcon;
-    }
-
-    @Nullable
     public ConversationHeaderData getConversationHeaderData() {
         return mConversationHeaderData;
     }
 
     private static boolean transparentBadgeRingEnabled() {
         return notificationsRedesignTemplates() && notificationTransparentBadgeRing();
-    }
-
-    private static class TouchDelegateComposite extends TouchDelegate {
-        private final ArrayList<TouchDelegate> mDelegates = new ArrayList<>();
-
-        private TouchDelegateComposite(View view) {
-            super(new Rect(), view);
-        }
-
-        public void add(TouchDelegate delegate) {
-            mDelegates.add(delegate);
-        }
-
-        public void clear() {
-            mDelegates.clear();
-        }
-
-        @Override
-        public boolean onTouchEvent(MotionEvent event) {
-            float x = event.getX();
-            float y = event.getY();
-            for (TouchDelegate delegate : mDelegates) {
-                event.setLocation(x, y);
-                if (delegate.onTouchEvent(event)) {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 }
