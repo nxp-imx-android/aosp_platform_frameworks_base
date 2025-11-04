@@ -16,24 +16,54 @@
 
 package com.android.server.camera;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import androidx.test.InstrumentationRegistry;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
+import android.app.job.JobScheduler;
 import android.content.Context;
+import android.hardware.CameraSessionStats;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
+import android.util.StatsEvent;
+import android.util.StatsEventTestUtils;
+import android.util.StatsLog;
 import android.view.Display;
 import android.view.Surface;
 
+import androidx.test.InstrumentationRegistry;
+
+import com.android.internal.util.FrameworkStatsLog;
+import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.os.AtomsProto.Atom;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(JUnit4.class)
 public class CameraServiceProxyTest {
+    @Rule
+    public final ExtendedMockitoRule mExtendedMockitoRule =
+            new ExtendedMockitoRule.Builder(this).mockStatic(StatsLog.class).build();
+
+    @Captor ArgumentCaptor<StatsEvent> mStatsEventCaptor;
+    @Mock private JobScheduler mMockJobScheduler;
+
+    private static final long SLEEP_TIME_MS = 1000;
 
     @Test
     public void testGetCropRotateScale() {
@@ -97,4 +127,57 @@ public class CameraServiceProxyTest {
                     /*ignoreResizableAndSdkCheck*/true)).isEqualTo(value);
         });
     }
+
+    @Test
+    public void testLogErrorState() throws Exception {
+        Context testContext = InstrumentationRegistry.getContext();
+        Context ctx = spy(testContext);
+        CameraServiceProxy cameraServiceProxy = new CameraServiceProxy(ctx);
+        when(ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE))
+                .thenReturn(mMockJobScheduler);
+
+        when(mMockJobScheduler.schedule(any())).thenReturn(1);
+
+        Class<?> currentClass = this.getClass();
+        Package currentPackage = currentClass.getPackage();
+        String packageName = "testingPackageName";
+        if (currentPackage != null) {
+            packageName = currentPackage.getName();
+        }
+
+        CameraSessionStats cameraSessionStats = new CameraSessionStats("0", 1,
+                3, packageName, 2, false, 917,
+                0, 0, 0, 6379409415148806677L,
+                2,
+                FrameworkStatsLog.CAMERA_ACTION_EVENT__ERROR_STATE__CAMERA_HAL_REQUEST_ERROR);
+
+        int usageEventSize = cameraServiceProxy.getUsageEventCount();
+        if (usageEventSize > 0) {
+            cameraServiceProxy.dumpCameraEvents();
+            sleepForSomeTIme(SLEEP_TIME_MS);
+        }
+        cameraServiceProxy.updateActivityCount(cameraSessionStats);
+
+        cameraServiceProxy.dumpCameraEvents();
+        sleepForSomeTIme(SLEEP_TIME_MS);
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()), atLeastOnce());
+        Atom atom = StatsEventTestUtils.convertToAtom(mStatsEventCaptor.getValue());
+
+        assertThat(atom.hasCameraActionEvent()).isTrue();
+        assertThat(atom.getCameraActionEvent().getPackageName()).isEqualTo(packageName);
+        assertThat(atom.getCameraActionEvent().getErrorState().getNumber())
+                .isEqualTo(FrameworkStatsLog
+                        .CAMERA_ACTION_EVENT__ERROR_STATE__CAMERA_HAL_REQUEST_ERROR);
+    }
+
+    private void sleepForSomeTIme(long sleepTime) {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        try {
+            latch.await(sleepTime, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }
