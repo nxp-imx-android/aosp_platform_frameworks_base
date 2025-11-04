@@ -24,7 +24,6 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
-import com.android.systemui.Flags.FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.PendingDisplay
@@ -411,7 +410,6 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION)
     fun onPrivacyItemsChanged_notDefaultCamera_showsAnimation() =
         testScope.runTest {
             val privacyList =
@@ -427,7 +425,6 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION)
     fun onPrivacyItemsChanged_defaultCameraApp_cameraAccess_doesNotShowAnimation() =
         testScope.runTest {
             val privacyList =
@@ -443,7 +440,6 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION)
     fun onPrivacyItemsChanged_defaultCameraApp_microphoneAccess_doesNotShowAnimation() =
         testScope.runTest {
             val privacyList =
@@ -459,7 +455,6 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION)
     fun onPrivacyItemsChanged_defaultCamera_thenAnotherApp_showsAnimation() =
         testScope.runTest {
             val privacyList1 =
@@ -488,41 +483,8 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @DisableFlags(FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION)
-    fun onPrivacyItemsChanged_defaultCameraApp_cameraAccess_flagOff_showsAnimation() =
-        testScope.runTest {
-            val privacyList =
-                listOf(
-                    PrivacyItem(
-                        application = PrivacyApplication(DEFAULT_CAMERA_PACKAGE_NAME, 1),
-                        privacyType = PrivacyType.TYPE_CAMERA,
-                    )
-                )
-            systemEventCoordinator.getPrivacyStateListener().onPrivacyItemsChanged(privacyList)
-
-            verify(scheduler).onStatusEvent(argThat { it.showAnimation })
-        }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION)
-    fun onPrivacyItemsChanged_defaultCameraApp_microphoneAccess_flagOff_showsAnimation() =
-        testScope.runTest {
-            val privacyList =
-                listOf(
-                    PrivacyItem(
-                        application = PrivacyApplication(DEFAULT_CAMERA_PACKAGE_NAME, 1),
-                        privacyType = PrivacyType.TYPE_MICROPHONE,
-                    )
-                )
-            systemEventCoordinator.getPrivacyStateListener().onPrivacyItemsChanged(privacyList)
-
-            verify(scheduler).onStatusEvent(argThat { it.showAnimation })
-        }
-
-    @Test
     @EnableFlags(
         FLAG_LOCATION_INDICATORS_ENABLED,
-        FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION,
         FLAG_LOCATION_INDICATORS_ANIMATION,
     )
     fun onPrivacyItemsChanged_locationThenMicForDefaultCamera_noAnimation() =
@@ -559,7 +521,7 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(FLAG_LOCATION_INDICATORS_ENABLED, FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION)
+    @EnableFlags(FLAG_LOCATION_INDICATORS_ENABLED)
     @DisableFlags(FLAG_LOCATION_INDICATORS_ANIMATION)
     fun onPrivacyItemsChanged_locationThenMicForDefaultCamera_locationAnimationOff_noAnimation() =
         testScope.runTest {
@@ -595,7 +557,6 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
     @Test
     @EnableFlags(
         FLAG_LOCATION_INDICATORS_ENABLED,
-        FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION,
         FLAG_LOCATION_INDICATORS_ANIMATION,
     )
     fun onPrivacyItemsChanged_micForDefaultCameraThenLocation_showsAnimationOnce() =
@@ -634,7 +595,7 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(FLAG_LOCATION_INDICATORS_ENABLED, FLAG_STATUS_BAR_PRIVACY_CHIP_ANIMATION_EXEMPTION)
+    @EnableFlags(FLAG_LOCATION_INDICATORS_ENABLED)
     @DisableFlags(FLAG_LOCATION_INDICATORS_ANIMATION)
     fun onPrivacyItemsChanged_micForDefaultCameraThenLocation_locationAnimationOff_doesNotShowAnimation() =
         testScope.runTest {
