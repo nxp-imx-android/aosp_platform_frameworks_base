@@ -20,29 +20,27 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.net.NetworkStats;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.ICancellationSignal;
 import android.os.IBinder;
+import android.os.ICancellationSignal;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.ResultReceiver;
 import android.os.WorkSource;
-import android.net.NetworkStats;
-import android.net.Uri;
 import android.service.carrier.CarrierIdentifier;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.CallForwardingInfo;
 import android.telephony.CarrierRestrictionRules;
+import android.telephony.CellBroadcastIdRange;
 import android.telephony.CellIdentity;
 import android.telephony.CellInfo;
-import android.telephony.CellBroadcastIdRange;
 import android.telephony.ClientRequestStats;
-import android.telephony.ThermalMitigationRequest;
-import android.telephony.gba.UaSecurityProtocolIdentifier;
 import android.telephony.IBootstrapAuthenticationCallback;
-import android.telephony.IccOpenLogicalChannelResponse;
 import android.telephony.ICellInfoCallback;
+import android.telephony.IccOpenLogicalChannelResponse;
 import android.telephony.ModemActivityInfo;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.NetworkScanRequest;
@@ -55,8 +53,13 @@ import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SignalStrengthUpdateRequest;
 import android.telephony.TelephonyHistogram;
+import android.telephony.ThermalMitigationRequest;
+import android.telephony.UiccCardInfo;
+import android.telephony.UiccSlotInfo;
+import android.telephony.UiccSlotMapping;
 import android.telephony.VisualVoicemailSmsFilterSettings;
 import android.telephony.emergency.EmergencyNumber;
+import android.telephony.gba.UaSecurityProtocolIdentifier;
 import android.telephony.ims.RcsClientConfiguration;
 import android.telephony.ims.RcsContactUceCapability;
 import android.telephony.ims.aidl.IFeatureProvisioningCallback;
@@ -73,11 +76,12 @@ import android.telephony.satellite.ISatelliteCapabilitiesCallback;
 import android.telephony.satellite.ISatelliteCommunicationAccessStateCallback;
 import android.telephony.satellite.ISatelliteDatagramCallback;
 import android.telephony.satellite.ISatelliteDisallowedReasonsCallback;
-import android.telephony.satellite.ISatelliteTransmissionUpdateCallback;
-import android.telephony.satellite.ISatelliteProvisionStateCallback;
 import android.telephony.satellite.ISatelliteModemStateCallback;
+import android.telephony.satellite.ISatelliteProvisionStateCallback;
+import android.telephony.satellite.ISatelliteTransmissionUpdateCallback;
 import android.telephony.satellite.ISelectedNbIotSatelliteSubscriptionCallback;
 import android.telephony.satellite.NtnSignalStrength;
+import android.telephony.satellite.PlmnSatelliteConfig;
 import android.telephony.satellite.SatelliteCapabilities;
 import android.telephony.satellite.SatelliteDatagram;
 import android.telephony.satellite.SatelliteSubscriberInfo;
@@ -95,10 +99,6 @@ import com.android.internal.telephony.OperatorInfo;
 import java.util.List;
 import java.util.Map;
 
-import android.telephony.UiccCardInfo;
-import android.telephony.UiccSlotInfo;
-import android.telephony.UiccSlotMapping;
-
 /**
  * Interface used to interact with the phone.  Mostly this is used by the
  * TelephonyManager class.  A few places are still using this directly.
@@ -107,26 +107,23 @@ import android.telephony.UiccSlotMapping;
  * @hide
  */
 interface ITelephony {
-
     /**
      * Dial a number. This doesn't place the call. It displays
      * the Dialer screen.
      * @param number the number to be dialed. If null, this
      * would display the Dialer screen with no number pre-filled.
      */
-    @UnsupportedAppUsage
-    void dial(String number);
+    @UnsupportedAppUsage void dial(String number);
 
     /**
      * Place a call to the specified number.
      * @param callingPackage The package making the call.
      * @param number the number to be called.
      */
-    @UnsupportedAppUsage
-    void call(String callingPackage, String number);
+    @UnsupportedAppUsage void call(String callingPackage, String number);
 
     /** @deprecated Use {@link #isRadioOnWithFeature(String, String) instead */
-    @UnsupportedAppUsage(maxTargetSdk = 30, trackingBug = 170729553)
+    @UnsupportedAppUsage(maxTargetSdk=30, trackingBug=170729553)
     boolean isRadioOn(String callingPackage);
 
     /**
@@ -140,7 +137,7 @@ interface ITelephony {
     /**
      * @deprecated Use {@link #isRadioOnForSubscriberWithFeature(int, String, String) instead
      */
-    @UnsupportedAppUsage(maxTargetSdk = 30, trackingBug = 170729553)
+    @UnsupportedAppUsage(maxTargetSdk=30, trackingBug=170729553)
     boolean isRadioOnForSubscriber(int subId, String callingPackage);
 
     /**
@@ -150,7 +147,8 @@ interface ITelephony {
      * @param callingFeatureId The feature in the package.
      * @return returns true if the radio is on.
      */
-    boolean isRadioOnForSubscriberWithFeature(int subId, String callingPackage, String callingFeatureId);
+    boolean isRadioOnForSubscriberWithFeature(
+            int subId, String callingPackage, String callingFeatureId);
 
     /**
      * Set the user-set status for enriched calling with call composer.
@@ -208,9 +206,7 @@ interface ITelephony {
      * @param dialString the MMI command to be executed.
      * @return true if MMI command is executed.
      */
-    @UnsupportedAppUsage
-    boolean handlePinMmi(String dialString);
-
+    @UnsupportedAppUsage boolean handlePinMmi(String dialString);
 
     /**
      * Handles USSD commands.
@@ -229,14 +225,13 @@ interface ITelephony {
      * @param subId user preferred subId.
      * @return true if MMI command is executed.
      */
-    @UnsupportedAppUsage(maxTargetSdk = 30, trackingBug = 170729553)
+    @UnsupportedAppUsage(maxTargetSdk=30, trackingBug=170729553)
     boolean handlePinMmiForSubscriber(int subId, String dialString);
 
     /**
      * Toggles the radio on or off.
      */
-    @UnsupportedAppUsage
-    void toggleRadioOnOff();
+    @UnsupportedAppUsage void toggleRadioOnOff();
 
     /**
      * Toggles the radio on or off on particular subId.
@@ -247,8 +242,7 @@ interface ITelephony {
     /**
      * Set the radio to on or off
      */
-    @UnsupportedAppUsage
-    boolean setRadio(boolean turnOn);
+    @UnsupportedAppUsage boolean setRadio(boolean turnOn);
 
     /**
      * Set the radio to on or off on particular subId.
@@ -302,8 +296,7 @@ interface ITelephony {
     /**
      * This method has been removed due to security and stability issues.
      */
-    @UnsupportedAppUsage
-    void updateServiceLocation();
+    @UnsupportedAppUsage void updateServiceLocation();
 
     /**
      * Version of updateServiceLocation that records the caller and validates permissions.
@@ -313,26 +306,22 @@ interface ITelephony {
     /**
      * This method has been removed due to security and stability issues.
      */
-    @UnsupportedAppUsage
-    void enableLocationUpdates();
+    @UnsupportedAppUsage void enableLocationUpdates();
 
     /**
      * This method has been removed due to security and stability issues.
      */
-    @UnsupportedAppUsage
-    void disableLocationUpdates();
+    @UnsupportedAppUsage void disableLocationUpdates();
 
     /**
      * Allow mobile data connections.
      */
-    @UnsupportedAppUsage
-    boolean enableDataConnectivity(String callingPackage);
+    @UnsupportedAppUsage boolean enableDataConnectivity(String callingPackage);
 
     /**
      * Disallow mobile data connections.
      */
-    @UnsupportedAppUsage
-    boolean disableDataConnectivity(String callingPackage);
+    @UnsupportedAppUsage boolean disableDataConnectivity(String callingPackage);
 
     /**
      * Report whether data connectivity is possible.
@@ -354,8 +343,7 @@ interface ITelephony {
      */
     List<NeighboringCellInfo> getNeighboringCellInfo(String callingPkg, String callingFeatureId);
 
-    @UnsupportedAppUsage
-    int getCallState();
+    @UnsupportedAppUsage int getCallState();
 
     /**
      * Returns the call state for a specific subscriiption.
@@ -365,8 +353,7 @@ interface ITelephony {
     /**
      * Replaced by getDataActivityForSubId.
      */
-    @UnsupportedAppUsage(maxTargetSdk = 28)
-    int getDataActivity();
+    @UnsupportedAppUsage(maxTargetSdk=28) int getDataActivity();
 
     /**
      * Returns a constant indicating the type of activity on a data connection
@@ -383,8 +370,7 @@ interface ITelephony {
     /**
      * Replaced by getDataStateForSubId.
      */
-    @UnsupportedAppUsage(maxTargetSdk = 28)
-    int getDataState();
+    @UnsupportedAppUsage(maxTargetSdk=28) int getDataState();
 
     /**
      * Returns a constant indicating the current data connection state
@@ -402,28 +388,28 @@ interface ITelephony {
      */
     boolean setVoiceMailNumber(int subId, String alphaTag, String number);
 
-     /**
-      * Sets the voice activation state for a particular subscriber.
-      */
+    /**
+     * Sets the voice activation state for a particular subscriber.
+     */
     void setVoiceActivationState(int subId, int activationState);
 
-     /**
-      * Sets the data activation state for a particular subscriber.
-      */
+    /**
+     * Sets the data activation state for a particular subscriber.
+     */
     void setDataActivationState(int subId, int activationState);
 
-     /**
-      * Returns the voice activation state for a particular subscriber.
-      * @param subId user preferred sub
-      * @param callingPackage package queries voice activation state
-      */
+    /**
+     * Returns the voice activation state for a particular subscriber.
+     * @param subId user preferred sub
+     * @param callingPackage package queries voice activation state
+     */
     int getVoiceActivationState(int subId, String callingPackage);
 
-     /**
-      * Returns the data activation state for a particular subscriber.
-      * @param subId user preferred sub
-      * @param callingPackage package queris data activation state
-      */
+    /**
+     * Returns the data activation state for a particular subscriber.
+     * @param subId user preferred sub
+     * @param callingPackage package queris data activation state
+     */
     int getDataActivationState(int subId, String callingPackage);
 
     /**
@@ -431,13 +417,13 @@ interface ITelephony {
      * @param subId user preferred subId.
      * Returns the unread count of voicemails
      */
-    int getVoiceMessageCountForSubscriber(int subId, String callingPackage,
-            String callingFeatureId);
+    int getVoiceMessageCountForSubscriber(
+            int subId, String callingPackage, String callingFeatureId);
 
     /**
-      * Returns true if current state supports both voice and data
-      * simultaneously. This can change based on location or network condition.
-      */
+     * Returns true if current state supports both voice and data
+     * simultaneously. This can change based on location or network condition.
+     */
     boolean isConcurrentVoiceAndDataAllowed(int subId);
 
     Bundle getVisualVoicemailSettings(String callingPackage, int subId);
@@ -445,14 +431,14 @@ interface ITelephony {
     String getVisualVoicemailPackageName(String callingPackage, String callingFeatureId, int subId);
 
     // Not oneway, caller needs to make sure the vaule is set before receiving a SMS
-    void enableVisualVoicemailSmsFilter(String callingPackage, int subId,
-            in VisualVoicemailSmsFilterSettings settings);
+    void enableVisualVoicemailSmsFilter(
+            String callingPackage, int subId, in VisualVoicemailSmsFilterSettings settings);
 
     oneway void disableVisualVoicemailSmsFilter(String callingPackage, int subId);
 
     // Get settings set by the calling package
-    VisualVoicemailSmsFilterSettings getVisualVoicemailSmsFilterSettings(String callingPackage,
-            int subId);
+    VisualVoicemailSmsFilterSettings getVisualVoicemailSmsFilterSettings(
+            String callingPackage, int subId);
 
     /**
      *  Get settings set by the current default dialer, Internal use only.
@@ -465,7 +451,8 @@ interface ITelephony {
      * Requires caller to be the default dialer and have SEND_SMS permission
      */
     void sendVisualVoicemailSmsForSubscriber(in String callingPackage, String callingAttributeTag,
-            in int subId, in String number, in int port, in String text, in PendingIntent sentIntent);
+            in int subId, in String number, in int port, in String text,
+            in PendingIntent sentIntent);
 
     // Send the special dialer code. The IPC caller must be the current default dialer.
     void sendDialerSpecialCode(String callingPackageName, String inputCode);
@@ -491,24 +478,21 @@ interface ITelephony {
      * @param callingPackage package making the call.
      * @param callingFeatureId The feature in the package.
      */
-    int getDataNetworkTypeForSubscriber(int subId, String callingPackage,
-            String callingFeatureId);
+    int getDataNetworkTypeForSubscriber(int subId, String callingPackage, String callingFeatureId);
 
     /**
-      * Returns the voice network type of a subId
-      * @param subId user preferred subId.
-      * @param callingPackage package making the call.getLteOnCdmaMode
-      * @param callingFeatureId The feature in the package.
-      * Returns the network type
-      */
-    int getVoiceNetworkTypeForSubscriber(int subId, String callingPackage,
-            String callingFeatureId);
+     * Returns the voice network type of a subId
+     * @param subId user preferred subId.
+     * @param callingPackage package making the call.getLteOnCdmaMode
+     * @param callingFeatureId The feature in the package.
+     * Returns the network type
+     */
+    int getVoiceNetworkTypeForSubscriber(int subId, String callingPackage, String callingFeatureId);
 
     /**
      * Return true if an ICC card is present
      */
-    @UnsupportedAppUsage
-    boolean hasIccCard();
+    @UnsupportedAppUsage boolean hasIccCard();
 
     /**
      * Return true if an ICC card is present for a subId.
@@ -526,8 +510,8 @@ interface ITelephony {
      * Request a cell information update for the specified subscription,
      * reported via the CellInfoCallback.
      */
-    void requestCellInfoUpdate(int subId, in ICellInfoCallback cb, String callingPkg,
-            String callingFeatureId);
+    void requestCellInfoUpdate(
+            int subId, in ICellInfoCallback cb, String callingPkg, String callingFeatureId);
 
     /**
      * Request a cell information update for the specified subscription,
@@ -564,7 +548,8 @@ interface ITelephony {
     boolean iccCloseLogicalChannel(in IccLogicalChannelRequest request);
 
     /**
-     * Transmit an APDU to the ICC card over a logical channel using the physical slot index and port index.
+     * Transmit an APDU to the ICC card over a logical channel using the physical slot index and
+     * port index.
      *
      * Input parameters equivalent to TS 27.007 AT+CGLA command.
      *
@@ -582,8 +567,8 @@ interface ITelephony {
      * @return The APDU response from the ICC card with the status appended at
      *            the end.
      */
-    String iccTransmitApduLogicalChannelByPort(int slotIndex, int portIndex, int channel, int cla, int instruction,
-            int p1, int p2, int p3, String data);
+    String iccTransmitApduLogicalChannelByPort(int slotIndex, int portIndex, int channel, int cla,
+            int instruction, int p1, int p2, int p3, String data);
 
     /**
      * Transmit an APDU to the ICC card over a logical channel.
@@ -603,12 +588,13 @@ interface ITelephony {
      * @return The APDU response from the ICC card with the status appended at
      *            the end.
      */
-    @UnsupportedAppUsage(trackingBug = 171933273)
-    String iccTransmitApduLogicalChannel(int subId, int channel, int cla, int instruction,
-            int p1, int p2, int p3, String data);
+    @UnsupportedAppUsage(trackingBug=171933273)
+    String iccTransmitApduLogicalChannel(
+            int subId, int channel, int cla, int instruction, int p1, int p2, int p3, String data);
 
     /**
-     * Transmit an APDU to the ICC card over the basic channel using the physical slot index and port index.
+     * Transmit an APDU to the ICC card over the basic channel using the physical slot index and
+     * port index.
      *
      * Input parameters equivalent to TS 27.007 AT+CSIM command.
      *
@@ -625,8 +611,8 @@ interface ITelephony {
      * @return The APDU response from the ICC card with the status appended at
      *            the end.
      */
-    String iccTransmitApduBasicChannelByPort(int slotIndex, int portIndex, String callingPackage, int cla,
-            int instruction, int p1, int p2, int p3, String data);
+    String iccTransmitApduBasicChannelByPort(int slotIndex, int portIndex, String callingPackage,
+            int cla, int instruction, int p1, int p2, int p3, String data);
 
     /**
      * Transmit an APDU to the ICC card over the basic channel.
@@ -660,8 +646,8 @@ interface ITelephony {
      * @param filePath
      * @return The APDU response.
      */
-    byte[] iccExchangeSimIO(int subId, int fileID, int command, int p1, int p2, int p3,
-            String filePath);
+    byte[] iccExchangeSimIO(
+            int subId, int fileID, int command, int p1, int p2, int p3, String filePath);
 
     /**
      * Send ENVELOPE to the SIM and returns the response.
@@ -723,18 +709,18 @@ interface ITelephony {
     boolean isTetheringApnRequiredForSubscriber(int subId);
 
     /**
-    * Enables framework IMS and triggers IMS Registration.
-    */
+     * Enables framework IMS and triggers IMS Registration.
+     */
     void enableIms(int slotId);
 
     /**
-    * Disables framework IMS and triggers IMS deregistration.
-    */
+     * Disables framework IMS and triggers IMS deregistration.
+     */
     void disableIms(int slotId);
 
     /**
-    * Toggle framework IMS disables and enables.
-    */
+     * Toggle framework IMS disables and enables.
+     */
     void resetIms(int slotIndex);
 
     /**
@@ -752,18 +738,19 @@ interface ITelephony {
     void unregisterImsFeatureCallback(in IImsServiceFeatureCallback callback);
 
     /**
-    * Returns the IImsRegistration associated with the slot and feature specified.
-    */
+     * Returns the IImsRegistration associated with the slot and feature specified.
+     */
     IImsRegistration getImsRegistration(int slotId, int feature);
 
     /**
-    * Returns the IImsConfig associated with the slot and feature specified.
-    */
+     * Returns the IImsConfig associated with the slot and feature specified.
+     */
     IImsConfig getImsConfig(int slotId, int feature);
 
     /**
-    *  @return true if the ImsService to bind to for the slot id specified was set, false otherwise.
-    */
+     *  @return true if the ImsService to bind to for the slot id specified was set, false
+     * otherwise.
+     */
     boolean setBoundImsServiceOverride(int slotIndex, int userId, boolean isCarrierService,
             in int[] featureTypes, in String packageName);
 
@@ -773,8 +760,8 @@ interface ITelephony {
     boolean clearCarrierImsServiceOverride(int slotIndex);
 
     /**
-    * @return the package name of the carrier/device ImsService associated with this slot.
-    */
+     * @return the package name of the carrier/device ImsService associated with this slot.
+     */
     String getBoundImsServicePackage(int slotIndex, boolean isCarrierImsService, int featureType);
 
     /**
@@ -797,8 +784,8 @@ interface ITelephony {
      * @param callingFeatureId The feature in the package
      * @return CellNetworkScanResult containing status of scan and networks.
      */
-    CellNetworkScanResult getCellNetworkScanResults(int subId, String callingPackage,
-            String callingFeatureId);
+    CellNetworkScanResult getCellNetworkScanResults(
+            int subId, String callingPackage, String callingFeatureId);
 
     /**
      * Perform a radio network scan and return the id of this scan.
@@ -815,7 +802,7 @@ interface ITelephony {
      */
     int requestNetworkScan(int subId, in boolean renounceFineLocationAccess,
             in NetworkScanRequest request, in Messenger messenger, in IBinder binder,
-	    in String callingPackage, String callingFeatureId);
+            in String callingPackage, String callingFeatureId);
 
     /**
      * Stop an existing radio network scan.
@@ -857,8 +844,8 @@ interface ITelephony {
      * @param callingPackage the package that changed set the allowed network types.
      * @return true on success; false on any failure.
      */
-    boolean setAllowedNetworkTypesForReason(int subId, int reason, long allowedNetworkTypes,
-            String callingPackage);
+    boolean setAllowedNetworkTypesForReason(
+            int subId, int reason, long allowedNetworkTypes, String callingPackage);
 
     /**
      * Get the user enabled state of Mobile Data.
@@ -870,8 +857,7 @@ interface ITelephony {
      *
      * @return true on enabled
      */
-    @UnsupportedAppUsage
-    boolean getDataEnabled(int subId);
+    @UnsupportedAppUsage boolean getDataEnabled(int subId);
 
     /**
      * Get the user enabled state of Mobile Data.
@@ -895,22 +881,22 @@ interface ITelephony {
      * @param enable true to turn on, else false
      * @param callingPackage the package that changed the data enabled state
      */
-     void setDataEnabledForReason(int subId, int reason, boolean enable, String callingPackage);
+    void setDataEnabledForReason(int subId, int reason, boolean enable, String callingPackage);
 
     /**
      * Return whether data is enabled for certain reason
      * @param subId user preferred subId.       .
      * @param reason the reason the data enable change is taking place
      * @return true on enabled
-    */
+     */
     boolean isDataEnabledForReason(int subId, int reason);
 
-     /**
+    /**
      * Checks if manual network selection is allowed.
      *
      * @return {@code true} if manual network selection is allowed, otherwise return {@code false}.
      */
-     boolean isManualNetworkSelectionAllowed(int subId);
+    boolean isManualNetworkSelectionAllowed(int subId);
 
     /**
      * Set IMS registration state
@@ -1087,8 +1073,8 @@ interface ITelephony {
      */
     int getRadioAccessFamily(in int phoneId, String callingPackage);
 
-    void uploadCallComposerPicture(int subscriptionId, String callingPackage,
-            String contentType, in ParcelFileDescriptor fd, in ResultReceiver callback);
+    void uploadCallComposerPicture(int subscriptionId, String callingPackage, String contentType,
+            in ParcelFileDescriptor fd, in ResultReceiver callback);
 
     /**
      * Enables or disables video calling.
@@ -1161,29 +1147,28 @@ interface ITelephony {
      */
     boolean isWifiCallingAvailable(int subId);
 
-     /**
+    /**
      * Returns the Status of VT (video telephony) for the subscription ID specified.
      */
     boolean isVideoTelephonyAvailable(int subId);
 
     /**
-    * Returns the MMTEL IMS registration technology for the subsciption ID specified.
-    */
+     * Returns the MMTEL IMS registration technology for the subsciption ID specified.
+     */
     int getImsRegTechnologyForMmTel(int subId);
 
     /** @deprecated Use {@link #getDeviceIdWithFeature(String, String) instead */
-    @UnsupportedAppUsage
-    String getDeviceId(String callingPackage);
+    @UnsupportedAppUsage String getDeviceId(String callingPackage);
 
     /**
-      * Returns the unique device ID of phone, for example, the IMEI for
-      * GSM and the MEID for CDMA phones. Return null if device ID is not available.
-      *
-      * @param callingPackage The package making the call.
-      * @param callingFeatureId The feature in the package
-      * <p>Requires Permission:
-      *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
-      */
+     * Returns the unique device ID of phone, for example, the IMEI for
+     * GSM and the MEID for CDMA phones. Return null if device ID is not available.
+     *
+     * @param callingPackage The package making the call.
+     * @param callingFeatureId The feature in the package
+     * <p>Requires Permission:
+     *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
+     */
     String getDeviceIdWithFeature(String callingPackage, String callingFeatureId);
 
     /**
@@ -1223,8 +1208,8 @@ interface ITelephony {
      * <p>Requires Permission:
      *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
      */
-    String getDeviceSoftwareVersionForSlot(int slotIndex, String callingPackage,
-            String callingFeatureId);
+    String getDeviceSoftwareVersionForSlot(
+            int slotIndex, String callingPackage, String callingFeatureId);
 
     /**
      * Returns the subscription ID associated with the specified PhoneAccountHandle.
@@ -1291,8 +1276,8 @@ interface ITelephony {
      * @param uri The URI for the ringtone to play when receiving a voicemail from a specific
      * PhoneAccount.
      */
-    void setVoicemailRingtoneUri(String callingPackage,
-            in PhoneAccountHandle phoneAccountHandle, in Uri uri);
+    void setVoicemailRingtoneUri(
+            String callingPackage, in PhoneAccountHandle phoneAccountHandle, in Uri uri);
 
     /**
      * Returns whether vibration is set for voicemail notification in Phone settings.
@@ -1314,8 +1299,8 @@ interface ITelephony {
      * @param enabled Whether to enable or disable vibration for voicemail notifications from a
      * specific PhoneAccount.
      */
-    void setVoicemailVibrationEnabled(String callingPackage,
-            in PhoneAccountHandle phoneAccountHandle, boolean enabled);
+    void setVoicemailVibrationEnabled(
+            String callingPackage, in PhoneAccountHandle phoneAccountHandle, boolean enabled);
 
     /**
      * Returns a list of packages that have carrier privileges for the specific phone.
@@ -1323,10 +1308,10 @@ interface ITelephony {
      */
     List<String> getPackagesWithCarrierPrivileges(int phoneId);
 
-     /**
-      * Returns a list of packages that have carrier privileges.
-      * Requires that the calling app has READ_PRIVILEGED_PHONE_STATE permission
-      */
+    /**
+     * Returns a list of packages that have carrier privileges.
+     * Requires that the calling app has READ_PRIVILEGED_PHONE_STATE permission
+     */
     List<String> getPackagesWithCarrierPrivilegesForAllPhones();
 
     /**
@@ -1468,11 +1453,11 @@ interface ITelephony {
      */
     void carrierActionResetAll(int subId);
 
-    void getCallForwarding(int subId, int callForwardingReason,
-            ICallForwardingInfoCallback callback);
+    void getCallForwarding(
+            int subId, int callForwardingReason, ICallForwardingInfoCallback callback);
 
-    void setCallForwarding(int subId, in CallForwardingInfo callForwardingInfo,
-            IIntegerConsumer callback);
+    void setCallForwarding(
+            int subId, in CallForwardingInfo callForwardingInfo, IIntegerConsumer callback);
 
     void getCallWaitingStatus(int subId, IIntegerConsumer callback);
 
@@ -1486,8 +1471,8 @@ interface ITelephony {
      * @param subId Subscription index
      * @hide
      */
-    List<ClientRequestStats> getClientRequestStats(String callingPackage, String callingFeatureId,
-            int subid);
+    List<ClientRequestStats> getClientRequestStats(
+            String callingPackage, String callingFeatureId, int subid);
 
     /**
      * Set SIM card power state.
@@ -1515,8 +1500,8 @@ interface ITelephony {
      * @param subId subscription ID used for authentication
      * @param appType the icc application type, like {@link #APPTYPE_USIM}
      */
-    String[] getForbiddenPlmns(int subId, int appType, String callingPackage,
-             String callingFeatureId);
+    String[] getForbiddenPlmns(
+            int subId, int appType, String callingPackage, String callingFeatureId);
 
     /**
      * Set the forbidden PLMN list from the givven app type (ex APPTYPE_USIM) on a particular
@@ -1615,9 +1600,10 @@ interface ITelephony {
      *
      * @return {@code true} if the switch succeeds, {@code false} if the switch fails.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-                      + "android.Manifest.permission.MODIFY_PHONE_STATE)")
-    boolean setSimSlotMapping(in List<UiccSlotMapping> slotMapping);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.MODIFY_PHONE_STATE)")
+    boolean
+    setSimSlotMapping(in List<UiccSlotMapping> slotMapping);
 
     /**
      * Returns whether mobile data roaming is enabled on the subscription with id {@code subId}.
@@ -1656,8 +1642,8 @@ interface ITelephony {
      * @param carrierServicePackage The package that should be marked as the carrier service
      *     package, or {@code null} to disable the override.
      */
-    void setCarrierServicePackageOverride(int subId, String carrierServicePackage,
-                String callingPackage);
+    void setCarrierServicePackageOverride(
+            int subId, String carrierServicePackage, String callingPackage);
 
     /**
      * A test API to return installed carrier id list version.
@@ -1674,18 +1660,18 @@ interface ITelephony {
      * How many modems can have simultaneous data connections.
      * @hide
      */
-    int getNumberOfModemsWithSimultaneousDataConnections(int subId, String callingPackage,
-            String callingFeatureId);
+    int getNumberOfModemsWithSimultaneousDataConnections(
+            int subId, String callingPackage, String callingFeatureId);
 
     /**
      * Return the network selection mode on the subscription with id {@code subId}.
      */
-     int getNetworkSelectionMode(int subId);
+    int getNetworkSelectionMode(int subId);
 
-     /**
+    /**
      * Return true if the device is in emergency sms mode, false otherwise.
      */
-     boolean isInEmergencySmsMode();
+    boolean isInEmergencySmsMode();
 
     /**
      * Return the modem radio power state for slot index.
@@ -1699,9 +1685,9 @@ interface ITelephony {
      * Adds an IMS registration status callback for the subscription id specified.
      */
     void registerImsRegistrationCallback(int subId, IImsRegistrationCallback c);
-     /**
-      * Removes an existing IMS registration status callback for the subscription specified.
-      */
+    /**
+     * Removes an existing IMS registration status callback for the subscription specified.
+     */
     void unregisterImsRegistrationCallback(int subId, IImsRegistrationCallback c);
 
     /**
@@ -1747,8 +1733,8 @@ interface ITelephony {
     /**
      * Return whether or not the MmTel capability is supported for the requested transport type.
      */
-    void isMmTelCapabilitySupported(int subId, IIntegerConsumer callback, int capability,
-            int transportType);
+    void isMmTelCapabilitySupported(
+            int subId, IIntegerConsumer callback, int capability, int transportType);
 
     /**
      * Returns true if the user's setting for 4G LTE is enabled, for the subscription specified.
@@ -1867,20 +1853,20 @@ interface ITelephony {
     /**
      * Register an IMS provisioning change callback with Telephony.
      */
-    void registerFeatureProvisioningChangedCallback(int subId,
-            IFeatureProvisioningCallback callback);
+    void registerFeatureProvisioningChangedCallback(
+            int subId, IFeatureProvisioningCallback callback);
 
     /**
      * unregister an existing IMS provisioning change callback.
      */
-    void unregisterFeatureProvisioningChangedCallback(int subId,
-            IFeatureProvisioningCallback callback);
+    void unregisterFeatureProvisioningChangedCallback(
+            int subId, IFeatureProvisioningCallback callback);
 
     /**
      * Set the provisioning status for the IMS MmTel capability using the specified subscription.
      */
-    void setImsProvisioningStatusForCapability(int subId, int capability, int tech,
-            boolean isProvisioned);
+    void setImsProvisioningStatusForCapability(
+            int subId, int capability, int tech, boolean isProvisioned);
 
     /**
      * Get the provisioning status for the IMS MmTel capability specified.
@@ -1895,8 +1881,8 @@ interface ITelephony {
     /**
      * Set the provisioning status for the IMS Rcs capability using the specified subscription.
      */
-    void setRcsProvisioningStatusForCapability(int subId, int capability, int tech,
-            boolean isProvisioned);
+    void setRcsProvisioningStatusForCapability(
+            int subId, int capability, int tech, boolean isProvisioned);
 
     /**
      * Return an integer containing the provisioning value for the specified provisioning key.
@@ -1986,8 +1972,8 @@ interface ITelephony {
      * Get if altering modems configurations will trigger reboot.
      * @hide
      */
-    boolean doesSwitchMultiSimConfigTriggerReboot(int subId, String callingPackage,
-             String callingFeatureId);
+    boolean doesSwitchMultiSimConfigTriggerReboot(
+            int subId, String callingPackage, String callingFeatureId);
 
     /**
      * Get the mapping from logical slots to port index.
@@ -2023,8 +2009,8 @@ interface ITelephony {
 
     boolean isApnMetered(int apnType, int subId);
 
-    oneway void setSystemSelectionChannels(in List<RadioAccessSpecifier> specifiers,
-            int subId, IBooleanConsumer resultCallback);
+    oneway void setSystemSelectionChannels(
+            in List<RadioAccessSpecifier> specifiers, int subId, IBooleanConsumer resultCallback);
 
     List<RadioAccessSpecifier> getSystemSelectionChannels(int subId);
 
@@ -2034,8 +2020,8 @@ interface ITelephony {
      * Enqueue a pending sms Consumer, which will answer with the user specified selection for an
      * outgoing SmsManager operation.
      */
-    oneway void enqueueSmsPickResult(String callingPackage, String callingAttributeTag,
-        IIntegerConsumer subIdResult);
+    oneway void enqueueSmsPickResult(
+            String callingPackage, String callingAttributeTag, IIntegerConsumer subIdResult);
 
     /**
      * Show error dialog to switch to managed profile.
@@ -2151,16 +2137,15 @@ interface ITelephony {
      * @param callingPackage the package name of the calling package.
      * @throws InvalidThermalMitigationRequestException if the parametes are invalid.
      */
-    int sendThermalMitigationRequest(int subId,
-            in ThermalMitigationRequest thermalMitigationRequest,
-            String callingPackage);
+    int sendThermalMitigationRequest(
+            int subId, in ThermalMitigationRequest thermalMitigationRequest, String callingPackage);
 
     /**
      * get the Generic Bootstrapping Architecture authentication keys
      */
     void bootstrapAuthenticationRequest(int subId, int appType, in Uri nafUrl,
-            in UaSecurityProtocolIdentifier securityProtocol,
-            boolean forceBootStrapping, IBootstrapAuthenticationCallback callback);
+            in UaSecurityProtocolIdentifier securityProtocol, boolean forceBootStrapping,
+            IBootstrapAuthenticationCallback callback);
 
     /**
      * Set the GbaService Package Name that Telephony will bind to.
@@ -2293,7 +2278,7 @@ interface ITelephony {
     /*
      * Set the device supports RCS User Capability Exchange.
      */
-     void setDeviceUceEnabled(boolean isEnabled);
+    void setDeviceUceEnabled(boolean isEnabled);
 
     /**
      * Add feature tags to the IMS registration being tracked by UCE and potentially
@@ -2307,8 +2292,8 @@ interface ITelephony {
      * generate a new PUBLISH to the network.
      * Note: This is designed for a SHELL command only.
      */
-    RcsContactUceCapability removeUceRegistrationOverrideShell(int subId,
-            in List<String> featureTags);
+    RcsContactUceCapability removeUceRegistrationOverrideShell(
+            int subId, in List<String> featureTags);
 
     /**
      * Clear overridden feature tags in the IMS registration being tracked by UCE and potentially
@@ -2331,9 +2316,9 @@ interface ITelephony {
     String getLastUcePidfXmlShell(int subId);
 
     /**
-      * Remove UCE requests cannot be sent to the network status.
-      * Note: This is designed for a SHELL command only.
-      */
+     * Remove UCE requests cannot be sent to the network status.
+     * Note: This is designed for a SHELL command only.
+     */
     boolean removeUceRequestDisallowedStatus(int subId);
 
     /**
@@ -2346,14 +2331,14 @@ interface ITelephony {
      * Set a SignalStrengthUpdateRequest to receive notification when Signal Strength breach the
      * specified thresholds.
      */
-    void setSignalStrengthUpdateRequest(int subId, in SignalStrengthUpdateRequest request,
-            String callingPackage);
+    void setSignalStrengthUpdateRequest(
+            int subId, in SignalStrengthUpdateRequest request, String callingPackage);
 
     /**
      * Clear a SignalStrengthUpdateRequest from system.
      */
-    void clearSignalStrengthUpdateRequest(int subId, in SignalStrengthUpdateRequest request,
-            String callingPackage);
+    void clearSignalStrengthUpdateRequest(
+            int subId, in SignalStrengthUpdateRequest request, String callingPackage);
 
     /**
      * Gets the current phone capability.
@@ -2393,8 +2378,8 @@ interface ITelephony {
     /**
      * Register an IMS connection state callback
      */
-    void registerImsStateCallback(int subId, int feature, in IImsStateCallback cb,
-            in String callingPackage);
+    void registerImsStateCallback(
+            int subId, int feature, in IImsStateCallback cb, in String callingPackage);
 
     /**
      * Unregister an IMS connection state callback
@@ -2407,8 +2392,8 @@ interface ITelephony {
      * @param callingPackage the name of the package making the call.
      * @param callingFeatureId The feature in the package.
      */
-    CellIdentity getLastKnownCellIdentity(int subId, String callingPackage,
-            String callingFeatureId);
+    CellIdentity getLastKnownCellIdentity(
+            int subId, String callingPackage, String callingFeatureId);
 
     /**
      *  @return true if the modem service is set successfully, false otherwise.
@@ -2493,10 +2478,12 @@ interface ITelephony {
      *
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.DUMP)")
-    void persistEmergencyCallDiagnosticData(String dropboxTag, boolean enableLogcat,
-        long logcatStartTimestampMillis, boolean enableTelecomDump, boolean enableTelephonyDump);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.DUMP)")
+    void
+    persistEmergencyCallDiagnosticData(String dropboxTag, boolean enableLogcat,
+            long logcatStartTimestampMillis, boolean enableTelecomDump,
+            boolean enableTelephonyDump);
     /**
      * Set whether the radio is able to connect with null ciphering or integrity
      * algorithms. This is a global setting and will apply to all active subscriptions
@@ -2527,8 +2514,8 @@ interface ITelephony {
     /**
      * Set reception of cell broadcast messages with the list of the given ranges
      */
-    void setCellBroadcastIdRanges(int subId, in List<CellBroadcastIdRange> ranges,
-            IIntegerConsumer callback);
+    void setCellBroadcastIdRanges(
+            int subId, in List<CellBroadcastIdRange> ranges, IIntegerConsumer callback);
 
     /**
      * Returns whether the domain selection service is supported.
@@ -2554,10 +2541,11 @@ interface ITelephony {
      *                    considered as {@code false} by Telephony.
      * @param callback The callback to get the result of the request.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestSatelliteEnabled(boolean enableSatellite, boolean enableDemoMode,
-            boolean isEmergency, in IIntegerConsumer callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestSatelliteEnabled(boolean enableSatellite, boolean enableDemoMode, boolean isEmergency,
+            in IIntegerConsumer callback);
 
     /**
      * Request to get whether the satellite modem is enabled.
@@ -2565,9 +2553,10 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request and whether the
      *                 satellite modem is enabled.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestIsSatelliteEnabled(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestIsSatelliteEnabled(in ResultReceiver receiver);
 
     /**
      * Request to get whether the satellite service demo mode is enabled.
@@ -2575,9 +2564,10 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request and whether the
      *                 satellite demo mode is enabled.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestIsDemoModeEnabled(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestIsDemoModeEnabled(in ResultReceiver receiver);
 
     /**
      * Request to get whether the satellite service is enabled with emergency mode.
@@ -2585,9 +2575,10 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request and whether the
      *                 satellite is enabled with emergency mode.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestIsEmergencyModeEnabled(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestIsEmergencyModeEnabled(in ResultReceiver receiver);
 
     /**
      * Request to get whether the satellite service is supported on the device.
@@ -2603,9 +2594,10 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request and the requested
      *                 capabilities of the satellite service.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestSatelliteCapabilities(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestSatelliteCapabilities(in ResultReceiver receiver);
 
     /**
      * Start receiving satellite transmission updates.
@@ -2613,10 +2605,11 @@ interface ITelephony {
      * @param resultCallback The callback to get the result of the request.
      * @param callback The callback to handle transmission updates.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void startSatelliteTransmissionUpdates(in IIntegerConsumer resultCallback,
-            in ISatelliteTransmissionUpdateCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    startSatelliteTransmissionUpdates(
+            in IIntegerConsumer resultCallback, in ISatelliteTransmissionUpdateCallback callback);
 
     /**
      * Stop receiving satellite transmission updates.
@@ -2624,10 +2617,11 @@ interface ITelephony {
      * @param resultCallback The callback to get the result of the request.
      * @param callback The callback that was passed to startSatelliteTransmissionUpdates.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void stopSatelliteTransmissionUpdates(in IIntegerConsumer resultCallback,
-            in ISatelliteTransmissionUpdateCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    stopSatelliteTransmissionUpdates(
+            in IIntegerConsumer resultCallback, in ISatelliteTransmissionUpdateCallback callback);
 
     /**
      * Register the subscription with a satellite provider.
@@ -2640,10 +2634,11 @@ interface ITelephony {
      *
      * @return The signal transport used by callers to cancel the provision request.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    ICancellationSignal provisionSatelliteService(in String token,
-            in byte[] provisionData, in IIntegerConsumer callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    ICancellationSignal
+    provisionSatelliteService(
+            in String token, in byte[] provisionData, in IIntegerConsumer callback);
 
     /**
      * Unregister the subscription with the satellite provider.
@@ -2655,9 +2650,10 @@ interface ITelephony {
      * @param token The token of the device/subscription to be deprovisioned.
      * @param callback The callback to get the result of the request.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void deprovisionSatelliteService(in String token, in IIntegerConsumer callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    deprovisionSatelliteService(in String token, in IIntegerConsumer callback);
 
     /**
      * Registers for provision state changed from satellite modem.
@@ -2666,9 +2662,10 @@ interface ITelephony {
      *
      * @return The {@link SatelliteError} result of the operation.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int registerForSatelliteProvisionStateChanged(in ISatelliteProvisionStateCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int
+    registerForSatelliteProvisionStateChanged(in ISatelliteProvisionStateCallback callback);
 
     /**
      * Unregisters for provision state changed from satellite modem.
@@ -2676,10 +2673,10 @@ interface ITelephony {
      *
      * @param callback The callback that was passed to registerForSatelliteProvisionStateChanged.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForSatelliteProvisionStateChanged(
-            in ISatelliteProvisionStateCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForSatelliteProvisionStateChanged(in ISatelliteProvisionStateCallback callback);
 
     /**
      * Request to get whether the device is provisioned with a satellite provider.
@@ -2687,9 +2684,10 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request and whether the
      *                 device is provisioned with a satellite provider.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestIsSatelliteProvisioned(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestIsSatelliteProvisioned(in ResultReceiver receiver);
 
     /**
      * Registers for modem state changed from satellite modem.
@@ -2698,9 +2696,10 @@ interface ITelephony {
      *
      * @return The {@link SatelliteError} result of the operation.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int registerForSatelliteModemStateChanged(ISatelliteModemStateCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int
+    registerForSatelliteModemStateChanged(ISatelliteModemStateCallback callback);
 
     /**
      * Unregisters for modem state changed from satellite modem.
@@ -2708,52 +2707,57 @@ interface ITelephony {
      *
      * @param callback The callback that was passed to registerForSatelliteStateChanged.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForModemStateChanged(ISatelliteModemStateCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForModemStateChanged(ISatelliteModemStateCallback callback);
 
-   /**
+    /**
      * Register to receive incoming datagrams over satellite.
      *
      * @param callback The callback to handle the incoming datagrams.
      *
      * @return The {@link SatelliteError} result of the operation.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int registerForIncomingDatagram(ISatelliteDatagramCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int
+    registerForIncomingDatagram(ISatelliteDatagramCallback callback);
 
-   /**
+    /**
      * Unregister to stop receiving incoming datagrams over satellite.
      * If callback was not registered before, the request will be ignored.
      *
      * @param callback The callback that was passed to registerForIncomingDatagram.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForIncomingDatagram(ISatelliteDatagramCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForIncomingDatagram(ISatelliteDatagramCallback callback);
 
-   /**
-    * Poll pending satellite datagrams over satellite.
-    *
-    * @param callback The callback to get the result of the request.
-    */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-                + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void pollPendingDatagrams(IIntegerConsumer callback);
+    /**
+     * Poll pending satellite datagrams over satellite.
+     *
+     * @param callback The callback to get the result of the request.
+     */
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    pollPendingDatagrams(IIntegerConsumer callback);
 
-   /**
-    * Send datagram over satellite.
-    *
-    * @param datagramType Type of datagram.
-    * @param datagram Datagram to send over satellite.
-    * @param needFullScreenPointingUI this is used to indicate pointingUI app to open in
-    *                                 full screen mode.
-    * @param callback The callback to get the result of the request.
-    */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void sendDatagram(int datagramType, in SatelliteDatagram datagram,
+    /**
+     * Send datagram over satellite.
+     *
+     * @param datagramType Type of datagram.
+     * @param datagram Datagram to send over satellite.
+     * @param needFullScreenPointingUI this is used to indicate pointingUI app to open in
+     *                                 full screen mode.
+     * @param callback The callback to get the result of the request.
+     */
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    sendDatagram(int datagramType, in SatelliteDatagram datagram,
             in boolean needFullScreenPointingUI, IIntegerConsumer callback);
 
     /**
@@ -2761,9 +2765,10 @@ interface ITelephony {
      *
      * @return Integer array of disallowed reasons of satellite.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int[] getSatelliteDisallowedReasons();
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int[]
+    getSatelliteDisallowedReasons();
 
     /**
      * Registers for disallowed reasons change event from satellite service.
@@ -2771,10 +2776,10 @@ interface ITelephony {
      * @param callback The callback to handle disallowed reasons changed event.
      *
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void registerForSatelliteDisallowedReasonsChanged(
-            ISatelliteDisallowedReasonsCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    registerForSatelliteDisallowedReasonsChanged(ISatelliteDisallowedReasonsCallback callback);
 
     /**
      * Unregisters for disallowed reasons change event from satellite service.
@@ -2782,10 +2787,10 @@ interface ITelephony {
      *
      * @param callback The callback to handle disallowed reasons changed event.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForSatelliteDisallowedReasonsChanged(
-            ISatelliteDisallowedReasonsCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForSatelliteDisallowedReasonsChanged(ISatelliteDisallowedReasonsCallback callback);
 
     /**
      * Request to get whether satellite communication is allowed for the current location.
@@ -2795,9 +2800,10 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request and whether satellite
      *                 communication is allowed for the current location.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestIsCommunicationAllowedForCurrentLocation(int subId, in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestIsCommunicationAllowedForCurrentLocation(int subId, in ResultReceiver receiver);
 
     /**
      * Request to get satellite access configuration for the current location.
@@ -2805,9 +2811,10 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request
      *                 and satellite access configuration for the current location.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestSatelliteAccessConfigurationForCurrentLocation(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestSatelliteAccessConfigurationForCurrentLocation(in ResultReceiver receiver);
 
     /**
      * Request to get the time after which the satellite will be visible.
@@ -2815,20 +2822,21 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request and the requested
      *                 time after which the satellite will be visible.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestTimeForNextSatelliteVisibility(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestTimeForNextSatelliteVisibility(in ResultReceiver receiver);
 
-
-     /**
+    /**
      * Request to get the currently selected satellite subscription id.
      *
      * @param receiver Result receiver to get the error code of the request and the currently
      *                 selected satellite subscription id.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestSelectedNbIotSatelliteSubscriptionId(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestSelectedNbIotSatelliteSubscriptionId(in ResultReceiver receiver);
 
     /**
      * Registers for selected satellite subscription changed event from the satellite service.
@@ -2836,9 +2844,10 @@ interface ITelephony {
      * @param executor The executor on which the callback will be called.
      * @param callback The callback to handle the satellite subscription changed event.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int registerForSelectedNbIotSatelliteSubscriptionChanged(
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int
+    registerForSelectedNbIotSatelliteSubscriptionChanged(
             in ISelectedNbIotSatelliteSubscriptionCallback callback);
 
     /**
@@ -2849,9 +2858,10 @@ interface ITelephony {
      *     #registerForSelectedNbIotSatelliteSubscriptionChanged(Executor,
      *     SelectedNbIotSatelliteSubscriptionCallback)}.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForSelectedNbIotSatelliteSubscriptionChanged(
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForSelectedNbIotSatelliteSubscriptionChanged(
             in ISelectedNbIotSatelliteSubscriptionCallback callback);
 
     /**
@@ -2860,9 +2870,10 @@ interface ITelephony {
      * @param isAligned {@true} Device is aligned with the satellite.
      *                  {@false} Device is not aligned with the satellite.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void setDeviceAlignedWithSatellite(boolean isAligned);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    setDeviceAlignedWithSatellite(boolean isAligned);
 
     /**
      * This API can be used by only CTS to update CTS mode testing.
@@ -3017,7 +3028,7 @@ interface ITelephony {
      * {@code false} otherwise.
      */
     boolean setTnScanningSupport(in boolean reset, in boolean concurrentTnScanningSupported,
-        in boolean tnScanningDuringSatelliteSessionAllowed);
+            in boolean tnScanningDuringSatelliteSessionAllowed);
 
     /**
      * This API can be used in only testing to override oem-enabled satellite provision status.
@@ -3041,9 +3052,10 @@ interface ITelephony {
     /**
      * Test method to confirm the file contents are not altered.
      */
-     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-                 + "android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
-     List<String> getShaIdFromAllowList(String pkgName, int carrierId);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
+    List<String>
+    getShaIdFromAllowList(String pkgName, int carrierId);
 
     /**
      * Add a restriction reason for disallowing satellite communication.
@@ -3053,9 +3065,10 @@ interface ITelephony {
      * @param callback Listener for the {@link SatelliteManager.SatelliteError} result of the
      * operation.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void addAttachRestrictionForCarrier(int subId, int reason, in IIntegerConsumer callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    addAttachRestrictionForCarrier(int subId, int reason, in IIntegerConsumer callback);
 
     /**
      * Remove a restriction reason for disallowing satellite communication.
@@ -3065,9 +3078,10 @@ interface ITelephony {
      * @param callback Listener for the {@link SatelliteManager.SatelliteError} result of the
      * operation.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void removeAttachRestrictionForCarrier(int subId, int reason, in IIntegerConsumer callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    removeAttachRestrictionForCarrier(int subId, int reason, in IIntegerConsumer callback);
 
     /**
      * Get reasons for disallowing satellite communication, as requested by
@@ -3077,9 +3091,10 @@ interface ITelephony {
      *
      * @return Set of reasons for disallowing satellite communication.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int[] getAttachRestrictionReasonsForCarrier(int subId);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int[]
+    getAttachRestrictionReasonsForCarrier(int subId);
 
     /**
      * Request to get the signal strength of the satellite connection.
@@ -3087,9 +3102,10 @@ interface ITelephony {
      * @param receiver Result receiver to get the error code of the request and the current signal
      * strength of the satellite connection.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestNtnSignalStrength(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestNtnSignalStrength(in ResultReceiver receiver);
 
     /**
      * Registers for NTN signal strength changed from satellite modem. If the registration operation
@@ -3102,9 +3118,10 @@ interface ITelephony {
      * {@link NtnSignalStrength.NtnSignalStrengthLevel} when the signal strength of non-terrestrial
      * network has changed.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void registerForNtnSignalStrengthChanged(in INtnSignalStrengthCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    registerForNtnSignalStrengthChanged(in INtnSignalStrengthCallback callback);
 
     /**
      * Unregisters for NTN signal strength changed from satellite modem.
@@ -3113,18 +3130,20 @@ interface ITelephony {
      * @param callback The callback that was passed to
      * {@link #registerForNtnSignalStrengthChanged(Executor, NtnSignalStrengthCallback)}.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForNtnSignalStrengthChanged(in INtnSignalStrengthCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForNtnSignalStrengthChanged(in INtnSignalStrengthCallback callback);
 
     /**
      * Registers for satellite capabilities change event from the satellite service.
      *
      * @param callback The callback to handle the satellite capabilities changed event.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int registerForCapabilitiesChanged(in ISatelliteCapabilitiesCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int
+    registerForCapabilitiesChanged(in ISatelliteCapabilitiesCallback callback);
 
     /**
      * Unregisters for satellite capabilities change event from the satellite service.
@@ -3133,9 +3152,10 @@ interface ITelephony {
      * @param callback The callback that was passed to.
      * {@link #registerForCapabilitiesChanged(Executor, SatelliteCapabilitiesCallback)}.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForCapabilitiesChanged(in ISatelliteCapabilitiesCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForCapabilitiesChanged(in ISatelliteCapabilitiesCallback callback);
 
     /**
      * This API can be used by only CTS to override the cached value for the device overlay config
@@ -3182,9 +3202,10 @@ interface ITelephony {
      * @throws UnsupportedOperationException if the modem does not support this feature.
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-        + "android.Manifest.permission.MODIFY_PHONE_STATE)")
-    void setEnableCellularIdentifierDisclosureNotifications(boolean enable);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.MODIFY_PHONE_STATE)")
+    void
+    setEnableCellularIdentifierDisclosureNotifications(boolean enable);
 
     /**
      * Get whether or not cellular identifier disclosure notifications are enabled.
@@ -3196,9 +3217,10 @@ interface ITelephony {
      * @throws UnsupportedOperationException if the modem does not support this feature.
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-        + "android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
-    boolean isCellularIdentifierDisclosureNotificationsEnabled();
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
+    boolean
+    isCellularIdentifierDisclosureNotificationsEnabled();
 
     /**
      * Enables or disables notifications sent when cellular null cipher or integrity algorithms
@@ -3210,9 +3232,10 @@ interface ITelephony {
      * and integrity algorithms in use
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-        + "android.Manifest.permission.MODIFY_PHONE_STATE)")
-    void setNullCipherNotificationsEnabled(boolean enable);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.MODIFY_PHONE_STATE)")
+    void
+    setNullCipherNotificationsEnabled(boolean enable);
 
     /**
      * Get whether notifications are enabled for null cipher or integrity algorithms in use by the
@@ -3224,9 +3247,10 @@ interface ITelephony {
      * and integrity algorithms in use
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-        + "android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
-    boolean isNullCipherNotificationsEnabled();
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)")
+    boolean
+    isNullCipherNotificationsEnabled();
 
     /**
      * Get supported network alert categories.
@@ -3251,9 +3275,10 @@ interface ITelephony {
      * @return List of plmns for carrier satellite service. If no plmn is available, empty list will
      * be returned.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    List<String> getSatellitePlmnsForCarrier(int subId);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    List<String>
+    getSatellitePlmnsForCarrier(int subId);
 
     /**
      * Registers for supported state changed from satellite modem.
@@ -3262,9 +3287,10 @@ interface ITelephony {
      *
      * @return The {@link SatelliteError} result of the operation.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int registerForSatelliteSupportedStateChanged(in IBooleanConsumer callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int
+    registerForSatelliteSupportedStateChanged(in IBooleanConsumer callback);
 
     /**
      * Unregisters for supported state changed from satellite modem.
@@ -3272,9 +3298,10 @@ interface ITelephony {
      *
      * @param callback The callback that was passed to registerForSatelliteSupportedStateChanged.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForSatelliteSupportedStateChanged(in IBooleanConsumer callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForSatelliteSupportedStateChanged(in IBooleanConsumer callback);
 
     /**
      * Registers for satellite communication allowed state changed.
@@ -3284,10 +3311,11 @@ interface ITelephony {
      *
      * @return The {@link SatelliteError} result of the operation.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int registerForCommunicationAccessStateChanged(int subId,
-            in ISatelliteCommunicationAccessStateCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int
+    registerForCommunicationAccessStateChanged(
+            int subId, in ISatelliteCommunicationAccessStateCallback callback);
 
     /**
      * Unregisters for satellite communication allowed state.
@@ -3296,10 +3324,11 @@ interface ITelephony {
      * @param subId The subId of the subscription to unregister for supported state changed.
      * @param callback The callback that was passed to registerForCommunicationAccessStateChanged.
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void unregisterForCommunicationAccessStateChanged(int subId,
-            in ISatelliteCommunicationAccessStateCallback callback);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    unregisterForCommunicationAccessStateChanged(
+            int subId, in ISatelliteCommunicationAccessStateCallback callback);
 
     /**
      * This API can be used by only CTS to override the boolean configs used by the
@@ -3372,9 +3401,10 @@ interface ITelephony {
      * to be used for provision if the request is successful or an error code if the request failed.
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestSatelliteSubscriberProvisionStatus(in ResultReceiver result);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestSatelliteSubscriberProvisionStatus(in ResultReceiver result);
 
     /**
      * Request to get the name to display for Satellite subscription.
@@ -3383,9 +3413,10 @@ interface ITelephony {
      * subscription.
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void requestSatelliteDisplayName(in ResultReceiver receiver);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    requestSatelliteDisplayName(in ResultReceiver receiver);
 
     /**
      * Deliver the list of provisioned satellite subscriber infos.
@@ -3394,9 +3425,10 @@ interface ITelephony {
      * @param result The result receiver that returns whether deliver success or fail.
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void provisionSatellite(in List<SatelliteSubscriberInfo> list, in ResultReceiver result);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    provisionSatellite(in List<SatelliteSubscriberInfo> list, in ResultReceiver result);
 
     /**
      * This API can be used by only CTS to override the cached value for the device overlay config
@@ -3447,19 +3479,20 @@ interface ITelephony {
      * @param result The result receiver that returns whether deliver success or fail.
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-            + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    void deprovisionSatellite(in List<SatelliteSubscriberInfo> list, in ResultReceiver result);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    void
+    deprovisionSatellite(in List<SatelliteSubscriberInfo> list, in ResultReceiver result);
 
-   /**
-    * Inform whether application supports NTN SMS in satellite mode.
-    *
-    * This method is used by default messaging application to inform framework whether it supports
-    * NTN SMS or not.
-    *
-    * @param ntnSmsSupported {@code true} If application supports NTN SMS, else {@code false}.
-    * @hide
-    */
+    /**
+     * Inform whether application supports NTN SMS in satellite mode.
+     *
+     * This method is used by default messaging application to inform framework whether it supports
+     * NTN SMS or not.
+     *
+     * @param ntnSmsSupported {@code true} If application supports NTN SMS, else {@code false}.
+     * @hide
+     */
     void setNtnSmsSupported(boolean ntnSmsSupported);
 
     /**
@@ -3473,16 +3506,16 @@ interface ITelephony {
      */
     int getCarrierIdFromIdentifier(in CarrierIdentifier carrierIdentifier);
 
-
     /**
      * Get list of applications that are optimized for low bandwidth satellite data.
      *
      * @return List of Application Name with data optimized network property.
      * {@link #PROPERTY_SATELLITE_DATA_OPTIMIZED}
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-                      + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    List<String> getSatelliteDataOptimizedApps();
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    List<String>
+    getSatelliteDataOptimizedApps();
 
     /**
      * Method to return the current satellite data service policy supported mode for the
@@ -3495,9 +3528,10 @@ interface ITelephony {
      * @throws IllegalArgumentException if the subscription is invalid.
      * @hide
      */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
-                      + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
-    int getSatelliteDataSupportMode(in int subId);
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int
+    getSatelliteDataSupportMode(in int subId);
 
     /**
      * This API can be used by only CTS to ignore plmn list from storage.
@@ -3506,6 +3540,21 @@ interface ITelephony {
      * @return {@code true} if the value is set successfully, {@code false} otherwise.
      */
     boolean setSatelliteIgnorePlmnListFromStorage(in boolean enabled);
+
+    /**
+     * Get the satellite configuration for the given PLMN.
+     *
+     * @param subId current subscription id.
+     * @param plmn PLMN for which the satellite configuration is requested.
+     * @return {@link PlmnSatelliteConfig} object containing the satellite
+     * configuration for the given PLMN.
+     *
+     * @throws SecurityException if the caller doesn't have required permission.
+     */
+    @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
+                    + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    PlmnSatelliteConfig
+    getPlmnSatelliteConfig(in int subId, in String plmn);
 
     /**
      * Get whether device is connected to satellite via carrier, either manually or automatically.
