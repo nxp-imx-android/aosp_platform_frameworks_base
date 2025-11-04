@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import android.os.Environment
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.core.net.toUri
@@ -96,11 +97,10 @@ constructor(
     }
 
     val currentSaveLocation: String by derivedStateOf {
-        // TODO(b/444278100): Localize default save location string (Screenshots).
         if (!isCustomSaveLocationActive) {
-            "Screenshots"
+            Environment.DIRECTORY_SCREENSHOTS
         } else {
-            customSaveLocationDisplayName ?: "Screenshots"
+            customSaveLocationDisplayName ?: Environment.DIRECTORY_SCREENSHOTS
         }
     }
 

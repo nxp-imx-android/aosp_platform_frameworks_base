@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
+import android.os.Environment
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
@@ -47,10 +48,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.padding
 import com.android.systemui.common.ui.compose.Icon
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureToolbarViewModel
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureIcons
 
@@ -74,8 +77,6 @@ fun SaveLocationDropdown(
     var expanded by remember { mutableStateOf(false) }
     var buttonWidth by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
-    // TODO(b/444278100): Localize defaultSaveLocation string.
-    val defaultSaveLocation = "Screenshots"
 
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         TextButton(
@@ -97,7 +98,7 @@ fun SaveLocationDropdown(
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     ProvideTextStyle(value = MaterialTheme.typography.labelMedium) {
-                        Text(text = "Save to") // TODO(b/444278100): Localize save to string.
+                        Text(text = stringResource(R.string.screenshot_save_to))
                         Text(
                             text = viewModel.currentSaveLocation,
                             maxLines = 1,
@@ -121,7 +122,7 @@ fun SaveLocationDropdown(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Item(
-                    label = defaultSaveLocation,
+                    label = Environment.DIRECTORY_SCREENSHOTS,
                     selected = !viewModel.isCustomSaveLocationActive,
                     onSelected = {
                         viewModel.setCustomSaveLocationActiveStatus(false)
@@ -147,7 +148,7 @@ fun SaveLocationDropdown(
                     )
                 }
                 Item(
-                    label = "Select folder", // TODO(b/444278100): Localize select folder string.
+                    label = stringResource(R.string.screenshot_select_folder),
                     selected = false,
                     onSelected = {
                         expanded = false
