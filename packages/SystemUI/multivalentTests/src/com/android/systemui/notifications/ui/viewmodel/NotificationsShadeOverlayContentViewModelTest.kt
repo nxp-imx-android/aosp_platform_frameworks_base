@@ -76,7 +76,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     private val Kosmos.underTest by Fixture { notificationsShadeOverlayContentViewModel }
 
     @Before
-    fun setUp() =
+    fun setUp(): Unit =
         with(kosmos) {
             sceneContainerStartable.start()
             enableDualShade()

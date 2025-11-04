@@ -178,7 +178,7 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
             assertThat(isInputEnabled).isTrue()
 
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT) {
-                kosmos.bouncerInteractor.authenticate(WRONG_PIN)
+                kosmos.bouncerInteractor.authenticate(WRONG_PIN + it)
             }
             assertThat(isInputEnabled).isFalse()
 

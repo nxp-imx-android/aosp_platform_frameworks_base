@@ -17,7 +17,9 @@
 package com.android.systemui.authentication.data.repository
 
 import android.os.UserHandle
+import android.util.Log
 import com.android.internal.widget.LockPatternUtils
+import com.android.internal.widget.LockPatternUtils.credentialTypeToString
 import com.android.internal.widget.LockPatternView
 import com.android.internal.widget.LockscreenCredential
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode
@@ -79,6 +81,15 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     var maximumTimeToLock: Long = 0
     var fakePowerButtonInstantlyLocks: Boolean = true
 
+    private var previousAttempts = listOf<LockscreenCredential>()
+
+    var lockoutOverride: Duration? = null
+        private set
+
+    fun overrideLockout(lockout: Duration) {
+        lockoutOverride = lockout
+    }
+
     fun setAuthenticationMethod(authenticationMethod: AuthenticationMethodModel) {
         _authenticationMethod.value = authenticationMethod
         securityMode = authenticationMethod.toSecurityMode()
@@ -91,6 +102,7 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     override suspend fun reportAuthenticationAttempt(isSuccessful: Boolean, isDuplicate: Boolean) {
         if (isSuccessful) {
             _failedAuthenticationAttempts.value = 0
+            previousAttempts = listOf()
             _lockoutEndTime = null
             hasLockoutOccurred.value = false
             lockoutStartedReportCount = 0
@@ -137,6 +149,18 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
         credential: LockscreenCredential
     ): AuthenticationResultModel {
         return credentialCheckingMutex.withLock {
+            Log.d(
+                TAG,
+                "previousAttempts: ${previousAttempts.joinToString { it.asString() }}, current: ${credential.asString()}",
+            )
+            if (credential in previousAttempts) {
+                return AuthenticationResultModel(
+                    isSuccessful = false,
+                    lockoutDuration = Duration.ZERO,
+                    isDuplicate = true,
+                )
+            }
+            Log.d(TAG, "checking credential")
             val expectedCredential = credentialOverride ?: getExpectedCredential(securityMode)
             val isSuccessful =
                 when {
@@ -149,6 +173,18 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
                         credential.isPattern && credential.matches(expectedCredential)
                     else -> error("Unexpected credential type ${credential.type}!")
                 }
+            Log.d(TAG, "checked credential, isSuccessful: $isSuccessful")
+
+            if (!isSuccessful) {
+                previousAttempts += credential.duplicate()
+                lockoutOverride?.let {
+                    lockoutOverride = null
+                    return@checkCredential AuthenticationResultModel(
+                        isSuccessful = false,
+                        lockoutDuration = it,
+                    )
+                }
+            }
 
             val failedAttempts = _failedAuthenticationAttempts.value
             if (isSuccessful || failedAttempts < MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT - 1) {
@@ -158,6 +194,9 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
             }
         }
     }
+
+    fun LockscreenCredential.asString() =
+        "${credentialTypeToString(type)}:${credential.contentToString()}"
 
     fun setPinEnhancedPrivacyEnabled(isEnabled: Boolean) {
         _isPinEnhancedPrivacyEnabled.value = isEnabled
@@ -191,15 +230,16 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     private fun getExpectedCredential(securityMode: SecurityMode): List<Any> {
         return when (val credentialType = getCurrentCredentialType(securityMode)) {
             LockPatternUtils.CREDENTIAL_TYPE_PIN -> credentialOverride ?: DEFAULT_PIN
-            LockPatternUtils.CREDENTIAL_TYPE_PASSWORD -> "password".toList()
-            LockPatternUtils.CREDENTIAL_TYPE_PATTERN -> PATTERN.toCells()
+            LockPatternUtils.CREDENTIAL_TYPE_PASSWORD -> DEFAULT_PASSWORD
+            LockPatternUtils.CREDENTIAL_TYPE_PATTERN -> DEFAULT_PATTERN.toCells()
             else -> error("Unsupported credential type $credentialType!")
         }
     }
 
     companion object {
+        private const val TAG = "FakeAuthenticationRepository"
         val DEFAULT_AUTHENTICATION_METHOD = AuthenticationMethodModel.Pin
-        val PATTERN =
+        val DEFAULT_PATTERN =
             listOf(
                 AuthenticationPatternCoordinate(2, 0),
                 AuthenticationPatternCoordinate(2, 1),
@@ -209,6 +249,7 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
                 AuthenticationPatternCoordinate(0, 1),
                 AuthenticationPatternCoordinate(0, 2),
             )
+        val WRONG_PATTERN = DEFAULT_PATTERN.reversed()
         const val MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT = 5
         const val MAX_FAILED_AUTH_TRIES_BEFORE_WIPE =
             MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT +
@@ -218,6 +259,8 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
         const val HINTING_PIN_LENGTH = 6
         val DEFAULT_PIN = buildList { repeat(HINTING_PIN_LENGTH) { add(it + 1) } }
         val WRONG_PIN = buildList { repeat(HINTING_PIN_LENGTH) { add(9 - it) } }
+        val DEFAULT_PASSWORD = "password".toList()
+        val WRONG_PASSWORD = "wrong_password".toList()
 
         private fun AuthenticationMethodModel.toSecurityMode(): SecurityMode {
             return when (this) {

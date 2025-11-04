@@ -79,7 +79,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
         Kosmos.Fixture { quickSettingsShadeOverlayContentViewModelFactory.create() }
 
     @Before
-    fun setUp() =
+    fun setUp(): Unit =
         with(kosmos) {
             sceneContainerStartable.start()
             enableDualShade()

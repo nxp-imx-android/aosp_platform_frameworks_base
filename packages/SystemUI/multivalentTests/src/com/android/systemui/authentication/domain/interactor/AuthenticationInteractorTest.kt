@@ -155,7 +155,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
         testScope.runTest {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
 
-            assertSucceeded(underTest.authenticate(FakeAuthenticationRepository.PATTERN))
+            assertSucceeded(underTest.authenticate(FakeAuthenticationRepository.DEFAULT_PATTERN))
         }
 
     @Test
@@ -308,7 +308,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
 
             // Make many wrong attempts to trigger lockout.
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT) {
-                assertFailed(underTest.authenticate(listOf(5, 6, 7))) // Wrong PIN
+                assertFailed(underTest.authenticate(listOf(5, 6, it))) // Wrong PIN
             }
             assertThat(underTest.lockoutEndTime).isNotNull()
             assertThat(kosmos.fakeAuthenticationRepository.lockoutStartedReportCount).isEqualTo(1)
@@ -345,7 +345,7 @@ class AuthenticationInteractorTest : SysuiTestCase() {
 
             // Make many wrong attempts, leading to lockout:
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT) { index ->
-                underTest.authenticate(listOf(5, 6, 7)) // Wrong PIN
+                underTest.authenticate(listOf(5, 6, 7, index)) // Wrong PIN
                 assertThat(failedAuthenticationAttempts).isEqualTo(index + 1)
             }
 
@@ -375,12 +375,14 @@ class AuthenticationInteractorTest : SysuiTestCase() {
 
             // Make many wrong attempts, but just shy of what's needed to get locked out:
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT - 1) {
-                underTest.authenticate(listOf(5, 6, 7)) // Wrong PIN
+                underTest.authenticate(listOf(5, 6, it)) // Wrong PIN
                 assertThat(underTest.lockoutEndTime).isNull()
             }
 
             // Make one more wrong attempt, leading to lockout:
-            underTest.authenticate(listOf(5, 6, 7)) // Wrong PIN
+            underTest.authenticate(
+                listOf(5, 6, FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT)
+            ) // Wrong PIN
 
             val expectedLockoutEndTime =
                 testScope.currentTime.milliseconds + FakeAuthenticationRepository.LOCKOUT_DURATION
