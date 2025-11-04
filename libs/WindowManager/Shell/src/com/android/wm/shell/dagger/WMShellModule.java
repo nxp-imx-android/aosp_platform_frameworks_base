@@ -85,6 +85,7 @@ import com.android.wm.shell.bubbles.logging.BubbleSessionTrackerImpl;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.bubbles.user.data.BubbleUserResolver;
 import com.android.wm.shell.bubbles.user.data.UserManagerBubbleUserResolver;
+import com.android.wm.shell.common.ClientFullscreenRequestController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -2119,6 +2120,17 @@ public abstract class WMShellModule {
         return Optional.empty();
     }
 
+    @WMSingleton
+    @Provides
+    static Optional<ClientFullscreenRequestController> provideClientFullscreenRequestController(
+            ShellInit shellInit,
+            Transitions transitions) {
+        if (com.android.window.flags.Flags.delegateRequestFullscreenHandlingToShell()) {
+            return Optional.of(new ClientFullscreenRequestController(shellInit, transitions));
+        }
+        return Optional.empty();
+    }
+
     //
     // App zoom out
     //
@@ -2203,6 +2215,7 @@ public abstract class WMShellModule {
             @NonNull LetterboxTaskListenerAdapter letterboxTaskListenerAdapter,
             @NonNull LetterboxCleanupAdapter letterboxCleanupAdapter,
             @NonNull Optional<CompatUISharedRepositoryCleanUp> compatUISharedStateManager,
+            Optional<ClientFullscreenRequestController> clientFullscreenRequestController,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserverOptional,
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,
