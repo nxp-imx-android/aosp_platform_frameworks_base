@@ -21,6 +21,7 @@ import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION;
 import static android.content.Intent.FLAG_ACTIVITY_NO_USER_ACTION;
+import static com.android.server.voiceinteraction.flags.Flags.disableStartingContextualSearchViaVims;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -1076,7 +1077,8 @@ public class VoiceInteractionManagerService extends SystemService {
                         .getString(R.string.config_defaultContextualSearchEnabled);
 
                 // If the request is for Contextual Search, process it differently
-                if (sessionArgs != null && sessionArgs.containsKey(csKey)) {
+                if (!disableStartingContextualSearchViaVims()
+                    && sessionArgs != null && sessionArgs.containsKey(csKey)) {
                     if (sessionArgs.getBoolean(csEnabledKey, true)) {
                         // If Contextual Search is enabled, try to follow that path.
                         Intent launchIntent;
