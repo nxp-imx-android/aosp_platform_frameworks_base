@@ -16,17 +16,26 @@
 
 package com.android.server.lskfreset;
 
+import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
+import android.security.keystore.KeyProperties;
 import android.util.Slog;
 
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
-import java.util.UUID;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.ECFieldFp;
+import java.security.spec.ECGenParameterSpec;
 
 public class LskfResetKeyManager {
     private static final String TAG = "LskfResetKeyManagerStub";
     private static final String ANDROID_KEYSTORE = "AndroidKeyStore";
+    private static final String EC_CURVE_P256 = "secp256r1";
 
     public LskfResetKeyManager(Context context) {
         Slog.d(TAG, "Initialized");
@@ -41,7 +50,36 @@ public class LskfResetKeyManager {
     @Nullable
     public byte[] generateAndStoreLskfResetKey(@NonNull String keyAlias) {
         try {
-            return UUID.randomUUID().toString().getBytes();
+            if (enableLskfResetManager()) {
+                KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
+                          KeyProperties.KEY_ALGORITHM_EC);
+                ECGenParameterSpec ecSpec = new ECGenParameterSpec(EC_CURVE_P256);
+                keyPairGenerator.initialize(ecSpec);
+                KeyPair destinationShareKey = keyPairGenerator.generateKeyPair();
+                KeyPair mediatorShareKey = null;
+                ECPrivateKey ecDestinationPrivateKey = null, ecMediatorPrivateKey = null;
+                BigInteger p = BigInteger.ZERO;
+                // This do-while loop won't be running many times as the chance
+                // of getting two keys that their addition is divisible by the
+                // EC's prime number is extremely unlikely. The addition of these
+                // two keys will be used as a separate key, as a result, we check
+                // that the addition mod p is not zero as an extra layer of
+                // security.
+                do {
+                    mediatorShareKey = keyPairGenerator.generateKeyPair();
+
+                    ecDestinationPrivateKey = (ECPrivateKey) destinationShareKey.getPrivate();
+                    ecMediatorPrivateKey = (ECPrivateKey) mediatorShareKey.getPrivate();
+
+                    p = ((ECFieldFp) ecDestinationPrivateKey.getParams().getCurve()
+                        .getField()).getP();
+                } while (ecDestinationPrivateKey.getS()
+                    .add(ecMediatorPrivateKey.getS())
+                    .mod(p).equals(BigInteger.ZERO));
+                return destinationShareKey.getPublic().getEncoded();
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             Slog.e(TAG, "Failed to generate key pair " + keyAlias, e);
             return null;
