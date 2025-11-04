@@ -385,10 +385,10 @@ class ContextImpl extends Context {
     @UnsupportedAppUsage
     final Object[] mServiceCache = SystemServiceRegistry.createServiceCache();
 
-    static final int STATE_UNINITIALIZED = 0;
-    static final int STATE_INITIALIZING = 1;
-    static final int STATE_READY = 2;
-    static final int STATE_NOT_FOUND = 3;
+    static final byte STATE_UNINITIALIZED = 0;
+    static final byte STATE_INITIALIZING = 1;
+    static final byte STATE_READY = 2;
+    static final byte STATE_NOT_FOUND = 3;
 
     /** @hide */
     @IntDef(prefix = { "STATE_" }, value = {
@@ -405,7 +405,7 @@ class ContextImpl extends Context {
      * {@link #STATE_INITIALIZING} or {@link #STATE_READY},
      */
     @ServiceInitializationState
-    final int[] mServiceInitializationStateArray = new int[mServiceCache.length];
+    final byte[] mServiceInitializationStateArray = new byte[mServiceCache.length];
 
     private final Object mDeviceIdListenerLock = new Object();
     /**
