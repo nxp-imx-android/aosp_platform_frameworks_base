@@ -266,6 +266,15 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Sets the intent launched when the user wants to preview the automation, or null if none.
+     *
+     * <p>This overrides the intent set in {@link Params.Builder#setPreviewIntent}.
+     */
+    public void setPreviewIntent(@Nullable PendingIntent previewIntent) {
+        mSession.setPreviewIntent(previewIntent);
+    }
+
+    /**
      * Closes the ComputerControl session and release resources. The session can no longer be used
      * after calling this method.
      */
