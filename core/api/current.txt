@@ -1393,6 +1393,7 @@ package android {
     field public static final int propertyYName = 16843893; // 0x1010475
     field public static final int protectionLevel = 16842761; // 0x1010009
     field public static final int publicKey = 16843686; // 0x10103a6
+    field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public static final int purposeString;
     field @FlaggedApi("android.content.pm.relative_reference_intent_filters") public static final int query = 16844431; // 0x101068f
     field public static final int queryActionMsg = 16843227; // 0x10101db
     field @FlaggedApi("android.content.pm.relative_reference_intent_filters") public static final int queryAdvancedPattern = 16844434; // 0x1010692

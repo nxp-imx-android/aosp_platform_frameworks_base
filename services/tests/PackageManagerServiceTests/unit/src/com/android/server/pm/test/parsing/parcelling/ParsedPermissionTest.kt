@@ -50,6 +50,7 @@ class ParsedPermissionTest : ParsedComponentTest(
         ParsedPermission::getProtectionLevel,
         ParsedPermission::getRequiresPurposeTargetSdkVersion,
         ParsedPermission::getRequiresGeneralPurposeTargetSdkVersion,
+        ParsedPermission::getRequiresPurposeStringTargetSdkVersion,
         ParsedPermission::isTree,
         ParsedPermission::isPurposeRequired,
     )

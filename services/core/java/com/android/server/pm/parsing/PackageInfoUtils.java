@@ -228,12 +228,16 @@ public class PackageInfoUtils {
                                 PackageInfo.REQUESTED_PERMISSION_IMPLICIT;
                     }
                     if (android.permission.flags.Flags.ppdManifestEnabled()) {
+                        Set<String> generalPurposes = Set.of();
+                        int purposeStringResource = usesPermission.getPurposeStringResource();
                         if (!usesPermission.getGeneralPurposes().isEmpty()) {
-                            UsesPermissionPurposeInfo ppi =
-                                    new UsesPermissionPurposeInfo(usesPermission.getName(),
-                                            usesPermission.getGeneralPurposes());
-                            info.requestedPermissionsPurposes.put(usesPermission.getName(), ppi);
+                            generalPurposes = usesPermission.getGeneralPurposes();
                         }
+                        UsesPermissionPurposeInfo ppi =
+                                new UsesPermissionPurposeInfo(usesPermission.getName(),
+                                        generalPurposes,
+                                        purposeStringResource);
+                        info.requestedPermissionsPurposes.put(usesPermission.getName(), ppi);
                     }
                     index++;
                 }
@@ -812,6 +816,7 @@ public class PackageInfoUtils {
         pi.knownCerts = p.getKnownCerts();
         pi.requiresPurpose = p.isPurposeRequired();
         pi.requiresPurposeTargetSdkVersion = p.getRequiresPurposeTargetSdkVersion();
+        pi.requiresPurposeStringTargetSdkVersion = p.getRequiresPurposeStringTargetSdkVersion();
         pi.requiresGeneralPurposeTargetSdkVersion = p.getRequiresGeneralPurposeTargetSdkVersion();
         for (ParsedValidPurpose validPurpose : p.getValidPurposes()) {
             if (validPurpose != null) {

@@ -1346,6 +1346,14 @@ public class ParsingPackageUtils {
                     R.styleable.AndroidManifestUsesPermission_maxSdkVersion,
                     Integer.MAX_VALUE);
 
+            int purposeStringResource = 0;
+            final boolean isAllPurposeEnabled = android.permission.flags.Flags.ppdManifestEnabled();
+            if (isAllPurposeEnabled) {
+                purposeStringResource = sa.getResourceId(
+                        R.styleable.AndroidManifestUsesPermission_purposeString,
+                        0);
+            }
+
             final ArraySet<String> requiredFeatures = new ArraySet<>();
             String feature = sa.getNonConfigurationString(
                     com.android.internal.R.styleable.AndroidManifestUsesPermission_requiredFeature,
@@ -1371,9 +1379,7 @@ public class ParsingPackageUtils {
 
             final Set<String> purposes = new ArraySet<>();
             final Set<String> generalPurposes = new ArraySet<>();
-            final boolean isAllPurposesEnabled =
-                    android.permission.flags.Flags.ppdManifestEnabled();
-            final boolean isPurposesEnabled = isAllPurposesEnabled
+            final boolean isPurposesEnabled = isAllPurposeEnabled
                     || android.permission.flags.Flags.ppdInstallTimeEnabled();
             final int outerDepth = parser.getDepth();
             int type;
@@ -1410,7 +1416,7 @@ public class ParsingPackageUtils {
                         break;
                     case "general-purpose":
                         result =
-                                isAllPurposesEnabled
+                                isAllPurposeEnabled
                                         ? parseGeneralPurpose(input, res, parser)
                                         : input.success(null);
                         if (result.isSuccess() && result.getResult() != null) {
@@ -1477,11 +1483,20 @@ public class ParsingPackageUtils {
                                         + pkg.getPackageName()
                                         + " at: "
                                         + parser.getPositionDescription());
-                    } else if (isAllPurposesEnabled
+                    } else if (isAllPurposeEnabled
                             && !Objects.equals(usesPermission.getGeneralPurposes(),
                             generalPurposes)) {
                         return input.error(
                                 "Conflicting uses-permissions general purposes: "
+                                        + name
+                                        + " in package: "
+                                        + pkg.getPackageName()
+                                        + " at: "
+                                        + parser.getPositionDescription());
+                    } else if (isAllPurposeEnabled && (usesPermission.getPurposeStringResource()
+                            != purposeStringResource)) {
+                        return input.error(
+                                "Conflicting uses-permissions purpose string: "
                                         + name
                                         + " in package: "
                                         + pkg.getPackageName()
@@ -1499,7 +1514,7 @@ public class ParsingPackageUtils {
 
             if (!found) {
                 pkg.addUsesPermission(
-                        new ParsedUsesPermissionImpl(name, usesPermissionFlags, purposes, generalPurposes));
+                        new ParsedUsesPermissionImpl(name, usesPermissionFlags, purposeStringResource, purposes, generalPurposes));
             }
             return success;
         } finally {

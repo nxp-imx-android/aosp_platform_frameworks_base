@@ -2463,6 +2463,10 @@
              be set to at least SDK version 37. -->
         <attr name="requiresGeneralPurposeTargetSdkVersion"  format="integer" />
 
+        <!-- Used to specify the app's minimum target SDK version for which a purpose string
+             should be provided. This must be set to at least SDK version 37. -->
+        <attr name="requiresPurposeStringTargetSdkVersion"  format="integer" />
+
     </declare-styleable>
 
      <!-- TODO(b/443057927): Rename for specific purpose.
@@ -2614,6 +2618,18 @@
                  ACCESS_COARSE_LOCATION permissions. -->
             <flag name="neverForLocation" value="0x00010000" />
         </attr>
+        <!-- Optional: The resource ID for the purpose string. Only required when stated so by the
+             {@link #AndroidManifestPermission permission} tag's <code>
+             requiresPurposeStringTargetSdkVersion</code> attribute. If required, a string resource
+             ID should be provided that has a brief explanation of what the permission will be used
+             for. The string should be present in all locales the app developer wants to support.
+
+             <p>The string is recommended to be around 150 characters in most locales with a
+             maximum length of 300 characters in all locales. This string may appear in the runtime
+             permission grant dialog that is presented to users to help inform them of the app's
+             intended usage of the permission.
+             @FlaggedApi(android.permission.flags.Flags.FLAG_PPD_MANIFEST_ENABLED)-->
+        <attr name="purposeString" format="reference" />
     </declare-styleable>
 
     <!-- Use <code>purpose</code> tag to specify purpose(s) for requesting a permission.

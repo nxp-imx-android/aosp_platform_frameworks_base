@@ -83,6 +83,9 @@ public final class PermissionInfoTest {
         assertEquals(
                 NO_TARGET_SDK_VERSION,
                 unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
+        assertEquals(
+                NO_TARGET_SDK_VERSION,
+                unparceledPermissionInfo.requiresPurposeStringTargetSdkVersion);
         assertNotNull(unparceledPermissionInfo.validPurposes);
         assertNotNull(unparceledPermissionInfo.validGeneralPurposes);
         assertTrue(unparceledPermissionInfo.validPurposes.isEmpty());
@@ -95,6 +98,7 @@ public final class PermissionInfoTest {
         permissionInfo.requiresPurpose = true;
         permissionInfo.requiresPurposeTargetSdkVersion = SDK_INT;
         permissionInfo.requiresGeneralPurposeTargetSdkVersion = SDK_INT;
+        permissionInfo.requiresPurposeStringTargetSdkVersion = SDK_INT;
         permissionInfo.validPurposes =
                 CollectionUtils.add(
                         permissionInfo.validPurposes,
@@ -125,6 +129,7 @@ public final class PermissionInfoTest {
         assertTrue(unparceledPermissionInfo.requiresPurpose);
         assertEquals(SDK_INT, unparceledPermissionInfo.requiresPurposeTargetSdkVersion);
         assertEquals(SDK_INT, unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
+        assertEquals(SDK_INT, unparceledPermissionInfo.requiresPurposeStringTargetSdkVersion);
         assertNotNull(unparceledPermissionInfo.validPurposes);
         assertEquals(2, unparceledPermissionInfo.validPurposes.size());
         assertNotNull(unparceledPermissionInfo.validGeneralPurposes);
@@ -180,6 +185,7 @@ public final class PermissionInfoTest {
     public void createFromParcel_returnsPurposeRelatedFields() {
         PermissionInfo permissionInfo = new PermissionInfo();
         permissionInfo.requiresGeneralPurposeTargetSdkVersion = TEST_TARGET_SDK_VERSION;
+        permissionInfo.requiresPurposeStringTargetSdkVersion = TEST_TARGET_SDK_VERSION;
         Parcel parcel = Parcel.obtain();
         permissionInfo.writeToParcel(parcel, 0);
 
@@ -189,5 +195,8 @@ public final class PermissionInfoTest {
         assertEquals(
                 TEST_TARGET_SDK_VERSION,
                 unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
+        assertEquals(
+                TEST_TARGET_SDK_VERSION,
+                unparceledPermissionInfo.requiresPurposeStringTargetSdkVersion);
     }
 }

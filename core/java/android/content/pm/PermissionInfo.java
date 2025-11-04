@@ -549,6 +549,18 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
     public int requiresGeneralPurposeTargetSdkVersion = NO_TARGET_SDK_VERSION;
 
     /**
+     * Specifies the minimum target SDK version for which a purpose string should be provided.
+     * If {@link #NO_TARGET_SDK_VERSION}, purpose string is not required.
+     *
+     * @hide
+     */
+    // Following pattern that most other fields in this class are also mutable.
+    @SuppressLint("MutableBareField")
+    @SystemApi
+    @FlaggedApi(android.permission.flags.Flags.FLAG_PPD_MANIFEST_ENABLED)
+    public int requiresPurposeStringTargetSdkVersion = NO_TARGET_SDK_VERSION;
+
+    /**
      * A {@link Map} of valid purposes where the key represents the name of the purpose and value
      * represents the {@link ValidPurposeInfo} metadata associated with the purpose.
      *
@@ -743,6 +755,7 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         requiresPurpose = orig.requiresPurpose;
         requiresPurposeTargetSdkVersion = orig.requiresPurposeTargetSdkVersion;
         requiresGeneralPurposeTargetSdkVersion = orig.requiresGeneralPurposeTargetSdkVersion;
+        requiresPurposeStringTargetSdkVersion = orig.requiresPurposeStringTargetSdkVersion;
         validPurposes = orig.validPurposes;
         validGeneralPurposes = orig.validGeneralPurposes;
     }
@@ -815,6 +828,7 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         writeValidPurposes(dest);
         dest.writeInt(requiresGeneralPurposeTargetSdkVersion);
         writeValidGeneralPurposes(dest);
+        dest.writeInt(requiresPurposeStringTargetSdkVersion);
     }
 
     /** @hide */
@@ -881,6 +895,7 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         readValidPurposes(source);
         requiresGeneralPurposeTargetSdkVersion = source.readInt();
         readValidGeneralPurposes(source);
+        requiresPurposeStringTargetSdkVersion = source.readInt();
     }
 
     private void readValidPurposes(@NonNull Parcel in) {

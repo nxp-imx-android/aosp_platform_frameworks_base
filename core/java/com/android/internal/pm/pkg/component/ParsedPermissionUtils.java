@@ -141,9 +141,10 @@ public class ParsedPermissionUtils {
             }
 
             final boolean isPlatform = "android".equals(permission.getPackageName());
-            final boolean ppdManifestEnabled = Flags.ppdManifestEnabled();
+            final boolean shouldParseAllPurpose = Flags.ppdManifestEnabled() && isPlatform;
+            final boolean shouldParsePurpose = (shouldParseAllPurpose || Flags.ppdInstallTimeEnabled()) && isPlatform;
             // For now only platform permissions can be purpose guarded.
-            if ((ppdManifestEnabled || Flags.ppdInstallTimeEnabled()) && isPlatform) {
+            if (shouldParsePurpose) {
                 final boolean requiresPurpose =
                         sa.getBoolean(
                                 R.styleable.AndroidManifestPermission_requiresPurpose,
@@ -160,7 +161,7 @@ public class ParsedPermissionUtils {
                 }
             }
 
-            if (ppdManifestEnabled && isPlatform) {
+            if (shouldParseAllPurpose) {
                 final ParseResult<Integer> generalPurposeTargetSdkVersionResult =
                         parseRequiresGeneralPurposeTargetSdkVersion(sa, input);
                 if (generalPurposeTargetSdkVersionResult.isError()) {
@@ -168,6 +169,14 @@ public class ParsedPermissionUtils {
                 }
                 permission.setRequiresGeneralPurposeTargetSdkVersion(
                         generalPurposeTargetSdkVersionResult.getResult());
+
+                final ParseResult<Integer> purposeStringTargetSdkVersionResult =
+                        parseRequiresPurposeStringTargetSdkVersion(sa, input);
+                if (purposeStringTargetSdkVersionResult.isError()) {
+                    return input.error(purposeStringTargetSdkVersionResult);
+                }
+                permission.setRequiresPurposeStringTargetSdkVersion(
+                        purposeStringTargetSdkVersionResult.getResult());
             }
 
             // For now only platform runtime permissions can be restricted
@@ -237,6 +246,23 @@ public class ParsedPermissionUtils {
                             + "defined with value being at least 37!");
         }
         return input.success(requiresGeneralPurposeTargetSdkVersion);
+    }
+
+    // Version code is only being used to validate attribute value.
+    @SuppressWarnings("AndroidFrameworkCompatChange")
+    private static ParseResult<Integer> parseRequiresPurposeStringTargetSdkVersion(
+            TypedArray array, ParseInput input) {
+        final int requiresPurposeStringTargetSdkVersion =
+                array.getInt(
+                        R.styleable.AndroidManifestPermission_requiresPurposeStringTargetSdkVersion,
+                        /* defValue= */ NO_TARGET_SDK_VERSION);
+        // Android C is the first platform version that supports purpose enforcement.
+        if (requiresPurposeStringTargetSdkVersion <= Build.VERSION_CODES.BAKLAVA) {
+            return input.error(
+                    "android:requiresPurposeStringTargetSdkVersion for <permission> must be "
+                            + "defined with value being at least 37!");
+        }
+        return input.success(requiresPurposeStringTargetSdkVersion);
     }
 
     @NonNull
