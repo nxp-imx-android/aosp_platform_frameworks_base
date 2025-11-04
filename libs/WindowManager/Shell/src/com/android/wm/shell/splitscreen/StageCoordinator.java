@@ -932,26 +932,6 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 taskId1, taskId2, splitPosition, snapPosition);
         final WindowContainerTransaction wct = new WindowContainerTransaction();
 
-        // If the two tasks are already in split screen on external display, only reparent the
-        // split root to the default display if the app pair is clicked on default display.
-        // TODO(b/393217881): cover more cases and extract this to a new method when split screen
-        //  in connected display is fully supported.
-        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
-            DisplayAreaInfo displayAreaInfo = mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY);
-            RunningTaskInfo taskInfo1 = mTaskOrganizer.getRunningTaskInfo(taskId1);
-            RunningTaskInfo taskInfo2 = mTaskOrganizer.getRunningTaskInfo(taskId2);
-
-            if (displayAreaInfo != null && taskInfo1 != null && taskInfo2 != null
-                    && getStageOfTask(taskId1) != STAGE_TYPE_UNDEFINED
-                    && getStageOfTask(taskId2) != STAGE_TYPE_UNDEFINED
-                    && taskInfo1.displayId != DEFAULT_DISPLAY
-                    && taskInfo1.displayId == taskInfo2.displayId) {
-                wct.reparent(mSplitRootTaskInfo.token, displayAreaInfo.token, true);
-                mTaskOrganizer.applyTransaction(wct);
-                return;
-            }
-        }
-
         if (taskId2 == INVALID_TASK_ID) {
             startSingleTask(taskId1, options1, wct, remoteTransition);
             return;
