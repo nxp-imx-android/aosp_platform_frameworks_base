@@ -17,6 +17,7 @@
 package android.os;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -224,5 +225,18 @@ public final class MessageHeapTest {
 
         // Verify the entire heap is still valid and ordered correctly.
         assertTrue(verify(heap));
+    }
+
+    @Test
+    public void testWeOnlyShrinkIfCapacityWillChange() {
+        MessageHeap heap = new MessageHeap();
+        final int numItemsToAdd = MessageHeap.INITIAL_SIZE + 1;
+
+        for (int i = 0; i < numItemsToAdd; i++) {
+            insertMessage(heap, 0);
+        }
+        assertEquals(numItemsToAdd, heap.size());
+        /* We are over half full, shrink should not happen. */
+        assertFalse(heap.maybeShrink());
     }
 }
