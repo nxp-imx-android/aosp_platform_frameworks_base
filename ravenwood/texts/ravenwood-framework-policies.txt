@@ -94,15 +94,6 @@ class android.app.ContextImpl exp
     method registerReceiverInternal ignore
     method unregisterReceiver ignore
 
-class android.app.ContextImpl$ApplicationContentResolver !android.app.ContextImpl_ravenwood$ContentResolver
-    method acquireProvider              redirect
-    method acquireExistingProvider      redirect
-    method releaseProvider              ignore
-    method acquireUnstableProvider      redirect
-    method releaseUnstableProvider      ignore
-    method unstableProviderDied         ignore
-    method appNotRespondingViaProvider  ignore
-
 class android.app.ActivityManager
     method getService exp
 
@@ -112,14 +103,10 @@ class android.app.ApplicationPackageManager throw
 class android.content.Context exp
 class android.content.ContentResolver exp
 class android.content.ContentProvider exp
-class android.content.ContentProviderClient exp
-class android.content.ContentProviderNative exp
 
 class android.content.Intent
     method migrateExtraStreamToClipData exp
     method prepareToLeaveProcess exp
-
-class android.provider.Settings exp
 
 class android.app.ActivityThread exp
 class android.app.ActivityThread$H exp

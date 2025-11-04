@@ -17,6 +17,7 @@ package com.android.ravenwoodtest.runtimetest;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.ravenwood.annotation.RavenwoodIgnore;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodSupported;
@@ -45,6 +46,7 @@ public class RavenwoodRuntimeSupportedAnnotationTest {
     static {
         RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodKeep.class);
         RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodRedirect.class);
+        RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodIgnore.class);
         // We need to use the HostStubGenProcessedAsSubstitute annotation for RavenwoodReplace,
         // because the method to be replaced will actually be removed, losing the annotation.
         RAVENWOOD_AVAILABLE_ANNOTS.add(getSubstituteAnnotation() /* RavenwoodReplace */);
@@ -73,6 +75,15 @@ public class RavenwoodRuntimeSupportedAnnotationTest {
     @Test
     public void testPackageManager() throws Exception {
         check("android.content.pm.PackageManager", "android.app.ApplicationPackageManager",
+                // Compare to methods with @RavenwoodKeep, etc
+                sWithAvailableAnnotation
+        );
+    }
+
+    @Test
+    public void testContentResolver() throws Exception {
+        check("android.content.ContentResolver",
+                "android.app.ContextImpl$ApplicationContentResolver",
                 // Compare to methods with @RavenwoodKeep, etc
                 sWithAvailableAnnotation
         );

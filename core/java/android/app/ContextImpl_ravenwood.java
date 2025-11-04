@@ -74,19 +74,16 @@ public class ContextImpl_ravenwood {
 
         static IContentProvider acquireProvider(
                 ContextImpl.ApplicationContentResolver self, Context context, String auth) {
-            onExperimentalApiCalled(2);
             return RavenwoodAppDriver.getInstance().getProvider(context, auth);
         }
 
         static IContentProvider acquireExistingProvider(
                 ContextImpl.ApplicationContentResolver self, Context context, String auth) {
-            onExperimentalApiCalled(2);
             return acquireProvider(self, context, auth);
         }
 
         static IContentProvider acquireUnstableProvider(
                 ContextImpl.ApplicationContentResolver self, Context context, String auth) {
-            onExperimentalApiCalled(2);
             return acquireProvider(self, context, auth);
         }
     }

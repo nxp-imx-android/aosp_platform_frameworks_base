@@ -89,6 +89,8 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.os.UserHandle;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.service.voice.VisualQueryDetectedResult;
 import android.speech.tts.TextToSpeech;
 import android.telephony.TelephonyManager;
@@ -130,6 +132,11 @@ import java.util.function.Consumer;
 /**
  * The Settings provider contains global system-level device preferences.
  */
+@RavenwoodKeepWholeClass(comment = """
+With the default ContentResolver instance, all the get methods will just return the default values.
+All the put methods will throw an exception. If you want to simulate writing to the settings
+provider, consider using TestableSettingsProvider, which is configured by TestableContext.
+        """, conditional = true, bug = 457840588)
 public final class Settings {
     /** @hide */
     public static final boolean DEFAULT_OVERRIDEABLE_BY_RESTORE = false;
@@ -3476,6 +3483,7 @@ public final class Settings {
         }
     }
 
+    @RavenwoodKeepPartialClass(comment = "GenerationTracker not used on Ravenwood")
     private static final class GenerationTracker {
         @NonNull private final Key mKey;
         @NonNull private final MemoryIntArray mArray;
@@ -3531,6 +3539,7 @@ public final class Settings {
             }
         }
 
+        @RavenwoodKeepWholeClass(comment = "GenerationTracker not used, but we still generate keys")
         private static final class Key {
             private final String mName;
             private final int mDeviceId;

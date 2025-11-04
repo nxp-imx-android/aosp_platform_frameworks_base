@@ -20,6 +20,8 @@ import static android.platform.test.ravenwood.RavenwoodProxyHelper.sNotImplement
 import static org.junit.Assert.fail;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.content.AttributionSource;
 import android.content.ContentProvider;
 import android.content.Context;
 import android.content.IContentProvider;
@@ -31,6 +33,7 @@ import android.platform.test.ravenwood.RavenwoodDriver;
 import android.platform.test.ravenwood.RavenwoodEnvironment;
 import android.platform.test.ravenwood.RavenwoodProxyHelper;
 import android.platform.test.ravenwood.RavenwoodSystemServer;
+import android.platform.test.ravenwood.RavenwoodUnsupportedApiException;
 import android.platform.test.ravenwood.RavenwoodUtils;
 import android.provider.Settings;
 import android.util.Log;
@@ -41,6 +44,8 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.ravenwood.common.SneakyThrow;
 import com.android.server.compat.PlatformCompat;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -177,15 +182,46 @@ public final class RavenwoodAppDriver {
         var mockSettings = RavenwoodProxyHelper.newProxy(
                 IContentProvider.class,
                 IContentProvider.descriptor,
-                (proxy, method, args) -> switch (method.getName()) {
-                    case "call" -> Bundle.EMPTY;
-                    default -> sNotImplementedHandler.invoke(proxy, method, args);
-                }, true);
+                new RavenwoodEmptySettingsProvider(), false);
         synchronized (mProviders) {
             mProviders.put(Settings.AUTHORITY, mockSettings);
         }
 
         reset();
+    }
+
+    /**
+     * Minimum implementation to support "empty" settings provider.
+     * See b/457840588 for the details.
+     */
+    private static class RavenwoodEmptySettingsProvider implements InvocationHandler {
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if ("call".equals(method.getName())) {
+                return call(
+                        (AttributionSource) args[0],
+                        (String) args[1],
+                        (String) args[2],
+                        (String) args[3],
+                        (Bundle) args[4]
+                );
+            } else {
+                return sNotImplementedHandler.invoke(proxy, method, args);
+            }
+        }
+
+        private Bundle call(@NonNull AttributionSource attributionSource, String authority,
+                String method, @Nullable String arg, @Nullable Bundle extras) {
+            final String[] commands = method.split("_", 2);
+            final String op = commands[0];
+            return switch (op) {
+                case "GET" -> Bundle.EMPTY;
+                case "PUT", "RESET" ->
+                        throw new RavenwoodUnsupportedApiException()
+                                .setReason("SettingsProvider#call(" + method + ")");
+                default -> throw new UnsupportedOperationException("Unknown command " + method);
+            };
+        }
     }
 
     private void initializeCompatIds() {
