@@ -599,7 +599,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         setUpFreeformTask()
 
         assertThat(
-                controller.doesAnyTaskRequireTaskbarRounding(
+                controller.isAnyTaskMaximizedOrSnapped(
                     displayId = DEFAULT_DISPLAY,
                     userId = taskRepository.userId,
                 )
@@ -643,7 +643,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
         setUpFreeformTask(bounds = stableBounds, active = true)
         assertThat(
-                controller.doesAnyTaskRequireTaskbarRounding(
+                controller.isAnyTaskMaximizedOrSnapped(
                     displayId = DEFAULT_DISPLAY,
                     userId = taskRepository.userId,
                 )
@@ -691,7 +691,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         assertThat(
-                controller.doesAnyTaskRequireTaskbarRounding(
+                controller.isAnyTaskMaximizedOrSnapped(
                     displayId = DEFAULT_DISPLAY,
                     userId = taskRepository.userId,
                 )

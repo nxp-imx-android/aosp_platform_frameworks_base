@@ -23,6 +23,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.AppOpsManager
+import android.app.IWallpaperManager
 import android.app.KeyguardManager
 import android.app.PendingIntent
 import android.app.TaskInfo
@@ -48,6 +49,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.RemoteException
+import android.os.ServiceManager
 import android.os.Trace
 import android.os.UserHandle
 import android.os.UserManager
@@ -295,6 +297,9 @@ class DesktopTasksController(
     private val latencyTracker: LatencyTracker
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
+
+    private val wallpaperService: IWallpaperManager =
+        IWallpaperManager.Stub.asInterface(ServiceManager.getService(Context.WALLPAPER_SERVICE))
     private lateinit var snapEventHandler: SnapEventHandler
     private lateinit var mPipScheduler: PipScheduler
     private val dragToDesktopStateListener =
@@ -1817,14 +1822,7 @@ class DesktopTasksController(
             }
 
         repository.addClosingTask(displayId = displayId, deskId = deskId, taskId = taskId)
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-            doesAnyTaskRequireTaskbarRounding(
-                displayId = displayId,
-                userId = userId,
-                excludeTaskId = taskId,
-            ),
-            displayId,
-        )
+        updateTaskBarAndWallpaperDimIfNeeded(displayId, userId, taskId)
 
         val immersiveRunnable =
             desktopImmersiveController
@@ -1973,14 +1971,7 @@ class DesktopTasksController(
             exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
             desktopExitRunnable?.invoke(transition)
         }
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-            doesAnyTaskRequireTaskbarRounding(
-                displayId = displayId,
-                userId = userId,
-                excludeTaskId = taskId,
-            ),
-            displayId,
-        )
+        updateTaskBarAndWallpaperDimIfNeeded(displayId, userId, taskId)
     }
 
     /**
@@ -3104,19 +3095,16 @@ class DesktopTasksController(
         logD("willMaximize = %s", willMaximize)
         logD("shouldRestoreToSnap = %s", shouldRestoreToSnap)
 
-        val doesAnyTaskRequireTaskbarRounding =
+        val isAnyTaskMaximizedOrSnappedOrWillBe =
             willMaximize ||
                 shouldRestoreToSnap ||
-                doesAnyTaskRequireTaskbarRounding(
+                isAnyTaskMaximizedOrSnapped(
                     displayId = taskInfo.displayId,
                     userId = taskInfo.userId,
                     excludeTaskId = taskInfo.taskId,
                 )
 
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-            doesAnyTaskRequireTaskbarRounding,
-            taskInfo.displayId,
-        )
+        updateTaskBarAndWallpaperDim(taskInfo.displayId, isAnyTaskMaximizedOrSnappedOrWillBe)
         val wct = WindowContainerTransaction().setBounds(taskInfo.token, destinationBounds)
         interaction.uiEvent?.let { uiEvent -> desktopModeUiEventLogger.log(taskInfo, uiEvent) }
         desktopModeEventLogger.logTaskResizingEnded(
@@ -3190,20 +3178,19 @@ class DesktopTasksController(
      */
     fun updateTaskbarRoundingOnTaskResize(displayId: Int, taskId: Int, newBounds: Rect) {
         val otherTasksRequireTaskbarRounding =
-            doesAnyTaskRequireTaskbarRounding(
+            isAnyTaskMaximizedOrSnapped(
                 displayId,
                 shellController.currentUserId,
                 excludeTaskId = taskId,
             )
-        val resizedTaskRequiresTaskbarRounding =
-            doesTaskRequireTaskbarRounding(displayId, newBounds)
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-            otherTasksRequireTaskbarRounding || resizedTaskRequiresTaskbarRounding,
+        val resizedTaskRequiresTaskbarRounding = doesTaskMaximizedOrSnapped(displayId, newBounds)
+        updateTaskBarAndWallpaperDim(
             displayId,
+            otherTasksRequireTaskbarRounding || resizedTaskRequiresTaskbarRounding,
         )
     }
 
-    private fun doesTaskRequireTaskbarRounding(displayId: Int, taskBounds: Rect): Boolean {
+    private fun doesTaskMaximizedOrSnapped(displayId: Int, taskBounds: Rect): Boolean {
         val isSnappedToHalfScreen = isTaskSnappedToHalfScreen(displayId, taskBounds)
         val isMaximizedToBothEdges = isMaximizedToStableBoundsEdges(displayId, taskBounds)
         logD("isTaskSnappedToHalfScreen(taskInfo) = %s", isSnappedToHalfScreen)
@@ -3212,7 +3199,7 @@ class DesktopTasksController(
     }
 
     @VisibleForTesting
-    fun doesAnyTaskRequireTaskbarRounding(
+    fun isAnyTaskMaximizedOrSnapped(
         displayId: Int,
         userId: Int,
         excludeTaskId: Int? = null,
@@ -3227,9 +3214,9 @@ class DesktopTasksController(
                     val taskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: return false
                     logD("taskInfo = %s", taskInfo)
                     val taskBounds = taskInfo.configuration.windowConfiguration.bounds
-                    doesTaskRequireTaskbarRounding(displayId, taskBounds)
+                    doesTaskMaximizedOrSnapped(displayId, taskBounds)
                 }
-        logD("doesAnyTaskRequireTaskbarRounding = %s", doesAnyTaskRequireTaskbarRounding)
+        logD("doesAnyTaskMaximizedOrSnapped = %s", doesAnyTaskRequireTaskbarRounding)
         return doesAnyTaskRequireTaskbarRounding
     }
 
@@ -3281,7 +3268,7 @@ class DesktopTasksController(
         if (DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue) {
             val isTiled = snapEventHandler.snapToHalfScreen(taskInfo, currentDragBounds, position)
             if (isTiled) {
-                taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(true, taskInfo.displayId)
+                updateTaskBarAndWallpaperDim(taskInfo.displayId, true)
             }
             return
         }
@@ -3301,7 +3288,7 @@ class DesktopTasksController(
             return
         }
 
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(true, taskInfo.displayId)
+        updateTaskBarAndWallpaperDim(taskInfo.displayId, true)
         val wct = WindowContainerTransaction().setBounds(taskInfo.token, destinationBounds)
 
         toggleResizeDesktopTaskTransitionHandler.startTransition(wct, currentDragBounds)
@@ -3506,10 +3493,7 @@ class DesktopTasksController(
                 }
             }
 
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-            doesAnyTaskRequireTaskbarRounding(displayId = displayId, userId = userId),
-            displayId,
-        )
+        updateTaskBarAndWallpaperDimIfNeeded(displayId, userId)
 
         return taskIdToMinimize
     }
@@ -4954,14 +4938,7 @@ class DesktopTasksController(
             snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
         }
 
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-            doesAnyTaskRequireTaskbarRounding(
-                displayId = task.displayId,
-                userId = task.userId,
-                excludeTaskId = task.taskId,
-            ),
-            task.displayId,
-        )
+        updateTaskBarAndWallpaperDimIfNeeded(task.displayId, task.userId, task.taskId)
         return if (wct.isEmpty) null else wct
     }
 
@@ -5568,10 +5545,7 @@ class DesktopTasksController(
             userId = userId,
         )
         desksOrganizer.activateDesk(wct, deskId)
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-            doesAnyTaskRequireTaskbarRounding(displayId = displayId, userId = userId),
-            displayId,
-        )
+        updateTaskBarAndWallpaperDimIfNeeded(displayId, userId)
         val expandedTasksOrderedFrontToBack =
             repository.getExpandedTasksIdsInDeskOrdered(deskId = deskId)
         // If we're adding a new Task we might need to minimize an old one
@@ -6587,15 +6561,8 @@ class DesktopTasksController(
         // We don't update the taskbar corner rounding of the new display as it's done each resize
         // operation method (e.g., [toggleDesktopTaskSize]) accordingly.
         if (taskInfo.displayId != motionEvent.displayId) {
-            // The window has moved to a new display, both of the display needs to receive the
-            // callback.
-            taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-                doesAnyTaskRequireTaskbarRounding(
-                    displayId = motionEvent.displayId,
-                    userId = taskInfo.userId,
-                ),
-                motionEvent.displayId,
-            )
+            // The window has moved to a new display, both of the display needs to be updated
+            updateTaskBarAndWallpaperDimIfNeeded(motionEvent.displayId, taskInfo.userId)
         }
         return needDragIndicatorCleanup
     }
@@ -7050,6 +7017,24 @@ class DesktopTasksController(
                         .filterNot { it.activeDeskId == INVALID_DISPLAY }
                         .isNotEmpty()
             }
+    }
+
+    private fun updateTaskBarAndWallpaperDimIfNeeded(
+        displayId: Int,
+        userId: Int,
+        excludeTaskId: Int? = null,
+    ) {
+        val shouldApplyEffect = isAnyTaskMaximizedOrSnapped(displayId, userId, excludeTaskId)
+        updateTaskBarAndWallpaperDim(displayId, shouldApplyEffect)
+    }
+
+    private fun updateTaskBarAndWallpaperDim(displayId: Int, shouldApplyEffect: Boolean) {
+        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(shouldApplyEffect, displayId)
+        wallpaperService.setWallpaperDimAmount(
+            if (shouldApplyEffect) 0.7f else 0f,
+            displayId,
+            true, /* temporary */
+        )
     }
 
     /** The interface for calls from outside the host process. */
