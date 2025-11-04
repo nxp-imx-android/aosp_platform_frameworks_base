@@ -954,6 +954,35 @@ public class AccessibilityNodeInfo implements Parcelable {
     public static final String EXTRA_DATA_RENDERING_INFO_KEY =
             "android.view.accessibility.extra.DATA_RENDERING_INFO_KEY";
 
+    /**
+     * Key used to request that the node source re-evaluate and update this node's layout-dependent
+     * actions. This request is made with {@link #refreshWithExtraData(String, Bundle)} and takes no
+     * arguments.
+     * <p>
+     * Some actions may depend on the on-screen layout of a node. In complex or dynamic UIs, it
+     * may be difficult for a source to determine if a node is truly actionable without more
+     * intensive inspection. For example, a node may be misreported as clickable despite being
+     * occluded, requiring a hit-test to confirm the availability of the action.
+     * <p>
+     * Using this key requests that the source perform a more intensive, layout-based analysis to
+     * determine which actions are available to the user. After this request, the source will update
+     * the actions and related properties of this node. For example, for clickability, this may
+     * result in changes to the value returned by {@link #isClickable()} and the presence of
+     * {@link AccessibilityAction#ACTION_CLICK} in the node's {@link #getActionList()}.
+     * <p>
+     * This analysis can be computationally expensive and should only be requested when needed to
+     * resolve ambiguous or inaccurate actions.
+     * <p>
+     * Providers may advertise that they support this request using
+     * {@link #setAvailableExtraData(List)}. Services may check for support with
+     * {@link #getAvailableExtraData()}.
+     *
+     * @see #refreshWithExtraData(String, Bundle)
+     */
+    @FlaggedApi(Flags.FLAG_A11Y_LAYOUT_BASED_ACTIONS_API)
+    public static final String EXTRA_DATA_REQUEST_LAYOUT_BASED_ACTIONS_KEY =
+            "android.view.accessibility.extra.DATA_REQUEST_LAYOUT_BASED_ACTIONS_KEY";
+
     /** @hide */
     public static final String EXTRA_DATA_REQUESTED_KEY =
             "android.view.accessibility.AccessibilityNodeInfo.extra_data_requested";
