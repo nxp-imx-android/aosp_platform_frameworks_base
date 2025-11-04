@@ -21,6 +21,9 @@ package com.android.wm.shell.shared.bubbles;
  */
 public class BubbleConstants {
 
-    /** The alpha for the scrim shown when bubbles are expanded. */
-    public static float BUBBLE_EXPANDED_SCRIM_ALPHA = .32f;
+    /** The alpha for the scrim shown when the floating bubbles are expanded. */
+    public static float FLOATING_BUBBLE_EXPANDED_SCRIM_ALPHA = .6f;
+
+    /** The alpha for the scrim shown when the bubble bar bubbles are expanded. */
+    public static float BUBBLE_BAR_EXPANDED_SCRIM_ALPHA = .32f;
 }
