@@ -1298,7 +1298,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun testOnTaskOpening_startingAppBubbleTask_skipsWindowDecorationCreation() {
         assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())

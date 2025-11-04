@@ -12801,7 +12801,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
         com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
     )
-    @DisableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    @DisableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     fun addMoveToBubbleFromDesktopChange_disableRootTaskForBubble_reparentToTda() {
         val task = setUpFreeformTask()
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
@@ -12821,7 +12821,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-        Flags.FLAG_ROOT_TASK_FOR_BUBBLE,
+        Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
         com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
     )
     fun addMoveToBubbleFromDesktopChange_enableAllFlags_reorder() {
@@ -12842,7 +12842,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-        Flags.FLAG_ROOT_TASK_FOR_BUBBLE,
+        Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
     )
     fun addMoveToBubbleFromDesktopChange_multiTasks_notExitDesktop() {
         val task = setUpFreeformTask()

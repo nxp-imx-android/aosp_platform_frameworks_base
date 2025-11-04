@@ -25,7 +25,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_HANDLERS_DEBUGGING_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS;
-import static com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE;
+import static com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK;
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.Flags.FLAG_TASK_VIEW_TRANSITIONS_REFACTOR;
@@ -107,7 +107,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
                 FLAG_TASK_VIEW_TRANSITIONS_REFACTOR,
                 FLAG_ENABLE_CREATE_ANY_BUBBLE,
                 FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS,
-                FLAG_ROOT_TASK_FOR_BUBBLE);
+                FLAG_ENABLE_BUBBLE_ROOT_TASK);
     }
 
     @Mock
