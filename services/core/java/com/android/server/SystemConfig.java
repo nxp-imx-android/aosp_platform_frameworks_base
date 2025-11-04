@@ -804,6 +804,8 @@ public class SystemConfig {
             if (f.isFile() || f.getPath().contains("@")) {
                 continue;
             }
+            readPermissions(parser, Environment.buildPath(f, "etc", "sysconfig"),
+                    apexPermissionFlag);
             readPermissions(parser, Environment.buildPath(f, "etc", "permissions"),
                     apexPermissionFlag);
         }
