@@ -65,7 +65,9 @@ constructor(
     /** The position of the thumb of the seek bar as the user is scrubbing it. */
     private var seekProgress: Float by mutableFloatStateOf(0f)
     /** Whether the internal "guts" are visible. */
-    private var isGutsVisible: Boolean by mutableStateOf(false)
+    private val isGutsVisible: Boolean
+        get() = interactor.isGutsVisible
+
     /** The index of the currently-selected card. */
     private var selectedCardIndex: Int by mutableIntStateOf(0)
         private set
@@ -185,7 +187,7 @@ constructor(
                                                         session.key,
                                                         MEDIA_PLAYER_ANIMATION_DELAY_MS,
                                                     )
-                                                    isGutsVisible = false
+                                                    interactor.setIsGutsVisible(false)
                                                 }
                                             },
                                         )
@@ -196,7 +198,7 @@ constructor(
                                                 falsingSystem.runIfNotFalseTap(
                                                     FalsingManager.LOW_PENALTY
                                                 ) {
-                                                    isGutsVisible = false
+                                                    interactor.setIsGutsVisible(false)
                                                 }
                                             },
                                         )
@@ -208,7 +210,7 @@ constructor(
                                                 falsingSystem.runIfNotFalseTap(
                                                     FalsingManager.LOW_PENALTY
                                                 ) {
-                                                    isGutsVisible = false
+                                                    interactor.setIsGutsVisible(false)
                                                 }
                                             },
                                         )
@@ -232,7 +234,7 @@ constructor(
                                             }
                                         },
                                     ),
-                                onLongClick = { isGutsVisible = false },
+                                onLongClick = { interactor.setIsGutsVisible(false) },
                             )
                         }
 
@@ -298,7 +300,7 @@ constructor(
                     }
                     override val onClickLabel =
                         context.getString(R.string.controls_media_playing_item_description)
-                    override val onLongClick = { isGutsVisible = true }
+                    override val onLongClick = { interactor.setIsGutsVisible(true) }
                 }
             }
             .let {

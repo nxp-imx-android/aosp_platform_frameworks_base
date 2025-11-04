@@ -74,6 +74,9 @@ interface MediaRepository {
     /** Whether media carousel should show first media session. */
     val shouldScrollToFirst: Boolean
 
+    /** Whether guts state should show on carousel. */
+    val isGutsVisible: Boolean
+
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
     fun seek(sessionKey: InstanceId, to: Long)
 
@@ -84,6 +87,8 @@ interface MediaRepository {
 
     /** Resets [shouldScrollToFirst] flag. */
     fun resetScrollToFirst()
+
+    fun storeIsGutsVisible(isGutsVisible: Boolean)
 }
 
 @SysUISingleton
@@ -109,6 +114,8 @@ constructor(
     override var currentCarouselIndex by mutableIntStateOf(0)
 
     override var shouldScrollToFirst by mutableStateOf(false)
+
+    override var isGutsVisible by mutableStateOf(false)
 
     @GuardedBy("mediaMutex")
     private var sortedMedia = TreeMap<MediaSortKeyModel, MediaDataModel>(comparator)
@@ -175,6 +182,7 @@ constructor(
             }
         }
         currentCarouselIndex = 0
+        isGutsVisible = false
     }
 
     override fun storeCarouselIndex(index: Int) {
@@ -183,6 +191,10 @@ constructor(
 
     override fun resetScrollToFirst() {
         shouldScrollToFirst = false
+    }
+
+    override fun storeIsGutsVisible(isGutsVisible: Boolean) {
+        this.isGutsVisible = isGutsVisible
     }
 
     @GuardedBy("mediaMutex")
