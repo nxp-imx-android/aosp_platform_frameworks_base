@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.android.wm.shell.windowdecor.extension.isFullscreen
 class FullscreenDisconnectHandler(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    private val fullscreenReconnectHandler: FullscreenReconnectHandler,
 ) {
 
     /**
@@ -48,6 +49,13 @@ class FullscreenDisconnectHandler(
             ) {
                 continue
             }
+            // TODO (b/434035592): Preserve display state for all users, not just current.
+            fullscreenReconnectHandler.preserveTask(
+                task.taskId,
+                disconnectedDisplayId,
+                task.userId,
+                task.isFocused,
+            )
             wct.reparent(task.token, taskDisplayArea.token, /* onTop= */ false)
         }
         return wct

@@ -148,6 +148,6 @@ class DisplayDisconnectTransitionHandler(
     }
 
     companion object {
-        private const val TAG = "DisplayDisconnectTransitionHandler"
+        private const val TAG = "DisconnectHandler"
     }
 }

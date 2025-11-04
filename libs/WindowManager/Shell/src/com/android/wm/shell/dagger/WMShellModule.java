@@ -183,6 +183,7 @@ import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarterInitializer;
 import com.android.wm.shell.freeform.TaskChangeListener;
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler;
+import com.android.wm.shell.fullscreen.FullscreenReconnectHandler;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.packageupdate.PackageUpdateController;
@@ -1326,15 +1327,36 @@ public abstract class WMShellModule {
     @Provides
     static Optional<FullscreenDisconnectHandler> provideFullscreenDisconnectHandler(
             ShellTaskOrganizer shellTaskOrganizer,
-            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            FullscreenReconnectHandler fullscreenReconnectHandler
     ) {
         if (!com.android.window.flags.Flags.enableDisplayDisconnectFullscreen()) {
             return Optional.empty();
         } else {
             return Optional.of(
                     new FullscreenDisconnectHandler(shellTaskOrganizer,
-                            rootTaskDisplayAreaOrganizer));
+                            rootTaskDisplayAreaOrganizer, fullscreenReconnectHandler));
         }
+    }
+
+    @WMSingleton
+    @Provides
+    static FullscreenReconnectHandler provideFullscreenReconnectHandler(
+            KeyguardManager keyguardManager,
+            DisplayController displayController,
+            Transitions transitions,
+            ShellTaskOrganizer shellTaskOrganizer,
+            Optional<RecentTasksController> recentTasksController,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            DesktopState desktopState,
+            Optional<SplitScreenController> splitScreenController,
+            ShellController shellController,
+            ShellInit shellInit
+    ) {
+        return new FullscreenReconnectHandler(keyguardManager, displayController, transitions,
+                shellTaskOrganizer, recentTasksController.orElse(null),
+                rootTaskDisplayAreaOrganizer, desktopState, splitScreenController, shellController,
+                shellInit);
     }
 
     @WMSingleton
