@@ -68,6 +68,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Recording screen and mic/internal audio
@@ -95,6 +96,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     private final MediaProjectionCaptureTarget mCaptureRegion;
     private final Handler mHandler;
     private final int mDisplayId;
+    private final AtomicBoolean mIsStarted = new AtomicBoolean();
 
     private Context mContext;
     ScreenMediaRecorderListener mListener;
@@ -294,39 +296,46 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         mStartTimeMillis = System.currentTimeMillis();
         mListener.onStarted();
         recordInternalAudio();
+        mIsStarted.set(true);
     }
 
     /**
      * End screen recording, throws an exception if stopping recording failed
      */
     public void end(@StopReason int stopReason) throws IOException {
-        Closer closer = new Closer();
+        if (mIsStarted.compareAndSet(true, false)) {
+            Closer closer = new Closer();
 
-        // MediaRecorder might throw RuntimeException if stopped immediately after starting
-        // We should remove the recording in this case as it will be invalid
-        closer.register(mMediaRecorder::stop);
-        closer.register(mMediaRecorder::release);
-        closer.register(mInputSurface::release);
-        closer.register(mVirtualDisplay::release);
-        closer.register(() -> {
-            if (stopReason == StopReason.STOP_UNKNOWN) {
-                // Attempt to call MediaProjection#stop() even if it might have already been called.
-                // If projection has already been stopped, then nothing will happen. Else, stop
-                // will be logged as a manually requested stop from host app.
-                mMediaProjection.stop();
-            } else {
-                // In any other case, the stop reason is related to the recorder, so pass it on here
-                mMediaProjection.stop(stopReason);
-            }
-        });
-        closer.register(this::stopInternalAudioRecording);
+            // MediaRecorder might throw RuntimeException if stopped immediately after starting
+            // We should remove the recording in this case as it will be invalid
+            closer.register(mMediaRecorder::stop);
+            closer.register(mMediaRecorder::release);
+            closer.register(mInputSurface::release);
+            closer.register(mVirtualDisplay::release);
+            closer.register(() -> {
+                if (stopReason == StopReason.STOP_UNKNOWN) {
+                    // Attempt to call MediaProjection#stop() even if it might have already been
+                    // called.
+                    // If projection has already been stopped, then nothing will happen. Else, stop
+                    // will be logged as a manually requested stop from host app.
+                    mMediaProjection.stop();
+                } else {
+                    // In any other case, the stop reason is related to the recorder, so pass it
+                    // on here
+                    mMediaProjection.stop(stopReason);
+                }
+            });
+            closer.register(this::stopInternalAudioRecording);
 
-        closer.close();
+            closer.close();
 
-        mMediaRecorder = null;
-        mMediaProjection = null;
+            mMediaRecorder = null;
+            mMediaProjection = null;
 
-        Log.d(TAG, "end recording");
+            Log.d(TAG, "end recording");
+        } else {
+            Log.d(TAG, "recording hasn't been started. Nothing to end");
+        }
     }
 
     @Override

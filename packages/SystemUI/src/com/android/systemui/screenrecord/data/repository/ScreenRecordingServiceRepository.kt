@@ -98,6 +98,13 @@ constructor(
                 if (new == null) {
                     // The service died. Update isServiceBound to match its state
                     isServiceBound.value = false
+                    statusUpdates.update { currentStatus ->
+                        if (currentStatus is Started) {
+                            Stopped(StopReason.STOP_ERROR)
+                        } else {
+                            currentStatus
+                        }
+                    }
                 } else {
                     new.setCallback(serviceCallback)
                 }
