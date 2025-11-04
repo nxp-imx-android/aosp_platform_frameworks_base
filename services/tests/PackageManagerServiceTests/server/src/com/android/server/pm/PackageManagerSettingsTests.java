@@ -45,6 +45,7 @@ import static org.mockito.Mockito.when;
 import android.annotation.NonNull;
 import android.app.PropertyInvalidatedCache;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
@@ -104,6 +105,7 @@ import com.android.server.utils.Watcher;
 import com.google.common.truth.Truth;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -167,7 +169,6 @@ public class PackageManagerSettingsTests {
     public void setup() {
         // Disable binder caches in this process.
         PropertyInvalidatedCache.disableForTestMode();
-
     }
 
     @Before
@@ -632,6 +633,8 @@ public class PackageManagerSettingsTests {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     public void testPackageRestrictions_appLockEnabledDefaultStateIsSet() {
+        Assume.assumeTrue(shouldTestAppLock(
+                InstrumentationRegistry.getInstrumentation().getContext()));
         final PackageSetting packageSetting = createPackageSetting(PACKAGE_NAME_1);
 
         Truth.assertThat(packageSetting.getUserStateOrDefault(0).isAppLockEnabled()).isFalse();
@@ -640,6 +643,8 @@ public class PackageManagerSettingsTests {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     public void testPackageRestrictions_writeAppLockEnabledGetsRead() {
+        Assume.assumeTrue(shouldTestAppLock(
+                InstrumentationRegistry.getInstrumentation().getContext()));
         final PackageSetting packageSetting = createPackageSetting(PACKAGE_NAME_1);
         packageSetting.modifyUserState(0).setAppLockEnabled(true);
 
@@ -649,6 +654,8 @@ public class PackageManagerSettingsTests {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     public void testPackageRestrictions_appLockEnabledPersistsAfterBoot() {
+        Assume.assumeTrue(shouldTestAppLock(
+                InstrumentationRegistry.getInstrumentation().getContext()));
         Settings settings = makeSettings();
         final PackageSetting packageSettings = createPackageSetting(PACKAGE_NAME_1);
         packageSettings.setAppId(Process.FIRST_APPLICATION_UID);
@@ -668,6 +675,8 @@ public class PackageManagerSettingsTests {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     public void testPackageRestrictions_appLockEnabledStateFalseAfterUninstallAndReinstall() {
+        Assume.assumeTrue(shouldTestAppLock(
+                InstrumentationRegistry.getInstrumentation().getContext()));
         Settings settings = makeSettings();
         final PackageSetting packageSettings = createPackageSetting(PACKAGE_NAME_1);
         packageSettings.setAppId(Process.FIRST_APPLICATION_UID);
@@ -696,6 +705,8 @@ public class PackageManagerSettingsTests {
     @Test
     @DisableFlags({android.security.Flags.FLAG_APP_LOCK_APIS})
     public void testPackageRestrictions_appLockEnabledNotSet_whenFeatureDisabled() {
+        Assume.assumeTrue(shouldTestAppLock(
+                InstrumentationRegistry.getInstrumentation().getContext()));
         final PackageSetting packageSetting = createPackageSetting(PACKAGE_NAME_1);
         packageSetting.modifyUserState(0).setAppLockEnabled(true);
 
@@ -706,6 +717,8 @@ public class PackageManagerSettingsTests {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     public void generateApplicationInfo_noFlags_appLockSupportedStateFalse() {
+        Assume.assumeTrue(shouldTestAppLock(
+                InstrumentationRegistry.getInstrumentation().getContext()));
         final PackageSetting packageSetting = createPackageSetting(PACKAGE_NAME_1);
         packageSetting.setPkg(((ParsedPackage) PackageImpl.forTesting(
                 PACKAGE_NAME_1).hideAsParsed())
@@ -723,6 +736,8 @@ public class PackageManagerSettingsTests {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     public void generateApplicationInfo_appLockFlag_headlessApp_appLockSupportedStateFalse() {
+        Assume.assumeTrue(shouldTestAppLock(
+                InstrumentationRegistry.getInstrumentation().getContext()));
         final PackageSetting packageSetting = createPackageSetting(PACKAGE_NAME_1);
         packageSetting.setPkg(((ParsedPackage) PackageImpl.forTesting(
                 PACKAGE_NAME_1).hideAsParsed())
@@ -740,6 +755,8 @@ public class PackageManagerSettingsTests {
     @Test
     @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
     public void generateApplicationInfo_appLockFlag_appLockSupportedStateTrue() {
+        Assume.assumeTrue(shouldTestAppLock(
+                InstrumentationRegistry.getInstrumentation().getContext()));
         // Create a fake activity with a launcher entry
         final IntentFilter intentFilter = new IntentFilter(Intent.ACTION_MAIN);
         intentFilter.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -2818,4 +2835,17 @@ public class PackageManagerSettingsTests {
         return PackageImpl.forTesting(pkgSetting.getPackageName()).hideAsParsed().hideAsFinal();
     }
 
+    private static boolean shouldTestAppLock(Context context) {
+        PackageManager pm = context.getPackageManager();
+        if (pm.hasSystemFeature(PackageManager.FEATURE_WATCH)) {
+            return false;
+        }
+        if (pm.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
+            return false;
+        }
+        if (pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+            return false;
+        }
+        return true;
+    }
 }
