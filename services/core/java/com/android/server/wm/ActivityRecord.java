@@ -5993,6 +5993,21 @@ final class ActivityRecord extends WindowToken {
 
             switch (mState) {
                 case RESUMED:
+                    if (com.android.window.flags.Flags.pauseInvisibleActivity()) {
+                        // Do nothing if currently in the process of resuming the activity.
+                        if (task.mInResumeTopActivity
+                                && task.topRunningActivity(true /* focusableOnly */) == this) {
+                            break;
+                        }
+                        // Otherwise, starting to pause it since it is not visible.
+                        final TaskFragment taskFragment = getTaskFragment();
+                        if (taskFragment != null && taskFragment.startPausing(
+                                mTaskSupervisor.mUserLeaving, false /* uiSleeping */,
+                                null /* resuming */, "makeInvisible")) {
+                            break;
+                        }
+                    }
+                    // fall through
                 case INITIALIZING:
                 case PAUSING:
                 case PAUSED:
@@ -6000,7 +6015,6 @@ final class ActivityRecord extends WindowToken {
                     addToStopping(true /* scheduleIdle */,
                             canEnterPictureInPicture /* idleDelayed */, "makeInvisible");
                     break;
-
                 default:
                     break;
             }
