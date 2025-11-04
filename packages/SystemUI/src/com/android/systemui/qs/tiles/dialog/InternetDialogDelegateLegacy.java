@@ -73,6 +73,7 @@ import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.qs.flags.QsDetailedView;
 import com.android.systemui.res.R;
+import com.android.systemui.retail.domain.interactor.RetailModeInteractor;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor;
@@ -211,10 +212,12 @@ public class InternetDialogDelegateLegacy implements
             KeyguardStateController keyguardStateController,
             SystemUIDialog.Factory systemUIDialogFactory,
             ShadeDialogContextInteractor shadeDialogContextInteractor,
-            ShadeModeInteractor shadeModeInteractor) {
+            ShadeModeInteractor shadeModeInteractor,
+            RetailModeInteractor retailModeInteractor) {
         // TODO (b/393628355): remove this after the details view is supported for single shade.
-        if (shadeModeInteractor.isDualShade()) {
+        if (shadeModeInteractor.isDualShade() && !retailModeInteractor.isInRetailMode()) {
             // If `QsDetailedView` is enabled, it should show the details view.
+            // Will still show the dialog if it's not dual shade mode, or it's in retail mode.
             QsDetailedView.assertInLegacyMode();
         }
 
