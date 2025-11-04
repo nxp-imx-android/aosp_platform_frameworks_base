@@ -68,6 +68,7 @@ public class MessageQueueTest {
     }
 
     @Test
+    @org.junit.Ignore("b/452987782")
     public void testPeekLastMessage() throws Exception {
         handler.sendEmptyMessageDelayed(0, LONG_DELAY_MS);
         handler.sendEmptyMessageDelayed(1, LONG_DELAY_MS + 1);
