@@ -37,6 +37,7 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME;
 import static android.content.pm.ApplicationInfo.FLAG_SUSPENDED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 
@@ -605,16 +606,18 @@ class ActivityStartInterceptor {
             @NonNull ActivityTaskSupervisor supervisor,
             @NonNull TaskInfo taskInfo,
             @NonNull String callingPackage,
-            @NonNull ActivityOptions options) {
+            @Nullable ActivityOptions options) {
         // TODO(b/456665032): handle other interceptions here too.
         if (!android.companion.virtualdevice.flags.Flags.automatedAppLaunchInterception()) {
             return false;
         }
+        final int launchDisplayId =
+                options != null ? options.getLaunchDisplayId() : DEFAULT_DISPLAY;
         return supervisor.createAutomatedAppLaunchWarningIntent(
                         taskInfo.baseIntent.getComponent().getPackageName(),
                         taskInfo.userId,
                         callingPackage,
-                        options.getLaunchDisplayId())
+                        launchDisplayId)
                 != null;
     }
 
