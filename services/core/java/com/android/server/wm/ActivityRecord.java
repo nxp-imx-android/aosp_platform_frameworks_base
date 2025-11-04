@@ -6374,6 +6374,13 @@ final class ActivityRecord extends WindowToken {
             return;
         }
         if (newPersistentState != null) {
+            if (Flags.enableAppRestartAfterUpdate() && isRootOfTask()
+                    && info.persistableMode == PERSIST_ACROSS_REBOOTS) {
+                // Only supporting for the root activity initially as supporting multiple activities
+                // makes the work more complex and there is no use case for it.
+                mAtmService.mPackageUpdateManager.addPersistentTaskForPackage(packageName,
+                        task.mTaskId, newPersistentState);
+            }
             mPersistentState = newPersistentState;
             mAtmService.notifyTaskPersisterLocked(task, false);
         }

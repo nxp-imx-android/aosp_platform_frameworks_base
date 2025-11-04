@@ -527,6 +527,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     private SparseArray<ActivityInterceptorCallback> mActivityInterceptorCallbacks =
             new SparseArray<>();
     PackageConfigPersister mPackageConfigPersister;
+    PackageUpdateManager mPackageUpdateManager;
 
     boolean mSuppressResizeConfigChanges;
 
@@ -1056,6 +1057,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         mVrController = new VrController(mGlobalLock);
         mKeyguardController = mTaskSupervisor.getKeyguardController();
         mPackageConfigPersister = new PackageConfigPersister(mTaskSupervisor.mPersisterQueue, this);
+        mPackageUpdateManager = new PackageUpdateManager(this);
     }
 
     public void onActivityManagerInternalAdded() {
