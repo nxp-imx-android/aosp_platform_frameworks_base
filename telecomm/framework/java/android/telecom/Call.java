@@ -167,16 +167,16 @@ public final class Call {
     public @interface CallState {};
 
     /**  The audio processing use case is unknown. */
-    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
     public static final int AUDIO_PROCESSING_USE_CASE_UNKNOWN = 0;
     /**  The audio processing use case is voice mail. */
-    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
     public static final int AUDIO_PROCESSING_USE_CASE_VOICEMAIL = 1;
     /**  The audio processing is done for spam detection. */
-    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
     public static final int AUDIO_PROCESSING_USE_CASE_CALL_SCREENING = 2;
     /**  The audio processing is done when the user asks to hold. */
-    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
     public static final int AUDIO_PROCESSING_USE_CASE_ASK_TO_HOLD = 3;
 
     /**
@@ -1968,7 +1968,7 @@ public final class Call {
      */
     @SystemApi
     @Deprecated
-    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
     public void enterBackgroundAudioProcessing() {
         if (mState != STATE_ACTIVE && mState != STATE_RINGING) {
             throw new IllegalStateException("Call must be active or ringing");
@@ -2000,7 +2000,7 @@ public final class Call {
     @SystemApi
     @RequiresPermission(allOf = {Manifest.permission.CAPTURE_AUDIO_OUTPUT,
         Manifest.permission.MODIFY_AUDIO_ROUTING})
-    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
     public void enterBackgroundAudioProcessing(@AudioProcessingUseCase int useCase) {
         if (mState != STATE_ACTIVE && mState != STATE_RINGING) {
             throw new IllegalStateException("Call must be active or ringing");
@@ -2035,7 +2035,7 @@ public final class Call {
      * @return the audio processing use case for {@link AudioProcessingUseCase}
      * @throws IllegalStateException if the call is not in {@link #STATE_AUDIO_PROCESSING}
      */
-    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
     public int getAudioProcessingUseCase() {
         if (mState != STATE_AUDIO_PROCESSING) {
             throw new IllegalStateException("Call is not in state AUDIO_PROCESSING");
@@ -2660,7 +2660,7 @@ public final class Call {
         mState = STATE_NEW;
         mCallingPackage = callingPackage;
         mTargetSdkVersion = targetSdkVersion;
-        if (Flags.enableAudioProcessingUseCase()) {
+        if (android.telecom.flags.Flags.enableAudioProcessingUseCase()) {
             mAudioProcessingUseCase = AUDIO_PROCESSING_USE_CASE_UNKNOWN;
         }
     }
@@ -2674,7 +2674,7 @@ public final class Call {
         mState = state;
         mCallingPackage = callingPackage;
         mTargetSdkVersion = targetSdkVersion;
-        if (Flags.enableAudioProcessingUseCase()) {
+        if (android.telecom.flags.Flags.enableAudioProcessingUseCase()) {
             mAudioProcessingUseCase = AUDIO_PROCESSING_USE_CASE_UNKNOWN;
         }
     }
