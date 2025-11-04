@@ -1058,11 +1058,18 @@ constructor(
     private fun handleOcclusion() {
         applicationScope.launch {
             occlusionInteractor.isKeyguardOccluded
-                .sample(sceneBackInteractor.backScene, ::Pair)
-                .collect { (occluded, backScene) ->
-                    // This does not use the scene family to resolve, as there is a race condition
-                    // when they both update state based off of the isKeyguardOccluded value.
-                    if (occluded) {
+                .sample(
+                    combine(keyguardInteractor.isAbleToDream, sceneBackInteractor.backScene, ::Pair)
+                ) { occluded, (dreaming, backScene) ->
+                    Triple(occluded, dreaming, backScene)
+                }
+                .collect { (occluded, dreaming, backScene) ->
+                    // Dreaming is a special case where the keyguard is occluded, and is handled
+                    // separately. See [handleDreamState].
+                    if (occluded && !dreaming) {
+                        // This does not use the scene family to resolve, as there is a race
+                        // condition when they both update state based off of the isKeyguardOccluded
+                        // value.
                         switchToScene(Scenes.Occluded, "isKeyguardOccluded == true")
                     } else if (sceneInteractor.currentScene.value == Scenes.Occluded) {
                         if (backScene == Scenes.Communal) {
