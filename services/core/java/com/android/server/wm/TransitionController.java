@@ -223,6 +223,16 @@ class TransitionController {
     final SparseArray<ArrayList<Task>> mLatestOnTopTasksReported = new SparseArray<>();
 
     /**
+     * The most recently reported focused display.
+     */
+    int mLatestFocusedDisplayId = Integer.MIN_VALUE;
+
+    /**
+     * The most recently reported globally focused task.
+     */
+    Task mLatestFocusedTask = null;
+
+    /**
      * `true` when building surface layer order for the start/finish transaction. We want to prevent
      * wm from touching z-order of surfaces during transitions, but we still need to be able to
      * calculate the layers. So, when assigning layers into the start/finish transaction, set this

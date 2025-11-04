@@ -51,6 +51,7 @@ import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 import static android.window.DesktopExperienceFlags.ENABLE_FILTER_REMOVING_DISPLAY_BUGFIX;
+import static android.window.DesktopExperienceFlags.ENABLE_INTERACTIVE_PICTURE_IN_PICTURE;
 import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKGROUND_COLOR;
 import static android.window.TransitionInfo.AnimationOptions;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
@@ -1990,6 +1991,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         // This is the only (or last) transition that is collecting, so we need to report any
         // leftover order changes.
         collectOrderChanges(mController.mWaitingTransitions.isEmpty());
+        // focus change is not necessarily an order change
+        collectFocusChanges();
 
         if (mPriorVisibilityMightBeDirty) {
             updatePriorVisibility();
@@ -2484,12 +2487,49 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
     }
 
+    /**
+     * Collects tasks for which the global focus has changed. To accommodate parallel
+     * collection (similar to {@link #collectOrderChanges}), the current state is compared to the
+     * last-reported state.
+     */
+    void collectFocusChanges() {
+        if (!ENABLE_INTERACTIVE_PICTURE_IN_PICTURE.isTrue()) {
+            return;
+        }
+
+        final DisplayContent focusedDisplay = mController.mAtm.mRootWindowContainer
+                .getTopFocusedDisplayContent();
+        if (mTargetDisplays.contains(focusedDisplay)) {
+            final int focusedDisplayId = focusedDisplay.getDisplayId();
+            final boolean topDisplayChanged =
+                    mController.mLatestFocusedDisplayId != focusedDisplayId;
+            final Task focusedTask = focusedDisplay.mFocusedApp != null
+                    ? focusedDisplay.mFocusedApp.getTask() : null;
+            final boolean taskChanged = mController.mLatestFocusedTask != focusedTask;
+
+            mController.mLatestFocusedDisplayId = focusedDisplayId;
+            mController.mLatestFocusedTask = focusedTask;
+
+            if (focusedTask != null && (topDisplayChanged || taskChanged)) {
+                addFocusChange(focusedTask);
+            }
+        }
+    }
+
     private void addToTopChange(@NonNull WindowContainer wc) {
         mParticipants.add(wc);
         if (!mChanges.containsKey(wc)) {
             mChanges.put(wc, new ChangeInfo(wc));
         }
         mChanges.get(wc).mFlags |= ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP;
+    }
+
+    private void addFocusChange(@NonNull WindowContainer wc) {
+        mParticipants.add(wc);
+        if (!mChanges.containsKey(wc)) {
+            mChanges.put(wc, new ChangeInfo(wc));
+        }
+        mChanges.get(wc).mFlags |= ChangeInfo.FLAG_CHANGE_FOCUS;
     }
 
     private void postCleanupOnFailure() {
@@ -3828,6 +3868,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
          */
         private static final int FLAG_BELOW_BACK_GESTURE_ANIMATION = 0x100;
 
+        /**
+         * Whether this change's container has changed its focus state.
+         */
+        private static final int FLAG_CHANGE_FOCUS = 0x200;
+
         @IntDef(prefix = { "FLAG_" }, value = {
                 FLAG_NONE,
                 FLAG_SEAMLESS_ROTATION,
@@ -3838,7 +3883,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 FLAG_CHANGE_MOVED_TO_TOP,
                 FLAG_CHANGE_CONFIG_AT_END,
                 FLAG_BACK_GESTURE_ANIMATION,
-                FLAG_BELOW_BACK_GESTURE_ANIMATION
+                FLAG_BELOW_BACK_GESTURE_ANIMATION,
+                FLAG_CHANGE_FOCUS
         })
         @Retention(RetentionPolicy.SOURCE)
         @interface ChangeInfoFlag {}
@@ -3941,6 +3987,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     || mRotation != mContainer.getWindowConfiguration().getRotation()
                     || mDisplayId != getDisplayId(mContainer)
                     || (mFlags & ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP) != 0
+                    || (mFlags & ChangeInfo.FLAG_CHANGE_FOCUS) != 0
                     // If we are restoring transient-hide containers, then we should consider them
                     // important for the transition as well (their requested visibilities would not
                     // have changed for the checks below to consider it).

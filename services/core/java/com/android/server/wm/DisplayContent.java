@@ -871,8 +871,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /**
      * A lambda function to find the focused window of the given window.
      *
-     * <p>The lambda returns true if a focused window was found, false otherwise. If a focused
-     * window is found it will be stored in <code>mTmpWindow</code>.
+     * <p>The lambda returns true if a focused window was found and does not need to search further,
+     * false otherwise. If a focused window is found it will be stored in <code>mTmpWindow</code>,
+     * which can happen even if the lambda returns false.
      */
     private final ToBooleanFunction<WindowState> mFindFocusedWindow = w -> {
         final ActivityRecord focusedApp = mFocusedApp;
@@ -945,9 +946,39 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
 
-        ProtoLog.v(WM_DEBUG_FOCUS_LIGHT, "findFocusedWindow: Found new focus @ %s", w);
-        mTmpWindow = w;
-        return true;
+        if (DesktopExperienceFlags.ENABLE_INTERACTIVE_PICTURE_IN_PICTURE.isTrue()) {
+            if (focusedApp == activity) {
+                ProtoLog.v(WM_DEBUG_FOCUS_LIGHT,
+                        "findFocusedWindow: Found new focus (matches focusedApp) @ %s", w);
+                mTmpWindow = w;
+                return true;
+            }
+            if (mTmpWindow == null) {
+                // store current window as candidate to be focused, however keep searching for a
+                // window that matches the focused app. If no match is found, the current window
+                // will be focused.
+                mTmpWindow = w;
+                final boolean isAlwaysOnTop = activity != null && activity.getRootTask() != null
+                        && activity.getRootTask().isAlwaysOnTop();
+                if (focusedApp != null && isAlwaysOnTop) {
+                    // Only always-on-top windows can be skipped to search for the focused app.
+                    ProtoLog.v(WM_DEBUG_FOCUS_LIGHT,
+                            "findFocusedWindow: Found candidate for new focus @ %s", w);
+                    return false;
+                }
+                ProtoLog.v(WM_DEBUG_FOCUS_LIGHT,
+                        "findFocusedWindow: Found new focus (top non-AoT & canReceiveKeys) @ %s",
+                        w);
+                return true;
+            }
+            // otherwise, there is a candidate but haven't found a correct window for focused app
+            // yet, therefore continue.
+            return false;
+        } else {
+            ProtoLog.v(WM_DEBUG_FOCUS_LIGHT, "findFocusedWindow: Found new focus @ %s", w);
+            mTmpWindow = w;
+            return true;
+        }
     };
 
     private final Consumer<WindowState> mPerformLayout = w -> {
