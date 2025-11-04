@@ -16,7 +16,11 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
+import android.app.ActivityManager
+import android.app.ActivityTaskManager
+import android.graphics.Point
 import android.graphics.Rect
+import android.util.Log
 import android.view.WindowManager
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Background
@@ -55,6 +59,7 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     @ScreenCapture private val screenCaptureUiParams: ScreenCaptureUiParameters,
     toolbarViewModelFactory: PreCaptureToolbarViewModel.Factory,
+    private val activityTaskManager: ActivityTaskManager,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     private val recordingParameters = screenCaptureUiParams as ScreenCaptureUiParameters.Record
@@ -69,7 +74,9 @@ constructor(
             recordingParameters.largeScreenParameters?.defaultCaptureRegion
                 ?: ScreenCaptureRegion.FULLSCREEN
         )
+    private val topTaskSource = MutableStateFlow<ActivityManager.RunningTaskInfo?>(null)
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
+    private var runningTasks: List<ActivityManager.RunningTaskInfo> = emptyList()
 
     val toolbarViewModel = toolbarViewModelFactory.create()
 
@@ -80,6 +87,8 @@ constructor(
 
     // TODO(b/423697394) Init default value to be user's previously selected option
     val captureRegion: ScreenCaptureRegion by captureRegionSource.hydratedStateOf()
+
+    val topTask: ActivityManager.RunningTaskInfo? by topTaskSource.hydratedStateOf()
 
     val regionBox: Rect? by regionBoxSource.hydratedStateOf()
 
@@ -97,10 +106,24 @@ constructor(
                 regionBoxBounds = null,
             )
         }
+        if (selectedRegion == ScreenCaptureRegion.APP_WINDOW) {
+            runningTasks = activityTaskManager.getTasks(Integer.MAX_VALUE)
+        }
         captureRegionSource.value = selectedRegion
         uiEventLogger.log(
             ScreenCaptureEvent.fromRegionAndType(selectedRegion, captureTypeSource.value)
         )
+    }
+
+    fun updateTaskSelectionFromHover(pointerPosition: Point) {
+        val task =
+            runningTasks.firstOrNull {
+                it.configuration.windowConfiguration.bounds.contains(
+                    pointerPosition.x,
+                    pointerPosition.y,
+                )
+            }
+        topTaskSource.value = task
     }
 
     fun updateRegionBoxBounds(bounds: Rect) {
@@ -119,7 +142,7 @@ constructor(
         when (captureRegionSource.value) {
             ScreenCaptureRegion.FULLSCREEN -> beginFullscreenScreenshot()
             ScreenCaptureRegion.PARTIAL -> beginPartialScreenshot()
-            ScreenCaptureRegion.APP_WINDOW -> {}
+            ScreenCaptureRegion.APP_WINDOW -> topTask?.taskId?.let { beginAppWindowScreenshot(it) }
         }
     }
 
@@ -148,6 +171,12 @@ constructor(
             delay(100)
             screenshotInteractor.requestPartialScreenshot(regionBoxRect, displayId)
         }
+        closeUi()
+    }
+
+    private fun beginAppWindowScreenshot(taskId: Int) {
+        Log.d(TAG, "Would take screenshot of taskId=$taskId now.")
+        hideUi()
         closeUi()
     }
 
@@ -204,6 +233,7 @@ constructor(
         coroutineScope {
             launch { toolbarViewModel.activate() }
             launch { initializeRegionBox() }
+            launch { topTaskSource.value = activityTaskManager.getTasks(1).firstOrNull() }
         }
     }
 
@@ -219,5 +249,9 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(displayId: Int): PreCaptureViewModel
+    }
+
+    private companion object {
+        const val TAG = "PreCaptureViewModel"
     }
 }
