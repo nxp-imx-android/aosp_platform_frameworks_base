@@ -12134,11 +12134,9 @@ public class Notification implements Parcelable
             }
             final TemplateBindResult result = new TemplateBindResult();
             final int expandedLayoutRes;
-            boolean showActionsContainer = true;
             if (mMetrics.size() == 1) {
                 if (mBuilder.mN.isPromotedOngoing()) {
                     expandedLayoutRes =  mBuilder.getPromotedSingleMetricLayoutResource();
-                    showActionsContainer = !mBuilder.getNonContextualActions().isEmpty();
                 } else {
                     expandedLayoutRes = mBuilder.getExpandedSingleMetricLayoutResource();
                 }
@@ -12147,8 +12145,7 @@ public class Notification implements Parcelable
             }
 
             final RemoteViews contentView = getStandardView(expandedLayoutRes, p, result);
-            contentView.setViewVisibility(R.id.actions_container,
-                    showActionsContainer ? View.VISIBLE : View.GONE);
+
             return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */true);
         }
 
