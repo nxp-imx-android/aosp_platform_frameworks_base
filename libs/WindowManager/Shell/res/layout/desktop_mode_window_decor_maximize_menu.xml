@@ -117,6 +117,7 @@
                 android:id="@+id/maximize_menu_snap_menu_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layoutDirection="ltr"
                 android:orientation="horizontal"
                 android:padding="4dp"
                 android:background="@drawable/desktop_mode_maximize_menu_layout_background"
