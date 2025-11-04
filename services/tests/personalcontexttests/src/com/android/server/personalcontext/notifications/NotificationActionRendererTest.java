@@ -44,7 +44,6 @@ import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
-import android.service.personalcontext.insight.InsightActionDetails;
 import android.service.personalcontext.insight.InsightDisplayDetails;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -121,10 +120,8 @@ public class NotificationActionRendererTest {
 
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title", FAKE_ICON).build();
-        InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent()).build();
         ActionableInsight insight =
-                new ActionableInsight.Builder(actionDetails, displayDetails).build();
+                new ActionableInsight.Builder(new Intent(), displayDetails).build();
 
         mRenderer.render(insight, false);
 
@@ -171,12 +168,11 @@ public class NotificationActionRendererTest {
                                 new NotificationEnqueuedEvent(
                                         mNotification, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
-        InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
+        Intent actionIntent = new Intent("ACTION");
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("Test Title", FAKE_ICON).build();
         ActionableInsight insight =
-                new ActionableInsight.Builder(actionDetails, displayDetails)
+                new ActionableInsight.Builder(actionIntent, displayDetails)
                         .setOriginHints(List.of(hint))
                         .build();
         when(mPackageManager.queryIntentActivitiesAsUser(any(), anyInt(), anyInt()))
@@ -193,8 +189,7 @@ public class NotificationActionRendererTest {
                                 new NotificationEnqueuedEvent(
                                         mNotification, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
-        InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
+        Intent actionIntent = new Intent("ACTION");
         InsightDisplayDetails.Builder displayDetailsBuilder;
         if (title != null && icon != null) {
             displayDetailsBuilder = new InsightDisplayDetails.Builder(title, icon);
@@ -204,7 +199,7 @@ public class NotificationActionRendererTest {
             displayDetailsBuilder = new InsightDisplayDetails.Builder(icon);
         }
         InsightDisplayDetails displayDetails = displayDetailsBuilder.build();
-        return new ActionableInsight.Builder(actionDetails, displayDetails)
+        return new ActionableInsight.Builder(actionIntent, displayDetails)
                 .setOriginHints(List.of(hint))
                 .build();
     }
