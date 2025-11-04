@@ -374,7 +374,7 @@ class BLASTSyncEngine {
                     && wc.mSyncState != WindowContainer.SYNC_STATE_NONE) {
                 mWm.mAnimator.mPendingState = WindowAnimator.PENDING_STATE_NEED_APPLY;
             }
-            if (mReady) {
+            if (mReady && !mWm.mWindowPlacerLocked.isInLayout()) {
                 mWm.mWindowPlacerLocked.requestTraversal();
             }
         }
