@@ -18,7 +18,6 @@ package com.android.systemui.volume;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -48,12 +47,15 @@ import androidx.slice.widget.SliceLiveData;
 
 import com.android.settingslib.bluetooth.A2dpProfile;
 import com.android.settingslib.bluetooth.BluetoothUtils;
-import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
 import com.android.settingslib.media.MediaOutputConstants;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
+
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,13 +66,15 @@ import java.util.Map;
 /**
  * Visual presentation of the volume panel dialog.
  */
-public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner {
+public class VolumePanelDialogDelegate implements SystemUIDialog.Delegate, LifecycleOwner {
     private static final String TAG = "VolumePanelDialog";
 
     private static final int DURATION_SLICE_BINDING_TIMEOUT_MS = 200;
     private static final int DEFAULT_SLICE_SIZE = 4;
 
     private final ActivityStarter mActivityStarter;
+    private final SystemUIDialog.Factory mSystemUIDialogFactory;
+    private final boolean mAboveStatusBar;
     private RecyclerView mVolumePanelSlices;
     private VolumePanelSlicesAdapter mVolumePanelSlicesAdapter;
     private final LifecycleRegistry mLifecycleRegistry;
@@ -78,60 +82,75 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
     private final Map<Uri, LiveData<Slice>> mSliceLiveData = new LinkedHashMap<>();
     private final HashSet<Uri> mLoadedSlices = new HashSet<>();
     private boolean mSlicesReadyToLoad;
-    private LocalBluetoothProfileManager mProfileManager;
+    private final LocalBluetoothProfileManager mProfileManager;
 
-    public VolumePanelDialog(Context context,
-            ActivityStarter activityStarter, boolean aboveStatusBar) {
-        super(context);
+    @AssistedFactory
+    public interface Factory {
+        /**
+         * Factory for creating a VolumePanelDialogDelegate.
+         */
+        VolumePanelDialogDelegate create(
+                LocalBluetoothProfileManager localBluetoothProfileManager,
+                boolean aboveStatusBar);
+    }
+
+    @AssistedInject
+    public VolumePanelDialogDelegate(
+            ActivityStarter activityStarter,
+            SystemUIDialog.Factory systemUIDialogFactory,
+            @Assisted LocalBluetoothProfileManager localBluetoothProfileManager,
+            @Assisted boolean aboveStatusBar) {
         mActivityStarter = activityStarter;
+        mSystemUIDialogFactory = systemUIDialogFactory;
+        mProfileManager = localBluetoothProfileManager;
+        mAboveStatusBar = aboveStatusBar;
         mLifecycleRegistry = new LifecycleRegistry(this);
-        if (!aboveStatusBar) {
-            getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
-        }
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public SystemUIDialog createDialog() {
+        return mSystemUIDialogFactory.create(this);
+    }
+
+    @Override
+    public void onCreate(SystemUIDialog dialog, Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
 
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.volume_panel_dialog,
-                null);
-        final Window window = getWindow();
+        if (!mAboveStatusBar) {
+            dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+        }
+
+        View dialogView = LayoutInflater.from(dialog.getContext())
+                .inflate(R.layout.volume_panel_dialog, null);
+        final Window window = dialog.getWindow();
         window.setContentView(dialogView);
 
         Button doneButton = dialogView.findViewById(R.id.done_button);
-        doneButton.setOnClickListener(v -> dismiss());
+        doneButton.setOnClickListener(v -> dialog.dismiss());
         Button settingsButton = dialogView.findViewById(R.id.settings_button);
         settingsButton.setOnClickListener(v -> {
-            dismiss();
+            dialog.dismiss();
 
             Intent intent = new Intent(Settings.ACTION_SOUND_SETTINGS);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mActivityStarter.startActivity(intent, /* dismissShade= */ true);
         });
 
-        LocalBluetoothManager localBluetoothManager = LocalBluetoothManager.getInstance(
-                getContext(), null);
-        if (localBluetoothManager != null) {
-            mProfileManager = localBluetoothManager.getProfileManager();
-        }
-
         mVolumePanelSlices = dialogView.findViewById(R.id.volume_panel_parent_layout);
-        mVolumePanelSlices.setLayoutManager(new LinearLayoutManager(getContext()));
+        mVolumePanelSlices.setLayoutManager(new LinearLayoutManager(dialog.getContext()));
 
-        loadAllSlices();
+        loadAllSlices(dialog);
 
         mLifecycleRegistry.setCurrentState(Lifecycle.State.CREATED);
     }
 
-    private void loadAllSlices() {
+    private void loadAllSlices(SystemUIDialog dialog) {
         mSliceLiveData.clear();
         mLoadedSlices.clear();
-        final List<Uri> sliceUris = getSlices();
+        final List<Uri> sliceUris = getSlices(dialog);
 
         for (Uri uri : sliceUris) {
-            final LiveData<Slice> sliceLiveData = SliceLiveData.fromUri(getContext(), uri,
+            final LiveData<Slice> sliceLiveData = SliceLiveData.fromUri(dialog.getContext(), uri,
                     (int type, Throwable source) -> {
                         if (!removeSliceLiveData(uri)) {
                             mLoadedSlices.add(uri);
@@ -146,7 +165,7 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
                     return;
                 }
                 Log.d(TAG, "received slice: " + (slice == null ? null : slice.getUri()));
-                final SliceMetadata metadata = SliceMetadata.from(getContext(), slice);
+                final SliceMetadata metadata = SliceMetadata.from(dialog.getContext(), slice);
                 if (slice == null || metadata.isErrorSlice()) {
                     if (!removeSliceLiveData(uri)) {
                         mLoadedSlices.add(uri);
@@ -156,16 +175,16 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
                 } else {
                     mHandler.postDelayed(() -> {
                         mLoadedSlices.add(uri);
-                        setupAdapterWhenReady();
+                        setupAdapterWhenReady(dialog);
                     }, DURATION_SLICE_BINDING_TIMEOUT_MS);
                 }
 
-                setupAdapterWhenReady();
+                setupAdapterWhenReady(dialog);
             });
         }
     }
 
-    private void setupAdapterWhenReady() {
+    private void setupAdapterWhenReady(SystemUIDialog dialog) {
         if (mLoadedSlices.size() == mSliceLiveData.size() && !mSlicesReadyToLoad) {
             mSlicesReadyToLoad = true;
             mVolumePanelSlicesAdapter = new VolumePanelSlicesAdapter(this, mSliceLiveData);
@@ -173,7 +192,7 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
                 if (eventInfo.actionType == EventInfo.ACTION_TYPE_SLIDER) {
                     return;
                 }
-                this.dismiss();
+                dialog.dismiss();
             });
             if (mSliceLiveData.size() < DEFAULT_SLICE_SIZE) {
                 mVolumePanelSlices.setMinimumHeight(0);
@@ -196,23 +215,23 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
     }
 
     @Override
-    protected void start() {
+    public void onStart(SystemUIDialog dialog) {
         Log.d(TAG, "onStart");
         mLifecycleRegistry.setCurrentState(Lifecycle.State.STARTED);
         mLifecycleRegistry.setCurrentState(Lifecycle.State.RESUMED);
     }
 
     @Override
-    protected void stop() {
+    public void onStop(SystemUIDialog dialog) {
         Log.d(TAG, "onStop");
         mLifecycleRegistry.setCurrentState(Lifecycle.State.DESTROYED);
     }
 
-    private List<Uri> getSlices() {
+    private List<Uri> getSlices(SystemUIDialog dialog) {
         final List<Uri> uris = new ArrayList<>();
         uris.add(REMOTE_MEDIA_SLICE_URI);
         uris.add(VOLUME_MEDIA_URI);
-        Uri controlUri = getExtraControlUri();
+        Uri controlUri = getExtraControlUri(dialog);
         if (controlUri != null) {
             Log.d(TAG, "add extra control slice");
             uris.add(controlUri);
@@ -262,15 +281,16 @@ public class VolumePanelDialog extends SystemUIDialog implements LifecycleOwner 
             .appendPath("alarm_volume")
             .build();
 
-    private Uri getExtraControlUri() {
+    private Uri getExtraControlUri(SystemUIDialog dialog) {
         Uri controlUri = null;
         final BluetoothDevice bluetoothDevice = findActiveDevice();
         if (bluetoothDevice != null) {
             // The control slice width = dialog width - horizontal padding of two sides
             final int dialogWidth =
-                    getWindow().getWindowManager().getCurrentWindowMetrics().getBounds().width();
+                    dialog.getWindow().getWindowManager()
+                            .getCurrentWindowMetrics().getBounds().width();
             final int controlSliceWidth = dialogWidth
-                    - getContext().getResources().getDimensionPixelSize(
+                    - dialog.getContext().getResources().getDimensionPixelSize(
                     R.dimen.volume_panel_slice_horizontal_padding) * 2;
             final String uri = BluetoothUtils.getControlUriMetaData(bluetoothDevice);
             if (!TextUtils.isEmpty(uri)) {
