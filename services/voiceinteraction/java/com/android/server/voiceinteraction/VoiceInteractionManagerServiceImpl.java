@@ -21,11 +21,13 @@ import static android.app.ActivityManager.START_ASSISTANT_NOT_ACTIVE_SESSION;
 import static android.app.ActivityManager.START_VOICE_HIDDEN_SESSION;
 import static android.app.ActivityManager.START_VOICE_NOT_ACTIVE_SESSION;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_ASSISTANT;
+import static android.app.privatecompute.flags.Flags.adoptPccFrameworkForHotwordDetection;
 import static android.service.voice.VoiceInteractionSession.KEY_SHOW_SESSION_ID;
 import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.policy.PhoneWindowManager.SYSTEM_DIALOG_REASON_ASSIST;
 
+import android.annotation.IntDef;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -93,6 +95,8 @@ import com.android.server.wm.ActivityTaskManagerInternal.ActivityTokens;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -108,6 +112,25 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
 
     private static final boolean SYSPROP_VISUAL_QUERY_SERVICE_ENABLED =
             SystemProperties.getBoolean("ro.hotword.visual_query_service_enabled", false);
+
+    /**
+     * Type of process the hotword detection service is running in.
+     *
+     * @hide
+     */
+    @IntDef(
+            prefix = {"SERVICE_TYPE_"},
+            value = {
+                SERVICE_TYPE_UNRESTRICTED,
+                SERVICE_TYPE_PCC,
+                SERVICE_TYPE_ISOLATED,
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface ServiceType {}
+
+    static final int SERVICE_TYPE_UNRESTRICTED = 0;
+    static final int SERVICE_TYPE_PCC = 1;
+    static final int SERVICE_TYPE_ISOLATED = 2;
 
     final boolean mValid;
 
@@ -728,11 +751,9 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
         }
     }
 
-    private void verifyDetectorForHotwordDetectionLocked(
-            @Nullable SharedMemory sharedMemory,
-            IHotwordRecognitionStatusCallback callback,
-            int detectorType) {
-        Slog.v(TAG, "verifyDetectorForHotwordDetectionLocked");
+    private ServiceInfo getHotwordDetectionServiceInfoLocked(
+            IHotwordRecognitionStatusCallback callback, int detectorType) {
+        Slog.v(TAG, "getHotwordDetectionServiceInfoLocked");
         int voiceInteractionServiceUid = mInfo.getServiceInfo().applicationInfo.uid;
         if (mHotwordDetectionComponentName == null) {
             Slog.w(TAG, "Hotword detection service name not found");
@@ -748,12 +769,31 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
                     callback, detectorType, false, voiceInteractionServiceUid);
             throw new IllegalStateException("Hotword detection service info not found");
         }
-        if (!isIsolatedProcessLocked(hotwordDetectionServiceInfo)) {
-            Slog.w(TAG, "Hotword detection service not in isolated process");
-            logDetectorCreateEventIfNeeded(
-                    callback, detectorType, false, voiceInteractionServiceUid);
-            throw new IllegalStateException("Hotword detection service not in isolated process");
+        return hotwordDetectionServiceInfo;
+    }
+
+    private ServiceInfo getVisualQueryDetectionServiceInfoLocked() {
+        Slog.v(TAG, "getVisualQueryDetectionServiceInfoLocked");
+        if (mVisualQueryDetectionComponentName == null) {
+            Slog.w(TAG, "Visual query detection service name not found");
+            throw new IllegalStateException("Visual query detection service name not found");
         }
+        ServiceInfo visualQueryDetectionServiceInfo =
+                getServiceInfoLocked(mVisualQueryDetectionComponentName, mUser);
+        if (visualQueryDetectionServiceInfo == null) {
+            Slog.w(TAG, "Visual query detection service info not found");
+            throw new IllegalStateException("Visual query detection service info not found");
+        }
+        return visualQueryDetectionServiceInfo;
+    }
+
+    private void verifyDetectorForHotwordDetectionLocked(
+            @Nullable SharedMemory sharedMemory,
+            IHotwordRecognitionStatusCallback callback,
+            int detectorType,
+            @NonNull ServiceInfo hotwordDetectionServiceInfo) {
+        Slog.v(TAG, "verifyDetectorForHotwordDetectionLocked");
+        int voiceInteractionServiceUid = mInfo.getServiceInfo().applicationInfo.uid;
         if (!Manifest.permission.BIND_HOTWORD_DETECTION_SERVICE.equals(
                 hotwordDetectionServiceInfo.permission)) {
             Slog.w(
@@ -792,23 +832,11 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
         logDetectorCreateEventIfNeeded(callback, detectorType, true, voiceInteractionServiceUid);
     }
 
-    private void verifyDetectorForVisualQueryDetectionLocked(@Nullable SharedMemory sharedMemory) {
+    private void verifyDetectorForVisualQueryDetectionLocked(
+            @Nullable SharedMemory sharedMemory,
+            @NonNull ServiceInfo visualQueryDetectionServiceInfo) {
         Slog.v(TAG, "verifyDetectorForVisualQueryDetectionLocked");
 
-        if (mVisualQueryDetectionComponentName == null) {
-            Slog.w(TAG, "Visual query detection service name not found");
-            throw new IllegalStateException("Visual query detection service name not found");
-        }
-        ServiceInfo visualQueryDetectionServiceInfo =
-                getServiceInfoLocked(mVisualQueryDetectionComponentName, mUser);
-        if (visualQueryDetectionServiceInfo == null) {
-            Slog.w(TAG, "Visual query detection service info not found");
-            throw new IllegalStateException("Visual query detection service name not found");
-        }
-        if (!isIsolatedProcessLocked(visualQueryDetectionServiceInfo)) {
-            Slog.w(TAG, "Visual query detection service not in isolated process");
-            throw new IllegalStateException("Visual query detection not in isolated process");
-        }
         if (!Manifest.permission.BIND_VISUAL_QUERY_DETECTION_SERVICE.equals(
                 visualQueryDetectionServiceInfo.permission)) {
             Slog.w(
@@ -845,11 +873,27 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
             @NonNull IBinder token,
             IHotwordRecognitionStatusCallback callback,
             int detectorType) {
+        Slog.v(TAG, "initAndVerifyDetectorLocked");
 
+        @ServiceType int hotwordDetectionServiceType;
         if (detectorType != HotwordDetector.DETECTOR_TYPE_VISUAL_QUERY_DETECTOR) {
-            verifyDetectorForHotwordDetectionLocked(sharedMemory, callback, detectorType);
+            ServiceInfo hotwordDetectionServiceInfo =
+                    getHotwordDetectionServiceInfoLocked(callback, detectorType);
+            hotwordDetectionServiceType = getServiceTypeLocked(hotwordDetectionServiceInfo);
+            if (hotwordDetectionServiceType == SERVICE_TYPE_UNRESTRICTED) {
+                logUnrestrictedServiceTypeAndThrowExceptionLocked(callback, detectorType);
+            }
+            verifyDetectorForHotwordDetectionLocked(
+                    sharedMemory, callback, detectorType, hotwordDetectionServiceInfo);
         } else {
-            verifyDetectorForVisualQueryDetectionLocked(sharedMemory);
+            ServiceInfo visualQueryDetectionServiceInfo =
+                    getVisualQueryDetectionServiceInfoLocked();
+            hotwordDetectionServiceType = getServiceTypeLocked(visualQueryDetectionServiceInfo);
+            if (hotwordDetectionServiceType == SERVICE_TYPE_UNRESTRICTED) {
+                logUnrestrictedServiceTypeAndThrowExceptionLocked(callback, detectorType);
+            }
+            verifyDetectorForVisualQueryDetectionLocked(
+                    sharedMemory, visualQueryDetectionServiceInfo);
         }
         if (SYSPROP_VISUAL_QUERY_SERVICE_ENABLED && !verifyProcessSharingLocked()) {
             Slog.w(TAG, "Sandboxed detection service not in shared isolated process");
@@ -881,7 +925,8 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
                                             "Fail to notify client detector remote "
                                                     + "exception occurred.");
                                 }
-                            });
+                            },
+                            hotwordDetectionServiceType);
             registerAccessibilityDetectionSettingsListenerLocked(
                     mHotwordDetectionConnection.mAccessibilitySettingsListener);
         } else if (detectorType != HotwordDetector.DETECTOR_TYPE_VISUAL_QUERY_DETECTOR) {
@@ -1080,6 +1125,37 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
     boolean isIsolatedProcessLocked(@NonNull ServiceInfo serviceInfo) {
         return (serviceInfo.flags & ServiceInfo.FLAG_ISOLATED_PROCESS) != 0
                 && (serviceInfo.flags & ServiceInfo.FLAG_EXTERNAL_SERVICE) == 0;
+    }
+
+    boolean isPccServiceLocked(@NonNull ServiceInfo serviceInfo) {
+        Slog.v(TAG, "isPccServiceLocked");
+
+        return (serviceInfo.flags & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX) != 0
+                && (serviceInfo.flags & ServiceInfo.FLAG_EXTERNAL_SERVICE) == 0;
+    }
+
+    @ServiceType
+    private int getServiceTypeLocked(@NonNull ServiceInfo serviceInfo) {
+        Slog.v(TAG, "getServiceTypeLocked");
+
+        if (adoptPccFrameworkForHotwordDetection() && isPccServiceLocked(serviceInfo)) {
+            return SERVICE_TYPE_PCC;
+        }
+        if (isIsolatedProcessLocked(serviceInfo)) {
+            return SERVICE_TYPE_ISOLATED;
+        }
+
+        return SERVICE_TYPE_UNRESTRICTED;
+    }
+
+    public void logUnrestrictedServiceTypeAndThrowExceptionLocked(
+            IHotwordRecognitionStatusCallback callback, int detectorType) {
+        int voiceInteractionServiceUid = mInfo.getServiceInfo().applicationInfo.uid;
+
+        Slog.w(TAG, "Hotword detection service not in a PCC or isolated process");
+        logDetectorCreateEventIfNeeded(callback, detectorType, false, voiceInteractionServiceUid);
+        throw new IllegalStateException(
+                "Hotword detection service not in a PCC or isolated process");
     }
 
     boolean verifyProcessSharingLocked() {
