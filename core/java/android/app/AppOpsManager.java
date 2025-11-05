@@ -3518,7 +3518,7 @@ public class AppOpsManager {
         // computer control session at all, while the op mode determines whether explicit user
         // consent is required when requesting a computer control session.
         new AppOpInfo.Builder(OP_COMPUTER_CONTROL, OPSTR_COMPUTER_CONTROL, "COMPUTER_CONTROL")
-                .setDefaultMode(AppOpsManager.MODE_IGNORED)
+                .setDefaultMode(AppOpsManager.MODE_DEFAULT)
                 .build(),
         new AppOpInfo.Builder(OP_READ_OTP_SMS, OPSTR_READ_OTP_SMS, "READ_OTP_SMS")
                 .build(),
