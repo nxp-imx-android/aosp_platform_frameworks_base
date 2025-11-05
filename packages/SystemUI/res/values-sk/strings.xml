@@ -170,8 +170,13 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Výber aplikácie na zdieľanie"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Zdieľanie zvuku"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Zdieľanie okna aplikácie"</string>
-    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Zdieľanie karty"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Pri zdieľaní je vidieť obsah vašej obrazovky"</string>
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Zdieľať kartu"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Vytvoriť snímku okna"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Okno nahrávania"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Vytvoriť snímku vybranej oblasti obrazovky"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Upozornenia na hovory sa nedajú upraviť."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Túto skupinu upozornení nejde na tomto mieste konfigurovať"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Približné upozornenie"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Všetky upozornenia aplikácie <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Zobraziť viac"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Systém toto upozornenie automaticky &lt;b&gt;preradil vyššie do kategórie Predvolené&lt;/b&gt;."</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Ponuka vypínača"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Strana <xliff:g id="ID_1">%1$d</xliff:g> z <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Chcete zapnúť <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Ak chcete použiť <xliff:g id="ID_4">^4</xliff:g>, stlačte klávesovú skratku <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Ak chcete zapnúť <xliff:g id="ID_4">%4$s</xliff:g>, znova stlačte <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Chcete zapnúť klávesovú skratku <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nezapínať"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Zapnúť skratku"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Klávesová skratka <xliff:g id="ID_1">%1$s</xliff:g> je zapnutá"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"Ak chcete použiť funkciu dostupnosti <xliff:g id="ID_4">^4</xliff:g>, stlačte klávesovú skratku <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Umožňuje vám to rýchlo priblížiť obrazovku a zväčšiť tak obsah. Pri zapnutom zväčšení upravíte priblíženie stlačením <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ikony"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> a znamienka + alebo -."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Vypnúť skratku"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Nechať zapnuté"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"Ak chcete použiť <xliff:g id="ID_4">^4</xliff:g>, stlačte klávesovú skratku <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> je čítačka obrazovky, ktorá vám umožňuje vypočuť si predčítavané položky. Môže to byť užitočné pre ľudí, ktorí nevidia dobre obrazovku. Môže to zmeniť spôsob fungovania vášho zariadenia."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Zapnutím klávesovej skratky udelíte aplikácii TalkBack úplnú kontrolu nad zariadením."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Úplná kontrola je vhodná pre aplikácie, ktoré vám pomáhajú s dostupnosťou, ale nie pre väčšinu aplikácií."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Zobrazenie a ovládanie obrazovky"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Môže čítať všetok obsah na obrazovke a zobrazovať obsah cez ďalšie aplikácie."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Zobrazenie a vykonávanie akcií"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Môže sledovať vaše interakcie s aplikáciou alebo hardvérovým senzorom a interagovať s aplikáciami za vás."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Ak chcete zapnúť funkciu dostupnosti <xliff:g id="ID_4">^4</xliff:g>. stlačte <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikonu"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Potom budete môcť ovládať svoje zariadenie handsfree."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Dostupnosť"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Hotovo"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Uzamknutá obrazovka"</string>

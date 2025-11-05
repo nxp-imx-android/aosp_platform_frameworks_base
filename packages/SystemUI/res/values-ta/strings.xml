@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ஆடியோவைப் பகிர்தல்"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ஆப்ஸ் சாளரத்தைப் பகிர்தல்"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"பிரிவைப் பகிர்தல்"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"பகிரும்போது, உங்கள் திரையில் உள்ள உள்ளடக்கத்தைப் பிறரால் பார்க்க முடியும்"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"சாளரத்தை ஸ்கிரீன்ஷாட் எடுக்கும்"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"சாளரத்தை ரெக்கார்டு செய்யும்"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"தேர்ந்தெடுக்கப்பட்ட பகுதியை ஸ்கிரீன்ஷாட் எடுக்கும்"</string>
@@ -377,7 +382,7 @@
     <string name="start_dreams" msgid="9131802557946276718">"ஸ்கிரீன் சேவர்"</string>
     <string name="ethernet_label" msgid="2203544727007463351">"ஈதர்நெட்"</string>
     <string name="quick_settings_dnd_label" msgid="7728690179108024338">"தொந்தரவு செய்ய வேண்டாம்"</string>
-    <string name="quick_settings_modes_label" msgid="879156359479504244">"பயன்முறைகள்"</string>
+    <string name="quick_settings_modes_label" msgid="879156359479504244">"மோட்கள்"</string>
     <string name="quick_settings_bluetooth_label" msgid="7018763367142041481">"புளூடூத்"</string>
     <string name="quick_settings_bluetooth_detail_empty_text" msgid="5760239584390514322">"இணைக்கப்பட்ட சாதனங்கள் இல்லை"</string>
     <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"சாதனத்தை இணைக்க/துண்டிக்க தட்டவும்"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"அழைப்பு அறிவிப்புகளை மாற்ற முடியாது."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"இந்த அறிவுப்புக் குழுக்களை இங்கே உள்ளமைக்க இயலாது"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ப்ராக்ஸியான அறிவிப்பு"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"அனைத்து <xliff:g id="APP_NAME">%1$s</xliff:g> அறிவிப்புகளும்"</string>
     <string name="see_more_title" msgid="7409317011708185729">"மேலும் காட்டு"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"சிஸ்டத்தால் தானாகவே இந்த அறிவிப்பு &lt;b&gt;இயல்பு நிலைக்கு உயர்த்தி அமைக்கப்பட்டது&lt;/b&gt;."</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"பவர் மெனு"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"பக்கம் <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ஐ ஆன் செய்யவா?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> என்பது <xliff:g id="ID_4">^4</xliff:g> ஐப் பயன்படுத்துவதற்கான கீபோர்டு ஷார்ட்கட்டாகும். <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"<xliff:g id="ID_4">%4$s</xliff:g> ஐ இயக்க <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> என்பதை மீண்டும் அழுத்தவும்"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> கீபோர்டு ஷார்ட்கட்டை ஆன் செய்யவா?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ஆன் செய்ய வேண்டாம்"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ஷார்ட்கட்டை ஆன் செய்"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> கீபோர்டு ஷார்ட்கட் ஆன் செய்யப்பட்டது"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> என்பது மாற்றுத்திறன் அம்சமான <xliff:g id="ID_4">^4</xliff:g> ஐப் பயன்படுத்துவதற்கான கீபோர்டு ஷார்ட்கட்டாகும். இதன்மூலம் திரையில் உள்ள உள்ளடக்கத்தை விரைவாக ஜூம் இன் செய்து பார்க்கலாம். பெரிதாக்கல் அம்சம் ஆன் செய்யப்பட்டதும் அளவை மாற்ற, <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> மற்றும் \"+\" அல்லது \"-\" என்பதை அழுத்தவும்."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ஷார்ட்கட்டை ஆஃப் செய்"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ஆனிலேயே வைத்திரு"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> என்பது <xliff:g id="ID_4">^4</xliff:g> ஐப் பயன்படுத்துவதற்கான கீபோர்டு ஷார்ட்கட்டாகும். <xliff:g id="ID_5">^4</xliff:g> என்பது ஒரு ஸ்கிரீன் ரீடர் ஆகும். இதன் மூலம் திரையில் உள்ளவற்றைச் சத்தமாக வாசிக்கச் செய்து கேட்கலாம். திரையைப் பார்க்க சிரமப்படும் பயனர்களுக்கு இது உதவியாக இருக்கும். இது உங்கள் சாதனம் செயல்படும் முறையை மாற்றக்கூடும்."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"கீபோர்டு ஷார்ட்கட்டை ஆன் செய்வதன் மூலம், உங்கள் சாதனத்தை முழுமையாகக் கட்டுப்படுத்த TalkBackகை அனுமதிக்கிறீர்கள்."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"மாற்றுத்திறன் வசதிக்கான தேவைகள் தொடர்பாக உங்களுக்கு உதவும் ஆப்ஸுக்கு முழுக் கட்டுப்பாட்டையும் வழங்குவது பொருத்தமாக இருக்கும். ஆனால், பெரும்பாலான ஆப்ஸுக்கு இதை வழங்க வேண்டியதில்லை."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"திரையைப் பார்த்தல் மற்றும் நிர்வகித்தல்"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"இந்த அம்சம் மூலம் திரையிலுள்ள அனைத்து உள்ளடக்கத்தையும் படிக்கவும் பிற ஆப்ஸின் மீது உள்ளடக்கத்தைக் காட்டவும் முடியும்."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"செயல்பாடுகளைப் பார்த்தல் மற்றும் செயல்படுத்துதல்"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"இந்தச் சேவையால் ஏதேனும் ஆப்ஸ் அல்லது வன்பொருள் சென்சாரின் உதவியுடன் உரையாடல்களைக் கண்காணித்து உங்கள் சார்பாக ஆப்ஸுடன் உரையாட முடியும்."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ஐகான்"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> என்பதை அழுத்தினால் மாற்றுத்திறன் அம்சமான <xliff:g id="ID_4">^4</xliff:g> ஆன் செய்யப்படும். இதன்மூலம் கைகளைப் பயன்படுத்தாமலேயே உங்கள் சாதனத்தைக் கட்டுப்படுத்தலாம்."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"மாற்றுத்திறன் வசதி"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"முடிந்தது"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"லாக் ஸ்கிரீன்"</string>

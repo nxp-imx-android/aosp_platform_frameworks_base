@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"音声を共有"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"アプリ ウィンドウを共有"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"タブを共有する"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"共有すると、画面の内容が表示されます"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ウィンドウのスクリーンショットを撮影"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ウィンドウを録画"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"選択した領域のスクリーンショットを撮影"</string>
@@ -947,6 +952,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"着信通知は変更できません。"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"このグループの通知はここでは設定できません"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"代理通知"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g> のすべての通知"</string>
     <string name="see_more_title" msgid="7409317011708185729">"詳細"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"この通知は、システムによって自動的に&lt;b&gt;ランクがデフォルトに上がり&lt;/b&gt;ました。"</string>
@@ -1157,8 +1164,8 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> のキーボード ショートカットを ON にしますか？"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ON にしない"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ショートカットを ON にする"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> のキーボード ショートカットを ON にしました"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> は、ユーザー補助機能の<xliff:g id="ID_4">^4</xliff:g>を使用するためのキーボード ショートカットです。画面をすばやくズームインして、コンテンツを拡大できます。拡大機能が ON になったら、<xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_6">^2</xliff:g> と「+」または「-」を押して、ズームを調整できます。"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g>のキーボード ショートカットを ON にしました"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> は、<xliff:g id="ID_4">^4</xliff:g>のユーザー補助機能を使用するためのキーボード ショートカットです。画面をすばやくズームインして、コンテンツを拡大できます。拡大機能が ON になったら、<xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_6">^2</xliff:g> と「+」または「-」を押して、ズームを調整できます。"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ショートカットを OFF にする"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ON のままにする"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> は、<xliff:g id="ID_4">^4</xliff:g> 機能を使用するためのキーボード ショートカットです。<xliff:g id="ID_5">^4</xliff:g> は、画面上の項目を読み上げるスクリーン リーダーです。目の不自由な方に役立つ機能です。この機能が ON になると、デバイスの動作が変わることがあります。"</string>
@@ -1731,8 +1738,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"左上から下にスワイプして通知を開きます"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"右上から下にスワイプしてクイック設定を開きます"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"戻る"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"ログイン"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"ユーザー補助"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"前へ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"次へ"</string>

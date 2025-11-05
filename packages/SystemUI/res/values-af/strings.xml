@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Deel oudio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Deel appvenster"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Deel oortjie"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Die inhoud van jou skerm is sigbaar wanneer jy deel"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Neem skermskoot van venster"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Neem venster op"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Neem ’n skermskoot van die geselekteerde area"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Oproepkennisgewings kan nie gewysig word nie."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Hierdie groep kennisgewings kan nie hier opgestel word nie"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Instaanbediener-kennisgewing"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Alle <xliff:g id="APP_NAME">%1$s</xliff:g>-kennisgewings"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Sien meer"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Hierdie kennisgewing is outomaties deur die stelsel &lt;b&gt;na Verstek bevorder&lt;/b&gt;."</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Aan/af-kieslys"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Bladsy <xliff:g id="ID_1">%1$d</xliff:g> van <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Skakel <xliff:g id="ID_1">%1$s</xliff:g> aan?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"<xliff:g id="ID_1">^1</xliff:g>-ikoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is die kortpadsleutel om <xliff:g id="ID_4">^4</xliff:g> te gebruik. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Druk weer <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> om <xliff:g id="ID_4">%4$s</xliff:g> te aktiveer"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Skakel <xliff:g id="ID_1">%1$s</xliff:g>-kortpadsleutel aan?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Moenie aanskakel nie"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Skakel kortpad aan"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g>-kortpadsleutel is aangeskakel"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"<xliff:g id="ID_1">^1</xliff:g>-ikoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is die kortpadsleutels om <xliff:g id="ID_4">^4</xliff:g>, ’n toeganklikheidskenmerk, te gebruik. Jy kan daarmee vinnig op die skerm inzoem om inhoud groter te maak. Wanneer vergroting aan is, moet jy "<annotation id="action_key_icon">"<xliff:g id="ID_5">^1</xliff:g>-ikoon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> en “+” of “-” druk om die zoem te verstel."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Skakel kortpad af"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Hou aan"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"<xliff:g id="ID_1">^1</xliff:g>-ikoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is die kortpadsleutel om <xliff:g id="ID_4">^4</xliff:g> te gebruik. <xliff:g id="ID_5">^4</xliff:g> is ’n skermleser wat jou toelaat om items hardop te hoor. Dit kan nuttig wees vir mense wat sukkel om die skerm te sien. Dit kan verander hoe jou toestel werk."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"As jy die kortpadsleutels aanskakel, sal jy TalkBack toelaat om volle beheer oor jou toestel te hê."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Volle beheer is gepas vir apps wat jou help met toeganklikheidbehoeftes, maar nie vir die meeste apps nie."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Bekyk en beheer skerm"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Dit kan alle inhoud op die skerm lees en inhoud bo-oor ander apps vertoon."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Bekyk en voer handelinge uit"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Dit kan jou interaksies met ’n app of ’n hardewaresensor naspoor en namens jou met apps interaksie hê."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"As jy "<annotation id="action_key_icon">"<xliff:g id="ID_1">^1</xliff:g>-ikoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> druk, skakel dit <xliff:g id="ID_4">^4</xliff:g>, ’n toeganklikheidskenmerk, aan. Jy kan daarmee jou toestel handvry beheer."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Toeganklikheid"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Klaar"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Sluitskerm"</string>

@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Споделувајте аудио"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Прозорец за споделување апликација"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Споделете ја картичката"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"При споделување, содржините на вашиот екран се видливи"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Снимање слика од екранот на прозорецот"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Снимање прозорец"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Снимање слика од екранот на избраната област"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Известувањата за повици не може да се изменат."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Оваа група известувања не може да се конфигурира тука"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Известување преку прокси"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Сите известувања од <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Прикажи повеќе"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Известувањево беше автоматски &lt;b&gt;поставено на „Стандардно“&lt;/b&gt; од страна на системот."</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Мени на копчето за вклучување"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Страница <xliff:g id="ID_1">%1$d</xliff:g> од <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Да се вклучи <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Иконата за <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Притиснете <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> повторно за да овозможите <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Да се вклучи кратенката од тастатура за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не вклучувај"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Вклучи ја кратенката"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Кратенката од тастатура за <xliff:g id="ID_1">%1$s</xliff:g> е вклучена"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"Иконата за <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_4">^4</xliff:g>, функција за пристапност. Ова ви овозможува брзо да зумирате на екранот за да го зголемите приказот на содржините. Откако ќе се вклучи зголемувањето, притиснете ја иконата за <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_6">^2</xliff:g> и „+“ или „–“ за да го приспособите зумот."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Исклучи ја кратенката"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не исклучувај"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"Иконата за <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е кратенката од тастатура за користење на <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> е читач на екран што ви овозможува да слушате ставки изговорени наглас. Ова може да биде корисно за лица што имаат проблем да го видат екранот. Ова може да го промени начинот на функционирање на уредот."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ако ја вклучите кратенката од тастатурата, ќе дозволите TalkBack да има целосна контрола врз вашиот уред."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Целосната контрола е соодветна за апликации што ви помагаат со потребите за пристапност, но не и за повеќето апликации."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Приказ и контрола на екранот"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Може да ги чита сите содржини на екранот и да прикажува содржини врз другите апликации."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Приказ и вршење дејства"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Може да ја следи вашата интеракција со апликациите или хардверскиот сензор и да стапува во интеракција со апликациите во ваше име."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Ако ја притиснете иконата за <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, ќе се вклучи <xliff:g id="ID_4">^4</xliff:g>, функција за пристапност. Ова ви овозможува да го контролирате вашиот уред без користење раце."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Пристапност"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Готово"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заклучен екран"</string>
@@ -1588,7 +1590,7 @@
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Екранот е поврзан"</string>
     <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Поврзано со надворешен екран"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Микрофон, камера и локација"</string>
-    <string name="privacy_dialog_summary" msgid="2458769652125995409">"Неодамнешно користење од апликациите"</string>
+    <string name="privacy_dialog_summary" msgid="2458769652125995409">"Скорешно користење од апликациите"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Видете го скорешниот пристап"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Готово"</string>
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"Проширување и прикажување на опциите"</string>
@@ -1599,7 +1601,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Управувајте со пристапот"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Се користи од телефонски повик"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Неодамна користено во телефонски повик"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Се користи од <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Се користи од „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Неодамна користено од <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Се користи од <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Неодамна користено од <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
