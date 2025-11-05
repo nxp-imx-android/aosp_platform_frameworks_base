@@ -89,14 +89,6 @@ flag {
     bug: "407149510"
 }
 
-# Deprecated: Use enable_bubble_root_task instead.
-flag {
-    namespace: "windowing_sdk"
-    name: "root_task_for_bubble"
-    description: "Using a root task to manage Bubble tasks"
-    bug: "407669465"
-}
-
  flag {
      namespace: "windowing_sdk"
      name: "enable_bubble_root_task"
