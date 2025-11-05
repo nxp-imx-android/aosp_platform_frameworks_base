@@ -43,7 +43,9 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.DisplayInfo
 import android.view.ISystemGestureExclusionListener
 import android.view.InputDevice
 import android.view.InsetsSource
@@ -80,7 +82,6 @@ import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DefaultWindowDecorationActions
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertFalse
-import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertTrue
 import junit.framework.Assert.fail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -131,6 +132,20 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         desktopState.isFreeformEnabled = true
 
         setUpCommon()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
+    fun createWindowDecoration_displayRetrievedFromDisplayManagerWhenUnavailableInDisplayController() {
+        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
+        setUpMockDecorationForTask(task)
+        val display = Display(mock(), task.displayId, DisplayInfo(), context.resources)
+        whenever(mockDisplayController.getDisplayContext(task.displayId)).thenReturn(null)
+        whenever(mockDisplayController.getDisplay(task.displayId)).thenReturn(display)
+        val taskSurface = SurfaceControl()
+        onTaskOpening(task, taskSurface)
+        // Verify display was retrieved from the display manager
+        verify(spyContext).createDisplayContext(display)
     }
 
     @Test

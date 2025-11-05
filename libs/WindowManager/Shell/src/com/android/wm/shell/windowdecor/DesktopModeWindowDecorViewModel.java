@@ -1695,13 +1695,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             oldDecoration.close();
         }
         final WindowDecorationWrapper windowDecoration;
+        final Context context =
+                DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()
+                        ? getDisplayContext(taskInfo)
+                        : mContext;
         if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue()) {
             final DefaultWindowDecoration defaultWindowDecoration = new DefaultWindowDecoration(
                     taskInfo,
                     taskSurface,
-                    DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()
-                            ? mDisplayController.getDisplayContext(taskInfo.displayId)
-                            : mContext,
+                    context,
                     mContext.createContextAsUser(UserHandle.of(taskInfo.userId),
                             0 /* flags */),
                     mDisplayController,
@@ -1737,9 +1739,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         } else {
             final DesktopModeWindowDecoration desktopModeWindowDecoration =
                     new DesktopModeWindowDecoration(
-                            DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()
-                                    ? mDisplayController.getDisplayContext(taskInfo.displayId)
-                                    : mContext,
+                            context,
                             mUserProfileContexts.getOrCreate(taskInfo.userId),
                             mDisplayController,
                             mTaskResourceLoader,
@@ -1814,6 +1814,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
             incrementEventReceiverTasks(taskInfo.displayId);
         }
+    }
+
+    private Context getDisplayContext(RunningTaskInfo taskInfo) {
+        final Context displayContext = mDisplayController.getDisplayContext(taskInfo.displayId);
+        if (displayContext != null) return displayContext;
+        ProtoLog.w(WM_SHELL_WINDOW_DECORATION,
+                "%s: Unable to retrieve display context from DisplayController."
+                        + "Creating context from DisplayManager instead.", TAG);
+        return mContext.createDisplayContext(mDisplayController.getDisplay(taskInfo.displayId));
     }
 
     private boolean isTaskInSplitScreen(int taskId) {
