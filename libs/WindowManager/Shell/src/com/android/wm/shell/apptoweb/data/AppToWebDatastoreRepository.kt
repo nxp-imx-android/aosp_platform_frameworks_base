@@ -71,20 +71,20 @@ constructor(private val dataStore: DataStore<AppToWebProto>) {
      */
     suspend fun getAppToWebProto(): AppToWebProto = dataStoreFlow.first()
 
-    /** Update [AppToWebUserRepository.firstRunPromptShownPackages] field. */
-    suspend fun updateFirstRunPromptShownPackages(
-        firstRunPromptShownPackagesByUserId: MutableMap<Int, MutableSet<String>>
+    /** Update [AppToWebUserRepository.firstRunPromptAckedPackages] field. */
+    suspend fun updateFirstRunPromptAckedPackages(
+        firstRunPromptAckedPackagesByUserId: MutableMap<Int, MutableSet<String>>
     ) {
         dataStore.updateData { proto: AppToWebProto ->
             val builder = proto.toBuilder()
-            firstRunPromptShownPackagesByUserId.forEach { (userId, packages) ->
+            firstRunPromptAckedPackagesByUserId.forEach { (userId, packages) ->
                 val currentUserDataBuilder = builder.getAppToWebRepoByUserOrDefault(
                         userId,
                         AppToWebUserRepository.newBuilder().build(),
                     ).toBuilder()
                 currentUserDataBuilder
-                    .clearFirstRunPromptShownPackages()
-                    .addAllFirstRunPromptShownPackages(packages.toList())
+                    .clearFirstRunPromptAckedPackages()
+                    .addAllFirstRunPromptAckedPackages(packages.toList())
                 builder.putAppToWebRepoByUser(userId, currentUserDataBuilder.build())
             }
             builder.build()
