@@ -34,6 +34,8 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 CleanArchitectureDependencyViolationDetector.ISSUE,
                 CollectAsStateDetector.ISSUE,
                 DemotingTestWithoutBugDetector.ISSUE,
+                DisplayAwareDetector.ERROR_ISSUE,
+                DisplayAwareDetector.INFO_ISSUE,
                 DoNotDirectlyConstructKosmosDetector.ISSUE,
                 DumpableNotRegisteredDetector.ISSUE,
                 ExposeFlowFromUiLayerDetector.ISSUE,
