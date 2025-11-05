@@ -46,6 +46,7 @@ android_test {
 
     static_libs: shared_deps + [
         "servicestests-core-utils",
+        "servicestests-utils",
     ],
 
     certificate: "platform",
