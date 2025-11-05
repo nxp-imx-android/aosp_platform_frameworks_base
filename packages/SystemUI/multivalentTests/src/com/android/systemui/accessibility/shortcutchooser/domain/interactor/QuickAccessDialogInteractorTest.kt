@@ -82,7 +82,7 @@ class QuickAccessDialogInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun getAllAccessibilityTargets_returnsAllTargetModels() =
+    fun allAccessibilityTargets_returnsAllTargetModels() =
         kosmos.runTest {
             val targets =
                 listOf(
@@ -92,7 +92,7 @@ class QuickAccessDialogInteractorTest : SysuiTestCase() {
             whenever(mockRepository.getAllAccessibilityTargets(SHORTCUT_TYPE))
                 .thenReturn(flowOf(targets))
 
-            assertThat(underTest.getAllAccessibilityTargets().first()).isEqualTo(targets)
+            assertThat(underTest.allAccessibilityTargets.first()).isEqualTo(targets)
         }
 
     @Test
