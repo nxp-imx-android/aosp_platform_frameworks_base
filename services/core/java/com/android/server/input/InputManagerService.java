@@ -579,8 +579,8 @@ public class InputManagerService extends IInputManager.Stub
                 mContext, mContext.getMainThreadHandler(), this);
         mModifierKeyRemapper = new ModifierKeyRemapper(mContext, mNative, mDataStore,
                 injector.getLooper());
-        mInputDeviceRemapper = new InputDeviceRemapper(mContext, mNative,
-                injector.getLooper());
+        mInputDeviceRemapper = new InputDeviceRemapper(mContext, mNative, injector.getLooper(),
+                injector.getIoLooper(), mInputDataStore);
         mKeyboardGlyphManager = new KeyboardGlyphManager(mContext, injector.getLooper());
         mPointerIconCache = new PointerIconCache(mContext, mNative);
 
@@ -705,7 +705,9 @@ public class InputManagerService extends IInputManager.Stub
         mKeyboardBacklightController.systemRunning();
         mKeyboardLedController.systemRunning();
         mModifierKeyRemapper.systemRunning();
-        mInputDeviceRemapper.systemRunning();
+        if (com.android.hardware.input.Flags.controllerRemapping()) {
+            mInputDeviceRemapper.systemRunning();
+        }
         mPointerIconCache.systemRunning();
         mKeyboardGlyphManager.systemRunning();
         mKeyGestureController.systemRunning();
@@ -2343,7 +2345,9 @@ public class InputManagerService extends IInputManager.Stub
         mKeyboardGlyphManager.dump(ipw);
         mKeyGestureController.dump(ipw);
         mVirtualInputDeviceController.dump(ipw);
-        mInputDeviceRemapper.dump(ipw);
+        if (com.android.hardware.input.Flags.controllerRemapping()) {
+            mInputDeviceRemapper.dump(ipw);
+        }
     }
 
     private void dumpAssociations(IndentingPrintWriter pw) {
@@ -3169,6 +3173,9 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull InputDeviceIdentifier identifier,
             @InputManager.ControllerButton int fromButton, int toKeyCode) {
         super.remapControllerButton_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         if (!isControllerButton(fromButton)) {
             throw new IllegalArgumentException("fromButton " + KeyEvent.keyCodeToString(fromButton)
                     + " is not a valid controller button");
@@ -3186,6 +3193,9 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull InputDeviceIdentifier identifier,
             @InputManager.ControllerButton int fromButton) {
         super.removeControllerButtonRemapping_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         if (!isControllerButton(fromButton)) {
             throw new IllegalArgumentException("fromButton " + KeyEvent.keyCodeToString(fromButton)
                     + " is not a valid controller button");
@@ -3198,6 +3208,9 @@ public class InputManagerService extends IInputManager.Stub
     public void clearAllControllerButtonRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
         super.clearAllControllerButtonRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         mInputDeviceRemapper.clearAllKeyRemappings(userId, identifier);
     }
 
@@ -3207,6 +3220,9 @@ public class InputManagerService extends IInputManager.Stub
     public Map<Integer, Integer> getControllerButtonRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
         super.getControllerButtonRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return Map.of();
+        }
         return mInputDeviceRemapper.getKeyRemappings(userId, identifier);
     }
 
@@ -3216,6 +3232,9 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull InputDeviceIdentifier identifier, @MotionEvent.Axis int fromAxis,
             @MotionEvent.Axis int toAxis) {
         super.remapControllerAxis_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         if (!isControllerAxis(fromAxis)) {
             throw new IllegalArgumentException("fromAxis " + MotionEvent.axisToString(fromAxis)
                     + " is not a valid controller axis");
@@ -3232,6 +3251,9 @@ public class InputManagerService extends IInputManager.Stub
     public void removeControllerAxisRemapping(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier, @MotionEvent.Axis int fromAxis) {
         super.removeControllerAxisRemapping_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         if (!isControllerAxis(fromAxis)) {
             throw new IllegalArgumentException("fromAxis " + MotionEvent.axisToString(fromAxis)
                     + " is not a valid controller axis");
@@ -3244,6 +3266,9 @@ public class InputManagerService extends IInputManager.Stub
     public void clearAllControllerAxisRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
         super.clearAllControllerAxisRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         mInputDeviceRemapper.clearAllAxisRemappings(userId, identifier);
     }
 
@@ -3253,6 +3278,9 @@ public class InputManagerService extends IInputManager.Stub
     public Map<Integer, Integer> getControllerAxisRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
         super.getControllerAxisRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return Map.of();
+        }
         return mInputDeviceRemapper.getAxisRemappings(userId, identifier);
     }
 
@@ -3445,7 +3473,9 @@ public class InputManagerService extends IInputManager.Stub
 
     private void handleCurrentUserChanged(@UserIdInt int userId) {
         mKeyGestureController.setCurrentUserId(userId);
-        mInputDeviceRemapper.setCurrentUserId(userId);
+        if (com.android.hardware.input.Flags.controllerRemapping()) {
+            mInputDeviceRemapper.setCurrentUserId(userId);
+        }
     }
 
     private void checkDisplayAssociationPermission(int displayId, int callingUid) {
