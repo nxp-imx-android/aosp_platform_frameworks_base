@@ -1269,9 +1269,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     && mAppVsyncOffsetNanos == appVsyncOffsetNanos
                     && mPresentationDeadlineNanos == presentationDeadlineNanos
                     && Arrays.equals(overrides, mFrameRateOverrides)
-                    &&
-                    (!com.android.graphics.surfaceflinger.flags.Flags.supportedRefreshRateUpdate()
-                            || Arrays.equals(supportedRefreshRates, mSupportedRefreshRates))) {
+                    && Arrays.equals(supportedRefreshRates, mSupportedRefreshRates)) {
                 return false;
             }
             mActiveSfDisplayMode = getModeById(mSfDisplayModes, activeSfModeId);
@@ -1284,9 +1282,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             mAppVsyncOffsetNanos = appVsyncOffsetNanos;
             mPresentationDeadlineNanos = presentationDeadlineNanos;
             mFrameRateOverrides = overrides;
-            if (com.android.graphics.surfaceflinger.flags.Flags.supportedRefreshRateUpdate()) {
-                mSupportedRefreshRates = supportedRefreshRates;
-            }
+            mSupportedRefreshRates = supportedRefreshRates;
             return true;
         }
 
