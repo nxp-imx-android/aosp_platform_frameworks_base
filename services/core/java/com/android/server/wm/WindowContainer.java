@@ -16,7 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
@@ -1672,11 +1671,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * TODO b/409417223 - remove this method and replace it with #matchParentBounds
      */
     boolean fillsParentBounds() {
-        if (!com.android.window.flags.Flags.refactorMatchParentBounds()) {
-            final int windowingMode = getWindowingMode();
-            return windowingMode == WINDOWING_MODE_FULLSCREEN
-                    || (windowingMode != WINDOWING_MODE_PINNED && matchParentBounds());
-        }
         return matchParentBounds();
     }
 
