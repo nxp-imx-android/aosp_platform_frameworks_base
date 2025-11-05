@@ -33,6 +33,7 @@ import android.hardware.input.IStickyModifierStateListener;
 import android.hardware.input.ITabletModeChangedListener;
 import android.hardware.input.IVirtualGamepad;
 import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualKeyboard;
 import android.hardware.input.KeyboardLayoutSelectionResult;
 import android.hardware.input.TouchCalibration;
 import android.hardware.input.VirtualGamepadConfig;
@@ -90,7 +91,7 @@ interface IInputManager {
     boolean injectInputEvent(in InputEvent ev, int mode);
 
     @EnforcePermission(anyOf = {"INJECT_KEY_EVENTS", "INJECT_EVENTS"})
-    IVirtualInputDevice createVirtualKeyboard(in IBinder token,
+    IVirtualKeyboard createVirtualKeyboard(in IBinder token,
             in VirtualKeyboardConfig config);
 
     @EnforcePermission("INJECT_EVENTS")

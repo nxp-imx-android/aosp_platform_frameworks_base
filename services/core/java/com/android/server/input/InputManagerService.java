@@ -64,6 +64,7 @@ import android.hardware.input.IStickyModifierStateListener;
 import android.hardware.input.ITabletModeChangedListener;
 import android.hardware.input.IVirtualGamepad;
 import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualKeyboard;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
@@ -1079,7 +1080,7 @@ public class InputManagerService extends IInputManager.Stub
             Manifest.permission.INJECT_KEY_EVENTS,
             Manifest.permission.INJECT_EVENTS
     })
-    public IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
+    public IVirtualKeyboard createVirtualKeyboard(@NonNull IBinder token,
             @NonNull VirtualKeyboardConfig config) {
         super.createVirtualKeyboard_enforcePermission();
 
@@ -1989,10 +1990,31 @@ public class InputManagerService extends IInputManager.Stub
         mNative.changeVirtualDevices();
     }
 
+    /**
+     * Creates a virtual keyboard that is passed via binder to other non-internal processes.
+     * Returns a {@link IVirtualKeyboard} that is safe for client processes to own.
+     */
     @NonNull
-    IVirtualInputDevice createVirtualKeyboardInternal(@NonNull IBinder token,
+    IVirtualKeyboard createVirtualKeyboardInternal(@NonNull IBinder token,
             @NonNull VirtualKeyboardConfig config) {
         return mVirtualInputDeviceController.createKeyboard(config.getInputDeviceName(),
+                config.getVendorId(), config.getProductId(), token,
+                InputManagerService.this.getTargetDisplayIdForInput(
+                        config.getAssociatedDisplayId()),
+                config.getLanguageTag(), config.getLayoutType());
+    }
+
+    /**
+     * Creates a virtual keyboard that is to be used by internal local services, such as VDM.
+     * Returns a {@link IVirtualInputDevice} that is not safe for client processes (can send
+     * non-keyboard events) to own but is safe for internal services dependent on the
+     * template.
+     */
+    @NonNull
+    IVirtualInputDevice createVirtualInputKeyboardDeviceInternal(@NonNull IBinder token,
+            @NonNull VirtualKeyboardConfig config) {
+        return mVirtualInputDeviceController.createVirtualInputKeyboardDevice(
+                config.getInputDeviceName(),
                 config.getVendorId(), config.getProductId(), token,
                 InputManagerService.this.getTargetDisplayIdForInput(
                         config.getAssociatedDisplayId()),
@@ -4104,7 +4126,7 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
                 @NonNull VirtualKeyboardConfig config) {
-            return InputManagerService.this.createVirtualKeyboardInternal(token, config);
+            return InputManagerService.this.createVirtualInputKeyboardDeviceInternal(token, config);
         }
 
         @NonNull
