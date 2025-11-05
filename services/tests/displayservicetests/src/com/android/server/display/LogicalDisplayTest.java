@@ -35,8 +35,6 @@ import android.app.PropertyInvalidatedCache;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.IBinder;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.CopyOnWriteSparseArray;
 import android.util.SparseArray;
@@ -47,7 +45,6 @@ import android.view.SurfaceControl;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.mode.SyntheticModeManager;
 
@@ -168,88 +165,7 @@ public class LogicalDisplayTest {
         assertEquals(new Point(0, DISPLAY_HEIGHT / 4), mLogicalDisplay.getDisplayPosition());
     }
 
-
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testNoLetterbox_noAnisotropyCorrectionForInternalDisplay() {
-        mDisplayDeviceInfo.type = Display.TYPE_INTERNAL;
-        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true, true, false, mDisplayInfoCacheMocked);
-
-        // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
-        // to using the whole screen. This is because display will rescale it back to fill the
-        // screen (in case the display menu setting is set to stretch the pixels across the display)
-        mDisplayDeviceInfo.xDpi = 0.5f;
-        mDisplayDeviceInfo.yDpi = 1.0f;
-
-        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
-        var originalDisplayInfo = mLogicalDisplay.getDisplayInfoLocked();
-        // Content width not scaled
-        assertEquals(DISPLAY_WIDTH, originalDisplayInfo.logicalWidth);
-        assertEquals(DISPLAY_HEIGHT, originalDisplayInfo.logicalHeight);
-
-        SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
-
-        // Applications need to think that they are shown on a display with square pixels.
-        // as applications can be displayed on multiple displays simultaneously (mirrored).
-        // Content is too wide, should have become letterboxed - but it won't because of anisotropy
-        // correction
-        assertEquals(new Point(0, 0), mLogicalDisplay.getDisplayPosition());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testNoLetterbox_anisotropyCorrection() {
-        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
-        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true, true, false, mDisplayInfoCacheMocked);
-
-        // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
-        // to using the whole screen. This is because display will rescale it back to fill the
-        // screen (in case the display menu setting is set to stretch the pixels across the display)
-        mDisplayDeviceInfo.xDpi = 0.5f;
-        mDisplayDeviceInfo.yDpi = 1.0f;
-
-        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
-        var originalDisplayInfo = mLogicalDisplay.getDisplayInfoLocked();
-        // Content width re-scaled
-        assertEquals(DISPLAY_WIDTH * 2, originalDisplayInfo.logicalWidth);
-        assertEquals(DISPLAY_HEIGHT, originalDisplayInfo.logicalHeight);
-
-        SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
-
-        // Applications need to think that they are shown on a display with square pixels.
-        // as applications can be displayed on multiple displays simultaneously (mirrored).
-        // Content is too wide, should have become letterboxed - but it won't because of anisotropy
-        // correction
-        assertEquals(new Point(0, 0), mLogicalDisplay.getDisplayPosition());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testLetterbox_anisotropyCorrectionYDpi() {
-        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
-        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true, true, false, mDisplayInfoCacheMocked);
-
-        DisplayInfo displayInfo = new DisplayInfo();
-        displayInfo.logicalWidth = DISPLAY_WIDTH;
-        displayInfo.logicalHeight = DISPLAY_HEIGHT / 2;
-        mDisplayDeviceInfo.xDpi = 1.0f;
-        mDisplayDeviceInfo.yDpi = 0.5f;
-        mLogicalDisplay.setDisplayInfoOverrideFromWindowManagerLocked(displayInfo);
-        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
-
-        SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
-
-        assertEquals(new Point(0, 75), mLogicalDisplay.getDisplayPosition());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
     public void testNoLetterbox_noAnisotropyCorrectionIfAnisotropicModesEnabled() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
@@ -309,64 +225,6 @@ public class LogicalDisplayTest {
         mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
 
         assertEquals(new Point(75, 0), mLogicalDisplay.getDisplayPosition());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testPillarbox_anisotropyCorrection() {
-        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
-        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true, true, false, mDisplayInfoCacheMocked);
-
-        DisplayInfo displayInfo = new DisplayInfo();
-        displayInfo.logicalWidth = DISPLAY_WIDTH;
-        displayInfo.logicalHeight = DISPLAY_HEIGHT;
-        displayInfo.rotation = Surface.ROTATION_90;
-        mDisplayDeviceInfo.flags = DisplayDeviceInfo.FLAG_ROTATES_WITH_CONTENT;
-        // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
-        // to using the whole screen. This is because display will rescale it back to fill the
-        // screen (in case the display menu setting is set to stretch the pixels across the display)
-        mDisplayDeviceInfo.xDpi = 0.5f;
-        mDisplayDeviceInfo.yDpi = 1.0f;
-        mLogicalDisplay.setDisplayInfoOverrideFromWindowManagerLocked(displayInfo);
-        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
-
-        SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
-
-        // Applications need to think that they are shown on a display with square pixels.
-        // as applications can be displayed on multiple displays simultaneously (mirrored).
-        // Content is a bit wider than in #testPillarbox, due to content added stretching
-        assertEquals(new Point(50, 0), mLogicalDisplay.getDisplayPosition());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testNoPillarbox_anisotropyCorrectionYDpi() {
-        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
-        mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isSyncedResolutionSwitchEnabled=*/ true, true, false, mDisplayInfoCacheMocked);
-
-        // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
-        // to using the whole screen. This is because display will rescale it back to fill the
-        // screen (in case the display menu setting is set to stretch the pixels across the display)
-        mDisplayDeviceInfo.xDpi = 1.0f;
-        mDisplayDeviceInfo.yDpi = 0.5f;
-
-        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
-        var originalDisplayInfo = mLogicalDisplay.getDisplayInfoLocked();
-        // Content width re-scaled
-        assertEquals(DISPLAY_WIDTH, originalDisplayInfo.logicalWidth);
-        assertEquals(DISPLAY_HEIGHT * 2, originalDisplayInfo.logicalHeight);
-
-        SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);
-        mLogicalDisplay.configureDisplayLocked(t, mDisplayDevice, false, mExecutor);
-
-        // Applications need to think that they are shown on a display with square pixels.
-        // as applications can be displayed on multiple displays simultaneously (mirrored).
-        // Content is too tall, should have occupy the whole screen - but it won't because of
-        // anisotropy correction
-        assertEquals(new Point(0, 0), mLogicalDisplay.getDisplayPosition());
     }
 
     @Test
