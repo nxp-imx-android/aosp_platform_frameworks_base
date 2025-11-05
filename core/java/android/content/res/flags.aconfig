@@ -239,3 +239,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "generate_external_resource_idmaps"
+    namespace: "resource_manager"
+    description: "Generate and use idmaps for external resources referenced in APKs"
+    bug: "373535266"
+}
