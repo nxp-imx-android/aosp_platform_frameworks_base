@@ -52,6 +52,7 @@ import static android.window.TaskFragmentOperation.OP_TYPE_UNKNOWN;
 import static android.window.TaskFragmentOperation.PRIVILEGED_OP_START;
 import static android.window.WindowContainerTransaction.Change.CHANGE_FOCUSABLE;
 import static android.window.WindowContainerTransaction.Change.CHANGE_FORCE_TRANSLUCENT;
+import static android.window.WindowContainerTransaction.Change.CHANGE_HANDLE_PACKAGE_UPDATE;
 import static android.window.WindowContainerTransaction.Change.CHANGE_HIDDEN;
 import static android.window.WindowContainerTransaction.Change.CHANGE_INTERCEPT_BACK_PRESSED;
 import static android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE;
@@ -1046,6 +1047,10 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         if ((c.getChangeMask() & CHANGE_INTERCEPT_BACK_PRESSED) != 0) {
             mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(tr.mTaskId,
                     c.getInterceptBackPressed());
+        }
+
+        if ((c.getChangeMask() & CHANGE_HANDLE_PACKAGE_UPDATE) != 0) {
+            tr.mHandlePackageUpdate = c.gethandlePackageUpdate();
         }
 
         return effects;
