@@ -63,7 +63,7 @@
                     android:lineHeight="32dp"
                     android:textFontWeight="400"
                     android:textSize="24sp"
-                    android:textColor="@androidprv:color/materialColorOnSurfaceVariant"
+                    android:textColor="@androidprv:color/materialColorOnSurface"
                     tools:text="Gmail" />
 
                 <TextView
@@ -94,6 +94,8 @@
                         android:text="@string/open_by_default_dialog_in_app_text"
                         android:textFontWeight="500"
                         android:textSize="16sp"
+                        android:textColor="@color/open_by_default_settings_dialog_radio_button_text_color"
+                        android:buttonTint="@color/open_by_default_settings_dialog_radio_button_text_color"
                         android:lineHeight="24dp"
                         android:background="@drawable/open_by_default_settings_dialog_radio_buttons_background"/>
                     <RadioButton
@@ -106,6 +108,8 @@
                         android:text="@string/open_by_default_dialog_in_browser_text"
                         android:textFontWeight="500"
                         android:textSize="16sp"
+                        android:textColor="@color/open_by_default_settings_dialog_radio_button_text_color"
+                        android:buttonTint="@color/open_by_default_settings_dialog_radio_button_text_color"
                         android:lineHeight="24dp"
                         android:background="@drawable/open_by_default_settings_dialog_radio_buttons_background"/>
                 </RadioGroup>
