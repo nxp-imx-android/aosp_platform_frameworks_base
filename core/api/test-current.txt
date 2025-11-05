@@ -962,7 +962,12 @@ package android.companion.virtual {
   }
 
   public final class VirtualDeviceParams implements android.os.Parcelable {
+    method public boolean isLocalDeviceOnly();
     field public static final int DEVICE_POLICY_INVALID = -1; // 0xffffffff
+  }
+
+  public static final class VirtualDeviceParams.Builder {
+    method @NonNull public android.companion.virtual.VirtualDeviceParams.Builder setLocalDeviceOnly(boolean);
   }
 
 }

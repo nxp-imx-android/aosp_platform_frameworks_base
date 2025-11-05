@@ -321,6 +321,7 @@ public class ComputerControlSessionImplTest {
                 eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue().getName())
                 .isEqualTo(mDefaultParams.getName());
+        assertTrue(mVirtualDeviceParamsArgumentCaptor.getValue().isLocalDeviceOnly());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
                 .getDevicePolicy(POLICY_TYPE_RECENTS))
                 .isEqualTo(DEVICE_POLICY_DEFAULT);

@@ -204,6 +204,17 @@ public class GenericWindowPolicyControllerTest {
     }
 
     @Test
+    public void activityDoesNotSupportDisplayOnRemoteDevices_localDeviceOnly_isAllowed() {
+        GenericWindowPolicyController gwpc = createLocalDeviceOnlyGwpc();
+        ActivityInfo activityInfo = getActivityInfo(
+                NONBLOCKED_APP_PACKAGE_NAME,
+                NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ false,
+                /* targetDisplayCategory */ null);
+        assertActivityCanBeLaunched(gwpc, activityInfo);
+    }
+
+    @Test
     public void openBlockedComponentOnVirtualDisplay_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithBlockedComponent(BLOCKED_COMPONENT);
         ActivityInfo activityInfo = getActivityInfo(
@@ -965,7 +976,26 @@ public class GenericWindowPolicyControllerTest {
                 /* activityListener= */ mActivityListener,
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
-                /* customHomeComponent= */ null);
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ false);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
+    }
+
+    private GenericWindowPolicyController createLocalDeviceOnlyGwpc() {
+        var gwpc = new GenericWindowPolicyController(
+                AttributionSource.myAttributionSource(),
+                /* allowedUsers= */ new ArraySet<>(getCurrentUserId()),
+                /* activityLaunchAllowedByDefault= */ true,
+                /* activityPolicyExemptions= */ new ArraySet<>(),
+                /* activityPolicyPackageExemptions= */ new ArraySet<>(),
+                /* crossTaskNavigationAllowedByDefault= */ true,
+                /* crossTaskNavigationExemptions= */ new ArraySet<>(),
+                /* activityListener= */ mActivityListener,
+                /* displayCategories= */ new ArraySet<>(),
+                /* showTasksInHostDeviceRecents= */ true,
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ true);
         gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
         return gwpc;
     }
@@ -982,7 +1012,8 @@ public class GenericWindowPolicyControllerTest {
                 /* activityListener= */ mActivityListener,
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
-                /* customHomeComponent= */ null);
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ false);
         gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
         return gwpc;
     }
@@ -1000,7 +1031,8 @@ public class GenericWindowPolicyControllerTest {
                 /* activityListener= */ mActivityListener,
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
-                /* customHomeComponent= */ homeComponent);
+                /* customHomeComponent= */ homeComponent,
+                /* localDeviceOnly */ false);
         gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
         return gwpc;
     }
@@ -1018,7 +1050,8 @@ public class GenericWindowPolicyControllerTest {
                 /* activityListener= */ mActivityListener,
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
-                /* customHomeComponent= */ null);
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ false);
         gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
         return gwpc;
     }
@@ -1036,7 +1069,8 @@ public class GenericWindowPolicyControllerTest {
                 /* activityListener= */ mActivityListener,
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
-                /* customHomeComponent= */ null);
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ false);
         gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
         return gwpc;
     }
@@ -1054,7 +1088,8 @@ public class GenericWindowPolicyControllerTest {
                 /* activityListener= */ mActivityListener,
                 /* displayCategories= */ Collections.singleton(displayCategory),
                 /* showTasksInHostDeviceRecents= */ true,
-                /* customHomeComponent= */ null);
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ false);
         gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
         return gwpc;
     }
@@ -1072,7 +1107,8 @@ public class GenericWindowPolicyControllerTest {
                 /* activityListener= */ mActivityListener,
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
-                /* customHomeComponent= */ null);
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ false);
         gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
         return gwpc;
     }
@@ -1090,7 +1126,8 @@ public class GenericWindowPolicyControllerTest {
                 /* activityListener= */ mActivityListener,
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
-                /* customHomeComponent= */ null);
+                /* customHomeComponent= */ null,
+                /* localDeviceOnly */ false);
         gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
         return gwpc;
     }

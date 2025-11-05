@@ -345,6 +345,7 @@ public final class VirtualDeviceParams implements Parcelable {
     private final int mAudioRecordingSessionId;
     private final long mDimDuration;
     private final long mScreenOffTimeout;
+    private final boolean mLocalDeviceOnly;
     @Nullable private final ViewConfigurationParams mViewConfigurationParams;
 
     private VirtualDeviceParams(
@@ -365,6 +366,7 @@ public final class VirtualDeviceParams implements Parcelable {
             int audioRecordingSessionId,
             long dimDuration,
             long screenOffTimeout,
+            boolean localDeviceOnly,
             @Nullable ViewConfigurationParams viewConfigurationParams) {
         mLockState = lockState;
         mAllowedUsers = new ArraySet<>(Objects.requireNonNull(allowedUsers));
@@ -387,6 +389,7 @@ public final class VirtualDeviceParams implements Parcelable {
         mDimDuration = dimDuration;
         mScreenOffTimeout = screenOffTimeout;
         mViewConfigurationParams = viewConfigurationParams;
+        mLocalDeviceOnly = localDeviceOnly;
     }
 
     @SuppressWarnings("unchecked")
@@ -410,6 +413,7 @@ public final class VirtualDeviceParams implements Parcelable {
         mInputMethodComponent = parcel.readTypedObject(ComponentName.CREATOR);
         mDimDuration = parcel.readLong();
         mScreenOffTimeout = parcel.readLong();
+        mLocalDeviceOnly = parcel.readBoolean();
         mViewConfigurationParams = Flags.viewconfigurationApis()
                 ? parcel.readTypedObject(ViewConfigurationParams.CREATOR) : null;
     }
@@ -667,6 +671,19 @@ public final class VirtualDeviceParams implements Parcelable {
         return mViewConfigurationParams;
     }
 
+    /**
+     * Returns whether there is a guarantee that this virtual device never represents a remote
+     * device.
+     *
+     * @see Builder#setLocalDeviceOnly(boolean)
+     * @hide
+     */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @TestApi
+    public boolean isLocalDeviceOnly() {
+        return mLocalDeviceOnly;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -692,6 +709,7 @@ public final class VirtualDeviceParams implements Parcelable {
         dest.writeTypedObject(mInputMethodComponent, flags);
         dest.writeLong(mDimDuration);
         dest.writeLong(mScreenOffTimeout);
+        dest.writeBoolean(mLocalDeviceOnly);
         if (Flags.viewconfigurationApis()) {
             dest.writeTypedObject(mViewConfigurationParams, flags);
         }
@@ -770,6 +788,7 @@ public final class VirtualDeviceParams implements Parcelable {
                 + " mAudioRecordingSessionId=" + mAudioRecordingSessionId
                 + " mDimDuration=" + mDimDuration
                 + " mScreenOffTimeout=" + mScreenOffTimeout
+                + " mLocalDeviceOnly=" + mLocalDeviceOnly
                 + " mViewConfigurationParams=" + mViewConfigurationParams
                 + ")";
     }
@@ -832,6 +851,7 @@ public final class VirtualDeviceParams implements Parcelable {
         @NonNull private final SparseIntArray mDevicePolicies = new SparseIntArray();
         private int mAudioPlaybackSessionId = AUDIO_SESSION_ID_GENERATE;
         private int mAudioRecordingSessionId = AUDIO_SESSION_ID_GENERATE;
+        private boolean mLocalDeviceOnly = false;
 
         @NonNull private final List<VirtualSensorConfig> mVirtualSensorConfigs = new ArrayList<>();
         @Nullable private Executor mVirtualSensorCallbackExecutor;
@@ -1323,6 +1343,21 @@ public final class VirtualDeviceParams implements Parcelable {
         }
 
         /**
+         * Sets whether there is a guarantee that this virtual device never represents a remote
+         * device ({@code false} by default).
+         *
+         * @see VirtualDeviceParams#isLocalDeviceOnly()
+         * @hide
+         */
+        @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+        @TestApi
+        @NonNull
+        public Builder setLocalDeviceOnly(boolean localDeviceOnly) {
+            mLocalDeviceOnly = localDeviceOnly;
+            return this;
+        }
+
+        /**
          * Sets the optional {@link ViewConfigurationParams} for the virtual device.
          *
          * @see ViewConfigurationParams
@@ -1454,6 +1489,7 @@ public final class VirtualDeviceParams implements Parcelable {
                     mAudioRecordingSessionId,
                     mDimDuration.toMillis(),
                     mScreenOffTimeout.toMillis(),
+                    mLocalDeviceOnly,
                     mViewConfigurationParams);
         }
     }
