@@ -36,6 +36,8 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
     private long mFlags;
     /** Whether there are currently ongoing transactions over this service connection. */
     private boolean mOngoingCalls;
+    /** The associated bound service session if created. */
+    private BoundServiceSession mBoundServiceSession;
 
     /** Returns the {@link ActivityServiceConnectionsHolder} associated with this connection. */
     public abstract ActivityServiceConnectionsHolder getActivity();
@@ -54,6 +56,9 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
 
     /** Tracks the current process state and sequence number for association management. */
     public abstract void trackProcState(int procState, int seq);
+
+    /** Returns a concise string representation of this record for logging and debugging. */
+    public abstract String toShortString();
 
     public ConnectionRecordInternal(long flags) {
         this.mFlags = flags;
@@ -122,6 +127,14 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
             return true;
         }
         return false;
+    }
+
+    public BoundServiceSession getBoundServiceSession() {
+        return mBoundServiceSession;
+    }
+
+    public void setBoundServiceSession(BoundServiceSession boundServiceSession) {
+        mBoundServiceSession = boundServiceSession;
     }
 
     @Override

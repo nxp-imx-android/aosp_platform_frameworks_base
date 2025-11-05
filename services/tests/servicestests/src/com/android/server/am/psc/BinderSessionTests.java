@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.server.am;
+package com.android.server.am.psc;
 
-import static com.android.server.am.BinderSession.MAX_UNIQUE_TAGS;
-import static com.android.server.am.BinderSession.OVERFLOW_TAG;
+import static com.android.server.am.psc.BinderSession.MAX_UNIQUE_TAGS;
+import static com.android.server.am.psc.BinderSession.OVERFLOW_TAG;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -189,12 +189,12 @@ public class BinderSessionTests {
         session.binderTransactionStarting("test");
         session.binderTransactionStarting("test");
         assertEquals(3, session.mTotal);
-        verify(mMockConsumer, never()).accept(any(ConnectionRecord.class), anyBoolean());
+        verify(mMockConsumer, never()).accept(any(ConnectionRecordInternal.class), anyBoolean());
 
         session.binderTransactionCompleted(token);
         session.binderTransactionCompleted(token);
         assertEquals(1, session.mTotal);
-        verify(mMockConsumer, never()).accept(any(ConnectionRecord.class), anyBoolean());
+        verify(mMockConsumer, never()).accept(any(ConnectionRecordInternal.class), anyBoolean());
 
         session.binderTransactionCompleted(token);
         assertEquals(0, session.mTotal);
@@ -210,7 +210,7 @@ public class BinderSessionTests {
         session.binderTransactionStarting("test");
         session.binderTransactionStarting("test");
         assertEquals(3, session.mTotal);
-        verify(mMockConsumer, never()).accept(any(ConnectionRecord.class), anyBoolean());
+        verify(mMockConsumer, never()).accept(any(ConnectionRecordInternal.class), anyBoolean());
 
         session.binderTransactionCompleted(-1);
         assertEquals(0, session.mTotal);
@@ -228,7 +228,7 @@ public class BinderSessionTests {
 
         session.binderTransactionCompleted(-1);
         assertEquals(0, session.mTotal);
-        verify(mMockConsumer, never()).accept(any(ConnectionRecord.class), anyBoolean());
+        verify(mMockConsumer, never()).accept(any(ConnectionRecordInternal.class), anyBoolean());
     }
 
     @Test

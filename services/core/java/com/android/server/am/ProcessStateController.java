@@ -44,6 +44,8 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.AsyncBatchSession;
+import com.android.server.am.psc.BoundServiceSession;
+import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ProcessListInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
@@ -65,7 +67,7 @@ public class ProcessStateController {
 
     private final OomAdjuster.Constants mOomConstants;
     private final OomAdjuster mOomAdjuster;
-    private final BiConsumer<ConnectionRecord, Boolean> mServiceBinderCallUpdater;
+    private final BiConsumer<ConnectionRecordInternal, Boolean> mServiceBinderCallUpdater;
 
     // TODO(b/425766486): Investigate if we could use java.util.concurrent.locks.ReadWriteLock.
     private final Object mLock;
@@ -102,7 +104,7 @@ public class ProcessStateController {
         mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> serviceHandler.post(() -> {
             synchronized (ams) {
                 if (cr.setOngoingCalls(hasOngoingCalls)) {
-                    runUpdate(cr.binding.client, OOM_ADJ_REASON_SERVICE_BINDER_CALL);
+                    runUpdate(cr.getClient(), OOM_ADJ_REASON_SERVICE_BINDER_CALL);
                 }
             }
         });
@@ -250,7 +252,7 @@ public class ProcessStateController {
      * Add a process to evaluated the next time an update is run.
      */
     @GuardedBy("mLock")
-    public void enqueueUpdateTarget(@Nullable ProcessRecord proc) {
+    public void enqueueUpdateTarget(@Nullable ProcessRecordInternal proc) {
         if (mBatchSession != null && mBatchSession.isActive()) {
             // BatchSession is active and a process has been enqueued for an update.
             getBatchSession().maybeEnqueueProcess(proc);
@@ -277,7 +279,7 @@ public class ProcessStateController {
      * {@link #enqueueUpdateTarget}).
      */
     @GuardedBy("mLock")
-    public boolean runUpdate(@NonNull ProcessRecord proc, @OomAdjReason int oomAdjReason) {
+    public boolean runUpdate(@NonNull ProcessRecordInternal proc, @OomAdjReason int oomAdjReason) {
         if (mBatchSession != null && mBatchSession.isActive()) {
             // BatchSession is active, just enqueue the proc for now. The update will happen
             // at the end of the session.
@@ -288,7 +290,8 @@ public class ProcessStateController {
     }
 
     @GuardedBy("mLock")
-    private boolean runUpdateimpl(@NonNull ProcessRecord proc, @OomAdjReason int oomAdjReason) {
+    private boolean runUpdateimpl(@NonNull ProcessRecordInternal proc,
+            @OomAdjReason int oomAdjReason) {
         commitStagedEvents();
         return mOomAdjuster.updateOomAdjLocked(proc, oomAdjReason);
     }
@@ -351,22 +354,22 @@ public class ProcessStateController {
     }
 
     /**
-     * Returns a {@link BoundServiceSession} for the given {@link ConnectionRecord}. Creates and
-     * associates a new one if required.
+     * Returns a {@link BoundServiceSession} for the given {@link ConnectionRecordInternal}.
+     * Creates and associates a new one if required.
      */
-    public BoundServiceSession getBoundServiceSessionFor(ConnectionRecord connectionRecord) {
+    public BoundServiceSession getBoundServiceSessionFor(
+            ConnectionRecordInternal connectionRecord) {
         if (connectionRecord.notHasFlag(Context.BIND_ALLOW_FREEZE) && connectionRecord.notHasFlag(
                 Context.BIND_SIMULATE_ALLOW_FREEZE)) {
             // Don't incur the memory and compute overhead for process state adjustments for all
             // bindings by default. This should be opted into as needed.
             return null;
         }
-        if (connectionRecord.mBoundServiceSession != null) {
-            return connectionRecord.mBoundServiceSession;
+        if (connectionRecord.getBoundServiceSession() == null) {
+            connectionRecord.setBoundServiceSession(
+                    new BoundServiceSession(mServiceBinderCallUpdater, connectionRecord));
         }
-        connectionRecord.mBoundServiceSession = new BoundServiceSession(mServiceBinderCallUpdater,
-                connectionRecord);
-        return connectionRecord.mBoundServiceSession;
+        return connectionRecord.getBoundServiceSession();
     }
 
     private static class GlobalState implements OomAdjuster.GlobalState {

@@ -43,7 +43,6 @@ import java.io.PrintWriter;
  */
 @RavenwoodKeepWholeClass
 final class ConnectionRecord extends ConnectionRecordInternal {
-    BoundServiceSession mBoundServiceSession;  // The associated bound service session if created.
     final AppBindRecord binding;    // The application/service binding.
     final ActivityServiceConnectionsHolder<ConnectionRecord> activity;  // If non-null, the owning activity.
     final IServiceConnection conn;  // The client connection.
@@ -116,8 +115,8 @@ final class ConnectionRecord extends ConnectionRecordInternal {
         pw.print(prefix);
         pw.print("ongoingCalls=");
         pw.println(getOngoingCalls());
-        if (mBoundServiceSession != null) {
-            mBoundServiceSession.dump(new IndentingPrintWriter(pw, "  ", prefix));
+        if (getBoundServiceSession() != null) {
+            getBoundServiceSession().dump(new IndentingPrintWriter(pw, "  ", prefix));
         }
     }
 
@@ -212,7 +211,8 @@ final class ConnectionRecord extends ConnectionRecordInternal {
         }
     }
 
-    String toShortString() {
+    @Override
+    public String toShortString() {
         final StringBuilder sb = new StringBuilder(128);
         sb.append("CR{");
         sb.append(Integer.toHexString(System.identityHashCode(this)));
