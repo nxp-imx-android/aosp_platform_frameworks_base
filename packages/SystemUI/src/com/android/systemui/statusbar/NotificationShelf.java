@@ -225,18 +225,20 @@ public class NotificationShelf extends ActivatableNotificationView {
             if (ambientState.isExpansionChanging() && !ambientState.isOnKeyguard()) {
                 float expansion = ambientState.getExpansionFraction();
                 if (ambientState.isBouncerInTransit()) {
-                    viewState.setAlpha(aboutToShowBouncerProgress(expansion));
+                    viewState.setAlpha(aboutToShowBouncerProgress(expansion), "shelf bouncer");
                 } else {
                     if (ambientState.isSmallScreen()) {
-                        viewState.setAlpha(ShadeInterpolation.getContentAlpha(expansion));
+                        viewState.setAlpha(ShadeInterpolation.getContentAlpha(expansion),
+                                "shelf small screen");
                     } else {
                         LargeScreenShadeInterpolator interpolator =
                                 ambientState.getLargeScreenShadeInterpolator();
-                        viewState.setAlpha(interpolator.getNotificationContentAlpha(expansion));
+                        viewState.setAlpha(interpolator.getNotificationContentAlpha(expansion),
+                                "shelf large screen");
                     }
                 }
             } else {
-                viewState.setAlpha(1f - ambientState.getHideAmount());
+                viewState.setAlpha(1f - ambientState.getHideAmount(), "shelf hide amount");
             }
             viewState.hideSensitive = false;
             viewState.setXTranslation(getTranslationX());
@@ -945,7 +947,8 @@ public class NotificationShelf extends ActivatableNotificationView {
         if (iconState == null) {
             return;
         }
-        iconState.setAlpha(ICON_ALPHA_INTERPOLATOR.getInterpolation(transitionAmount));
+        iconState.setAlpha(ICON_ALPHA_INTERPOLATOR.getInterpolation(transitionAmount),
+                "shelf icon");
         boolean isAppearing = row.isDrawingAppearAnimation() && !row.isInShelf();
         iconState.hidden = isAppearing
                 || (!physicalNotificationMovement() && view instanceof ExpandableNotificationRow
@@ -965,7 +968,7 @@ public class NotificationShelf extends ActivatableNotificationView {
         final boolean stayingInShelf = row.isInShelf() && !row.isTransformingIntoShelf();
         if (stayingInShelf) {
             iconState.iconAppearAmount = 1.0f;
-            iconState.setAlpha(1.0f);
+            iconState.setAlpha(1.0f, "shelf icon staying");
             iconState.hidden = false;
         }
         int backgroundColor = getBackgroundColorWithoutTint();
