@@ -15,7 +15,7 @@
  */
 package android.app.appfunctions;
 
-import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 
 import static java.util.Objects.requireNonNull;
 
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 /** Represents metadata about a package providing app functions. */
-@FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+@FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionPackageMetadata implements AbstractAppFunctionMetadata, Parcelable {
 
     @NonNull

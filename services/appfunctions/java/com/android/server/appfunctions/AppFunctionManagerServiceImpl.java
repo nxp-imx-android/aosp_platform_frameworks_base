@@ -267,7 +267,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             mMultiUserAppFunctionAccessHistory.onUserUnlocked(user);
         }
 
-        if (android.app.appfunctions.flags.Flags.enableContextualAppFunctions()) {
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
             mDynamicAppFunctionRegistry.onUserUnlocked(user);
         }
     }
@@ -295,7 +295,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     /** Called when the user stopped. */
     public void onUserStopped(@NonNull TargetUser user) {
-        if (android.app.appfunctions.flags.Flags.enableContextualAppFunctions()) {
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
             Objects.requireNonNull(user);
             mDynamicAppFunctionRegistry.onUserStopped(user);
         }
@@ -469,7 +469,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         })
                 .thenAccept(
                         canExecuteResult -> {
-                            if (android.app.appfunctions.flags.Flags.enableContextualAppFunctions()
+                            if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
                                     && isDynamicAppFunction(
                                             requestInternal
                                                     .getClientRequest()
@@ -558,7 +558,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull Executor executor) {
         AndroidFuture<Boolean> future = new AndroidFuture<>();
 
-        if (android.app.appfunctions.flags.Flags.enableContextualAppFunctions()
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
                 && isDynamicAppFunction(functionIdentifier)) {
             future.complete(
                     mDynamicAppFunctionRegistry.isAppFunctionEnabled(
