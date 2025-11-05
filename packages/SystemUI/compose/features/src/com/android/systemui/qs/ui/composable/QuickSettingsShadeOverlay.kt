@@ -31,6 +31,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.verticalScroll
@@ -423,7 +425,11 @@ private fun ContentScope.QuickSettingsLayout(
                                 volumeSliderViewModel.getSliderHapticsViewModelFactory(),
                             dimensions = QuickSettingsShade.Dimensions.volumeSliderDimensions,
                         )
+                        Spacer(Modifier.width(8.dp))
                         IconButton(
+                            modifier = Modifier.size(
+                                QuickSettingsShade.Dimensions.volumeSliderDimensions.trackHeight
+                            ),
                             colors =
                                 IconButtonDefaults.iconButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
