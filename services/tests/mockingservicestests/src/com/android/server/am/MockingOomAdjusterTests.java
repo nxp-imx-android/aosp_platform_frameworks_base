@@ -4750,7 +4750,7 @@ public class MockingOomAdjusterTests {
         doCallRealMethod().when(record).getHostProcess();
         doCallRealMethod().when(record).numberOfConnections();
         doCallRealMethod().when(record).getConnectionsAt(any(int.class));
-        doReturn(hasExternalProviders).when(record).hasExternalProcessHandles();
+        doReturn(hasExternalProviders).when(record).getHasExternalProcessHandles();
         return record;
     }
 

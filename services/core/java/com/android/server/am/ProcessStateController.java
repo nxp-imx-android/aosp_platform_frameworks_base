@@ -32,7 +32,6 @@ import android.app.ActivityManagerInternal.OomAdjReason;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManagerInternal;
@@ -47,6 +46,7 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.BoundServiceSession;
 import com.android.server.am.psc.ConnectionRecordInternal;
+import com.android.server.am.psc.ContentProviderRecordInternal;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterImpl;
 import com.android.server.am.psc.ProcessListInternal;
@@ -784,21 +784,13 @@ public class ProcessStateController {
     }
 
     /**
-     * Note that a content provider has an external client.
+     * Sets the state indicating whether the given content provider has clients from external
+     * processes.
      */
     @GuardedBy("mLock")
-    public void addExternalProviderClient(@NonNull ContentProviderRecord cpr,
-            IBinder externalProcessToken, int callingUid, String callingTag) {
-        cpr.addExternalProcessHandleLocked(externalProcessToken, callingUid, callingTag);
-    }
-
-    /**
-     * Remove an external client from a conetnt provider.
-     */
-    @GuardedBy("mLock")
-    public boolean removeExternalProviderClient(@NonNull ContentProviderRecord cpr,
-            IBinder externalProcessToken) {
-        return cpr.removeExternalProcessHandleLocked(externalProcessToken);
+    public void setHasExternalProcessHandles(@NonNull ContentProviderRecordInternal cpr,
+            boolean value) {
+        cpr.setHasExternalProcessHandles(value);
     }
 
     /**

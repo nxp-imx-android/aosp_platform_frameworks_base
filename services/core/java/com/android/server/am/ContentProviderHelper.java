@@ -891,8 +891,7 @@ public class ContentProviderHelper {
                     cpr.mProviderInfo.name);
             ContentProviderRecord localCpr = mProviderMap.getProviderByClass(comp, userId);
             if (localCpr.hasExternalProcessHandles()) {
-                if (mService.mProcessStateController.removeExternalProviderClient(localCpr,
-                        token)) {
+                if (localCpr.removeExternalProcessHandleLocked(token)) {
                     mService.updateOomAdjLocked(localCpr.mProc, OOM_ADJ_REASON_REMOVE_PROVIDER);
                 } else {
                     Slog.e(TAG, "Attempt to remove content provider " + localCpr
@@ -1462,11 +1461,9 @@ public class ContentProviderHelper {
             String callingPackage, String callingTag, boolean stable, boolean updateLru,
             long startTime, ProcessList processList, @UserIdInt int expectedUserId) {
         if (r == null) {
-            mService.mProcessStateController.addExternalProviderClient(cpr, externalProcessToken,
-                    callingUid, callingTag);
+            cpr.addExternalProcessHandleLocked(externalProcessToken, callingUid, callingTag);
             return null;
         }
-
 
         final ProcessProviderRecord pr = r.mProviders;
         for (int i = 0, size = pr.numberOfProviderConnections(); i < size; i++) {
@@ -1508,8 +1505,7 @@ public class ContentProviderHelper {
             ContentProviderRecord cpr, IBinder externalProcessToken, boolean stable,
             boolean enforceDelay, boolean updateOomAdj) {
         if (conn == null) {
-            mService.mProcessStateController.removeExternalProviderClient(cpr,
-                    externalProcessToken);
+            cpr.removeExternalProcessHandleLocked(externalProcessToken);
             return false;
         }
 
@@ -1904,6 +1900,7 @@ public class ContentProviderHelper {
         return false;
     }
 
+    @GuardedBy("mService")
     boolean cleanupAppInLaunchingProvidersLocked(ProcessRecord app, boolean alwaysBad) {
         // Look through the content providers we are waiting to have launched,
         // and if any run in this process then either schedule a restart of
