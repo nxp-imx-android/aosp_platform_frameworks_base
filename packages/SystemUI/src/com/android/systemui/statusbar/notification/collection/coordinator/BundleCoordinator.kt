@@ -16,20 +16,20 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.app.INotificationManager
+import android.app.NotificationChannel
 import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
 import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
-import android.app.INotificationManager
-import android.app.NotificationChannel
 import android.os.Build
 import android.os.SystemProperties
 import android.os.UserHandle
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.internal.R
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.notification.Bundles
 import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
@@ -60,11 +60,12 @@ import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
 import com.android.systemui.statusbar.notification.stack.BUCKET_PROMO
 import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
 import com.android.systemui.statusbar.notification.stack.BUCKET_SOCIAL
+import com.android.systemui.statusbar.notification.stack.NotificationSectionsManager
 import com.android.systemui.util.time.SystemClock
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executor
 
 /** Coordinator for sections derived from NotificationAssistantService classification. */
 @CoordinatorScope
@@ -80,8 +81,10 @@ constructor(
     @Application private val coroutineScope: CoroutineScope,
     @Bundles private val onboardingAffordanceManager: OnboardingAffordanceManager,
     private val notificationManager: INotificationManager,
+    @Main private val mainExecutor: Executor,
     @Background private val backgroundExecutor: Executor,
     private val userTracker: UserTracker,
+    private val sectionsManager: NotificationSectionsManager,
 ) : Coordinator {
 
     val newsSectioner =
@@ -131,12 +134,13 @@ constructor(
     val bundler =
         object : NotifBundler("NotifBundler") {
             // Use list instead of set to keep fixed order
-            override val bundleSpecs: MutableList<BundleSpec> = mutableListOf(
-                BundleSpec.NEWS,
-                BundleSpec.SOCIAL_MEDIA,
-                BundleSpec.PROMOTIONS,
-                BundleSpec.RECOMMENDED,
-            )
+            override val bundleSpecs: MutableList<BundleSpec> =
+                mutableListOf(
+                    BundleSpec.NEWS,
+                    BundleSpec.SOCIAL_MEDIA,
+                    BundleSpec.PROMOTIONS,
+                    BundleSpec.RECOMMENDED,
+                )
 
             private var bundleIds = this.bundleSpecs.map { it.key }
 
@@ -169,9 +173,10 @@ constructor(
 
             init {
                 if (NmContextualDisplay.isEnabled) {
+                    var newTypes: MutableList<Int> = mutableListOf()
                     backgroundExecutor.execute {
-                        val dynamicBundles = notificationManager.getDynamicBundles(
-                                null, userTracker.userHandle)
+                        val dynamicBundles =
+                            notificationManager.getDynamicBundles(null, userTracker.userHandle)
                         for (dynamicBundle in dynamicBundles) {
                             val bundleSpec =
                                 BundleSpec(
@@ -186,10 +191,14 @@ constructor(
                                     bundleType = dynamicBundle.dynamicBundleType,
                                 )
                             bundleSpecs.add(bundleSpec)
+                            newTypes.add(dynamicBundle.dynamicBundleType)
                         }
                         bundleIds = this.bundleSpecs.map { it.key }
-                        val invalidator = object : Invalidator("dynamic bundles") {}
-                        invalidator.invalidateList("dynamic bundles loaded")
+                        mainExecutor.execute {
+                            newTypes.forEach { sectionsManager.addSection(it) }
+                            val invalidator = object : Invalidator("dynamic bundles") {}
+                            invalidator.invalidateList("dynamic bundles loaded")
+                        }
                     }
                 }
             }

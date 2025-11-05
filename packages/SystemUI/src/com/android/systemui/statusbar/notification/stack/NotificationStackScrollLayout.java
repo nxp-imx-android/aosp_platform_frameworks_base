@@ -121,6 +121,7 @@ import com.android.systemui.statusbar.notification.row.ActivatableNotificationVi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
+import com.android.systemui.statusbar.notification.shared.NmContextualDisplay;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
@@ -372,7 +373,6 @@ public class NotificationStackScrollLayout
             return true;
         }
     };
-    private final NotificationSection[] mSections;
     private final ArrayList<ExpandableView> mTmpSortedChildren = new ArrayList<>();
     private final ArrayList<ExpandableView> mTmpNonOverlapChildren = new ArrayList<>();
     private final ArrayDeque<ExpandableView> mTmpStack = new ArrayDeque<>();
@@ -691,7 +691,6 @@ public class NotificationStackScrollLayout
         mDebugRemoveAnimation = mFeatureFlags.isEnabled(Flags.NSSL_DEBUG_REMOVE_ANIMATION);
         mSectionsManager = Dependency.get(NotificationSectionsManager.class);
         mSectionsManager.initialize(this);
-        mSections = mSectionsManager.createSectionsForBuckets();
 
         mAmbientState = Dependency.get(AmbientState.class);
         int minHeight = res.getDimensionPixelSize(R.dimen.notification_min_height);
@@ -2092,7 +2091,8 @@ public class NotificationStackScrollLayout
     private float getAppearStartPosition() {
         SceneContainerFlag.assertInLegacyMode();
         if (isHeadsUpTransition()) {
-            final NotificationSection firstVisibleSection = getFirstVisibleSection();
+            final NotificationSection firstVisibleSection =
+                    mSectionsManager.getFirstVisibleSection();
             final int pinnedHeight = firstVisibleSection != null
                     ? firstVisibleSection.getFirstVisibleChild().getPinnedHeadsUpHeight()
                     : 0;
@@ -2980,25 +2980,6 @@ public class NotificationStackScrollLayout
         }
     }
 
-    private NotificationSection getFirstVisibleSection() {
-        for (NotificationSection section : mSections) {
-            if (section.getFirstVisibleChild() != null) {
-                return section;
-            }
-        }
-        return null;
-    }
-
-    private NotificationSection getLastVisibleSection() {
-        for (int i = mSections.length - 1; i >= 0; i--) {
-            NotificationSection section = mSections[i];
-            if (section.getLastVisibleChild() != null) {
-                return section;
-            }
-        }
-        return null;
-    }
-
     private ExpandableView getLastChildWithBackground() {
         int childCount = getChildCount();
         for (int i = childCount - 1; i >= 0; i--) {
@@ -3500,8 +3481,7 @@ public class NotificationStackScrollLayout
 
     private void updateFirstAndLastBackgroundViews() {
         ExpandableView lastChild = getLastChildWithBackground();
-        mSectionsManager.updateFirstAndLastViewsForAllSections(
-                mSections, getChildrenWithBackground());
+        mSectionsManager.updateFirstAndLastViewsForAllSections(getChildrenWithBackground());
 
         mAmbientState.setLastVisibleBackgroundChild(lastChild);
         invalidate();
@@ -4908,7 +4888,7 @@ public class NotificationStackScrollLayout
         ExpandableNotificationRow row = view instanceof ExpandableNotificationRow
                 ? (ExpandableNotificationRow) view
                 : null;
-        NotificationSection firstSection = getFirstVisibleSection();
+        NotificationSection firstSection = mSectionsManager.getFirstVisibleSection();
         ExpandableView firstVisibleChild =
                 firstSection == null ? null : firstSection.getFirstVisibleChild();
         if (row != null) {
@@ -4953,7 +4933,7 @@ public class NotificationStackScrollLayout
                     endPosition += row.getNotificationParent().getTranslationY();
                 }
                 int layoutEnd = mMaxLayoutHeight + (int) getStackTranslation();
-                NotificationSection lastSection = getLastVisibleSection();
+                NotificationSection lastSection = mSectionsManager.getLastVisibleSection();
                 ExpandableView lastVisibleChild =
                         lastSection == null ? null : lastSection.getLastVisibleChild();
                 if (row != lastVisibleChild && mShelf.getVisibility() != GONE) {
@@ -6319,7 +6299,6 @@ public class NotificationStackScrollLayout
             return;
         }
         mSectionsManager.updateFirstAndLastViewsForAllSections(
-                mSections,
                 getChildrenWithBackground()
         );
 
@@ -6903,7 +6882,9 @@ public class NotificationStackScrollLayout
             case ROWS_HIGH_PRIORITY:
                 return bucket < BUCKET_SILENT;
             case ROWS_GENTLE:
-                if (NotificationBundleUi.isEnabled()) {
+                if (NmContextualDisplay.isEnabled()) {
+                    return row.getEntryAdapter().isBundled() || row.getEntryAdapter().isBundle();
+                } else if (NotificationBundleUi.isEnabled()) {
                     return bucket == BUCKET_SILENT
                             || bucket == BUCKET_PROMO
                             || bucket == BUCKET_RECS
