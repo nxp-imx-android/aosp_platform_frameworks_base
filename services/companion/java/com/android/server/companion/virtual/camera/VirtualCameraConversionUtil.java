@@ -137,7 +137,7 @@ public final class VirtualCameraConversionUtil {
         SupportedStreamConfiguration supportedConfig = new SupportedStreamConfiguration();
         supportedConfig.height = stream.getHeight();
         supportedConfig.width = stream.getWidth();
-        supportedConfig.pixelFormat = convertToHalFormat(stream.getFormat());
+        supportedConfig.imageFormat = convertToHalFormat(stream.getFormat());
         supportedConfig.maxFps = stream.getMaximumFramesPerSecond();
         supportedConfig.index = stream.getStreamIndex();
         return supportedConfig;

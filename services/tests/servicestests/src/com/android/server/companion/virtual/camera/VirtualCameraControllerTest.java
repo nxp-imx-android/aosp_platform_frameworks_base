@@ -290,7 +290,7 @@ public class VirtualCameraControllerTest {
             int maxFps, VirtualCameraMetadata expectedMetadata) {
         assertThat(configuration.supportedStreamConfigs[0].width).isEqualTo(width);
         assertThat(configuration.supportedStreamConfigs[0].height).isEqualTo(height);
-        assertThat(configuration.supportedStreamConfigs[0].pixelFormat).isEqualTo(format);
+        assertThat(configuration.supportedStreamConfigs[0].imageFormat).isEqualTo(format);
         assertThat(configuration.supportedStreamConfigs[0].maxFps).isEqualTo(maxFps);
         assertArrayEquals(configuration.cameraCharacteristics.metadata, expectedMetadata.metadata);
     }
@@ -311,7 +311,7 @@ public class VirtualCameraControllerTest {
             int maxFps, int sensorOrientation, int lensFacing) {
         assertThat(configuration.supportedStreamConfigs[0].width).isEqualTo(width);
         assertThat(configuration.supportedStreamConfigs[0].height).isEqualTo(height);
-        assertThat(configuration.supportedStreamConfigs[0].pixelFormat).isEqualTo(format);
+        assertThat(configuration.supportedStreamConfigs[0].imageFormat).isEqualTo(format);
         assertThat(configuration.supportedStreamConfigs[0].maxFps).isEqualTo(maxFps);
         assertThat(configuration.sensorOrientation).isEqualTo(sensorOrientation);
         assertThat(configuration.lensFacing).isEqualTo(lensFacing);
