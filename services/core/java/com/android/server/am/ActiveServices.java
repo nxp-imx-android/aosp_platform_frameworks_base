@@ -4895,8 +4895,20 @@ public final class ActiveServices {
 
     // TODO(b/265746493): Special case for HotwordDetectionService,
     // VisualQueryDetectionService, WearableSensingService and OnDeviceSandboxedInferenceService
+    private boolean isPccService(@NonNull ServiceInfo serviceInfo) {
+        return (serviceInfo.flags & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX) != 0
+                && (serviceInfo.flags & ServiceInfo.FLAG_EXTERNAL_SERVICE) == 0;
+    }
+
+    // TODO(b/265746493): Special case for HotwordDetectionService,
+    // VisualQueryDetectionService, WearableSensingService and OnDeviceSandboxedInferenceService
     // Need a cleaner way to append this seInfo.
-    private String generateAdditionalSeInfoFromService(Intent service, String packageName) {
+    String generateAdditionalSeInfoFromService(Intent service, @NonNull ServiceRecord r) {
+        if (isPccService(r.serviceInfo)) {
+            // The system will run the PCC service in a process with pcc_components sepolicy
+            // assigned to it.
+            return "";
+        }
         if (service == null || service.getAction() == null) {
             return "";
         }
@@ -4910,7 +4922,7 @@ public final class ActiveServices {
         // WearableSensingService needs additional SeInfo unless it is restricted at the package
         // level via allow-association restrictions.
         if (action.equals(WearableSensingService.SERVICE_INTERFACE)
-                && !mAm.hasRestrictedAssociations(packageName)) {
+                && !mAm.hasRestrictedAssociations(r.packageName)) {
             return ":isolatedComputeApp";
         }
         return "";
@@ -5052,7 +5064,7 @@ public final class ActiveServices {
                 r.mRecentCallingPackage = callingPackage;
                 r.mRecentCallingUid = callingUid;
             }
-            r.appInfo.seInfo += generateAdditionalSeInfoFromService(service, r.packageName);
+            r.appInfo.seInfo += generateAdditionalSeInfoFromService(service, r);
             return new ServiceLookupResult(r, resolution.getAlias());
         }
 
@@ -5311,7 +5323,7 @@ public final class ActiveServices {
                 }
             }
 
-            r.appInfo.seInfo += generateAdditionalSeInfoFromService(service, r.packageName);
+            r.appInfo.seInfo += generateAdditionalSeInfoFromService(service, r);
             return new ServiceLookupResult(r, resolution.getAlias());
         }
         return null;
@@ -6124,7 +6136,7 @@ public final class ActiveServices {
         if (app == null && !permissionsReviewRequired && !packageFrozen) {
             // Fixup the seInfo as the service's app info might have been updated during restart.
             final String seInfo = generateAdditionalSeInfoFromService(
-                    r.intent.getIntent(), r.packageName);
+                    r.intent.getIntent(), r);
             if (!TextUtils.isEmpty(seInfo) && (TextUtils.isEmpty(r.appInfo.seInfo)
                     || r.appInfo.seInfo.indexOf(seInfo) < 0)) {
                 r.appInfo.seInfo += seInfo;
