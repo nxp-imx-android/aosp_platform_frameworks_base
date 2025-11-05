@@ -21,6 +21,8 @@ import static android.hardware.display.DisplayManagerGlobal.INTERNAL_EVENT_FLAG_
 import static android.hardware.display.DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_STATE;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.AdditionalMatchers.aryEq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,6 +41,7 @@ import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.view.Display;
 import android.view.DisplayInfo;
 
 import androidx.test.InstrumentationRegistry;
@@ -117,7 +120,20 @@ public class DisplayManagerGlobalTest {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayListenerIsCalled_WhenDisplayEventOccurs() throws RemoteException {
+        testDisplayListenerIsCalled_WhenDisplayEventOccursInternal(/* withSnapshot= */ false);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+    public void testDisplayListenerIsCalled_WhenDisplayEventOccurs_withSnapshot()
+            throws RemoteException {
+        testDisplayListenerIsCalled_WhenDisplayEventOccursInternal(/* withSnapshot= */ true);
+    }
+
+    private void testDisplayListenerIsCalled_WhenDisplayEventOccursInternal(boolean withSnapshot)
+            throws RemoteException {
         mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
                 ALL_DISPLAY_EVENTS, /* packageName= */ null,
                 /* isEventFilterExplicit */ true);
@@ -125,9 +141,19 @@ public class DisplayManagerGlobalTest {
                 .registerCallbackWithEventMask(mCallbackCaptor.capture(), anyLong());
         IDisplayManagerCallback callback = mCallbackCaptor.getValue();
 
+        if (withSnapshot) {
+            var defaultDisplaySnapshot = new int[] { Display.DEFAULT_DISPLAY };
+            callback.onDisplaySnapshot(defaultDisplaySnapshot, defaultDisplaySnapshot);
+        }
+
         int displayId = 1;
         callback.onDisplayEvent(displayId, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
         waitForHandler();
+        if (withSnapshot) {
+            Mockito.verify(mDisplayListener, never()).onDisplayConnectedSnapshot(any());
+            Mockito.verify(mDisplayListener).onDisplayAddedSnapshot(
+                    aryEq(new int[] { Display.DEFAULT_DISPLAY }));
+        }
         Mockito.verify(mDisplayListener).onDisplayAdded(eq(displayId));
         Mockito.verifyNoMoreInteractions(mDisplayListener);
 
@@ -180,7 +206,23 @@ public class DisplayManagerGlobalTest {
             Flags.FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS,
             Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT
     })
+    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEventsAreHandledInCorrectOrder() throws RemoteException {
+        testDisplayEventsAreHandledInCorrectOrderInternal(/* withSnapshot= */ false);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({
+            Flags.FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS,
+            Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT,
+            Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT
+    })
+    public void testDisplayEventsAreHandledInCorrectOrder_withSnapshot() throws RemoteException {
+        testDisplayEventsAreHandledInCorrectOrderInternal(/* withSnapshot= */ true);
+    }
+
+    private void testDisplayEventsAreHandledInCorrectOrderInternal(boolean withSnapshot)
+            throws RemoteException {
         // Register a listener for all possible events.
         long allInternalEvents =
                 DisplayManagerGlobal.INTERNAL_EVENT_FLAG_TOPOLOGY_UPDATED
@@ -219,6 +261,10 @@ public class DisplayManagerGlobalTest {
                         | DisplayManagerGlobal.EVENT_DISPLAY_REMOVED
                         | DisplayManagerGlobal.EVENT_DISPLAY_DISCONNECTED;
 
+        if (withSnapshot) {
+            var defaultDisplaySnapshot = new int[] { Display.DEFAULT_DISPLAY };
+            callback.onDisplaySnapshot(defaultDisplaySnapshot, defaultDisplaySnapshot);
+        }
         // Trigger the event.
         callback.onDisplayEvent(displayId, allEventsMask);
         waitForHandler();
@@ -226,6 +272,12 @@ public class DisplayManagerGlobalTest {
         // Verify the order of callbacks. The order should be based on the event's integer value,
         // not the order they were OR'd into the mask.
         InOrder inOrder = inOrder(mDisplayListener);
+        if (withSnapshot) {
+            inOrder.verify(mDisplayListener).onDisplayConnectedSnapshot(
+                    aryEq(new int[] { Display.DEFAULT_DISPLAY }));
+            inOrder.verify(mDisplayListener).onDisplayAddedSnapshot(
+                    aryEq(new int[] { Display.DEFAULT_DISPLAY }));
+        }
         inOrder.verify(mDisplayListener).onDisplayConnected(eq(displayId));
         inOrder.verify(mDisplayListener).onDisplayAdded(eq(displayId));
         // BASIC_CHANGED, REFRESH_RATE_CHANGED, STATE_CHANGED, COMMITTED_STATE_CHANGED
