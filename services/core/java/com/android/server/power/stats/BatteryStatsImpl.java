@@ -909,6 +909,14 @@ public class BatteryStatsImpl extends BatteryStats {
                             elapsedRealtimeMs);
                     mKernelSingleUidTimeReader.addDelta(parentUid, onBatteryScreenOffCounter,
                             elapsedRealtimeMs);
+                } else if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()
+                        && Process.isPrivateComputeCoreUid(uid)) {
+                    // TODO: b/467545924 - Remove special handling of PCC UID once the childUid data
+                    // structure recognizes PCC UIDs
+                    mKernelSingleUidTimeReader.addDelta(uid, onBatteryCounter,
+                            elapsedRealtimeMs);
+                    mKernelSingleUidTimeReader.addDelta(uid, onBatteryScreenOffCounter,
+                            elapsedRealtimeMs);
                 } else {
                     Uid.ChildUid childUid = u.getChildUid(uid);
                     if (childUid != null) {
@@ -2047,7 +2055,8 @@ public class BatteryStatsImpl extends BatteryStats {
         mTmpRailStats = new RailStats();
     }
 
-    private final class PowerStatsCollectorInjector implements CpuPowerStatsCollector.Injector,
+    @VisibleForTesting
+    final class PowerStatsCollectorInjector implements CpuPowerStatsCollector.Injector,
             ScreenPowerStatsCollector.Injector, MobileRadioPowerStatsCollector.Injector,
             WifiPowerStatsCollector.Injector, BluetoothPowerStatsCollector.Injector,
             EnergyConsumerPowerStatsCollector.Injector, WakelockPowerStatsCollector.Injector {
@@ -2184,7 +2193,9 @@ public class BatteryStatsImpl extends BatteryStats {
 
     @VisibleForTesting
     protected PowerStatsCollector.ConsumedEnergyRetriever mConsumedEnergyRetriever;
-    private final PowerStatsCollectorInjector mPowerStatsCollectorInjector =
+
+    @VisibleForTesting
+    protected final PowerStatsCollectorInjector mPowerStatsCollectorInjector =
             new PowerStatsCollectorInjector();
 
     /**
@@ -4553,9 +4564,15 @@ public class BatteryStatsImpl extends BatteryStats {
         mPowerStatsUidResolver.releaseIsolatedUid(isolatedUid);
     }
 
-    private int mapUid(int uid) {
+    @VisibleForTesting
+    int mapUid(int uid) {
         if (Process.isSdkSandboxUid(uid)) {
             return Process.getAppUidForSdkSandboxUid(uid);
+        }
+        if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()
+                && Process.isPrivateComputeCoreUid(uid)) {
+            return mPowerStatsCollectorInjector
+                    .getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
         }
         return mPowerStatsUidResolver.mapUid(uid);
     }
@@ -14222,6 +14239,10 @@ public class BatteryStatsImpl extends BatteryStats {
         if (u == null) {
             if (Process.isSdkSandboxUid(uid)) {
                 Log.wtf(TAG, "Tracking an SDK Sandbox UID");
+            }
+            if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()
+                    && Process.isPrivateComputeCoreUid(uid)) {
+                Log.wtf(TAG, "Tracking a PCC UID");
             }
             u = new Uid(this, uid, elapsedRealtimeMs, uptimeMs);
             mUidStats.put(uid, u);

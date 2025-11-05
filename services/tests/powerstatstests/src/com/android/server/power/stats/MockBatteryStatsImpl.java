@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
 import android.app.usage.NetworkStatsManager;
+import android.content.Context;
 import android.net.NetworkStats;
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -189,6 +190,11 @@ public class MockBatteryStatsImpl extends BatteryStatsImpl {
 
         setCpuScalingPolicies(new CpuScalingPolicies(freqsByPolicy, freqsByPolicy));
         return this;
+    }
+
+    /** Sets the context in the PowerStatsCollectorInjector. */
+    public void setTestContext(Context context) {
+        mPowerStatsCollectorInjector.setContext(context);
     }
 
     public MockBatteryStatsImpl setCpuScalingPolicies(CpuScalingPolicies cpuScalingPolicies) {
