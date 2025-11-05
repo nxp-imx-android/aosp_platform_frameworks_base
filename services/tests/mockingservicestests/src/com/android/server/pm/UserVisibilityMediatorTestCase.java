@@ -643,7 +643,20 @@ abstract class UserVisibilityMediatorTestCase extends ExpectableTestCase {
     protected void expectVisibleUsers(@UserIdInt Integer... userIds) {
         IntArray visibleUsers = mMediator.getVisibleUsers();
         expectWithMessage("getVisibleUsers()").that(visibleUsers).isNotNull();
+        if (visibleUsers == null) {
+            return;
+        }
         expectWithMessage("getVisibleUsers()").that(visibleUsers.toArray()).asList()
+                .containsExactlyElementsIn(Arrays.asList(userIds));
+    }
+
+    protected void expectVisibleUsersOnDisplay(int displayId, @UserIdInt Integer... userIds) {
+        IntArray visibleUsers = mMediator.getVisibleUsers(displayId);
+        expectWithMessage("getVisibleUsers(%s)", displayId).that(visibleUsers).isNotNull();
+        if (visibleUsers == null) {
+            return;
+        }
+        expectWithMessage("getVisibleUsers(%s)", displayId).that(visibleUsers.toArray()).asList()
                 .containsExactlyElementsIn(Arrays.asList(userIds));
     }
 
@@ -651,12 +664,28 @@ abstract class UserVisibilityMediatorTestCase extends ExpectableTestCase {
         expectWithMessage("isUserVisible(%s, %s)", userId, displayId)
                 .that(mMediator.isUserVisible(userId, displayId))
                 .isTrue();
+        expectUserVisibleOnVisibleUsersForDisplay(/* when= */ "", userId, displayId);
+    }
+
+    private void expectUserVisibleOnVisibleUsersForDisplay(String when, @UserIdInt int userId,
+            int displayId) {
+        String suffix = TextUtils.isEmpty(when) ? "" : " on " + when;
+        IntArray visibleUsersOnDisplay = mMediator.getVisibleUsers(displayId);
+        expectWithMessage("getVisibleUsers(%s)%s", displayId, suffix).that(visibleUsersOnDisplay)
+                .isNotNull();
+        if (visibleUsersOnDisplay == null) {
+            return;
+        }
+        expectWithMessage("getVisibleUsers(%s) contains %s%s", displayId, userId, suffix)
+                .that(visibleUsersOnDisplay.toArray())
+                .asList().contains(userId);
     }
 
     protected void expectUserIsNotVisibleOnDisplay(@UserIdInt int userId, int displayId) {
         expectWithMessage("isUserVisible(%s, %s)", userId, displayId)
                 .that(mMediator.isUserVisible(userId, displayId))
                 .isFalse();
+        expectUserNotVisibleOnVisibleUsersForDisplay(/* when= */ "", userId, displayId);
     }
 
     protected void expectUserIsNotVisibleOnDisplay(String when, @UserIdInt int userId,
@@ -665,6 +694,22 @@ abstract class UserVisibilityMediatorTestCase extends ExpectableTestCase {
         expectWithMessage("isUserVisible(%s, %s)%s", userId, displayId, suffix)
                 .that(mMediator.isUserVisible(userId, displayId))
                 .isFalse();
+        expectUserNotVisibleOnVisibleUsersForDisplay(when, userId, displayId);
+    }
+
+    private void expectUserNotVisibleOnVisibleUsersForDisplay(String when, @UserIdInt int userId,
+            int displayId) {
+        String suffix = TextUtils.isEmpty(when) ? "" : " on " + when;
+        IntArray visibleUsersOnDisplay = mMediator.getVisibleUsers(displayId);
+        expectWithMessage("getVisibleUsers(%s)%s", displayId, suffix)
+                .that(visibleUsersOnDisplay)
+                .isNotNull();
+        if (visibleUsersOnDisplay == null) {
+            return;
+        }
+        expectWithMessage("getVisibleUsers(%s) contains %s%s", displayId, userId, suffix)
+                .that(visibleUsersOnDisplay.toArray())
+                .asList().doesNotContain(userId);
     }
 
     protected void expectUserIsNotVisibleAtAll(@UserIdInt int userId) {
@@ -675,6 +720,11 @@ abstract class UserVisibilityMediatorTestCase extends ExpectableTestCase {
         expectUserIsNotVisibleOnDisplay(userId, INVALID_DISPLAY);
         expectUserIsNotVisibleOnDisplay(userId, SECONDARY_DISPLAY_ID);
         expectUserIsNotVisibleOnDisplay(userId, OTHER_SECONDARY_DISPLAY_ID);
+        String when = "";
+        expectUserNotVisibleOnVisibleUsersForDisplay(when, userId, DEFAULT_DISPLAY);
+        expectUserNotVisibleOnVisibleUsersForDisplay(when, userId, INVALID_DISPLAY);
+        expectUserNotVisibleOnVisibleUsersForDisplay(when, userId, SECONDARY_DISPLAY_ID);
+        expectUserNotVisibleOnVisibleUsersForDisplay(when, userId, OTHER_SECONDARY_DISPLAY_ID);
         expectDisplaysAssignedToUserIsEmpty(userId);
     }
 
