@@ -19,10 +19,14 @@ package com.android.systemui.accessibility.floatingmenu;
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU;
 import static android.view.WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL;
 
+import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
+
 import android.annotation.Nullable;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
+import android.os.HandlerExecutor;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.WindowManager;
@@ -35,15 +39,24 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
+import com.android.systemui.Flags;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver;
 import com.android.systemui.accessibility.AccessibilityButtonModeObserver.AccessibilityButtonMode;
 import com.android.systemui.accessibility.AccessibilityButtonTargetsObserver;
 import com.android.systemui.dagger.SysUISingleton;
+import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
+import com.android.systemui.keyguard.shared.model.KeyguardState;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.DisplayTracker;
+import com.android.systemui.settings.UserTracker;
 import com.android.systemui.util.settings.SecureSettings;
+
+import kotlinx.coroutines.CoroutineScope;
+
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
@@ -57,12 +70,15 @@ public class AccessibilityFloatingMenuController implements
     private final AccessibilityButtonModeObserver mAccessibilityButtonModeObserver;
     private final AccessibilityButtonTargetsObserver mAccessibilityButtonTargetsObserver;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
+    private final KeyguardTransitionInteractor mKeyguardInteractor;
+    private final UserTracker mUserTracker;
 
     private final Context mContext;
     private final WindowManager mWindowManager;
     private final DisplayManager mDisplayManager;
     private final AccessibilityManager mAccessibilityManager;
     private final HearingAidDeviceManager mHearingAidDeviceManager;
+    private final CoroutineScope mCoroutineScope;
 
     private final SecureSettings mSecureSettings;
     private final DisplayTracker mDisplayTracker;
@@ -101,6 +117,23 @@ public class AccessibilityFloatingMenuController implements
     final UserInitializationCompleteCallback mUserInitializationCompleteCallback =
             new UserInitializationCompleteCallback();
 
+    @VisibleForTesting
+    final Consumer<KeyguardState> mKeyguardStateConsumer = (state) -> {
+        mIsKeyguardVisible = switch(state) {
+            case KeyguardState.LOCKSCREEN, KeyguardState.DOZING, KeyguardState.AOD -> true;
+            default -> false;
+        };
+        handleFloatingMenuVisibility(mIsKeyguardVisible, mBtnMode, mBtnTargets);
+    };
+
+    final UserTracker.Callback mUserTrackerCallback = new UserTracker.Callback() {
+        @Override
+        public void onBeforeUserSwitching(int newUser) {
+            destroyFloatingMenu();
+            mIsUserInInitialization = true;
+        }
+    };
+
     @Inject
     public AccessibilityFloatingMenuController(Context context,
             WindowManager windowManager,
@@ -113,7 +146,10 @@ public class AccessibilityFloatingMenuController implements
             SecureSettings secureSettings,
             DisplayTracker displayTracker,
             NavigationModeController navigationModeController,
-            @Main Handler handler) {
+            @Main Handler handler,
+            @Application CoroutineScope coroutineScope,
+            KeyguardTransitionInteractor keyguardInteractor,
+            UserTracker userTracker) {
         mContext = context;
         mWindowManager = windowManager;
         mDisplayManager = displayManager;
@@ -126,6 +162,9 @@ public class AccessibilityFloatingMenuController implements
         mDisplayTracker = displayTracker;
         mNavigationModeController = navigationModeController;
         mHandler = handler;
+        mKeyguardInteractor = keyguardInteractor;
+        mCoroutineScope = coroutineScope;
+        mUserTracker = userTracker;
 
         mIsKeyguardVisible = false;
     }
@@ -144,7 +183,7 @@ public class AccessibilityFloatingMenuController implements
     /**
      * Handles visibility of the accessibility floating menu when accessibility button targets
      * changes.
-     * List should come from {@link android.provider.Settings.Secure#ACCESSIBILITY_BUTTON_TARGETS}.
+     * List should come from {@link Settings.Secure#ACCESSIBILITY_BUTTON_TARGETS}.
      * @param targets Current accessibility button list.
      */
     @Override
@@ -163,7 +202,15 @@ public class AccessibilityFloatingMenuController implements
     private void registerContentObservers() {
         mAccessibilityButtonModeObserver.addListener(this);
         mAccessibilityButtonTargetsObserver.addListener(this);
-        mKeyguardUpdateMonitor.registerCallback(mKeyguardCallback);
+        if (Flags.keyguardInteractorForFloatingButton()) {
+            if (mCoroutineScope != null) {
+                collectFlow(mCoroutineScope,
+                        mKeyguardInteractor.getCurrentKeyguardState(), mKeyguardStateConsumer);
+            }
+            mUserTracker.addCallback(mUserTrackerCallback, new HandlerExecutor(mHandler));
+        } else {
+            mKeyguardUpdateMonitor.registerCallback(mKeyguardCallback);
+        }
         mAccessibilityManager.registerUserInitializationCompleteCallback(
                 mUserInitializationCompleteCallback);
     }
@@ -175,7 +222,7 @@ public class AccessibilityFloatingMenuController implements
      *                        {@link MenuView} when keyguard appears.
      * @param mode accessibility button mode {@link AccessibilityButtonMode}
      * @param targets accessibility button list; it should comes from
-     *                {@link android.provider.Settings.Secure#ACCESSIBILITY_BUTTON_TARGETS}.
+     *                {@link Settings.Secure#ACCESSIBILITY_BUTTON_TARGETS}.
      */
     private void handleFloatingMenuVisibility(boolean keyguardVisible,
             @AccessibilityButtonMode int mode, String targets) {
