@@ -26,7 +26,6 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.ActivityManagerInternal;
 import android.app.KeyguardManager;
-import android.app.WallpaperColors;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -229,6 +228,11 @@ public class ThemeManagerService extends SystemService {
         // Wallpaper Color Change
         mWallpaperManagerInternal.addOnColorsChangedListener(
                 (wallpaperColors, which, displayId, userId, fromForegroundApp) -> {
+                    ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
+                    if (userSettings.colorSource().equals(VALUE_PRESET)) {
+                        Slog.d(TAG, "Wallpaper color change ignored due to preset color source");
+                        return;
+                    }
                     Slog.d(TAG, "User: " + userId + " changed wallpaper");
                     mStateManager.onSeedColorChange(activityManagerInternal.getCurrentUserId(),
                             ColorScheme.getSeedColor(wallpaperColors),
@@ -278,8 +282,7 @@ public class ThemeManagerService extends SystemService {
                         // the event
 
                         if (userSettings.colorSource().equals(VALUE_PRESET)) {
-                            int newSeed = ColorScheme.getSeedColor(
-                                    new WallpaperColors(userSettings.systemPalette(), null, null));
+                            int newSeed = userSettings.systemPalette().toArgb();
 
                             Slog.d(TAG, "User: " + userId + " changed seed to "
                                     + Integer.toHexString(newSeed));
