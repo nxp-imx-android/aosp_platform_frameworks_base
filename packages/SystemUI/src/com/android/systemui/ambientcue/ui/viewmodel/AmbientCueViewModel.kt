@@ -28,6 +28,7 @@ import androidx.core.content.edit
 import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.systemui.Dumpable
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
+import com.android.systemui.ambientcue.shared.flag.AmbientCueFlag
 import com.android.systemui.ambientcue.shared.logger.AmbientCueLogger
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.domain.interactor.SharedPreferencesInteractor
@@ -104,7 +105,10 @@ constructor(
         )
 
     val isVisible: Boolean
-        get() = isRootViewAttached && !isImeVisible && !isOccludedBySystemUi
+        get() =
+            isRootViewAttached &&
+                (!isImeVisible || AmbientCueFlag.isAmbientCueWithImeVisibleEnabled) &&
+                !isOccludedBySystemUi
 
     var isExpanded: Boolean by mutableStateOf(false)
         private set
