@@ -103,6 +103,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.Accessibil
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimRounding
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState
+import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_CORNER_RADIUS
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_SCRIM_ALPHA
@@ -149,7 +150,7 @@ fun ContentScope.ConstrainedNotificationStack(
                 .onSizeChanged { viewModel.onConstrainedAvailableSpaceChanged(it.height) }
                 .onGloballyPositioned {
                     if (shouldUseLockscreenStackBounds(layoutState)) {
-                        stackScrollView.updateDrawBounds(it.rawBoundsInWindow())
+                        stackScrollView.updateStackBounds(it.rawBoundsInWindow())
                     }
                 }
     ) {
@@ -493,7 +494,9 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                 Modifier.padding(top = stackTopPadding, bottom = stackBottomPadding)
                                     .onGloballyPositioned {
                                         if (!shouldUseLockscreenStackBounds(layoutState)) {
-                                            stackScrollView.updateDrawBounds(it.rawBoundsInWindow())
+                                            stackScrollView.updateStackBounds(
+                                                it.rawBoundsInWindow()
+                                            )
                                         }
                                     }
                                     .debugBackground(viewModel, DEBUG_BOX_COLOR)
@@ -739,13 +742,13 @@ private const val TAG = "FlexiNotifs"
 private val DEBUG_BOX_COLOR = Color(0f, 1f, 0f, 0.2f)
 
 /**
- * The boundaries of this layout relative to the window's origin, without being clipped to the
- * window bounds.
+ * The vertical boundaries of this layout relative to the window's origin, without being clipped to
+ * the window bounds.
  *
  * This is different from [boundsInWindow], which clips the bounds to the window. Unclipped bounds
  * are needed when a layout is positioned off-screen, for example during a scene transition.
  */
-private fun LayoutCoordinates.rawBoundsInWindow(): android.graphics.RectF {
+private fun LayoutCoordinates.rawBoundsInWindow(): YSpace {
     val root = findRootCoordinates()
 
     // Explicitly set clipBounds=false to ensure we get the raw, unclipped bounds, as the default
@@ -757,7 +760,7 @@ private fun LayoutCoordinates.rawBoundsInWindow(): android.graphics.RectF {
     val boundsBottom = bounds.bottom
 
     if (boundsLeft == boundsRight || boundsTop == boundsBottom) {
-        return android.graphics.RectF()
+        return YSpace.Zero
     }
 
     val topLeft = root.localToWindow(Offset(boundsLeft, boundsTop))
@@ -765,11 +768,8 @@ private fun LayoutCoordinates.rawBoundsInWindow(): android.graphics.RectF {
     val bottomRight = root.localToWindow(Offset(boundsRight, boundsBottom))
     val bottomLeft = root.localToWindow(Offset(boundsLeft, boundsBottom))
 
-    val left = fastMinOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x)
-    val right = fastMaxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x)
-
     val top = fastMinOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y)
     val bottom = fastMaxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y)
 
-    return android.graphics.RectF(left, top, right, bottom)
+    return YSpace(top, bottom)
 }

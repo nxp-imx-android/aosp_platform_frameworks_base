@@ -101,6 +101,7 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape;
+import com.android.systemui.statusbar.notification.stack.ui.YSpace;
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel.HeightSuppressionState;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController;
@@ -424,10 +425,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     public void updateStackEndHeightAndStackHeight_shadeFullyExpanded_withSceneContainer() {
         final float stackTop = 200f;
         final float stackBottom = 1000f;
-        final float stackWidth = 400f;
         final float stackEndHeight = stackBottom - stackTop;
         mAmbientState.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
 
@@ -444,10 +444,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     public void updateStackEndHeightAndStackHeight_shadeExpanding_withSceneContainer() {
         final float stackTop = 200f;
         final float stackBottom = 1000f;
-        final float stackWidth = 400f;
         final float stackEndHeight = stackBottom - stackTop;
         mAmbientState.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
 
@@ -466,10 +465,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         // GIVEN stack scrolled over the top, stack top is negative
         final float stackTop = -2000f;
         final float stackBottom = 1000f;
-        final float stackWidth = 400f;
         final float stackEndHeight = stackBottom - stackTop;
         mAmbientState.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
 
@@ -490,7 +488,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         final float stackWidth = 400f;
         final float stackHeight = stackBottom - stackTop;
         mAmbientState.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.SHADE);
         mStackScroller.setMaxDisplayedNotifications(-1); // no limit on the shade
         mStackScroller.setExpandFraction(1f); // shade is fully expanded
@@ -499,7 +497,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // WHEN stackBottom changes
         final float newStackBottom = 800;
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, 400, newStackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, newStackBottom));
 
         // THEN stackEndHeight is updated
         final float newStackHeight = newStackBottom - stackTop;
@@ -571,7 +569,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is fully collapsed
         mStackScroller.setExpandFraction(expandFraction);
@@ -598,7 +596,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is expanding
         mStackScroller.setExpandFraction(expandFraction);
@@ -625,9 +623,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackTop = 100;
         float stackBottom = 1100;
         float stackHeight = stackBottom - stackTop;
-        float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is fully expanded
         mStackScroller.setExpandFraction(expandFraction);
@@ -1163,10 +1160,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         int maxNotifs = 2; // any non-zero limit
         float stackTop = 100;
         float stackBottom = 1100;
-        float stackWidth = 400;
         float stackViewPortHeight = stackBottom - stackTop;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
         when(mStackSizeCalculator.computeHeight(
                 eq(mStackScroller),
                 eq(-1),
@@ -1204,7 +1200,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackBottom = 1100;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // Given we have a limit on max displayed notifications
         int stackHeightBeforeUpdate = 100;
