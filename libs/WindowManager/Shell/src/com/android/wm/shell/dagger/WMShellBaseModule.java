@@ -93,8 +93,10 @@ import com.android.wm.shell.compatui.api.CompatUIComponentRepository;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUIRepository;
 import com.android.wm.shell.compatui.api.CompatUISharedRepositoryCleanUp;
+import com.android.wm.shell.compatui.api.CompatUISharedStateHandler;
 import com.android.wm.shell.compatui.api.CompatUISharedStateRepository;
 import com.android.wm.shell.compatui.components.RestartButtonSpecKt;
+import com.android.wm.shell.compatui.impl.CompositeCompatUIHandler;
 import com.android.wm.shell.compatui.impl.DefaultCompatUIComponentFactory;
 import com.android.wm.shell.compatui.impl.DefaultCompatUIHandler;
 import com.android.wm.shell.compatui.impl.DefaultComponentIdGenerator;
@@ -330,6 +332,7 @@ public abstract class WMShellBaseModule {
             @NonNull CompatUISharedStateRepository sharedComponentRepository,
             @NonNull CompatUIComponentIdGenerator componentIdGenerator,
             @NonNull CompatUIComponentFactory compatUIComponentFactory,
+            @NonNull CompatUISharedStateRepository sharedStateRepository,
             CompatUIStatusManager compatUIStatusManager,
             DesktopState desktopState,
             Lazy<ActivityTransitionAnimator> activityTransitionAnimator,
@@ -339,9 +342,14 @@ public abstract class WMShellBaseModule {
         }
         if (Flags.appCompatUiFramework()) {
             return Optional.of(
-                    new DefaultCompatUIHandler(compatUIRepository, compatUIComponentRepository,
-                            sharedComponentRepository, componentIdGenerator,
-                            compatUIComponentFactory, mainExecutor));
+                    new CompositeCompatUIHandler(
+                            new CompatUISharedStateHandler(sharedStateRepository,
+                                    displayController),
+                            new DefaultCompatUIHandler(compatUIRepository,
+                                    compatUIComponentRepository,
+                                    sharedComponentRepository, componentIdGenerator,
+                                    compatUIComponentFactory, mainExecutor))
+            );
         }
         return Optional.of(
                 new CompatUIController(

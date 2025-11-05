@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.compatui.impl
 
-import android.app.TaskInfo
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.compatui.api.CompatUIComponentFactory
 import com.android.wm.shell.compatui.api.CompatUIComponentIdGenerator
@@ -26,7 +25,6 @@ import com.android.wm.shell.compatui.api.CompatUIHandler
 import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUIRepository
 import com.android.wm.shell.compatui.api.CompatUIRequest
-import com.android.wm.shell.compatui.api.CompatUISharedState
 import com.android.wm.shell.compatui.api.CompatUISharedStateRepository
 import com.android.wm.shell.repository.iterate
 import java.util.function.Consumer
@@ -44,7 +42,6 @@ class DefaultCompatUIHandler(
     private var compatUIEventSender: Consumer<CompatUIEvent>? = null
 
     override fun onCompatInfoChanged(compatUIInfo: CompatUIInfo) {
-        warmUpSharedStateForTask(compatUIInfo.taskInfo)
         compatUIRepository.iterate { spec ->
             // We get the identifier for the component depending on the task and spec
             val componentId = componentIdGenerator.generateId(compatUIInfo, spec)
@@ -112,12 +109,4 @@ class DefaultCompatUIHandler(
     }
 
     override fun sendCompatUIRequest(compatUIRequest: CompatUIRequest) {}
-
-    private fun warmUpSharedStateForTask(taskInfo: TaskInfo) {
-        sharedStateRepository.insert(
-            taskInfo.taskId,
-            CompatUISharedState(taskId = taskInfo.taskId),
-            overrideIfPresent = false,
-        )
-    }
 }
