@@ -874,7 +874,8 @@ public final class DisplayManagerService extends SystemService {
                     ActivityTaskManagerInternal.class);
 
             ActivityManager activityManager = mContext.getSystemService(ActivityManager.class);
-            activityManager.addOnUidImportanceListener(mUidImportanceListener, IMPORTANCE_CACHED);
+            activityManager.addOnUidImportanceListener(mUidImportanceListener,
+                    IMPORTANCE_CACHED - 1);
 
             mDeviceStateManager = LocalServices.getService(DeviceStateManagerInternal.class);
             mContext.getSystemService(DeviceStateManager.class).registerCallback(
