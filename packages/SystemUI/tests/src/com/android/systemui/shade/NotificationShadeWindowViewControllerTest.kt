@@ -585,7 +585,6 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HUB_BLURRED_BY_SHADE_FIX)
     fun handleExternalTouch_isNotInterceptedAndIsNotDraggingDown_onTouchNotSent() {
         whenever(view.dispatchTouchEvent(any())).thenReturn(true)
         whenever(view.onInterceptTouchEvent(any())).thenReturn(false)
@@ -603,7 +602,6 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HUB_BLURRED_BY_SHADE_FIX)
     fun handleExternalTouch_isDraggingDown_onTouchSentAndInterceptTouchNotCalledAgain() {
         whenever(view.dispatchTouchEvent(any())).thenReturn(true)
         whenever(view.onInterceptTouchEvent(any())).thenReturn(false)

@@ -1752,17 +1752,6 @@ flag {
     bug: "418243972"
 }
 
-
-flag {
-    name: "hub_blurred_by_shade_fix"
-    namespace: "systemui"
-    description: "Fixes the blurring issue on hub after the shade is pulled down slightly."
-    bug: "412261838"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
 flag {
     name: "animation_library_shell_migration"
     namespace: "systemui"
