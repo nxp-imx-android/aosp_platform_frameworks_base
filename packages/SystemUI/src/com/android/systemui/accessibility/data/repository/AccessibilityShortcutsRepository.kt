@@ -71,7 +71,7 @@ interface AccessibilityShortcutsRepository {
     fun enableShortcutsForTargets(
         enable: Boolean,
         @UserShortcutType shortcutType: Int,
-        targetName: String,
+        targetNames: Set<String>,
     )
 
     fun enableMagnificationAndZoomIn(displayId: Int)
@@ -269,12 +269,12 @@ constructor(
     override fun enableShortcutsForTargets(
         enable: Boolean,
         @UserShortcutType shortcutType: Int,
-        targetName: String,
+        targetNames: Set<String>,
     ) {
         accessibilityManager.enableShortcutsForTargets(
             enable,
             shortcutType,
-            setOf(targetName),
+            targetNames,
             userTracker.userId,
         )
     }

@@ -122,7 +122,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
             underTest.enableShortcutForTargets(enable = true, shortcutType, targetName)
 
             verify(mockRepository)
-                .enableShortcutsForTargets(eq(true), eq(shortcutType), eq(targetName))
+                .enableShortcutsForTargets(eq(true), eq(shortcutType), eq(setOf(targetName)))
         }
 
     @Test
@@ -134,7 +134,7 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
             underTest.enableShortcutForTargets(enable = false, shortcutType, targetName)
 
             verify(mockRepository)
-                .enableShortcutsForTargets(eq(false), eq(shortcutType), eq(targetName))
+                .enableShortcutsForTargets(eq(false), eq(shortcutType), eq(setOf(targetName)))
         }
 
     @Test

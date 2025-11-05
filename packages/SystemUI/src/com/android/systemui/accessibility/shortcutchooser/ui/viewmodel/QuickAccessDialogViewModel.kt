@@ -53,7 +53,7 @@ constructor(private val interactor: QuickAccessDialogInteractor) : HydratedActiv
     }
 
     val accessibilityTargets: List<AccessibilityTargetModel> by
-        interactor.allAccessibilityTargets.hydratedStateOf(emptyList())
+        interactor.accessibilityTargets.hydratedStateOf(emptyList())
 
     private val _isDialogVisible = MutableStateFlow<Boolean>(false)
     val isDialogVisible = _isDialogVisible.asStateFlow()

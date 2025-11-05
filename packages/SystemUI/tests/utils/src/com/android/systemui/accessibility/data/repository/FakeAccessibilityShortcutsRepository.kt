@@ -49,7 +49,7 @@ class FakeAccessibilityShortcutsRepository(
     var ttsPrompt: TtsPrompt? = null
     var ttsText: CharSequence = ""
     var shortcutTypeAssigned: Int = 0
-    var enabledShortcutTargetName = ""
+    var enabledShortcutTargetNames = emptySet<String>()
     var performedShortcutTargetName = ""
 
     override suspend fun getKeyGestureConfirmInfo(
@@ -90,11 +90,11 @@ class FakeAccessibilityShortcutsRepository(
     override fun enableShortcutsForTargets(
         enable: Boolean,
         @UserShortcutType shortcutType: Int,
-        targetName: String,
+        targetNames: Set<String>,
     ) {
         areShortcutsEnabled = enable
         shortcutTypeAssigned = shortcutType
-        enabledShortcutTargetName = targetName
+        enabledShortcutTargetNames = targetNames.toSet()
     }
 
     override fun enableMagnificationAndZoomIn(displayId: Int) {

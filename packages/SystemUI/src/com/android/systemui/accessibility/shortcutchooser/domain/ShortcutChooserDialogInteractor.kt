@@ -60,7 +60,7 @@ constructor(
         enable: Boolean,
         @UserShortcutType shortcutType: Int,
         targetName: String,
-    ) = repository.enableShortcutsForTargets(enable, shortcutType, targetName)
+    ) = repository.enableShortcutsForTargets(enable, shortcutType, setOf(targetName))
 
     fun performAccessibilityShortcut(
         displayId: Int,

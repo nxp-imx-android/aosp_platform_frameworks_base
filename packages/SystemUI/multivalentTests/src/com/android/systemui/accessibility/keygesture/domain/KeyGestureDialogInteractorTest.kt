@@ -69,7 +69,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
         underTest.enableShortcutsForTargets(enable = true, enabledTargetName)
 
         verify(mockRepository)
-            .enableShortcutsForTargets(eq(true), eq(KEY_GESTURE), eq(enabledTargetName))
+            .enableShortcutsForTargets(eq(true), eq(KEY_GESTURE), eq(setOf(enabledTargetName)))
     }
 
     @Test

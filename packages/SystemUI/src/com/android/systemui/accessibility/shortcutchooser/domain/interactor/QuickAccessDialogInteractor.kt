@@ -49,14 +49,19 @@ constructor(
             }
             .filterNotNull()
 
-    val allAccessibilityTargets: Flow<List<AccessibilityTargetModel>> =
+    val accessibilityTargets: Flow<List<AccessibilityTargetModel>> =
         repository.getAllAccessibilityTargets(SHORTCUT_TYPE)
 
     fun enableShortcutForAllTargets() =
-        repository
-            .getAllAccessibilityTargetsInfo(SHORTCUT_TYPE)
-            .filter { !it.isAssigned }
-            .forEach { repository.enableShortcutsForTargets(true, SHORTCUT_TYPE, it.targetName) }
+        repository.enableShortcutsForTargets(
+            true,
+            SHORTCUT_TYPE,
+            repository
+                .getAllAccessibilityTargetsInfo(SHORTCUT_TYPE)
+                .filter { !it.isAssigned }
+                .map { it.targetName }
+                .toSet(),
+        )
 
     fun performAccessibilityShortcut(displayId: Int, targetName: String) {
         if (displayId != INVALID_DISPLAY) {
