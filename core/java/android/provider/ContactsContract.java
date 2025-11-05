@@ -1870,6 +1870,50 @@ public final class ContactsContract {
         }
 
         /**
+        * Query parameter key used to specify a comma-separated list of mimetypes for filtering.
+        * Used with URIs that support mimetype-based filtering.
+        * This is supported by com.android.contacts/contacts_data and
+        * com.android.contacts/contacts_data/filter uris.
+        *
+        * <p>
+        * Example uri:
+        * <pre>
+        * Uri uri = Contacts.CONTACTS_DATA.buildUpon()
+        *          .appendQueryParameter(Contacts.REQUESTED_MIMETYPES_PARAM_KEY,
+        *              "vnd.android.cursor.item/email_v2,vnd.android.cursor.item/phone_v2")
+        *          .build();
+        * </pre>
+        * </p>
+        *
+        * @hide
+        */
+        public static final String REQUESTED_MIMETYPES_PARAM_KEY = "requested_mimetypes";
+
+        /**
+        * Query parameter key used to specify if *all* provided mimetypes must be present for a
+        * contact to be included in the results. If "true", only contacts having data for all
+        * specified mimetypes are returned. If "false" or absent, contacts having data for *any*
+        * of the specified mimetypes are returned.
+        * Used in conjunction with {@link #REQUESTED_MIMETYPES_PARAM_KEY} and is supported by
+        * com.android.contacts/contacts_data and com.android.contacts/contacts_data/filter uris.
+        *
+        * <p>
+        * Example uri:
+        * <pre>
+        * Uri uri = Contacts.CONTACTS_DATA.buildUpon()
+        *          .appendQueryParameter(Contacts.REQUESTED_MIMETYPES_PARAM_KEY,
+        *              "vnd.android.cursor.item/email_v2,vnd.android.cursor.item/phone_v2")
+        *          .appendQueryParameter(Contacts.MATCH_ALL_MIMETYPES_PARAM_KEY, "true")
+        *          .build();
+        * // This returning cursor will contain contacts that have BOTH an email and a phone number.
+        * </pre>
+        * </p>
+        *
+        * @hide
+        */
+        public static final String MATCH_ALL_MIMETYPES_PARAM_KEY = "match_all_mimetypes";
+
+        /**
          * A sub-directory of a single contact that contains all of the constituent raw contact
          * {@link ContactsContract.Data} rows.  This directory can be used either
          * with a {@link #CONTENT_URI} or {@link #CONTENT_LOOKUP_URI}.
