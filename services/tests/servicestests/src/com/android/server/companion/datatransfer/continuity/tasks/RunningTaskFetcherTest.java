@@ -24,6 +24,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.ActivityTaskManager;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.AppOpsManager;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ActivityInfo;
@@ -55,6 +56,7 @@ public class RunningTaskFetcherTest {
     @Mock private ActivityTaskManagerInternal mockActivityTaskManagerInternal;
     @Mock private PackageManager mockPackageManager;
     @Mock private PackageMetadataCache mockPackageMetadataCache;
+    @Mock private AppOpsManager mockAppOps;
 
     private RunningTaskFetcher runningTaskFetcher;
 
@@ -73,7 +75,8 @@ public class RunningTaskFetcherTest {
                         mockActivityTaskManager,
                         mockActivityTaskManagerInternal,
                         mockPackageManager,
-                        mockPackageMetadataCache);
+                        mockPackageMetadataCache,
+                        mockAppOps);
     }
 
     @Test
@@ -85,6 +88,7 @@ public class RunningTaskFetcherTest {
                     "com.example.app1",
                     100,
                     new PackageMetadata("app1", new byte[0]),
+                    true,
                     true),
             new FakeTask(
                     2,
@@ -92,13 +96,15 @@ public class RunningTaskFetcherTest {
                     "com.example.app2",
                     200,
                     new PackageMetadata("app2", new byte[0]),
-                    false),
+                    false,
+                    true),
             new FakeTask(
                     3,
                     USER_ID,
                     LAUNCHER_PACKAGE_NAME,
                     300,
                     new PackageMetadata("app3", new byte[0]),
+                    true,
                     true),
             new FakeTask(
                     4,
@@ -106,7 +112,8 @@ public class RunningTaskFetcherTest {
                     "com.example.app4",
                     400,
                     new PackageMetadata("app4", new byte[0]),
-                    true),
+                    true,
+                    false),
         };
         setupRunningTasks(tasks);
 
@@ -128,8 +135,9 @@ public class RunningTaskFetcherTest {
                     "com.example.app1",
                     100,
                     new PackageMetadata("app1", new byte[0]),
+                    true,
                     true),
-            new FakeTask(2, USER_ID, "com.example.app2", 200, null, true),
+            new FakeTask(2, USER_ID, "com.example.app2", 200, null, true, true),
         };
         setupRunningTasks(tasks);
 
@@ -149,6 +157,7 @@ public class RunningTaskFetcherTest {
                     "com.example.app1",
                     100,
                     new PackageMetadata("app1", new byte[0]),
+                    true,
                     true),
             new FakeTask(
                     2,
@@ -156,7 +165,8 @@ public class RunningTaskFetcherTest {
                     "com.example.app2",
                     200,
                     new PackageMetadata("app2", new byte[0]),
-                    false),
+                    false,
+                    true),
         };
         setupRunningTasks(tasks);
 
@@ -174,6 +184,7 @@ public class RunningTaskFetcherTest {
                     "com.example.app1",
                     100,
                     new PackageMetadata("app1", new byte[0]),
+                    true,
                     true),
             new FakeTask(
                     2,
@@ -181,7 +192,8 @@ public class RunningTaskFetcherTest {
                     "com.example.app2",
                     200,
                     new PackageMetadata("app2", new byte[0]),
-                    false),
+                    false,
+                    true),
         };
         setupRunningTasks(tasks);
 
@@ -193,7 +205,7 @@ public class RunningTaskFetcherTest {
     @Test
     public void testGetRunningTaskById_taskWithoutPackageMetadata_returnsNull() {
         FakeTask[] tasks = {
-            new FakeTask(2, USER_ID, "com.example.app2", 200, null, true),
+            new FakeTask(2, USER_ID, "com.example.app2", 200, null, true, true),
         };
         setupRunningTasks(tasks);
 
@@ -211,6 +223,26 @@ public class RunningTaskFetcherTest {
                     LAUNCHER_PACKAGE_NAME,
                     200,
                     new PackageMetadata("launcher", new byte[0]),
+                    false,
+                    true),
+        };
+        setupRunningTasks(tasks);
+
+        RemoteTaskInfo remoteTask = runningTaskFetcher.getRunningTaskById(tasks[0].taskId());
+
+        assertThat(remoteTask).isNull();
+    }
+
+    @Test
+    public void testGetRunningTaskById_packageNotAllowedToContinueAcrossDevices_returnsNull() {
+        FakeTask[] tasks = {
+            new FakeTask(
+                    1,
+                    USER_ID,
+                    "com.example.app1",
+                    200,
+                    new PackageMetadata("app", new byte[0]),
+                    true,
                     false),
         };
         setupRunningTasks(tasks);
@@ -226,7 +258,8 @@ public class RunningTaskFetcherTest {
             String packageName,
             long lastActiveTime,
             PackageMetadata packageMetadata,
-            boolean isHandoffEnabled) {
+            boolean isHandoffEnabled,
+            boolean isOpContinueAcrossDevicesAllowed) {
 
         public RemoteTaskInfo toRemoteTaskInfo() {
             return new RemoteTaskInfo(
@@ -257,6 +290,14 @@ public class RunningTaskFetcherTest {
                 .thenReturn(task.packageMetadata);
         when(mockActivityTaskManagerInternal.isHandoffEnabledForTask(task.taskId))
                 .thenReturn(task.isHandoffEnabled);
+        when(mockAppOps.noteOpNoThrow(
+                        AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
+                        taskInfo.userId,
+                        task.packageName))
+                .thenReturn(
+                        task.isOpContinueAcrossDevicesAllowed
+                                ? AppOpsManager.MODE_ALLOWED
+                                : AppOpsManager.MODE_ERRORED);
 
         return taskInfo;
     }

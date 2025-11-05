@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.AppOpsManager;
 import android.content.pm.PackageManager;
 import android.content.Intent;
 import android.util.Slog;
@@ -48,18 +49,21 @@ public class RunningTaskFetcher {
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final PackageManager mPackageManager;
     private final PackageMetadataCache mPackageMetadataCache;
+    private final AppOpsManager mAppOps;
 
     public RunningTaskFetcher(
             int userId,
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-            @NonNull PackageManager packageManager) {
+            @NonNull PackageManager packageManager,
+            @NonNull AppOpsManager appOps) {
         this(
                 userId,
                 Objects.requireNonNull(activityTaskManager),
                 Objects.requireNonNull(activityTaskManagerInternal),
                 Objects.requireNonNull(packageManager),
-                new PackageMetadataCache(Objects.requireNonNull(packageManager)));
+                new PackageMetadataCache(packageManager),
+                Objects.requireNonNull(appOps));
     }
 
     public RunningTaskFetcher(
@@ -67,12 +71,15 @@ public class RunningTaskFetcher {
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
             @NonNull PackageManager packageManager,
-            @NonNull PackageMetadataCache packageMetadataCache) {
+            @NonNull PackageMetadataCache packageMetadataCache,
+            @NonNull AppOpsManager appOps) {
+
         mUserId = userId;
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mPackageManager = Objects.requireNonNull(packageManager);
         mPackageMetadataCache = Objects.requireNonNull(packageMetadataCache);
+        mAppOps = Objects.requireNonNull(appOps);
     }
 
     @Nullable
@@ -159,6 +166,18 @@ public class RunningTaskFetcher {
         if (defaultLauncherPackage == null) {
             Slog.w(TAG, "Could not get default launcher package");
             return true;
+        }
+
+        if (mAppOps.noteOpNoThrow(
+                        AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
+                        taskInfo.userId,
+                        taskInfo.baseActivity.getPackageName())
+                != AppOpsManager.MODE_ALLOWED) {
+            Slog.w(
+                    TAG,
+                    "AppOpsManager.OP_CONTINUE_ACROSS_DEVICES is not allowed for task: "
+                            + taskInfo.taskId);
+            return false;
         }
 
         return !defaultLauncherPackage.equals(taskInfo.baseActivity.getPackageName());

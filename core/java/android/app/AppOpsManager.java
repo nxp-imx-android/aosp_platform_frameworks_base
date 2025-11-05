@@ -1780,9 +1780,17 @@ public class AppOpsManager {
      */
     public static final int OP_READ_VO2_MAX = AppOpEnums.APP_OP_READ_VO2_MAX;
 
+    /**
+     * Allow the app to continue across devices.
+     *
+     * @hide
+     */
+    public static final int OP_CONTINUE_ACROSS_DEVICES =
+            AppOpEnums.APP_OP_CONTINUE_ACROSS_DEVICES;
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 174;
+    public static final int _NUM_OP = 175;
 
     /**
      * All app ops represented as strings.
@@ -1960,6 +1968,7 @@ public class AppOpsManager {
             OPSTR_READ_HEART_RATE_VARIABILITY,
             OPSTR_READ_RESPIRATORY_RATE,
             OPSTR_READ_VO2_MAX,
+            OPSTR_CONTINUE_ACROSS_DEVICES,
     })
     public @interface AppOpString {}
 
@@ -2818,6 +2827,15 @@ public class AppOpsManager {
     @FlaggedApi(Flags.FLAG_GRANULAR_HEALTH_PERMISSIONS_PHASE_TWO_ENABLED)
     public static final String OPSTR_READ_VO2_MAX = "android:read_vo2_max";
 
+    /**
+     * Access to continue an app across devices.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
+    public static final String OPSTR_CONTINUE_ACROSS_DEVICES = "android:continue_across_devices";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -3528,6 +3546,9 @@ public class AppOpsManager {
                 "READ_VO2_MAX").setPermission(
                         Flags.granularHealthPermissionsPhaseTwoEnabled()
                                 ? HealthPermissions.READ_VO2_MAX : null)
+                .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
+        new AppOpInfo.Builder(OP_CONTINUE_ACROSS_DEVICES, OPSTR_CONTINUE_ACROSS_DEVICES,
+                "CONTINUE_ACROSS_DEVICES")
                 .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
     };
 
