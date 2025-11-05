@@ -53,10 +53,8 @@ class DesktopToFullscreenTaskAnimator(
         val scaleX = startBounds.width().toFloat() / screenWidth
         val scaleY = startBounds.height().toFloat() / screenHeight
 
-        // Hide the first (fullscreen) frame because the animation will start from the freeform
-        // size.
         startTransaction
-            .hide(leash)
+            .setScale(leash, scaleX, scaleY)
             .setWindowCrop(leash, endBounds.width(), endBounds.height())
             .apply()
 
