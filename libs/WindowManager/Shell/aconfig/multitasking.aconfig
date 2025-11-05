@@ -177,9 +177,6 @@ flag {
     namespace: "multitasking"
     description: "Enables box shadows for PiP"
     bug: "367464660"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
