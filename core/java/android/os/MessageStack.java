@@ -366,7 +366,7 @@ public final class MessageStack {
         Message lastMsg = null;
         Message current = (Message) sTop.getAcquire(this);
         while (current != null) {
-            if (lastMsg == null || (current.when > lastMsg.when && !lastMsg.isRemoved())) {
+            if (!current.isRemoved() && (lastMsg == null || current.when > lastMsg.when)) {
                 lastMsg = current;
             }
             current = current.next;
