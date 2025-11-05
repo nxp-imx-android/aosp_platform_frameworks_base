@@ -650,8 +650,9 @@ public class StatusBarStateControllerImpl implements
         final boolean overlaidQuickSettings = currentOverlays.contains(Overlays.QuickSettingsShade);
 
         final boolean isUnlocked = deviceUnlockStatus.isUnlocked();
-        final boolean isTransitioningFromLockscreen = transitionState.isTransitioning(
-                Scenes.Lockscreen, Scenes.Gone);
+        final boolean isTransitioningFromLockscreen = transitionState.isTransitioningSets(
+                Set.of(Scenes.Lockscreen),
+                Set.of(Scenes.Dream, Scenes.Gone, Scenes.Occluded));
 
         final String inputLogString = "currentScene=" + currentScene.getTestTag()
                 + " currentOverlays=" + currentOverlays + " backStack=" + backStack
@@ -678,14 +679,16 @@ public class StatusBarStateControllerImpl implements
         // 2. currentScene is a keyguardish scene (Lockscreen, Bouncer, or Communal).
         // 3. backStack contains a keyguardish scene (Lockscreen or Communal).
         // 4. the alternate bouncer is visible.
-        // 5. the transition from Lockscreen to Gone is ongoing and not yet complete.
+        // 5. the transition from Lockscreen to Gone/Occluded/Dream is ongoing and not yet complete.
 
         final boolean onKeyguardish =
                 onLockscreen || overlaidBouncer || onCommunal || isTransitioningFromLockscreen;
 
-        if (onOccluded || overOccluded) {
+        if ((onOccluded || overOccluded) && !isTransitioningFromLockscreen) {
             // Occlusion is special; even though the device is still technically on the lockscreen,
             // the UI behaves as if it is unlocked.
+            // However, in the case that the device is still mid-transition from lockscreen, wait
+            // until the transition to occluded is complete before settling on the new state.
             newState = StatusBarState.SHADE;
         } else if (onKeyguardish || overCommunal || alternateBouncerIsVisible) {
             // We get here if we are on or over a keyguardish scene, even if isUnlocked is true; we
