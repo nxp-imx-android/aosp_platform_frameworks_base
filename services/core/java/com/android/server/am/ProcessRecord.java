@@ -335,6 +335,30 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             BackgroundStartPrivileges.NONE;
 
     /**
+     * Whether we have told usage stats about it being an interaction.
+     */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private boolean mHasReportedInteraction;
+
+    /**
+     * When we became foreground for interaction purposes.
+     */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private long mFgInteractionTime;
+
+    /**
+     * The time we sent the last interaction event.
+     */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private long mInteractionEventTime;
+
+    /**
+     * When (uptime) the process last became unimportant.
+     */
+    @CompositeRWLock({"mService", "mProcLock"})
+    private long mWhenUnimportant;
+
+    /**
      * Controller for driving the process state on the window manager side.
      */
     private final WindowProcessController mWindowProcessController;
@@ -511,7 +535,26 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
             pw.print(prefix); pw.print("pendingUiClean="); pw.println(mProfile.hasPendingUiClean());
         }
         mProfile.dumpPss(pw, prefix, nowUptime);
+        if (mHasReportedInteraction || mFgInteractionTime != 0) {
+            pw.print(prefix); pw.print("reportedInteraction=");
+            pw.print(mHasReportedInteraction);
+            if (mInteractionEventTime != 0) {
+                pw.print(" time=");
+                TimeUtils.formatDuration(mInteractionEventTime, SystemClock.elapsedRealtime(), pw);
+            }
+            if (mFgInteractionTime != 0) {
+                pw.print(" fgInteractionTime=");
+                TimeUtils.formatDuration(mFgInteractionTime, SystemClock.elapsedRealtime(), pw);
+            }
+            pw.println();
+        }
         super.dump(pw, prefix, nowUptime);
+        if (getSetProcState() > ActivityManager.PROCESS_STATE_SERVICE) {
+            pw.print(prefix);
+            pw.print("whenUnimportant=");
+            TimeUtils.formatDuration(mWhenUnimportant - nowUptime, pw);
+            pw.println();
+        }
         mErrorState.dump(pw, prefix, nowUptime);
         mServices.dump(pw, prefix, nowUptime);
         mProviders.dump(pw, prefix, nowUptime);
@@ -982,6 +1025,60 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy("mService")
     boolean isDebugging() {
         return mDebugging;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    void setHasReportedInteraction(boolean hasReportedInteraction) {
+        mHasReportedInteraction = hasReportedInteraction;
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    boolean getHasReportedInteraction() {
+        return mHasReportedInteraction;
+    }
+
+    /**
+     * Sets the time the process became foreground for interaction purposes, and notifies the
+     * WindowProcessController.
+     */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    void setFgInteractionTime(long fgInteractionTime) {
+        mFgInteractionTime = fgInteractionTime;
+        mWindowProcessController.setFgInteractionTime(mFgInteractionTime);
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    long getFgInteractionTime() {
+        return mFgInteractionTime;
+    }
+
+    /**
+     * Sets the time the last interaction event was sent, and notifies the WindowProcessController.
+     */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    void setInteractionEventTime(long interactionEventTime) {
+        mInteractionEventTime = interactionEventTime;
+        mWindowProcessController.setInteractionEventTime(mInteractionEventTime);
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    long getInteractionEventTime() {
+        return mInteractionEventTime;
+    }
+
+    /**
+     * Sets the uptime in milliseconds when the process last became unimportant, and notifies the
+     * WindowProcessController.
+     */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    void setWhenUnimportant(long whenUnimportant) {
+        mWhenUnimportant = whenUnimportant;
+        mWindowProcessController.setWhenUnimportant(mWhenUnimportant);
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    long getWhenUnimportant() {
+        return mWhenUnimportant;
     }
 
     @Nullable
@@ -1598,8 +1695,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return mProfile.getNextPssTime();
     }
 
-    @Override
-    public void setLastCpuTime(long time) {
+    void setLastCpuTime(long time) {
         mProfile.mLastCpuTime.set(time);
     }
 

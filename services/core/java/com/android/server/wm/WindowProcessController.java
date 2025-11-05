@@ -2105,18 +2105,15 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         mHasOverlayUi = hasOverlayUi;
     }
 
-    @Override
-    public void onInteractionEventTimeChanged(long interactionEventTime) {
+    public void setInteractionEventTime(long interactionEventTime) {
         mInteractionEventTime = interactionEventTime;
     }
 
-    @Override
-    public void onFgInteractionTimeChanged(long fgInteractionTime) {
+    public void setFgInteractionTime(long fgInteractionTime) {
         mFgInteractionTime = fgInteractionTime;
     }
 
-    @Override
-    public void onWhenUnimportantChanged(long whenUnimportant) {
+    public void setWhenUnimportant(long whenUnimportant) {
         mWhenUnimportant = whenUnimportant;
     }
 

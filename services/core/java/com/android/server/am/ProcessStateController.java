@@ -141,6 +141,14 @@ public class ProcessStateController {
         mOomConstants.mProcStateDebugUids = value;
     }
 
+    public void setForceEnablePssProfiling(boolean value) {
+        mOomConstants.mForceEnablePssProfiling = value;
+    }
+
+    public void setPssToRssThresholdModifier(float value) {
+        mOomConstants.mPssToRssThresholdModifier = value;
+    }
+
     /**
      * Start a batch session for specifically service state changes. ProcessStateController updates
      * will not be triggered until until the returned SyncBatchSession is closed.

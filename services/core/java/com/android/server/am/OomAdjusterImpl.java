@@ -1714,7 +1714,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                     // normally be a B service, but if we are low on RAM and it
                     // is large we want to force it down since we would prefer to
                     // keep launcher over it.
-                    long lastPssOrRss = mService.mAppProfiler.isProfilingPss()
+                    long lastPssOrRss = mOomConstants.mForceEnablePssProfiling
                             ? app.getLastPss() : app.getLastRss();
 
                     // RSS is larger than PSS, but the RSS/PSS ratio varies per-process based on how
@@ -1723,8 +1723,8 @@ public class OomAdjusterImpl extends OomAdjuster {
                     //
                     // TODO(b/296454553): Tune the second value so that the relative number of
                     // service B is similar before/after this flag is enabled.
-                    double thresholdModifier = mService.mAppProfiler.isProfilingPss()
-                            ? 1 : mConstants.PSS_TO_RSS_THRESHOLD_MODIFIER;
+                    double thresholdModifier = mOomConstants.mForceEnablePssProfiling
+                            ? 1 : mOomConstants.mPssToRssThresholdModifier;
                     double cachedRestoreThreshold =
                             mProcessList.getCachedRestoreThresholdKb() * thresholdModifier;
 
