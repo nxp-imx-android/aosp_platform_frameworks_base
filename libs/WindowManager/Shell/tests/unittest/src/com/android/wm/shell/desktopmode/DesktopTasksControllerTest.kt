@@ -613,6 +613,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask()
 
         val argumentCaptor = argumentCaptor<Boolean>()
+        val displayIdCaptor = argumentCaptor<Int>()
         controller.toggleDesktopTaskSize(
             task1,
             ToggleTaskSizeInteraction(
@@ -622,7 +623,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             ),
         )
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(argumentCaptor.capture())
+        verify(taskbarDesktopTaskListener)
+            .onTaskbarCornerRoundingUpdate(argumentCaptor.capture(), displayIdCaptor.capture())
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
                 resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
@@ -634,6 +636,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 deskId = 0,
             )
         assertThat(argumentCaptor.firstValue).isTrue()
+        assertThat(displayIdCaptor.firstValue).isEqualTo(task1.displayId)
     }
 
     @Test
@@ -655,6 +658,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask(bounds = stableBounds, active = true)
 
         val argumentCaptor = argumentCaptor<Boolean>()
+        val displayIdCaptor = argumentCaptor<Int>()
         controller.toggleDesktopTaskSize(
             task1,
             ToggleTaskSizeInteraction(
@@ -664,7 +668,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             ),
         )
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(argumentCaptor.capture())
+        verify(taskbarDesktopTaskListener)
+            .onTaskbarCornerRoundingUpdate(argumentCaptor.capture(), displayIdCaptor.capture())
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
                 eq(ResizeTrigger.MAXIMIZE_BUTTON),
@@ -676,6 +681,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 anyOrNull(),
             )
         assertThat(argumentCaptor.firstValue).isFalse()
+        assertThat(displayIdCaptor.firstValue).isEqualTo(task1.displayId)
     }
 
     @Test
@@ -4545,7 +4551,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
         controller.moveToNextDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test
@@ -5229,7 +5235,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         minimizePipTask(task)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test
@@ -5613,7 +5619,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test
