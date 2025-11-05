@@ -29,6 +29,7 @@ import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_C
 import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_CHARACTER_LOCATION_IN_WINDOW_KEY;
 import static android.view.accessibility.Flags.FLAG_A11Y_CHARACTER_IN_WINDOW_API;
 import static android.view.accessibility.Flags.a11yCharacterInWindowApi;
+import static android.view.accessibility.Flags.a11yTextChangeTypesApi;
 import static android.view.inputmethod.CursorAnchorInfo.FLAG_HAS_VISIBLE_REGION;
 import static android.view.inputmethod.EditorInfo.STYLUS_HANDWRITING_ENABLED_ANDROIDX_EXTRAS_KEY;
 import static android.view.inputmethod.Flags.initiationWithoutInputConnection;
@@ -410,6 +411,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     static final String LOG_TAG = "TextView";
     static final boolean DEBUG_EXTRACT = false;
     static final boolean DEBUG_CURSOR = false;
+    static final boolean DEBUG_A11Y = false;
 
     private static final float[] TEMP_POSITION = new float[2];
 
@@ -9953,6 +9955,38 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     }
 
     /**
+     * Called by the input connection when a text is being committed.
+     * @hide
+     */
+    public void beginCommitText() {
+        createEditorIfNeeded();
+        mEditor.createInputMethodStateIfNeeded();
+        mEditor.mInputMethodState.mIsCommittingText = true;
+    }
+
+    /**
+     * Called by the input connection when a text committing is finished.
+     * @hide
+     */
+    public void endCommitText() {
+        if (mEditor != null && mEditor.mInputMethodState != null) {
+            mEditor.mInputMethodState.mIsCommittingText = false;
+        }
+    }
+
+    /**
+     * Called by the input connection when the IME signals that a conversion suggestion is
+     * currently selected by the user.
+     * @param isSuggestionSelected {@code true} if a suggestion is selected.
+     * @hide
+     */
+    public void setSuggestionSelection(boolean isSuggestionSelected) {
+        createEditorIfNeeded();
+        mEditor.createInputMethodStateIfNeeded();
+        mEditor.mInputMethodState.mIsConversionSuggestionSelected = isSuggestionSelected;
+    }
+
+    /**
      * @hide
      */
     public void hideErrorIfUnchanged() {
@@ -10133,6 +10167,9 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             if (isMultilineInputType(outAttrs.inputType)) {
                 // Multi-line text editors should always show an enter key.
                 outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_ENTER_ACTION;
+            }
+            if (a11yTextChangeTypesApi()) {
+                outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_ENABLE_TEXT_SUGGESTION_SELECTED;
             }
             outAttrs.hintText = mHint;
             outAttrs.targetInputMethodUser = mTextOperationUser;
@@ -14699,27 +14736,18 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             final boolean isTextTransformed = (getTransformationMethod() != null
                     && getTransformed() instanceof OffsetMapping);
             if (includeCharacterBounds && !isTextTransformed) {
-                final CharSequence text = getText();
-                if (text instanceof Spannable) {
+                if (hasComposingText()) {
+                    final CharSequence text = getText();
                     final Spannable sp = (Spannable) text;
-                    int composingTextStart = EditableInputConnection.getComposingSpanStart(sp);
-                    int composingTextEnd = EditableInputConnection.getComposingSpanEnd(sp);
-                    if (composingTextEnd < composingTextStart) {
-                        final int temp = composingTextEnd;
-                        composingTextEnd = composingTextStart;
-                        composingTextStart = temp;
-                    }
-                    final boolean hasComposingText =
-                            (0 <= composingTextStart) && (composingTextStart
-                                    < composingTextEnd);
-                    if (hasComposingText) {
-                        final CharSequence composingText = text.subSequence(composingTextStart,
-                                composingTextEnd);
-                        builder.setComposingText(composingTextStart, composingText);
-                        populateCharacterBounds(builder, composingTextStart,
-                                composingTextEnd, viewportToContentHorizontalOffset,
-                                viewportToContentVerticalOffset);
-                    }
+                    final int composingTextStart =
+                            EditableInputConnection.getComposingSpanStart(sp);
+                    final int composingTextEnd = EditableInputConnection.getComposingSpanEnd(sp);
+                    final CharSequence composingText = text.subSequence(composingTextStart,
+                            composingTextEnd);
+                    builder.setComposingText(composingTextStart, composingText);
+                    populateCharacterBounds(builder, composingTextStart,
+                            composingTextEnd, viewportToContentHorizontalOffset,
+                            viewportToContentVerticalOffset);
                 }
             }
 
@@ -15204,6 +15232,34 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                 && (isFocused() || (isSelected() && isShown()));
     }
 
+    /** @hide */
+    @VisibleForTesting
+    void setTextChangeTypes(AccessibilityEvent event) {
+        if (DEBUG_A11Y) {
+            Log.v(LOG_TAG, "setTextChangeTypes hasComposingText()=" + hasComposingText()
+                    + " mEditor.mInputMethodState.mIsConversionSuggestionSelected="
+                    + ((mEditor == null || mEditor.mInputMethodState == null)
+                            ? "false" : mEditor.mInputMethodState.mIsConversionSuggestionSelected)
+                    + " mEditor.mInputMethodState.mIsCommittingText="
+                    + ((mEditor == null || mEditor.mInputMethodState == null)
+                            ? "false" : mEditor.mInputMethodState.mIsCommittingText));
+        }
+        int textChangeTypes = AccessibilityEvent.TEXT_CHANGE_TYPE_UNDEFINED;
+        if (hasComposingText()) {
+            textChangeTypes |= AccessibilityEvent.TEXT_CHANGE_TYPE_IN_COMPOSITION;
+        }
+        if (mEditor != null && mEditor.mInputMethodState != null
+                && mEditor.mInputMethodState.mIsConversionSuggestionSelected) {
+            textChangeTypes |=
+                    AccessibilityEvent.TEXT_CHANGE_TYPE_CONVERSION_SUGGESTION_SELECTED_BY_IME;
+        }
+        if (mEditor != null && mEditor.mInputMethodState != null
+                && mEditor.mInputMethodState.mIsCommittingText) {
+            textChangeTypes |= AccessibilityEvent.TEXT_CHANGE_TYPE_COMMITTED_BY_IME;
+        }
+        event.setTextChangeTypes(textChangeTypes);
+    }
+
     void sendAccessibilityEventTypeViewTextChanged(CharSequence beforeText,
             int fromIndex, int removedCount, int addedCount) {
         AccessibilityEvent event =
@@ -15212,6 +15268,9 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
         event.setRemovedCount(removedCount);
         event.setAddedCount(addedCount);
         event.setBeforeText(beforeText);
+        if (a11yTextChangeTypesApi()) {
+            setTextChangeTypes(event);
+        }
         sendAccessibilityEventUnchecked(event);
     }
 
@@ -15222,6 +15281,9 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
         event.setFromIndex(fromIndex);
         event.setToIndex(toIndex);
         event.setBeforeText(beforeText);
+        if (a11yTextChangeTypesApi()) {
+            setTextChangeTypes(event);
+        }
         sendAccessibilityEventUnchecked(event);
     }
 
@@ -15785,6 +15847,44 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     public boolean canSelectAllText() {
         return canSelectText() && !hasPasswordTransformationMethod()
                 && !(getSelectionStart() == 0 && getSelectionEnd() == mText.length());
+    }
+
+    /**
+     * Return whether the text contains a composing range.
+     * @hide
+     */
+    @VisibleForTesting
+    public boolean hasComposingText() {
+        final CharSequence text = getText();
+        if (text instanceof Spannable) {
+            final Spannable sp = (Spannable) text;
+            int composingTextStart = EditableInputConnection.getComposingSpanStart(sp);
+            int composingTextEnd = EditableInputConnection.getComposingSpanEnd(sp);
+            if (composingTextEnd < composingTextStart) {
+                final int temp = composingTextEnd;
+                composingTextEnd = composingTextStart;
+                composingTextStart = temp;
+            }
+            final boolean hasComposingText =
+                    (0 <= composingTextStart) && (composingTextStart
+                            < composingTextEnd);
+            return hasComposingText;
+        }
+        return false;
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    public boolean isCommittingText() {
+        return mEditor != null && mEditor.mInputMethodState != null
+                && mEditor.mInputMethodState.mIsCommittingText;
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    public boolean isConversionSuggestionSelected() {
+        return mEditor != null && mEditor.mInputMethodState != null
+                && mEditor.mInputMethodState.mIsConversionSuggestionSelected;
     }
 
     boolean selectAllText() {

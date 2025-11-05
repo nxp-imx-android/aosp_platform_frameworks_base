@@ -44,6 +44,7 @@ import android.text.PrecomputedText;
 import android.text.method.OffsetMapping;
 import android.text.method.TransformationMethod;
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView.BufferType;
 
@@ -59,6 +60,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Locale;
 
 /**
@@ -78,6 +80,32 @@ public class TextViewTest {
     public void setup() {
         mActivity = mActivityRule.getActivity();
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
+    }
+
+    @Test
+    public void testSetTextChangeTypes() throws Exception {
+        mTextView = new TextView(mActivity);
+        mTextView.beginCommitText();
+        mTextView.setSuggestionSelection(true);
+        mTextView.setText("Hello", BufferType.EDITABLE);
+        mTextView.clearComposingText();
+
+        assertFalse(mTextView.hasComposingText());
+        assertTrue(mTextView.isConversionSuggestionSelected());
+        assertTrue(mTextView.isCommittingText());
+
+        AccessibilityEvent event =
+                AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
+        Method setTextChangeTypesMethod = TextView.class.getDeclaredMethod(
+                "setTextChangeTypes", AccessibilityEvent.class);
+        setTextChangeTypesMethod.setAccessible(true);
+        setTextChangeTypesMethod.invoke(mTextView, event);
+        int expectedChangeTypes =
+                AccessibilityEvent.TEXT_CHANGE_TYPE_COMMITTED_BY_IME
+                        | AccessibilityEvent.TEXT_CHANGE_TYPE_CONVERSION_SUGGESTION_SELECTED_BY_IME;
+        assertEquals(expectedChangeTypes, event.getTextChangeTypes());
+
+        mTextView.endCommitText();
     }
 
     @Presubmit
