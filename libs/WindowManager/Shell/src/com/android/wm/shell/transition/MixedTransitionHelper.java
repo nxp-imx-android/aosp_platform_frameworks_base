@@ -46,6 +46,8 @@ import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreen;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 
+import java.util.List;
+
 public class MixedTransitionHelper {
     static boolean animateEnterPipFromSplit(
             @NonNull DefaultMixedHandler.MixedTransition mixed, @NonNull TransitionInfo info,
@@ -281,5 +283,37 @@ public class MixedTransitionHelper {
             }
         }
         return pinnedLayerInfo;
+    }
+
+    /**
+     * Finds the top-most split-screen stage that should be fullscreen when dismissing
+     * split-screen.
+     *
+     * @param changes the list of changes in the transition
+     * @param splitHandler the split-screen stage coordinator
+     * @param taskToIgnore an optional task change to ignore. This is for cases where a task is
+     *                     launching on top of split-screen, and we want to find which of the
+     *                     remaining split-screen tasks is on top.
+     * @return the stage type of the top-most task in split-screen, or
+     *         {@link SplitScreen#STAGE_TYPE_UNDEFINED} if none
+     */
+    @SplitScreen.StageType
+    static int getTopSplitStageToKeep(@NonNull List<TransitionInfo.Change> changes,
+            @Nullable StageCoordinator splitHandler,
+            @Nullable TransitionInfo.Change taskToIgnore) {
+        if (splitHandler == null) {
+            return SplitScreen.STAGE_TYPE_UNDEFINED;
+        }
+        for (int i = changes.size() - 1; i >= 0; i--) {
+            final TransitionInfo.Change change = changes.get(i);
+            if (change == taskToIgnore) {
+                continue;
+            }
+            final int prevStage = splitHandler.getSplitItemStage(change.getLastParent());
+            if (prevStage != SplitScreen.STAGE_TYPE_UNDEFINED) {
+                return prevStage;
+            }
+        }
+        return SplitScreen.STAGE_TYPE_UNDEFINED;
     }
 }
