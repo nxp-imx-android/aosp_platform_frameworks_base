@@ -159,6 +159,14 @@ flag {
 }
 
 flag {
+    name: "extend_aapm_to_a11y_services"
+    is_exported: true
+    namespace: "accessibility"
+    description: "Extend AAPM support to Accessibility Services."
+    bug: "433993016"
+}
+
+flag {
     name: "extend_ecm_to_all_settings"
     namespace: "responsible_apis"
     description: "Allow all app settings to be restrictable via configuration"
