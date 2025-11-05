@@ -990,17 +990,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                 isInstrumenting,
                 isInstrumenting ? instr.mSourceUid : -1,
                 isInstrumenting && instr.mHasBackgroundActivityStartsPermission);
+        mService.mProcessStateController.setHasActiveInstrumentation(this, isInstrumenting);
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     ActiveInstrumentation getActiveInstrumentation() {
         return mInstr;
-    }
-
-    @Override
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    public boolean hasActiveInstrumentation() {
-        return mInstr != null;
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})

@@ -634,12 +634,11 @@ public class ProcessStateController {
     }
 
     /**
-     * Sets an active instrumentation running within the given process.
+     * Sets whether the given process has an active instrumentation running.
      */
-    @GuardedBy("mLock")
-    public void setActiveInstrumentation(@NonNull ProcessRecord proc,
-            ActiveInstrumentation activeInstrumentation) {
-        proc.setActiveInstrumentation(activeInstrumentation);
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setHasActiveInstrumentation(@NonNull ProcessRecordInternal proc, boolean value) {
+        proc.setHasActiveInstrumentation(value);
     }
 
     @GuardedBy("mLock")

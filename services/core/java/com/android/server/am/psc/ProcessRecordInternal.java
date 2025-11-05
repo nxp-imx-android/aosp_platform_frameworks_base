@@ -135,7 +135,16 @@ public abstract class ProcessRecordInternal {
     public abstract boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId);
 
     /** Returns true if there is an active instrumentation running in this process. */
-    public abstract boolean hasActiveInstrumentation();
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public boolean hasActiveInstrumentation() {
+        return mHasActiveInstrumentation;
+    }
+
+    /** Sets whether an active instrumentation is running in this process. */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setHasActiveInstrumentation(boolean value) {
+        mHasActiveInstrumentation = value;
+    }
 
     /** Returns whether this process is frozen. */
     public abstract boolean isFrozen();
@@ -667,6 +676,9 @@ public abstract class ProcessRecordInternal {
 
     @GuardedBy("mServiceLock")
     private boolean mHasActivities = false;
+
+    @CompositeRWLock({"mServiceLock", "mProcLock"})
+    private boolean mHasActiveInstrumentation = false;
 
     @GuardedBy("mServiceLock")
     private int mActivityStateFlags = ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
