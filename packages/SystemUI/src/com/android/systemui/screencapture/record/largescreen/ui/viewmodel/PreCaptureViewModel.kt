@@ -20,7 +20,6 @@ import android.app.ActivityManager
 import android.app.ActivityTaskManager
 import android.graphics.Point
 import android.graphics.Rect
-import android.util.Log
 import android.view.WindowManager
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Background
@@ -174,9 +173,28 @@ constructor(
         closeUi()
     }
 
+    fun captureTaskAtPosition(pointerPosition: Point) {
+        val task =
+            activityTaskManager
+                .getTasks(Integer.MAX_VALUE)
+                .filter { it.isVisible }
+                .firstOrNull {
+                    it.configuration.windowConfiguration.bounds.contains(
+                        pointerPosition.x,
+                        pointerPosition.y,
+                    )
+                }
+        if (task == null) {
+            return
+        }
+        beginAppWindowScreenshot(task.taskId)
+    }
+
     private fun beginAppWindowScreenshot(taskId: Int) {
-        Log.d(TAG, "Would take screenshot of taskId=$taskId now.")
         hideUi()
+        backgroundScope.launch {
+            screenshotInteractor.requestAppWindowScreenshot(taskId, displayId)
+        }
         closeUi()
     }
 
@@ -249,9 +267,5 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(displayId: Int): PreCaptureViewModel
-    }
-
-    private companion object {
-        const val TAG = "PreCaptureViewModel"
     }
 }
