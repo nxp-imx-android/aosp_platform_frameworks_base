@@ -66,6 +66,11 @@ public class DimmerTests extends WindowTestsBase {
             mVisibleRequested = true;
         }
 
+        @Override
+        boolean isVisible() {
+            return true;
+        }
+
         static class MockSurfaceBuilder extends SurfaceControl.Builder {
             MockSurfaceBuilder(SurfaceSession ss) {
                 super(ss);

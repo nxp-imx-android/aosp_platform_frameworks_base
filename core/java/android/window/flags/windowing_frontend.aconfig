@@ -473,3 +473,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "avoid_recreating_dim_surface_during_activity_transition"
+    namespace: "windowing_frontend"
+    description: "Fix dim layer flickering during activity transition"
+    bug: "456398458"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
