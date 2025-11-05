@@ -37,6 +37,7 @@ import android.app.WindowConfiguration.WindowingMode
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Point
@@ -275,6 +276,7 @@ class DesktopTasksController(
     private val transactionPool: TransactionPool,
     private val pipTransitionState: Optional<PipTransitionState>,
     private val lockTaskChangeListener: LockTaskChangeListener,
+    private val launcherApps: LauncherApps,
 ) :
     RemoteCallable<DesktopTasksController>,
     TransitionHandler,
@@ -306,6 +308,37 @@ class DesktopTasksController(
 
             private fun removeVisualIndicator() {
                 visualIndicator?.fadeOutIndicator { releaseVisualIndicator() }
+            }
+        }
+    private val launcherAppsCallback =
+        object : LauncherApps.Callback() {
+            override fun onPackageRemoved(packageName: String, user: UserHandle) {
+                val repository = userRepositories.getProfile(user.identifier)
+                repository.clearRememberedBoundsRatio(packageName)
+            }
+
+            override fun onPackageAdded(packageName: String, user: UserHandle) {}
+
+            override fun onPackageChanged(packageName: String, user: UserHandle) {}
+
+            override fun onPackagesAvailable(
+                packageNames: Array<out String>,
+                user: UserHandle,
+                replacing: Boolean,
+            ) {}
+
+            override fun onPackagesUnavailable(
+                packageNames: Array<out String>,
+                user: UserHandle,
+                replacing: Boolean,
+            ) {
+                if (replacing) {
+                    return
+                }
+                val repository = userRepositories.getProfile(user.identifier)
+                packageNames.forEach { packageName ->
+                    repository.clearRememberedBoundsRatio(packageName)
+                }
             }
         }
 
@@ -354,6 +387,9 @@ class DesktopTasksController(
 
     private fun onInit() {
         logD("onInit")
+        if (Flags.enableRememberedBounds()) {
+            launcherApps.registerCallback(launcherAppsCallback)
+        }
         shellCommandHandler.addDumpCallback(this::dump, this)
         shellCommandHandler.addCommandCallback("desktopmode", desktopModeShellCommandHandler, this)
         shellController.addExternalInterface(

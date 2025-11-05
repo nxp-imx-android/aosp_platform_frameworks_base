@@ -85,8 +85,6 @@ class DesktopRepository(
     private var desktopGestureExclusionListener: Consumer<Region>? = null
     private var desktopGestureExclusionExecutor: Executor? = null
 
-    // TODO: b/452164707 - Remove an entry when its package is removed (e.g., observing
-    // [onPackageRemoved]).
     // TODO: b/452164081 - Add this to persistent repository.
     private val rememberedBoundsRatioByPackageName = ArrayMap<String, RectF>()
 
@@ -1261,6 +1259,14 @@ class DesktopRepository(
             return
         }
         rememberedBoundsRatioByPackageName[packageName] = bounds
+    }
+
+    /** Clears the remembered bounds ratio for the given package. */
+    fun clearRememberedBoundsRatio(packageName: String) {
+        if (!Flags.enableRememberedBounds()) {
+            return
+        }
+        rememberedBoundsRatioByPackageName.remove(packageName)
     }
 
     private fun updatePersistentRepository(displayId: Int): Unit =

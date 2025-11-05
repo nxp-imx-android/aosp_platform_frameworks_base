@@ -42,6 +42,7 @@ import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.content.pm.ApplicationInfo
+import android.content.pm.LauncherApps
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
@@ -327,6 +328,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var pipTransitionState: PipTransitionState
     @Mock private lateinit var surfaceControlTransaction: SurfaceControl.Transaction
     @Mock private lateinit var lockTaskChangeListener: LockTaskChangeListener
+    @Mock private lateinit var launcherApps: LauncherApps
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -585,6 +587,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transactionPool,
             Optional.of(pipTransitionState),
             lockTaskChangeListener,
+            launcherApps,
         )
 
     @After
@@ -1964,6 +1967,65 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         assertThat(controller.getInitialBounds(displayLayout, rememberedTask, 0))
             .isEqualTo(controller.getInitialBounds(displayLayout, nonRememberedTask, 0))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun rememberedBounds_clearedOnRemoved() {
+        val callbackCaptor = argumentCaptor<LauncherApps.Callback>()
+        verify(launcherApps).registerCallback(callbackCaptor.capture())
+        val launcherAppsCallback = callbackCaptor.firstValue
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isEqualTo(boundsRatio)
+
+        // Package is removed.
+        launcherAppsCallback.onPackageRemoved(packageName, UserHandle.of(DEFAULT_USER_ID))
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun rememberedBounds_clearedOnUnavailable() {
+        val callbackCaptor = argumentCaptor<LauncherApps.Callback>()
+        verify(launcherApps).registerCallback(callbackCaptor.capture())
+        val launcherAppsCallback = callbackCaptor.firstValue
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isEqualTo(boundsRatio)
+
+        // Package is unavailable.
+        launcherAppsCallback.onPackagesUnavailable(
+            arrayOf(packageName),
+            UserHandle.of(DEFAULT_USER_ID),
+            /* replacing= */ false,
+        )
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun rememberedBounds_notClearedOnReplaced() {
+        val callbackCaptor = argumentCaptor<LauncherApps.Callback>()
+        verify(launcherApps).registerCallback(callbackCaptor.capture())
+        val launcherAppsCallback = callbackCaptor.firstValue
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isEqualTo(boundsRatio)
+
+        // Package is just being replaced.
+        launcherAppsCallback.onPackagesUnavailable(
+            arrayOf(packageName),
+            UserHandle.of(DEFAULT_USER_ID),
+            /* replacing= */ true,
+        )
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isEqualTo(boundsRatio)
     }
 
     @Test
