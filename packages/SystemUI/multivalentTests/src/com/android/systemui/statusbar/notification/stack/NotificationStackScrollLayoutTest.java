@@ -987,6 +987,23 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableSceneContainer
+    public void testOutsideScrimBounds() {
+        mStackScroller.setLeftTopRightBottom(1000, 0, 2000, 2000);
+        mStackScroller.setClippingShape(createScrimShape(100, 500, 900, 2000));
+
+        MotionEvent event1 = createMotionEvent(1500f, 400f);
+        assertTrue(mStackScroller.outsideScrimBounds(event1.getX(), event1.getY()));
+
+        MotionEvent event2 = createMotionEvent(400f, 1000f);
+        assertFalse(mStackScroller.outsideScrimBounds(event2.getX(), event2.getY()));
+
+        mStackScroller.setClippingShape(null);
+        assertFalse(mStackScroller.outsideScrimBounds(event1.getX(), event1.getY()));
+        assertFalse(mStackScroller.outsideScrimBounds(event2.getX(), event2.getY()));
+    }
+
+    @Test
     @DisableSceneContainer // TODO(b/312473478): address disabled test
     public void setFractionToShade_recomputesStackHeight() {
         mStackScroller.setFractionToShade(1f);
