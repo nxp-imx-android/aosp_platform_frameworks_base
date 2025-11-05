@@ -52,7 +52,6 @@ class ParsedPermissionTest : ParsedComponentTest(
         ParsedPermission::getRequiresGeneralPurposeTargetSdkVersion,
         ParsedPermission::getRequiresPurposeStringTargetSdkVersion,
         ParsedPermission::isTree,
-        ParsedPermission::isPurposeRequired,
     )
 
     override fun subclassExtraParams() = listOf(

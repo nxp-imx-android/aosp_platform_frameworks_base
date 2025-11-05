@@ -250,7 +250,7 @@ public class ParsedUsesPermissionImpl implements ParsedUsesPermission, Parcelabl
     };
 
     @DataClass.Generated(
-            time = 1761688735854L,
+            time = 1762204690869L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/com/android/internal/pm/pkg/component/ParsedUsesPermissionImpl.java",
             inputSignatures = "private @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForInternedString.class) @android.annotation.NonNull java.lang.String name\nprivate @com.android.internal.pm.pkg.component.ParsedUsesPermission.UsesPermissionFlags int usesPermissionFlags\nprivate  int purposeStringResource\nprivate @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForStringSet.class) @android.annotation.NonNull java.util.Set<java.lang.String> purposes\nprivate @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForStringSet.class) @android.annotation.NonNull java.util.Set<java.lang.String> generalPurposes\nclass ParsedUsesPermissionImpl extends java.lang.Object implements [com.android.internal.pm.pkg.component.ParsedUsesPermission, android.os.Parcelable]\n@com.android.internal.util.DataClass(genGetters=true, genSetters=true, genBuilder=false, genParcelable=true, genAidl=false)")

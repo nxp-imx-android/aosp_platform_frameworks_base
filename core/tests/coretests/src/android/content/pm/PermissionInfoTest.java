@@ -79,7 +79,9 @@ public final class PermissionInfoTest {
         parcel.setDataPosition(0);
         PermissionInfo unparceledPermissionInfo = PermissionInfo.CREATOR.createFromParcel(parcel);
 
-        assertFalse(unparceledPermissionInfo.requiresPurpose);
+        assertEquals(
+                NO_TARGET_SDK_VERSION,
+                unparceledPermissionInfo.requiresPurposeTargetSdkVersion);
         assertEquals(
                 NO_TARGET_SDK_VERSION,
                 unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
@@ -95,7 +97,6 @@ public final class PermissionInfoTest {
     @Test
     public void createFromParcel_withCustomPermissionInfo_returnsValidPurposes() {
         PermissionInfo permissionInfo = new PermissionInfo();
-        permissionInfo.requiresPurpose = true;
         permissionInfo.requiresPurposeTargetSdkVersion = SDK_INT;
         permissionInfo.requiresGeneralPurposeTargetSdkVersion = SDK_INT;
         permissionInfo.requiresPurposeStringTargetSdkVersion = SDK_INT;
@@ -126,7 +127,6 @@ public final class PermissionInfoTest {
         parcel.setDataPosition(0);
         PermissionInfo unparceledPermissionInfo = PermissionInfo.CREATOR.createFromParcel(parcel);
 
-        assertTrue(unparceledPermissionInfo.requiresPurpose);
         assertEquals(SDK_INT, unparceledPermissionInfo.requiresPurposeTargetSdkVersion);
         assertEquals(SDK_INT, unparceledPermissionInfo.requiresGeneralPurposeTargetSdkVersion);
         assertEquals(SDK_INT, unparceledPermissionInfo.requiresPurposeStringTargetSdkVersion);

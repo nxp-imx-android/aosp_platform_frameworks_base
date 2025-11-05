@@ -142,23 +142,16 @@ public class ParsedPermissionUtils {
 
             final boolean isPlatform = "android".equals(permission.getPackageName());
             final boolean shouldParseAllPurpose = Flags.ppdManifestEnabled() && isPlatform;
-            final boolean shouldParsePurpose = (shouldParseAllPurpose || Flags.ppdInstallTimeEnabled()) && isPlatform;
+            final boolean shouldParsePurpose = (Flags.ppdPurposeEnabled() || Flags.ppdInstallTimeEnabled()) && isPlatform;
             // For now only platform permissions can be purpose guarded.
             if (shouldParsePurpose) {
-                final boolean requiresPurpose =
-                        sa.getBoolean(
-                                R.styleable.AndroidManifestPermission_requiresPurpose,
-                                /* defValue= */ false);
-                permission.setPurposeRequired(requiresPurpose);
-                if (requiresPurpose) {
-                    final ParseResult<Integer> targetSdkVersionResult =
-                            parseRequiresPurposeTargetSdkVersion(sa, input);
-                    if (targetSdkVersionResult.isError()) {
-                        return input.error(targetSdkVersionResult);
-                    }
-                    permission.setRequiresPurposeTargetSdkVersion(
-                            targetSdkVersionResult.getResult());
+                final ParseResult<Integer> targetSdkVersionResult =
+                        parseRequiresPurposeTargetSdkVersion(sa, input);
+                if (targetSdkVersionResult.isError()) {
+                    return input.error(targetSdkVersionResult);
                 }
+                permission.setRequiresPurposeTargetSdkVersion(
+                        targetSdkVersionResult.getResult());
             }
 
             if (shouldParseAllPurpose) {
@@ -223,7 +216,7 @@ public class ParsedPermissionUtils {
         final int requiresPurposeTargetSdkVersion =
                 array.getInt(
                         R.styleable.AndroidManifestPermission_requiresPurposeTargetSdkVersion,
-                        /* defValue= */ 0);
+                        /* defValue= */ NO_TARGET_SDK_VERSION);
         // Android C is the first platform version that supports purpose enforcement.
         if (requiresPurposeTargetSdkVersion <= Build.VERSION_CODES.BAKLAVA) {
             return input.error(

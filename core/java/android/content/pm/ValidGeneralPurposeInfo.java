@@ -25,7 +25,7 @@ import android.os.Parcelable;
 import com.android.internal.util.DataClass;
 
 /**
- * Information about {@link android.R.styleable#AndroidManifestGeneralValidPurpose
+ * Information about {@link android.R.styleable#AndroidManifestValidGeneralPurpose
  * &lt;valid-general-purpose&gt;} tag parsed from the manifest.
  *
  * @hide

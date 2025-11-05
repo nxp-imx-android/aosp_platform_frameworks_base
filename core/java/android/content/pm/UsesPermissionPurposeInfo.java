@@ -50,6 +50,14 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
 
     /**
      * The set of enum strings listed using {@link
+     * android.R.styleable#AndroidManifestPurpose &lt;purpose&gt;} under {@link
+     * android.R.styleable#AndroidManifestUsesPermission &lt;uses-permission&gt;}
+     */
+    @DataClass.PluralOf("Purpose")
+    private @NonNull Set<String> mPurposes;
+
+    /**
+     * The set of enum strings listed using {@link
      * android.R.styleable#AndroidManifestGeneralPurpose &lt;general-purpose&gt;} under {@link
      * android.R.styleable#AndroidManifestUsesPermission &lt;uses-permission&gt;}
      */
@@ -69,6 +77,10 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
      *
      * @param permissionName
      *   The name of the permission that the purpose information in this class pertains to.
+     * @param purposes
+     *   The set of enum strings listed using {@link
+     *   android.R.styleable#AndroidManifestPurpose &lt;purpose&gt;} under {@link
+     *   android.R.styleable#AndroidManifestUsesPermission &lt;uses-permission&gt;}
      * @param generalPurposes
      *   The set of enum strings listed using {@link
      *   android.R.styleable#AndroidManifestGeneralPurpose &lt;general-purpose&gt;} under {@link
@@ -79,11 +91,15 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
     @FlaggedApi(android.permission.flags.Flags.FLAG_PPD_MANIFEST_ENABLED)
     public UsesPermissionPurposeInfo(
             @NonNull String permissionName,
+            @NonNull Set<String> purposes,
             @NonNull Set<String> generalPurposes,
             @StringRes int purposeStringResource) {
         this.mPermissionName = permissionName;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mPermissionName);
+        this.mPurposes = purposes;
+        com.android.internal.util.AnnotationValidations.validate(
+                NonNull.class, null, mPurposes);
         this.mGeneralPurposes = generalPurposes;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mGeneralPurposes);
@@ -95,6 +111,14 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
     // for codegen constructors to call
     private void onConstructed() {
         mGeneralPurposes = Collections.unmodifiableSet(mGeneralPurposes);
+    }
+
+    void parcelPurposes(Parcel dest, int flags) {
+        dest.writeArray(mPurposes.toArray());
+    }
+
+    static ArraySet<String> unparcelPurposes(Parcel in) {
+        return new ArraySet<>(in.readArray(null, String.class));
     }
 
     void parcelGeneralPurposes(Parcel dest, int flags) {
@@ -132,6 +156,16 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
 
     /**
      * The set of enum strings listed using {@link
+     * android.R.styleable#AndroidManifestPurpose &lt;purpose&gt;} under {@link
+     * android.R.styleable#AndroidManifestUsesPermission &lt;uses-permission&gt;}
+     */
+    @DataClass.Generated.Member
+    public @NonNull Set<String> getPurposes() {
+        return mPurposes;
+    }
+
+    /**
+     * The set of enum strings listed using {@link
      * android.R.styleable#AndroidManifestGeneralPurpose &lt;general-purpose&gt;} under {@link
      * android.R.styleable#AndroidManifestUsesPermission &lt;uses-permission&gt;}
      */
@@ -164,6 +198,7 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
         //noinspection PointlessBooleanExpression
         return true
                 && java.util.Objects.equals(mPermissionName, that.mPermissionName)
+                && java.util.Objects.equals(mPurposes, that.mPurposes)
                 && java.util.Objects.equals(mGeneralPurposes, that.mGeneralPurposes)
                 && mPurposeStringResource == that.mPurposeStringResource;
     }
@@ -176,6 +211,7 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
 
         int _hash = 1;
         _hash = 31 * _hash + java.util.Objects.hashCode(mPermissionName);
+        _hash = 31 * _hash + java.util.Objects.hashCode(mPurposes);
         _hash = 31 * _hash + java.util.Objects.hashCode(mGeneralPurposes);
         _hash = 31 * _hash + mPurposeStringResource;
         return _hash;
@@ -188,6 +224,7 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
         // void parcelFieldName(Parcel dest, int flags) { ... }
 
         dest.writeString(mPermissionName);
+        parcelPurposes(dest, flags);
         parcelGeneralPurposes(dest, flags);
         dest.writeInt(mPurposeStringResource);
     }
@@ -204,12 +241,16 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
         // static FieldType unparcelFieldName(Parcel in) { ... }
 
         String permissionName = in.readString();
+        Set<String> purposes = unparcelPurposes(in);
         Set<String> generalPurposes = unparcelGeneralPurposes(in);
         int purposeStringResource = in.readInt();
 
         this.mPermissionName = permissionName;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mPermissionName);
+        this.mPurposes = purposes;
+        com.android.internal.util.AnnotationValidations.validate(
+                NonNull.class, null, mPurposes);
         this.mGeneralPurposes = generalPurposes;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mGeneralPurposes);
@@ -235,10 +276,10 @@ public final class UsesPermissionPurposeInfo implements Parcelable {
     };
 
     @DataClass.Generated(
-            time = 1761664032801L,
+            time = 1762202984216L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/content/pm/UsesPermissionPurposeInfo.java",
-            inputSignatures = "private final @android.annotation.NonNull java.lang.String mPermissionName\nprivate @com.android.internal.util.DataClass.PluralOf(\"GeneralPurpose\") @android.annotation.NonNull java.util.Set<java.lang.String> mGeneralPurposes\nprivate @android.annotation.StringRes int mPurposeStringResource\nprivate  void onConstructed()\n  void parcelGeneralPurposes(android.os.Parcel,int)\nstatic  android.util.ArraySet<java.lang.String> unparcelGeneralPurposes(android.os.Parcel)\nclass UsesPermissionPurposeInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genParcelable=true, genEqualsHashCode=true, genConstructor=false, genSetters=false)")
+            inputSignatures = "private final @android.annotation.NonNull java.lang.String mPermissionName\nprivate @com.android.internal.util.DataClass.PluralOf(\"Purpose\") @android.annotation.NonNull java.util.Set<java.lang.String> mPurposes\nprivate @com.android.internal.util.DataClass.PluralOf(\"GeneralPurpose\") @android.annotation.NonNull java.util.Set<java.lang.String> mGeneralPurposes\nprivate @android.annotation.StringRes int mPurposeStringResource\nprivate  void onConstructed()\n  void parcelPurposes(android.os.Parcel,int)\nstatic  android.util.ArraySet<java.lang.String> unparcelPurposes(android.os.Parcel)\n  void parcelGeneralPurposes(android.os.Parcel,int)\nstatic  android.util.ArraySet<java.lang.String> unparcelGeneralPurposes(android.os.Parcel)\nclass UsesPermissionPurposeInfo extends java.lang.Object implements [android.os.Parcelable]\n@com.android.internal.util.DataClass(genParcelable=true, genEqualsHashCode=true, genConstructor=false, genSetters=false)")
     @Deprecated
     private void __metadata() {}
 
