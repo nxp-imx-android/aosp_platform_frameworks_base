@@ -13963,6 +13963,22 @@ public final class Settings {
          */
         public static final String IDENTITY_CHECK_WATCH_NOTIFICATION_VIEW_DETAILS_CLICKED =
                 "identity_check_watch_notification_view_details_clicked";
+
+        /**
+         * Setting to showing password characters from touch inputs in text editors.
+         * 1 = On, 0 = Off
+         * @hide
+         */
+        @FlaggedApi("com.android.systemui.split_show_passwords_to_touch_and_physical")
+        public static final String TEXT_SHOW_PASSWORD_TOUCH = "show_passwords_touch";
+
+        /**
+         * Setting to showing password characters from physical inputs in text editors.
+         * 1 = On, 0 = Off
+         * @hide
+         */
+        @FlaggedApi("com.android.systemui.split_show_passwords_to_touch_and_physical")
+        public static final String TEXT_SHOW_PASSWORD_PHYSICAL = "show_passwords_physical";
     }
 
     /**
