@@ -240,7 +240,9 @@ public class NotificationActionRenderer implements Renderer {
     }
 
     @Override
-    public boolean isInsightInteresting(ContextInsight insight) {
-        return insight instanceof ActionableInsight && getSbnFromInsight(insight) != null;
+    public boolean isInterestedInInsight(ContextInsight insight) {
+        // Notifications should be rendered due to a RenderToken, which bypasses this filter.
+        // We don't want any other random insights.
+        return false;
     }
 }

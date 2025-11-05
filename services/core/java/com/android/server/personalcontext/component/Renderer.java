@@ -27,7 +27,7 @@ import androidx.annotation.NonNull;
  */
 public interface Renderer extends Component {
     /** Gets the insights this renderer is interested in. */
-    boolean isInsightInteresting(ContextInsight insight);
+    boolean isInterestedInInsight(ContextInsight insight);
 
     /** Renders an insight. */
     void render(@NonNull ContextInsight insight, boolean isFirst);

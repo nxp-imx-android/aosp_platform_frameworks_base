@@ -46,7 +46,6 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.notification.NotificationManagerInternal;
-import com.android.server.personalcontext.component.Renderer;
 import com.android.server.personalcontext.embedded.EmbeddedInsightRenderer;
 import com.android.server.personalcontext.notifications.NotificationActionRenderer;
 
@@ -256,35 +255,18 @@ public class PersonalContextManagerService extends SystemService {
     }
 
     private void startInsightWorkflow(@UserIdInt int userId, Set<ContextInsight> insights) {
-        // TODO(b/452425186): Make this into a workflow like refiners.
         final ContextComponentManager componentManager = getComponentManagerForUser(userId);
         if (componentManager == null) {
-            Slog.w(TAG, "Cannot start insight workflow, no component manager for user " + userId);
+            Slog.w(TAG, "Cannot start renderer workflow, no component manager for user " + userId);
             return;
         }
-        try {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Slog.d(TAG, "Insight workflow started for user " + userId);
-            }
 
-            for (ContextInsight insight : insights) {
-                if (Log.isLoggable(TAG, Log.DEBUG)) {
-                    Slog.d(TAG, "Handling insight: " + insight);
-                }
-                for (Renderer renderer : componentManager.getRenderers()) {
-                    if (Log.isLoggable(TAG, Log.DEBUG)) {
-                        Slog.d(TAG, "Sending to renderer: " + renderer);
-                    }
-                    renderer.render(insight, false);
-                }
-            }
-
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Slog.d(TAG, "Insight workflow complete for user " + userId);
-            }
-        } catch (Exception e) {
-            Slog.e(TAG, "Insight workflow failed for user " + userId, e);
-        }
+        RendererWorkflow.start(
+                componentManager,
+                insights,
+                HINT_SIGNING_KEY,
+                mLogger,
+                mExecutor);
     }
 
     /** Returns the component manager for the given user, for testing purposes. */

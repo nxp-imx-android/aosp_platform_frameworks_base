@@ -17,9 +17,11 @@
 package com.android.server.personalcontext;
 
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.insight.ContextInsight;
 
 import com.android.server.personalcontext.component.Component;
 import com.android.server.personalcontext.component.Refiner;
+import com.android.server.personalcontext.component.Renderer;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -31,11 +33,14 @@ import java.util.Map;
 import java.util.Queue;
 
 /** @hide */
-public class ContextLogger implements RefinerWorkflow.EventListener {
+public class ContextLogger
+        implements RefinerWorkflow.EventListener, RendererWorkflow.EventListener {
     private static final int MAX_RECENT_ITEMS_TO_KEEP = 3;
 
     private final Queue<Timeline> mRecentRefinerTimelines = new LinkedList<>();
     private final Map<Long, Timeline> mActiveRefinerTimelines = new HashMap<>();
+    private final Queue<Timeline> mRecentRendererTimelines = new LinkedList<>();
+    private final Map<Long, Timeline> mActiveRendererTimelines = new HashMap<>();
 
     /** Called when a workflow is started. */
     public void onRefinerWorkflowStarted(long flowId, Collection<ContextHintWithSignature> hints) {
@@ -106,6 +111,55 @@ public class ContextLogger implements RefinerWorkflow.EventListener {
         }
     }
 
+    /** Called when a workflow is started. */
+    public void onRendererWorkflowStarted(long flowId, ContextInsight insight) {
+        final Timeline flowTimeline = new Timeline();
+
+        flowTimeline.addStringDetail("Render workflow %s started", flowId);
+
+        flowTimeline.addInsightDetail(insight);
+
+        mActiveRendererTimelines.put(flowId, flowTimeline);
+    }
+
+    /** Called when an insight is sent to a renderer. */
+    public void onInsightSentToRenderer(long flowId, ContextInsight insight, Renderer renderer) {
+        Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
+        if (flowTimeline == null) return;
+
+        flowTimeline.addStringDetail("Render workflow %s sent insight to renderer", flowId);
+        flowTimeline.addComponentDetail(renderer);
+    }
+
+    /** Called when a workflow stops. */
+    public void onRendererWorkflowFinished(long flowId) {
+        Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
+        if (flowTimeline == null) return;
+
+        flowTimeline.addStringDetail("Render workflow %s finished", flowId);
+
+        flushRendererWorkflowTimeline(flowId, flowTimeline);
+    }
+
+    /** Called when a workflow has an unexpected error. */
+    public void onRendererWorkflowError(long flowId, Throwable t) {
+        Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
+        if (flowTimeline == null) return;
+
+        flowTimeline.addStringDetail("Render workflow %s failed", flowId);
+        flowTimeline.addThrowableDetail(t);
+
+        flushRendererWorkflowTimeline(flowId, flowTimeline);
+    }
+
+    private void flushRendererWorkflowTimeline(long flowId, Timeline timeline) {
+        mActiveRendererTimelines.remove(flowId);
+        mRecentRendererTimelines.add(timeline);
+        if (mRecentRendererTimelines.size() > MAX_RECENT_ITEMS_TO_KEEP) {
+            mRecentRendererTimelines.remove();
+        }
+    }
+
     /** Writes recent activity in a log format to the PrintWriter. */
     public void dump(PrintWriter fout) {
         fout.write("Active Hint Workflows\n");
@@ -152,6 +206,16 @@ public class ContextLogger implements RefinerWorkflow.EventListener {
 
         public void addThrowableDetail(Throwable t) {
             addStringDetail("  Exception: %s", t.getMessage());
+        }
+
+        public void addInsightDetail(ContextInsight insight) {
+            addStringDetail(
+                    "  Insight: %s - %s (%s source hints)",
+                    insight.getClass().getSimpleName(),
+                    insight.getInsightId(),
+                    insight.getOriginHints().size());
+
+            addHintListDetail(insight.getOriginHints());
         }
 
         public void dump(PrintWriter fout) {
