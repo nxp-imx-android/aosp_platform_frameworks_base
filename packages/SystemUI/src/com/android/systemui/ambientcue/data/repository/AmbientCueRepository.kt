@@ -406,12 +406,12 @@ constructor(
             )
 
     override val isRootViewAttached: StateFlow<Boolean> =
-        combine(isDeactivated, globallyFocusedTaskId, actions, isAmbientCueEnabled) {
+        combine(isDeactivated, globallyFocusedTaskId, unfilteredActions, isAmbientCueEnabled) {
                 isDeactivated,
                 globallyFocusedTaskId,
-                actions,
+                unfilteredActions,
                 isAmbientCueEnabled ->
-                actions.isNotEmpty() &&
+                unfilteredActions.isNotEmpty() &&
                     isAmbientCueEnabled &&
                     !isDeactivated &&
                     globallyFocusedTaskId == targetTaskId.value
@@ -422,7 +422,7 @@ constructor(
                     var maCount = 0
                     var mrCount = 0
                     val packageName = frontRunningTask?.baseIntent?.component?.packageName ?: ""
-                    actions.value.forEach { action ->
+                    unfilteredActions.value.forEach { action ->
                         when (action.actionType) {
                             MA_ACTION_TYPE_NAME -> maCount++
                             MR_ACTION_TYPE_NAME -> mrCount++

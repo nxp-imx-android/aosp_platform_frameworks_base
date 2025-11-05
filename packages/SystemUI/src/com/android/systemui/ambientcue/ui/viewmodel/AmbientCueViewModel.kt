@@ -108,6 +108,7 @@ constructor(
         get() =
             isRootViewAttached &&
                 (!isImeVisible || AmbientCueFlag.isAmbientCueWithImeVisibleEnabled) &&
+                actions.isNotEmpty() &&
                 !isOccludedBySystemUi
 
     var isExpanded: Boolean by mutableStateOf(false)
@@ -329,11 +330,11 @@ constructor(
     companion object {
         private const val TAG = "AmbientCueViewModel"
         @VisibleForTesting const val AMBIENT_CUE_TIMEOUT_MS = 30_000
+        @VisibleForTesting const val ACTIONS_DEBOUNCE_MS = 300L
         // For how long we should wait until we can show the long press hint
         private val ONBOARDING_DELAY = 7.days
         private const val SHARED_PREFERENCES_FILE_NAME = "ambientcue_pref"
         private const val KEY_FIRST_TIME_ONBOARDING_SHOWN_AT = "show_first_time_onboarding"
         private const val KEY_SHOW_LONG_PRESS_ONBOARDING = "show_long_press_onboarding"
-        private const val ACTIONS_DEBOUNCE_MS = 300L
     }
 }
