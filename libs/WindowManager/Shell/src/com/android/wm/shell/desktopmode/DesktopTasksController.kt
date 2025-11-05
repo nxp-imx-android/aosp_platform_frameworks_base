@@ -5405,9 +5405,6 @@ class DesktopTasksController(
         minimizeTaskId: Int?,
         closingTopTransparentTaskId: Int?,
     ) {
-        if (!DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue) {
-            return
-        }
         // TODO: b/446995362 - pass immersive task here?
         desktopMixedTransitionHandler.addPendingMixedTransition(
             DesktopMixedTransitionHandler.PendingMixedTransition.Launch(
