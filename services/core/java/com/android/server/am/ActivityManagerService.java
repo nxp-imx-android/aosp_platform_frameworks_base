@@ -15597,12 +15597,12 @@ public class ActivityManagerService extends IActivityManager.Stub
         return (ProcessRecord) wpc.mOwner;
     }
 
-    void updateTopAppListeners(ProcessRecord r) {
+    void updateTopAppListeners(ProcessRecordInternal r) {
         String pkg;
         int uid;
         if (r != null) {
             pkg = r.processName;
-            uid = r.info.uid;
+            uid = r.getApplicationUid();
         } else {
             pkg = null;
             uid = -1;

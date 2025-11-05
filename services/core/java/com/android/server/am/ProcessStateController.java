@@ -76,7 +76,7 @@ public class ProcessStateController {
     private final Object mLock;
     private final Object mProcLock;
 
-    private final Consumer<ProcessRecord> mTopChangeCallback;
+    private final Consumer<ProcessRecordInternal> mTopChangeCallback;
 
     private final ProcessLruUpdater mProcessLruUpdater;
 
@@ -91,7 +91,7 @@ public class ProcessStateController {
 
     private ProcessStateController(ActivityManagerService ams, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread handlerThread,
-            Object lock, Object procLock, Consumer<ProcessRecord> topChangeCallback,
+            Object lock, Object procLock, Consumer<ProcessRecordInternal> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
             OomAdjuster.Constants oomConstants, OomAdjuster.Callback callback,
             OomAdjuster.StateGetter stateGetter) {
@@ -490,7 +490,7 @@ public class ProcessStateController {
     }
 
     @GuardedBy("mLock")
-    private void setTopProcess(@Nullable ProcessRecord proc) {
+    private void setTopProcess(@Nullable ProcessRecordInternal proc) {
         if (mGlobalState.mTopProcess == proc) return;
         mGlobalState.mTopProcess = proc;
         mTopChangeCallback.accept(proc);
@@ -1153,7 +1153,8 @@ public class ProcessStateController {
          */
         public void setTopProcessAsync(@Nullable WindowProcessController wpc, boolean clearPrev,
                 boolean cancelExpandedShade) {
-            final ProcessRecord top = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            final ProcessRecordInternal top = wpc != null
+                    ? (ProcessRecordInternal) wpc.mOwner : null;
             getBatchSession().stage(() -> {
                 mPsc.setTopProcess(top);
                 if (clearPrev) {
@@ -1273,7 +1274,7 @@ public class ProcessStateController {
 
         private ServiceThread mHandlerThread = null;
         private Object mLock = null;
-        private Consumer<ProcessRecord> mTopChangeCallback = null;
+        private Consumer<ProcessRecordInternal> mTopChangeCallback = null;
         private ProcessLruUpdater mProcessLruUpdater = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
 
@@ -1347,7 +1348,7 @@ public class ProcessStateController {
          * Set a callback for when ProcessStateController is informed about the Top process
          * changing.
          */
-        public Builder setTopProcessChangeCallback(Consumer<ProcessRecord> callback) {
+        public Builder setTopProcessChangeCallback(Consumer<ProcessRecordInternal> callback) {
             mTopChangeCallback = callback;
             return this;
         }
