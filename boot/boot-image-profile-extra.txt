@@ -76,6 +76,18 @@ HSPLandroid/os/MessageHeap;->*
 HSPLandroid/os/MessageStack;->*
 HSPLandroid/os/WaitState;->*
 HSPLandroid/os/Message;->compareMessages(Landroid/os/Message;Landroid/os/Message;)I
+HSPLandroid/os/Message$MessageCompare;->*
+HSPLandroid/os/Message$MatchHandlerWhatAndObject;->*
+HSPLandroid/os/Message$MatchHandlerWhatAndObjectEquals;->*
+HSPLandroid/os/Message$MatchHandlerRunnableAndObject;->*
+HSPLandroid/os/Message$MatchHandler;->*
+HSPLandroid/os/Message$MatchHandlerRunnableAndObjectEquals;->*
+HSPLandroid/os/Message$MatchHandlerAndObject;->*
+HSPLandroid/os/Message$MatchHandlerAndObjectEquals;->*
+HSPLandroid/os/Message$MatchAllMessages;->*
+HSPLandroid/os/Message$MatchAllFutureMessages;->*
+HSPLandroid/os/Message$MatchBarrierToken;->*
+HSPLandroid/os/Message$MatchDeliverableMessages;->*
 
 # While the SystemFeaturesMetadata static cache isn't heavyweight, ensure it's
 # pre-initialized in the boot image to avoid redundant per-process overhead.
