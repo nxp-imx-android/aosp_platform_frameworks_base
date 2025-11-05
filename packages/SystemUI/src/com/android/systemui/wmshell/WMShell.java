@@ -524,10 +524,6 @@ public final class WMShell implements
                 desktopMode.moveFocusedTaskToFullscreen(displayId,
                         DesktopModeTransitionSource.KEYBOARD_SHORTCUT);
             }
-            @Override
-            public void moveFocusedTaskToStageSplit(int displayId, boolean leftOrTop) {
-                desktopMode.moveFocusedTaskToStageSplit(displayId, leftOrTop);
-            }
         });
     }
 
