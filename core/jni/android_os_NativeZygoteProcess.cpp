@@ -33,7 +33,8 @@
 #include "com_android_internal_os_Zygote.h"
 #include "core_jni_helpers.h"
 
-#define RESPONSE_DATA_BUF_SIZE 1024
+// Should be in sync with MESSAGE_BUFFER_SIZE in system/zygote/zygote-messages/src/lib.rs
+#define RESPONSE_DATA_BUF_SIZE 2048
 
 namespace {
 
