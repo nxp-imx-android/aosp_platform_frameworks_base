@@ -226,6 +226,10 @@
     <string name="screenshot_saved_title">Screenshot saved</string>
     <!-- Notification title displayed when we fail to take a screenshot. [CHAR LIMIT=50] -->
     <string name="screenshot_failed_title">Couldn\'t save screenshot</string>
+    <!-- Title label indicating the folder where the screenshot will be saved. [CHAR LIMIT=30] -->
+    <string name="screenshot_save_to">Save to</string>
+    <!-- Menu item text to open a file picker to select a custom folder for saving screenshots. [CHAR LIMIT=30] -->
+    <string name="screenshot_select_folder">Select folder</string>
     <!-- Appended to the notification content when a screenshot failure happens on an external display. [CHAR LIMIT=50] -->
     <string name="screenshot_failed_external_display_indication">External Display</string>
     <!-- Notification text displayed when we fail to save a screenshot due to locked storage. [CHAR LIMIT=100] -->
