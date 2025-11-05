@@ -87,6 +87,7 @@ import android.os.PowerManagerInternal;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
@@ -262,6 +263,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testAddHandoffEnablementListener_doesNotNotifyIfFlagDisabled() {
         ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
                 mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
@@ -348,6 +350,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testGetHandoffActivityParamsForTask_returnsNullIfFlagDisabled() {
         HandoffActivityParams handoffActivityParams =
         new HandoffActivityParams.Builder()
