@@ -302,10 +302,7 @@ constructor(
      * The end padding is as follows: Below clock padding end
      */
     private fun setUpSmartspace(previewContext: Context, parentView: ConstraintLayout) {
-        if (
-            !lockscreenSmartspaceController.isEnabled ||
-                !lockscreenSmartspaceController.isDateWeatherDecoupled
-        ) {
+        if (!lockscreenSmartspaceController.isEnabled) {
             return
         }
 

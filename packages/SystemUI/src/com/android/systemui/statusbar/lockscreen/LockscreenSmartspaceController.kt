@@ -316,8 +316,6 @@ constructor(
 
     val isEnabled: Boolean = plugin != null
 
-    val isDateWeatherDecoupled: Boolean = datePlugin != null && weatherPlugin != null
-
     val isWeatherEnabled: Boolean
         get() {
             val showWeather =
@@ -338,9 +336,6 @@ constructor(
         if (!isEnabled) {
             throw RuntimeException("Cannot build view when not enabled")
         }
-        if (!isDateWeatherDecoupled) {
-            throw RuntimeException("Cannot build date view when not decoupled")
-        }
 
         val view =
             buildView(
@@ -360,9 +355,6 @@ constructor(
 
         if (!isEnabled) {
             throw RuntimeException("Cannot build view when not enabled")
-        }
-        if (!isDateWeatherDecoupled) {
-            throw RuntimeException("Cannot build weather view when not decoupled")
         }
 
         val view =
@@ -601,7 +593,7 @@ constructor(
     }
 
     private fun filterSmartspaceTarget(t: SmartspaceTarget): Boolean {
-        if (isDateWeatherDecoupled && t.featureType == SmartspaceTarget.FEATURE_WEATHER) {
+        if (t.featureType == SmartspaceTarget.FEATURE_WEATHER) {
             return false
         }
         if (!showNotifications) {
