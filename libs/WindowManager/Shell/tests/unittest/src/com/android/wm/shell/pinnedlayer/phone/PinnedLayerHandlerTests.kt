@@ -22,6 +22,7 @@ import android.app.ActivityManager.AppTask.WindowingLayer
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
 import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.IBinder
 import android.os.IRemoteCallback
@@ -58,6 +59,7 @@ import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -81,13 +83,15 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock private lateinit var startTransaction: SurfaceControl.Transaction
     @Mock private lateinit var finishTransaction: SurfaceControl.Transaction
     @Mock private lateinit var normalLayerHandler: NormalAppLayerHandler
+    @Mock private lateinit var presentationController: PinnedLayerPresentationController
 
     private lateinit var pinnedLayerController: PinnedLayerController
     private lateinit var pinnedLayerHandler: PinnedLayerHandler
 
     @Before
     fun setup() {
-        pinnedLayerController = PinnedLayerController(shellInit, transitions)
+        pinnedLayerController =
+            PinnedLayerController(shellInit, transitions, presentationController)
         pinnedLayerHandler =
             PinnedLayerHandler(shellInit, transitions, normalLayerHandler, pinnedLayerController)
     }
@@ -267,6 +271,26 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         assertTrue(pinnedLayerController.isPinned(TASK_ID_0))
         assertTrue(pinnedLayerController.isPinned(TASK_ID_1))
         assertEquals(TASK_ID_1, pinnedLayerController.currentPinnedTask?.taskId)
+    }
+
+    @Test
+    fun handlePinRequest_findsProperBounds() {
+        val transition = mock<IBinder>()
+        val callback = mock<IRemoteCallback>()
+        val requestInfo = setupWindowingLayerTransition(WINDOWING_LAYER_PINNED, callback)
+        val transitionInfo = TransitionInfo(TRANSIT_CHANGE, FLAG_NONE)
+        val bounds = Rect(100, 100, 200, 200)
+        whenever(presentationController.getPinEntryDestinationBounds(any())).thenReturn(bounds)
+
+        val wct = pinnedLayerHandler.handleRequest(transition, requestInfo)
+
+        val actualBounds =
+            wct?.changes
+                ?.get(requestInfo.triggerTask!!.token.asBinder())
+                ?.configuration
+                ?.windowConfiguration
+                ?.bounds
+        assertEquals(bounds, actualBounds)
     }
 
     @Test
