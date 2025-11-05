@@ -27,6 +27,7 @@ import android.window.DisplayAreaInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_PIP
+import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
@@ -145,6 +146,29 @@ class PipDesktopStateTest : ShellTestCase() {
 
         whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
         assertThat(pipDesktopState.isPipInDesktopMode()).isTrue()
+    }
+
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
+    @Test
+    fun isFreeFloatingPipEnabled_notInDesktopMode_returnsFalse() {
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
+
+        assertThat(pipDesktopState.isFreeFloatingPipEnabled()).isFalse()
+    }
+
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
+    @Test
+    fun isFreeFloatingPipEnabled_touchFirstDisplay_returnsFalse() {
+        assertThat(pipDesktopState.isFreeFloatingPipEnabled()).isFalse()
+    }
+
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
+    @Test
+    fun isFreeFloatingPipEnabled_desktopFirstDisplay_returnsTrue() {
+        defaultTda.configuration.windowConfiguration.windowingMode =
+            DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
+
+        assertThat(pipDesktopState.isFreeFloatingPipEnabled()).isTrue()
     }
 
     @Test
