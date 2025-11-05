@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
@@ -62,11 +63,16 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.DeviceFontFamilyName
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -577,6 +583,51 @@ private fun BatteryInfo(
 }
 
 @Composable
+private fun CarrierTextWithSubscriptionId(
+    viewModel: ShadeHeaderViewModel,
+    subId: Int,
+    textColor: Color,
+    inverseTextColor: Color,
+) {
+    AndroidView(
+        factory = { context ->
+            ModernShadeCarrierGroupMobileView.constructAndBind(
+                    context = context,
+                    logger = viewModel.mobileIconsViewModel.logger,
+                    slot = "mobile_carrier_shade_group",
+                    viewModel =
+                        (viewModel.mobileIconsViewModel.viewModelForSub(
+                            subId,
+                            StatusBarLocation.SHADE_CARRIER_GROUP,
+                        ) as ShadeCarrierGroupMobileIconViewModel),
+                )
+                .also { it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() } }
+        },
+        update = { view ->
+            view.setStyleAndTint(
+                R.style.TextAppearance_QS_Status,
+                textColor.toArgb(),
+                inverseTextColor.toArgb(),
+            )
+        },
+    )
+}
+
+@Composable
+private fun CarrierTextNoSubscriptionId(viewModel: ShadeHeaderViewModel) {
+    Text(
+        text = viewModel.carrierText.toString(),
+        color = ShadeHeader.Colors.textColor,
+        style =
+            TextStyle(
+                fontFamily =
+                    FontFamily(Font(DeviceFontFamilyName("variable-body-medium-emphasized"))),
+                letterSpacing = 0.01.em,
+            ),
+    )
+}
+
+@Composable
 private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifier = Modifier) {
     if (StatusBarMobileIconKairos.isEnabled) {
         ShadeCarrierGroupKairos(viewModel, modifier)
@@ -585,30 +636,15 @@ private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifie
 
     val textColor = ShadeHeader.Colors.textColor
     val inverseTextColor = ShadeHeader.Colors.inverseTextColor
+    val mobileSubIds = viewModel.mobileSubIds
+
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-        for (subId in viewModel.mobileSubIds) {
-            AndroidView(
-                factory = { context ->
-                    ModernShadeCarrierGroupMobileView.constructAndBind(
-                            context = context,
-                            logger = viewModel.mobileIconsViewModel.logger,
-                            slot = "mobile_carrier_shade_group",
-                            viewModel =
-                                (viewModel.mobileIconsViewModel.viewModelForSub(
-                                    subId,
-                                    StatusBarLocation.SHADE_CARRIER_GROUP,
-                                ) as ShadeCarrierGroupMobileIconViewModel),
-                        )
-                        .also { it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() } }
-                },
-                update = { view ->
-                    view.setStyleAndTint(
-                        R.style.TextAppearance_QS_Status,
-                        textColor.toArgb(),
-                        inverseTextColor.toArgb(),
-                    )
-                },
-            )
+        if (mobileSubIds.isEmpty()) {
+            CarrierTextNoSubscriptionId(viewModel)
+        } else {
+            for (subId in mobileSubIds) {
+                CarrierTextWithSubscriptionId(viewModel, subId, textColor, inverseTextColor)
+            }
         }
     }
 }

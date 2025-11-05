@@ -50,6 +50,8 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileRepo
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.DemoModeMobileConnectionDataSourceKairosImpl
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionRepositoryKairosFactoryImpl
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileConnectionsRepositoryKairosImpl
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.CarrierTextInteractor
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.CarrierTextInteractorImpl
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairosAdapter
@@ -165,6 +167,13 @@ abstract class StatusBarPipelineModule {
     abstract fun bindCarrierConfigStartable(impl: CarrierConfigCoreStartable): CoreStartable
 
     companion object {
+
+        @Provides
+        fun carrierTextInteractor(
+            impl: Provider<CarrierTextInteractorImpl>
+        ): CarrierTextInteractor {
+            return impl.get()
+        }
 
         @Provides
         fun mobileIconsInteractor(
