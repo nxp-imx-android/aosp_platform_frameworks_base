@@ -46,7 +46,6 @@ import com.android.server.backup.Flags;
 import com.android.server.backup.OperationStorage.OpType;
 import com.android.server.backup.UserBackupManagerService;
 import com.android.server.backup.crossplatform.CrossPlatformManifest;
-import com.android.server.backup.fullbackup.FullBackupPreflight;
 import com.android.server.backup.remote.RemoteCall;
 import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.backup.utils.BackupManagerMonitorEventSender;
@@ -59,23 +58,19 @@ import java.io.OutputStream;
 import java.util.Objects;
 
 /**
- * Core logic for performing one package's adb backup, gathering the tarball from the application
- * and emitting it to the designated OutputStream.
+ * Core logic for performing one package's full backup for `adb backup`, gathering the tarball from
+ * the application and emitting it to the designated OutputStream.
  */
 public class FullAdbBackupEngine {
     private UserBackupManagerService backupManagerService;
     private OutputStream mOutput;
-    private FullBackupPreflight mPreflightHook;
     private BackupRestoreTask mTimeoutMonitor;
     private IBackupAgent mAgent;
     private boolean mIncludeApks;
     private final PackageInfo mPkg;
-    private final long mQuota;
     private final int mOpToken;
-    private final int mTransportFlags;
     private final BackupAgentTimeoutParameters mAgentTimeoutParameters;
     private final BackupEligibilityRules mBackupEligibilityRules;
-    private final BackupManagerMonitorEventSender mBackupManagerMonitorEventSender;
 
     class FullAdbBackupRunner implements Runnable {
         private final @UserIdInt int mUserId;
@@ -109,8 +104,8 @@ public class FullAdbBackupEngine {
         public void run() {
             try {
                 FullBackupDataOutput output =
-                        new FullBackupDataOutput(mPipe, /* quota */ -1, mTransportFlags);
-                AppMetadataAdbBackupWriter appMetadataBackupWriter =
+                        new FullBackupDataOutput(mPipe, /* quota */ -1, /* transportFlags= */ 0);
+                AppMetadataAdbBackupWriter appMetadataAdbBackupWriter =
                         new AppMetadataAdbBackupWriter(output, mPackageManager);
 
                 String packageName = mPackage.packageName;
@@ -124,7 +119,7 @@ public class FullAdbBackupEngine {
                     }
 
                     File manifestFile = new File(mFilesDir, BACKUP_MANIFEST_FILENAME);
-                    appMetadataBackupWriter.backupManifest(
+                    appMetadataAdbBackupWriter.backupManifest(
                             mPackage, manifestFile, mFilesDir, writeApk);
                     manifestFile.delete();
 
@@ -133,22 +128,15 @@ public class FullAdbBackupEngine {
                             AppWidgetBackupBridge.getWidgetState(packageName, mUserId);
                     if (widgetData != null && widgetData.length > 0) {
                         File metadataFile = new File(mFilesDir, BACKUP_METADATA_FILENAME);
-                        appMetadataBackupWriter.backupWidget(
+                        appMetadataAdbBackupWriter.backupWidget(
                                 mPackage, metadataFile, mFilesDir, widgetData);
                         metadataFile.delete();
                     }
                 }
 
-                // TODO(b/113807190): Look into removing, only used for 'adb backup'.
                 if (writeApk) {
-                    appMetadataBackupWriter.backupApk(mPackage);
-                    appMetadataBackupWriter.backupObb(mUserId, mPackage);
-                }
-
-                if (Flags.enableCrossPlatformTransfer()
-                        && (mTransportFlags & BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS)
-                                != 0) {
-                    backupCrossPlatformManifest(output, mPackage.applicationInfo);
+                    appMetadataAdbBackupWriter.backupApk(mPackage);
+                    appMetadataAdbBackupWriter.backupObb(mUserId, mPackage);
                 }
 
                 Slog.d(TAG, "Calling doFullBackup() on " + packageName);
@@ -164,10 +152,10 @@ public class FullAdbBackupEngine {
                         OpType.BACKUP_WAIT);
                 mAgent.doFullBackup(
                         mPipe,
-                        mQuota,
+                        /* quota */ Long.MAX_VALUE,
                         mToken,
                         backupManagerService.getBackupManagerBinder(),
-                        mTransportFlags);
+                        /* transportFlags= */ 0);
             } catch (IOException e) {
                 Slog.e(TAG, "Error running full backup for " + mPackage.packageName, e);
             } catch (RemoteException e) {
@@ -195,91 +183,30 @@ public class FullAdbBackupEngine {
                     && !isSharedStorage
                     && (!isSystemApp || isUpdatedSystemApp);
         }
-
-        /** Back up the app's cross platform manifest. */
-        private void backupCrossPlatformManifest(
-                FullBackupDataOutput output, ApplicationInfo applicationInfo) throws IOException {
-            CrossPlatformManifest manifest =
-                    CrossPlatformManifest.create(
-                            mPackage,
-                            PLATFORM_IOS,
-                            mBackupEligibilityRules.getPlatformSpecificParams(
-                                    applicationInfo, PLATFORM_IOS));
-            File manifestFile = new File(mFilesDir, CROSS_PLATFORM_MANIFEST_FILENAME);
-            try (FileOutputStream out = new FileOutputStream(manifestFile)) {
-                out.write(manifest.toByteArray());
-            }
-
-            // We want the manifest block in the archive stream to be constant each time we generate
-            // a backup stream for the app. However, the underlying TAR mechanism sees it as a file
-            // and will propagate its last modified time. We pin the last modified time to zero to
-            // prevent the TAR header from varying.
-            manifestFile.setLastModified(0);
-
-            FullBackup.backupToTar(
-                    mPackage.packageName,
-                    /* domain= */ null,
-                    /* linkdomain= */ null,
-                    mFilesDir.getAbsolutePath(),
-                    manifestFile.getAbsolutePath(),
-                    output);
-        }
     }
 
     public FullAdbBackupEngine(
             UserBackupManagerService backupManagerService,
             OutputStream output,
-            FullBackupPreflight preflightHook,
             PackageInfo pkg,
             boolean alsoApks,
             BackupRestoreTask timeoutMonitor,
-            long quota,
             int opToken,
-            int transportFlags,
-            BackupEligibilityRules backupEligibilityRules,
-            BackupManagerMonitorEventSender backupManagerMonitorEventSender) {
+            BackupEligibilityRules backupEligibilityRules) {
         this.backupManagerService = backupManagerService;
         mOutput = output;
-        mPreflightHook = preflightHook;
         mPkg = pkg;
         mIncludeApks = alsoApks;
         mTimeoutMonitor = timeoutMonitor;
-        mQuota = quota;
         mOpToken = opToken;
-        mTransportFlags = transportFlags;
         mAgentTimeoutParameters =
                 Objects.requireNonNull(
                         backupManagerService.getAgentTimeoutParameters(),
                         "Timeout parameters cannot be null");
         mBackupEligibilityRules = backupEligibilityRules;
-        mBackupManagerMonitorEventSender = backupManagerMonitorEventSender;
     }
 
-    public int preflightCheck() throws RemoteException {
-        if (mPreflightHook == null) {
-            if (DEBUG) {
-                Slog.v(TAG, "No preflight check");
-            }
-            return BackupTransport.TRANSPORT_OK;
-        }
-        if (initializeAgent()) {
-            int result = mPreflightHook.preflightFullBackup(mPkg, mAgent);
-            if (DEBUG) {
-                Slog.v(TAG, "preflight returned " + result);
-            }
-
-            // Clear any logs generated during preflight
-            mAgent.clearBackupRestoreEventLogger();
-            return result;
-        } else {
-            Slog.w(TAG, "Unable to bind to full agent for " + mPkg.packageName);
-            return BackupTransport.AGENT_ERROR;
-        }
-    }
-
-    public int backupOnePackage() throws RemoteException {
-        int result = BackupTransport.AGENT_ERROR;
-
+    public void backupOnePackage() throws RemoteException {
         if (initializeAgent()) {
             ParcelFileDescriptor[] pipes = null;
             try {
@@ -306,19 +233,9 @@ public class FullAdbBackupEngine {
                     if (DEBUG) {
                         Slog.d(TAG, "Full package backup success: " + mPkg.packageName);
                     }
-                    result = BackupTransport.TRANSPORT_OK;
                 }
-
-                mBackupManagerMonitorEventSender.monitorAgentLoggingResults(mPkg, mAgent);
             } catch (IOException e) {
                 Slog.e(TAG, "Error backing up " + mPkg.packageName + ": " + e.getMessage());
-                // This is likely due to the app process dying.
-                mBackupManagerMonitorEventSender.monitorEvent(
-                        BackupManagerMonitor.LOG_EVENT_ID_FULL_BACKUP_AGENT_PIPE_BROKEN,
-                        mPkg,
-                        BackupManagerMonitor.LOG_EVENT_CATEGORY_AGENT,
-                        /* extras= */ null);
-                result = BackupTransport.AGENT_ERROR;
             } finally {
                 try {
                     // flush after every package
@@ -333,26 +250,12 @@ public class FullAdbBackupEngine {
                     }
                 } catch (IOException e) {
                     Slog.w(TAG, "Error bringing down backup stack");
-                    result = BackupTransport.TRANSPORT_ERROR;
                 }
             }
         } else {
             Slog.w(TAG, "Unable to bind to full agent for " + mPkg.packageName);
         }
         tearDown();
-        return result;
-    }
-
-    public void sendQuotaExceeded(long backupDataBytes, long quotaBytes) {
-        if (initializeAgent()) {
-            try {
-                RemoteCall.execute(
-                        callback -> mAgent.doQuotaExceeded(backupDataBytes, quotaBytes, callback),
-                        mAgentTimeoutParameters.getQuotaExceededTimeoutMillis());
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Remote exception while telling agent about quota exceeded");
-            }
-        }
     }
 
     private boolean initializeAgent() {

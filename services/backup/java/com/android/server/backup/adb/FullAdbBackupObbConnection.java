@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.android.server.backup.fullbackup;
+package com.android.server.backup.adb;
 
 import static com.android.server.backup.BackupManagerService.DEBUG;
 import static com.android.server.backup.BackupManagerService.TAG;
@@ -43,13 +43,13 @@ import java.util.Objects;
 /**
  * Full backup/restore to a file/socket.
  */
-public class FullBackupObbConnection implements ServiceConnection {
+public class FullAdbBackupObbConnection implements ServiceConnection {
 
     private UserBackupManagerService backupManagerService;
     volatile IObbBackupService mService;
     private final BackupAgentTimeoutParameters mAgentTimeoutParameters;
 
-    public FullBackupObbConnection(UserBackupManagerService backupManagerService) {
+    public FullAdbBackupObbConnection(UserBackupManagerService backupManagerService) {
         this.backupManagerService = backupManagerService;
         mService = null;
         mAgentTimeoutParameters = Objects.requireNonNull(

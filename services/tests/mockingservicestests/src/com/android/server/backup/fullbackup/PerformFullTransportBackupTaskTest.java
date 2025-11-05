@@ -133,7 +133,6 @@ public class PerformFullTransportBackupTaskTest {
                             .newWithCurrentTransport(
                                     mBackupManagerService,
                                     /* operationStorage */  null,
-                                    /* observer */  null,
                                     /* whichPackages */  null,
                                     /* updateSchedule */  false,
                                     /* runningJob */  null,
@@ -190,7 +189,6 @@ public class PerformFullTransportBackupTaskTest {
                 .newWithCurrentTransport(
                         mBackupManagerService,
                         mOperationStorage,
-                        /* observer */  null,
                         /* whichPackages */  packageNames,
                         /* updateSchedule */  false,
                         /* runningJob */  null,

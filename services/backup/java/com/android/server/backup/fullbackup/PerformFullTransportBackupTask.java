@@ -101,14 +101,13 @@ import java.util.concurrent.atomic.AtomicLong;
  *       so read() returns -1. 3. Notifies mCurrentOpLock which unblocks
  *       mBackupRunner.getBackupResultBlocking().
  */
-public class PerformFullTransportBackupTask extends FullBackupTask implements BackupRestoreTask {
+public class PerformFullTransportBackupTask implements BackupRestoreTask, Runnable {
     /**
      * @throws IllegalStateException if there's no transport available.
      */
     public static PerformFullTransportBackupTask newWithCurrentTransport(
             UserBackupManagerService backupManagerService,
             OperationStorage operationStorage,
-            IFullBackupRestoreObserver observer,
             String[] whichPackages,
             boolean updateSchedule,
             FullBackupJob runningJob,
@@ -132,7 +131,6 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                 backupManagerService,
                 operationStorage,
                 transportConnection,
-                observer,
                 whichPackages,
                 updateSchedule,
                 runningJob,
@@ -172,12 +170,10 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
     public PerformFullTransportBackupTask(UserBackupManagerService backupManagerService,
             OperationStorage operationStorage,
             TransportConnection transportConnection,
-            IFullBackupRestoreObserver observer,
             String[] whichPackages, boolean updateSchedule,
             FullBackupJob runningJob, CountDownLatch latch, IBackupObserver backupObserver,
             @Nullable IBackupManagerMonitor monitor, @Nullable OnTaskFinishedListener listener,
             boolean userInitiated, BackupEligibilityRules backupEligibilityRules) {
-        super(observer);
         mUserBackupManagerService = backupManagerService;
         mOperationStorage = operationStorage;
         mTransportConnection = transportConnection;
