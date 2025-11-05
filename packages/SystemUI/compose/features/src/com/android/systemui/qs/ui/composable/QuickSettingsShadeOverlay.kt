@@ -442,7 +442,7 @@ private fun ContentScope.QuickSettingsLayout(
                             },
                         ) {
                             Icon(
-                                painterResource(R.drawable.horizontal_ellipsis),
+                                painterResource(R.drawable.ic_more_vert),
                                 // TODO(b/378513663): Update the placeholder content description
                                 contentDescription = "Volume settings",
                             )
