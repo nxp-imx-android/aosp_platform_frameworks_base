@@ -67,6 +67,8 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodSupported;
+import android.ravenwood.annotation.RavenwoodSupported.SupportType;
 import android.system.Int64Ref;
 import android.text.TextUtils;
 import android.util.EventLog;
@@ -104,7 +106,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * developer guide.</p>
  * </div>
  */
-@RavenwoodKeepPartialClass
+@RavenwoodKeepPartialClass(comment = "kept just enough to support SettingsProvider",
+        bug = 457841012)
 public abstract class ContentResolver implements ContentInterface {
     /**
      * Enables logic that supports deprecation of {@code _data} columns,
@@ -874,6 +877,7 @@ public abstract class ContentResolver implements ContentInterface {
     /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationContentResolver")
     protected abstract IContentProvider acquireProvider(Context c, String name);
 
     /**
@@ -884,6 +888,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @hide
      */
     @UnsupportedAppUsage
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationContentResolver")
     protected IContentProvider acquireExistingProvider(Context c, String name) {
         return acquireProvider(c, name);
     }
@@ -891,21 +896,26 @@ public abstract class ContentResolver implements ContentInterface {
     /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationContentResolver")
     public abstract boolean releaseProvider(IContentProvider icp);
     /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationContentResolver")
     protected abstract IContentProvider acquireUnstableProvider(Context c, String name);
     /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationContentResolver")
     public abstract boolean releaseUnstableProvider(IContentProvider icp);
     /** @hide */
     @SuppressWarnings("HiddenAbstractMethod")
     @UnsupportedAppUsage
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationContentResolver")
     public abstract void unstableProviderDied(IContentProvider icp);
 
     /** @hide */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ApplicationContentResolver")
     public void appNotRespondingViaProvider(IContentProvider icp) {
         throw new UnsupportedOperationException("appNotRespondingViaProvider");
     }
@@ -2505,6 +2515,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @hide
      */
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public final IContentProvider acquireProvider(Uri uri) {
         if (!SCHEME_CONTENT.equals(uri.getScheme())) {
             return null;
@@ -2540,6 +2551,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @hide
      */
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public final IContentProvider acquireProvider(String name) {
         if (name == null) {
             return null;
@@ -2587,6 +2599,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return a {@link ContentProviderClient} that is associated with the {@link ContentProvider}
      * that services the content at uri or null if there isn't one.
      */
+    @RavenwoodKeep
     public final @Nullable ContentProviderClient acquireContentProviderClient(@NonNull Uri uri) {
         Objects.requireNonNull(uri, "uri");
         IContentProvider provider = acquireProvider(uri);
@@ -2607,6 +2620,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return a {@link ContentProviderClient} that is associated with the {@link ContentProvider}
      * with the authority of name or null if there isn't one.
      */
+    @RavenwoodKeep
     public final @Nullable ContentProviderClient acquireContentProviderClient(
             @NonNull String name) {
         Objects.requireNonNull(name, "name");
@@ -2634,6 +2648,7 @@ public abstract class ContentResolver implements ContentInterface {
      * can acquire a new one if you would like to try to restart the provider
      * and perform new operations on it.
      */
+    @RavenwoodKeep
     public final @Nullable ContentProviderClient acquireUnstableContentProviderClient(
             @NonNull Uri uri) {
         Objects.requireNonNull(uri, "uri");
@@ -2661,6 +2676,7 @@ public abstract class ContentResolver implements ContentInterface {
      * can acquire a new one if you would like to try to restart the provider
      * and perform new operations on it.
      */
+    @RavenwoodKeep
     public final @Nullable ContentProviderClient acquireUnstableContentProviderClient(
             @NonNull String name) {
         Objects.requireNonNull(name, "name");
@@ -3958,16 +3974,19 @@ public abstract class ContentResolver implements ContentInterface {
 
     /** @hide */
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public String getPackageName() {
         return mContext.getOpPackageName();
     }
 
     /** @hide */
+    @RavenwoodKeep
     public @Nullable String getAttributionTag() {
         return mContext.getAttributionTag();
     }
 
     /** @hide */
+    @RavenwoodKeep
     public @NonNull AttributionSource getAttributionSource() {
         return mContext.getAttributionSource();
     }
@@ -3986,11 +4005,13 @@ public abstract class ContentResolver implements ContentInterface {
     private static final String TAG = "ContentResolver";
 
     /** @hide */
+    @RavenwoodKeep
     public int resolveUserId(Uri uri) {
         return ContentProvider.getUserIdFromUri(uri, mContext.getUserId());
     }
 
     /** @hide */
+    @RavenwoodKeep
     public int getUserId() {
         return mContext.getUserId();
     }

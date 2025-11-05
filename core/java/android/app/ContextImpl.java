@@ -88,6 +88,7 @@ import android.permission.PermissionManager;
 import android.ravenwood.annotation.RavenwoodIgnore;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodReplace;
@@ -469,6 +470,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public ContentResolver getContentResolver() {
         return mContentResolver;
     }
@@ -3972,12 +3974,13 @@ class ContextImpl extends Context {
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
 
-    @RavenwoodKeepPartialClass
+    @RavenwoodKeepWholeClass
+    @RavenwoodRedirectionClass("ContextImpl_ravenwood$ContentResolver")
+    @RavenwoodProvidingImplementation(target = ContentResolver.class)
     static final class ApplicationContentResolver extends ContentResolver {
         @UnsupportedAppUsage
         private final ActivityThread mMainThread;
 
-        @RavenwoodKeep
         public ApplicationContentResolver(Context context, ActivityThread mainThread) {
             super(context);
             mMainThread = Objects.requireNonNull(mainThread);
@@ -3985,6 +3988,7 @@ class ContextImpl extends Context {
 
         @Override
         @UnsupportedAppUsage
+        @RavenwoodRedirect
         protected IContentProvider acquireProvider(Context context, String auth) {
             return mMainThread.acquireProvider(context,
                     ContentProvider.getAuthorityWithoutUserId(auth),
@@ -3992,6 +3996,7 @@ class ContextImpl extends Context {
         }
 
         @Override
+        @RavenwoodRedirect
         protected IContentProvider acquireExistingProvider(Context context, String auth) {
             return mMainThread.acquireExistingProvider(context,
                     ContentProvider.getAuthorityWithoutUserId(auth),
@@ -3999,11 +4004,13 @@ class ContextImpl extends Context {
         }
 
         @Override
+        @RavenwoodIgnore
         public boolean releaseProvider(IContentProvider provider) {
             return mMainThread.releaseProvider(provider, true);
         }
 
         @Override
+        @RavenwoodRedirect
         protected IContentProvider acquireUnstableProvider(Context c, String auth) {
             return mMainThread.acquireProvider(c,
                     ContentProvider.getAuthorityWithoutUserId(auth),
@@ -4011,16 +4018,19 @@ class ContextImpl extends Context {
         }
 
         @Override
+        @RavenwoodIgnore
         public boolean releaseUnstableProvider(IContentProvider icp) {
             return mMainThread.releaseProvider(icp, false);
         }
 
         @Override
+        @RavenwoodIgnore
         public void unstableProviderDied(IContentProvider icp) {
             mMainThread.handleUnstableProviderDied(icp.asBinder(), true);
         }
 
         @Override
+        @RavenwoodIgnore
         public void appNotRespondingViaProvider(IContentProvider icp) {
             mMainThread.appNotRespondingViaProvider(icp.asBinder());
         }

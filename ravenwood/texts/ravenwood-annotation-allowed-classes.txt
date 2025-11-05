@@ -38,6 +38,8 @@ android.content.ClipboardManager
 android.content.ComponentCallbacksController
 android.content.ComponentName
 android.content.ContentProvider
+android.content.ContentProviderClient
+android.content.ContentProviderNative
 android.content.ContentResolver
 android.content.ContentUris
 android.content.ContentValues
@@ -325,6 +327,8 @@ android.os.WorkSource
 android.os.connectivity.CellularBatteryStats
 android.os.connectivity.WifiActivityEnergyInfo
 android.os.connectivity.WifiBatteryStats
+
+android.provider.Settings
 
 android.telephony.ActivityStatsTechSpecificInfo
 android.telephony.CellSignalStrength

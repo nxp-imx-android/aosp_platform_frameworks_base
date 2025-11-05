@@ -36,6 +36,7 @@ import android.os.ICancellationSignal;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
@@ -68,6 +69,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * on the ContentProviderClient those calls are made from until you are finished
  * with the data they have returned.
  */
+@RavenwoodKeepWholeClass
 public class ContentProviderClient implements ContentInterface, AutoCloseable {
     private static final String TAG = "ContentProviderClient";
 

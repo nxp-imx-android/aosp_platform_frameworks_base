@@ -1042,6 +1042,8 @@ public abstract class Context {
     public abstract PackageManager getPackageManager();
 
     /** Return a ContentResolver instance for your application's package. */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "only content://settings/ is understood for now", bug = 457841012)
     public abstract ContentResolver getContentResolver();
 
     /**
