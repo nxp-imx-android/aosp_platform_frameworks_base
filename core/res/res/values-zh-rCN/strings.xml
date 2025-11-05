@@ -326,6 +326,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"助听装置"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"无障碍功能使用情况"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"显示屏"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g>正在消耗电量"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> 个应用正在消耗电量"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"点按即可详细了解电量和流量消耗情况"</string>
