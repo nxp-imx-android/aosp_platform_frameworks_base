@@ -219,7 +219,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
             val expectedDisclaimerText =
                 context.getString(R.string.monitoring_description_parental_controls_legacy)
             val expectedFooterText =
-                context.getString(R.string.quick_settings_disclosure_parental_controls)
+                context.getString(R.string.quick_settings_disclosure_parental_controls_legacy)
             assertEquals(expectedLabel, currentSupervisionModel!!.label)
             assertTrue(currentSupervisionModel!!.icon.toBitmap()!!.sameAs(expectedIcon.toBitmap()))
             assertEquals(expectedDisclaimerText, currentSupervisionModel!!.disclaimerText)
@@ -277,7 +277,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
             val expectedDisclaimerText =
                 context.getString(R.string.monitoring_description_parental_controls_legacy)
             val expectedFooterText =
-                context.getString(R.string.quick_settings_disclosure_parental_controls)
+                context.getString(R.string.quick_settings_disclosure_parental_controls_legacy)
             assertEquals(expectedLabel, currentSupervisionModel!!.label)
             assertTrue(currentSupervisionModel!!.icon.toBitmap()!!.sameAs(expectedIcon.toBitmap()))
             assertEquals(expectedDisclaimerText, currentSupervisionModel!!.disclaimerText)
