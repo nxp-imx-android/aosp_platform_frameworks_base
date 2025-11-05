@@ -770,6 +770,8 @@ public class TaskTests extends WindowTestsBase {
         final Rect fullScreenBoundsPort = new Rect(0, 0, 1080, 1920);
         final DisplayContent display = new TestDisplayContent.Builder(mAtm,
                 fullScreenBounds.width(), fullScreenBounds.height()).setCanRotate(false).build();
+        // Skip WAKE transition (when adding task to empty display).
+        display.setIsSleeping(false);
         assertNotNull(mRootWindowContainer.getDisplayContent(display.mDisplayId));
         // Fix the display orientation to landscape which is the natural rotation (0) for the test
         // display.
