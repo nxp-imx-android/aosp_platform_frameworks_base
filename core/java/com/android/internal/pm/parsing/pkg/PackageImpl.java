@@ -2576,7 +2576,7 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
      */
     @Deprecated
     @Override
-    @FlaggedApi(android.security.Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC)
+    @FlaggedApi(android.security.Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC2)
     public PackageImpl setCleartextTrafficAllowed(boolean value) {
         return setBoolean(Booleans.USES_CLEARTEXT_TRAFFIC, value);
     }
