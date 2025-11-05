@@ -810,16 +810,6 @@ flag {
 }
 
 flag {
-  name: "screenshare_notification_hiding_bug_fix"
-  namespace: "systemui"
-  description: "Various bug fixes for notification redaction while screensharing"
-  bug: "312784809"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "qs_sizes_in_tile_request_dialog"
     namespace: "systemui"
     description: "Allows for selecting a tile's size in the tile request dialog."
