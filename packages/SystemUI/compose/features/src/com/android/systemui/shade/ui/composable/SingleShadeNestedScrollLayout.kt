@@ -182,21 +182,12 @@ fun ContentScope.SingleShadeNestedScrollLayout(
         val insetsTop = cutoutInsets?.getTop(this) ?: 0
         val alwaysVisibleHeader = measurables[0][0].measure(constraintsWithCutout)
         val overlappableHeader = measurables[1][0].measure(constraintsWithCutout)
+        val scrim = measurables[2][0].measure(constraintsWithCutout)
         val totalScrimOffset =
             insetsTop +
                 alwaysVisibleHeader.height +
                 overlappableHeader.height +
                 scrimOffset.value.roundToInt()
-        // Reduce the Scrim's height so it only fills the visible space, when we offset it down.
-        val constrainedScrimHeight =
-            constraints.constrainHeight(constraints.maxHeight - totalScrimOffset)
-        val scrim =
-            measurables[2][0].measure(
-                constraints.copy(
-                    minHeight = constrainedScrimHeight,
-                    maxHeight = constrainedScrimHeight,
-                )
-            )
         // Update the last height of the header.
         overlappableHeaderHeight.intValue = overlappableHeader.height
         minScrimHeight.intValue =
@@ -206,9 +197,11 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                     alwaysVisibleHeader.height -
                     overlappableHeader.height
             )
+        val height = maxOf(alwaysVisibleHeader.height + overlappableHeader.height, scrim.height)
         layout(
             width = maxOf(alwaysVisibleHeader.width, overlappableHeader.width, scrim.width),
-            height = maxOf(alwaysVisibleHeader.height + overlappableHeader.height, scrim.height),
+            height = height,
+            rulers = { Shade.Rulers.SingleShadeNestedScrollLayoutBottom provides height.toFloat() },
         ) {
             alwaysVisibleHeader.place(insetsLeft, insetsTop)
             overlappableHeader.place(insetsLeft, insetsTop + alwaysVisibleHeader.height)
