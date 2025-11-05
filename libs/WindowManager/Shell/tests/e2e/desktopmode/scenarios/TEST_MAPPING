@@ -308,7 +308,14 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchBetweenDesktopAndFullScreenTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchBetweenDesktopAndFullScreenViaOverviewTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchBetweenDesktopAndFullScreenViewViaQuickSwitchTest",
       "keywords": [
         "device",
         "desktop"

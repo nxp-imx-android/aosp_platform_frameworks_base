@@ -19,13 +19,13 @@ package com.android.wm.shell.functional.fundamentals
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.SwitchBetweenDesktopAndFullScreen
+import com.android.wm.shell.scenarios.SwitchBetweenDesktopAndFullScreenViaQuickSwitch
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [SwitchBetweenDesktopAndFullScreen]. */
+/* Functional test for [SwitchBetweenDesktopAndFullScreenViaQuickSwitch]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class SwitchBetweenDesktopAndFullScreenTest : SwitchBetweenDesktopAndFullScreen()
+class SwitchBetweenDesktopAndFullScreenViaQuickSwitchTest : SwitchBetweenDesktopAndFullScreenViaQuickSwitch()
