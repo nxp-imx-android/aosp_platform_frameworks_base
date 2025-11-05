@@ -72,7 +72,7 @@ class InternetConnectivityActionViewModelTest : SysuiTestCase() {
 
         underTest =
             InternetConnectivityActionViewModel(
-                kosmos.testScope,
+                kosmos.testScope.backgroundScope,
                 handler,
                 interactor,
                 internetDialogManager,
@@ -86,93 +86,99 @@ class InternetConnectivityActionViewModelTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(QsDetailedView.FLAG_NAME)
-    fun detailedViewDisabled_showDialog() = runTest {
-        underTest.start()
-        waitForIdleSync(handler)
+    fun detailedViewDisabled_showDialog() =
+        kosmos.testScope.runTest {
+            underTest.start()
+            waitForIdleSync(handler)
 
-        interactor.internetConnectivityActionEvent.emit(Unit)
-        waitForIdleSync(handler)
+            interactor.internetConnectivityActionEvent.emit(Unit)
+            waitForIdleSync(handler)
 
-        verify(internetDialogManager).create(eq(true), eq(false), eq(false), isNull())
-    }
-
-    @Test
-    @EnableFlags(QsDetailedView.FLAG_NAME)
-    fun dualShadeDisabled_showDialog() = runTest {
-        whenever(shadeModeInteractor.isDualShade).thenReturn(false)
-        underTest.start()
-        waitForIdleSync(handler)
-
-        interactor.internetConnectivityActionEvent.emit(Unit)
-        waitForIdleSync(handler)
-
-        verify(internetDialogManager).create(eq(true), eq(false), eq(false), isNull())
-    }
+            verify(internetDialogManager).create(eq(true), eq(false), eq(false), isNull())
+        }
 
     @Test
     @EnableFlags(QsDetailedView.FLAG_NAME)
-    fun noDetailsShowing_showInternet() = runTest {
-        whenever(shadeModeInteractor.isDualShade).thenReturn(true)
-        underTest.start()
-        waitForIdleSync(handler)
+    fun dualShadeDisabled_showDialog() =
+        kosmos.testScope.runTest {
+            whenever(shadeModeInteractor.isDualShade).thenReturn(false)
+            underTest.start()
+            waitForIdleSync(handler)
 
-        interactor.internetConnectivityActionEvent.emit(Unit)
-        waitForIdleSync(handler)
+            interactor.internetConnectivityActionEvent.emit(Unit)
+            waitForIdleSync(handler)
 
-        verify(shadeInteractor)
-            .expandQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", TransitionKeys.Instant)
-        verify(detailsViewModel)
-            .onTileClicked(com.android.systemui.qs.pipeline.shared.TileSpec.create("internet"))
-    }
+            verify(internetDialogManager).create(eq(true), eq(false), eq(false), isNull())
+        }
 
     @Test
     @EnableFlags(QsDetailedView.FLAG_NAME)
-    fun otherDetailsShowing_switchToInternet() = runTest {
-        whenever(shadeModeInteractor.isDualShade).thenReturn(true)
-        whenever(detailsViewModel.activeTileDetails).thenReturn(otherDetailsViewModel)
-        underTest.start()
-        waitForIdleSync(handler)
+    fun noDetailsShowing_showInternet() =
+        kosmos.testScope.runTest {
+            whenever(shadeModeInteractor.isDualShade).thenReturn(true)
+            underTest.start()
+            waitForIdleSync(handler)
 
-        interactor.internetConnectivityActionEvent.emit(Unit)
-        waitForIdleSync(handler)
+            interactor.internetConnectivityActionEvent.emit(Unit)
+            waitForIdleSync(handler)
 
-        verify(shadeInteractor, never())
-            .collapseQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", null, true)
-        verify(shadeInteractor, never())
-            .expandQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", TransitionKeys.Instant)
-        verify(detailsViewModel)
-            .onTileClicked(com.android.systemui.qs.pipeline.shared.TileSpec.create("internet"))
-    }
+            verify(shadeInteractor)
+                .expandQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", TransitionKeys.Instant)
+            verify(detailsViewModel)
+                .onTileClicked(com.android.systemui.qs.pipeline.shared.TileSpec.create("internet"))
+        }
 
     @Test
     @EnableFlags(QsDetailedView.FLAG_NAME)
-    fun internetDetailsShowing_doNothing() = runTest {
-        whenever(shadeModeInteractor.isDualShade).thenReturn(true)
-        whenever(detailsViewModel.activeTileDetails).thenReturn(internetDetailsViewModel)
+    fun otherDetailsShowing_switchToInternet() =
+        kosmos.testScope.runTest {
+            whenever(shadeModeInteractor.isDualShade).thenReturn(true)
+            whenever(detailsViewModel.activeTileDetails).thenReturn(otherDetailsViewModel)
+            underTest.start()
+            waitForIdleSync(handler)
 
-        underTest.start()
-        waitForIdleSync(handler)
+            interactor.internetConnectivityActionEvent.emit(Unit)
+            waitForIdleSync(handler)
 
-        interactor.internetConnectivityActionEvent.emit(Unit)
-        waitForIdleSync(handler)
-
-        verify(shadeInteractor, never())
-            .collapseQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", null, true)
-        verify(shadeInteractor, never())
-            .expandQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", TransitionKeys.Instant)
-    }
+            verify(shadeInteractor, never())
+                .collapseQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", null, true)
+            verify(shadeInteractor, never())
+                .expandQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", TransitionKeys.Instant)
+            verify(detailsViewModel)
+                .onTileClicked(com.android.systemui.qs.pipeline.shared.TileSpec.create("internet"))
+        }
 
     @Test
     @EnableFlags(QsDetailedView.FLAG_NAME)
-    fun inRetailMode_showDialog() = runTest {
-        whenever(shadeModeInteractor.isDualShade).thenReturn(true)
-        whenever(retailModeInteractor.isInRetailMode).thenReturn(true)
-        underTest.start()
-        waitForIdleSync(handler)
+    fun internetDetailsShowing_doNothing() =
+        kosmos.testScope.runTest {
+            whenever(shadeModeInteractor.isDualShade).thenReturn(true)
+            whenever(detailsViewModel.activeTileDetails).thenReturn(internetDetailsViewModel)
 
-        interactor.internetConnectivityActionEvent.emit(Unit)
-        waitForIdleSync(handler)
+            underTest.start()
+            waitForIdleSync(handler)
 
-        verify(internetDialogManager).create(eq(true), eq(false), eq(false), isNull())
-    }
+            interactor.internetConnectivityActionEvent.emit(Unit)
+            waitForIdleSync(handler)
+
+            verify(shadeInteractor, never())
+                .collapseQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", null, true)
+            verify(shadeInteractor, never())
+                .expandQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", TransitionKeys.Instant)
+        }
+
+    @Test
+    @EnableFlags(QsDetailedView.FLAG_NAME)
+    fun inRetailMode_showDialog() =
+        kosmos.testScope.runTest {
+            whenever(shadeModeInteractor.isDualShade).thenReturn(true)
+            whenever(retailModeInteractor.isInRetailMode).thenReturn(true)
+            underTest.start()
+            waitForIdleSync(handler)
+
+            interactor.internetConnectivityActionEvent.emit(Unit)
+            waitForIdleSync(handler)
+
+            verify(internetDialogManager).create(eq(true), eq(false), eq(false), isNull())
+        }
 }
