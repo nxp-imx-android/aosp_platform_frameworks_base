@@ -218,7 +218,9 @@ public final class MessageQueue {
         if (sSkipEpollWaitForZeroTimeoutInitialized) {
             return;
         }
-        nativeSetSkipEpollWaitForZeroTimeout(ptr);
+        if (Flags.nativeLooperSkipEpollWaitForZeroTimeout()) {
+            nativeSetSkipEpollWaitForZeroTimeout(ptr);
+        }
         sSkipEpollWaitForZeroTimeoutInitialized = true;
     }
 
