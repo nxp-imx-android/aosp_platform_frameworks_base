@@ -427,6 +427,16 @@ flag {
 }
 
 flag {
+    name: "get_display_info_outside_lock"
+    namespace: "display_manager"
+    description: "Makes DisplayManagerGlobal call DisplayManagerService.getDisplayInfo() outside the lock"
+    bug: "342607960"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_display_event_merging"
     namespace: "display_manager"
     description: "Enable merging of display events"
