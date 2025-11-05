@@ -17,13 +17,6 @@ flag {
 }
 
 flag {
-    name: "bind_wallpaper_service_on_its_own_thread_during_a_user_switch"
-    namespace: "multiuser"
-    description: "Bind wallpaper service on its own thread instead of system_server's main handler during a user switch."
-    bug: "302100344"
-}
-
-flag {
     name: "support_communal_profile"
     is_exported: true
     namespace: "multiuser"
