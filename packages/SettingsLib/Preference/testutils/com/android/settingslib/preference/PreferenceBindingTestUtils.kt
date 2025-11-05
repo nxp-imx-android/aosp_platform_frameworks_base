@@ -58,6 +58,9 @@ private object DummyPreferenceScreenMetadata : PreferenceScreenMetadata {
     override val key: String
         get() = ""
 
+    override val purpose: Int
+        get() = 0
+
     override fun fragmentClass() = null
 
     override fun getPreferenceHierarchy(context: Context, coroutineScope: CoroutineScope) =

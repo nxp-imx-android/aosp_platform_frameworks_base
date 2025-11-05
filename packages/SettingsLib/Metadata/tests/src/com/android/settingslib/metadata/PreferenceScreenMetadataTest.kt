@@ -164,6 +164,8 @@ class PreferenceScreenMetadataTest {
     open class Screen(override val key: String, override val arguments: Bundle? = null) :
         PreferenceScreenCreator, PreferenceLifecycleProvider {
 
+        override val purpose: Int = 0
+
         lateinit var preferenceLifecycleContext: PreferenceLifecycleContext
 
         override fun fragmentClass() = PreferenceFragment::class.java
@@ -178,6 +180,8 @@ class PreferenceScreenMetadataTest {
 
     open class ScreenWithKeyParams(override val key: String, override val keyParameters: KeyParameters? = null) :
         PreferenceScreenCreator, PreferenceLifecycleProvider {
+
+        override val purpose: Int = 0
 
         lateinit var preferenceLifecycleContext: PreferenceLifecycleContext
 

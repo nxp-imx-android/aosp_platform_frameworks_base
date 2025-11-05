@@ -135,6 +135,9 @@ private abstract class Screen(val testScope: TestScope) : PreferenceScreenCreato
     override val key: String
         get() = "screen"
 
+    override val purpose: Int
+        get() = 0
+
     override fun fragmentClass() = PreferenceFragment::class.java
 
     fun test() {
