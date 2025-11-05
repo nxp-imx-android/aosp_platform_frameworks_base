@@ -575,7 +575,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
      * and instead falls back to startActivity (where the ActivityStartInterceptor can intercept).
      */
     @Test
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_AUTOMATED_APP_LAUNCH_INTERCEPTION)
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
     public void testStartActivityFromRecents_automatedTask_launchesWarning() {
         final DisplayContent newDisplay = addNewDisplayContentAt(DisplayContent.POSITION_TOP);
         final Task stack = new TaskBuilder(mSupervisor)

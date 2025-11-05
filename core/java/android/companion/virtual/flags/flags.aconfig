@@ -238,16 +238,6 @@ flag {
 }
 
 flag {
-    name: "automated_app_launch_interception"
-    namespace: "virtual_devices"
-    description: "Show a warning dialog when launching an automated app"
-    bug: "442627126"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "virtual_camera_stable_stream_id"
     namespace: "virtual_devices"
     description: "Assign the index at which a stream has been added to the virtual camera config as its id."
