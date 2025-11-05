@@ -18,7 +18,6 @@ package com.android.systemui.shared.clocks
 
 import android.icu.util.TimeZone
 import com.android.app.animation.Interpolators
-import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.DigitalTimeFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.FontTextStyleImpl
@@ -41,7 +40,8 @@ import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
 import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.util.Locale
 
-class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClockViewController {
+class FlexClockViewGroupController(private val clockCtx: FlexClockContext) :
+    FlexClockViewController {
     val layerControllers = mutableListOf<FlexClockViewController>()
     val dozeState = AnimationState(1F)
 

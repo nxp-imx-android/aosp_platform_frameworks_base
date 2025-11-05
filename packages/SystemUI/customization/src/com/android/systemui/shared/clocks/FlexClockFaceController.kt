@@ -27,7 +27,6 @@ import androidx.compose.ui.layout.positionInWindow
 import com.android.app.animation.Interpolators
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.animation.GSFAxes
-import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DefaultClockFaceLayout
 import com.android.systemui.customization.clocks.DigitalTimeFormatter
@@ -77,7 +76,7 @@ interface FlexClockViewController {
 }
 
 class FlexClockFaceController(
-    private val clockCtx: ClockContext,
+    private val clockCtx: FlexClockContext,
     private val isLargeClock: Boolean,
 ) : ClockFaceController {
     override val view: View

@@ -24,16 +24,16 @@ import com.android.systemui.log.core.MessageBuffer
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 
-class TypefaceCache(
+class TypefaceCache<TKey>(
     messageBuffer: MessageBuffer,
     val animationFrameCount: Int,
-    val typefaceFactory: (String) -> Typeface,
+    val typefaceFactory: (TKey) -> Typeface,
 ) {
     private val logger = Logger(messageBuffer, this::class.simpleName!!)
 
-    private data class CacheKey(val res: String, val fvar: String?)
+    private data class CacheKey<TKey>(val res: TKey, val fvar: String?)
 
-    private inner class WeakTypefaceRef(val key: CacheKey, typeface: Typeface) :
+    private inner class WeakTypefaceRef(val key: CacheKey<TKey>, typeface: Typeface) :
         WeakReference<Typeface>(typeface, queue)
 
     private var totalHits = 0
@@ -47,11 +47,11 @@ class TypefaceCache(
     // different numbers of simultaneously loaded and configured fonts. Because our clocks tend to
     // initialize a number of parallel views and animators, our usages of Typefaces overlap. As a
     // result, once a typeface is no longer being used, it is unlikely to be recreated immediately.
-    private val cache = mutableMapOf<CacheKey, WeakTypefaceRef>()
+    private val cache = mutableMapOf<CacheKey<TKey>, WeakTypefaceRef>()
     private val queue = ReferenceQueue<Typeface>()
     private val fontCache = FontCacheImpl(animationFrameCount)
 
-    fun getTypeface(res: String): Typeface {
+    fun getTypeface(res: TKey): Typeface {
         checkQueue()
         val key = CacheKey(res, null)
         cache[key]?.get()?.let {
@@ -65,7 +65,7 @@ class TypefaceCache(
         return result
     }
 
-    fun getVariantCache(res: String): TypefaceVariantCache {
+    fun getVariantCache(res: TKey): TypefaceVariantCache {
         val baseTypeface = getTypeface(res)
         return object : TypefaceVariantCache {
             override val fontCache = this@TypefaceCache.fontCache
@@ -87,27 +87,27 @@ class TypefaceCache(
         }
     }
 
-    private fun logHit(key: CacheKey) {
+    private fun logHit(key: CacheKey<TKey>) {
         totalHits++
         if (DEBUG_HITS)
             logger.i({ "HIT: $str1; Total: $int1" }) {
-                str1 = key.toString()
+                str1 = "$key"
                 int1 = totalHits
             }
     }
 
-    private fun logMiss(key: CacheKey) {
+    private fun logMiss(key: CacheKey<TKey>) {
         totalMisses++
         logger.w({ "MISS: $str1; Total: $int1" }) {
-            str1 = key.toString()
+            str1 = "$key"
             int1 = totalMisses
         }
     }
 
-    private fun logEviction(key: CacheKey) {
+    private fun logEviction(key: CacheKey<TKey>) {
         totalEvictions++
         logger.i({ "EVICTED: $str1; Total: $int1" }) {
-            str1 = key.toString()
+            str1 = "$key"
             int1 = totalEvictions
         }
     }
