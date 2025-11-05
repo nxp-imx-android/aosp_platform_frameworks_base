@@ -224,7 +224,8 @@ class ClientFullscreenRequestController(
                 }
 
                 sealed class RestorableState {
-                    // TODO: b/296268915 - add desktop, pip and split states.
+                    data class Desktop(val originalDeskId: Int) : RestorableState()
+                    // TODO: b/296268915 - add pip and split states.
                 }
             }
 
