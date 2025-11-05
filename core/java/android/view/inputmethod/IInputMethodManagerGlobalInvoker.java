@@ -211,12 +211,8 @@ final class IInputMethodManagerGlobalInvoker {
             return new ArrayList<>();
         }
         try {
-            if (Flags.useInputMethodInfoSafeList()) {
-                return InputMethodInfoSafeList.extractFrom(
-                        service.getInputMethodList(userId, directBootAwareness));
-            } else {
-                return service.getInputMethodListLegacy(userId, directBootAwareness);
-            }
+            return InputMethodInfoSafeList.extractFrom(
+                    service.getInputMethodList(userId, directBootAwareness));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -231,12 +227,8 @@ final class IInputMethodManagerGlobalInvoker {
             return new ArrayList<>();
         }
         try {
-            if (Flags.useInputMethodInfoSafeList()) {
-                return InputMethodInfoSafeList.extractFrom(
-                        service.getEnabledInputMethodList(userId));
-            } else {
-                return service.getEnabledInputMethodListLegacy(userId);
-            }
+            return InputMethodInfoSafeList.extractFrom(
+                    service.getEnabledInputMethodList(userId));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
