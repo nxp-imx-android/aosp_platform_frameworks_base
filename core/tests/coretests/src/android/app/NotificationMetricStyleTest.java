@@ -33,7 +33,7 @@ import android.app.Notification.Metric.TimeDifference;
 import android.app.Notification.MetricStyle;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.graphics.Color;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.platform.test.annotations.EnableFlags;
@@ -100,9 +100,16 @@ public class NotificationMetricStyleTest {
     private TimeZone mPreviousTimeZone;
     private String mPrevious24HourSetting;
 
+    private Notification.Colors mDefaultColors;
+
     @Before
     public void setUp() {
         mContext = InstrumentationRegistry.getInstrumentation().getContext();
+
+        mDefaultColors = new Notification.Colors();
+        boolean nightMode = (mContext.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        mDefaultColors.resolvePalette(mContext, Notification.COLOR_DEFAULT, false, nightMode);
 
         // Force some values that can depend on device current settings to a known state.
         mPreviousLocale = Locale.getDefault();
@@ -572,8 +579,8 @@ public class NotificationMetricStyleTest {
         container.addView(remoteViews.apply(mContext, container));
         Chronometer chronometer = container.findViewById(R.id.metric_chronometer_0);
 
-        // TODO: b/454876153 -- Update to read the color value from mContext, once it exists.
-        assertThat(chronometer.getTextColors().getColors()[0]).isEqualTo(Color.YELLOW);
+        assertThat(chronometer.getTextColors().getColors()[0]).isEqualTo(
+                mDefaultColors.getSemanticColor(SEMANTIC_STYLE_CAUTION));
     }
 
     @Test
@@ -593,8 +600,8 @@ public class NotificationMetricStyleTest {
         container.addView(remoteViews.apply(mContext, container));
         Chronometer chronometer = container.findViewById(R.id.metric_chronometer_0);
 
-        // TODO: b/454876153 -- Update to read the color value from mContext, once it exists.
-        assertThat(chronometer.getTextColors().getColors()[0]).isNotEqualTo(Color.YELLOW);
+        assertThat(chronometer.getTextColors().getColors()[0]).isNotEqualTo(
+                mDefaultColors.getSemanticColor(SEMANTIC_STYLE_CAUTION));
     }
 
     private void withLocale(Locale locale, Runnable r) {

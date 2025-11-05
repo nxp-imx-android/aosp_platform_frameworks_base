@@ -17177,6 +17177,8 @@ public class Notification implements Parcelable
      * @hide
      */
     public static class Colors implements SemanticColors {
+        private static final double TEXT_CONTRAST = 4.5;
+
         private int mPaletteIsForRawColor = COLOR_INVALID;
         private boolean mPaletteIsForColorized = false;
         private boolean mPaletteIsForNightMode = false;
@@ -17264,10 +17266,10 @@ public class Notification implements Parcelable
                 int onSurfaceColorExtreme = isBgDark ? Color.WHITE : Color.BLACK;
                 mPrimaryTextColor = ContrastColorUtil.ensureContrast(
                         ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.9f),
-                        mBackgroundColor, isBgDark, 4.5);
+                        mBackgroundColor, isBgDark, TEXT_CONTRAST);
                 mSecondaryTextColor = ContrastColorUtil.ensureContrast(
                         ColorUtils.blendARGB(mBackgroundColor, onSurfaceColorExtreme, 0.8f),
-                        mBackgroundColor, isBgDark, 4.5);
+                        mBackgroundColor, isBgDark, TEXT_CONTRAST);
                 mContrastColor = mPrimaryTextColor;
                 mPrimaryAccentColor = mPrimaryTextColor;
                 mSecondaryAccentColor = mSecondaryTextColor;
@@ -17340,18 +17342,14 @@ public class Notification implements Parcelable
                 }
                 if (Flags.apiNotificationSemanticStyle()) {
                     // TODO: b/454876153 - Use theme-based tokens, once they exist.
-                    if (mSemanticInfo == COLOR_INVALID) {
-                        mSemanticInfo = Color.BLUE;
-                    }
-                    if (mSemanticSafe == COLOR_INVALID) {
-                        mSemanticSafe = Color.GREEN;
-                    }
-                    if (mSemanticCaution == COLOR_INVALID) {
-                        mSemanticCaution = Color.YELLOW;
-                    }
-                    if (mSemanticDanger == COLOR_INVALID) {
-                        mSemanticDanger = Color.RED;
-                    }
+                    mSemanticInfo = Builder.ensureColorContrast(Color.BLUE, mBackgroundColor,
+                            TEXT_CONTRAST);
+                    mSemanticSafe = Builder.ensureColorContrast(Color.GREEN, mBackgroundColor,
+                            TEXT_CONTRAST);
+                    mSemanticCaution = Builder.ensureColorContrast(Color.YELLOW, mBackgroundColor,
+                            TEXT_CONTRAST);
+                    mSemanticDanger = Builder.ensureColorContrast(Color.RED, mBackgroundColor,
+                            TEXT_CONTRAST);
                 }
             }
             // make sure every color has a valid value
