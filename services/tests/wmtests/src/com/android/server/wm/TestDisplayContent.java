@@ -270,6 +270,13 @@ class TestDisplayContent extends DisplayContent {
             // Set the default focused TDA.
             newDisplay.onLastFocusedTaskDisplayAreaChanged(newDisplay.getDefaultTaskDisplayArea());
 
+            // Skip WAKE transition when adding a task to the empty display. If the test wants to
+            // verify the WAKE transition behavior of non-default display, it can set to a different
+            // type, e.g. PresentationControllerTests uses TYPE_EXTERNAL.
+            if (mInfo.type == Display.TYPE_INTERNAL) {
+                newDisplay.setIsSleeping(false);
+            }
+
             return newDisplay;
         }
     }
