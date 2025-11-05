@@ -20,7 +20,11 @@ import android.content.Context
 import android.view.View
 import android.view.WindowManagerPolicyConstants
 
-/** Simplifies accessing context fields. */
+/**
+ * **These functions provide accurate results only when used with the current user's context.**
+ *
+ * Simplifies access to context-dependent properties.
+ */
 object ContextUtils {
 
     /** Gets navigation mode. */
