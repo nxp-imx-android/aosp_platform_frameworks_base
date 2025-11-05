@@ -257,11 +257,11 @@ import java.util.Optional;
  */
 @Module(
         includes = {
-            WMShellBaseModule.class,
-            PipModule.class,
-            ShellBackAnimationModule.class,
-            LetterboxModule.class,
-            PinnedLayerModule.class
+                WMShellBaseModule.class,
+                PipModule.class,
+                ShellBackAnimationModule.class,
+                LetterboxModule.class,
+                PinnedLayerModule.class
         })
 public abstract class WMShellModule {
 
@@ -811,6 +811,7 @@ public abstract class WMShellModule {
             Optional<SplitScreenController> splitScreenOptional,
             @Nullable PipTransitionController pipTransitionController,
             PipScheduler pipScheduler,
+            Optional<NormalAppLayerHandler> normalAppLayerHandler,
             Optional<PinnedLayerHandler> pinnedLayerHandler,
             Optional<RecentsTransitionHandler> recentsTransitionHandler,
             KeyguardTransitionHandler keyguardTransitionHandler,
@@ -826,6 +827,7 @@ public abstract class WMShellModule {
                 splitScreenOptional,
                 pipTransitionController,
                 PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipScheduler) : Optional.empty(),
+                normalAppLayerHandler.orElse(null),
                 pinnedLayerHandler.orElse(null),
                 recentsTransitionHandler,
                 keyguardTransitionHandler,
@@ -1456,7 +1458,7 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static MultiDisplayDragMoveIndicatorSurface.Factory
-            providesMultiDisplayDragMoveIndicatorSurfaceFactory() {
+                providesMultiDisplayDragMoveIndicatorSurfaceFactory() {
         return new MultiDisplayDragMoveIndicatorSurface.Factory();
     }
 
@@ -2061,12 +2063,14 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static Optional<NormalAppLayerHandler> provideNormalAppLayerHandler(
-            Optional<NormalAppLayerController> normalAppLayerController,
-            Optional<DesktopUserRepositories> desktopUserRepositoriesOptional) {
+            ShellInit shellInit,
+            Transitions transitions,
+            Optional<NormalAppLayerController> normalAppLayerController) {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                     new NormalAppLayerHandler(
-                            normalAppLayerController.get(), desktopUserRepositoriesOptional.get()));
+                            shellInit, transitions, normalAppLayerController.get()));
+
         }
         return Optional.empty();
     }

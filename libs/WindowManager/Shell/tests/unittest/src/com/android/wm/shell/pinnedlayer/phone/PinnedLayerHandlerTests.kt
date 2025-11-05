@@ -46,7 +46,7 @@ import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.desktopmode.NormalAppLayerHandler
+import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
@@ -83,7 +83,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock private lateinit var transitions: Transitions
     @Mock private lateinit var startTransaction: SurfaceControl.Transaction
     @Mock private lateinit var finishTransaction: SurfaceControl.Transaction
-    @Mock private lateinit var normalLayerHandler: NormalAppLayerHandler
+    @Mock private lateinit var normalLayerController: NormalAppLayerController
     @Mock private lateinit var presentationController: PinnedLayerPresentationController
 
     private lateinit var pinnedLayerController: PinnedLayerController
@@ -94,7 +94,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
         pinnedLayerController =
             PinnedLayerController(shellInit, transitions, presentationController)
         pinnedLayerHandler =
-            PinnedLayerHandler(shellInit, transitions, normalLayerHandler, pinnedLayerController)
+            PinnedLayerHandler(shellInit, transitions, pinnedLayerController, normalLayerController)
         whenever(presentationController.isTaskSupportedForPinning(any())).thenReturn(true)
     }
 
@@ -543,7 +543,13 @@ class PinnedLayerHandlerTests : ShellTestCase() {
             buildChange(TRANSIT_CHANGE, requireNotNull(normalLayerRequestInfo.triggerTask))
         )
 
-        whenever(normalLayerHandler.handleRequest(normalLayerTransition, normalLayerRequestInfo))
+        whenever(
+                normalLayerController.moveTaskToNormalLayer(
+                    normalLayerTransition,
+                    requireNotNull(normalLayerRequestInfo.triggerTask),
+                    null,
+                )
+            )
             .thenReturn(WindowContainerTransaction())
 
         // Pin the task first
