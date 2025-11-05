@@ -153,6 +153,9 @@ public interface TextClassifier {
     /** SMS retriever OTP.  */
     @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
     String TYPE_SMS_RETRIEVER_OTP = "sms_retriever_otp";
+    /** WebOTP SMS. */
+    @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_WEB_OTP_SMS_API)
+    String TYPE_SMS_WEB_OTP = "sms_web_otp";
     /**
      * Word that users may be interested to look up for meaning.
      * @hide
@@ -173,7 +176,8 @@ public interface TextClassifier {
             TYPE_FLIGHT_NUMBER,
             TYPE_DICTIONARY,
             TYPE_OTP,
-            TYPE_SMS_RETRIEVER_OTP
+            TYPE_SMS_RETRIEVER_OTP,
+            TYPE_SMS_WEB_OTP,
     })
     @interface EntityType {}
 
@@ -263,6 +267,12 @@ public interface TextClassifier {
      * @hide
      */
     String EXTRA_SMS_RETRIEVER_HASH_MATCHED_PACKAGE = "sms-retriever-hash-matched-package";
+
+    /**
+     * Extra specifying a list of trusted packages which can receive or view the OTP.
+     */
+    @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_OTP_APP_COMPAT_API)
+    String EXTRA_SMS_TRUSTED_PACKAGES = "android.view.textclassifier.extra.SMS_TRUSTED_PACKAGES";
 
     /**
      * Returns suggested text selection start and end indices, recognized entity types, and their
