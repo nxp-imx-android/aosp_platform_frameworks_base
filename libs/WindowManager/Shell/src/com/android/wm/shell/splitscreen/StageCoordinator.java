@@ -353,6 +353,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             if (targetDisplayAreaInfo != null) {
                 wct.reparent(mSplitRootTaskInfo.token, targetDisplayAreaInfo.token,
                         true /* onTop */);
+                ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
+                        "Reparenting split screen root to display %d", displayId);
             }
         }
     }
@@ -931,6 +933,16 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 "startTasks: task1=%d task2=%d position=%d snapPosition=%d",
                 taskId1, taskId2, splitPosition, snapPosition);
         final WindowContainerTransaction wct = new WindowContainerTransaction();
+
+        // When entering split screen from the overview app menu, check the task's display.
+        // If the task is on a different display than the split screen root, move the root
+        // to the task's display.
+        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
+            RunningTaskInfo taskInfo1 = mTaskOrganizer.getRunningTaskInfo(taskId1);
+            if (taskInfo1 != null) {
+                prepareMovingSplitScreenRoot(wct, taskInfo1.displayId);
+            }
+        }
 
         if (taskId2 == INVALID_TASK_ID) {
             startSingleTask(taskId1, options1, wct, remoteTransition);
