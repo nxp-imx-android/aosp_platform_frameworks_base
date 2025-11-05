@@ -1,0 +1,163 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.personalcontext;
+
+import android.service.personalcontext.hint.ContextHintWithSignature;
+
+import com.android.server.personalcontext.component.Component;
+import com.android.server.personalcontext.component.Refiner;
+
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+
+/** @hide */
+public class ContextLogger implements RefinerWorkflow.EventListener {
+    private static final int MAX_RECENT_ITEMS_TO_KEEP = 3;
+
+    private final Queue<Timeline> mRecentRefinerTimelines = new LinkedList<>();
+    private final Map<Long, Timeline> mActiveRefinerTimelines = new HashMap<>();
+
+    /** Called when a workflow is started. */
+    public void onRefinerWorkflowStarted(long flowId, Collection<ContextHintWithSignature> hints) {
+        final Timeline flowTimeline = new Timeline();
+
+        flowTimeline.addStringDetail(
+                "Hint workflow %s started with %s hints", flowId, hints.size());
+
+        flowTimeline.addHintListDetail(hints);
+
+        mActiveRefinerTimelines.put(flowId, flowTimeline);
+    }
+
+    /** Called when a set of hints is sent to a refiner. */
+    public void onHintsSentToRefiner(
+            long flowId, Collection<ContextHintWithSignature> hints, Refiner refiner) {
+        Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
+        if (flowTimeline == null) return;
+
+        flowTimeline.addStringDetail(
+                "Hint workflow %s sent %s hints to refiner/understander", flowId, hints.size());
+
+        flowTimeline.addComponentDetail(refiner);
+        flowTimeline.addHintListDetail(hints);
+    }
+
+    /** Called when a set of hints is received from a refiner. */
+    public void onHintsReceivedFromRefiner(
+            long flowId, Collection<ContextHintWithSignature> hints, Refiner refiner) {
+        Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
+        if (flowTimeline == null) return;
+
+        flowTimeline.addStringDetail(
+                "Hint workflow %s received %s hints from refiner/understander",
+                flowId,
+                hints.size());
+
+        flowTimeline.addComponentDetail(refiner);
+        flowTimeline.addHintListDetail(hints);
+    }
+
+    /** Called when a workflow stops. */
+    public void onRefinerWorkflowFinished(long flowId) {
+        Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
+        if (flowTimeline == null) return;
+
+        flowTimeline.addStringDetail("Hint workflow %s finished", flowId);
+
+        flushRefinerWorkflowTimeline(flowId, flowTimeline);
+    }
+
+    /** Called when a workflow has an unexpected error. */
+    public void onRefinerWorkflowError(long flowId, Throwable t) {
+        Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
+        if (flowTimeline == null) return;
+
+        flowTimeline.addStringDetail("Hint workflow %s failed", flowId);
+        flowTimeline.addThrowableDetail(t);
+
+        flushRefinerWorkflowTimeline(flowId, flowTimeline);
+    }
+
+    private void flushRefinerWorkflowTimeline(long flowId, Timeline timeline) {
+        mActiveRefinerTimelines.remove(flowId);
+        mRecentRefinerTimelines.add(timeline);
+        while (mRecentRefinerTimelines.size() > MAX_RECENT_ITEMS_TO_KEEP) {
+            mRecentRefinerTimelines.remove();
+        }
+    }
+
+    /** Writes recent activity in a log format to the PrintWriter. */
+    public void dump(PrintWriter fout) {
+        fout.write("Active Hint Workflows\n");
+        fout.write("=====================\n");
+        dumpTimelines(fout, mActiveRefinerTimelines.values());
+
+        fout.write("Recent Hint Workflows\n");
+        fout.write("=====================\n");
+        dumpTimelines(fout, mRecentRefinerTimelines);
+    }
+
+    private void dumpTimelines(PrintWriter fout, Collection<Timeline> timelines) {
+        boolean first = true;
+        for (Timeline timeline : timelines) {
+            if (first) {
+                first = false;
+            } else {
+                fout.write("---------------------\n");
+            }
+            timeline.dump(fout);
+        }
+        fout.write("\n");
+    }
+
+    private static final class Timeline {
+        private final List<String> mDetails = new ArrayList<>();
+
+        public void addStringDetail(String pattern, Object... args) {
+            mDetails.add(String.format(pattern, args));
+        }
+
+        public void addHintListDetail(Collection<ContextHintWithSignature> hints) {
+            for (ContextHintWithSignature hint : hints) {
+                addStringDetail(
+                        "  Hint: %s - %s",
+                        hint.getContextHint().getClass().getSimpleName(),
+                        hint.getContextHint().getHintId());
+            }
+        }
+
+        public void addComponentDetail(Component component) {
+            addStringDetail("  Component: %s", component);
+        }
+
+        public void addThrowableDetail(Throwable t) {
+            addStringDetail("  Exception: %s", t.getMessage());
+        }
+
+        public void dump(PrintWriter fout) {
+            for (String detail : mDetails) {
+                fout.write(detail + "\n");
+            }
+        }
+    }
+}
