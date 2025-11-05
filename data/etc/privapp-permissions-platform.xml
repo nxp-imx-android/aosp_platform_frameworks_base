@@ -320,6 +320,7 @@ applications that come with the platform
         <permission name="android.permission.INSTALL_PACKAGES"/>
         <permission name="android.permission.INSTALL_PACKAGE_UPDATES"/>
         <permission name="android.permission.KILL_ALL_BACKGROUND_PROCESSES"/>
+        <permission name="android.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES"/>
         <!-- Needed for test only -->
         <permission name="android.permission.LISTEN_FOR_KEY_ACTIVITY" />
         <!-- Needed for test only -->

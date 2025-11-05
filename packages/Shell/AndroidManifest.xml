@@ -399,6 +399,9 @@
     <!-- Permission needed for CTS test - CtsSystemUiTestCases:PipNotificationTests -->
     <uses-permission android:name="android.permission.GET_INTENT_SENDER_INTENT" />
 
+    <!-- Permission needed for CTS test - CtsPccApiTests -->
+    <uses-permission android:name="android.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES" />
+
     <!-- Permission needed to run keyguard manager tests in CTS -->
     <uses-permission android:name="android.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS" />
 
