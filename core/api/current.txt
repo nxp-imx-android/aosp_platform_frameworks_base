@@ -20295,6 +20295,7 @@ package android.hardware.camera2 {
     ctor public CameraManager.AvailabilityCallback();
     method public void onCameraAccessPrioritiesChanged();
     method public void onCameraAvailable(@NonNull String);
+    method @FlaggedApi("com.android.internal.camera.flags.device_removed_callback") public void onCameraRemoved(@NonNull String);
     method public void onCameraUnavailable(@NonNull String);
     method public void onPhysicalCameraAvailable(@NonNull String, @NonNull String);
     method public void onPhysicalCameraUnavailable(@NonNull String, @NonNull String);
