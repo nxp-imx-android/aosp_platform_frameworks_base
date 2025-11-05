@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
  * Tests internal MessageQueue APIs. For public APIs, please use the MessageQueueTest in CTS.
  */
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.DisabledOnRavenwood(bug = 452987782)
 public class MessageQueueTest {
 
     private static final long LONG_DELAY_MS = 1000;
