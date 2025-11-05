@@ -27,6 +27,7 @@ import androidx.core.net.toUri
 import androidx.core.util.forEach
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
+import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTaskOrganizer.TaskVanishedListener
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -165,13 +166,28 @@ class AppToWebRepositoryImpl(
             return false
         }
         val packageName = taskInfo.baseActivity?.packageName ?: return false
+        if (isBrowserApp(context, packageName, taskInfo.userId)) {
+            // Browser apps are not the target.
+            return false
+        }
+        if (taskInfo.capturedLink == null) {
+            // No captured link, so no prompt.
+            return false
+        }
+        if (ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING) {
+            return true
+        }
+        if (!context.resources.getBoolean(R.bool.config_appToWebActivePrompting)) {
+            // Active prompting is disabled.
+            return false
+        }
         val everShown =
             firstRunPromptShownPackagesByUserId[taskInfo.userId]?.contains(packageName) ?: false
-        return (!everShown || ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING) && !isBrowserApp(
-            context,
-            packageName,
-            taskInfo.userId
-        ) && taskInfo.capturedLink != null
+        if (everShown) {
+            // The prompt has been shown before.
+            return false
+        }
+        return true
     }
 
     override fun isFirstRunPromptShown(taskInfo: RunningTaskInfo): Boolean {

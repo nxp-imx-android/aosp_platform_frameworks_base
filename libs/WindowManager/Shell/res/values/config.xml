@@ -196,4 +196,7 @@
          TODO: b/444730302 - remove config once status bar input layer can be removed for all
           devices. -->
     <bool name="config_removeStatusBarInputLayer">true</bool>
+
+    <!-- Whether to actively prompt user to use web rather than apps. -->
+    <bool name="config_appToWebActivePrompting">false</bool>
 </resources>
