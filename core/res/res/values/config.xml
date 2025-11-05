@@ -2376,7 +2376,11 @@
          Note: this flag is subtly different from the
          PackageManager.FEATURE_TELEPHONY system feature, which is
          available on *any* device with a telephony radio, even if the
-         device is data-only. -->
+         device is data-only.
+
+         Note: This config is deprecated, please declare
+         PackageManager#FEATURE_TELEPHONY_CALLING instead.
+    -->
     <bool name="config_voice_capable">true</bool>
 
     <!-- Flag indicating whether all audio streams should be mapped to
@@ -2439,7 +2443,11 @@
          which can't send and receive sms message.
 
          Note: Disable SMS also disable voicemail waiting sms,
-               cell broadcasting sms, and MMS. -->
+         cell broadcasting sms, and MMS.
+
+         Note: This config is deprecated, please declare
+         PackageManager#FEATURE_TELEPHONY_MESSAGING instead.
+    -->
     <bool name="config_sms_capable">true</bool>
 
     <!-- Default SMS Application. This will be the default SMS application when
@@ -2467,7 +2475,11 @@
     <!-- Flag indicating whether the current device allows data.
          If true, this means that the device supports data connectivity through
          the telephony network.
-         This can be overridden to false for devices that support voice and/or sms . -->
+         This can be overridden to false for devices that support voice and/or sms.
+
+         Note: This config is deprecated, please declare
+         PackageManager#FEATURE_TELEPHONY_DATA instead.
+    -->
     <bool name="config_mobile_data_capable">true</bool>
 
     <!-- Default web browser.  This is the package name of the application that will
