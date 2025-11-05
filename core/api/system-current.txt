@@ -315,6 +315,7 @@ package android {
     field public static final String PERFORM_CDMA_PROVISIONING = "android.permission.PERFORM_CDMA_PROVISIONING";
     field public static final String PERFORM_IMS_SINGLE_REGISTRATION = "android.permission.PERFORM_IMS_SINGLE_REGISTRATION";
     field public static final String PERFORM_SIM_ACTIVATION = "android.permission.PERFORM_SIM_ACTIVATION";
+    field @FlaggedApi("android.app.bridged_notifications_api") public static final String POST_BRIDGED_NOTIFICATIONS = "android.permission.POST_BRIDGED_NOTIFICATIONS";
     field public static final String POWER_SAVER = "android.permission.POWER_SAVER";
     field @FlaggedApi("android.permission.flags.factory_reset_prep_permission_apis") public static final String PREPARE_FACTORY_RESET = "android.permission.PREPARE_FACTORY_RESET";
     field public static final String PROVIDE_DEFAULT_ENABLED_CREDENTIAL_SERVICE = "android.permission.PROVIDE_DEFAULT_ENABLED_CREDENTIAL_SERVICE";
@@ -1103,6 +1104,10 @@ package android.app {
     field @FlaggedApi("android.app.notification_is_animated_action_api") public static final String EXTRA_IS_ANIMATED = "android.extra.IS_ANIMATED";
     field public static final int SEMANTIC_ACTION_CONVERSATION_IS_PHISHING = 12; // 0xc
     field public static final int SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY = 11; // 0xb
+  }
+
+  public static class Notification.Builder {
+    method @FlaggedApi("android.app.bridged_notifications_api") @NonNull @RequiresPermission("android.Manifest.permission.POST_BRIDGED_NOTIFICATIONS") public android.app.Notification.Builder setBridgedNotificationMetadata(@Nullable android.app.Notification.BridgedNotificationMetadata);
   }
 
   @FlaggedApi("android.app.api_tvextender") public static final class Notification.TvExtender implements android.app.Notification.Extender {

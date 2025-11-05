@@ -17,6 +17,7 @@
 package android.app;
 
 import static android.annotation.Dimension.DP;
+import static android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS_API;
 import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
@@ -1940,6 +1941,7 @@ public class Notification implements Parcelable
     private CharSequence mSettingsText;
 
     private BubbleMetadata mBubbleMetadata;
+    private BridgedNotificationMetadata mBridgedNotificationMetadata;
 
     /** @hide */
     @IntDef(prefix = { "GROUP_ALERT_" }, value = {
@@ -3205,6 +3207,11 @@ public class Notification implements Parcelable
             mBubbleMetadata = BubbleMetadata.CREATOR.createFromParcel(parcel);
         }
 
+        if (parcel.readInt() != 0) {
+            mBridgedNotificationMetadata =
+                    BridgedNotificationMetadata.CREATOR.createFromParcel(parcel);
+        }
+
         mAllowSystemGeneratedContextualActions = parcel.readBoolean();
 
         mFgsDeferBehavior = parcel.readInt();
@@ -3325,6 +3332,7 @@ public class Notification implements Parcelable
         that.mGroupAlertBehavior = this.mGroupAlertBehavior;
         that.mFgsDeferBehavior = this.mFgsDeferBehavior;
         that.mBubbleMetadata = this.mBubbleMetadata;
+        that.mBridgedNotificationMetadata = this.mBridgedNotificationMetadata;
         that.mAllowSystemGeneratedContextualActions = this.mAllowSystemGeneratedContextualActions;
 
         if (!heavy) {
@@ -3470,6 +3478,10 @@ public class Notification implements Parcelable
 
         if (mBubbleMetadata != null) {
             visitIconUri(visitor, mBubbleMetadata.getIcon());
+        }
+
+        if (mBridgedNotificationMetadata != null) {
+            visitIconUri(visitor, mBridgedNotificationMetadata.getIcon());
         }
 
         if (extras != null && extras.containsKey(WearableExtender.EXTRA_WEARABLE_EXTENSIONS)) {
@@ -4052,6 +4064,13 @@ public class Notification implements Parcelable
         if (mBubbleMetadata != null) {
             parcel.writeInt(1);
             mBubbleMetadata.writeToParcel(parcel, 0);
+        } else {
+            parcel.writeInt(0);
+        }
+
+        if (mBridgedNotificationMetadata != null) {
+            parcel.writeInt(1);
+            mBridgedNotificationMetadata.writeToParcel(parcel, 0);
         } else {
             parcel.writeInt(0);
         }
@@ -4746,6 +4765,27 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Returns the metadata associated with a notification originating on another device.
+     * A copy of the original notification is sent to this device by a bridging app. This
+     * metadata is used for displaying the notification as a bridged notification to the user.
+     */
+    @Nullable
+    @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS_API)
+    public BridgedNotificationMetadata getBridgedNotificationMetadata() {
+        return mBridgedNotificationMetadata;
+    }
+
+    /**
+     * Removes BridgedNotificationMetadata from a notification. BridgedNotificationMetadata can
+     * only be set by the builder, but in situations where the metadata needs to be stripped (such
+     * as if the caller did not have the correct permissions), this function is required.
+     * @hide
+     */
+    public void removeBridgedNotificationMetadata() {
+        mBridgedNotificationMetadata = null;
+    }
+
+    /**
      * Returns whether the platform is allowed (by the app developer) to generate contextual actions
      * for this notification.
      */
@@ -5188,6 +5228,21 @@ public class Notification implements Parcelable
         @NonNull
         public Builder setBubbleMetadata(@Nullable BubbleMetadata data) {
             mN.mBubbleMetadata = data;
+            return this;
+        }
+
+        /**
+         * Sets the metadata for notifications which originate from another device. This metadata
+         * is used to display the notifications in a distinct way from local notifications, to
+         * reflect their source.
+         * @hide
+         */
+        @NonNull
+        @SystemApi
+        @RequiresPermission("android.Manifest.permission.POST_BRIDGED_NOTIFICATIONS")
+        @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS_API)
+        public Builder setBridgedNotificationMetadata(@Nullable BridgedNotificationMetadata data) {
+            mN.mBridgedNotificationMetadata = data;
             return this;
         }
 
@@ -8462,6 +8517,18 @@ public class Notification implements Parcelable
                     isLowRam ? R.dimen.notification_small_icon_size_low_ram
                             : R.dimen.notification_small_icon_size);
             mSmallIcon.scaleDownIfNecessary(maxSize, maxSize);
+        }
+
+        if (mBridgedNotificationMetadata != null
+                // Only bitmap icons can be downscaled.
+                && (mBridgedNotificationMetadata.getIcon().getType() == Icon.TYPE_BITMAP
+                        || mBridgedNotificationMetadata.getIcon().getType()
+                        == Icon.TYPE_ADAPTIVE_BITMAP)) {
+            Resources resources = context.getResources();
+            int maxSize = resources.getDimensionPixelSize(
+                    isLowRam ? R.dimen.notification_small_icon_size_low_ram
+                            : R.dimen.notification_small_icon_size);
+            mBridgedNotificationMetadata.getIcon().scaleDownIfNecessary(maxSize, maxSize);
         }
 
         if (mLargeIcon != null || largeIcon != null) {
@@ -15175,6 +15242,118 @@ public class Notification implements Parcelable
         }
     }
 
+    /**
+     * Encapsulates the information needed to display a notification as a bridged notification.
+     *
+     * A bridged notification is a notification sent from another device via a bridging application.
+     * The notification is displayed with customized content to differentiate it to the user from
+     * a local notification.
+     *
+     * Only preauthorized applications with bridging permissions can post bridged notifications.
+     */
+    @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS_API)
+    public static final class BridgedNotificationMetadata implements Parcelable {
+        public static final int BRIDGED_METADATA_TYPE_UNKNOWN = 0;
+        public static final int BRIDGED_METADATA_TYPE_PHONE = 1;
+        public static final int BRIDGED_METADATA_TYPE_TABLET = 2;
+        public static final int BRIDGED_METADATA_TYPE_LAPTOP = 3;
+        public static final int BRIDGED_METADATA_TYPE_WATCH = 4;
+        public static final int BRIDGED_METADATA_TYPE_TV = 5;
+
+        /** @hide */
+        @IntDef(prefix = { "BRIDGED_METADATA_TYPE_" }, value = {
+                BRIDGED_METADATA_TYPE_UNKNOWN,
+                BRIDGED_METADATA_TYPE_PHONE,
+                BRIDGED_METADATA_TYPE_TABLET,
+                BRIDGED_METADATA_TYPE_LAPTOP,
+                BRIDGED_METADATA_TYPE_WATCH,
+                BRIDGED_METADATA_TYPE_TV
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface BridgedMetadataType {}
+
+        private int mOriginDeviceType = BRIDGED_METADATA_TYPE_UNKNOWN;
+        @NonNull
+        private String mPackageName;
+        @NonNull
+        private Icon mIcon;
+
+        public BridgedNotificationMetadata(@BridgedMetadataType int type,
+                                           @NonNull String packageName, @NonNull Icon icon) {
+            mOriginDeviceType = type;
+            mPackageName = requireNonNull(packageName);
+            mIcon = requireNonNull(icon);
+        }
+
+        private BridgedNotificationMetadata(Parcel in) {
+            if (in.readInt() != 0) {
+                mOriginDeviceType = in.readInt();
+            }
+            if (in.readInt() != 0) {
+                mPackageName = in.readString8();
+            }
+            if (in.readInt() != 0) {
+                mIcon = Icon.CREATOR.createFromParcel(in);
+            }
+        }
+
+        public static final @NonNull Parcelable.Creator<BridgedNotificationMetadata> CREATOR =
+                new Parcelable.Creator<BridgedNotificationMetadata>() {
+
+                    @Override
+                    public BridgedNotificationMetadata createFromParcel(Parcel source) {
+                        return new BridgedNotificationMetadata(source);
+                    }
+
+                    @Override
+                    public BridgedNotificationMetadata[] newArray(int size) {
+                        return new BridgedNotificationMetadata[size];
+                    }
+                };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel out, int flags) {
+            requireNonNull(out);
+
+            out.writeInt(1);
+            out.writeInt(mOriginDeviceType);
+
+            out.writeInt(1);
+            out.writeString8(mPackageName);
+
+            out.writeInt(1);
+            mIcon.writeToParcel(out, 0);
+        }
+
+        /**
+         * The device type int representation of the device the notification was bridged from.
+         */
+        @BridgedMetadataType
+        public int getOriginDeviceType() {
+            return mOriginDeviceType;
+        }
+
+        /**
+         * The package name of the application the notification originated from.
+         */
+        @NonNull
+        public String getPackageName() {
+            return mPackageName;
+        }
+
+        /**
+         * An icon representing the application the notification originated from.
+         */
+        @NonNull
+        public Icon getIcon() {
+            return mIcon;
+        }
+    }
 
     // When adding a new Style subclass here, don't forget to update
     // Builder.getNotificationStyleClass.

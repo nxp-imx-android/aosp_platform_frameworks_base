@@ -328,6 +328,14 @@ flag {
   bug: "438704204"
 }
 
+flag {
+   name: "bridged_notifications_api"
+   is_exported: true
+   namespace: "better_together"
+   description: "Adds support for specifying bridged notification metadata for displaying to the user."
+   bug: "438827600"
+}
+
 # End: exported flags that cannot be removed
 
 
