@@ -18,6 +18,12 @@ package com.android.systemui.screencapture.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureMarkupInteractor
+import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordParametersInteractor
 
 val Kosmos.screenCaptureOverlayStateInteractor: ScreenCaptureOverlayStateInteractor by
-    Kosmos.Fixture { ScreenCaptureOverlayStateInteractor(screenCaptureMarkupInteractor) }
+    Kosmos.Fixture {
+        ScreenCaptureOverlayStateInteractor(
+            screenCaptureMarkupInteractor,
+            screenCaptureRecordParametersInteractor,
+        )
+    }

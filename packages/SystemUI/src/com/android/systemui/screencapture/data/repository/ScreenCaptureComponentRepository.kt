@@ -39,6 +39,8 @@ class ScreenCaptureComponentRepository @Inject constructor() {
         type: ScreenCaptureType,
         update: (ScreenCaptureComponent?) -> ScreenCaptureComponent?,
     ) {
+        // Don't do state.update {} because the lambda might be executed multiple times which we
+        // don't want when initializing a dagger component
         with(components.getValue(type)) { mutex.withLock { state.value = update(state.value) } }
     }
 }
