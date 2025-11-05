@@ -80,10 +80,6 @@
       "host": true
     },
     {
-      "name": "AdServicesSharedLibrariesUnitTestsRavenwood",
-      "host": true
-    },
-    {
       "name": "android.test.mock.ravenwood.tests",
       "host": true
     },
@@ -182,6 +178,10 @@
     },
     {
       "name": "InternalTestsRavenwood",
+      "host": true
+    },
+    {
+      "name": "LibnativehelperInternalTestCasesRavenwood",
       "host": true
     },
     {
