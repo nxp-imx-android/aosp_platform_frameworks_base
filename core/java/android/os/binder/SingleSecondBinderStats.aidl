@@ -54,4 +54,12 @@ parcelable SingleSecondBinderStats {
 
     /** The sum of squared microsecond durations of the measured CPU time. */
     long cpuTimeMicrosSquaredSum;
+
+    /**
+     * The latency data. Each data point is the duration of a call
+     * represented using a logarithmic scale.
+     * There should be exactly durationCount number of data points
+     * and the value should lie between [0, 99]
+     */
+    byte[] durationBinIndices;
 }
