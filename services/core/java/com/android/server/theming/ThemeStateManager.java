@@ -225,14 +225,17 @@ public class ThemeStateManager {
     /**
      * Called when the boot process is complete. This method checks if the applied
      * overlays match the current theme settings and forces an update if necessary.
+     *
+     * @param isPaletteOutdated A boolean indicating the palette version is outdated and should be
+     *                         recalculated.
      */
-    void onBootComplete() {
+    void onBootComplete(boolean isPaletteOutdated) {
         boolean shouldEvaluateOnBoot = false;
         for (int i = 0; i < mThemeStates.size(); i++) {
             int key = mThemeStates.keyAt(i);
             ThemeStatePair statePair = getState(key);
 
-            if (!statePair.isColorSchemeApplied(mContext)) {
+            if (!statePair.isColorSchemeApplied(mContext) || isPaletteOutdated) {
                 Slog.d(TAG, "Color palette does not match user " + statePair.userId
                         + " settings, requesting update.");
                 statePair.forceUpdate();

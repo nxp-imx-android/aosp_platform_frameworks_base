@@ -553,7 +553,7 @@ public class ThemeStateManagerTest {
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         ThemeStatePair pair = mThemeStateManager.getState(DEFAULT_USER_ID);
 
-        mThemeStateManager.onBootComplete();
+        mThemeStateManager.onBootComplete(false);
         assertThat(pair.getPendingState()).isNull(); // there is no update
     }
 
@@ -562,7 +562,21 @@ public class ThemeStateManagerTest {
         // creates user with seed color red, not the same as the default google_blue
         ThemeStatePair pair = startProvisionedUser();
 
-        mThemeStateManager.onBootComplete();
+        mThemeStateManager.onBootComplete(false);
+        assertThat(pair.getPendingState()).isNotNull(); // there is an update
+        assertThat(pair.getPendingState().timeStamp()).isNotEqualTo(
+                pair.getCurrentState().timeStamp());
+    }
+
+    @Test
+    public void testOnBootComplete_paletteOutdated_shouldForceUpdate() {
+        // creates user with seed color same as the default google_blue
+        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, GOOGLE_BLUE,
+                DEFAULT_CONTRAST, DEFAULT_STYLE);
+        ThemeStatePair pair = mThemeStateManager.getState(DEFAULT_USER_ID);
+
+        mThemeStateManager.onBootComplete(true);
+
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().timeStamp()).isNotEqualTo(
                 pair.getCurrentState().timeStamp());
