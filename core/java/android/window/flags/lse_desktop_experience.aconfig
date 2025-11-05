@@ -928,16 +928,6 @@ flag {
 }
 
 flag {
-    name: "enable_full_screen_window_on_removing_split_screen_stage_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables clearing the windowing mode of a freeform window when removing the task from the split screen stage."
-    bug: "372791604"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_fullscreen_window_controls"
     namespace: "lse_desktop_experience"
     description: "Enables fullscreen window app header."
