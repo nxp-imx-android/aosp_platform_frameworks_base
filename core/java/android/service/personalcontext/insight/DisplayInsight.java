@@ -1,0 +1,141 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.service.personalcontext.insight;
+
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.os.Bundle;
+import android.service.personalcontext.Flags;
+import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
+
+import java.util.Objects;
+
+/**
+ * An insight that contains information for display purposes with no particular action associated.
+ */
+@FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+public final class DisplayInsight extends ContextInsight {
+    private static final String KEY_DISPLAY_DETAILS = "key_display_details";
+
+    private final InsightDisplayDetails mDisplayDetails;
+
+    /** Private constructor used by {@link Builder}. */
+    private DisplayInsight(
+            @NonNull ContextInsight.ConstructorParams baseParams,
+            @NonNull InsightDisplayDetails displayDetails) {
+        super(baseParams);
+        mDisplayDetails = Objects.requireNonNull(displayDetails);
+    }
+
+    /**
+     * Internal constructor only for use by {@link ContextInsight#createInsightFromBundle(Bundle)}.
+     */
+    DisplayInsight(@NonNull ContextInsight.ConstructorParams baseParams, @NonNull Bundle bundle) {
+        this(
+                baseParams,
+                Objects.requireNonNull(
+                        bundle.getParcelable(KEY_DISPLAY_DETAILS, InsightDisplayDetails.class)));
+    }
+
+    @NonNull
+    @Override
+    Bundle toBundleImpl() {
+        final Bundle b = new Bundle();
+        b.putParcelable(KEY_DISPLAY_DETAILS, mDisplayDetails);
+        return b;
+    }
+
+    /** Returns the {@link InsightDisplayDetails} of this insight. */
+    @NonNull
+    public InsightDisplayDetails getDetails() {
+        return mDisplayDetails;
+    }
+
+    /** @hide */
+    @Override
+    @InsightType
+    public int getInsightType() {
+        return INSIGHT_TYPE_DISPLAY;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof DisplayInsight that)) return false;
+        if (!super.equals(o)) return false;
+        return Objects.equals(mDisplayDetails, that.mDisplayDetails);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mDisplayDetails);
+    }
+
+    @Override
+    public String toString() {
+        return "DisplayInsight{"
+                + "mDisplayDetails="
+                + mDisplayDetails
+                + ", super="
+                + super.toString()
+                + "}";
+    }
+
+    /** Builder for {@link DisplayInsight}. */
+    public static final class Builder {
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
+        private final InsightDisplayDetails mDisplayDetails;
+
+        /**
+         * Creates a new builder for a display insight. By default, no hints are present. They can
+         * be added using {@link #addOriginHint(ContextHintWithSignature)}.
+         *
+         * @param displayDetails the display details of the insight.
+         */
+        public Builder(@NonNull InsightDisplayDetails displayDetails) {
+            mDisplayDetails = Objects.requireNonNull(displayDetails);
+        }
+
+        /**
+         * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
+         *
+         * @param hint the origin {@link ContextHint} to add
+         */
+        @NonNull
+        public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
+            mBaseBuilder.addOriginHint(hint);
+            return this;
+        }
+
+        /**
+         * Adds a tag to the resulting {@link ContextInsight}.
+         *
+         * @param tag the tag to add
+         */
+        @NonNull
+        public Builder addTag(@NonNull String tag) {
+            mBaseBuilder.addTag(tag);
+            return this;
+        }
+
+        /** Builds the {@link DisplayInsight}. */
+        @NonNull
+        public DisplayInsight build() {
+            return new DisplayInsight(mBaseBuilder.build(), mDisplayDetails);
+        }
+    }
+}

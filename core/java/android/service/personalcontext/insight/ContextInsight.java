@@ -66,7 +66,12 @@ public abstract class ContextInsight {
      */
     @IntDef(
             prefix = {"INSIGHT_TYPE_"},
-            value = {INSIGHT_TYPE_ERROR, INSIGHT_TYPE_BUNDLE, INSIGHT_TYPE_ACTIONABLE})
+            value = {
+                INSIGHT_TYPE_ERROR,
+                INSIGHT_TYPE_BUNDLE,
+                INSIGHT_TYPE_ACTIONABLE,
+                INSIGHT_TYPE_DISPLAY
+            })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InsightType {}
 
@@ -83,6 +88,9 @@ public abstract class ContextInsight {
 
     /** Type identifier for {@link ActionableInsight}. */
     static final int INSIGHT_TYPE_ACTIONABLE = 2;
+
+    /** Type identifier for {@link DisplayInsight}. */
+    static final int INSIGHT_TYPE_DISPLAY = 3;
 
     /**
      * Object returned when there is an unparcelling error.
@@ -203,6 +211,16 @@ public abstract class ContextInsight {
         return Objects.hash(mId);
     }
 
+    @Override
+    public String toString() {
+        return "ContextInsight{"
+                + "mId="
+                + mId
+                + ", mOriginHints="
+                + mOriginHints
+                + '}';
+    }
+
     /**
      * Unbundles an insight into the correct subclass of insight based on the insight type.
      *
@@ -226,6 +244,7 @@ public abstract class ContextInsight {
             return switch (type) {
                 case INSIGHT_TYPE_BUNDLE -> new BundleInsight(constructorParams, data);
                 case INSIGHT_TYPE_ACTIONABLE -> new ActionableInsight(constructorParams, data);
+                case INSIGHT_TYPE_DISPLAY -> new DisplayInsight(constructorParams, data);
                 default -> ERROR_INSIGHT;
             };
         } catch (Exception e) {
