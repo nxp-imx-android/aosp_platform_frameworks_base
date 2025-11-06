@@ -204,6 +204,7 @@ android_app {
         "com.android.media.flags.mediasession-aconfig",
         "npumanager_aconfig_flags",
         "telecom_flags",
+        "android.multiuser.flags-aconfig",
     ],
 }
 
