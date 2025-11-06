@@ -128,6 +128,7 @@ public final class ShortcutConstants {
             Settings.Secure.ACCESSIBILITY_GESTURE_TARGETS,
             Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS,
             Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS,
+            Settings.Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS,
     };
 
     /**
@@ -141,6 +142,7 @@ public final class ShortcutConstants {
             Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED,
             Settings.Secure.ACCESSIBILITY_TOP_ROW_KEY_TARGETS,
             Settings.Secure.ACCESSIBILITY_QUICK_ACCESS_TARGETS,
+            Settings.Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS,
     };
 
     /**
