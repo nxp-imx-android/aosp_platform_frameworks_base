@@ -327,8 +327,7 @@ constructor(
                 0.85f to 320, // tiny font size but large display size
                 1f to 346,
                 1.15f to 346,
-                1.5f to 376,
-                1.8f to 411, // large font size but tiny display size
+                1.5f to 411, // large font size but tiny display size
             )
 
         private const val NUMBER_OVERLAP_CLOCK_ID = "DIGITAL_CLOCK_NUMBEROVERLAP"
