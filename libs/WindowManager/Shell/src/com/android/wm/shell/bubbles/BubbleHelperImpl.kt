@@ -1,0 +1,61 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.wm.shell.bubbles
+
+import android.app.ActivityManager
+import android.app.ActivityTaskManager.INVALID_TASK_ID
+import android.window.WindowContainerToken
+import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToSplit
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.splitscreen.SplitScreenController
+import dagger.Lazy
+import java.util.Optional
+
+/** Helper class to query Bubble info from other components. */
+class BubbleHelperImpl(
+    private val bubbleRootTask: Lazy<BubbleRootTask>,
+    private val splitScreenController: Lazy<Optional<SplitScreenController>>,
+) : BubbleHelper {
+    override fun getAppBubbleRootTaskToken(): WindowContainerToken? =
+        bubbleRootTask.get().windowContainerToken
+
+    override fun isAppBubbleRootTask(taskId: Int): Boolean =
+        bubbleRootTask.get().taskId == taskId && taskId != INVALID_TASK_ID
+
+    override fun isAppBubbleRootTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean =
+        isAppBubbleRootTask(taskInfo.taskId)
+
+    override fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
+        if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
+            return isAppBubbleRootTask(taskInfo.parentTaskId)
+        }
+
+        // Skip treating the task as an app bubble if it's transitioning from bubble to split.
+        // In BubblesTransitionObserver#removeBubbleIfLaunchingToSplit, a WCT is applied to set
+        // LaunchNextToBubble=false. Then TaskViewTaskController#notifyTaskRemovalStarted is called,
+        // which triggers this check. However, the isAppBubble flag is only updated during the next
+        // Task#fillTaskInfo by the WM core, so the flag we are currently processing is still true.
+        // Later, TaskViewTransitions#onExternalDone unblocks the animation. Without this check,
+        // DefaultMixedHandler could misinterpret the OPEN change as a bubble-enter transition,
+        // incorrectly re-creating the bubble instead of completing the split-screen transition.
+        if (taskInfo.isBubbleToSplit(splitScreenController)) {
+            return false
+        }
+
+        return taskInfo.isAppBubble
+    }
+}

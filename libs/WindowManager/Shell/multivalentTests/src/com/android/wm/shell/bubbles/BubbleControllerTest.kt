@@ -29,7 +29,6 @@ import android.graphics.Insets
 import android.graphics.Rect
 import android.graphics.drawable.Icon
 import android.os.Handler
-import android.os.IBinder
 import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
@@ -48,8 +47,6 @@ import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
-import android.window.WindowContainerTransaction
-import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
@@ -58,7 +55,6 @@ import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
-import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
@@ -104,6 +100,8 @@ import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import java.util.Optional
+import java.util.concurrent.Executor
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -122,8 +120,6 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
-import java.util.Optional
-import java.util.concurrent.Executor
 
 /** Tests for [BubbleController].
  *
@@ -150,6 +146,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     private val taskViewTransitions = mock<TaskViewTransitions>()
     private val userManager = mock<UserManager>()
     private val windowManager = mock<WindowManager>()
+    private val bubbleHelper = mock<BubbleHelper>()
 
     private lateinit var bubbleController: BubbleController
     private lateinit var bubblePositioner: BubblePositioner
@@ -487,81 +484,6 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         }
 
         assertThat(bubbleController.hasStableBubbleForTask(777)).isFalse()
-    }
-
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    @Test
-    fun shouldBeAppBubble_parentTaskMatchesBubbleRootTask_returnsTrue() {
-        val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 777)
-        val taskInfo = ActivityManager.RunningTaskInfo().apply { parentTaskId = 777 }
-
-        assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isTrue()
-    }
-
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    @Test
-    fun shouldBeAppBubble_parentTaskDoesNotMatchesBubbleRootTask_returnsFalse() {
-        val bubbleController = createBubbleControllerWithRootTask(bubbleRootTaskId = 123)
-        val taskInfo = ActivityManager.RunningTaskInfo().apply { parentTaskId = 456 }
-
-        assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isFalse()
-    }
-
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    @Test
-    fun testCreateRootTask() {
-        val binder = mock<IBinder>()
-        val rootToken = mock<WindowContainerToken>() {
-            on { asBinder() } doReturn binder
-        }
-        val bubbleRootTask = ActivityManager.RunningTaskInfo().apply {
-            taskId = 123
-            token = rootToken
-        }
-        val shellTaskOrganizer = mock<ShellTaskOrganizer>()
-        createBubbleControllerWithRootTask(shellTaskOrganizer, bubbleRootTask)
-
-        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
-        verify(shellTaskOrganizer).applyTransaction(wctCaptor.capture())
-        val wct = wctCaptor.firstValue
-
-        // verify hierarchy ops
-        assertThat(wct.hierarchyOps.any { hop -> hop.type == HIERARCHY_OP_TYPE_REORDER }).isTrue()
-
-        // verify changes
-        assertThat(wct.changes[binder]).isNotNull()
-        val change = wct.changes[binder]!!
-        assertThat(change.interceptBackPressed).isTrue()
-        assertThat(change.forceExcludedFromRecents).isTrue()
-        assertThat(change.disablePip).isTrue()
-        assertThat(change.disableLaunchAdjacent).isTrue()
-        assertThat(change.forceTranslucent).isTrue()
-    }
-
-    @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    @Test
-    fun shouldBeAppBubble_taskIsSplitting_returnsFalse() {
-        val sideStageRootTask = 5
-        splitScreenController.stub {
-            on { isTaskRootOrStageRoot(sideStageRootTask) } doReturn true
-        }
-        val taskInfo = ActivityManager.RunningTaskInfo().apply {
-            // Task is running in split-screen mode.
-            parentTaskId = sideStageRootTask
-            // Even though the task was previously marked as an app bubble,
-            // it should not be considered a bubble when in split-screen mode.
-            isAppBubble = true
-        }
-
-        assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isFalse()
-    }
-
-    @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
-    @Test
-    fun shouldBeAppBubble_isAppBubbleNotSplitting_returnsTrue() {
-        val taskInfo = ActivityManager.RunningTaskInfo().apply { isAppBubble = true }
-
-        assertThat(bubbleController.shouldBeAppBubble(taskInfo)).isTrue()
     }
 
     @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
@@ -1137,6 +1059,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 { isStayAwakeOnFold },
                 sessionTracker,
                 bubbleViewInfoTaskFactory,
+                bubbleHelper,
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()
@@ -1144,39 +1067,6 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         bubbleController.asBubbles().setSysuiProxy(mock<SysuiProxy>())
         // Flush so that proxy gets set
         mainExecutor.flushAll()
-
-        return bubbleController
-    }
-
-    private fun createBubbleControllerWithRootTask(bubbleRootTaskId: Int): BubbleController {
-        val shellTaskOrganizer = mock<ShellTaskOrganizer>()
-
-        val bubbleRootTask = ActivityManager.RunningTaskInfo().apply {
-            taskId = bubbleRootTaskId
-            token = mock<WindowContainerToken>()
-        }
-        return createBubbleControllerWithRootTask(shellTaskOrganizer, bubbleRootTask)
-    }
-
-    private fun createBubbleControllerWithRootTask(shellTaskOrganizer: ShellTaskOrganizer,
-        bubbleRootTask: ActivityManager.RunningTaskInfo
-    ): BubbleController {
-        val bubbleController = createBubbleController(
-            bubbleData,
-            windowManager,
-            shellTaskOrganizer,
-            bubbleLogger,
-            bubblePositioner,
-            mainExecutor,
-            bgExecutor,
-        )
-
-        val rootTaskListener = argumentCaptor<ShellTaskOrganizer.TaskListener>().let { captor ->
-            verify(shellTaskOrganizer).createRootTask(any(), captor.capture())
-            captor.lastValue
-        }
-
-        rootTaskListener.onTaskAppeared(bubbleRootTask, null /* leash */)
 
         return bubbleController
     }

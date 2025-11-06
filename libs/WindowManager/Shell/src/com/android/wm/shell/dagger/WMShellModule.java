@@ -67,8 +67,11 @@ import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.bubbles.BubbleData;
 import com.android.wm.shell.bubbles.BubbleDataRepository;
 import com.android.wm.shell.bubbles.BubbleEducationController;
+import com.android.wm.shell.bubbles.BubbleHelper;
+import com.android.wm.shell.bubbles.BubbleHelperImpl;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
+import com.android.wm.shell.bubbles.BubbleRootTask;
 import com.android.wm.shell.bubbles.BubbleTaskUnfoldTransitionMerger;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.BubbleViewInfoTask;
@@ -359,6 +362,25 @@ public abstract class WMShellModule {
     @Binds
     abstract BubbleUserResolver bindUserResolver(UserManagerBubbleUserResolver impl);
 
+    @WMSingleton
+    @Provides
+    static BubbleRootTask provideBubbleRootTask(
+            Context context,
+            ShellInit shellInit,
+            ShellTaskOrganizer taskOrganizer,
+            @Bubbles TaskViewTransitions taskViewTransitions) {
+        return new BubbleRootTask(context, shellInit, taskOrganizer, taskViewTransitions);
+    }
+
+    @WMSingleton
+    @Provides
+    static BubbleHelper provideBubbleHelper(
+            Lazy<BubbleRootTask> bubbleRootTask,
+            Lazy<Optional<SplitScreenController>> splitScreenController) {
+        // Use Lazy to prevent circular dependencies
+        return new BubbleHelperImpl(bubbleRootTask, splitScreenController);
+    }
+
     // Note: Handler needed for LauncherApps.register
     @WMSingleton
     @Provides
@@ -395,7 +417,8 @@ public abstract class WMShellModule {
             @NonNull Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
             BubblesFoldLockSettingsObserver foldLockSettingsObserver,
             BubbleSessionTracker sessionTracker,
-            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
+            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
+            BubbleHelper bubbleHelper) {
         final WindowManager wm = enableViewCaptureTracing()
                 ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
                 : windowManager;
@@ -439,7 +462,8 @@ public abstract class WMShellModule {
                 unfoldProgressProvider,
                 foldLockSettingsObserver,
                 sessionTracker,
-                bubbleViewInfoTaskFactory);
+                bubbleViewInfoTaskFactory,
+                bubbleHelper);
     }
 
     //

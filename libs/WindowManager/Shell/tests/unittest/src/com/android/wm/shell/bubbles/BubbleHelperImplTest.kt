@@ -1,0 +1,131 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.wm.shell.bubbles
+
+import android.app.ActivityManager
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
+import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
+import com.android.wm.shell.MockToken
+import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.bubbles.BubbleRootTaskTest.Companion.prepareRootTaskForTest
+import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.taskview.TaskViewTransitions
+import com.google.common.truth.Truth.assertThat
+import java.util.Optional
+import org.junit.Before
+import org.junit.Test
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
+
+/**
+ * Unit tests for [BubbleHelperImpl].
+ *
+ * Build/Install/Run:
+ *  atest WMShellUnitTests:BubbleHelperImplTest
+ */
+@SmallTest
+class BubbleHelperImplTest : ShellTestCase() {
+
+    private val shellInit = mock<ShellInit>()
+    private val taskOrganizer = mock<ShellTaskOrganizer>()
+    private val taskViewTransitions = mock<TaskViewTransitions>()
+    private val splitScreenController = mock<SplitScreenController>()
+
+    private lateinit var bubbleRootTask: BubbleRootTask
+    private lateinit var bubbleHelper: BubbleHelper
+
+    @Before
+    fun setUp() {
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, taskViewTransitions)
+        bubbleHelper = BubbleHelperImpl(
+            bubbleRootTask = { bubbleRootTask },
+            splitScreenController = { Optional.of(splitScreenController) }
+        )
+    }
+
+    @Test
+    fun getAppBubbleRootTaskToken() {
+        val token = MockToken.token()
+        bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123, bubbleRootToken = token)
+
+        assertThat(bubbleHelper.getAppBubbleRootTaskToken()).isEqualTo(token)
+    }
+
+    @Test
+    fun isAppBubbleRootTask() {
+        bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123)
+        val taskInfo0 = ActivityManager.RunningTaskInfo().apply { taskId = 456 }
+        val taskInfo1 = ActivityManager.RunningTaskInfo().apply { taskId = 123 }
+
+        assertThat(bubbleHelper.isAppBubbleRootTask(777)).isFalse()
+        assertThat(bubbleHelper.isAppBubbleRootTask(123)).isTrue()
+        assertThat(bubbleHelper.isAppBubbleRootTask(taskInfo0)).isFalse()
+        assertThat(bubbleHelper.isAppBubbleRootTask(taskInfo1)).isTrue()
+    }
+
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    @Test
+    fun isAppBubble_parentTaskMatchesBubbleRootTask_returnsTrue() {
+        bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 777)
+
+        val taskInfo = ActivityManager.RunningTaskInfo().apply { parentTaskId = 777 }
+
+        assertThat(bubbleHelper.isAppBubbleTask(taskInfo)).isTrue()
+    }
+
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    @Test
+    fun isAppBubble_parentTaskDoesNotMatchesBubbleRootTask_returnsFalse() {
+        bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123)
+
+        val taskInfo = ActivityManager.RunningTaskInfo().apply { parentTaskId = 456 }
+
+        assertThat(bubbleHelper.isAppBubbleTask(taskInfo)).isFalse()
+    }
+
+    @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    @Test
+    fun isAppBubble_taskIsSplitting_returnsFalse() {
+        val sideStageRootTask = 5
+        splitScreenController.stub {
+            on { isTaskRootOrStageRoot(sideStageRootTask) } doReturn true
+        }
+        val taskInfo = ActivityManager.RunningTaskInfo().apply {
+            // Task is running in split-screen mode.
+            parentTaskId = sideStageRootTask
+            // Even though the task was previously marked as an app bubble,
+            // it should not be considered a bubble when in split-screen mode.
+            isAppBubble = true
+        }
+
+        assertThat(bubbleHelper.isAppBubbleTask(taskInfo)).isFalse()
+    }
+
+    @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    @Test
+    fun isAppBubble_isAppBubbleNotSplitting_returnsTrue() {
+        val taskInfo = ActivityManager.RunningTaskInfo().apply { isAppBubble = true }
+
+        assertThat(bubbleHelper.isAppBubbleTask(taskInfo)).isTrue()
+    }
+}

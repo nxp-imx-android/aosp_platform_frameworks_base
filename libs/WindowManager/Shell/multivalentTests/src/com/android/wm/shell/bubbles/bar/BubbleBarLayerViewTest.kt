@@ -46,6 +46,7 @@ import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleData
 import com.android.wm.shell.bubbles.BubbleDataRepository
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker
 import com.android.wm.shell.bubbles.BubbleTransitions
@@ -278,6 +279,7 @@ class BubbleBarLayerViewTest {
             { false },
             sessionTracker,
             bubbleViewInfoTaskFactory,
+            mock<BubbleHelper>(),
         )
     }
 
