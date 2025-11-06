@@ -41,7 +41,7 @@ interface IContextualModeManager {
 
     /** Enable or disable mode sync. */
     @EnforcePermission("WRITE_SECURE_SETTINGS")
-    void setModeSyncEnabled(boolean enabled);
+    void setModeSyncEnabled(in UserHandle userHandle, boolean enabled);
 
     /** Get all modes. */
     @EnforcePermission("MANAGE_CONTEXTUAL_MODES")

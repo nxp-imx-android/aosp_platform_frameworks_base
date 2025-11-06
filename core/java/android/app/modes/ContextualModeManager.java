@@ -20,6 +20,8 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SystemApi;
+import android.annotation.TestApi;
 import android.content.Context;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -57,7 +59,7 @@ import java.util.function.Consumer;
  * @see ContextualModeListener
  * @hide
  */
-// TODO(b/430676215): implement backend, expose API and add CTS
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_DND_SYNC)
 public final class ContextualModeManager {
     private static final String TAG = "CtxModeManager";
@@ -90,6 +92,7 @@ public final class ContextualModeManager {
      * @return {@code true} if mode synchronization is supported, {@code false} otherwise
      * @hide
      */
+    @SystemApi
     public boolean isModeSyncSupported() {
         if (mModeSyncSupported != null) {
             return mModeSyncSupported;
@@ -116,17 +119,21 @@ public final class ContextualModeManager {
      * @see #setModeSyncEnabled(boolean)
      * @hide
      */
+    @SystemApi
     public boolean isModeSyncEnabled() {
         return isModeSyncEnabled(mContext.getUser());
     }
 
     /**
-     * Checks if mode sync is enabled for the given user.
+     * Checks if mode sync is enabled for the given user. Requires {@link
+     * Manifest.permission#INTERACT_ACROSS_USERS} permission if the supplied {@link UserHandle}
+     * belongs to a different user.
      *
      * @param userHandle the handle of a user to check
      * @return {@code true} if the user has enabled mode sync, {@code false} otherwise
      * @hide
      */
+    @RequiresPermission(value = Manifest.permission.INTERACT_ACROSS_USERS, conditional = true)
     public boolean isModeSyncEnabled(UserHandle userHandle) {
         try {
             return getService().isModeSyncEnabled(userHandle);
@@ -145,18 +152,38 @@ public final class ContextualModeManager {
      * @throws SecurityException if the caller does not have the required permission
      * @hide
      */
+    @SystemApi
     @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
     public void setModeSyncEnabled(boolean enabled) {
+        setModeSyncEnabled(mContext.getUser(), enabled);
+    }
+
+    /**
+     * Sets the given user's preference for mode synchronization. Requires {@link
+     * Manifest.permission#INTERACT_ACROSS_USERS} permission if the supplied {@link UserHandle}
+     * belongs to a different user.
+     *
+     * @param userHandle the handle of a user whose preference will be set
+     * @param enabled {@code true} to enable mode synchronization, {@code false} to disable it
+     * @throws SecurityException if the caller does not have the required permission
+     * @hide
+     */
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.WRITE_SECURE_SETTINGS,
+                Manifest.permission.INTERACT_ACROSS_USERS
+            },
+            conditional = true)
+    public void setModeSyncEnabled(UserHandle userHandle, boolean enabled) {
         try {
-            getService().setModeSyncEnabled(enabled);
+            getService().setModeSyncEnabled(userHandle, enabled);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
 
     /**
-     * Registers a listener to receive updates on the mode sync enablement state for the current
-     * user.
+     * Registers a listener to receive updates on the mode sync enabled state for the current user.
      *
      * <p>The provided listener will be invoked whenever the user's preference for mode
      * synchronization changes. It will receive {@code true} if mode sync is enabled, and {@code
@@ -164,24 +191,27 @@ public final class ContextualModeManager {
      *
      * @param executor the {@link Executor} on which to invoke the listener
      * @param listener a {@link Consumer} that will be called with the new enablement state
-     * @see #unregisterModeSyncEnablementListener(Consumer)
+     * @see #unregisterModeSyncEnabledListener(Consumer)
      * @hide
      */
-    public void registerModeSyncEnablementListener(
+    @SystemApi
+    public void registerModeSyncEnabledListener(
             @NonNull Executor executor, @NonNull Consumer<Boolean> listener) {
-        registerModeSyncEnablementListener(mContext.getUser(), executor, listener);
+        registerModeSyncEnabledListener(mContext.getUser(), executor, listener);
     }
 
     /**
-     * Registers a listener to receive updates on the mode sync enablement state for the specified
-     * user.
+     * Registers a listener to receive updates on the mode sync enabled state for the specified
+     * user. Requires {@link Manifest.permission#INTERACT_ACROSS_USERS} permission if the supplied
+     * {@link UserHandle} belongs to a different user.
      *
      * @param userHandle the handle of a user to listen for changes on
      * @param executor the {@link Executor} on which to invoke the listener
      * @param listener a {@link Consumer} that will be called with the new enablement state
      * @hide
      */
-    public void registerModeSyncEnablementListener(
+    @RequiresPermission(value = Manifest.permission.INTERACT_ACROSS_USERS, conditional = true)
+    public void registerModeSyncEnabledListener(
             UserHandle userHandle,
             @NonNull Executor executor,
             @NonNull Consumer<Boolean> listener) {
@@ -205,13 +235,14 @@ public final class ContextualModeManager {
 
     /**
      * Unregisters a listener that was previously registered via {@link
-     * #registerModeSyncEnablementListener(Executor, Consumer)}.
+     * #registerModeSyncEnabledListener(Executor, Consumer)}.
      *
      * @param listener the listener to unregister, must be the same object that was passed to the
      *     registration method
      * @hide
      */
-    public void unregisterModeSyncEnablementListener(@NonNull Consumer<Boolean> listener) {
+    @SystemApi
+    public void unregisterModeSyncEnabledListener(@NonNull Consumer<Boolean> listener) {
         List<ContextualModeSyncListenerStub> stubsToUnregister = new ArrayList<>();
         synchronized (mLock) {
             Iterator<ContextualModeSyncListenerStub> iterator =
@@ -245,6 +276,7 @@ public final class ContextualModeManager {
      * @throws SecurityException if the caller does not have the required permission
      * @hide
      */
+    @TestApi
     @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
     @NonNull
     public List<ContextualMode> getModes() {
@@ -252,14 +284,21 @@ public final class ContextualModeManager {
     }
 
     /**
-     * Retrieves all available modes for the specified user.
+     * Retrieves all available modes for the specified user. Requires {@link
+     * Manifest.permission#INTERACT_ACROSS_USERS} permission if the supplied {@link UserHandle}
+     * belongs to a different user.
      *
      * @param userHandle the handle of a user to query
      * @return a non-null, possibly empty, list of {@link ContextualMode}
      * @throws SecurityException if the caller does not have the required permission
      * @hide
      */
-    @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MANAGE_CONTEXTUAL_MODES,
+                Manifest.permission.INTERACT_ACROSS_USERS
+            },
+            conditional = true)
     @NonNull
     public List<ContextualMode> getModes(UserHandle userHandle) {
         try {
@@ -279,20 +318,28 @@ public final class ContextualModeManager {
      * @throws SecurityException if the caller does not have the required permission
      * @hide
      */
+    @TestApi
     @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
     public void mutateModes(@NonNull ContextualModesMutation mutation) {
         mutateModes(mContext.getUser(), mutation);
     }
 
     /**
-     * Applies a set of changes to the state of one or more modes for the specified user.
+     * Applies a set of changes to the state of one or more modes for the specified user. Requires
+     * {@link Manifest.permission#INTERACT_ACROSS_USERS} permission if the supplied {@link
+     * UserHandle} belongs to a different user.
      *
      * @param userHandle the handle of a user whose modes will be mutated
      * @param mutation a {@link ContextualModesMutation} object containing the desired changes
      * @throws SecurityException if the caller does not have the required permission
      * @hide
      */
-    @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MANAGE_CONTEXTUAL_MODES,
+                Manifest.permission.INTERACT_ACROSS_USERS
+            },
+            conditional = true)
     public void mutateModes(UserHandle userHandle, @NonNull ContextualModesMutation mutation) {
         try {
             getService().mutateModes(userHandle, mutation);
@@ -313,6 +360,7 @@ public final class ContextualModeManager {
      * @see #unregisterModeListener(ContextualModeListener)
      * @hide
      */
+    @TestApi
     @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
     public void registerModeListener(
             @NonNull Executor executor, @NonNull ContextualModeListener listener) {
@@ -320,7 +368,9 @@ public final class ContextualModeManager {
     }
 
     /**
-     * Registers a listener to receive updates on mode changes for the specified user.
+     * Registers a listener to receive updates on mode changes for the specified user. Requires
+     * {@link Manifest.permission#INTERACT_ACROSS_USERS} permission if the supplied {@link
+     * UserHandle} belongs to a different user.
      *
      * @param userHandle the handle of a user to listen for changes on
      * @param executor the {@link Executor} on which to invoke the listener's callbacks
@@ -328,7 +378,12 @@ public final class ContextualModeManager {
      * @throws SecurityException if the caller does not have the required permission
      * @hide
      */
-    @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MANAGE_CONTEXTUAL_MODES,
+                Manifest.permission.INTERACT_ACROSS_USERS
+            },
+            conditional = true)
     public void registerModeListener(
             UserHandle userHandle,
             @NonNull Executor executor,
@@ -359,6 +414,7 @@ public final class ContextualModeManager {
      * @throws SecurityException if the caller does not have the required permission
      * @hide
      */
+    @TestApi
     @RequiresPermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
     public void unregisterModeListener(@NonNull ContextualModeListener listener) {
         List<ContextualModeListenerStub> stubsToUnregister = new ArrayList<>();
@@ -402,6 +458,7 @@ public final class ContextualModeManager {
      * @see #registerModeListener(Executor, ContextualModeListener)
      * @hide
      */
+    @TestApi
     public interface ContextualModeListener {
         /**
          * Called when one or more modes have changed. This can include changes to a mode's state
@@ -425,7 +482,7 @@ public final class ContextualModeManager {
         final List<Pair<Executor, Consumer<Boolean>>> mListeners = new ArrayList<>();
 
         @Override
-        public void onModeSyncEnablementChanged(boolean enabled) {
+        public void onModeSyncEnabledChanged(boolean enabled) {
             List<Pair<Executor, Consumer<Boolean>>> listenerCopy;
             synchronized (mLock) {
                 listenerCopy = new ArrayList<>(mListeners);

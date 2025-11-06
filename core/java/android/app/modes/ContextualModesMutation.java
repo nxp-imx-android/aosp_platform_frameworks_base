@@ -17,6 +17,7 @@ package android.app.modes;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.notification.Flags;
@@ -37,15 +38,11 @@ import java.util.List;
  * @see ContextualMode
  * @hide
  */
-// TODO(b/430676215): implement backend, expose API and add CTS
+@TestApi
 @FlaggedApi(Flags.FLAG_ENABLE_DND_SYNC)
 public final class ContextualModesMutation implements Parcelable {
 
-    /**
-     * A {@link Parcelable.Creator} that can unparcel {@link ContextualModesMutation} objects.
-     *
-     * @hide
-     */
+    /** A {@link Parcelable.Creator} that can unparcel {@link ContextualModesMutation} objects. */
     @NonNull
     public static final Creator<ContextualModesMutation> CREATOR =
             new Creator<>() {

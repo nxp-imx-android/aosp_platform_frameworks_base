@@ -22,5 +22,5 @@
 oneway interface IContextualModeSyncListener {
 
     /** Called when mode sync is enabled or disabled. */
-    void onModeSyncEnablementChanged(boolean enabled);
+    void onModeSyncEnabledChanged(boolean enabled);
 }

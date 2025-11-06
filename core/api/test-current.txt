@@ -11,6 +11,7 @@ package android {
     field public static final String KEEP_UNINSTALLED_PACKAGES = "android.permission.KEEP_UNINSTALLED_PACKAGES";
     field public static final String MAKE_UID_VISIBLE = "android.permission.MAKE_UID_VISIBLE";
     field public static final String MANAGE_APP_OPS_MODES = "android.permission.MANAGE_APP_OPS_MODES";
+    field @FlaggedApi("android.service.notification.enable_dnd_sync") public static final String MANAGE_CONTEXTUAL_MODES = "android.permission.MANAGE_CONTEXTUAL_MODES";
     field public static final String MANAGE_CRATES = "android.permission.MANAGE_CRATES";
     field public static final String MANAGE_TOAST_RATE_LIMITING = "android.permission.MANAGE_TOAST_RATE_LIMITING";
     field public static final String MODIFY_HDR_CONVERSION_MODE = "android.permission.MODIFY_HDR_CONVERSION_MODE";
@@ -831,6 +832,66 @@ package android.app.job {
 
   public class JobParameters implements android.os.Parcelable {
     field public static final int INTERNAL_STOP_REASON_USER_UI_STOP = 11; // 0xb
+  }
+
+}
+
+package android.app.modes {
+
+  @FlaggedApi("android.service.notification.enable_dnd_sync") public final class ContextualMode implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public String getId();
+    method public int getState();
+    method public int getType();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.modes.ContextualMode> CREATOR;
+    field public static final int STATE_ACTIVE = 2; // 0x2
+    field public static final int STATE_INACTIVE = 1; // 0x1
+    field public static final int STATE_UNKNOWN = 0; // 0x0
+    field public static final int TYPE_BEDTIME = 3; // 0x3
+    field public static final int TYPE_DRIVING = 4; // 0x4
+    field public static final int TYPE_IMMERSIVE = 5; // 0x5
+    field public static final int TYPE_MANAGED = 7; // 0x7
+    field public static final int TYPE_MANUAL_DO_NOT_DISTURB = 999; // 0x3e7
+    field public static final int TYPE_OTHER = 0; // 0x0
+    field public static final int TYPE_SCHEDULE_CALENDAR = 2; // 0x2
+    field public static final int TYPE_SCHEDULE_TIME = 1; // 0x1
+    field public static final int TYPE_THEATER = 6; // 0x6
+    field @FlaggedApi("android.app.modes_ui_transit") public static final int TYPE_TRANSIT = 8; // 0x8
+    field public static final int TYPE_UNKNOWN = -1; // 0xffffffff
+  }
+
+  public static final class ContextualMode.Builder {
+    ctor public ContextualMode.Builder(@NonNull String);
+    ctor public ContextualMode.Builder(@NonNull android.app.modes.ContextualMode);
+    method @NonNull public android.app.modes.ContextualMode build();
+    method @NonNull public android.app.modes.ContextualMode.Builder setState(int);
+    method @NonNull public android.app.modes.ContextualMode.Builder setType(int);
+  }
+
+  @FlaggedApi("android.service.notification.enable_dnd_sync") public final class ContextualModeManager {
+    method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_CONTEXTUAL_MODES) public java.util.List<android.app.modes.ContextualMode> getModes();
+    method @RequiresPermission(android.Manifest.permission.MANAGE_CONTEXTUAL_MODES) public void mutateModes(@NonNull android.app.modes.ContextualModesMutation);
+    method @RequiresPermission(android.Manifest.permission.MANAGE_CONTEXTUAL_MODES) public void registerModeListener(@NonNull java.util.concurrent.Executor, @NonNull android.app.modes.ContextualModeManager.ContextualModeListener);
+    method @RequiresPermission(android.Manifest.permission.MANAGE_CONTEXTUAL_MODES) public void unregisterModeListener(@NonNull android.app.modes.ContextualModeManager.ContextualModeListener);
+  }
+
+  public static interface ContextualModeManager.ContextualModeListener {
+    method public void onModeRemoved(@NonNull String);
+    method public void onModesChanged(@NonNull java.util.List<android.app.modes.ContextualMode>);
+  }
+
+  @FlaggedApi("android.service.notification.enable_dnd_sync") public final class ContextualModesMutation implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<android.app.modes.ContextualMode> getUpdatedModes();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.modes.ContextualModesMutation> CREATOR;
+  }
+
+  public static final class ContextualModesMutation.Builder {
+    ctor public ContextualModesMutation.Builder();
+    method @NonNull public android.app.modes.ContextualModesMutation.Builder addUpdatedMode(@NonNull android.app.modes.ContextualMode);
+    method @NonNull public android.app.modes.ContextualModesMutation build();
   }
 
 }

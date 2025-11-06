@@ -18,6 +18,7 @@ package android.app.modes;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.TestApi;
 import android.app.AutomaticZenRule;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -38,7 +39,7 @@ import java.util.Objects;
  * @see ContextualModeManager
  * @hide
  */
-// TODO(b/430676215): implement backend, expose API and add CTS
+@TestApi
 @FlaggedApi(Flags.FLAG_ENABLE_DND_SYNC)
 public final class ContextualMode implements Parcelable {
     /**
@@ -153,11 +154,7 @@ public final class ContextualMode implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ModeType {}
 
-    /**
-     * A {@link Parcelable.Creator} that can unparcel {@link ContextualMode} objects.
-     *
-     * @hide
-     */
+    /** A {@link Parcelable.Creator} that can unparcel {@link ContextualMode} objects. */
     @NonNull
     public static final Creator<ContextualMode> CREATOR =
             new Creator<>() {
@@ -343,7 +340,6 @@ public final class ContextualMode implements Parcelable {
 
         /**
          * Create a builder from the given id.
-         *
          * @param id the id of mode
          */
         public Builder(@NonNull String id) {
@@ -352,7 +348,6 @@ public final class ContextualMode implements Parcelable {
 
         /**
          * Create a builder from a {@link ContextualMode}.
-         *
          * @param mode the mode to copy from
          */
         public Builder(@NonNull ContextualMode mode) {
