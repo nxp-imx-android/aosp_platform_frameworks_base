@@ -137,19 +137,18 @@
       ],
       "host": true
     },
-// TODO(b/457437499) Uncomment it once it's stable. It's flaky now.
-//    {
-//      "name": "FrameworksCoreTestsRavenwood",
-//      "options": [
-//        {
-//          "exclude-annotation": "androidx.test.filters.FlakyTest"
-//        },
-//        {
-//          "exclude-annotation": "android.platform.test.annotations.FlakyTest"
-//        }
-//      ],
-//      "host": true
-//    },
+    {
+      "name": "FrameworksCoreTestsRavenwood",
+      "options": [
+        {
+          "exclude-annotation": "androidx.test.filters.FlakyTest"
+        },
+        {
+          "exclude-annotation": "android.platform.test.annotations.FlakyTest"
+        }
+      ],
+      "host": true
+    },
     {
       "name": "FrameworksInputMethodSystemServerTestsRavenwood",
       "options": [
