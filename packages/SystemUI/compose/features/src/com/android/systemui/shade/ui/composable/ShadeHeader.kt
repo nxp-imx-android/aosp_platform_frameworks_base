@@ -314,7 +314,7 @@ fun ContentScope.ExpandedShadeHeader(
                     BatteryInfo(
                         viewModel = viewModel,
                         showIcon = true,
-                        useExpandedFormat = useExpandedFormat,
+                        useExpandedFormat = true,
                         textColor = textColor,
                     )
                 }
