@@ -41720,6 +41720,7 @@ package android.security {
     field public static final int ERROR_KEY_OPERATION_EXPIRED = 15; // 0xf
     field public static final int ERROR_OTHER = 1; // 0x1
     field public static final int ERROR_PERMISSION_DENIED = 5; // 0x5
+    field @FlaggedApi("android.security.keystore2.limit_keys_per_uid") public static final int ERROR_TOO_MANY_KEYS = 18; // 0x12
     field public static final int ERROR_UNIMPLEMENTED = 12; // 0xc
     field public static final int ERROR_USER_AUTHENTICATION_REQUIRED = 2; // 0x2
     field public static final int RETRY_AFTER_NEXT_REBOOT = 4; // 0x4
