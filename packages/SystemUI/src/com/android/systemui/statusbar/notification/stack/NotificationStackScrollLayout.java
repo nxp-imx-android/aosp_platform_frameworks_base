@@ -4751,7 +4751,7 @@ public class NotificationStackScrollLayout
         for (int i = 0; i < getChildCount(); i++) {
             ExpandableView child = getChildAtIndex(i);
             if (child instanceof ExpandableNotificationRow row) {
-                row.setUserLocked(false);
+                row.setUserSwipingToExpandRow(false);
             }
         }
     }
@@ -4923,7 +4923,7 @@ public class NotificationStackScrollLayout
     private void updateScrollPositionOnExpandInBottom(ExpandableView view) {
         if (view instanceof ExpandableNotificationRow row && !onKeyguard()) {
             // TODO: once we're recycling this will need to check the adapter position of the child
-            if (row.isUserLocked() && row != getFirstChildNotGoneInternal()) {
+            if (row.isUserSwipingToExpandRow() && row != getFirstChildNotGoneInternal()) {
                 if (row.isSummaryWithChildren()) {
                     return;
                 }
@@ -7287,7 +7287,7 @@ public class NotificationStackScrollLayout
                     // We also need to un-user lock it here, since otherwise the content height
                     // calculated might be wrong. We also can't invert the two calls since
                     // un-userlocking it will trigger a layout switch in the content view.
-                    row.setUserLocked(false);
+                    row.setUserSwipingToExpandRow(false);
                     updateContentHeight();
                     notifyHeightChangeListener(row);
                     return;
@@ -7305,9 +7305,9 @@ public class NotificationStackScrollLayout
         }
 
         @Override
-        public void setUserLockedChild(View v, boolean userLocked) {
+        public void setUserSwipingToExpand(View v, boolean isUserSwiping) {
             if (v instanceof ExpandableNotificationRow) {
-                ((ExpandableNotificationRow) v).setUserLocked(userLocked);
+                ((ExpandableNotificationRow) v).setUserSwipingToExpandRow(isUserSwiping);
             }
             cancelLongPress();
             requestDisallowInterceptTouchEvent(true);

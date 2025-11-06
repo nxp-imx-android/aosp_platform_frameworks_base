@@ -388,7 +388,7 @@ class NotificationStackSizeCalculatorTest : SysuiTestCase() {
         val expandableView = createMockRow(rowHeight)
 
         // AND: the user is dragging down on the Notification
-        whenever(expandableView.isUserLocked).thenReturn(true)
+        whenever(expandableView.isUserSwipingToExpandRow).thenReturn(true)
 
         // AND: the row has a smaller min height, that we won't use here
         whenever(expandableView.getMinHeight(any())).thenReturn(1)
