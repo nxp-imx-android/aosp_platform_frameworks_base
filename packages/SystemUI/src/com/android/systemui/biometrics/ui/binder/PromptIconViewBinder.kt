@@ -25,7 +25,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.airbnb.lottie.LottieAnimationView
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.settingslib.widget.LottieColorUtils
-import com.android.systemui.Flags.bpColors
 import com.android.systemui.biometrics.BiometricAuthIconAssets
 import com.android.systemui.biometrics.ui.viewmodel.BiometricAuthIconViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptIconViewModel
@@ -146,9 +145,7 @@ fun LottieAnimationView.updateAsset(
         playAnimation()
     }
     LottieColorUtils.applyDynamicColors(context, this)
-    if (bpColors()) {
-        LottieColorUtils.applyMaterialColor(context, this)
-    }
+    LottieColorUtils.applyMaterialColor(context, this)
 }
 
 private fun LottieAnimationView.setFailureListener(
