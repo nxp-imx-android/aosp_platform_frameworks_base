@@ -531,5 +531,7 @@ public class SecureSettingsValidators {
                 new InclusiveIntegerRangeValidator(0, 1));
         VALIDATORS.put(Secure.IDENTITY_CHECK_WATCH_NOTIFICATION_VIEW_DETAILS_CLICKED,
                 new InclusiveIntegerRangeValidator(0, 1));
+        VALIDATORS.put(Secure.CONTEXTUAL_MODE_SYNC_ENABLED,
+                new InclusiveIntegerRangeValidator(0, 1));
     }
 }
