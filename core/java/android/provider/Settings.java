@@ -8046,6 +8046,12 @@ public final class Settings {
                 "bluetooth_le_broadcast_fallback_active_device_address";
 
         /**
+         * User preference for enabling contextual mode sync.
+         * @hide
+         */
+        public static final String CONTEXTUAL_MODE_SYNC_ENABLED = "contextual_mode_sync_enabled";
+
+        /**
          * Ringtone routing value for hearing aid. It routes ringtone to hearing aid or device
          * speaker.
          * <ul>
