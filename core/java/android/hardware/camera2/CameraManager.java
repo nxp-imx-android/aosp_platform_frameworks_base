@@ -25,7 +25,6 @@ import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.content.Context.DEVICE_ID_INVALID;
 import static android.hardware.devicestate.feature.flags.Flags.deviceStatePropertyMigration;
 import static android.view.Surface.ROTATION_0;
-import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
 import android.annotation.CallbackExecutor;
@@ -36,9 +35,6 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
-import android.app.ActivityManager;
-import android.app.CameraCompatTaskInfo;
-import android.app.TaskInfo;
 import android.app.compat.CompatChanges;
 import android.companion.virtual.VirtualDeviceManager;
 import android.compat.annotation.ChangeId;
@@ -74,7 +70,6 @@ import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.ServiceSpecificException;
@@ -86,7 +81,6 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.Size;
 import android.view.Display;
-import android.view.Surface;
 
 import com.android.internal.camera.flags.Flags;
 import com.android.internal.util.ArrayUtils;
@@ -1674,34 +1668,9 @@ public final class CameraManager {
     @TestApi
     public static CameraCompatibilityInfo getRotationOverride(@Nullable Context context,
             @Nullable PackageManager packageManager, @Nullable String packageName) {
-        if (com.android.window.flags.Flags
-                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()
-                && isCameraCompatibilityInfoRequested()) {
+        if (isCameraCompatibilityInfoRequested()) {
             return CompatibilityInfo.getCameraCompatibilityInfo();
-        } else {
-            // Isolated process does not have access to ActivityTaskManager service, which is used
-            // indirectly in `ActivityManager.getAppTasks()`.
-            if (context != null && !Process.isIsolated()) {
-                final ActivityManager activityManager = context.getSystemService(
-                        ActivityManager.class);
-                if (activityManager != null) {
-                    for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
-                        final TaskInfo taskInfo = appTask.getTaskInfo();
-                        final int cameraCompatMode = taskInfo.appCompatTaskInfo
-                                .cameraCompatTaskInfo.cameraCompatMode;
-                        if (isInCameraCompatibilityInfo(cameraCompatMode)
-                                && taskInfo.topActivity != null
-                                && taskInfo.topActivity.getPackageName().equals(packageName)) {
-                            // WindowManager has requested rotation override.
-                            return getCameraCompatibilityInfoForCompatFreeform(cameraCompatMode,
-                                    taskInfo.appCompatTaskInfo.cameraCompatTaskInfo
-                                            .displayRotation);
-                        }
-                    }
-                }
-            }
         }
-
         if (!CameraManagerGlobal.sLandscapeToPortrait) {
             // No override and crop, and no change to sensor orientation.
             return new CameraCompatibilityInfo.Builder().build();
@@ -1734,54 +1703,6 @@ public final class CameraManager {
                 && compatInfo.getRotateAndCropRotation() != ROTATION_0)
                 || compatInfo.shouldOverrideSensorOrientation()
                 || !compatInfo.shouldAllowTransformInverseDisplay();
-    }
-
-    // TODO(b/430274604): remove once refactoring is launched.
-    private static boolean isInCameraCompatibilityInfo(@CameraCompatTaskInfo.CameraCompatMode int
-            cameraCompatMode) {
-        return (cameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_UNSPECIFIED)
-                && (cameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_NONE);
-    }
-
-    // TODO(b/430274604): remove once refactoring is launched.
-    private static CameraCompatibilityInfo getCameraCompatibilityInfoForCompatFreeform(
-            @CameraCompatTaskInfo.CameraCompatMode int freeformCameraCompatMode,
-            @Surface.Rotation int displayRotation) {
-        int rotateAndCrop = Surface.ROTATION_0;
-        // Only rotate-and-crop if the app and device orientations do not match.
-        if (freeformCameraCompatMode
-                == CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT
-                || freeformCameraCompatMode
-                    == CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE) {
-            // Rotate-and-crop compensates for changes in camera preview calculations (sandboxing).
-            // Recommended calculation of camera preview is:
-            // rotation = (sensorOrientationDegrees - deviceOrientationDegrees * sign + 360) % 360
-            // (camera-facing - sign - is accounted for later).
-            // If any of the parameters above are changed, rotate-and-crop should be applied to
-            // equal the changed amount.
-            // For example, with real display rotation 90 sandboxed to 0, rotate-and-crop by 270
-            // degrees (-90) for back camera, and 90 for front camera.
-            // Use `displayRotation` param, sent by WindowManager, as the display rotation in the
-            // app process might be sandboxed.
-            if (displayRotation == ROTATION_90) {
-                // The actual rotate and crop will be decided later, taking camera facing into
-                // account: back camera: 270 degrees, front camera: 90 degrees.
-                rotateAndCrop = Surface.ROTATION_270;
-            } else if (displayRotation == ROTATION_270) {
-                // The actual rotate and crop will be decided later, taking camera facing into
-                // account: back camera: 90 degrees, front camera: 270 degrees.
-                rotateAndCrop = Surface.ROTATION_90;
-            } else {
-                // TODO(b/390183440): differentiate between LANDSCAPE and REVERSE_LANDSCAPE
-                //  requested orientation for landscape apps. 'displayRotation` is 0 or 180 (rare)
-                //  in either case.
-                // The actual rotate and crop will be decided later, taking camera facing into
-                // account: back camera: 90 degrees, front camera: 270 degrees.
-                rotateAndCrop = Surface.ROTATION_90;
-            }
-        }
-        return new CameraCompatibilityInfo.Builder().setRotateAndCropRotation(rotateAndCrop)
-                .setShouldOverrideSensorOrientation(false).build();
     }
 
     /**
