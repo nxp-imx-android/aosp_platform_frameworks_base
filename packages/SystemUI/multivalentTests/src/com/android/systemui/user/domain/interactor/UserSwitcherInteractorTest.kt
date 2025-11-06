@@ -745,6 +745,30 @@ class UserSwitcherInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    fun userSwitchedBroadcast_removesStaleCallbacks() {
+        testScope.runTest {
+            val userInfos = createUserInfos(count = 2, includeGuest = false)
+            for (userInfo in userInfos) {
+                whenever(manager.isUserRunning(eq(userInfo.id))).thenReturn(true)
+            }
+            createUserInteractor()
+            userRepository.setUserInfos(userInfos)
+            userRepository.setSelectedUserInfo(userInfos[0])
+            userRepository.setSettings(UserSwitcherSettingsModel(isUserSwitcherEnabled = true))
+            val callback1: UserSwitcherInteractor.UserCallback = mock()
+            val callback2: UserSwitcherInteractor.UserCallback = mock()
+            whenever(callback2.isEvictable()).thenReturn(true)
+            underTest.addCallback(callback1)
+            underTest.addCallback(callback2)
+            runCurrent()
+            userRepository.setSelectedUserInfo(userInfos[1])
+            runCurrent()
+            verify(callback1, atLeastOnce()).onUserStateChanged()
+            verify(callback2, never()).onUserStateChanged()
+        }
+    }
+
+    @Test
     fun userInfoChangedBroadcast() {
         createUserInteractor()
         testScope.runTest {

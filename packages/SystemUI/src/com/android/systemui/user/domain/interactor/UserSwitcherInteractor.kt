@@ -68,6 +68,7 @@ import com.android.systemui.user.utils.MultiUserActionsEventHelper
 import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.policy.UserRestrictionChecker
 import java.io.PrintWriter
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -83,8 +84,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /** Encapsulates business logic to for the user switcher. */
@@ -131,8 +130,7 @@ constructor(
                 com.android.internal.R.string.config_supervisedUserCreationPackage
             )
 
-    private val callbackMutex = Mutex()
-    private val callbacks = mutableSetOf<UserCallback>()
+    private val callbacks = CopyOnWriteArrayList<UserCallback>()
     private val userInfos: Flow<List<UserInfo>> =
         repository.userInfos.map { userInfos -> userInfos.filter { it.isFull } }
 
@@ -363,11 +361,11 @@ constructor(
     }
 
     fun addCallback(callback: UserCallback) {
-        applicationScope.launch { callbackMutex.withLock { callbacks.add(callback) } }
+        callbacks.add(callback)
     }
 
     fun removeCallback(callback: UserCallback) {
-        applicationScope.launch { callbackMutex.withLock { callbacks.remove(callback) } }
+        callbacks.remove(callback)
     }
 
     fun refreshUsers() {
@@ -566,17 +564,13 @@ constructor(
 
     private fun notifyCallbacks() {
         applicationScope.launch {
-            callbackMutex.withLock {
-                val iterator = callbacks.iterator()
-                while (iterator.hasNext()) {
-                    val callback = iterator.next()
-                    if (!callback.isEvictable()) {
-                        callback.onUserStateChanged()
-                    } else {
-                        iterator.remove()
-                    }
+            // We need to iterate twice since CoWArrayList doesn't support iterator ops.
+            callbacks.forEach {
+                if (!it.isEvictable()) {
+                    it.onUserStateChanged()
                 }
             }
+            callbacks.removeAll { it.isEvictable() }
         }
     }
 
