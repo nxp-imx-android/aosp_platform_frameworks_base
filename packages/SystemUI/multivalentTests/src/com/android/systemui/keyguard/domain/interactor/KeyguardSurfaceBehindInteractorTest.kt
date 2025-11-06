@@ -255,7 +255,7 @@ class KeyguardSurfaceBehindInteractorTest : SysuiTestCase() {
             val values by collectValues(underTest.viewParams)
             kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "")
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -304,7 +304,7 @@ class KeyguardSurfaceBehindInteractorTest : SysuiTestCase() {
             activityManagerWrapper.mockTopActivityClassName(LAUNCHER_ACTIVITY_NAME)
             kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "")
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -450,7 +450,7 @@ class KeyguardSurfaceBehindInteractorTest : SysuiTestCase() {
 
             kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "")
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()

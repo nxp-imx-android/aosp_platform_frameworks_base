@@ -124,7 +124,7 @@ class AssistantIconInteractorTest : SysuiTestCase() {
 
     private fun setDeviceEntered() {
         kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
             biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         kosmos.sceneInteractor.changeScene(Scenes.Gone, "test")

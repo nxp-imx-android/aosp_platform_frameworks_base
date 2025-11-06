@@ -403,7 +403,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
 
             // WHEN biometrics succeeds with wake and unlock mode
             powerInteractor.setAwakeForTest()
-            keyguardRepository.setBiometricUnlockState(BiometricUnlockMode.WAKE_AND_UNLOCK)
+            keyguardRepository.setBiometricUnlockState(BiometricUnlockMode.WAKE_AND_DISMISS)
             runCurrent()
 
             assertThat(transitionRepository)

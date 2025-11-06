@@ -21,6 +21,7 @@ import android.annotation.SuppressLint
 import android.app.DreamManager
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
@@ -29,10 +30,9 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
-import com.android.systemui.Flags
 import com.android.systemui.keyguard.KeyguardWmStateRefactor
 import com.android.systemui.keyguard.data.repository.KeyguardTransitionRepository
-import com.android.systemui.keyguard.shared.model.BiometricUnlockMode.Companion.isWakeAndUnlock
+import com.android.systemui.keyguard.shared.model.BiometricUnlockMode.Companion.isWakeAndDismiss
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -100,7 +100,7 @@ constructor(
                 .filterRelevantKeyguardStateAnd { it }
                 .collect {
                     val biometricUnlockState = keyguardInteractor.biometricUnlockState.value
-                    if (isWakeAndUnlock(biometricUnlockState.mode)) {
+                    if (isWakeAndDismiss(biometricUnlockState.mode)) {
                         if (SceneContainerFlag.isEnabled) {
                             // TODO(b/360368320): Adapt for scene framework
                         } else {
@@ -150,7 +150,9 @@ constructor(
                         flow
                     }
                 }
-                .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwakeForAnimations() }
+                .filterRelevantKeyguardStateAnd { wakefulness ->
+                    wakefulness.isAwakeForAnimations()
+                }
                 .sample(communalInteractor.isCommunalAvailable, ::Pair)
                 .collect { (_, isCommunalAvailable) ->
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
@@ -218,7 +220,7 @@ constructor(
                             startTransitionTo(state, ownerReason = reason)
                         } &&
                             // Handled by dismissFromDozing().
-                            !isWakeAndUnlock(biometricUnlockState.mode)
+                            !isWakeAndDismiss(biometricUnlockState.mode)
                     ) {
                         if (canWakeDirectlyToGone) {
                             if (!SceneContainerFlag.isEnabled) {
