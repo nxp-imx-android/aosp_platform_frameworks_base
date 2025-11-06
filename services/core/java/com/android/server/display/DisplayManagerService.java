@@ -4864,29 +4864,18 @@ public final class DisplayManagerService extends SystemService {
 
             if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
                 // The client is not visible to the user and is not a system service, so do nothing.
-                if (Flags.sendNonRrCallbacksWhenInBackground()) {
-
-                    // Remove the DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED from the
-                    // mask
-                    eventMask = eventMask
-                            & ~DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
-                    if (extraLogging(mPackageName)) {
-                        Slog.i(TAG,
-                                "Not sending refresh rate event because the pid is not in "
-                                        + "the foreground. New eventMask " + eventMask
-                                        + ", mInternalEventFlagsMask:" + mInternalEventFlagsMask
-                                        + " uid " + mUid + " pid " + mPid);
-                    }
-                    if (eventMask == 0) {
-                        return 0;
-                    }
-                } else {
-                    if (extraLogging(mPackageName)) {
-                        Slog.i(TAG,
-                                "Not sending displayEvent: " + eventsToString(eventMask)
-                                        + " due to mask:" + mInternalEventFlagsMask + " uid " + mUid
-                                        + " pid " + mPid + " is in the background");
-                    }
+                // Remove the DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED from the
+                // mask
+                eventMask = eventMask
+                        & ~DisplayManagerGlobal.EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+                if (extraLogging(mPackageName)) {
+                    Slog.i(TAG,
+                            "Not sending refresh rate event because the pid is not in "
+                                    + "the foreground. New eventMask " + eventMask
+                                    + ", mInternalEventFlagsMask:" + mInternalEventFlagsMask
+                                    + " uid " + mUid + " pid " + mPid);
+                }
+                if (eventMask == 0) {
                     return 0;
                 }
             }
@@ -5188,16 +5177,12 @@ public final class DisplayManagerService extends SystemService {
                             }
 
                             if (!shouldReceiveRefreshRateWithChangeUpdate(eventMask)) {
-                                if (Flags.sendNonRrCallbacksWhenInBackground()) {
-                                    // Remove the DisplayManagerGlobal
-                                    // .EVENT_DISPLAY_REFRESH_RATE_CHANGED from the mask
-                                    eventMask = eventMask
-                                            & ~DisplayManagerGlobal
-                                            .EVENT_DISPLAY_REFRESH_RATE_CHANGED;
-                                    if (eventMask == 0) {
-                                        continue;
-                                    }
-                                } else {
+                                // Remove the DisplayManagerGlobal
+                                // .EVENT_DISPLAY_REFRESH_RATE_CHANGED from the mask
+                                eventMask = eventMask
+                                        & ~DisplayManagerGlobal
+                                        .EVENT_DISPLAY_REFRESH_RATE_CHANGED;
+                                if (eventMask == 0) {
                                     continue;
                                 }
                             }
