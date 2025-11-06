@@ -10139,6 +10139,12 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.android.internal.app.LockedAppActivity"
+                  android:exported="false"
+                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|uiMode"
+                  android:enableOnBackInvokedCallback="true"
+                  android:featureFlag="android.security.app_lock_core" />
+
         <activity android:name="com.android.internal.app.UnlaunchableAppActivity"
                 android:theme="@style/Theme.Dialog.Confirmation"
                 android:excludeFromRecents="true"
