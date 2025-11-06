@@ -17,20 +17,23 @@ package com.android.server.pm;
 
 import static android.content.pm.UserInfo.FLAG_ADMIN;
 import static android.content.pm.UserInfo.FLAG_FULL;
-import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.provider.Settings.Global.DEVICE_PROVISIONED;
 import static android.provider.Settings.Secure.BUGREPORT_IN_POWER_MENU;
 import static android.provider.Settings.Secure.USER_SETUP_COMPLETE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.createUser;
+import static com.android.server.pm.HsumBootUserInitializer.getFullAdminFilter;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.annotation.UserIdInt;
@@ -43,7 +46,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.UserInfo;
-import android.content.pm.UserInfo.UserInfoFlag;
 import android.database.ContentObserver;
 import android.os.Handler;
 import android.os.Looper;
@@ -52,7 +54,6 @@ import android.provider.Settings;
 import android.util.Log;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
-import com.android.server.pm.UserFilter.DeathPredictor;
 
 import com.google.common.truth.Expect;
 
@@ -61,152 +62,168 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-
 
 public final class HsuDeviceProvisionerTest {
+
+    private static final String TAG = HsuDeviceProvisionerTest.class.getSimpleName();
 
     private static final String SETUP_WIZARD_PKG = "com.google.android.setupwizard";
     private static final String SETUP_WIZARD_ACTIVITY = "SetupWizardActivity";
 
-    private static final String TAG = HsuDeviceProvisionerTest.class.getSimpleName();
-
     private static final @UserIdInt int ADMIN_USER_ID = 8;
-    private static final @UserIdInt int ANOTHER_ADMIN_USER_ID = 15;
 
     @Rule public final Expect expect = Expect.create();
     @Rule
     public final ExtendedMockitoRule extendedMockito =
             new ExtendedMockitoRule.Builder(this)
                     .mockStatic(UserManager.class)
-                    .spyStatic(Settings.Global.class)
-                    .spyStatic(Settings.Secure.class)
+                    .mockStatic(Settings.Global.class)
+                    .mockStatic(Settings.Secure.class)
                     .build();
     @Mock private ContentResolver mMockContentResolver;
     @Mock private UserManagerService mMockUms;
     @Mock private Context mMockContext;
     @Mock private PackageManager mMockPackageManager;
 
-    private HsuDeviceProvisioner mFixture;
-    private UserInfo mAdminUser, mAnotherAdminUser;
+    // Using a spy so we can test that "entry point" methods (like init() and onChange()) calls
+    // "feature" methods (like copySecureSettingFromFirstAdmin()); these methods are then tested in
+    // isolation
+    private HsuDeviceProvisioner mSpy;
+
+    private final UserInfo mAdminUser = createUser(ADMIN_USER_ID, FLAG_ADMIN | FLAG_FULL);
 
     @Before
     public void setFixtures() {
         when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
-        mFixture = new HsuDeviceProvisioner(mMockContext, new Handler(Looper.getMainLooper()),
-                mMockContentResolver, mMockUms);
-        mAdminUser = createUser(ADMIN_USER_ID, FLAG_ADMIN | FLAG_FULL);
-        mAnotherAdminUser = createUser(ANOTHER_ADMIN_USER_ID, FLAG_ADMIN | FLAG_FULL);
+        mSpy = spy(new HsuDeviceProvisioner(mMockContext, new Handler(Looper.getMainLooper()),
+                mMockContentResolver, mMockUms));
     }
 
     @Test
-    public void testInit_provisioned() {
-        mockIsDeviceProvisioned(true);
+    public void testInit_notProvisioned() {
+        mockIsDeviceProvisioned(false);
+        // isDeviceUpgrading() shouldn't be called, but if it's, we return true to verify
+        // onDeviceUpgrading() is not called
+        mockIsDeviceUpgrading(true);
 
-        mFixture.init();
+        mSpy.init();
+
+        verifyContentObserverRegistered();
+        verifyOnDeviceUpgradingNeverCalled();
+    }
+
+    @Test
+    public void testInit_provisioned_deviceNotUpgrading() {
+        mockIsDeviceProvisioned(true);
+        mockIsDeviceUpgrading(false);
+        ignoreOnDeviceUpgrading();
+
+        mSpy.init();
 
         verifyContentObserverNeverRegistered();
-        verifyNoSecureSettingsSet();
+        verifyOnDeviceUpgradingNeverCalled();
     }
 
     @Test
-    public void testInit_notProvisioned_setObserver() {
-        mockIsDeviceProvisioned(false);
+    public void testInit_provisioned_deviceUpgrading() {
+        mockIsDeviceProvisioned(true);
+        mockIsDeviceUpgrading(true);
+        ignoreOnDeviceUpgrading();
 
-        mFixture.init();
+        mSpy.init();
 
-        var contentObserver = verifyContentObserverRegistered();
-        expect.that(contentObserver).isSameInstanceAs(mFixture);
-        verifyNoSecureSettingsSet();
+        verifyContentObserverNeverRegistered();
+        verifyOnDeviceUpgradingCalled();
     }
 
     @Test
-    public void testOnChange_notProvisioned_dontSetAnything() {
+    public void testOnDeviceUpgrading() {
+        ignoreCopySecureSettingFromFirstAdmin();
+
+        mSpy.onDeviceUpgrading();
+
+        verifyCopySecureSettingFromFirstAdminCalled();
+    }
+
+    @Test
+    public void testOnChange_notProvisioned() {
         mockIsDeviceProvisioned(false);
-        mockQuerySetupWizardHomeActivity();
 
-        mFixture.onChange(true);
+        mSpy.onChange(true);
 
+        verifyContentObserverNeverUnregistered();
         verifyNoSecureSettingsSet();
+        verifyCopySecureSettingFromFirstAdminNeverCalled();
+        verifyDisableSetupWizardHomeForSystemUserNeverCalled();
+    }
+
+    @Test
+    public void testOnChange_provisioned() {
+        mockIsDeviceProvisioned(true);
+
+        mSpy.onChange(true);
+
+        verifyContentObserverUnregistered(mSpy);
+        verifySettingCopied(USER_SETUP_COMPLETE, 1);
+        verifyCopySecureSettingFromFirstAdminCalled();
+        verifyDisableSetupWizardHomeForSystemUserCalled();
+    }
+
+    @Test
+    public void testCopySecureSettingFromFirstAdmin_noUsers() {
+        mockGetAdmins();
+
+        mSpy.copySecureSettingFromFirstAdmin();
+
+        verifyCopySecureSettingFromSourceUserNeverCalled();
+    }
+
+    @Test
+    public void testCopySecureSettingFromFirstAdmin_withUsers() {
+        mockGetAdmins(mAdminUser);
+
+        mSpy.copySecureSettingFromFirstAdmin();
+
+        verifyCopySecureSettingFromSourceUser(ADMIN_USER_ID);
+    }
+
+    @Test
+    public void testCopySecureSettingFromSourceUser_systemUser() {
+        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
+
+        mSpy.copySecureSettingFromSourceUser(USER_SYSTEM);
+
+        verifySettingNeverCopiedForUser(BUGREPORT_IN_POWER_MENU);
+    }
+
+    @Test
+    public void testCopySecureSettingFromSourceUser_nonSystemUser() {
+        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, ADMIN_USER_ID);
+
+        mSpy.copySecureSettingFromSourceUser(ADMIN_USER_ID);
+
+        verifySettingCopiedForUser(BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
+    }
+
+    @Test
+    public void testDisableSetupWizardHomeForSystemUser_noMatches() {
+
+        mSpy.disableSetupWizardHomeForSystemUser();
+
         verifyDisableSuwNeverCalled();
     }
 
     @Test
-    public void testOnChange_provisioned_setUserSetupComplete() {
-        mockIsDeviceProvisioned(true);
+    public void testDisableSetupWizardHomeForSystemUser_matches() {
         mockQuerySetupWizardHomeActivity();
 
-        mFixture.onChange(true);
+        mSpy.disableSetupWizardHomeForSystemUser();
 
-        verifySettingCopied(USER_SETUP_COMPLETE, 1);
         verifyDisableSuwCalled();
-    }
-
-    @Test
-    public void testOnChange_provisioned_copyBugreportInPowerMenu_RealUser() {
-        mockIsDeviceProvisioned(true);
-        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, ADMIN_USER_ID);
-        mockGetUsers(mAdminUser, mAnotherAdminUser);
-        mFixture.onChange(true);
-
-        verifySettingCopiedForUser(BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
-    }
-
-    @Test
-    public void testOnChange_provisioned_copyBugreportInPowerMenu_NoUser() {
-        mockIsDeviceProvisioned(true);
-
-        mFixture.onChange(true);
-
-        verifySettingNotCopied(BUGREPORT_IN_POWER_MENU);
-    }
-
-    @Test
-    public void testOnChange_provisioned_copyBugreportInPowerMenu_SystemUser() {
-        mockIsDeviceProvisioned(true);
-
-        mFixture.onChange(true);
-
-        verifySettingNotCopied(BUGREPORT_IN_POWER_MENU);
-    }
-
-    @Test
-    public void testInit_provisioned_copySettingsFromAdmin_deviceUpgrading() {
-        mockIsDeviceProvisioned(true);
-        mockIsDeviceUpgrading(true);
-        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, ADMIN_USER_ID);
-        mockGetUsers(mAdminUser, mAnotherAdminUser);
-
-        mFixture.init();
-
-        verifySettingCopiedForUser(BUGREPORT_IN_POWER_MENU, 1, USER_SYSTEM);
-    }
-
-    @Test
-    public void testInit_provisioned_dontCopySettingsFromAdmin_deviceNotUpgrading() {
-        mockIsDeviceProvisioned(true);
-        mockIsDeviceUpgrading(false);
-        mockSettingValue(BUGREPORT_IN_POWER_MENU, 1, ADMIN_USER_ID);
-        mockGetUsers(mAdminUser, mAnotherAdminUser);
-
-        mFixture.init();
-
-        verifySettingNotCopied(BUGREPORT_IN_POWER_MENU);
-    }
-
-    @Test
-    public void testInit_provisioned_noAdminAvailable() {
-        mockIsDeviceProvisioned(true);
-
-        mFixture.init();
-
-        verifySettingNotCopied(BUGREPORT_IN_POWER_MENU);
     }
 
     private void mockIsDeviceProvisioned(boolean value) {
@@ -225,35 +242,27 @@ public final class HsuDeviceProvisionerTest {
                                 eq(mMockContentResolver), eq(settingName), anyInt(), eq(userId)));
     }
 
+    private void mockGetAdmins(UserInfo... users) {
+        UserFilter filter = getFullAdminFilter();
+        List<UserInfo> list = Arrays.asList(users);
+        Log.d(TAG, "mockGetAdmins(): mMockUms.getUserFilter(" + filter + ") will return " + list);
+        when(mMockUms.getUsers(filter)).thenReturn(list);
+    }
+
     private void verifyNoSecureSettingsSet() {
-        try {
-            verify(() -> Settings.Secure.putInt(any(), any(), anyInt()), never());
-        } catch (Throwable t) {
-            Log.e(TAG, "verify failure:", t);
-            expect.withMessage("Settings.Secure.putInt() should not have been called, verify() "
-                    + "failed: %s", t).fail();
-        }
+        verify(() -> Settings.Secure.putInt(any(), any(), anyInt()), never());
     }
 
     private void verifyContentObserverUnregistered(ContentObserver contentObserver) {
-        try {
-            verify(mMockContentResolver).unregisterContentObserver(contentObserver);
-        } catch (Throwable t) {
-            Log.e(TAG, "verify failure:", t);
-            expect.withMessage("ContentResolver (%s) was not unregistered, verify() failed: %s",
-                    contentObserver, t).fail();
-        }
+        verify(mMockContentResolver).unregisterContentObserver(contentObserver);
     }
 
     private void verifyContentObserverNeverRegistered() {
-        try {
-            verify(mMockContentResolver, never())
-                    .registerContentObserver(any(), anyBoolean(), any());
-        } catch (Throwable t) {
-            Log.e(TAG, "verify failure:", t);
-            expect.withMessage("should not have registered a content observer, verify() failed: %s",
-                    t).fail();
-        }
+        verify(mMockContentResolver, never()).registerContentObserver(any(), anyBoolean(), any());
+    }
+
+    private void verifyContentObserverNeverUnregistered() {
+        verify(mMockContentResolver, never()).unregisterContentObserver(any());
     }
 
     private ContentObserver verifyContentObserverRegistered() {
@@ -264,6 +273,46 @@ public final class HsuDeviceProvisionerTest {
                         eq(false),
                         captor.capture());
         return captor.getValue();
+    }
+
+    private void verifyCopySecureSettingFromSourceUserNeverCalled() {
+        verify(mSpy, never()).copySecureSettingFromSourceUser(anyInt());
+    }
+
+    private void verifyCopySecureSettingFromSourceUser(@UserIdInt int userId) {
+        verify(mSpy).copySecureSettingFromSourceUser(userId);
+    }
+
+    private void verifyOnDeviceUpgradingCalled() {
+        verify(mSpy).onDeviceUpgrading();
+    }
+
+    private void verifyOnDeviceUpgradingNeverCalled() {
+        verify(mSpy, never()).onDeviceUpgrading();
+    }
+
+    private void verifyCopySecureSettingFromFirstAdminCalled() {
+        verify(mSpy).copySecureSettingFromFirstAdmin();
+    }
+
+    private void verifyCopySecureSettingFromFirstAdminNeverCalled() {
+        verify(mSpy, never()).disableSetupWizardHomeForSystemUser();
+    }
+
+    private void verifyDisableSetupWizardHomeForSystemUserCalled() {
+        verify(mSpy).disableSetupWizardHomeForSystemUser();
+    }
+
+    private void verifyDisableSetupWizardHomeForSystemUserNeverCalled() {
+        verify(mSpy, never()).copySecureSettingFromFirstAdmin();
+    }
+
+    private void ignoreOnDeviceUpgrading() {
+        doNothing().when(mSpy).onDeviceUpgrading();
+    }
+
+    private void ignoreCopySecureSettingFromFirstAdmin() {
+        doNothing().when(mSpy).copySecureSettingFromFirstAdmin();
     }
 
     private ResolveInfo createFakeResolveInfo(String packageName, String activityName) {
@@ -297,77 +346,17 @@ public final class HsuDeviceProvisionerTest {
         verify(mMockPackageManager, never()).setComponentEnabledSetting(any(), anyInt(), anyInt());
     }
 
-    private void verifySettingNotCopied(String settingName) {
-        try {
-            verify(() -> Settings.Secure.putInt(any(), eq(settingName), anyInt()), never());
-        } catch (Throwable t) {
-            Log.e(TAG, "verify failure:", t);
-            expect.withMessage("Setting %s should not have been copied: %s", settingName, t).fail();
-        }
+    private void verifySettingNeverCopiedForUser(String settingName) {
+        verify(() ->
+                Settings.Secure.putIntForUser(any(), eq(settingName), anyInt(), anyInt()), never());
     }
 
     private void verifySettingCopied(String settingName, int value) {
-        try {
-            verify(() -> Settings.Secure.putInt(mMockContentResolver, settingName, value));
-        } catch (Throwable t) {
-            Log.e(TAG, "verify failure:", t);
-            expect.withMessage("Settings should have been copied: %s", t).fail();
-        }
+        verify(() -> Settings.Secure.putInt(mMockContentResolver, settingName, value));
     }
 
     private void verifySettingCopiedForUser(String settingName, int value, @UserIdInt int userId) {
-        try {
-            verify(() -> Settings.Secure.putIntForUser(
-                                    mMockContentResolver, settingName, value, userId));
-        } catch (Throwable t) {
-            Log.e(TAG, "verify failure:", t);
-            expect.withMessage("Settings should have been copied: %s", t).fail();
-        }
-    }
-
-    private static UserInfo createUser(@UserIdInt int userId, @UserInfoFlag int flags) {
-        return new UserInfo(userId, /* name= */ null, /* iconPath= */ null, flags,
-                // Not using userType (for now)
-                /* userType= */ "AB Positive");
-    }
-
-    // NOTE: copied from TestableDeviceConfig, should be moved to a helper class
-    private static void log(InvocationOnMock invocation) {
-        // InvocationOnMock.toString() prints one argument per line, which would spam logcat
-        try {
-            Log.v(TAG, "answering " + invocation.getMethod().getName() + "("
-                    + Arrays.stream(invocation.getArguments()).map(Object::toString)
-                    .collect(Collectors.joining(", ")) + ")");
-        } catch (Exception e) {
-            // Fallback in case logic above fails
-            Log.v(TAG, "answering " + invocation);
-        }
-    }
-
-    private void mockGetUsers(UserInfo... users) {
-        DeathPredictor deathPredictor = user -> false;
-        when(mMockUms.getUsers(ArgumentCaptor.forClass(UserFilter.class).capture()))
-                .thenAnswer(invocation -> {
-                    log(invocation);
-                    var filter = (UserFilter) invocation.getArgument(0);
-                    ArrayList<UserInfo> matchedUsers = new ArrayList<>(users.length);
-                    for (var user : users) {
-                        if (filter.matches(deathPredictor, user)) {
-                            matchedUsers.add(user);
-                        }
-                    }
-                    Log.v(TAG, "getUsers(filter): returning " + matchedUsers);
-                    return matchedUsers;
-                });
-        when(mMockUms.getNumberOfUsers(ArgumentCaptor.forClass(UserFilter.class).capture()))
-                .thenAnswer(invocation -> {
-                    log(invocation);
-                    var filter = (UserFilter) invocation.getArgument(0);
-                    int number = (int) Arrays.stream(users)
-                            .filter(user -> filter.matches(deathPredictor, user))
-                            .count();
-                    Log.v(TAG, "getNumberOfUsers(filter): returning " + number);
-                    return number;
-                });
+        verify(() ->
+                Settings.Secure.putIntForUser(mMockContentResolver, settingName, value, userId));
     }
 }

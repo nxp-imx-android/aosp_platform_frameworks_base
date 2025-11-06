@@ -15,16 +15,13 @@
  */
 package com.android.server.pm;
 
-import android.Manifest;
-import static android.content.pm.UserInfo.FLAG_ADMIN;
-import static android.content.pm.UserInfo.FLAG_FULL;
-
 import static com.android.server.pm.HsumBootUserInitializer.getFullAdminFilter;
 
+import android.Manifest;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -38,7 +35,6 @@ import androidx.annotation.RequiresPermission;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.utils.Slogf;
-import com.android.server.utils.TimingsTraceAndSlog;
 
 import java.util.List;
 
@@ -64,7 +60,7 @@ final class HsuDeviceProvisioner extends ContentObserver {
      * <p>Consequently, the {@link PackageManager} obtained via {@code context.getPackageManager()}
      * will operate with the privileges and scope of the system user.
      */
-    public HsuDeviceProvisioner(Context context, Handler handler, ContentResolver contentResolver,
+    HsuDeviceProvisioner(Context context, Handler handler, ContentResolver contentResolver,
             UserManagerService ums) {
         super(handler);
         mContentResolver = contentResolver;
@@ -75,14 +71,12 @@ final class HsuDeviceProvisioner extends ContentObserver {
     /**
      * Initialize this object.
      *
-     * It will register itself as a content observer for the settings changes if necessary.
+     * <p>It will register itself as a content observer for the settings changes if necessary.
      */
     public void init() {
         if (isDeviceProvisioned()) {
-            //TODO(b/446947591):Remove check after OTA launch
             if (mPm.isDeviceUpgrading()) {
-                Slogf.i(TAG, "Device is upgrading, copying secure settings from first admin user.");
-                copySecureSettingFromFirstAdmin();
+                onDeviceUpgrading();
             }
             return;
         }
@@ -96,17 +90,26 @@ final class HsuDeviceProvisioner extends ContentObserver {
         if (DEBUG) {
             Slogf.d(TAG, "onChange(%b): isDeviceProvisioned=%b", selfChange, isDeviceProvisioned());
         }
-        if (isDeviceProvisioned()) {
-            // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
-            // has been set up at least once.
-            Slogf.i(TAG,
-                "Marking USER_SETUP_COMPLETE and disabling SUW home activity for system user");
-            Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1);
-            mContentResolver.unregisterContentObserver(this);
-            disableSetupWizardHomeForSystemUser();
-            // Copy settings from the Real user to the system user.
-            copySecureSettingFromFirstAdmin();
+        if (!isDeviceProvisioned()) {
+            return;
         }
+
+        Slogf.i(TAG, "Making changes on first boot");
+        // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
+        // has been set up at least once.
+        Slogf.i(TAG, "Marking USER_SETUP_COMPLETE");
+        Settings.Secure.putInt(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1);
+        mContentResolver.unregisterContentObserver(this);
+        disableSetupWizardHomeForSystemUser();
+        // Copy settings from the Real user to the system user.
+        copySecureSettingFromFirstAdmin();
+    }
+
+    @VisibleForTesting
+    void onDeviceUpgrading() {
+        Slogf.i(TAG, "Making changes when device is updating");
+        //TODO(b/446947591):Remove check after OTA launch
+        copySecureSettingFromFirstAdmin();
     }
 
     private boolean isDeviceProvisioned() {
@@ -129,7 +132,8 @@ final class HsuDeviceProvisioner extends ContentObserver {
                 /* defaultValue= */ 0);
     }
 
-    private void copySecureSettingFromFirstAdmin() {
+    @VisibleForTesting
+    void copySecureSettingFromFirstAdmin() {
         var filter = getFullAdminFilter();
         var users = mUms.getUsers(filter);
         if (users.isEmpty()) {
@@ -137,6 +141,9 @@ final class HsuDeviceProvisioner extends ContentObserver {
             return;
         }
         int firstUserId = users.get(0).id;
+        Slogf.i(TAG, "copySecureSettingFromFirstAdmin(): will copy settings from user %d",
+                firstUserId);
+
         copySecureSettingFromSourceUser(firstUserId);
     }
 
@@ -152,7 +159,7 @@ final class HsuDeviceProvisioner extends ContentObserver {
         int settingValue =
                 Settings.Secure.getIntForUser(
                         mContentResolver, settingName, defaultValue, userId);
-        Slogf.i(TAG, "copySecureSettingFromSourceUser (userId=%d): %s, value=%d",
+        Slogf.i(TAG, "copySecureSettingFromSourceUser(userId=%d): %s=%d",
                 userId, settingName, settingValue);
         Settings.Secure.putIntForUser(
                 mContentResolver, settingName, settingValue, UserHandle.USER_SYSTEM);
@@ -160,7 +167,8 @@ final class HsuDeviceProvisioner extends ContentObserver {
 
     @RequiresPermission(Manifest.permission.CHANGE_COMPONENT_ENABLED_STATE)
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
-    private void disableSetupWizardHomeForSystemUser() {
+    @VisibleForTesting
+    void disableSetupWizardHomeForSystemUser() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_SETUP_WIZARD);
 
@@ -178,7 +186,7 @@ final class HsuDeviceProvisioner extends ContentObserver {
             matches.get(0).getComponentInfo().getComponentName();
 
         if (setupWizardHomeComponent != null) {
-            Slogf.i(TAG, "Disabling Setup Wizard component for system user: %s",
+            Slogf.i(TAG, "Disabling Setup Wizard component (%s) for system user",
                 setupWizardHomeComponent.flattenToString());
 
             try {
