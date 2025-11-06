@@ -37,6 +37,7 @@ import android.view.Surface;
 import com.android.internal.camera.flags.Flags;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
@@ -66,6 +67,12 @@ import java.util.concurrent.Executor;
  * because future images may originate from a different {@link ImageReader} contained within the
  * {@code MultiResolutionImageReader}.</p>
  *
+ * <p>Note that by default, for a MultiResolutionImageReader, each capture request produces only
+ * one output buffer from one internal reader. Some devices also support producing from multiple
+ * readers for a single CaptureRequest (for example, by running multiple sensors at the same time).
+ * Support for this can be queried by {@link
+ * MultiResolutionStreamConfigurationMap#isConcurrentReadersSupported} and enabled by {@link
+ * MultiResolutionImageReader(Collection<MultiResolutionSttreamInfo>, int, int, long, boolean)}.</p>
  *
  * @see ImageReader
  * @see android.hardware.camera2.CameraCharacteristics#SCALER_MULTI_RESOLUTION_STREAM_CONFIGURATION_MAP
@@ -75,60 +82,20 @@ public class MultiResolutionImageReader implements AutoCloseable {
     private static final String TAG = "MultiResolutionImageReader";
 
     /**
-     * <p>
      * Create a new multi-resolution reader based on a group of camera stream properties returned
      * by a camera device.
-     * </p>
-     * <p>
-     * The valid size and formats depend on the camera characteristics.
-     * {@code MultiResolutionImageReader} for an image format is supported by the camera device if
-     * the format is in the supported multi-resolution output stream formats returned by
-     * {@link android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputFormats}.
-     * If the image format is supported, the {@code MultiResolutionImageReader} object can be
-     * created with the {@code streams} objects returned by
-     * {@link android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputInfo}.
-     * </p>
-     * <p>
-     * The {@code maxImages} parameter determines the maximum number of
-     * {@link Image} objects that can be acquired from each of the {@code ImageReader}
-     * within the {@code MultiResolutionImageReader}. However, requesting more buffers will
-     * use up more memory, so it is important to use only the minimum number necessary. The
-     * application is strongly recommended to acquire no more than {@code maxImages} images
-     * from all of the internal ImageReader objects combined. By keeping track of the number of
-     * acquired images for the MultiResolutionImageReader, the application doesn't need to do the
-     * bookkeeping for each internal ImageReader returned from {@link
-     * ImageReader.OnImageAvailableListener#onImageAvailable onImageAvailable} callback.
-     * </p>
-     * <p>
-     * Unlike the normal ImageReader, the MultiResolutionImageReader has a more complex
-     * configuration sequence. Instead of passing the same surface to OutputConfiguration and
-     * CaptureRequest, the
-     * {@link android.hardware.camera2.params.OutputConfiguration#createInstancesForMultiResolutionOutput}
-     * call needs to be used to create the OutputConfigurations for session creation, and then
-     * {@link #getSurface} is used to get {@link CaptureRequest.Builder#addTarget the target for
-     * CaptureRequest}.
-     * </p>
-     * @param streams The group of multi-resolution stream info, which is used to create
-     *            a multi-resolution reader containing a number of ImageReader objects. Each
-     *            ImageReader object represents a multi-resolution stream in the group.
+     *
+     * <p>This constructor is the equivalent of
+     * {@link #MultiResolutionImageReader(Collection<MultiResolutionStreamInfo>, int, int, long)}
+     * without specifying {@code usage}.</p>
+     *
+     * <p>See {@link #MultiResolutionImageReader(Collection<MultiResolutionStreamInfo>, int, int, long)}
+     * for full details.</p>
+     *
+     * @param streams The group of multi-resolution stream info.
      * @param format The format of the Image that this multi-resolution reader will produce.
-     *            This must be one of the {@link android.graphics.ImageFormat} or
-     *            {@link android.graphics.PixelFormat} constants. Note that not all formats are
-     *            supported, like ImageFormat.NV21. The supported multi-resolution
-     *            reader format can be queried by {@link
-     *            android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputFormats}.
      * @param maxImages The maximum number of images the user will want to
-     *            access simultaneously. This should be as small as possible to
-     *            limit memory use. Once maxImages images are obtained by the
-     *            user from any given internal ImageReader, one of them has to be released before
-     *            a new Image will become available for access through the ImageReader's
-     *            {@link ImageReader#acquireLatestImage()} or
-     *            {@link ImageReader#acquireNextImage()}. Must be greater than 0.
-     * @see Image
-     * @see
-     * android.hardware.camera2.CameraCharacteristics#SCALER_MULTI_RESOLUTION_STREAM_CONFIGURATION_MAP
-     * @see
-     * android.hardware.camera2.params.MultiResolutionStreamConfigurationMap
+     *            access simultaneously.
      */
     public MultiResolutionImageReader(
             @NonNull Collection<MultiResolutionStreamInfo> streams,
@@ -136,6 +103,7 @@ public class MultiResolutionImageReader implements AutoCloseable {
             @IntRange(from = 1) int maxImages) {
         mFormat = format;
         mMaxImages = maxImages;
+        mConcurrencyEnabled = false;
 
         if (streams == null || streams.size() <= 1) {
             throw new IllegalArgumentException(
@@ -164,66 +132,21 @@ public class MultiResolutionImageReader implements AutoCloseable {
     }
 
     /**
-     * <p>
      * Create a new multi-resolution reader based on a group of camera stream properties returned
-     * by a camera device, and the desired format, maximum buffer capacity and consumer usage flag.
-     * </p>
-     * <p>
-     * The valid size and formats depend on the camera characteristics.
-     * {@code MultiResolutionImageReader} for an image format is supported by the camera device if
-     * the format is in the supported multi-resolution output stream formats returned by
-     * {@link android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputFormats}.
-     * If the image format is supported, the {@code MultiResolutionImageReader} object can be
-     * created with the {@code streams} objects returned by
-     * {@link android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputInfo}.
-     * </p>
-     * <p>
-     * The {@code maxImages} parameter determines the maximum number of
-     * {@link Image} objects that can be acquired from each of the {@code ImageReader}
-     * within the {@code MultiResolutionImageReader}. However, requesting more buffers will
-     * use up more memory, so it is important to use only the minimum number necessary. The
-     * application is strongly recommended to acquire no more than {@code maxImages} images
-     * from all of the internal ImageReader objects combined. By keeping track of the number of
-     * acquired images for the MultiResolutionImageReader, the application doesn't need to do the
-     * bookkeeping for each internal ImageReader returned from {@link
-     * ImageReader.OnImageAvailableListener#onImageAvailable onImageAvailable} callback.
-     * </p>
-     * <p>
-     * Unlike the normal ImageReader, the MultiResolutionImageReader has a more complex
-     * configuration sequence. Instead of passing the same surface to OutputConfiguration and
-     * CaptureRequest, the
-     * {@link android.hardware.camera2.params.OutputConfiguration#createInstancesForMultiResolutionOutput}
-     * call needs to be used to create the OutputConfigurations for session creation, and then
-     * {@link #getSurface} is used to get {@link CaptureRequest.Builder#addTarget the target for
-     * CaptureRequest}.
-     * </p>
-     * @param streams The group of multi-resolution stream info, which is used to create
-     *            a multi-resolution reader containing a number of ImageReader objects. Each
-     *            ImageReader object represents a multi-resolution stream in the group.
-     * @param format The format of the Image that this multi-resolution reader will produce.
-     *            This must be one of the {@link android.graphics.ImageFormat} or
-     *            {@link android.graphics.PixelFormat} constants. Note that not all formats are
-     *            supported, like ImageFormat.NV21. The supported multi-resolution
-     *            reader format can be queried by {@link
-     *            android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputFormats}.
-     * @param maxImages The maximum number of images the user will want to
-     *            access simultaneously. This should be as small as possible to
-     *            limit memory use. Once maxImages images are obtained by the
-     *            user from any given internal ImageReader, one of them has to be released before
-     *            a new Image will become available for access through the ImageReader's
-     *            {@link ImageReader#acquireLatestImage()} or
-     *            {@link ImageReader#acquireNextImage()}. Must be greater than 0.
-     * @param usage The intended usage of the images produced by the internal ImageReader. See the usages
-     *              on {@link HardwareBuffer} for a list of valid usage bits. See also
-     *              {@link HardwareBuffer#isSupported(int, int, int, int, long)} for checking
-     *              if a combination is supported. If it's not supported this will throw
-     *              an {@link IllegalArgumentException}.
-     * @see Image
-     * @see
-     * android.hardware.camera2.CameraCharacteristics#SCALER_MULTI_RESOLUTION_STREAM_CONFIGURATION_MAP
-     * @see
-     * android.hardware.camera2.params.MultiResolutionStreamConfigurationMap
+     * by a camera device, the desired format, maximum buffer capacity and consumer usage flag.
      *
+     * <p>This construct is the equivalent of
+     * {@link #MultiResolutionImageReader(Collection<MultiResolutionStreamInfo>, int, int, long, boolean)}
+     * with {@code enableConcurrency} set to {@code false}.</p>
+     *
+     * <p>See {@link #MultiResolutionImageReader(Collection<MultiResolutionStreamInfo>, int, int, long, boolean)}
+     * for full details.</p>
+     *
+     * @param streams The group of multi-resolution stream info.
+     * @param format The format of the Image that this multi-resolution reader will produce.
+     * @param maxImages The maximum number of images the user will want to
+     *            access simultaneously.
+     * @param usage The intended usage of the images produced by the internal ImageReader.
      */
     @FlaggedApi(Flags.FLAG_MULTIRESOLUTION_IMAGEREADER_USAGE_PUBLIC)
     public MultiResolutionImageReader(
@@ -233,6 +156,7 @@ public class MultiResolutionImageReader implements AutoCloseable {
             @Usage              long usage) {
         mFormat = format;
         mMaxImages = maxImages;
+        mConcurrencyEnabled = false;
 
         if (streams == null || streams.size() <= 1) {
             throw new IllegalArgumentException(
@@ -261,6 +185,115 @@ public class MultiResolutionImageReader implements AutoCloseable {
     }
 
     /**
+     * Create a new multi-resolution reader based on a group of camera stream properties returned
+     * by a camera device, and the desired format, maximum buffer capacity, consumer usage flag, and
+     * whether to enable concurrent readers.
+     *
+     * <p>The valid size and formats depend on the camera characteristics.
+     * {@code MultiResolutionImageReader} for an image format is supported by the camera device if
+     * the format is in the supported multi-resolution output stream formats returned by
+     * {@link android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputFormats}.
+     * If the image format is supported, the {@code MultiResolutionImageReader} object can be
+     * created with the {@code streams} objects returned by
+     * {@link android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputInfo}.</p>
+     *
+     * <p>The {@code maxImages} parameter determines the maximum number of
+     * {@link Image} objects that can be acquired from each of the {@code ImageReader}
+     * within the {@code MultiResolutionImageReader}. However, requesting more buffers will
+     * use up more memory, so it is important to use only the minimum number necessary. The
+     * application is strongly recommended to acquire no more than {@code maxImages} images
+     * from all of the internal ImageReader objects combined. By keeping track of the number of
+     * acquired images for the MultiResolutionImageReader, the application doesn't need to do the
+     * bookkeeping for each internal ImageReader returned from {@link
+     * ImageReader.OnImageAvailableListener#onImageAvailable onImageAvailable} callback.</p>
+     *
+     * <p>Unlike the normal ImageReader, the MultiResolutionImageReader has a more complex
+     * configuration sequence. Instead of passing the same surface to OutputConfiguration and
+     * CaptureRequest, the
+     * {@link android.hardware.camera2.params.OutputConfiguration#createInstancesForMultiResolutionOutput}
+     * call needs to be used to create the OutputConfigurations for session creation, and then
+     * {@link #getSurface} is used to get {@link CaptureRequest.Builder#addTarget the target for
+     * CaptureRequest}.</p>
+     *
+     * <p>If {@link MultiResolutionStreamConfigurationMap#isConcurrentReadersSupported}
+     * returns {@code true}, the camera device supports concurrent outputs from
+     * multiple internal ImageReaders, in scenarios where multiple sensors run at the same time.
+     * The application can enable such mode by setting {@code enableConcurrency} to {@code true}.
+     * </p>
+     *
+     * @param streams The group of multi-resolution stream info, which is used to create
+     *            a multi-resolution reader containing a number of ImageReader objects. Each
+     *            ImageReader object represents a multi-resolution stream in the group.
+     * @param format The format of the Image that this multi-resolution reader will produce.
+     *            This must be one of the {@link android.graphics.ImageFormat} or
+     *            {@link android.graphics.PixelFormat} constants. Note that not all formats are
+     *            supported, like ImageFormat.NV21. The supported multi-resolution
+     *            reader format can be queried by {@link
+     *            android.hardware.camera2.params.MultiResolutionStreamConfigurationMap#getOutputFormats}.
+     * @param maxImages The maximum number of images the user will want to
+     *            access simultaneously. This should be as small as possible to
+     *            limit memory use. Once maxImages images are obtained by the
+     *            user from any given internal ImageReader, one of them has to be released before
+     *            a new Image will become available for access through the ImageReader's
+     *            {@link ImageReader#acquireLatestImage()} or
+     *            {@link ImageReader#acquireNextImage()}. Must be greater than 0.
+     * @param usage The intended usage of the images produced by the internal ImageReader. See the
+     *              usages on {@link HardwareBuffer} for a list of valid usage bits. See also
+     *              {@link HardwareBuffer#isSupported(int, int, int, int, long)} for checking
+     *              if a combination is supported. If it's not supported this will throw
+     *              an {@link IllegalArgumentException}.
+     * @param enableConcurrency Whether to give the camera device the choice to output concurrent
+     *                          readers for this MultiResolutionImageReader. If set to true for
+     *                          a device that doesn't support MultiResolutionImageReader concurrency,
+     *                          {@link android.hardware.camera2.CameraDevice#createCaptureSession}
+     *                          will fail.
+     *
+     * @see Image
+     * @see
+     * android.hardware.camera2.CameraCharacteristics#SCALER_MULTI_RESOLUTION_STREAM_CONFIGURATION_MAP
+     * @see
+     * android.hardware.camera2.params.MultiResolutionStreamConfigurationMap
+     *
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_RESOLUTION_CONCURRENT_READERS)
+    public MultiResolutionImageReader(
+            @NonNull Collection<MultiResolutionStreamInfo> streams,
+            @Format             int format,
+            @IntRange(from = 1) int maxImages,
+            @Usage              long usage,
+            boolean enableConcurrency) {
+        mFormat = format;
+        mMaxImages = maxImages;
+        mConcurrencyEnabled = enableConcurrency;
+
+        if (streams == null || streams.size() <= 1) {
+            throw new IllegalArgumentException(
+                "The streams info collection must contain at least 2 entries");
+        }
+        if (mMaxImages < 1) {
+            throw new IllegalArgumentException(
+                "Maximum outstanding image count must be at least 1");
+        }
+
+        if (format == ImageFormat.NV21) {
+            throw new IllegalArgumentException(
+                    "NV21 format is not supported");
+        }
+
+        int numImageReaders = streams.size();
+        mReaders = new ImageReader[numImageReaders];
+        mStreamInfo = new MultiResolutionStreamInfo[numImageReaders];
+        int index = 0;
+        for (MultiResolutionStreamInfo streamInfo : streams) {
+            mReaders[index] = ImageReader.newInstance(streamInfo.getWidth(),
+                    streamInfo.getHeight(), format, maxImages, usage);
+            mStreamInfo[index] = streamInfo;
+            index++;
+        }
+    }
+
+
+    /**
      * Set onImageAvailableListener callback.
      *
      * <p>This function sets the onImageAvailableListener for all the internal
@@ -282,6 +315,97 @@ public class MultiResolutionImageReader implements AutoCloseable {
             @Nullable @CallbackExecutor Executor executor) {
         for (int i = 0; i < mReaders.length; i++) {
             mReaders[i].setOnImageAvailableListenerWithExecutor(listener, executor);
+        }
+    }
+
+    /**
+     * Register a listener to be notified of active output surfaces for a
+     * concurrency-enabled MultiResolutionImageReader.
+     *
+     * <p>See {@link OnActiveOutputSurfacesListener#onActiveOutputSurfaces} for more details.</p>
+     *
+     * @param executor
+     *            The executor which will be used to invoke the callback.
+     * @param listener
+     *            The listener that will be run.
+     *
+     * @throws IllegalArgumentException
+     *            If the executor or listener is null.
+     * @throws IllegalStateException
+     *            If the MultiResolutionImageReader is created without enabling concurrency.
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_RESOLUTION_CONCURRENT_READERS)
+    public void setOnActiveOutputSurfacesListener(@NonNull @CallbackExecutor Executor executor,
+            @NonNull OnActiveOutputSurfacesListener listener) {
+        if (executor == null) {
+            throw new IllegalArgumentException("executor was null");
+        }
+        if (listener == null) {
+            throw new IllegalArgumentException("listener was null");
+        }
+        if (!mConcurrencyEnabled) {
+            throw new IllegalStateException("can only be used if concurrency is enabled");
+        }
+        synchronized (mListenerLock) {
+            mListenerExecutor = executor;
+            mOutputSurfacesListener = listener;
+        }
+    }
+
+    /**
+     * Callback interface for being notified of the surfaces used for the capture.
+     *
+     * <p>The onActiveOutputSurfaces is called per request on this MultiResolutionImageReader,
+     * to indicate which underlying ImageReader surfaces are outputting images.</p>
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_RESOLUTION_CONCURRENT_READERS)
+    public interface OnActiveOutputSurfacesListener {
+        /**
+         * Callback that is called to notify the active surfaces that the application should
+         * expect to receive images from.
+         *
+         * <p>If the MultiResolutionImageReader is created with {@code enableConcurrency}
+         * set to {@code true}, multiple underlying readers may produce images for a single
+         * capture request. The application can listen to this callback to know which readers
+         * to expect an output image from.</p>
+         *
+         * <p>If the MultiResolutionImageReader is created without {@code enableConcurrency}
+         * set to {@code true}, this callback will not the triggered.</p>
+         *
+         * <p>For each of the {@code activeOutputSurfaces}, a
+         * {@link ImageReader.onImageAvailableListener.onImageAvailable} will be called. Or in
+         * rare cases, {@link CameraCaptureSession#onCaptureBufferLost} is called if the buffer
+         * is dropped.</p>
+         *
+         * @param activeOutputSurfaces the active output surfaces to expect an output from.
+         * @param timestamp the timestamp at the start of this capture.
+         * @param frameNumber the frame number of this capture.
+         *
+         * @see ImageReader
+         * @see CameraCaptureSession
+         */
+        void onActiveOutputSurfaces(@NonNull List<Surface> activeOutputSurfaces,
+                long timestamp, long frameNumber);
+    }
+
+    /**
+     * Post the onActiveOutputSurfaces callback.
+     *
+     * @hide
+     */
+    public void postOnActiveOutputSurfacesCallback(
+            List<Surface> activeOutputSurfaces, long timestamp, long frameNumber) {
+        final Executor executor;
+        final OnActiveOutputSurfacesListener listener;
+        synchronized (mListenerLock) {
+            executor = mListenerExecutor;
+            listener = mOutputSurfacesListener;
+        }
+
+        if (executor != null && listener != null) {
+            executor.execute(() -> {
+                listener.onActiveOutputSurfaces(activeOutputSurfaces, timestamp, frameNumber);
+            });
         }
     }
 
@@ -443,10 +567,29 @@ public class MultiResolutionImageReader implements AutoCloseable {
                 + "imagereader");
     }
 
+    /**
+     * Returns if concurrency is enabled for this MultiResolutionImageReader.
+     *
+     * <p>If a MultiResolutionImageReader is created with concurrency enabled, the camera HAL
+     * may produce outputs concurrently from multiple internal readers.</p>
+     *
+     * @return True if concurrent readers are enabled.
+     *
+     * @hide
+     */
+    public boolean isConcurrencyEnabled() {
+        return mConcurrencyEnabled;
+    }
+
     // mReaders and mStreamInfo has the same length, and their entries are 1:1 mapped.
     private final ImageReader[] mReaders;
     private final MultiResolutionStreamInfo[] mStreamInfo;
 
     private final int mFormat;
     private final int mMaxImages;
+    private final boolean mConcurrencyEnabled;
+
+    private final Object mListenerLock = new Object();
+    private Executor mListenerExecutor;
+    private OnActiveOutputSurfacesListener mOutputSurfacesListener;
 }

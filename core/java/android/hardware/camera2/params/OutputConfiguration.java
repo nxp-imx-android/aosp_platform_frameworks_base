@@ -29,7 +29,6 @@ import android.annotation.TestApi;
 import android.graphics.ColorSpace;
 import android.graphics.ImageFormat;
 import android.graphics.ImageFormat.Format;
-import android.hardware.DataSpace;
 import android.hardware.HardwareBuffer;
 import android.hardware.HardwareBuffer.Usage;
 import android.hardware.camera2.CameraCaptureSession;
@@ -160,6 +159,13 @@ public final class OutputConfiguration implements Parcelable {
      *doesn't belong to any surface group.</p>
      */
     public static final int SURFACE_GROUP_ID_NONE = -1;
+
+    private static final int MULTI_RES_OFF = 0;
+    /**
+     * @hide
+     */
+    public static final int MULTI_RES_ON = 1;
+    private static final int MULTI_RES_ON_CONCURRENT = 2;
 
     /**
      * Default timestamp base.
@@ -437,11 +443,13 @@ public final class OutputConfiguration implements Parcelable {
      * group ID. And all OutputConfigurations of a MultiResolutionImageReader will have the same
      * group ID and have this flag set.</p>
      *
+     * @param reader The MultiResolutionImageReader associated with this output.
+     *
      * @throws IllegalStateException If surface sharing is enabled via {@link #enableSurfaceSharing}
      *         call, or no non-negative group ID has been set.
      * @hide
      */
-    public void setMultiResolutionOutput() {
+    public void setMultiResolutionOutput(MultiResolutionImageReader reader) {
         if (mIsShared) {
             throw new IllegalStateException("Multi-resolution output flag must not be set for " +
                     "configuration with surface sharing");
@@ -451,7 +459,13 @@ public final class OutputConfiguration implements Parcelable {
                     "surface with non-negative group ID");
         }
 
-        mIsMultiResolution = true;
+        if (Flags.multiResolutionConcurrentReaders()) {
+            mMultiResolutionReader = reader;
+            mMultiResMode = (reader != null && reader.isConcurrencyEnabled()) ?
+                    MULTI_RES_ON_CONCURRENT : MULTI_RES_ON;
+        } else {
+            mMultiResMode = MULTI_RES_ON;
+        }
     }
 
     /**
@@ -614,7 +628,7 @@ public final class OutputConfiguration implements Parcelable {
         mIsDeferredConfig = false;
         mIsShared = false;
         mPhysicalCameraId = null;
-        mIsMultiResolution = false;
+        mMultiResMode = MULTI_RES_OFF;
         mSensorPixelModesUsed = new ArrayList<Integer>();
         mDynamicRangeProfile = DynamicRangeProfiles.STANDARD;
         mColorSpace = ColorSpaceProfiles.UNSPECIFIED;
@@ -658,7 +672,7 @@ public final class OutputConfiguration implements Parcelable {
             OutputConfiguration config = new OutputConfiguration(
                     groupId, imageReaders[i].getSurface());
             config.setPhysicalCameraId(streamInfo.getPhysicalCameraId());
-            config.setMultiResolutionOutput();
+            config.setMultiResolutionOutput(multiResolutionImageReader);
             configs.add(config);
 
             // No need to call addSensorPixelModeUsed for ultra high resolution sensor camera,
@@ -721,7 +735,7 @@ public final class OutputConfiguration implements Parcelable {
             OutputConfiguration config = new OutputConfiguration(
                     groupId, format, surfaceSize);
             config.setPhysicalCameraId(stream.getPhysicalCameraId());
-            config.setMultiResolutionOutput();
+            config.setMultiResolutionOutput(/*multiResolutionOutput*/ null);
             configs.add(config);
 
             // No need to call addSensorPixelModeUsed for ultra high resolution sensor camera,
@@ -775,6 +789,8 @@ public final class OutputConfiguration implements Parcelable {
             Surface surface = multiResolutionImageReader.getSurface(config.getConfiguredSize(),
                     physicalCameraId);
             config.addSurface(surface);
+
+            config.setMultiResolutionOutput(multiResolutionImageReader);
         }
     }
 
@@ -894,7 +910,7 @@ public final class OutputConfiguration implements Parcelable {
         mConfiguredGenerationId = 0;
         mIsShared = false;
         mPhysicalCameraId = null;
-        mIsMultiResolution = false;
+        mMultiResMode = MULTI_RES_OFF;
         mSensorPixelModesUsed = new ArrayList<Integer>();
         mDynamicRangeProfile = DynamicRangeProfiles.STANDARD;
         mColorSpace = ColorSpaceProfiles.UNSPECIFIED;
@@ -1034,7 +1050,7 @@ public final class OutputConfiguration implements Parcelable {
         }
         mIsShared = false;
         mPhysicalCameraId = null;
-        mIsMultiResolution = false;
+        mMultiResMode = MULTI_RES_OFF;
         mSensorPixelModesUsed = new ArrayList<Integer>();
         mDynamicRangeProfile = DynamicRangeProfiles.STANDARD;
         mColorSpace = ColorSpaceProfiles.UNSPECIFIED;
@@ -1089,7 +1105,7 @@ public final class OutputConfiguration implements Parcelable {
      * #createInstancesForMultiResolutionOutput} to back a MultiResolutionImageReader.
      */
     public void enableSurfaceSharing() {
-        if (mIsMultiResolution) {
+        if (isMultiResolution()) {
             throw new IllegalStateException("Cannot enable surface sharing on "
                     + "multi-resolution output configurations");
         }
@@ -1662,7 +1678,7 @@ public final class OutputConfiguration implements Parcelable {
         this.mIsDeferredConfig = other.mIsDeferredConfig;
         this.mIsShared = other.mIsShared;
         this.mPhysicalCameraId = other.mPhysicalCameraId;
-        this.mIsMultiResolution = other.mIsMultiResolution;
+        this.mMultiResMode = other.mMultiResMode;
         this.mSensorPixelModesUsed = other.mSensorPixelModesUsed;
         this.mDynamicRangeProfile = other.mDynamicRangeProfile;
         this.mColorSpace = other.mColorSpace;
@@ -1672,6 +1688,7 @@ public final class OutputConfiguration implements Parcelable {
         this.mMirrorModeForSurfaces = other.mMirrorModeForSurfaces.clone();
         this.mReadoutTimestampEnabled = other.mReadoutTimestampEnabled;
         this.mUsage = other.mUsage;
+        this.mMultiResolutionReader = other.mMultiResolutionReader;
     }
 
     /**
@@ -1688,7 +1705,7 @@ public final class OutputConfiguration implements Parcelable {
         ArrayList<Surface> surfaces = new ArrayList<Surface>();
         source.readTypedList(surfaces, Surface.CREATOR);
         String physicalCameraId = source.readString();
-        boolean isMultiResolutionOutput = source.readInt() == 1;
+        int multiResMode = source.readInt();
         int[] sensorPixelModesUsed = source.createIntArray();
 
         checkArgumentInRange(rotation, ROTATION_0, ROTATION_270, "Rotation constant");
@@ -1734,7 +1751,7 @@ public final class OutputConfiguration implements Parcelable {
         mPublicFormat = StreamConfigurationMap.internalFormatAndDataspaceToImageFormat(
                 mConfiguredFormat, mConfiguredDataspace);
         mPhysicalCameraId = physicalCameraId;
-        mIsMultiResolution = isMultiResolutionOutput;
+        mMultiResMode = multiResMode;
         mSensorPixelModesUsed = ListUtils.convertIntArrayToIntegerList(sensorPixelModesUsed);
         mDynamicRangeProfile = dynamicRangeProfile;
         mColorSpace = colorSpace;
@@ -1883,7 +1900,7 @@ public final class OutputConfiguration implements Parcelable {
      * @hide
      */
     public boolean isMultiResolution() {
-        return mIsMultiResolution;
+        return mMultiResMode != MULTI_RES_OFF;
     }
 
     /**
@@ -1898,6 +1915,17 @@ public final class OutputConfiguration implements Parcelable {
      */
     public @Nullable String getPhysicalCameraId() {
         return mPhysicalCameraId;
+    }
+
+    /**
+     * Get the MultiResolutionImageReader associated with this OutputConfiguration
+     *
+     * This function returns {@code null} if this OutputConfiguration is not associated with
+     * a MultiResolutionImageReader.
+     * @hide
+     */
+    public @Nullable MultiResolutionImageReader getMultiResolutionReader() {
+        return mMultiResolutionReader;
     }
 
     public static final @android.annotation.NonNull Parcelable.Creator<OutputConfiguration> CREATOR =
@@ -1936,7 +1964,7 @@ public final class OutputConfiguration implements Parcelable {
         dest.writeInt(mIsShared ? 1 : 0);
         dest.writeTypedList(mSurfaces);
         dest.writeString(mPhysicalCameraId);
-        dest.writeInt(mIsMultiResolution ? 1 : 0);
+        dest.writeInt(mMultiResMode);
         // writeList doesn't seem to work well with Integer list.
         dest.writeIntArray(ListUtils.convertIntegerListToIntArray(mSensorPixelModesUsed));
         dest.writeLong(mDynamicRangeProfile);
@@ -1978,7 +2006,7 @@ public final class OutputConfiguration implements Parcelable {
                     || mConfiguredDataspace != other.mConfiguredDataspace
                     || mConfiguredGenerationId != other.mConfiguredGenerationId
                     || !Objects.equals(mPhysicalCameraId, other.mPhysicalCameraId)
-                    || mIsMultiResolution != other.mIsMultiResolution
+                    || mMultiResMode != other.mMultiResMode
                     || mStreamUseCase != other.mStreamUseCase
                     || mTimestampBase != other.mTimestampBase
                     || mMirrorMode != other.mMirrorMode
@@ -2017,6 +2045,11 @@ public final class OutputConfiguration implements Parcelable {
             if (mColorSpace != other.mColorSpace) {
                 return false;
             }
+            if (Flags.multiResolutionConcurrentReaders()) {
+                if (!Objects.equals(mMultiResolutionReader, other.mMultiResolutionReader)) {
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -2046,11 +2079,12 @@ public final class OutputConfiguration implements Parcelable {
                     mRotation, mConfiguredSize.hashCode(), mConfiguredFormat, mConfiguredDataspace,
                     mSurfaceGroupId, mSurfaceType, mIsShared ? 1 : 0,
                     mPhysicalCameraId == null ? 0 : mPhysicalCameraId.hashCode(),
-                    mIsMultiResolution ? 1 : 0, mSensorPixelModesUsed.hashCode(),
+                    mMultiResMode, mSensorPixelModesUsed.hashCode(),
                     mDynamicRangeProfile, mColorSpace, mStreamUseCase,
                     mTimestampBase, mMirrorMode,
                     HashCodeHelpers.hashCode(mMirrorModeForSurfaces.toArray()),
-                    mReadoutTimestampEnabled ? 1 : 0, Long.hashCode(mUsage));
+                    mReadoutTimestampEnabled ? 1 : 0, Long.hashCode(mUsage),
+                    Objects.hashCode(mMultiResolutionReader));
         }
 
         return HashCodeHelpers.hashCode(
@@ -2058,11 +2092,11 @@ public final class OutputConfiguration implements Parcelable {
                 mConfiguredSize.hashCode(), mConfiguredFormat,
                 mConfiguredDataspace, mSurfaceGroupId, mIsShared ? 1 : 0,
                 mPhysicalCameraId == null ? 0 : mPhysicalCameraId.hashCode(),
-                mIsMultiResolution ? 1 : 0, mSensorPixelModesUsed.hashCode(),
+                mMultiResMode, mSensorPixelModesUsed.hashCode(),
                 mDynamicRangeProfile, mColorSpace, mStreamUseCase, mTimestampBase,
                 mMirrorMode, HashCodeHelpers.hashCode(mMirrorModeForSurfaces.toArray()),
                 mReadoutTimestampEnabled ? 1 : 0,
-                Long.hashCode(mUsage));
+                Long.hashCode(mUsage), Objects.hashCode(mMultiResolutionReader));
     }
 
     private static final String TAG = "OutputConfiguration";
@@ -2091,9 +2125,9 @@ public final class OutputConfiguration implements Parcelable {
     private boolean mIsShared;
     // The physical camera id that this output configuration is for.
     private String mPhysicalCameraId;
-    // Flag indicating if this config is for a multi-resolution output with a
-    // MultiResolutionImageReader
-    private boolean mIsMultiResolution;
+    // Whether this config is for a multi-resolution output with a
+    // MultiResolutionImageReader, and if so, whether concurrency is enabled.
+    private int mMultiResMode;
     // The sensor pixel modes that this OutputConfiguration will use
     private ArrayList<Integer> mSensorPixelModesUsed;
     // Dynamic range profile
@@ -2114,4 +2148,8 @@ public final class OutputConfiguration implements Parcelable {
     private boolean mIsReadoutSensorTimestampBase;
     // The usage flags. Only set for instances created for ImageReader without specifying surface.
     private long mUsage;
+
+    // The parent multiResolutionImageReader if this OutputConfiguration is generated from it.
+    private MultiResolutionImageReader mMultiResolutionReader;
+
 }
