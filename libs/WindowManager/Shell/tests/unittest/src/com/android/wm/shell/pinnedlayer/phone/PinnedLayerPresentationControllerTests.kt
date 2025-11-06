@@ -17,6 +17,7 @@
 package com.android.wm.shell.pinnedlayer.phone
 
 import android.app.TaskInfo
+import android.app.WindowConfiguration
 import android.content.res.Resources
 import android.graphics.Rect
 import android.platform.test.annotations.EnableFlags
@@ -31,11 +32,13 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 
@@ -51,6 +54,7 @@ import org.mockito.MockitoAnnotations
 class PinnedLayerPresentationControllerTests : ShellTestCase() {
     @Mock private lateinit var displayController: DisplayController
     @Mock private lateinit var displayLayout: DisplayLayout
+    @Mock private lateinit var desktopState: DesktopState
     private lateinit var resources: Resources
     private lateinit var displayMetrics: DisplayMetrics
 
@@ -71,8 +75,10 @@ class PinnedLayerPresentationControllerTests : ShellTestCase() {
         whenever(displayLayout.width()).thenReturn(1080)
         whenever(displayLayout.height()).thenReturn(1920)
         whenever(displayLayout.stableInsets()).thenReturn(Rect(0, 100, 0, 50))
+        whenever(desktopState.isDesktopModeSupportedOnDisplay(anyInt()))
+            .thenReturn(true)
 
-        controller = PinnedLayerPresentationController(context, displayController)
+        controller = PinnedLayerPresentationController(context, displayController, desktopState)
     }
 
     @Test
@@ -186,6 +192,34 @@ class PinnedLayerPresentationControllerTests : ShellTestCase() {
         val bounds = controller.getPinEntryDestinationBounds(task)
 
         assertThat(bounds).isNull()
+    }
+
+    @Test
+    fun isTaskSupportedForPinning_supported() {
+        val task = TestRunningTaskInfoBuilder()
+            .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM)
+            .build()
+
+        assertThat(controller.isTaskSupportedForPinning(task)).isTrue()
+    }
+
+    @Test
+    fun isTaskSupportedForPinning_notFreeform_returnsFalse() {
+        val task = TestRunningTaskInfoBuilder()
+            .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN)
+            .build()
+
+        assertThat(controller.isTaskSupportedForPinning(task)).isFalse()
+    }
+
+    @Test
+    fun isTaskSupportedForPinning_desktopModeNotSupported_returnsFalse() {
+        whenever(desktopState.isDesktopModeSupportedOnDisplay(anyInt())).thenReturn(false)
+        val task = TestRunningTaskInfoBuilder()
+            .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM)
+            .build()
+
+        assertThat(controller.isTaskSupportedForPinning(task)).isFalse()
     }
 
     private fun createTaskInfo(bounds: Rect): TaskInfo {

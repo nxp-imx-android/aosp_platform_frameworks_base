@@ -22,6 +22,7 @@ import android.app.ActivityManager.AppTask.WindowingLayer
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
 import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
+import android.app.TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.IBinder
@@ -94,6 +95,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
             PinnedLayerController(shellInit, transitions, presentationController)
         pinnedLayerHandler =
             PinnedLayerHandler(shellInit, transitions, normalLayerHandler, pinnedLayerController)
+        whenever(presentationController.isTaskSupportedForPinning(any())).thenReturn(true)
     }
 
     @Test
@@ -291,6 +293,24 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 ?.windowConfiguration
                 ?.bounds
         assertEquals(bounds, actualBounds)
+    }
+
+    @Test
+    fun handleRequest_pinRequestNotSupported_rejectsRequest() {
+        val transition = mock<IBinder>()
+        val callback = mock<IRemoteCallback>()
+        val requestInfo =
+            setupWindowingLayerTransition(
+                WINDOWING_LAYER_PINNED,
+                callback,
+                triggerTaskId = TASK_ID_0,
+            )
+        whenever(presentationController.isTaskSupportedForPinning(any())).thenReturn(false)
+
+        val wct = pinnedLayerHandler.handleRequest(transition, requestInfo)
+
+        assertNull(wct)
+        verifyCallbackResult(callback, RESULT_FAILED_BAD_STATE)
     }
 
     @Test

@@ -92,14 +92,18 @@ class PinnedLayerController(
      * @param transition a transition token.
      * @param task a task to pin.
      * @param remoteCallback a callback to notify about the result of the operation.
-     * @return a [WindowContainerTransaction] that contains pinned properties.
+     * @return a [WindowContainerTransaction] that contains pinned properties or `null` if the
+     *   pinning is not supported for given task.
      */
     fun pinTask(
         transition: IBinder,
         task: TaskInfo,
         remoteCallback: IRemoteCallback?,
-    ): WindowContainerTransaction =
-        WindowContainerTransaction().apply {
+    ): WindowContainerTransaction? {
+        if (!isPinningSupported(task)) {
+            return null
+        }
+        return WindowContainerTransaction().apply {
             val transitions = activeTransitions.getOrPut(transition) { mutableSetOf() }
             transitions += ActiveTransition.Pin(task, remoteCallback)
             val bounds = presentationController.getPinEntryDestinationBounds(task)
@@ -110,6 +114,7 @@ class PinnedLayerController(
                 merge(unpinTask(transition, pinnedTask, UnpinStrategy.CLOSE), /* transfer= */ true)
             }
         }
+    }
 
     /**
      * Unpins a specific task and adds it to the active transitions for the given transition token.
@@ -204,7 +209,11 @@ class PinnedLayerController(
         }
     }
 
-    private fun sendWindowingLayerResult(result: Int, callback: IRemoteCallback) {
+    private fun isPinningSupported(task: TaskInfo): Boolean =
+        // check support only for tasks that are not pinned yet.
+        isPinned(task.taskId) || presentationController.isTaskSupportedForPinning(task)
+
+    fun sendWindowingLayerResult(result: Int, callback: IRemoteCallback) {
         val bundle = Bundle()
         bundle.putInt(REMOTE_CALLBACK_RESULT_KEY, result)
         try {

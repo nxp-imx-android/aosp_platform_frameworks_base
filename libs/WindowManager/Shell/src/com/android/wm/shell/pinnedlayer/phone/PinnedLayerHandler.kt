@@ -19,6 +19,7 @@ package com.android.wm.shell.pinnedlayer.phone
 import android.app.ActivityManager.AppTask.WINDOWING_LAYER_PINNED
 import android.app.ActivityManager.AppTask.WINDOWING_LAYER_UNDEFINED
 import android.app.TaskInfo
+import android.app.TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.window.TransitionInfo
@@ -76,14 +77,22 @@ class PinnedLayerHandler(
         )
         // There's either a pin request or an already pinned task is brought to foreground.
         if (isLayerPinningRequest || isLayerOpeningPinnedRequest) {
-            wct.merge(
+            val pinWct =
                 pinnedLayerController.pinTask(
                     transition,
                     triggerTask,
                     windowingLayerChange?.remoteCallback,
-                ),
-                true,
-            )
+                )
+            if (pinWct == null) {
+                // Pin is not supported for the task, handler should reject the callback (if
+                // provided) and do not request any changes
+                logV("Pinning is not supported for task=%s", triggerTask)
+                windowingLayerChange?.remoteCallback?.let {
+                    pinnedLayerController.sendWindowingLayerResult(RESULT_FAILED_BAD_STATE, it)
+                }
+                return null
+            }
+            wct.merge(pinWct, /* transfer= */ true)
         }
 
         val isClosePinnedRequest = request.isClosingPinnedRequest()
