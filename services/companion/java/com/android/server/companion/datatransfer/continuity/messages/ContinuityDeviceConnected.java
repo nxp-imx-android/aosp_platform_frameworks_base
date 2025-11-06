@@ -16,27 +16,43 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
+import android.annotation.NonNull;
+import android.util.Slog;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /** Deserialized version of the {@link ContinuityDeviceConnected} proto. */
-public record ContinuityDeviceConnected(List<RemoteTaskInfo> remoteTasks)
+public record ContinuityDeviceConnected(@NonNull List<RemoteTaskInfo> remoteTasks)
         implements TaskContinuityMessage {
 
-    public static ContinuityDeviceConnected readFromProto(ProtoInputStream pis) throws IOException {
+    private static final String TAG = ContinuityDeviceConnected.class.getSimpleName();
+
+    public ContinuityDeviceConnected {
+        Objects.requireNonNull(remoteTasks);
+    }
+
+    @NonNull
+    public static ContinuityDeviceConnected readFromProto(@NonNull ProtoInputStream pis)
+            throws IOException {
+
+        Objects.requireNonNull(pis);
 
         List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
                 case (int) android.companion.ContinuityDeviceConnected.REMOTE_TASKS:
-                    final long remoteTasksToken =
-                            pis.start(android.companion.ContinuityDeviceConnected.REMOTE_TASKS);
-                    remoteTasks.add(RemoteTaskInfo.fromProto(pis));
-                    pis.end(remoteTasksToken);
+                    RemoteTaskInfo remoteTaskInfo =
+                            RemoteTaskInfo.CREATOR.read(
+                                    pis, android.companion.ContinuityDeviceConnected.REMOTE_TASKS);
+                    if (remoteTaskInfo != null) {
+                        remoteTasks.add(remoteTaskInfo);
+                    } else {
+                        Slog.w(TAG, "Failed to read RemoteTaskInfo from proto.");
+                    }
                     break;
             }
         }
@@ -52,12 +68,12 @@ public record ContinuityDeviceConnected(List<RemoteTaskInfo> remoteTasks)
 
     /** Writes this object to a proto output stream. */
     @Override
-    public void writeToProto(ProtoOutputStream pos) throws IOException {
+    public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
+        Objects.requireNonNull(pos);
+
         for (RemoteTaskInfo remoteTaskInfo : remoteTasks()) {
-            long remoteTasksToken =
-                    pos.start(android.companion.ContinuityDeviceConnected.REMOTE_TASKS);
-            remoteTaskInfo.writeToProto(pos);
-            pos.end(remoteTasksToken);
+            RemoteTaskInfo.CREATOR.write(
+                    pos, android.companion.ContinuityDeviceConnected.REMOTE_TASKS, remoteTaskInfo);
         }
     }
 }

@@ -17,37 +17,46 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.HandoffActivityData;
 import android.content.ComponentName;
 import android.net.Uri;
-import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.util.Log;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 
-public final class HandoffActivityDataSerializer {
+public final class HandoffActivityDataSerializer extends ProtoCreator<HandoffActivityData> {
 
-    private static final String TAG = "HandoffActivityDataSerializer";
+    private static final String TAG = HandoffActivityDataSerializer.class.getSimpleName();
 
-    public static void writeToProto(HandoffActivityData handoffActivityData, ProtoOutputStream pos)
+    public static HandoffActivityDataSerializer INSTANCE = new HandoffActivityDataSerializer();
+
+    @Override
+    public void write(@NonNull ProtoOutputStream pos, @Nullable HandoffActivityData value)
             throws IOException {
 
-        String flattenedComponentName = handoffActivityData.getComponentName().flattenToString();
+        if (value == null) {
+            return;
+        }
+
+        Objects.requireNonNull(pos);
+
+        String flattenedComponentName = value.getComponentName().flattenToString();
         pos.writeString(
                 android.companion.HandoffActivityData.COMPONENT_NAME, flattenedComponentName);
 
-        Uri fallbackUri = handoffActivityData.getFallbackUri();
+        Uri fallbackUri = value.getFallbackUri();
         if (fallbackUri != null) {
             pos.writeString(
                     android.companion.HandoffActivityData.FALLBACK_URI, fallbackUri.toString());
         }
 
-        PersistableBundle extras = handoffActivityData.getExtras();
+        PersistableBundle extras = value.getExtras();
         if (!extras.isEmpty()) {
             ByteArrayOutputStream extrasStream = new ByteArrayOutputStream();
             extras.writeToStream(extrasStream);
@@ -56,7 +65,10 @@ public final class HandoffActivityDataSerializer {
         }
     }
 
-    public static HandoffActivityData readFromProto(ProtoInputStream pis) throws IOException {
+    @Override
+    @Nullable
+    public HandoffActivityData read(@NonNull ProtoInputStream pis) throws IOException {
+        Objects.requireNonNull(pis);
 
         ComponentName componentName = null;
         Uri fallbackUri = null;
@@ -70,8 +82,7 @@ public final class HandoffActivityDataSerializer {
 
                     componentName = ComponentName.unflattenFromString(flattenedComponentName);
                     if (componentName == null) {
-                        throw new IOException(
-                                "Invalid component name in proto: " + flattenedComponentName);
+                        return null;
                     }
 
                     break;
@@ -104,7 +115,7 @@ public final class HandoffActivityDataSerializer {
         }
 
         if (componentName == null) {
-            throw new IOException("No component name in proto");
+            return null;
         }
 
         return new HandoffActivityData.Builder(componentName)

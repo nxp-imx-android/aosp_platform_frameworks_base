@@ -16,24 +16,31 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
-
+import android.annotation.NonNull;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.IOException;
+import java.util.Objects;
 
 /** Deserialized version of the {@link RemoteTaskAdded} proto. */
-public record RemoteTaskAddedMessage(RemoteTaskInfo task) implements TaskContinuityMessage {
+public record RemoteTaskAddedMessage(@NonNull RemoteTaskInfo task)
+        implements TaskContinuityMessage {
 
-    static RemoteTaskAddedMessage readFromProto(ProtoInputStream pis) throws IOException {
+    public RemoteTaskAddedMessage {
+        Objects.requireNonNull(task);
+    }
+
+    @NonNull
+    static RemoteTaskAddedMessage readFromProto(@NonNull ProtoInputStream pis) throws IOException {
+        Objects.requireNonNull(pis);
+
         RemoteTaskInfo task = null;
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
                 case (int) android.companion.RemoteTaskAddedMessage.TASK:
-                    final long taskToken = pis.start(android.companion.RemoteTaskAddedMessage.TASK);
-                    task = RemoteTaskInfo.fromProto(pis);
-                    pis.end(taskToken);
+                    task =
+                            RemoteTaskInfo.CREATOR.read(
+                                    pis, android.companion.RemoteTaskAddedMessage.TASK);
                     break;
             }
         }
@@ -51,10 +58,8 @@ public record RemoteTaskAddedMessage(RemoteTaskInfo task) implements TaskContinu
     }
 
     @Override
-    public void writeToProto(ProtoOutputStream pos) throws IOException {
-        long taskToken = pos.start(android.companion.RemoteTaskAddedMessage.TASK);
-
-        task().writeToProto(pos);
-        pos.end(taskToken);
+    public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
+        RemoteTaskInfo.CREATOR.write(
+                Objects.requireNonNull(pos), android.companion.RemoteTaskAddedMessage.TASK, task());
     }
 }

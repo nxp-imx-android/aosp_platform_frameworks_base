@@ -16,24 +16,32 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
+import android.annotation.NonNull;
 import android.app.HandoffActivityData;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Deserialized version of the HandoffRequestResultMessage proto. Contains a status code and a list
  * of activities for handoff.
  */
 public record HandoffRequestResultMessage(
-        int taskId, int statusCode, List<HandoffActivityData> activities)
+        int taskId, int statusCode, @NonNull List<HandoffActivityData> activities)
         implements TaskContinuityMessage {
 
-    public static HandoffRequestResultMessage readFromProto(ProtoInputStream pis)
+    public HandoffRequestResultMessage {
+        Objects.requireNonNull(activities);
+    }
+
+    @NonNull
+    public static HandoffRequestResultMessage readFromProto(@NonNull ProtoInputStream pis)
             throws IOException {
+
+        Objects.requireNonNull(pis);
 
         int statusCode = 0;
         int taskId = 0;
@@ -50,12 +58,12 @@ public record HandoffRequestResultMessage(
                     taskId = pis.readInt(android.companion.HandoffRequestResultMessage.TASK_ID);
                     break;
                 case (int) android.companion.HandoffRequestResultMessage.ACTIVITIES:
-                    long token =
-                            pis.start(android.companion.HandoffRequestResultMessage.ACTIVITIES);
-                    HandoffActivityData activityData =
-                            HandoffActivityDataSerializer.readFromProto(pis);
-                    activities.add(activityData);
-                    pis.end(token);
+                    HandoffActivityData handoffActivityData =
+                            HandoffActivityDataSerializer.INSTANCE.read(
+                                    pis, android.companion.HandoffRequestResultMessage.ACTIVITIES);
+                    if (handoffActivityData != null) {
+                        activities.add(handoffActivityData);
+                    }
                     break;
             }
         }
@@ -69,14 +77,15 @@ public record HandoffRequestResultMessage(
     }
 
     @Override
-    public void writeToProto(ProtoOutputStream pos) throws IOException {
+    public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
+        Objects.requireNonNull(pos);
+
         pos.write(android.companion.HandoffRequestResultMessage.STATUS_CODE, statusCode);
         pos.write(android.companion.HandoffRequestResultMessage.TASK_ID, taskId);
 
         for (android.app.HandoffActivityData activity : activities) {
-            long token = pos.start(android.companion.HandoffRequestResultMessage.ACTIVITIES);
-            HandoffActivityDataSerializer.writeToProto(activity, pos);
-            pos.end(token);
+            HandoffActivityDataSerializer.INSTANCE.write(
+                    pos, android.companion.HandoffRequestResultMessage.ACTIVITIES, activity);
         }
     }
 }

@@ -21,22 +21,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 
-import android.testing.AndroidTestingRunner;
 import android.platform.test.annotations.Presubmit;
+import android.testing.AndroidTestingRunner;
+import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
-import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import java.util.Collections;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -112,7 +111,8 @@ public class FeatureControllerTest {
         mFakeFeatureController.onMessageReceived(
                 /* associationId= */ 1,
                 new RemoteTaskAddedMessage(
-                        new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
+                        new RemoteTaskInfo(
+                                1, "label", 1000, new byte[0], new HandoffOptions(true, true))));
         assertThat(mFakeFeatureController.mRemoteTaskAddedMessages).hasSize(1);
     }
 
@@ -128,7 +128,8 @@ public class FeatureControllerTest {
         mFakeFeatureController.onMessageReceived(
                 /* associationId= */ 1,
                 new RemoteTaskUpdatedMessage(
-                        new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
+                        new RemoteTaskInfo(
+                                1, "label", 1000, new byte[0], new HandoffOptions(true, true))));
         assertThat(mFakeFeatureController.mRemoteTaskUpdatedMessages).hasSize(1);
     }
 

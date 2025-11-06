@@ -16,14 +16,18 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
+import android.annotation.NonNull;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.IOException;
+import java.util.Objects;
 
 public record RemoteTaskRemovedMessage(int taskId) implements TaskContinuityMessage {
 
-    public static RemoteTaskRemovedMessage readFromProto(ProtoInputStream pis) throws IOException {
+    public static RemoteTaskRemovedMessage readFromProto(@NonNull ProtoInputStream pis)
+            throws IOException {
+        Objects.requireNonNull(pis);
+
         int taskId = 0;
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
@@ -42,7 +46,9 @@ public record RemoteTaskRemovedMessage(int taskId) implements TaskContinuityMess
     }
 
     @Override
-    public void writeToProto(ProtoOutputStream pos) throws IOException {
+    public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
+        Objects.requireNonNull(pos);
+
         pos.write(android.companion.RemoteTaskRemovedMessage.TASK_ID, taskId());
     }
 }

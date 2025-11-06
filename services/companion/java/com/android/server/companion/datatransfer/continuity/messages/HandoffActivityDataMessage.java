@@ -20,17 +20,20 @@ import android.annotation.NonNull;
 import android.app.HandoffActivityData;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public record HandoffActivityDataMessage(HandoffActivityData activity,
-                                         byte[][] packageSignatureDigests) {
+public record HandoffActivityDataMessage(
+        @NonNull HandoffActivityData activity, @NonNull byte[][] packageSignatureDigests) {
 
-    public static HandoffActivityDataMessage fromProto(
-            @NonNull ProtoInputStream protoInputStream)
+    public HandoffActivityDataMessage {
+        Objects.requireNonNull(activity);
+        Objects.requireNonNull(packageSignatureDigests);
+    }
+
+    public static HandoffActivityDataMessage fromProto(@NonNull ProtoInputStream protoInputStream)
             throws IOException {
         Objects.requireNonNull(protoInputStream);
 
@@ -39,15 +42,16 @@ public record HandoffActivityDataMessage(HandoffActivityData activity,
         while (protoInputStream.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (protoInputStream.getFieldNumber()) {
                 case (int) android.companion.HandoffActivityDataMessage.ACTIVITY:
-                    long token =
-                            protoInputStream.start(
+                    activityData =
+                            HandoffActivityDataSerializer.INSTANCE.read(
+                                    protoInputStream,
                                     android.companion.HandoffActivityDataMessage.ACTIVITY);
-                    activityData = HandoffActivityDataSerializer.readFromProto(protoInputStream);
-                    protoInputStream.end(token);
                     break;
                 case (int) android.companion.HandoffActivityDataMessage.SIGNATURE_DIGESTS:
-                    packageSignatureDigests.add(protoInputStream.readBytes(
-                            android.companion.HandoffActivityDataMessage.SIGNATURE_DIGESTS));
+                    packageSignatureDigests.add(
+                            protoInputStream.readBytes(
+                                    android.companion.HandoffActivityDataMessage
+                                            .SIGNATURE_DIGESTS));
                     break;
             }
         }
@@ -57,15 +61,16 @@ public record HandoffActivityDataMessage(HandoffActivityData activity,
                     "HandoffActivityDataMessage is missing HandoffActivityData field");
         }
 
-        return new HandoffActivityDataMessage(activityData,
-                packageSignatureDigests.toArray(new byte[0][]));
+        return new HandoffActivityDataMessage(
+                activityData, packageSignatureDigests.toArray(new byte[0][]));
     }
 
-    public void writeToProto(ProtoOutputStream protoOutputStream) throws IOException {
-        long token = protoOutputStream.start(
-                android.companion.HandoffActivityDataMessage.ACTIVITY);
-        HandoffActivityDataSerializer.writeToProto(activity(), protoOutputStream);
-        protoOutputStream.end(token);
+    public void writeToProto(@NonNull ProtoOutputStream protoOutputStream) throws IOException {
+        Objects.requireNonNull(protoOutputStream);
+        HandoffActivityDataSerializer.INSTANCE.write(
+                protoOutputStream,
+                android.companion.HandoffActivityDataMessage.ACTIVITY,
+                activity());
 
         for (byte[] signatureDigest : packageSignatureDigests()) {
             protoOutputStream.write(

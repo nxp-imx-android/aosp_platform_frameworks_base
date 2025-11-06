@@ -17,45 +17,41 @@
 package com.android.server.companion.datatransfer.continuity.connectivity;
 
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
-
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.never;
-import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.companion.IOnMessageReceivedListener;
-import android.companion.IOnTransportsChangedListener;
+import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
-import android.companion.AssociationInfo;
+import android.companion.IOnMessageReceivedListener;
+import android.companion.IOnTransportsChangedListener;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-
 import androidx.test.platform.app.InstrumentationRegistry;
-
-import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -105,7 +101,13 @@ public class TaskContinuityMessengerTest {
         connectAssociations(List.of(expectedAssociationId));
         ContinuityDeviceConnected expectedMessage =
                 new ContinuityDeviceConnected(
-                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
+                        List.of(
+                                new RemoteTaskInfo(
+                                        1,
+                                        "label",
+                                        1000,
+                                        new byte[0],
+                                        new HandoffOptions(true, true))));
 
         listener.onMessageReceived(
                 expectedAssociationId, TaskContinuityMessageSerializer.serialize(expectedMessage));
@@ -149,7 +151,13 @@ public class TaskContinuityMessengerTest {
         connectAssociations(List.of(associationId));
         ContinuityDeviceConnected expectedMessage =
                 new ContinuityDeviceConnected(
-                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
+                        List.of(
+                                new RemoteTaskInfo(
+                                        1,
+                                        "label",
+                                        1000,
+                                        new byte[0],
+                                        new HandoffOptions(true, true))));
         TaskContinuityMessenger.SendMessageResult result =
                 mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
         verify(mMockCompanionDeviceManagerService, times(1))
@@ -167,7 +175,13 @@ public class TaskContinuityMessengerTest {
         int associationId = 1;
         ContinuityDeviceConnected expectedMessage =
                 new ContinuityDeviceConnected(
-                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
+                        List.of(
+                                new RemoteTaskInfo(
+                                        1,
+                                        "label",
+                                        1000,
+                                        new byte[0],
+                                        new HandoffOptions(true, true))));
         TaskContinuityMessenger.SendMessageResult result =
                 mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
         verify(mMockCompanionDeviceManagerService, never())

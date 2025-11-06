@@ -17,22 +17,17 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.testng.Assert.expectThrows;
-
-import android.companion.TaskContinuityMessage;
 
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import android.util.proto.ProtoOutputStream;
 import android.util.proto.ProtoInputStream;
-
-import org.junit.runner.RunWith;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
+import android.util.proto.ProtoOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -55,7 +50,13 @@ public class ContinuityDeviceConnectedTest {
         long expectedLastActiveTime = 0;
         ContinuityDeviceConnected expected =
                 new ContinuityDeviceConnected(
-                        Arrays.asList(new RemoteTaskInfo(1, "task", 50, new byte[0], true)));
+                        Arrays.asList(
+                                new RemoteTaskInfo(
+                                        1,
+                                        "task",
+                                        50,
+                                        new byte[0],
+                                        new HandoffOptions(true, true))));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);

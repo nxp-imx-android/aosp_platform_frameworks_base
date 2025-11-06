@@ -16,8 +16,8 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
+import android.annotation.NonNull;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.IOException;
 
 /**
@@ -31,5 +31,5 @@ public interface TaskContinuityMessage {
     long getFieldNumber();
 
     /** Writes this object to a proto output stream. */
-    void writeToProto(ProtoOutputStream pos) throws IOException;
+    void writeToProto(@NonNull ProtoOutputStream pos) throws IOException;
 }

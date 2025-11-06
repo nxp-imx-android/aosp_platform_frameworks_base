@@ -18,19 +18,16 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.ActivityTaskManager;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
-import android.content.pm.PackageManager;
+import android.app.HandoffActivityParams;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.util.Slog;
-
-import com.android.server.LocalServices;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
-import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadata;
-import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadataCache;
 import com.android.server.wm.ActivityTaskManagerInternal;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -42,7 +39,7 @@ import java.util.stream.Collectors;
  */
 public class RunningTaskFetcher {
 
-    private static final String TAG = "RunningTaskFetcher";
+    private static final String TAG = RunningTaskFetcher.class.getSimpleName();
 
     private final int mUserId;
     private final ActivityTaskManager mActivityTaskManager;
@@ -127,13 +124,23 @@ public class RunningTaskFetcher {
 
         boolean isHandoffEnabled =
                 mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId);
+        if (!isHandoffEnabled) {
+            return null;
+        }
+
+        boolean requirePackageInstalled = true;
+        HandoffActivityParams params =
+                mActivityTaskManagerInternal.getHandoffActivityParamsForTask(taskInfo.taskId);
+        if (params != null) {
+            requirePackageInstalled = params.isAllowHandoffWithoutPackageInstalled();
+        }
 
         return new RemoteTaskInfo(
                 taskInfo.taskId,
                 packageMetadata.label(),
                 taskInfo.lastActiveTime,
                 packageMetadata.icon(),
-                isHandoffEnabled);
+                new HandoffOptions(isHandoffEnabled, requirePackageInstalled));
     }
 
     @NonNull
