@@ -75,13 +75,13 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_LRU;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PSS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVERS;
-import static com.android.server.am.ActivityManagerService.FOLLOW_UP_OOMADJUSTER_UPDATE_MSG;
 import static com.android.server.am.ActivityManagerService.TAG_LRU;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.am.AppProfiler.TAG_PSS;
 import static com.android.server.am.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_LEGACY;
 import static com.android.server.am.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NONE;
+import static com.android.server.am.ProcessStateController.FOLLOW_UP_UPDATE_MSG;
 import static com.android.server.am.psc.Constants.CACHED_APP_IMPORTANCE_LEVELS;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
@@ -272,6 +272,7 @@ public abstract class OomAdjuster {
         };
     }
 
+    private final Handler mUpdateHandler;
     ActivityManagerConstants mConstants;
 
     /**
@@ -705,7 +706,8 @@ public abstract class OomAdjuster {
     OomAdjuster(ActivityManagerService service, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
             GlobalState globalState, Injector injector, Callback callback,
-            StateGetter stateGetter) {
+            StateGetter stateGetter, Handler updateHandler) {
+        mUpdateHandler = updateHandler;
         mCallback = callback;
         mService = service;
         mOomConstants = oomConstants;
@@ -2675,8 +2677,7 @@ public abstract class OomAdjuster {
 
 
     @GuardedBy("mService")
-    private void scheduleFollowUpOomAdjusterUpdateLocked(long updateUptimeMs,
-            long now) {
+    private void scheduleFollowUpOomAdjusterUpdateLocked(long updateUptimeMs, long now) {
         if (updateUptimeMs + mConstants.FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION
                 >= mNextFollowUpUpdateUptimeMs) {
             // Update time is too close or later than the next follow up update.
@@ -2688,10 +2689,9 @@ public abstract class OomAdjuster {
             updateUptimeMs = now + mConstants.FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION;
         }
 
-        // Schedulate a follow up update. Don't bother deleting existing handler messages, they
-        // will be cleared during the message while no locks are being held.
+        // Schedule a follow up update. Don't bother deleting existing handler messages.
+        // They will be cleared during the message while no locks are being held.
         mNextFollowUpUpdateUptimeMs = updateUptimeMs;
-        mService.mHandler.sendEmptyMessageAtTime(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG,
-                mNextFollowUpUpdateUptimeMs);
+        mUpdateHandler.sendEmptyMessageAtTime(FOLLOW_UP_UPDATE_MSG, mNextFollowUpUpdateUptimeMs);
     }
 }

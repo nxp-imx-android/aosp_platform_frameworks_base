@@ -95,6 +95,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.Handler;
 import android.os.Trace;
 import android.util.ArraySet;
 import android.util.Slog;
@@ -610,9 +611,9 @@ public class OomAdjusterImpl extends OomAdjuster {
     OomAdjusterImpl(ActivityManagerService service, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
             GlobalState globalState, Injector injector, Callback callback,
-            StateGetter stateGetter) {
+            StateGetter stateGetter, Handler updateHandler) {
         super(service, processList, activeUids, adjusterThread, oomConstants, globalState, injector,
-                callback, stateGetter);
+                callback, stateGetter, updateHandler);
     }
 
     private final ProcessRecordNodes mProcessRecordProcStateNodes = new ProcessRecordNodes(

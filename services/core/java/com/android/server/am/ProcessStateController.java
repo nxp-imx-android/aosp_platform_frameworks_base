@@ -34,6 +34,7 @@ import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Message;
 import android.os.PowerManagerInternal;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -65,6 +66,8 @@ import java.util.function.Consumer;
 public class ProcessStateController {
     public static final String TAG = "ProcessStateController";
 
+    public static final int FOLLOW_UP_UPDATE_MSG = 1;
+
     private final OomAdjuster.Constants mOomConstants;
     private final OomAdjuster mOomAdjuster;
     private final BiConsumer<ConnectionRecordInternal, Boolean> mServiceBinderCallUpdater;
@@ -92,12 +95,26 @@ public class ProcessStateController {
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
             OomAdjuster.Constants oomConstants, OomAdjuster.Callback callback,
             OomAdjuster.StateGetter stateGetter) {
-        mOomConstants = oomConstants;
-        mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
-                mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter);
-
         mLock = lock;
         mProcLock = procLock;
+
+        final Handler updateHandler = new Handler(handlerThread.getLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                if (msg.what == FOLLOW_UP_UPDATE_MSG) {
+                    // Remove any existing duplicate messages on the handler here while no lock
+                    // is being held. If another follow up update is needed, it will be scheduled
+                    // by OomAdjuster.
+                    removeMessages(FOLLOW_UP_UPDATE_MSG);
+                    synchronized (mLock) {
+                        ProcessStateController.this.runFollowUpUpdate();
+                    }
+                }
+            }
+        };
+        mOomConstants = oomConstants;
+        mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
+                mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter, updateHandler);
         mTopChangeCallback = topChangeCallback;
         mProcessLruUpdater = lruUpdater;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
@@ -108,7 +125,6 @@ public class ProcessStateController {
                 }
             }
         });
-
     }
 
     public OomAdjuster.Constants getOomConstants() {
