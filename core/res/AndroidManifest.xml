@@ -3417,9 +3417,9 @@
 
     <!-- Allows an application to manage access to documents, usually as part
          of a document picker.
-         <p>This permission should <em>only</em> be requested by the platform
-         document management app.  This permission cannot be granted to
-         third-party apps.
+         <p>This permission should <em>only</em> be held by the platform
+         document management app and the shell (for CTS). This permission cannot
+         be granted to third-party apps.
     -->
     <permission android:name="android.permission.MANAGE_DOCUMENTS"
         android:protectionLevel="signature|role" />
