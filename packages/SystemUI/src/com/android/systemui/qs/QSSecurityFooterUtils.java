@@ -298,7 +298,7 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
             boolean isProfileOwnerOfOrganizationOwnedDevice, boolean isParentalControlsEnabled,
             boolean isWorkProfileOn) {
         if (isParentalControlsEnabled) {
-            return mContext.getString(R.string.quick_settings_disclosure_parental_controls);
+            return mContext.getString(R.string.quick_settings_disclosure_parental_controls_legacy);
         }
         if (isDeviceManaged || DEBUG_FORCE_VISIBLE) {
             return getManagedDeviceFooterText(hasCACerts, hasCACertsInWorkProfile,
