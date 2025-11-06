@@ -19,8 +19,6 @@ package com.android.wm.shell.dagger;
 import static android.window.DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP;
 import static android.window.DesktopExperienceFlags.ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX;
 import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
-import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX;
-
 import static com.android.systemui.Flags.enableViewCaptureTracing;
 
 import android.annotation.NonNull;
@@ -113,7 +111,6 @@ import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
 import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
-import com.android.wm.shell.desktopmode.DefaultDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
@@ -1217,14 +1214,9 @@ public abstract class WMShellModule {
             InteractionJankMonitor interactionJankMonitor,
             Optional<BubbleController> bubbleController,
             DesktopState desktopState) {
-        return ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX.isTrue()
-                ? new SpringDragToDesktopTransitionHandler(
+        return new SpringDragToDesktopTransitionHandler(
                 context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
-                desktopUserRepositories, interactionJankMonitor, bubbleController, desktopState)
-                : new DefaultDragToDesktopTransitionHandler(
-                        context, transitions, rootTaskDisplayAreaOrganizer, desksOrganizer,
-                        desktopUserRepositories, interactionJankMonitor, bubbleController,
-                        desktopState);
+                desktopUserRepositories, interactionJankMonitor, bubbleController, desktopState);
     }
 
     @WMSingleton

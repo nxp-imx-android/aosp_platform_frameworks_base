@@ -66,8 +66,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION(Flags::enableDesktopWindowingAppToWebEducation,
             true),
     ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION(Flags::enableDesktopWindowingBackNavigation, true),
-    ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX(
-            Flags::enableDesktopWindowingEnterTransitionBugfix, true),
     ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX(
             Flags::enableDesktopWindowingExitTransitionsBugfix, true),
     ENABLE_DESKTOP_WINDOWING_HSUM(Flags::enableDesktopWindowingHsum, true),
