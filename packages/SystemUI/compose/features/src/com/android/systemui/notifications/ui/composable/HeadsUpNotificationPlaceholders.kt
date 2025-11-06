@@ -220,13 +220,7 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
                 }
                 .onGloballyPositioned {
                     if (updateDrawBounds) {
-                        stackScrollView.updateDrawBounds(
-                            it.boundsInWindow().toAndroidRectF().apply {
-                                // extend bounds to the screen top to avoid cutting off HUN
-                                // transitions
-                                top = 0f
-                            }
-                        )
+                        stackScrollView.updateDrawBounds(it.boundsInWindow().toAndroidRectF())
                     }
                 }
                 .thenIf(isSnoozable) { Modifier.nestedScroll(snoozeScrollConnection) }
