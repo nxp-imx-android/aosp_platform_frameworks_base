@@ -42,7 +42,7 @@ annotation class ReadWritePermit {
         /** Require explicit user agreement (e.g. terms of service). */
         const val REQUIRE_USER_AGREEMENT = 3
 
-        private const val READ_PERMIT_BITS = 15
+        private const val READ_PERMIT_BITS = 16
         private const val READ_PERMIT_MASK = (1 shl 16) - 1
 
         /** Wraps given read and write permit into an integer. */
