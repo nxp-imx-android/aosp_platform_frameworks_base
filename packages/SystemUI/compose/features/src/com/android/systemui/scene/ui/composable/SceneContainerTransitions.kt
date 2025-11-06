@@ -23,6 +23,7 @@ import com.android.systemui.scene.ui.composable.transitions.dreamToBouncerTransi
 import com.android.systemui.scene.ui.composable.transitions.dreamToCommunalTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.dreamToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.fromBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToShadeSceneTransition
@@ -76,6 +77,14 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_EXPAND,
             ) {
                 dreamToShadeTransition()
+            }
+            from(
+                Scenes.Dream,
+                to = Scenes.QuickSettings,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_EXPAND,
+            ) {
+                dreamToQuickSettingsTransition()
             }
             from(
                 Scenes.Gone,
@@ -190,6 +199,14 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                     Notifications.Elements.HeadsUpNotificationPlaceholder,
                     enabled = false,
                 )
+            }
+            from(
+                Scenes.QuickSettings,
+                to = Scenes.Dream,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_COLLAPSE,
+            ) {
+                reversed { dreamToQuickSettingsTransition() }
             }
 
             from(
