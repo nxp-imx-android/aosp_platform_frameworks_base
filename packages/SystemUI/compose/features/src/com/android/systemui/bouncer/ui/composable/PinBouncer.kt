@@ -148,7 +148,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             onPointerDown = viewModel::onBackspaceButtonPressed,
             onLongPressed = viewModel::onBackspaceButtonLongPressed,
             onLongClickLabel =
-                stringResource(R.string.keyguard_accessibility_pin_delete_long_click_partial),
+                stringResource(R.string.keyguard_accessibility_pin_delete_long_click),
             appearance = backspaceButtonAppearance,
             scaling = buttonScaleAnimatables[9]::value,
             elementId = "delete_button",
