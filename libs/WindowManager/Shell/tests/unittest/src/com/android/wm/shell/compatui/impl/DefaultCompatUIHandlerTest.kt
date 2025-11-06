@@ -17,6 +17,7 @@
 package com.android.wm.shell.compatui.impl
 
 import android.app.ActivityManager
+import android.content.res.Configuration
 import android.testing.AndroidTestingRunner
 import android.view.View
 import androidx.test.filters.SmallTest
@@ -268,7 +269,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
     private fun prepareSharedStateRepository(taskId: Int = 1) {
         sharedStateRepository.insert(
             taskId,
-            CompatUISharedState(taskId = taskId),
+            CompatUISharedState(taskId = taskId, taskConfiguration = Configuration()),
             overrideIfPresent = true,
         )
     }
