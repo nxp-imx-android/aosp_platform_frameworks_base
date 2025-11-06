@@ -16,6 +16,8 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.os.Build
+import android.util.Log
 import android.util.MathUtils.max
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.util.lerp
@@ -105,11 +107,12 @@ constructor(
 
     override suspend fun onActivated() {
         blurChoreographer.registerOnBlurAppliedListener(::onBlurApplied)
-        windowRootViewBlurInteractor.registerShadeBlurChangedListener(::applyBlur)
-
-        isPersistentEarlyWakeupRequired.collect {
-            blurChoreographer.setPersistentEarlyWakeup(it)
+        windowRootViewBlurInteractor.registerShadeBlurChangedListener {
+            v("Applying blur requested by shade", it.radius, it.scale)
+            applyBlur(it)
         }
+
+        isPersistentEarlyWakeupRequired.collect { blurChoreographer.setPersistentEarlyWakeup(it) }
     }
 
     override suspend fun onDeactivated() {
@@ -130,7 +133,11 @@ constructor(
                 is TransitionState.Transition.ShowOrHideOverlay ->
                     transitionState.toBlurRadius(transitionProgress)
             }
-        blurRadius?.let { applyBlur(BlurEffect(it, computeBackgroundBlurScale(transitionState))) }
+        blurRadius?.let {
+            val scale = computeBackgroundBlurScale(transitionState)
+            v("Applying blur for TransitionState change", blurRadius, scale)
+            applyBlur(BlurEffect(it, scale))
+        }
     }
 
     private fun ContentKey.blurRadius(): Float {
@@ -205,7 +212,8 @@ constructor(
     ): Float? {
         val transitionState = this
         return if (
-            ignoredOverlayChanges.contains(transitionState.toContent) ||
+            ignoredOverlayChanges.contains(transitionState.overlay) ||
+                ignoredOverlayChanges.contains(transitionState.toContent) ||
                 ignoredOverlayChanges.contains(transitionState.fromContent)
         ) {
             null
@@ -262,7 +270,7 @@ constructor(
     private fun TransitionState.Idle.toBlurRadius(): Float? {
         val transitionState = this
         return if (
-            transitionState.currentOverlays.containsAll(ignoredOverlayChanges) ||
+            transitionState.currentOverlays.any { ignoredOverlayChanges.contains(it) } ||
                 ignoredSceneChanges.contains(transitionState.currentScene)
         ) {
             null
@@ -273,6 +281,12 @@ constructor(
             )
     }
 
+    private fun v(message: String, blurRadius: Float, blurScale: Float) {
+        if (isLoggable) {
+            Log.v(TAG, "$message blurRadius=$blurRadius blurScale=$blurScale")
+        }
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(): SceneTransitionBlurViewModel
@@ -280,5 +294,8 @@ constructor(
 
     companion object {
         private const val BLUR_SCALE_COMMUNAL = 0.05f
+        private const val TAG = "SceneTransitionBlur"
+        private val isLoggable
+            get() = Log.isLoggable(TAG, Log.VERBOSE) || Build.IS_ENG
     }
 }
