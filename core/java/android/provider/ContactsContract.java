@@ -315,6 +315,19 @@ public final class ContactsContract {
      * {@link CommonDataKinds.Email#CONTENT_FILTER_URI CommonDataKinds.Email.CONTENT_FILTER_URI}
      * and
      * {@link CommonDataKinds.Phone#CONTENT_FILTER_URI CommonDataKinds.Phone.CONTENT_FILTER_URI}.
+     *
+     * <aside class="note"><b>Note:</b>If an app targets
+     * {@link android.os.Build.VERSION_CODES#CINNAMON_BUN}
+     * or after, they must hold
+     * {@link android.Manifest.permission#WRITE_CONTACTS} permission in order to respond to
+     * directory contact queries such as {@link ContactsContract.Contacts#CONTENT_FILTER_URI}.
+     * Additionally, Apps must have
+     * {@link android.Manifest.permission#READ_CALL_LOG} in order respond to
+     * {@link PhoneLookup#CONTENT_FILTER_URI} and
+     * {@link CommonDataKinds.Phone#CONTENT_FILTER_URI}.
+     * If an app that implements a directory provider lacks the required permissions the
+     * contacts provider will not forward queries to it.
+     * </aside>
      * </p>
      * <p>
      * A directory provider should return NULL for every projection field it does not
