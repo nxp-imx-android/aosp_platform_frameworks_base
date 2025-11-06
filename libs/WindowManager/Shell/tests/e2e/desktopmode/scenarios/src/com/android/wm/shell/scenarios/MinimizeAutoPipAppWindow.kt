@@ -46,7 +46,6 @@ abstract class MinimizeAutoPipAppWindow(val rotation: Rotation = Rotation.ROTATI
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableMinimizeButton())
         Assume.assumeTrue(Flags.enableDesktopWindowingPip())
         Assume.assumeTrue(com.android.wm.shell.Flags.enablePip2())
         testApp.enterDesktopMode(wmHelper, device)

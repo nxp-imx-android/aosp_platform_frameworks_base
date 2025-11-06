@@ -303,7 +303,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MINIMIZE_BUTTON)
     fun testMinimizeButtonInFreeform_withStateChangeAnnouncementFlag_minimizeWindow() {
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor =

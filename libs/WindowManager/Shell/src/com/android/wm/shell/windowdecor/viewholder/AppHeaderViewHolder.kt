@@ -42,7 +42,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.withStyledAttributes
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
 import com.android.internal.R.color.materialColorOnSecondaryContainer
@@ -569,7 +568,6 @@ class AppHeaderViewHolder(
             minimizeWindowButton.background = getDrawable(1)
         }
         maximizeButtonView.setAnimationTints(isDarkMode())
-        minimizeWindowButton.isGone = !DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue
     }
 
     private fun bindDataWithThemedHeaders(
@@ -639,7 +637,6 @@ class AppHeaderViewHolder(
                     drawableInsets = dimensions.minimizeBackgroundInsets,
                 )
         }
-        minimizeWindowButton.isGone = !DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue
         // Maximize button.
         maximizeButtonView.apply {
             setAnimationTints(

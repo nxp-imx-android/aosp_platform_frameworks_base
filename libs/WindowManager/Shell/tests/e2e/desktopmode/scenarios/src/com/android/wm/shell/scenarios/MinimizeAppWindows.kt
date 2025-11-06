@@ -54,7 +54,6 @@ constructor(
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableMinimizeButton())
         Assume.assumeTrue(Flags.enableEmptyDeskOnMinimize())
         if (usingKeyboard) {
             Assume.assumeTrue(DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue)
