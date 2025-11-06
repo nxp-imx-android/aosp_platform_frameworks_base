@@ -279,6 +279,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -841,6 +842,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     private final DisplayRotationReversionController mRotationReversionController;
 
+    /**
+     * Track the mirrors of this display so that we can continue mirroring successfully even if this
+     * display is migrated to a new surface control.
+     */
+    private final List<DisplayMirrorImpl> mDisplayMirrors = new ArrayList<>();
+
     private final Consumer<WindowState> mUpdateWindowsForAnimator = w -> {
         WindowStateAnimator winAnimator = w.mWinAnimator;
         final ActivityRecord activity = w.mActivityRecord;
@@ -1337,6 +1344,87 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         scheduleAnimation();
     }
 
+    /**
+     * Wraps a SurfaceControl mirror of this display so that mirroring can continue in an
+     * uninterrupted manner even when this display's SurfaceControl is recreated.
+     */
+    private class DisplayMirrorImpl implements WindowManagerInternal.DisplayMirror {
+
+        private final SurfaceControl mMirrorParent;
+        private SurfaceControl mMirrorSurfaceControl;
+
+        DisplayMirrorImpl(SurfaceControl source) {
+            mMirrorParent = mWmService.makeSurfaceBuilder()
+                    .setName("DisplayMirrorParent")
+                    .setCallsite("DisplayContent#createMirrorForDisplay")
+                    .setContainerLayer()
+                    .build();
+            mMirrorSurfaceControl = SurfaceControl.mirrorSurface(source);
+            try (var t = mWmService.mTransactionFactory.get()) {
+                t.reparent(mMirrorSurfaceControl, mMirrorParent)
+                        .show(mMirrorSurfaceControl)
+                        .show(mMirrorParent)
+                        .apply();
+            }
+        }
+
+        void recreateMirror(SurfaceControl source, Transaction t) {
+            t.remove(mMirrorSurfaceControl);
+            mMirrorSurfaceControl = SurfaceControl.mirrorSurface(source);
+            t.reparent(mMirrorSurfaceControl, mMirrorParent)
+                    .show(mMirrorSurfaceControl);
+        }
+
+        @Override
+        public SurfaceControl getMirrorSurfaceControl() {
+            return mMirrorParent;
+        }
+
+        @Override
+        public void close() throws Exception {
+            removeDisplayMirror(this);
+        }
+
+        void closeWithTransaction(Transaction t) {
+            t.remove(mMirrorSurfaceControl)
+                    .remove(mMirrorParent);
+        }
+    }
+
+    /**
+     * Creates a mirror SurfaceControl for this display that successfully continues mirroring
+     * even after display surface migrations. The mirror must be closed with the WM lock when it
+     * is no longer being used.
+     */
+    @Nullable
+    WindowManagerInternal.DisplayMirror createMirrorForDisplay() {
+        final var sc = getSurfaceControl();
+        if (sc == null) {
+            return null;
+        }
+        final var mirror = new DisplayMirrorImpl(sc);
+        mDisplayMirrors.add(mirror);
+        return mirror;
+    }
+
+    private void removeDisplayMirror(DisplayMirrorImpl mirror) {
+        if (!mDisplayMirrors.remove(mirror)) {
+            return;
+        }
+        try (var t = mWmService.mTransactionFactory.get()) {
+            mirror.closeWithTransaction(t);
+            t.apply();
+        }
+    }
+
+    private void removeAllDisplayMirrors(Transaction t) {
+        final var displayMirrors = new ArrayList<>(mDisplayMirrors);
+        mDisplayMirrors.clear();
+        for (int i = 0; i < displayMirrors.size(); i++) {
+            displayMirrors.get(i).closeWithTransaction(t);
+        }
+    }
+
     void setAnimationsDisabledLocked(boolean disabled) {
         if (mAnimationsDisabled != disabled) {
             mAnimationsDisabled = disabled;
@@ -1410,6 +1498,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     b.setName("Accessibility Overlays").setParent(mSurfaceControl).build();
         } else {
             transaction.reparent(mA11yOverlayLayer, mSurfaceControl);
+        }
+
+        for (int i = 0; i < mDisplayMirrors.size(); i++) {
+            mDisplayMirrors.get(i).recreateMirror(mSurfaceControl, transaction);
         }
 
         transaction
@@ -3550,6 +3642,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mWallpaperController.resetLargestDisplay(mDisplay);
             mWmService.mDisplayWindowSettings.onDisplayRemoved(this);
             getDisplayUiContext().unregisterComponentCallbacks(mSysUiContextConfigCallback);
+            removeAllDisplayMirrors(getPendingTransaction());
         } finally {
             mDisplayReady = false;
         }

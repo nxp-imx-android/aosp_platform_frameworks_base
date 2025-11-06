@@ -25,6 +25,7 @@ import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 
 import com.android.server.input.InputManagerInternal;
+import com.android.server.wm.WindowManagerInternal;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -43,7 +44,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private final DisplayInfo mDisplayInfo;
     // The mirror of the VirtualDisplay, used to control sensitive parameters of the surface.
     // NOTE: This must NOT be sent to the client app, and must remain in system_server.
-    private final SurfaceControl mMirrorSurface;
+    private final WindowManagerInternal.DisplayMirror mMirror;
     // The parent leash of the mirror that can be safely sent to the client app to be embedded
     // in its MirrorView.
     private final SurfaceControl mMirrorLeash;
@@ -51,27 +52,27 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private final InputManagerInternal mInputManagerInternal;
     private final Consumer<InteractiveMirrorImpl> mOnCloseListener;
 
-    InteractiveMirrorImpl(SurfaceControl mirrorSurface,
+    InteractiveMirrorImpl(WindowManagerInternal.DisplayMirror mirror,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
             InputManagerInternal inputManagerInternal, Consumer<InteractiveMirrorImpl> onClose) {
-        mMirrorSurface = mirrorSurface;
+        mMirror = mirror;
         mTransactionSupplier = transactionSupplier;
         mDisplayInfo = displayInfo;
         mInputManagerInternal = inputManagerInternal;
         mMirrorLeash = new SurfaceControl.Builder()
-                .setName("InteractiveMirrorImpl#mMirrorLeash$" + mMirrorSurface.hashCode())
+                .setName("InteractiveMirrorImpl#mMirrorLeash$" + mMirror.hashCode())
                 .setContainerLayer()
                 .build();
         mOnCloseListener = onClose;
 
-        Slog.v(TAG, "Creating interactive mirror with surface: " + mirrorSurface);
+        Slog.v(TAG, "Creating interactive mirror with SurfaceControl: " + mMirrorLeash);
         initialize();
     }
 
     private void initialize() {
         try (var transaction = mTransactionSupplier.get()) {
             transaction
-                    .reparent(mMirrorSurface, mMirrorLeash)
+                    .reparent(mMirror.getMirrorSurfaceControl(), mMirrorLeash)
                     .show(mMirrorLeash);
             setInteractiveWithTransaction(InteractiveMirror.DEFAULT_INTERACTIVE, transaction);
             transaction.apply();
@@ -94,7 +95,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
 
     private void setInteractiveWithTransaction(boolean interactive,
             SurfaceControl.Transaction transaction) {
-        transaction.setDropInputMode(mMirrorSurface,
+        transaction.setDropInputMode(mMirror.getMirrorSurfaceControl(),
                 interactive ? DropInputMode.NONE : DropInputMode.ALL);
     }
 
@@ -123,10 +124,13 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     }
 
     void closeWithTransaction(SurfaceControl.Transaction transaction) {
-        Slog.v(TAG, "Closing interactive mirror with surface: " + mMirrorSurface);
-        transaction
-                .reparent(mMirrorSurface, null)
-                .reparent(mMirrorLeash, null);
+        Slog.v(TAG, "Closing interactive mirror with SurfaceControl: " + mMirrorLeash);
+        transaction.remove(mMirrorLeash);
+        try {
+            mMirror.close();
+        } catch (Exception e) {
+            Slog.e(TAG, "Failed to close DisplayMirror", e);
+        }
         mOnCloseListener.accept(this);
     }
 }

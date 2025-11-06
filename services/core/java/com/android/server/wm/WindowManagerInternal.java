@@ -55,7 +55,6 @@ import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 import com.android.internal.policy.KeyInterceptionInfo;
 import com.android.server.input.InputManagerService;
 import com.android.server.policy.WindowManagerPolicy;
-import com.android.server.wm.DisplayPolicy;
 import com.android.server.wm.SensitiveContentPackages.PackageInfo;
 
 import java.lang.annotation.Retention;
@@ -1251,11 +1250,25 @@ public abstract class WindowManagerInternal {
     public abstract void restoreDisplayWindowSettings(int userId, byte[] payload);
 
     /**
-     * Creates a mirror of the given display's root SurfaceControl.
+     * An abstraction of a SurfaceControl that mirrors a display. The mirror surface will
+     * successfully mirror the display's content until the display is removed or the mirror is
+     * {@link #close()}-ed.
+     */
+    public interface DisplayMirror extends AutoCloseable {
+        /**
+         * Get the mirror surface. The same SurfaceControl reference is returned throughout the
+         * lifecycle of this mirror. This SurfaceControl will be released automatically on
+         * {@link #close()}.
+         */
+        SurfaceControl getMirrorSurfaceControl();
+    }
+
+    /**
+     * Creates a mirror of the given display.
      *
      * @param displayId The display which should be mirrored.
-     * @return The mirror surface, or null if the display was not found.
+     * @return The display mirror, or null if mirroring was not successful.
      */
     @Nullable
-    public abstract SurfaceControl createMirrorForDisplayContent(int displayId);
+    public abstract DisplayMirror createMirrorForDisplayContent(int displayId);
 }
