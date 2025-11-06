@@ -372,6 +372,12 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Nullable
     @DataClass.ParcelWith(ForInternedString.class)
     private String zygotePreloadName;
+    @Nullable
+    @DataClass.ParcelWith(ForInternedString.class)
+    private String mZygotePreloadNativeLib;
+    @Nullable
+    @DataClass.ParcelWith(ForInternedString.class)
+    private String mZygotePreloadNativeFunc;
     /**
      * @see AndroidPackage#getResizeableActivity()
      */
@@ -1550,6 +1556,18 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         return zygotePreloadName;
     }
 
+    @Nullable
+    @Override
+    public String getZygotePreloadNativeFunc() {
+        return mZygotePreloadNativeFunc;
+    }
+
+    @Nullable
+    @Override
+    public String getZygotePreloadNativeLib() {
+        return mZygotePreloadNativeLib;
+    }
+
     @Override
     public boolean isAllowCrossUidActivitySwitchFromBelow() {
         return mAllowCrossUidActivitySwitchFromBelow;
@@ -2597,6 +2615,18 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     }
 
     @Override
+    public PackageImpl setZygotePreloadNativeLib(@Nullable String zygotePreloadNativeLib) {
+        this.mZygotePreloadNativeLib = zygotePreloadNativeLib;
+        return this;
+    }
+
+    @Override
+    public PackageImpl setZygotePreloadNativeFunc(@Nullable String zygotePreloadNativeFunc) {
+        this.mZygotePreloadNativeFunc = zygotePreloadNativeFunc;
+        return this;
+    }
+
+    @Override
     public PackageImpl sortActivities() {
         Collections.sort(this.activities, ORDER_COMPARATOR);
         return this;
@@ -2686,6 +2716,8 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         appInfo.uiOptions = uiOptions;
         appInfo.volumeUuid = volumeUuid;
         appInfo.zygotePreloadName = zygotePreloadName;
+        appInfo.zygotePreloadNativeLib = mZygotePreloadNativeLib;
+        appInfo.zygotePreloadNativeFunc = mZygotePreloadNativeFunc;
         appInfo.setGwpAsanMode(gwpAsanMode);
         appInfo.setMemtagMode(memtagMode);
         appInfo.setNativeHeapZeroInitialized(nativeHeapZeroInitialized);
@@ -3273,6 +3305,8 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         dest.writeInt(this.theme);
         dest.writeInt(this.uiOptions);
         dest.writeString(this.zygotePreloadName);
+        dest.writeString(this.mZygotePreloadNativeLib);
+        dest.writeString(this.mZygotePreloadNativeFunc);
         dest.writeStringArray(this.splitClassLoaderNames);
         dest.writeStringArray(this.splitCodePaths);
         dest.writeSparseArray(this.splitDependencies);
@@ -3472,6 +3506,8 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         this.theme = in.readInt();
         this.uiOptions = in.readInt();
         this.zygotePreloadName = in.readString();
+        this.mZygotePreloadNativeLib = in.readString();
+        this.mZygotePreloadNativeFunc = in.readString();
         this.splitClassLoaderNames = in.createStringArray();
         this.splitCodePaths = in.createStringArray();
         this.splitDependencies = in.readSparseArray(boot);

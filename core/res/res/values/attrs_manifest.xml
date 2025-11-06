@@ -1292,6 +1292,19 @@
          interface. -->
     <attr name="zygotePreloadName" format="string"/>
 
+     <!-- Name of the library to be preloaded by Native App Zygote. When a service with this
+          attribute sets {@link android.R.attr#nativeService}, {@link android.R.attr#useAppZygote},
+          and {@link android.R.attr#isolatedProcess} to <code>true</code>, the system launches a
+          Native App Zygote process. When both {@link android.R.attr#zygotePreloadName} and
+          {@link android.R.attr#zygotePreloadNativeLib} are specified, a service will fork a Native
+          App Zygote process if the aforementioned attributes are all set to <code>true</code>, and
+          a Managed App Zygote process otherwise. -->
+    <attr name="zygotePreloadNativeLib" format="string"/>
+
+    <!-- Optional function name to be called once the library by zygotePreloadNativeLib has been
+         preloaded. If not specified, no function is called after the library is loaded. -->
+    <attr name="zygotePreloadNativeFunc" format="string"/>
+
     <!-- If set to <code>true</code>, indicates to the platform that this APK is
          a 'feature' split and that it implicitly depends on the base APK. This distinguishes
          this split APK from a 'configuration' split, which provides resource overrides
@@ -2190,6 +2203,10 @@
         <attr name="hasFragileUserData" format="boolean"/>
 
         <attr name="zygotePreloadName" />
+
+        <attr name="zygotePreloadNativeLib" />
+
+        <attr name="zygotePreloadNativeFunc" />
 
         <!-- If {@code true} the system will clear app's data if a restore operation fails.
              This flag is turned on by default. <em>This attribute is usable only by system apps.

@@ -366,6 +366,22 @@ public interface AndroidPackage {
     String getZygotePreloadName();
 
     /**
+     * @see ApplicationInfo#zygotePreloadNativeLib
+     * @see R.styleable#AndroidManifestApplication_zygotePreloadNativeLib
+     */
+    @Nullable
+    @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
+    String getZygotePreloadNativeLib();
+
+    /**
+     * @see ApplicationInfo#zygotePreloadNativeFunc
+     * @see R.styleable#AndroidManifestApplication_zygotePreloadNativeFunc
+     */
+    @Nullable
+    @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
+    String getZygotePreloadNativeFunc();
+
+    /**
      * @see ApplicationInfo#PRIVATE_FLAG_ALLOW_AUDIO_PLAYBACK_CAPTURE
      * @see R.styleable#AndroidManifestApplication_allowAudioPlaybackCapture
      */

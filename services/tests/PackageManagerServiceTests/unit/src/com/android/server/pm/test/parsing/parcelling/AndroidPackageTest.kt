@@ -57,7 +57,8 @@ import org.junit.Rule
 
 @ExperimentalContracts
 @EnableFlags(android.content.pm.Flags.FLAG_INCLUDE_FEATURE_FLAGS_IN_PACKAGE_CACHER,
-    android.permission.flags.Flags.FLAG_PPD_INSTALL_TIME_ENABLED
+    android.permission.flags.Flags.FLAG_PPD_INSTALL_TIME_ENABLED,
+    android.os.Flags.FLAG_NATIVE_APP_ZYGOTE
 )
 class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, PackageImpl::class) {
 
@@ -230,6 +231,8 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
         AndroidPackage::getUid,
         AndroidPackage::getVersionName,
         AndroidPackage::getZygotePreloadName,
+        AndroidPackage::getZygotePreloadNativeLib,
+        AndroidPackage::getZygotePreloadNativeFunc,
         AndroidPackage::isAllowAudioPlaybackCapture,
         AndroidPackage::isBackupAllowed,
         AndroidPackage::isClearUserDataAllowed,
