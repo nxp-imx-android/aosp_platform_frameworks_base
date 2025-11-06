@@ -32,4 +32,6 @@ oneway interface ILocationButtonSession {
     void resize(int width, int height);
     void changeConfiguration(in Configuration newConfig);
     void close();
+    void setStrokeColor(int color);
+    void setStrokeWidth(int width);
 }

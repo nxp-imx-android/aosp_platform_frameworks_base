@@ -354,6 +354,7 @@ package android {
     field @Deprecated public static final String USE_FINGERPRINT = "android.permission.USE_FINGERPRINT";
     field public static final String USE_FULL_SCREEN_INTENT = "android.permission.USE_FULL_SCREEN_INTENT";
     field public static final String USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER = "android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER";
+    field @FlaggedApi("android.widget.flags.location_button_enabled") public static final String USE_LOCATION_BUTTON = "android.permission.USE_LOCATION_BUTTON";
     field @FlaggedApi("android.permission.flags.use_loopback_interface_permission_enabled") public static final String USE_LOOPBACK_INTERFACE = "android.permission.USE_LOOPBACK_INTERFACE";
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final String USE_PINNED_WINDOWING_LAYER = "android.permission.USE_PINNED_WINDOWING_LAYER";
     field public static final String USE_SIP = "android.permission.USE_SIP";
@@ -62921,12 +62922,15 @@ package android.widget.location {
   }
 
   @FlaggedApi("android.widget.flags.location_button_enabled") public final class LocationButtonRequest implements android.os.Parcelable {
-    ctor public LocationButtonRequest(int, int, int, float, int, int, int);
+    ctor public LocationButtonRequest(int, int, @ColorInt int, @ColorInt int, int, float, @ColorInt int, int, @ColorInt int, @NonNull android.content.res.Configuration);
     method public int describeContents();
     method @ColorInt public int getBackgroundColor();
+    method @NonNull public android.content.res.Configuration getConfiguration();
     method public float getCornerRadius();
     method public int getHeight();
     method @ColorInt public int getIconTint();
+    method @ColorInt public int getStrokeColor();
+    method public int getStrokeWidth();
     method @ColorInt public int getTextColor();
     method public int getTextType();
     method public int getWidth();
@@ -62942,6 +62946,8 @@ package android.widget.location {
     method public void setBackgroundColor(@ColorInt int);
     method public void setCornerRadius(float);
     method public void setIconTint(@ColorInt int);
+    method public void setStrokeColor(@ColorInt int);
+    method public void setStrokeWidth(int);
     method public void setTextColor(@ColorInt int);
     method public void setTextType(int);
     field public static final int TEXT_TYPE_NEAR_PRECISE_LOCATION = 1; // 0x1

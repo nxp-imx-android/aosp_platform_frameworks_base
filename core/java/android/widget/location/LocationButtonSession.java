@@ -147,4 +147,18 @@ public interface LocationButtonSession extends AutoCloseable {
      * @param textType The text type for the button text.
      */
     void setTextType(@TextType int textType);
+
+    /**
+     * Sets the color of location button stroke/outline.
+     *
+     * @param color The desired outline color, as a {@link ColorInt}.
+     */
+    void setStrokeColor(@ColorInt int color);
+
+    /**
+     * Sets the width of location button stroke/outline.
+     *
+     * @param width The desired stroke width.
+     */
+    void setStrokeWidth(int width);
 }
