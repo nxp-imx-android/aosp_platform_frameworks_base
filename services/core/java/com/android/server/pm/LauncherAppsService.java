@@ -238,7 +238,8 @@ public class LauncherAppsService extends SystemService {
 
         private final PackageRemovedListener mPackageRemovedListener =
                 new PackageRemovedListener();
-        private final MyPackageMonitor mPackageMonitor = new MyPackageMonitor();
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+        final MyPackageMonitor mPackageMonitor = new MyPackageMonitor();
 
         @GuardedBy("mListeners")
         private boolean mIsWatchingPackageBroadcasts = false;
@@ -282,6 +283,10 @@ public class LauncherAppsService extends SystemService {
             mDpm = (DevicePolicyManager) mContext.getSystemService(Context.DEVICE_POLICY_SERVICE);
             mInternal = new LocalService();
             registerSettingsObserver();
+        }
+
+        private static long getAppLockInfoFlag() {
+            return android.security.Flags.appLockApis() ? PackageManager.GET_APP_LOCK_INFO : 0L;
         }
 
         @VisibleForTesting
@@ -693,7 +698,7 @@ public class LauncherAppsService extends SystemService {
                         return launcherActivities;
                     }
                     final ApplicationInfo appInfo = mPackageManagerInternal.getApplicationInfo(
-                            packageName, /* flags= */ 0, callingUid, user.getIdentifier());
+                            packageName, getAppLockInfoFlag(), callingUid, user.getIdentifier());
                     if (shouldShowSyntheticActivity(user, appInfo)) {
                         LauncherActivityInfoInternal info = getHiddenAppActivityInfo(packageName,
                                 callingUid, user);
@@ -709,7 +714,7 @@ public class LauncherAppsService extends SystemService {
                 }
                 final List<ApplicationInfo> installedPackages =
                         mPackageManagerInternal.getInstalledApplications(
-                                /* flags= */ 0, user.getIdentifier(), callingUid);
+                                getAppLockInfoFlag(), user.getIdentifier(), callingUid);
                 for (ApplicationInfo applicationInfo : installedPackages) {
                     if (!visiblePackages.contains(applicationInfo.packageName)) {
                         if (!shouldShowSyntheticActivity(user, applicationInfo)) {
@@ -823,7 +828,8 @@ public class LauncherAppsService extends SystemService {
                         mPackageManagerInternal.getActivityInfo(
                                 component,
                                 PackageManager.MATCH_DIRECT_BOOT_AWARE
-                                        | PackageManager.MATCH_DIRECT_BOOT_UNAWARE,
+                                        | PackageManager.MATCH_DIRECT_BOOT_UNAWARE
+                                        | getAppLockInfoFlag(),
                                 callingUid,
                                 user.getIdentifier());
                 if (activityInfo == null) {
@@ -961,12 +967,13 @@ public class LauncherAppsService extends SystemService {
                             user.getIdentifier()));
         }
 
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
         @NonNull
-        private List<ApplicationInfo> getApplicationInfoListForAllArchivedApps(UserHandle user) {
+        List<ApplicationInfo> getApplicationInfoListForAllArchivedApps(UserHandle user) {
             final int callingUid = injectBinderCallingUid();
             List<ApplicationInfo> installedApplicationInfoList =
                     mPackageManagerInternal.getInstalledApplicationsCrossUser(
-                            PackageManager.MATCH_ARCHIVED_PACKAGES,
+                            PackageManager.MATCH_ARCHIVED_PACKAGES | getAppLockInfoFlag(),
                             user.getIdentifier(),
                             callingUid);
             List<ApplicationInfo> archivedApplicationInfos = new ArrayList<>();
@@ -979,14 +986,15 @@ public class LauncherAppsService extends SystemService {
             return archivedApplicationInfos;
         }
 
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
         @NonNull
-        private List<ApplicationInfo> getApplicationInfoForArchivedApp(
+        List<ApplicationInfo> getApplicationInfoForArchivedApp(
                 @NonNull String packageName, UserHandle user) {
             final int callingUid = injectBinderCallingUid();
             ApplicationInfo applicationInfo = Binder.withCleanCallingIdentity(() ->
                     mPackageManagerInternal.getApplicationInfo(
                             packageName,
-                            PackageManager.MATCH_ARCHIVED_PACKAGES,
+                            PackageManager.MATCH_ARCHIVED_PACKAGES | getAppLockInfoFlag(),
                             callingUid,
                             user.getIdentifier()));
             if (applicationInfo == null || !applicationInfo.isArchived) {
@@ -995,12 +1003,13 @@ public class LauncherAppsService extends SystemService {
             return List.of(applicationInfo);
         }
 
-        private List<LauncherActivityInfoInternal> queryIntentLauncherActivities(
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+        List<LauncherActivityInfoInternal> queryIntentLauncherActivities(
                 Intent intent, int callingUid, UserHandle user) {
             final List<ResolveInfo> apps = mPackageManagerInternal.queryIntentActivities(intent,
                     intent.resolveTypeIfNeeded(mContext.getContentResolver()),
                     PackageManager.MATCH_DIRECT_BOOT_AWARE
-                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE,
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE | getAppLockInfoFlag(),
                     callingUid, user.getIdentifier());
             final int numResolveInfos = apps.size();
             List<LauncherActivityInfoInternal> results = new ArrayList<>();
@@ -1154,7 +1163,7 @@ public class LauncherAppsService extends SystemService {
             final long ident = Binder.clearCallingIdentity();
             try {
                 final ApplicationInfo info = mPackageManagerInternal.getApplicationInfo(packageName,
-                        flags, callingUid, user.getIdentifier());
+                        flags | getAppLockInfoFlag(), callingUid, user.getIdentifier());
                 return info;
             } finally {
                 Binder.restoreCallingIdentity(ident);
@@ -2580,7 +2589,8 @@ public class LauncherAppsService extends SystemService {
             }
         }
 
-        private class MyPackageMonitor extends PackageMonitor implements ShortcutChangeListener {
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+        class MyPackageMonitor extends PackageMonitor implements ShortcutChangeListener {
 
             // TODO Simplify with lambdas.
 
@@ -2796,6 +2806,22 @@ public class LauncherAppsService extends SystemService {
                 }
 
                 super.onPackagesUnsuspended(packages);
+            }
+
+            @Override
+            public void onPackageAppLockEnabled(String packageName) {
+                if (android.security.Flags.appLockApis()) {
+                    onPackageChanged(packageName);
+                }
+                super.onPackageAppLockEnabled(packageName);
+            }
+
+            @Override
+            public void onPackageAppLockDisabled(String packageName) {
+                if (android.security.Flags.appLockApis()) {
+                    onPackageChanged(packageName);
+                }
+                super.onPackageAppLockDisabled(packageName);
             }
 
             @Override

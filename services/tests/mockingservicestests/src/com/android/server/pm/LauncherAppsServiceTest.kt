@@ -1,0 +1,541 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.pm
+
+import android.app.ActivityManagerInternal
+import android.app.usage.UsageStatsManagerInternal
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.pm.IOnAppsChangedListener
+import android.content.pm.LauncherUserInfo
+import android.content.pm.PackageManager
+import android.content.pm.PackageManagerInternal
+import android.content.pm.ParceledListSlice
+import android.content.pm.ShortcutServiceInternal
+import android.content.pm.UserInfo
+import android.os.Binder
+import android.os.Bundle
+import android.os.IBinder
+import android.os.RemoteException
+import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
+import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.LocalServices
+import com.android.server.extendedtestutils.wheneverStatic
+import com.android.server.testutils.mock
+import com.android.server.testutils.whenever
+import com.android.server.wm.ActivityTaskManagerInternal
+import com.google.common.truth.Truth.assertThat
+import com.google.testing.junit.testparameterinjector.TestParameter
+import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyBoolean
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.ArgumentMatchers.eq
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+
+/**
+ * Build/Install/Run:
+ * atest FrameworksMockingServicesTests:com.android.server.pm.LauncherAppsServiceTest
+ */
+@RunWith(TestParameterInjector::class)
+class LauncherAppsServiceTest : PackageHelperTestBase() {
+    @get:Rule
+    val setFlagsRule = SetFlagsRule()
+
+    private val context = InstrumentationRegistry.getInstrumentation().context
+
+    private val mockUsmInternal: UsageStatsManagerInternal = mock()
+    private val mockAmInternal: ActivityManagerInternal = mock()
+    private val mockAtmInternal: ActivityTaskManagerInternal = mock()
+    private val mockSsInternal: ShortcutServiceInternal = mock()
+    private val mockPmInternal: PackageManagerInternal = mock()
+    private val mockUserInfo: UserInfo = mock()
+
+    private lateinit var launcherAppsService: TestLauncherAppsImpl
+    private lateinit var mockUmInternal: UserManagerInternal
+
+    @Before
+    @Throws(Exception::class)
+    override fun setup() {
+        super.setup()
+
+        mockUmInternal = rule.mocks().userManagerInternal
+
+        wheneverStatic { LocalServices.getService(UserManagerInternal::class.java) }
+            .thenReturn(mockUmInternal)
+        whenever(mockUmInternal.getUserInfos())
+            .thenReturn(arrayOf(mockUserInfo))
+        whenever(mockUmInternal.getUserInfo(TEST_USER_ID))
+            .thenReturn(mockUserInfo)
+        wheneverStatic { LocalServices.getService(UsageStatsManagerInternal::class.java) }
+            .thenReturn(mockUsmInternal)
+        wheneverStatic { LocalServices.getService(ActivityManagerInternal::class.java) }
+            .thenReturn(mockAmInternal)
+        wheneverStatic { LocalServices.getService(ActivityTaskManagerInternal::class.java) }
+            .thenReturn(mockAtmInternal)
+        wheneverStatic { LocalServices.getService(ShortcutServiceInternal::class.java) }
+            .thenReturn(mockSsInternal)
+        wheneverStatic { LocalServices.getService(PackageManagerInternal::class.java) }
+            .thenReturn(mockPmInternal)
+
+        launcherAppsService = TestLauncherAppsImpl(context)
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @Throws(Exception::class)
+    fun getApplicationInfo_queriesAppLockInfo() {
+        val requestedPackage = TEST_PACKAGE_2
+
+        launcherAppsService.getApplicationInfo(
+            TEST_PACKAGE_1, requestedPackage, /* flags= */ 0, TEST_USER_HANDLE
+        )
+
+        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).getApplicationInfo(
+                eq(requestedPackage), capture(), anyInt(), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @Throws(Exception::class)
+    fun getApplicationInfo_withAppLockApisDisabled_doesNotQueryAppLockInfo() {
+        val requestedPackage = TEST_PACKAGE_2
+
+        launcherAppsService.getApplicationInfo(
+            TEST_PACKAGE_1, requestedPackage, /* flags= */ 0, TEST_USER_HANDLE
+        )
+
+        verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).getApplicationInfo(
+                eq(requestedPackage), capture(), anyInt(), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @Throws(Exception::class)
+    fun resolveLauncherActivityInternal_queriesAppLockInfo() {
+        val testComponent = ComponentName(context, LauncherAppsServiceTest::class.java)
+
+        launcherAppsService.resolveLauncherActivityInternal(
+            TEST_PACKAGE_1, testComponent, TEST_USER_HANDLE
+        )
+
+        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).getActivityInfo(
+                eq(testComponent), capture(), anyInt(), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @Throws(Exception::class)
+    fun resolveLauncherActivityInternal_withAppLockApisDisabled_doesNotQueryAppLockInfo() {
+        val testComponent = ComponentName(context, LauncherAppsServiceTest::class.java)
+
+        launcherAppsService.resolveLauncherActivityInternal(
+            TEST_PACKAGE_1, testComponent, TEST_USER_HANDLE
+        )
+
+        verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).getActivityInfo(
+                eq(testComponent), capture(), anyInt(), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    fun getApplicationInfoListForAllArchivedApps_queriesAppLockInfo() {
+        launcherAppsService.getApplicationInfoListForAllArchivedApps(TEST_USER_HANDLE)
+
+        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).getInstalledApplicationsCrossUser(
+                capture(), eq(TEST_USER_ID), anyInt()
+            )
+        }
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    fun getApplicationInfoListForAllArchivedApps_withAppLockApisDisabled_doesNotQueryAppLockInfo() {
+        launcherAppsService.getApplicationInfoListForAllArchivedApps(TEST_USER_HANDLE)
+
+        verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).getInstalledApplicationsCrossUser(
+                capture(), eq(TEST_USER_ID), anyInt()
+            )
+        }
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    fun getApplicationInfoForArchivedApp_queriesAppLockInfo() {
+        launcherAppsService.getApplicationInfoForArchivedApp(TEST_PACKAGE_1, TEST_USER_HANDLE)
+
+        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).getApplicationInfo(
+                eq(TEST_PACKAGE_1), capture(), anyInt(), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    fun getApplicationInfoForArchivedApp_withAppLockApisDisabled_doesNotQueryAppLockInfo() {
+        launcherAppsService.getApplicationInfoForArchivedApp(TEST_PACKAGE_1, TEST_USER_HANDLE)
+
+        verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).getApplicationInfo(
+                eq(TEST_PACKAGE_1), capture(), anyInt(), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    fun queryIntentLauncherActivities_queriesAppLockInfo() {
+        val testIntent = Intent()
+
+        launcherAppsService.queryIntentLauncherActivities(
+            testIntent, TEST_CALLING_UID, TEST_USER_HANDLE
+        )
+
+        verifyCapturedFlagsHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).queryIntentActivities(
+                eq(testIntent), any(), capture(), eq(TEST_CALLING_UID), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    fun queryIntentLauncherActivities_withAppLockApisDisabled_doesNotQueryAppLockInfo() {
+        val testIntent = Intent()
+
+        launcherAppsService.queryIntentLauncherActivities(
+            testIntent, TEST_CALLING_UID, TEST_USER_HANDLE
+        )
+
+        verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag {
+            verify(mockPmInternal).queryIntentActivities(
+                eq(testIntent), any(), capture(), eq(TEST_CALLING_UID), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @Throws(Exception::class)
+    fun getLauncherActivities_queriesAppLockInfo(@TestParameter specificPackageProvided: Boolean) {
+        testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabled(
+            appLockApisEnabled = true,
+            specificPackageProvided
+        )
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @Throws(Exception::class)
+    fun getLauncherActivities_withAppLockApisDisabled_doesNotQueryAppLockInfo(
+        @TestParameter specificPackageProvided: Boolean
+    ) {
+        testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabled(
+            appLockApisEnabled = false,
+            specificPackageProvided
+        )
+    }
+
+    private fun testGetLauncherActivities_queriesAppLockInfoIfAppLockApisEnabled(
+        appLockApisEnabled: Boolean,
+        specificPackageProvided: Boolean
+    ) {
+        if (specificPackageProvided) {
+            verifyGetLauncherActivitiesForSpecificPackage(appLockApisEnabled)
+        } else {
+            verifyGetLauncherActivitiesForAllPackages(appLockApisEnabled)
+        }
+    }
+
+    private fun verifyGetLauncherActivitiesForSpecificPackage(appLockApisEnabled: Boolean) {
+        val requestedPackage = TEST_PACKAGE_2
+        mockPackageVisibilityAndProfileAccess(
+            TEST_USER_ID,
+            requestedPackage,
+            isProfileAccessible = true,
+            isPackageFiltered = false
+        )
+
+        launcherAppsService.getLauncherActivities(
+            TEST_PACKAGE_1, requestedPackage, TEST_USER_HANDLE
+        )
+
+        // The service first queries for launcher activities.
+        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled) {
+            verify(mockPmInternal).queryIntentActivities(
+                any(), any(), capture(), anyInt(), eq(TEST_USER_ID)
+            )
+        }
+
+        // It also queries ApplicationInfo for hidden app logic.
+        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled) {
+            verify(mockPmInternal, times(2)).getApplicationInfo(
+                eq(requestedPackage), capture(), anyInt(), eq(TEST_USER_ID)
+            )
+        }
+    }
+
+    private fun verifyGetLauncherActivitiesForAllPackages(appLockApisEnabled: Boolean) {
+        launcherAppsService.getLauncherActivities(
+            TEST_PACKAGE_1, /* packageName= */ null, TEST_USER_HANDLE
+        )
+
+        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled) {
+            verify(mockPmInternal).getInstalledApplications(
+                capture(), eq(TEST_USER_ID), anyInt()
+            )
+        }
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @Throws(Exception::class)
+    fun onPackageChanged_respectsVisibilityAndProfileAccessForAppLockState(
+        @TestParameter isProfileAccessible: Boolean,
+        @TestParameter isPackageFiltered: Boolean,
+        @TestParameter appLockEnabled: Boolean
+    ) {
+        testOnPackageChanged_respectsVisibilityAndProfileAccessForAppLockState(
+            appLockApisEnabled = true,
+            isProfileAccessible,
+            isPackageFiltered,
+            appLockEnabled
+        )
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_APIS)
+    @Throws(Exception::class)
+    fun onPackageChanged_withAppLockApisDisabled_doesNotTriggerListenerForAppLockState(
+        @TestParameter isProfileAccessible: Boolean,
+        @TestParameter isPackageFiltered: Boolean,
+        @TestParameter appLockEnabled: Boolean
+    ) {
+        testOnPackageChanged_respectsVisibilityAndProfileAccessForAppLockState(
+            appLockApisEnabled = false,
+            isProfileAccessible,
+            isPackageFiltered,
+            appLockEnabled
+        )
+    }
+
+    private fun testOnPackageChanged_respectsVisibilityAndProfileAccessForAppLockState(
+        appLockApisEnabled: Boolean,
+        isProfileAccessible: Boolean,
+        isPackageFiltered: Boolean,
+        appLockEnabled: Boolean
+    ) {
+        val callingPackage = TEST_PACKAGE_1
+        val changedPackage = TEST_PACKAGE_2
+        val changedUserId = TEST_USER_ID
+        val onPackageChangedLatch = CountDownLatch(1)
+        val listener = TestOnAppsChangedListener(onPackageChangedLatch)
+        val spyPackageMonitor = spy(launcherAppsService.mPackageMonitor)
+        whenever(spyPackageMonitor.getChangingUserId()).thenReturn(changedUserId)
+        mockPackageVisibilityAndProfileAccess(
+            changedUserId, changedPackage, isProfileAccessible, isPackageFiltered
+        )
+        launcherAppsService.addOnAppsChangedListener(callingPackage, listener)
+
+        if (appLockEnabled) {
+            spyPackageMonitor.onPackageAppLockEnabled(changedPackage)
+        } else {
+            spyPackageMonitor.onPackageAppLockDisabled(changedPackage)
+        }
+
+        val onPackageChangedTriggered =
+            onPackageChangedLatch.await(PACKAGE_CALLBACK_LATCH_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+
+        if (appLockApisEnabled && isProfileAccessible && !isPackageFiltered) {
+            assertPackageChangedTriggered(
+                onPackageChangedTriggered, listener, changedUserId, changedPackage
+            )
+        } else {
+            assertPackageChangedNotTriggered(onPackageChangedTriggered, listener)
+        }
+
+        // Clean up.
+        launcherAppsService.removeOnAppsChangedListener(listener)
+    }
+
+    private fun verifyCapturedFlagsHaveGetAppLockInfoFlag(
+        verification: ArgumentCaptor<Long>.() -> Unit
+    ) {
+        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled = true, verification)
+    }
+
+    private fun verifyCapturedFlagsDoNotHaveGetAppLockInfoFlag(
+        verification: ArgumentCaptor<Long>.() -> Unit
+    ) {
+        verifyCapturedFlagsForAppLockInfoFlag(appLockApisEnabled = false, verification)
+    }
+
+    private fun verifyCapturedFlagsForAppLockInfoFlag(
+        appLockApisEnabled: Boolean,
+        verification: ArgumentCaptor<Long>.() -> Unit
+    ) {
+        val flagsArgCaptor = ArgumentCaptor.forClass(Long::class.java)
+        verification(flagsArgCaptor)
+        for (capturedFlags in flagsArgCaptor.allValues) {
+            if (appLockApisEnabled) {
+                assertThat(capturedFlags and PackageManager.GET_APP_LOCK_INFO).isNotEqualTo(0L)
+            } else {
+                assertThat(capturedFlags and PackageManager.GET_APP_LOCK_INFO).isEqualTo(0L)
+            }
+        }
+    }
+
+    private fun assertPackageChangedTriggered(
+        wasTriggered: Boolean,
+        listener: TestOnAppsChangedListener,
+        expectedUserId: Int,
+        expectedPackageName: String
+    ) {
+        assertThat(wasTriggered).isTrue()
+        assertThat(listener.changedUser?.identifier).isEqualTo(expectedUserId)
+        assertThat(listener.changedPackageName).isEqualTo(expectedPackageName)
+    }
+
+    private fun assertPackageChangedNotTriggered(
+        wasTriggered: Boolean,
+        listener: TestOnAppsChangedListener
+    ) {
+        assertThat(wasTriggered).isFalse()
+        assertThat(listener.changedUser).isNull()
+        assertThat(listener.changedPackageName).isNull()
+    }
+
+    private fun mockPackageVisibilityAndProfileAccess(
+        userId: Int, packageName: String, isProfileAccessible: Boolean, isPackageFiltered: Boolean
+    ) {
+        whenever(
+            mockUmInternal.isProfileAccessible(
+                anyInt(), eq(userId), anyString(), anyBoolean()
+            )
+        ).thenReturn(isProfileAccessible)
+        whenever(mockPmInternal.filterAppAccess(eq(packageName), anyInt(), eq(userId), eq(false)))
+            .thenReturn(isPackageFiltered)
+    }
+
+    private class TestOnAppsChangedListener(val onPackageChangedLatch: CountDownLatch) :
+        IOnAppsChangedListener {
+        var changedUser: UserHandle? = null
+        var changedPackageName: String? = null
+
+        @Throws(RemoteException::class)
+        override fun onPackageChanged(user: UserHandle?, packageName: String?) {
+            changedUser = user
+            changedPackageName = packageName
+            onPackageChangedLatch.countDown()
+        }
+
+        // Other oneway methods are empty for this test's purpose.
+        @Throws(RemoteException::class)
+        override fun onPackageRemoved(user: UserHandle?, packageName: String?) {
+        }
+
+        @Throws(RemoteException::class)
+        override fun onPackageAdded(user: UserHandle?, packageName: String?) {
+        }
+
+        @Throws(RemoteException::class)
+        override fun onPackagesAvailable(
+            user: UserHandle?, packageNames: Array<String?>?, replacing: Boolean
+        ) {
+        }
+
+        @Throws(RemoteException::class)
+        override fun onPackagesUnavailable(
+            user: UserHandle?, packageNames: Array<String?>?, replacing: Boolean
+        ) {
+        }
+
+        @Throws(RemoteException::class)
+        override fun onPackagesSuspended(
+            user: UserHandle?, packageNames: Array<String?>?, launcherExtras: Bundle?
+        ) {
+        }
+
+        @Throws(RemoteException::class)
+        override fun onPackagesUnsuspended(user: UserHandle?, packageNames: Array<String?>?) {
+        }
+
+        @Throws(RemoteException::class)
+        override fun onShortcutChanged(
+            user: UserHandle?, packageName: String?, shortcuts: ParceledListSlice<*>?
+        ) {
+        }
+
+        @Throws(RemoteException::class)
+        override fun onPackageLoadingProgressChanged(
+            user: UserHandle?, packageName: String?, progress: Float
+        ) {
+        }
+
+        @Throws(RemoteException::class)
+        override fun onUserConfigChanged(launcherUserInfo: LauncherUserInfo?) {
+        }
+
+        override fun asBinder(): IBinder? {
+            return Binder()
+        }
+    }
+
+    private class TestLauncherAppsImpl(context: Context) : LauncherAppsService.LauncherAppsImpl(
+        context
+    ) {
+        override fun verifyCallingPackage(callingPackage: String?, callerUid: Int) {
+            // Skip package verification for tests.
+        }
+    }
+
+    companion object {
+        private const val PACKAGE_CALLBACK_LATCH_TIMEOUT_MS = 500L
+        private const val TEST_CALLING_UID = 12345
+        private val TEST_USER_HANDLE = UserHandle.of(TEST_USER_ID)
+    }
+}
