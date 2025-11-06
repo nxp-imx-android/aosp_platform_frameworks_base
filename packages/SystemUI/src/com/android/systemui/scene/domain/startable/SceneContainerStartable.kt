@@ -484,12 +484,6 @@ constructor(
                         }
                     }
 
-                    if (powerInteractor.detailedWakefulness.value.isAsleep()) {
-                        // The logic below is for when the device becomes unlocked. That must be a
-                        // no-op if the device is not awake.
-                        return@map SwitchSceneCommand.NoOp
-                    }
-
                     if (
                         isOnPrimaryBouncer &&
                             deviceUnlockStatus.deviceUnlockSource == DeviceUnlockSource.TrustAgent
