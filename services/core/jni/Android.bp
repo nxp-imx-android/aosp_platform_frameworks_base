@@ -120,6 +120,7 @@ cc_defaults {
         "libcutils",
         "libcrypto",
         "libfmq",
+        "libstatslog",
         "liblog",
         "libgraphicsenv",
         "libgralloctypes",
