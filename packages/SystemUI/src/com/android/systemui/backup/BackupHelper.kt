@@ -20,6 +20,7 @@ import android.app.backup.BackupAgentHelper
 import android.app.backup.BackupDataInputStream
 import android.app.backup.BackupDataOutput
 import android.app.backup.FileBackupHelper
+import android.app.backup.SharedPreferencesBackupHelper
 import android.app.job.JobScheduler
 import android.content.Context
 import android.content.Intent
@@ -38,9 +39,12 @@ import com.android.systemui.controls.controller.ControlsFavoritePersistenceWrapp
 import com.android.systemui.inputdevice.tutorial.domain.backup.TutorialSchedulerBackupHelper
 import com.android.systemui.keyguard.domain.backup.KeyguardQuickAffordanceBackupHelper
 import com.android.systemui.people.widget.PeopleBackupHelper
+import com.android.systemui.qs.panels.data.repository.QSPreferencesRepository.Companion.FILE_NAME
 import com.android.systemui.qs.panels.domain.backup.QSPreferencesBackupHelper
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserFileManagerImpl
+import com.android.systemui.statusbar.notification.stack.domain.interactor.KEY_SHOW_BUNDLE_ONBOARDING
+import com.android.systemui.statusbar.notification.stack.domain.interactor.KEY_SHOW_SUMMARIZATION_ONBOARDING
 
 /**
  * Helper for backing up elements in SystemUI
@@ -103,6 +107,18 @@ open class BackupHelper : BackupAgentHelper() {
                 CommunalBackupHelper(userHandle, CommunalBackupUtils(context = this)),
             )
         }
+        addHelper(
+            KEY_SHOW_BUNDLE_ONBOARDING,
+            SharedPreferencesBackupHelper(
+                this,
+                UserFileManagerImpl.createFile(userId = userId, fileName = FILE_NAME).path),
+        )
+        addHelper(
+            KEY_SHOW_SUMMARIZATION_ONBOARDING,
+            SharedPreferencesBackupHelper(
+                this,
+                UserFileManagerImpl.createFile(userId = userId, fileName = FILE_NAME).path),
+        )
     }
 
     override fun onRestoreFinished() {
