@@ -326,6 +326,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"শুনাৰ ডিভাইচ"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"সাধ্য সুবিধাৰ ব্যৱহাৰ"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"ডিছপ্লে’"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g>এ বেটাৰী ব্যৱহাৰ কৰি আছে"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g>টা এপে বেটাৰী ব্যৱহাৰ কৰি আছে"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"বেটাৰী আৰু ডেটাৰ ব্যৱহাৰৰ বিষয়ে সবিশেষ জানিবলৈ টিপক"</string>
@@ -340,7 +342,7 @@
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"আপোনাৰ সম্পৰ্কসমূহ এক্সেছ কৰক আৰু এই ডিভাইচটোত সম্পৰ্ক ছেভ কৰিব পৰা আপোনাৰ একাউণ্টসমূহৰ সূচীখন চাওক"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"অৱস্থান"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"এই ডিভাইচৰ অৱস্থান ব্যৱহাৰ কৰিব পাৰে"</string>
-    <string name="permgrouplab_calendar" msgid="6426860926123033230">"Calendar"</string>
+    <string name="permgrouplab_calendar" msgid="6426860926123033230">"কেলেণ্ডাৰ"</string>
     <string name="permgroupdesc_calendar" msgid="6762751063361489379">"আপোনাৰ কেলেণ্ডাৰ ব্যৱহাৰ কৰিব পাৰে"</string>
     <string name="permgrouplab_sms" msgid="795737735126084874">"এছএমএছ"</string>
     <string name="permgroupdesc_sms" msgid="5726462398070064542">"এছএমএছ বার্তা পঠিয়াব আৰু চাব পাৰে"</string>

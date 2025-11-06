@@ -326,6 +326,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"వినికిడి డివైజ్"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"యాక్సెసిబిలిటీ వినియోగం"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"డిస్‌ప్లే చేయండి"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> బ్యాటరీని ఉపయోగిస్తోంది"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> యాప్‌లు బ్యాటరీని ఉపయోగిస్తున్నాయి"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"బ్యాటరీ మరియు డేటా వినియోగ వివరాల కోసం నొక్కండి"</string>
@@ -1244,7 +1246,7 @@
     <string name="redo" msgid="7231448494008532233">"చర్యను రిపీట్‌ చేయి"</string>
     <string name="autofill" msgid="511224882647795296">"ఆటోఫిల్"</string>
     <string name="textSelectionCABTitle" msgid="5151441579532476940">"వచన ఎంపిక"</string>
-    <string name="addToDictionary" msgid="8041821113480950096">"నిఘంటువుకు జోడించండి"</string>
+    <string name="addToDictionary" msgid="8041821113480950096">"డిక్షనరీకి జోడించండి"</string>
     <string name="deleteText" msgid="4200807474529938112">"తొలగించండి"</string>
     <string name="inputMethod" msgid="1784759500516314751">"ఇన్‌పుట్ పద్ధతి"</string>
     <string name="editTextMenuTitle" msgid="857666911134482176">"వచనానికి సంబంధించిన చర్యలు"</string>
