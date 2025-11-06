@@ -20,6 +20,14 @@ flag {
 }
 
 flag {
+    name: "a11y_extra_rendering_info_color_additions"
+    namespace: "accessibility"
+    is_exported: true
+    description: "Adds a public Builder API for AccessibilityNodeInfo.ExtraRenderingInfo and adds color properties"
+    bug: "452371989"
+}
+
+flag {
     name: "a11y_is_required_api"
     namespace: "accessibility"
     description: "Adds an API to indicate whether a form field (or similar element) is required."

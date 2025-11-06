@@ -56577,6 +56577,18 @@ package android.view.accessibility {
     method public int getTextSizeUnit();
   }
 
+  @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public static final class AccessibilityNodeInfo.ExtraRenderingInfo.Builder {
+    ctor @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public AccessibilityNodeInfo.ExtraRenderingInfo.Builder();
+    ctor @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public AccessibilityNodeInfo.ExtraRenderingInfo.Builder(@NonNull android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo build();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearLayoutSize();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearTextSizeInPx();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearTextSizeUnit();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setLayoutSize(int, int);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setTextSizeInPx(float);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setTextSizeUnit(int);
+  }
+
   public static final class AccessibilityNodeInfo.RangeInfo {
     ctor public AccessibilityNodeInfo.RangeInfo(int, float, float, float);
     method public float getCurrent();

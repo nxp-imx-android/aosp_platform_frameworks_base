@@ -8138,11 +8138,11 @@ public class AccessibilityNodeInfo implements Parcelable {
 
     /**
      * Class with information of a view useful to evaluate accessibility needs. Developers can
-     * refresh the node with the key {@link #EXTRA_DATA_RENDERING_INFO_KEY} to fetch the text size
-     * and unit if it is {@link TextView} and the height and the width of layout params from
-     * {@link ViewGroup} or {@link TextView}.
+     * refresh the node with the key {@link #EXTRA_DATA_RENDERING_INFO_KEY} to fetch this
+     * information if it is available for this node.
      *
      * @see #EXTRA_DATA_RENDERING_INFO_KEY
+     * @see #getAvailableExtraData()
      * @see #refreshWithExtraData(String, Bundle)
      */
     public static final class ExtraRenderingInfo {
@@ -8176,6 +8176,9 @@ public class AccessibilityNodeInfo implements Parcelable {
         private static ExtraRenderingInfo obtain(ExtraRenderingInfo other) {
             return new ExtraRenderingInfo(other);
         }
+
+        /** Creates a new instance. */
+        private ExtraRenderingInfo() {}
 
         /**
          * Creates a new rendering info of a view, and this new instance is initialized from
@@ -8271,6 +8274,119 @@ public class AccessibilityNodeInfo implements Parcelable {
          */
         @Deprecated
         void recycle() {}
+
+        /** The builder for ExtraRenderingInfo. */
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public static final class Builder {
+            private Size mLayoutSize;
+            private float mTextSizeInPx = UNDEFINED_VALUE;
+            private int mTextSizeUnit = UNDEFINED_VALUE;
+
+            /** Creates a new Builder. */
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public Builder() {}
+
+            /**
+             * Creates a new Builder that is initialized from an {@link ExtraRenderingInfo}.
+             *
+             * @param info an instance from which to initialize the builder
+             */
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public Builder(@NonNull ExtraRenderingInfo info) {
+                mLayoutSize = info.mLayoutSize;
+                mTextSizeInPx = info.mTextSizeInPx;
+                mTextSizeUnit = info.mTextSizeUnit;
+            }
+
+            /**
+             * Sets layout width and layout height of the view.
+             *
+             * @param width The layout width.
+             * @param height The layout height.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setLayoutSize(int width, int height) {
+                mLayoutSize = new Size(width, height);
+                return this;
+            }
+
+            /**
+             * Clears the layout width and layout height of the view.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearLayoutSize() {
+                mLayoutSize = null;
+                return this;
+            }
+
+            /**
+             * Sets text size of the view.
+             *
+             * @param textSizeInPx The text size in pixels.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setTextSizeInPx(float textSizeInPx) {
+                mTextSizeInPx = textSizeInPx;
+                return this;
+            }
+
+            /**
+             * Clears the text size of the view.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearTextSizeInPx() {
+                mTextSizeInPx = UNDEFINED_VALUE;
+                return this;
+            }
+
+            /**
+             * Sets text size unit of the view.
+             *
+             * @param textSizeUnit The text size unit.
+             * @return This builder.
+             * @see TypedValue#TYPE_DIMENSION
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setTextSizeUnit(int textSizeUnit) {
+                mTextSizeUnit = textSizeUnit;
+                return this;
+            }
+
+            /**
+             * Clears the text size unit of the view.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearTextSizeUnit() {
+                mTextSizeUnit = UNDEFINED_VALUE;
+                return this;
+            }
+
+            /** Creates a new {@link ExtraRenderingInfo} instance. */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo build() {
+                ExtraRenderingInfo extraRenderingInfo = new ExtraRenderingInfo();
+                extraRenderingInfo.mLayoutSize = mLayoutSize;
+                extraRenderingInfo.mTextSizeInPx = mTextSizeInPx;
+                extraRenderingInfo.mTextSizeUnit = mTextSizeUnit;
+
+                return extraRenderingInfo;
+            }
+        }
     }
 
     /**
