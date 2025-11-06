@@ -187,7 +187,7 @@ constructor(
             hydrateInteractionState()
             handleBouncerOverscroll()
             handleOcclusion()
-            handleDeviceEntryHapticsWhileDeviceLocked()
+            handleDeviceEntryHapticsWhileDeviceNotGone()
             hydrateWindowController()
             hydrateBackStack()
             resetShadeSessions()
@@ -810,44 +810,41 @@ constructor(
         }
     }
 
-    private fun handleDeviceEntryHapticsWhileDeviceLocked() {
+    private fun handleDeviceEntryHapticsWhileDeviceNotGone() {
         applicationScope.launch {
-            deviceEntryInteractor.isDeviceEntered.collectLatest { isDeviceEntered ->
+            sceneInteractor.currentScene.collectLatest { currentScene ->
                 // Only check for haptics signals before device is entered
-                if (!isDeviceEntered) {
+                if (currentScene != Scenes.Gone) {
                     coroutineScope {
                         launch {
-                            deviceEntryHapticsInteractor.playSuccessHapticOnDeviceEntry
-                                .sample(sceneInteractor.currentScene)
-                                .collect { currentScene ->
-                                    if (Flags.msdlFeedback()) {
-                                        msdlPlayer.playToken(
-                                            MSDLToken.UNLOCK,
-                                            authInteractionProperties,
-                                        )
-                                    } else {
-                                        vibratorHelper.vibrateAuthSuccess(
-                                            "$TAG, $currentScene device-entry::success"
-                                        )
-                                    }
+                            deviceEntryHapticsInteractor.playSuccessHapticOnDeviceEntry.collect {
+                                currentScene ->
+                                if (Flags.msdlFeedback()) {
+                                    msdlPlayer.playToken(
+                                        MSDLToken.UNLOCK,
+                                        authInteractionProperties,
+                                    )
+                                } else {
+                                    vibratorHelper.vibrateAuthSuccess(
+                                        "$TAG, $currentScene device-entry::success"
+                                    )
                                 }
+                            }
                         }
 
                         launch {
-                            deviceEntryHapticsInteractor.playErrorHaptic
-                                .sample(sceneInteractor.currentScene)
-                                .collect { currentScene ->
-                                    if (Flags.msdlFeedback()) {
-                                        msdlPlayer.playToken(
-                                            MSDLToken.FAILURE,
-                                            authInteractionProperties,
-                                        )
-                                    } else {
-                                        vibratorHelper.vibrateAuthError(
-                                            "$TAG, $currentScene device-entry::error"
-                                        )
-                                    }
+                            deviceEntryHapticsInteractor.playErrorHaptic.collect { currentScene ->
+                                if (Flags.msdlFeedback()) {
+                                    msdlPlayer.playToken(
+                                        MSDLToken.FAILURE,
+                                        authInteractionProperties,
+                                    )
+                                } else {
+                                    vibratorHelper.vibrateAuthError(
+                                        "$TAG, $currentScene device-entry::error"
+                                    )
                                 }
+                            }
                         }
                     }
                 }
