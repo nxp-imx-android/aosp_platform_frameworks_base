@@ -1631,6 +1631,16 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     @Override
     public void notifyFinished(@NonNull InsetsAnimationControlRunner runner, boolean shown) {
         setRequestedVisibleTypes(shown ? runner.getTypes() : 0, runner.getTypes());
+        if (Flags.reportAnimatingInsetsTypes()
+                && runner.getAnimationType() != ANIMATION_TYPE_RESIZE) {
+            // We update and send the requestedVisibleTypes first to the server to avoid an
+            // unwanted show/hide request.
+            // This could happen if a controlled (hide) animation is finished, but the IME is
+            // still shown: In this case, it is crucial that the server knows about the IME's
+            // requested visibility to avoid flickering (by first hiding due to being not
+            // requested and not animating, then showing because it becomes requested again).
+            reportRequestedVisibleTypes(null /* statsToken */);
+        }
         cancelAnimation(runner, false /* invokeCallback */);
         ProtoLog.d(INSETS_CONTROLLER_DEBUG, "notifyFinished. shown: %s", shown);
         if (runner.getAnimationType() == ANIMATION_TYPE_RESIZE) {
@@ -1646,7 +1656,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                     ImeTracker.PHASE_CLIENT_ANIMATION_FINISHED_SHOW);
             ImeTracker.forLogging().onShown(statsToken);
         }
-        reportRequestedVisibleTypes(null /* statsToken */);
+        if (!Flags.reportAnimatingInsetsTypes()) {
+            reportRequestedVisibleTypes(null /* statsToken */);
+        }
     }
 
     @Override

@@ -555,6 +555,30 @@ public class BackAnimationControllerTest extends ShellTestCase {
     }
 
     @Test
+    public void interruptPostCommitAnimation_DoesNotStartAnimationTwice() throws RemoteException {
+        registerAnimation(BackNavigationInfo.TYPE_RETURN_TO_HOME);
+        createNavigationInfo(BackNavigationInfo.TYPE_RETURN_TO_HOME,
+                /* enableAnimation = */ true,
+                /* isAnimationCallback = */ false);
+
+        // Start and cancel a back gesture to trigger the post-commit animation.
+        doStartEvents(0, 100);
+        simulateRemoteAnimationStart();
+        releaseBackGesture();
+
+        // Check that back cancellation is dispatched.
+        verify(mAnimatorCallback).onBackCancelled();
+        verify(mBackAnimationRunner).onAnimationStart(anyInt(), any(), any(), any(), any());
+
+        // Immediately start a new gesture to interrupt the post-commit animation.
+        doStartEvents(0, 100);
+        mShellExecutor.flushAll();
+
+        // Verify that startPredictiveBackAnimation() is only called once.
+        verify(mActivityTaskManager, times(1)).startPredictiveBackAnimation();
+    }
+
+    @Test
     public void acceptsGesture_transitionTimeout() throws RemoteException {
         registerAnimation(BackNavigationInfo.TYPE_RETURN_TO_HOME);
         createNavigationInfo(BackNavigationInfo.TYPE_RETURN_TO_HOME,
