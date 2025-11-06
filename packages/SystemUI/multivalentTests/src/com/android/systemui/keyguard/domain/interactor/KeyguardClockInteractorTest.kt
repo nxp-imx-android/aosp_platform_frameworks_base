@@ -55,7 +55,7 @@ import org.junit.runner.RunWith
 class KeyguardClockInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
-    private val Kosmos.underTest by Kosmos.Fixture { kosmos.keyguardClockInteractor }
+    private val Kosmos.underTest by Kosmos.Fixture { keyguardClockInteractor }
 
     @Test
     @DisableSceneContainer
@@ -120,6 +120,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun clockSize_sceneContainerFlagOn_splitShade_isMediaVisible_SMALL() =
         kosmos.runTest {
             val value by collectLastValue(underTest.clockSize)
@@ -133,6 +134,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun clockSize_sceneContainerFlagOn_splitShade_noMedia_LARGE() =
         kosmos.runTest {
             val value by collectLastValue(underTest.clockSize)
@@ -144,6 +146,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun clockSize_sceneContainerFlagOn_splitShade_isDozing_LARGE() =
         kosmos.runTest {
             val value by collectLastValue(underTest.clockSize)
@@ -157,6 +160,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun clockSize_sceneContainerFlagOn_splitShade_smallClockSettingSelectd_SMALL() =
         kosmos.runTest {
             val value by collectLastValue(underTest.clockSize)
@@ -180,6 +184,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun clockShouldBeCentered_sceneContainerFlagOn_splitShade_noActiveNotifications_true() =
         kosmos.runTest {
             val value by collectLastValue(underTest.clockShouldBeCentered)
