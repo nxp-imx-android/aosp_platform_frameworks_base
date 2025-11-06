@@ -86,7 +86,8 @@ public class MediaOutputDialog extends SystemUIDialog
     private TextView mHeaderTitle;
     private TextView mHeaderSubtitle;
     private ImageView mHeaderIcon;
-    private ImageView mAppResourceIcon;
+    private ImageView mAppResourceIconNormal;
+    private ImageView mAppResourceIconSmall;
     private RecyclerView mDevicesRecyclerView;
     private ViewGroup mDeviceListLayout;
     private ViewGroup mQuickAccessShelf;
@@ -168,6 +169,9 @@ public class MediaOutputDialog extends SystemUIDialog
         mHeaderTitle = mDialogView.requireViewById(R.id.header_title);
         mHeaderSubtitle = mDialogView.requireViewById(R.id.header_subtitle);
         mHeaderIcon = mDialogView.requireViewById(R.id.header_icon);
+        mAppResourceIconNormal = mDialogView.requireViewById(R.id.app_source_icon);
+        mAppResourceIconSmall =
+                mDialogView.requireViewById(R.id.app_source_icon_small_screen_height);
         mQuickAccessShelf = mDialogView.requireViewById(R.id.quick_access_shelf);
         mConnectDeviceButton = mDialogView.requireViewById(R.id.connect_device);
         mAudioSharingButton = mDialogView.requireViewById(R.id.audio_sharing);
@@ -178,13 +182,8 @@ public class MediaOutputDialog extends SystemUIDialog
         mDoneButton = mDialogView.requireViewById(R.id.done);
         mStopButton = mDialogView.requireViewById(R.id.stop);
 
-        boolean isSmallScreenHeight =
-                mContext.getResources().getConfiguration().screenHeightDp <= SMALL_SCREEN_HEIGHT_DP;
-        mAppResourceIcon = mDialogView.requireViewById(
-                isSmallScreenHeight ? R.id.app_source_icon_small_screen_height
-                        : R.id.app_source_icon);
-        mAppResourceIcon.setVisibility(View.VISIBLE);
-        mMediaMetadataSectionLayout.setVisibility(isSmallScreenHeight ? View.GONE : View.VISIBLE);
+        updateAppResourceIcon();
+        mMediaMetadataSectionLayout.setVisibility(isSmallScreenHeight() ? View.GONE : View.VISIBLE);
 
         // Init device list
         mLayoutManager.setAutoMeasureEnabled(true);
@@ -221,6 +220,16 @@ public class MediaOutputDialog extends SystemUIDialog
         if (mOnDialogEventListener != null) {
             mOnDialogEventListener.onCreate(this);
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        mMainThreadHandler.post(() -> {
+            updateAppResourceIcon();
+            mMediaMetadataSectionLayout.
+                    setVisibility(isSmallScreenHeight() ? View.GONE : View.VISIBLE);
+        });
     }
 
     @Override
@@ -288,18 +297,7 @@ public class MediaOutputDialog extends SystemUIDialog
             mHeaderIcon.setVisibility(View.GONE);
         }
 
-        if (!mIncludePlaybackAndAppMetadata) {
-            mAppResourceIcon.setVisibility(View.GONE);
-        } else {
-            Drawable appIcon = mMediaSwitchingController.getAppIcon();
-            if (appIcon != null) {
-                mAppResourceIcon.setColorFilter(
-                        mMediaSwitchingController.getColorScheme().getSecondary());
-                mAppResourceIcon.setImageDrawable(appIcon);
-            } else {
-                mAppResourceIcon.setVisibility(View.GONE);
-            }
-        }
+        updateAppResourceIcon();
 
         if (!mIncludePlaybackAndAppMetadata) {
             mHeaderTitle.setVisibility(View.GONE);
@@ -427,6 +425,25 @@ public class MediaOutputDialog extends SystemUIDialog
         }
 
         mQuickAccessShelf.setVisibility(showQuickAccessShelf ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateAppResourceIcon() {
+        mAppResourceIconNormal.setVisibility(View.GONE);
+        mAppResourceIconSmall.setVisibility(View.GONE);
+
+        Drawable appIcon = mMediaSwitchingController.getAppIcon();
+        ImageView mAppResourceIcon =
+                isSmallScreenHeight() ? mAppResourceIconSmall : mAppResourceIconNormal;
+        if (mIncludePlaybackAndAppMetadata && appIcon != null) {
+            mAppResourceIcon.setColorFilter(
+                    mMediaSwitchingController.getColorScheme().getSecondary());
+            mAppResourceIcon.setImageDrawable(appIcon);
+            mAppResourceIcon.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private boolean isSmallScreenHeight() {
+        return mContext.getResources().getConfiguration().screenHeightDp <= SMALL_SCREEN_HEIGHT_DP;
     }
 
     @VisibleForTesting
