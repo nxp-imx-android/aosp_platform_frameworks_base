@@ -132,7 +132,11 @@ class AppHeaderControllerTests : ShellTestCase() {
                 context = context,
                 assistContentRequester = mockAssistContentRequester,
                 genericLinksParser = mock(),
+                appToWebDatastoreRepository = mock(),
+                mainCoroutineScope = testScope,
+                bgCoroutineScope = testScope.backgroundScope,
                 shellTaskOrganizer = mockTaskOrganizer,
+                launcherApps = mock(),
                 shellInit = shellInit,
             )
         whenever(mockAssistContentRequester.requestAssistContent(anyInt(), any())).thenAnswer {
