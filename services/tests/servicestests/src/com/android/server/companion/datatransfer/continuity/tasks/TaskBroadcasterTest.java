@@ -17,35 +17,30 @@
 package com.android.server.companion.datatransfer.continuity.tasks;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.never;
-import static org.mockito.ArgumentMatchers.eq;
 
 import android.app.ActivityManager.RunningTaskInfo;
-import android.companion.datatransfer.continuity.RemoteTask;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
-import com.android.server.companion.datatransfer.continuity.tasks.RunningTaskFetcher;
-
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.List;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -74,7 +69,7 @@ public class TaskBroadcasterTest {
                         "test" /* label */,
                         100 /* lastActiveTime */,
                         new byte[0] /* icon */,
-                        true /* isHandoffEnabled */);
+                        new HandoffOptions(true, true));
         when(mMockRunningTaskFetcher.getRunningTasks()).thenReturn(List.of(expectedRemoteTaskInfo));
 
         int associationId = 1;
@@ -95,7 +90,7 @@ public class TaskBroadcasterTest {
                         "newTask" /* label */,
                         0 /* lastActiveTime */,
                         new byte[0] /* icon */,
-                        true /* isHandoffEnabled */);
+                        new HandoffOptions(true, true));
         when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
                 .thenReturn(expectedRemoteTaskInfo);
 
@@ -136,7 +131,7 @@ public class TaskBroadcasterTest {
                         "task" /* label */,
                         100 /* lastActiveTime */,
                         new byte[0] /* icon */,
-                        true /* isHandoffEnabled */);
+                        new HandoffOptions(true, true));
         when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
                 .thenReturn(expectedRemoteTaskInfo);
         RunningTaskInfo taskInfo = new RunningTaskInfo();
@@ -158,7 +153,7 @@ public class TaskBroadcasterTest {
                         "task" /* label */,
                         100 /* lastActiveTime */,
                         new byte[0] /* icon */,
-                        true /* isHandoffEnabled */);
+                        new HandoffOptions(true, true));
         when(mMockRunningTaskFetcher.getRunningTaskById(expectedRemoteTaskInfo.id()))
                 .thenReturn(expectedRemoteTaskInfo);
         RunningTaskInfo taskInfo = new RunningTaskInfo();

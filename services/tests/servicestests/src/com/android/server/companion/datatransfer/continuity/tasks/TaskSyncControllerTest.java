@@ -29,6 +29,7 @@ import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
@@ -146,7 +147,8 @@ public class TaskSyncControllerTest {
     @Test
     public void onRemoteTaskAddedMessageReceived_addsTask() {
         int associationId = 1;
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "label", 100, new byte[0], false);
+        RemoteTaskInfo remoteTaskInfo =
+                new RemoteTaskInfo(1, "label", 100, new byte[0], new HandoffOptions(true, true));
         RemoteTaskAddedMessage remoteTaskAddedMessage = new RemoteTaskAddedMessage(remoteTaskInfo);
         mTaskSyncController.onRemoteTaskAddedMessageReceived(associationId, remoteTaskAddedMessage);
         verify(mMockRemoteTaskStore).upsertTask(associationId, remoteTaskInfo);
@@ -155,7 +157,8 @@ public class TaskSyncControllerTest {
     @Test
     public void onRemoteTaskUpdatedMessageReceived_updatesTask() {
         int associationId = 1;
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "label", 100, new byte[0], false);
+        RemoteTaskInfo remoteTaskInfo =
+                new RemoteTaskInfo(1, "label", 100, new byte[0], new HandoffOptions(true, true));
         RemoteTaskUpdatedMessage remoteTaskUpdatedMessage =
                 new RemoteTaskUpdatedMessage(remoteTaskInfo);
         mTaskSyncController.onRemoteTaskUpdatedMessageReceived(
@@ -181,7 +184,8 @@ public class TaskSyncControllerTest {
                         new AssociationInfo.Builder(associationId, 0, "test_package")
                                 .setDisplayName("test_device")
                                 .build());
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "label", 100, new byte[0], false);
+        RemoteTaskInfo remoteTaskInfo =
+                new RemoteTaskInfo(1, "label", 100, new byte[0], new HandoffOptions(true, true));
         List<RemoteTaskStore.Task> tasks =
                 List.of(new RemoteTaskStore.Task(associationId, remoteTaskInfo));
         ArgumentCaptor<List<RemoteTask>> remoteTasksCaptor = ArgumentCaptor.forClass(List.class);

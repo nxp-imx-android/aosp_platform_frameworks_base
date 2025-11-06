@@ -17,26 +17,19 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertThrows;
-import static org.testng.Assert.expectThrows;
+import static org.junit.Assert.assertNull;
 
 import android.app.HandoffActivityData;
 import android.content.ComponentName;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
-
-import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataSerializer;
-
+import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -73,28 +66,22 @@ public class HandoffActivityDataSerializerTest {
     }
 
     @Test
-    public void testReadFromProto_noComponentName_throwsException() {
+    public void testReadFromProto_noComponentName_returnsNull() throws IOException {
         ProtoOutputStream pos = new ProtoOutputStream();
         pos.flush();
 
-        assertThrows(
-                IOException.class,
-                () ->
-                        HandoffActivityDataSerializer.readFromProto(
-                                new ProtoInputStream(pos.getBytes())));
+        assertNull(
+                HandoffActivityDataSerializer.INSTANCE.read(new ProtoInputStream(pos.getBytes())));
     }
 
     @Test
-    public void testReadFromProto_invalidComponentName_throwsException() {
+    public void testReadFromProto_invalidComponentName_returnsNull() throws IOException {
         ProtoOutputStream pos = new ProtoOutputStream();
         pos.writeString(android.companion.HandoffActivityData.COMPONENT_NAME, "invalid");
         pos.flush();
 
-        assertThrows(
-                IOException.class,
-                () ->
-                        HandoffActivityDataSerializer.readFromProto(
-                                new ProtoInputStream(pos.getBytes())));
+        assertNull(
+                HandoffActivityDataSerializer.INSTANCE.read(new ProtoInputStream(pos.getBytes())));
     }
 
     private void confirmRoundTripSerializationDoesNotModifyData(HandoffActivityData expected)
@@ -102,11 +89,11 @@ public class HandoffActivityDataSerializerTest {
 
         // Write to a ProtoOutputStream.
         ProtoOutputStream pos = new ProtoOutputStream();
-        HandoffActivityDataSerializer.writeToProto(expected, pos);
+        HandoffActivityDataSerializer.INSTANCE.write(pos, expected);
 
         // Read from a ProtoInputStream.
         ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        HandoffActivityData actual = HandoffActivityDataSerializer.readFromProto(pis);
+        HandoffActivityData actual = HandoffActivityDataSerializer.INSTANCE.read(pis);
 
         assertThat(actual.getComponentName()).isEqualTo(expected.getComponentName());
         assertThat(actual.getFallbackUri()).isEqualTo(expected.getFallbackUri());

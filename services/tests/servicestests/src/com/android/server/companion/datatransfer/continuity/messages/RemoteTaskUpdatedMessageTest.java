@@ -23,13 +23,9 @@ import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
-
+import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -37,7 +33,8 @@ public class RemoteTaskUpdatedMessageTest {
 
     @Test
     public void testConstructor_fromObjects() {
-        RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0], true);
+        RemoteTaskInfo expected =
+                new RemoteTaskInfo(1, "label", 0, new byte[0], new HandoffOptions(true, true));
 
         RemoteTaskUpdatedMessage actual = new RemoteTaskUpdatedMessage(expected);
 
@@ -53,7 +50,9 @@ public class RemoteTaskUpdatedMessageTest {
     @Test
     public void testWriteAndReadFromProto_roundTrip_works() throws IOException {
         final RemoteTaskUpdatedMessage expected =
-                new RemoteTaskUpdatedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0], true));
+                new RemoteTaskUpdatedMessage(
+                        new RemoteTaskInfo(
+                                1, "label", 0, new byte[0], new HandoffOptions(true, true)));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
@@ -68,7 +67,9 @@ public class RemoteTaskUpdatedMessageTest {
     @Test
     public void testGetFieldNumber_returnsCorrectValue() {
         RemoteTaskUpdatedMessage remoteTaskUpdatedMessage =
-                new RemoteTaskUpdatedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0], true));
+                new RemoteTaskUpdatedMessage(
+                        new RemoteTaskInfo(
+                                1, "label", 0, new byte[0], new HandoffOptions(true, true)));
         assertThat(remoteTaskUpdatedMessage.getFieldNumber())
                 .isEqualTo(android.companion.TaskContinuityMessage.REMOTE_TASK_UPDATED);
     }

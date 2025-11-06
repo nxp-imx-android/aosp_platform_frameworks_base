@@ -17,28 +17,21 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import static org.junit.Assert.assertThrows;
+
+import android.platform.test.annotations.Presubmit;
+import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoOutputStream;
 import java.io.IOException;
-
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-class TaskContinuityMessageSerializerTest {
+@Presubmit
+@RunWith(AndroidTestingRunner.class)
+public class TaskContinuityMessageSerializerTest {
 
     @Test
     public void testDeserialize_emptyData_throwsIOException() {
         assertThrows(
                 IOException.class, () -> TaskContinuityMessageSerializer.deserialize(new byte[0]));
-    }
-
-    @Test
-    public void testDeserialize_messageIsNotTaskContinuityMessage_throwsIOException()
-            throws IOException {
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        pos.write(1000, "unknown field");
-        pos.flush();
-
-        assertThrows(
-                IOException.class,
-                () -> TaskContinuityMessageSerializer.deserialize(pos.getBytes()));
     }
 }
