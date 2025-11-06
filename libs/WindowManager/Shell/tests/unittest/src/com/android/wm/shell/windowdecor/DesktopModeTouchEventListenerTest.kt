@@ -293,7 +293,6 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
                 .onDragPositioningEnd(
                     taskInfo = eq(decor.defaultWindowDecoration.taskInfo),
                     taskSurface = any(),
-                    displayId = eq(decor.defaultWindowDecoration.taskInfo.displayId),
                     inputCoordinate = any(),
                     currentDragBounds = any(),
                     validDragArea = any(),

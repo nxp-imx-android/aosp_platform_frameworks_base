@@ -6261,7 +6261,6 @@ class DesktopTasksController(
      *
      * @param taskInfo the task being dragged.
      * @param taskSurface the leash of the task being dragged.
-     * @param displayId the displayId of the input event.
      * @param inputCoordinate the coordinates of the motion event
      * @param currentDragBounds the current bounds of where the visible task is (might be actual
      *   task bounds or just task leash)
@@ -6272,7 +6271,6 @@ class DesktopTasksController(
     fun onDragPositioningEnd(
         taskInfo: RunningTaskInfo,
         taskSurface: SurfaceControl,
-        displayId: Int,
         inputCoordinate: PointF,
         currentDragBounds: Rect,
         validDragArea: Rect,
@@ -6286,7 +6284,7 @@ class DesktopTasksController(
         val indicator = getVisualIndicator() ?: return true
         val indicatorType =
             indicator.updateIndicatorType(
-                displayId,
+                motionEvent.displayId,
                 PointF(inputCoordinate.x, currentDragBounds.top.toFloat()),
             )
 
@@ -6346,7 +6344,7 @@ class DesktopTasksController(
 
                 if (
                     DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue &&
-                        !desktopState.isEligibleWindowDropTarget(displayId)
+                        !desktopState.isEligibleWindowDropTarget(motionEvent.displayId)
                 ) {
                     // The task surface was moved off-screen during the drag operation.
                     // If the window is dropped on an ineligible display, this resets

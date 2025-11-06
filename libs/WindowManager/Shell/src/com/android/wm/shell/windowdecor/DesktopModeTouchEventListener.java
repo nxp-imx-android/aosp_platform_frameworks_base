@@ -658,7 +658,7 @@ public class DesktopModeTouchEventListener
                 final Rect validDragArea = decoration.getValidDragArea();
                 final boolean needDragIndicatorCleanup =
                         mDesktopTasksController.onDragPositioningEnd(
-                                taskInfo, decoration.getTaskSurface(), e.getDisplayId(),
+                                taskInfo, decoration.getTaskSurface(),
                                 new PointF(
                                         e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)),
                                 newTaskBounds, validDragArea,

@@ -9245,7 +9245,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             spyController.onDragPositioningEnd(
                 task,
                 mockSurface,
-                DEFAULT_DISPLAY,
                 inputCoordinate = PointF(200f, -200f),
                 currentDragBounds = Rect(100, -100, 500, 1000),
                 validDragArea = Rect(0, 50, 2000, 2000),
@@ -9299,7 +9298,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             spyController.onDragPositioningEnd(
                 task,
                 mockSurface,
-                DEFAULT_DISPLAY,
                 inputCoordinate = PointF(200f, 300f),
                 currentDragBounds = currentDragBounds,
                 validDragArea = Rect(0, 50, 2000, 2000),
@@ -9353,7 +9351,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             spyController.onDragPositioningEnd(
                 task,
                 mockSurface,
-                DEFAULT_DISPLAY,
                 inputCoordinate = PointF(200f, 300f),
                 currentDragBounds,
                 validDragArea = Rect(0, 50, 2000, 2000),
@@ -9396,7 +9393,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             taskInfo = task,
             taskSurface = mockSurface,
-            displayId = SECONDARY_DISPLAY_ID,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9452,7 +9448,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             spyController.onDragPositioningEnd(
                 task,
                 mockSurface,
-                DEFAULT_DISPLAY,
                 inputCoordinate = PointF(200f, 300f),
                 currentDragBounds = Rect(100, 50, 500, 1000),
                 validDragArea = Rect(0, 50, 2000, 2000),
@@ -9499,7 +9494,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
-            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9565,7 +9559,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
-            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9624,7 +9617,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
-            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9690,7 +9682,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
-            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9735,7 +9726,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             taskInfo = task,
             taskSurface = mockSurface,
-            displayId = DEFAULT_DISPLAY,
             inputCoordinate = PointF(250f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 0, 2000, 2000),
@@ -9767,7 +9757,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             taskInfo = task,
             taskSurface = mockSurface,
-            displayId = DEFAULT_DISPLAY,
             inputCoordinate = PointF(250f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9818,7 +9807,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             taskInfo = task,
             taskSurface = mockSurface,
-            displayId = DEFAULT_DISPLAY,
             inputCoordinate = PointF(510f, 210f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
