@@ -152,6 +152,7 @@ public class MediaQualityService extends SystemService {
     private final BiMap<Long, Long> mCurrentPictureHandleToOriginal = new BiMap<>();
     private final Set<Long> mPictureProfileForHal = new HashSet<>();
     private final HashMap<String, Runnable> mPendingUpdates = new HashMap<>();
+    private final HashMap<String, PictureProfile> mBaseProfiles = new HashMap<>();
     private static final int UPDATE_DELAY_MS = 1000; // Delay in milliseconds for debouncing
 
     public MediaQualityService(Context context) {
@@ -351,10 +352,39 @@ public class MediaQualityService extends SystemService {
             int callingUid = Binder.getCallingUid();
             int callingPid = Binder.getCallingPid();
             Long dbId = mPictureProfileTempIdMap.getKey(id);
-            if (mPictureProfileForHal.contains(dbId)) {
-                mHalNotifier.notifyHalOnPictureProfileChange(dbId, pp.getParameters());
-            }
+
             synchronized (mPictureProfileLock) {
+                PictureProfile fromDb = mBaseProfiles.get(id);
+                if (dbId == null) {
+                    mMqManagerNotifier.notifyOnPictureProfileError(
+                            id, PictureProfile.ERROR_INVALID_ARGUMENT,
+                            callingUid, callingPid);
+                    Slog.e(TAG, "updatePictureProfile: "
+                            + "dbId not found in mPictureProfileTempIdMap");
+                    return;
+                }
+                if (fromDb == null) {
+                    fromDb = mMqDatabaseUtils.getPictureProfile(dbId);
+                    if (fromDb != null) {
+                        mBaseProfiles.put(id, fromDb);
+                    }
+                }
+                final PictureProfile baseProfileForTask = fromDb;
+                if (baseProfileForTask == null || !hasPermissionToUpdatePictureProfile(
+                        baseProfileForTask, pp, callingUid, callingPid)) {
+                    mMqManagerNotifier.notifyOnPictureProfileError(
+                            id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                    Slog.e(TAG, "updatePictureProfile: "
+                            + "no permission to update picture profile or profile not found");
+                    if (baseProfileForTask != null) {
+                        mBaseProfiles.remove(id);
+                    }
+                    return;
+                }
+                if (mPictureProfileForHal.contains(dbId)) {
+                    mHalNotifier.notifyHalOnPictureProfileChange(dbId, pp.getParameters());
+                }
+
                 Runnable oldTask = mPendingUpdates.remove(id);
                 if (oldTask != null) {
                     mHandler.removeCallbacks(oldTask);
@@ -363,31 +393,14 @@ public class MediaQualityService extends SystemService {
                 Runnable newTask = () -> {
                     synchronized (mPictureProfileLock) {
                         mPendingUpdates.remove(id);
-                    }
-
-                    if (dbId == null) {
-                        mMqManagerNotifier.notifyOnPictureProfileError(
-                                id, PictureProfile.ERROR_INVALID_ARGUMENT,
-                                callingUid, callingPid);
-                        Slog.e(TAG, "updatePictureProfile: "
-                                + "dbId not found in mPictureProfileTempIdMap");
-                        return;
+                        mBaseProfiles.remove(id);
                     }
                     if (DEBUG) {
                         Slog.d(TAG, "the dbId associated with id is " + dbId);
                     }
-                    PictureProfile fromDb = mMqDatabaseUtils.getPictureProfile(dbId);
-                    if (!hasPermissionToUpdatePictureProfile(
-                            fromDb, pp, callingUid, callingPid)) {
-                        mMqManagerNotifier.notifyOnPictureProfileError(
-                                id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
-                        Slog.e(TAG, "updatePictureProfile: "
-                                + "no permission to update picture profile");
-                        return;
-                    }
-
                     synchronized (mPictureProfileLock) {
-                        PictureProfile updatedProfile = new PictureProfile.Builder(fromDb)
+                        PictureProfile updatedProfile =
+                                new PictureProfile.Builder(baseProfileForTask)
                         .setParameters(pp.getParameters())
                         .build();
                         ContentValues values = MediaQualityUtils.getContentValues(dbId,
