@@ -39,6 +39,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class InputMethodInfoTest {
@@ -129,6 +132,30 @@ public class InputMethodInfoTest {
         final InputMethodInfo clone = cloneViaParcel(imi);
 
         assertThat(clone.isVirtualDeviceOnly(), is(true));
+    }
+
+    @Test
+    public void testMergeAdditionalSubtypes() throws Exception {
+        final InputMethodInfo source = buildInputMethodForTest(R.xml.ime_meta);
+        assertThat(source.getSubtypeCount(), is(1));
+        final InputMethodSubtype sourceSubtype = source.getSubtypeAt(0);
+
+        final List<InputMethodSubtype> additionalSubtypes = new ArrayList<>();
+        // Add a duplicated subtype.
+        additionalSubtypes.add(sourceSubtype);
+        // Add a new subtype.
+        final InputMethodSubtype newSubtype = new InputMethodSubtype.InputMethodSubtypeBuilder()
+                .setSubtypeLocale("en_GB")
+                .setSubtypeMode("keyboard")
+                .build();
+        additionalSubtypes.add(newSubtype);
+
+        final InputMethodInfo mergedImi = new InputMethodInfo(source, additionalSubtypes);
+        assertThat(mergedImi.getSubtypeCount(), is(2));
+        // The original subtype should be preserved.
+        assertThat(mergedImi.getSubtypeAt(0), is(sourceSubtype));
+        // The new subtype should be added.
+        assertThat(mergedImi.getSubtypeAt(1), is(newSubtype));
     }
 
     private InputMethodInfo buildInputMethodForTest(final @XmlRes int metaDataRes)
