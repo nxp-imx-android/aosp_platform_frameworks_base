@@ -66,7 +66,7 @@ public class UsesCleartextTrafficDeprecationTest {
   }
 
   @Test
-  @DisableFlags({Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC})
+  @DisableFlags({Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC2})
   @DisableCompatChanges({ManifestConfigSource.DEPRECATE_USES_CLEARTEXT_TRAFFIC})
   public void testWithDisabledFlagAndDisabledChange_isTrue() throws Exception {
     ManifestConfigSource source =
@@ -78,7 +78,7 @@ public class UsesCleartextTrafficDeprecationTest {
   }
 
   @Test
-  @DisableFlags({Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC})
+  @DisableFlags({Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC2})
   @EnableCompatChanges({ManifestConfigSource.DEPRECATE_USES_CLEARTEXT_TRAFFIC})
   public void testWithDisabledFlagAndEnabledChange_isTrue() throws Exception {
     ManifestConfigSource source =
@@ -90,7 +90,7 @@ public class UsesCleartextTrafficDeprecationTest {
   }
 
   @Test
-  @EnableFlags({Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC})
+  @EnableFlags({Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC2})
   @DisableCompatChanges({ManifestConfigSource.DEPRECATE_USES_CLEARTEXT_TRAFFIC})
   public void testWithEnabledFlagAndDisabledChange_isTrue() throws Exception {
     ManifestConfigSource source =
@@ -102,7 +102,7 @@ public class UsesCleartextTrafficDeprecationTest {
   }
 
   @Test
-  @EnableFlags({Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC})
+  @EnableFlags({Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC2})
   @EnableCompatChanges({ManifestConfigSource.DEPRECATE_USES_CLEARTEXT_TRAFFIC})
   public void testWithEnabledFlagAndEnabledChange_isFalse() throws Exception {
     ManifestConfigSource source =

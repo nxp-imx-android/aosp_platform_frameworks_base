@@ -17,7 +17,7 @@
 package android.security.net.config;
 
 import static com.android.org.conscrypt.net.flags.Flags.networkSecurityConfigLocalhost;
-import static android.security.Flags.deprecateUsesCleartextTraffic;
+import static android.security.Flags.deprecateUsesCleartextTraffic2;
 
 import android.annotation.FlaggedApi;
 import android.app.compat.CompatChanges;
@@ -104,7 +104,7 @@ public class ManifestConfigSource implements ConfigSource {
                         (mApplicationInfo.flags & ApplicationInfo.FLAG_USES_CLEARTEXT_TRAFFIC) != 0
                         && !mApplicationInfo.isInstantApp();
                 if (CompatChanges.isChangeEnabled(DEPRECATE_USES_CLEARTEXT_TRAFFIC) &&
-                    deprecateUsesCleartextTraffic()) {
+                    deprecateUsesCleartextTraffic2()) {
                     usesCleartextTraffic = false;
                 }
                 source = new DefaultConfigSource(usesCleartextTraffic, mApplicationInfo);

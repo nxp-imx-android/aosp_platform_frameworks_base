@@ -676,7 +676,7 @@ public interface AndroidPackage {
      * Security Configuration file</a> instead.
      */
     @Deprecated
-    @FlaggedApi("android.security.deprecate_uses_cleartext_traffic")
+    @FlaggedApi("android.security.deprecate_uses_cleartext_traffic2")
     boolean isCleartextTrafficAllowed();
 
     /**
