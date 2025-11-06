@@ -17556,7 +17556,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
         EnforcingAdmin enforcingAdmin;
 
-        if (Flags.setPermissionGrantStateCoexistence() && Flags.dpeBasedOnAsyncApisEnabled()) {
+        if (Flags.setPermissionGrantStateCoexistence()) {
             // TODO(b/403539755):  If admin calls setPermissionGrantState and enforcement fails,
             //  subsequent calls will succeed without retrying enforcement. Need to somehow track
             //  actual enforcement status to disambiguate.
@@ -24823,7 +24823,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     private boolean maybeMigratePermissionGrantStatePoliciesLocked(String backupId) {
         Slogf.i(LOG_TAG, "Migrating PERMISSION_GRANT policy to device policy engine.");
-        if (!Flags.setPermissionGrantStateCoexistence() || !Flags.dpeBasedOnAsyncApisEnabled()) {
+        if (!Flags.setPermissionGrantStateCoexistence()) {
             return false;
         }
         if (mOwners.isPermissionGrantStateMigrated()) {

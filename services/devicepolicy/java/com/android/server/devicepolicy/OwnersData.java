@@ -473,7 +473,7 @@ class OwnersData {
                 out.attributeBoolean(null, ATTR_SET_KEYGUARD_DISABLED_FEATURES_MIGRATED,
                         mSetKeyguardDisabledFeaturesMigrated);
             }
-            if (Flags.setPermissionGrantStateCoexistence() && Flags.dpeBasedOnAsyncApisEnabled()) {
+            if (Flags.setPermissionGrantStateCoexistence()) {
                 out.attributeBoolean(null, ATTR_PERMISSION_GRANT_STATE_MIGRATED,
                         mPermissionGrantStateMigrated);
             }
@@ -573,7 +573,6 @@ class OwnersData {
                                     ATTR_SET_KEYGUARD_DISABLED_FEATURES_MIGRATED, false);
                     mPermissionGrantStateMigrated =
                             Flags.setPermissionGrantStateCoexistence()
-                                    && Flags.dpeBasedOnAsyncApisEnabled()
                                     && parser.getAttributeBoolean(null,
                                     ATTR_PERMISSION_GRANT_STATE_MIGRATED, false);
                     mCrossProfileWidgetProviderMigrated = Flags.crossProfileWidgetProviderBulkApis()
