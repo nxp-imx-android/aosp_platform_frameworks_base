@@ -111,6 +111,22 @@ class AmbientCueViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun isVisible_actionsIsEmpty_false() =
+        kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            assertThat(viewModel.isVisible).isTrue()
+
+            ambientCueRepository.fake.setActions(emptyList())
+            runCurrent()
+
+            advanceTimeBy(AmbientCueViewModel.ACTIONS_DEBOUNCE_MS.milliseconds)
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isFalse()
+        }
+
+    @Test
     @DisableFlags(Flags.FLAG_ENABLE_AMBIENT_CUE_WITH_IME_VISIBLE)
     fun isVisible_imeNotVisible_true() =
         kosmos.runTest {
