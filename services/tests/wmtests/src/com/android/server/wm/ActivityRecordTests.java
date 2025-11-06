@@ -154,6 +154,7 @@ import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationTarget;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.window.SplashScreenView;
 import android.window.TaskSnapshot;
 
 import androidx.test.filters.MediumTest;
@@ -3124,6 +3125,20 @@ public class ActivityRecordTests extends WindowTestsBase {
         // Assert that the bottom window now has the starting window.
         assertNoStartingWindow(activityTop);
         assertHasStartingWindow(activityBottom);
+    }
+
+    @Test
+    public void testCleanUpSplashScreenWhenTransferFail() {
+        registerTestStartingWindowOrganizer();
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        activity.addStartingWindow(mPackageName, android.R.style.Theme, null, true, true, false,
+                true, false, false, false);
+        waitUntilHandlersIdle();
+        assertHasStartingWindow(activity);
+        activity.setCustomizeSplashScreenExitAnimation(true /* enable */);
+        activity.finishing = true;
+        activity.onCopySplashScreenFinish(mock(SplashScreenView.SplashScreenViewParcelable.class));
+        verify(activity).cleanUpSplashScreen();
     }
 
     @Test
