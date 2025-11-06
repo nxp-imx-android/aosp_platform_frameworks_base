@@ -496,6 +496,14 @@ flag {
 }
 
 flag {
+  name: "policy_streamlining_tests"
+  is_exported: false
+  namespace: "enterprise"
+  description: "Enable the tests using the policy streamlining APIs."
+  bug: "454277430"
+}
+
+flag {
   name: "remove_hack_in_policy_engine"
   namespace: "enterprise"
   description: "[Coexistence] Remove hack for handling user control disabled policy result code in the policy engine."
