@@ -4154,16 +4154,6 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             return CloseTaskResult.NO_STAGE;
         }
 
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.removeTask(taskInfo.token);
-
-        if (stage.getChildCount() > 1) {
-            mTransitions.startTransition(TRANSIT_CLOSE, wct, null);
-            ProtoLog.i(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
-                    CloseTaskResult.CLOSED_TASK_SPLIT_REMAINED);
-            return CloseTaskResult.CLOSED_TASK_SPLIT_REMAINED;
-        }
-
         final int closingStagePosition;
         if (mMainStage.containsTask(taskId)) {
             closingStagePosition = getMainStagePosition();
@@ -4173,6 +4163,16 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
                     CloseTaskResult.STAGE_POSITION_UNKNOWN);
             return CloseTaskResult.STAGE_POSITION_UNKNOWN;
+        }
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.removeTask(taskInfo.token);
+        stage.markToBeVanished(taskId);
+        if (!stage.areAllTasksToBeVanished()) {
+            mTransitions.startTransition(TRANSIT_CLOSE, wct, null);
+            ProtoLog.i(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
+                    CloseTaskResult.CLOSED_TASK_SPLIT_REMAINED);
+            return CloseTaskResult.CLOSED_TASK_SPLIT_REMAINED;
         }
 
         mSplitLayout.flingDividerToDismiss(
