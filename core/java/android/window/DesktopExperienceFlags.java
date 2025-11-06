@@ -78,8 +78,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS),
     ENABLE_APP_HANDLE_POSITION_REPORTING(Flags::enableAppHandlePositionReporting, false,
             Flags.FLAG_ENABLE_APP_HANDLE_POSITION_REPORTING),
-    ENABLE_APP_TO_WEB_EDUCATION_ANIMATION(Flags::enableAppToWebEducationAnimation, false,
-            Flags.FLAG_ENABLE_APP_TO_WEB_EDUCATION_ANIMATION),
     ENABLE_AUTO_RECOVERY_FROM_SELF_KILL(Flags::enableAutoRecoveryFromSelfKill, false,
             Flags.FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL),
     ENABLE_AUTO_ROTATE_ON_SLATE_STATE(Flags::enableAutoRotateOnSlateState, false,
