@@ -295,11 +295,15 @@ fun ContentScope.NestedScrollingNotificationPanel(
     val density = LocalDensity.current
     val screenCornerRadius = LocalScreenCornerRadius.current
     val scrimCornerRadius = dimensionResource(R.dimen.notification_scrim_corner_radius)
-    val singleShadeNotificationScrimBgColor =
+    val classicShadeNotificationScrimBgColor =
         Color(
-            ShadeColors.singleShadeNotificationScrimBg(
+            ShadeColors.classicShadeNotificationScrimBg(
                 LocalContext.current,
                 blurSupported = isTransparencyEnabled,
+                // When the Notification Scrim punches a hole in its own scene, we need to use the
+                // composite colors of the Scene Scrim, and the Notification Scrim to achieve the
+                // same color as  in the shade types where we are NOT punching a hole.
+                withScrim = shouldPunchHoleBehindScrim,
             )
         )
     val expansionFraction by viewModel.expandFraction.collectAsStateWithLifecycle(0f)
@@ -470,7 +474,12 @@ fun ContentScope.NestedScrollingNotificationPanel(
                     // NotificationPanel background
                     Box(
                         modifier =
-                            Modifier.thenIf(shouldFillMaxSize) {
+                            Modifier
+                                // The DstOut blend mode is used to punch a transparent hole through
+                                // the scrim's background, cutting out the QQS tiles. This works in
+                                // conjunction with CompositingStrategy.Offscreen on the parent
+                                // to ensure the blending only affects the current Scene.
+                                .thenIf(shouldPunchHoleBehindScrim) {
                                     Modifier.drawBehind {
                                         drawRect(Color.Black, blendMode = BlendMode.DstOut)
                                     }
@@ -480,8 +489,11 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                         (expansionFraction / EXPANSION_FOR_MAX_SCRIM_ALPHA)
                                             .coerceAtMost(1f)
                                 }
+                                // The background color that makes the surface behind Notifications.
                                 .thenIf(shouldDrawScrimBackground) {
-                                    Modifier.background(color = singleShadeNotificationScrimBgColor)
+                                    Modifier.background(
+                                        color = classicShadeNotificationScrimBgColor
+                                    )
                                 }
                     )
                 },
