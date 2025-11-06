@@ -350,7 +350,7 @@ class AppCompatActivityRobot {
     }
 
     void setTopActivityResumed() {
-        doReturn(RESUMED).when(mActivityStack.top()).getState();
+        mActivityStack.top().setState(RESUMED, "test");
         doReturn(true).when(mActivityStack.top()).isVisibleRequested();
         doReturn(true).when(mActivityStack.top()).isVisible();
         mActivityStack.top().mAppCompatController.getSizeCompatModePolicy()
@@ -372,6 +372,20 @@ class AppCompatActivityRobot {
 
     void destroyTopActivity() {
         mActivityStack.top().removeImmediately();
+    }
+
+    void finishTopActivity() {
+        mActivityStack.top().finishIfPossible("test", false);
+    }
+
+    void removeTopTask() {
+        final ActivityRecord r = mActivityStack.top();
+        mSupervisor.removeTask(r.getTask(), false /*killProcess*/, true, "test", r.getUid(),
+                r.getPid(), r.info.name);
+    }
+
+    void exitAppProcess() {
+        mActivityStack.top().handleAppDied();
     }
 
     void destroyActivity(int fromTop) {
