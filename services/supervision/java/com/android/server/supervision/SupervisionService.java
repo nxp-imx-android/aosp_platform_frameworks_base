@@ -239,6 +239,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
     /** Set the Supervision Recovery Info. */
     @Override
     public void setSupervisionRecoveryInfo(SupervisionRecoveryInfo recoveryInfo) {
+        if (Flags.supervisionRecoveryImprovements()) {
+            checkCallAuthorization(isCallerSystem());
+        }
+
         if (!Flags.persistentSupervisionSettings()) {
             SupervisionRecoveryInfoStorage.getInstance(mInjector.context)
                     .saveRecoveryInfo(recoveryInfo);
@@ -255,7 +259,13 @@ public class SupervisionService extends ISupervisionManager.Stub {
     /** Returns the Supervision Recovery Info or null if recovery is not set. */
     @Override
     public SupervisionRecoveryInfo getSupervisionRecoveryInfo() {
-        if (Flags.persistentSupervisionSettings()) {
+        if (Flags.supervisionRecoveryImprovements()) {
+            checkCallAuthorization(isCallerSystem());
+
+            synchronized (getLockObject()) {
+                return mSupervisionSettings.getRecoveryInfo();
+            }
+        } else if (Flags.persistentSupervisionSettings()) {
             return mSupervisionSettings.getRecoveryInfo();
         }
         return SupervisionRecoveryInfoStorage.getInstance(mInjector.context).loadRecoveryInfo();
@@ -437,6 +447,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public List<ResolveInfo> querySupervisionApprovalActivities(int userId) {
+        checkCallAuthorization(isCallerSystem());
+
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
@@ -977,7 +989,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private boolean isCallerSystem() {
-        return UserHandle.isSameApp(Binder.getCallingUid(), Process.SYSTEM_UID);
+        return UserHandle.isSameApp(mInjector.getCallingUid(), Process.SYSTEM_UID);
     }
 
     /**
@@ -1123,6 +1135,13 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 mServiceThreadHandler = new Handler(getServiceThread().getLooper());
             }
             return mServiceThreadHandler;
+        }
+
+        // TODO: b/458276188 - potentially get rid of this if we can use a robolectric shadow to
+        //  set the calling uid instead.
+        /** Provides a way to override the calling uid for testing purposes. */
+        int getCallingUid() {
+            return Binder.getCallingUid();
         }
     }
 

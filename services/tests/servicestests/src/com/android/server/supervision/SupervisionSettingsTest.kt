@@ -22,8 +22,12 @@ import android.app.supervision.PolicyKey
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.flags.Flags
 import android.os.PersistableBundle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.platform.test.flag.junit.SetFlagsRule
 import android.util.ArraySet
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
@@ -45,6 +49,7 @@ import org.mockito.junit.MockitoRule
 class SupervisionSettingsTest {
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     @get:Rule val mocks: MockitoRule = MockitoJUnit.rule()
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     private lateinit var mSupervisionSettings: SupervisionSettings
 
@@ -192,9 +197,27 @@ class SupervisionSettingsTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_SUPERVISION_RECOVERY_IMPROVEMENTS)
     fun saveAndGetRecoveryInfo_retrievesCorrectRecoveryInfo() {
         // Save and get recovery info
         mSupervisionSettings.saveRecoveryInfo(RECOVERY_INFO)
+        val retrievedRecoveryInfo = mSupervisionSettings.getRecoveryInfo()
+
+        // Check if recovery info was retrieved correctly
+        assertThat(retrievedRecoveryInfo).isNotNull()
+        assertThat(retrievedRecoveryInfo.accountType).isEqualTo(RECOVERY_INFO.accountType)
+        assertThat(retrievedRecoveryInfo.accountName).isEqualTo(RECOVERY_INFO.accountName)
+        assertThat(retrievedRecoveryInfo.accountData.getString("id"))
+            .isEqualTo(RECOVERY_INFO.accountData.getString("id"))
+        assertThat(retrievedRecoveryInfo.state).isEqualTo(RECOVERY_INFO.state)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SUPERVISION_RECOVERY_IMPROVEMENTS)
+    fun saveAndLoadRecoveryInfo_retrievesCorrectRecoveryInfo() {
+        // Save, load, and get recovery info
+        mSupervisionSettings.saveRecoveryInfo(RECOVERY_INFO)
+        mSupervisionSettings.loadRecoveryInfo()
         val retrievedRecoveryInfo = mSupervisionSettings.getRecoveryInfo()
 
         // Check if recovery info was retrieved correctly

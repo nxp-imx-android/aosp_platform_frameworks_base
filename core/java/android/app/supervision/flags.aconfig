@@ -150,3 +150,14 @@ flag {
   description: "Flag that enables supervision policy APIs in Supervision Service"
   bug: "443997530"
 }
+
+flag {
+  name: "supervision_recovery_improvements"
+  is_exported: false
+  namespace: "supervision"
+  description: "Fixes some performance issues with supervision recovery"
+  bug: "454885259"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

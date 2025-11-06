@@ -56,6 +56,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.IBinder
 import android.os.PersistableBundle
+import android.os.Process
 import android.os.UserHandle
 import android.os.UserHandle.MIN_SECONDARY_USER_ID
 import android.os.UserHandle.USER_SYSTEM
@@ -443,6 +444,7 @@ class SupervisionServiceTest {
 
     @Test
     fun setSupervisionEnabledForUser_noPermission_throwsException() {
+        injector.setCallingUid(1234)
         context.permissions[BYPASS_ROLE_QUALIFICATION] = PERMISSION_DENIED
         assertFailsWith<SecurityException> { setSupervisionEnabledForUser(USER_ID, false) }
     }
@@ -751,6 +753,20 @@ class SupervisionServiceTest {
                 /* enabled= */ false,
                 USER_ID,
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SUPERVISION_RECOVERY_IMPROVEMENTS)
+    fun setSupervisionRecoveryInfo_noPermission_throwsException() {
+        injector.setCallingUid(9876)
+        assertFailsWith<SecurityException> { service.setSupervisionRecoveryInfo(null) }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SUPERVISION_RECOVERY_IMPROVEMENTS)
+    fun getSupervisionRecoveryInfo_noPermission_throwsException() {
+        injector.setCallingUid(9876)
+        assertFailsWith<SecurityException> { service.getSupervisionRecoveryInfo() }
     }
 
     @Test
@@ -1481,6 +1497,7 @@ private class TestInjector(val context: Context, private val serviceThread: Serv
     SupervisionService.Injector(context) {
     private val roleHolders = mutableMapOf<Pair<String, UserHandle>, List<String>>()
     private var roleHoldersChangedListener: OnRoleHoldersChangedListener? = null
+    private var callingUid = Process.SYSTEM_UID
 
     override fun addOnRoleHoldersChangedListenerAsUser(
         executor: Executor,
@@ -1501,6 +1518,14 @@ private class TestInjector(val context: Context, private val serviceThread: Serv
 
     override fun getServiceThread(): ServiceThread {
         return serviceThread
+    }
+
+    override fun getCallingUid(): Int {
+        return callingUid
+    }
+
+    fun setCallingUid(callingUid: Int) {
+        this.callingUid = callingUid
     }
 
     /**
