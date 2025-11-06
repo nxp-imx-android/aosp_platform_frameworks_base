@@ -79,6 +79,7 @@ import com.android.server.appbinding.AppBindingConstants
 import com.android.server.appbinding.AppBindingService
 import com.android.server.appbinding.AppServiceConnection
 import com.android.server.appbinding.finders.SupervisionAppServiceFinder
+import com.android.server.pm.UserFilter
 import com.android.server.pm.UserManagerInternal
 import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
 import com.android.server.supervision.SupervisionService.SETTINGS_PACKAGE_NAME
@@ -1379,29 +1380,14 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf(supervisionPackage),
         )
-        val activityInfo1 =
-            ActivityInfo().apply {
-                packageName = supervisionPackage
-                name = "Activity1"
-                applicationInfo = ApplicationInfo()
-            }
         val resolveInfo1 =
-            ResolveInfo().apply {
-                activityInfo = activityInfo1
-                nonLocalizedLabel = "Use supervision app"
-            }
-
-        val activityInfo2 =
-            ActivityInfo().apply {
-                packageName = supervisionPackage
-                name = "Activity2"
-                applicationInfo = ApplicationInfo()
-            }
+            mockSupervisionApprovalActivity(supervisionPackage, "Activity1", "Use supervision app")
         val resolveInfo2 =
-            ResolveInfo().apply {
-                activityInfo = activityInfo2
-                nonLocalizedLabel = "Use another supervision app"
-            }
+            mockSupervisionApprovalActivity(
+                supervisionPackage,
+                "Activity2",
+                "Use another supervision app",
+            )
         whenever(
                 mockPackageManager.queryIntentActivities(
                     argThat { intent: Intent ->
@@ -1450,6 +1436,162 @@ class SupervisionServiceTest {
         whenever(mockUserManagerInternal.getUsers(any<Boolean>())).thenReturn(userInfos)
     }
 
+    @Test
+    fun getUsersThatRequirePlatformCredential_usersHaveNoSupervisionRoleHolders_returnsUsers() {
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        setSupervisionEnabledForUserInternal(USER_ID_SECONDARY, true)
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            emptyList(),
+        )
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID_SECONDARY),
+            emptyList(),
+        )
+        whenever(mockUserManagerInternal.getUsers(any<UserFilter>()))
+            .thenReturn(
+                listOf(
+                    UserInfo(USER_ID, "user0", USER_ICON, FLAG_FULL, USER_TYPE),
+                    UserInfo(USER_ID_SECONDARY, "user1", USER_ICON, FLAG_FULL, USER_TYPE),
+                )
+            )
+
+        val result = service.getUsersThatRequirePlatformCredential()
+
+        assertThat(result).hasSize(2)
+        assertThat(result.map { it.id }).containsExactly(USER_ID, USER_ID_SECONDARY)
+    }
+
+    @Test
+    fun getUsersThatRequirePlatformCredential_multipleRoleHolders_onlyOneRoleHolderHasSupervisionActivity_returnsUser() {
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+
+        val supervisionPackage = "com.example.supervisionapp"
+        val supervisionPackage2 = "com.example.supervisionapp2"
+
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(supervisionPackage, supervisionPackage2),
+        )
+        whenever(mockUserManagerInternal.getUsers(any<UserFilter>()))
+            .thenReturn(listOf(UserInfo(USER_ID, "user0", USER_ICON, FLAG_FULL, USER_TYPE)))
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(mockSupervisionApprovalActivity(supervisionPackage, null, null)))
+
+        val result = service.getUsersThatRequirePlatformCredential()
+
+        assertThat(result.map { it.id }).containsExactly(USER_ID)
+    }
+
+    @Test
+    fun getUsersThatRequirePlatformCredential_returnsUsersWithNoSupervisionActivities() {
+        val supervisionPackage = "com.example.supervisionapp"
+        val supervisionPackage2 = "com.example.supervisionapp2"
+
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        setSupervisionEnabledForUserInternal(USER_ID_SECONDARY, true)
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(supervisionPackage),
+        )
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID_SECONDARY),
+            listOf(supervisionPackage2),
+        )
+
+        whenever(mockUserManagerInternal.getUsers(any<UserFilter>()))
+            .thenReturn(
+                listOf(
+                    UserInfo(USER_ID, "user0", USER_ICON, FLAG_FULL, USER_TYPE),
+                    UserInfo(USER_ID_SECONDARY, "user1", USER_ICON, FLAG_FULL, USER_TYPE),
+                )
+            )
+        // Only return a supervision activity for one supervision  package
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(listOf(mockSupervisionApprovalActivity(supervisionPackage, null, null)))
+
+        val result = service.getUsersThatRequirePlatformCredential()
+
+        assertThat(result).hasSize(1)
+        assertThat(result.map { it.id }).containsExactly(USER_ID_SECONDARY)
+    }
+
+    @Test
+    fun getUsersThatRequirePlatformCredential_filtersOutUnsupervisedUsers() {
+        val supervisionPackage = "com.example.supervisionapp"
+
+        setSupervisionEnabledForUserInternal(USER_ID, true)
+        setSupervisionEnabledForUserInternal(USER_ID_SECONDARY, false)
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf(supervisionPackage),
+        )
+
+        // Set up 2 users on the device
+        whenever(mockUserManagerInternal.getUsers(any<UserFilter>()))
+            .thenReturn(
+                listOf(
+                    UserInfo(USER_ID, "user0", USER_ICON, FLAG_FULL, USER_TYPE),
+                    UserInfo(USER_ID_SECONDARY, "user1", USER_ICON, FLAG_FULL, USER_TYPE),
+                )
+            )
+        // Return no supervision approval activity for supervised user
+        whenever(
+                mockPackageManager.queryIntentActivities(
+                    argThat { intent: Intent ->
+                        intent.action == SupervisionManager.ACTION_CONFIRM_SUPERVISION_APPROVAL &&
+                            intent.`package` == supervisionPackage
+                    },
+                    any<Int>(),
+                )
+            )
+            .thenReturn(emptyList<ResolveInfo>())
+
+        val result = service.getUsersThatRequirePlatformCredential()
+
+        assertThat(result).hasSize(1)
+        assertThat(result.map { it.id }).containsExactly(USER_ID)
+    }
+
+    private fun mockSupervisionApprovalActivity(
+        supervisionPackageName: String,
+        activityName: String?,
+        label: String?,
+    ): ResolveInfo {
+        val activityInfo =
+            ActivityInfo().apply {
+                packageName = supervisionPackageName
+                name = activityName ?: "Activity"
+                applicationInfo = ApplicationInfo()
+            }
+        return ResolveInfo().apply {
+            this.activityInfo = activityInfo
+            nonLocalizedLabel = label ?: "Generic label"
+        }
+    }
+
     private fun addDefaultAndFullUsers() {
         val userInfos =
             userData.map { (userId, flags) ->
@@ -1472,6 +1614,7 @@ class SupervisionServiceTest {
 
     private companion object {
         const val USER_ID = 0
+        const val USER_ID_SECONDARY = 1
         const val APP_UID = USER_ID * UserHandle.PER_USER_RANGE
         const val SUPERVISING_USER_ID = 10
         const val USER_ICON = "user_icon"

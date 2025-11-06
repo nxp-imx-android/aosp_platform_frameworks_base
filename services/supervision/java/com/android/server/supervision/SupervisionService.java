@@ -27,6 +27,7 @@ import static android.content.pm.PackageInstaller.SessionParams.MAX_PACKAGE_NAME
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.provider.Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED;
 import static android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED;
+
 import static com.android.internal.util.Preconditions.checkCallAuthorization;
 
 import android.annotation.CallbackExecutor;
@@ -75,6 +76,7 @@ import android.os.UserManager;
 import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.SparseArray;
+
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -92,6 +94,7 @@ import com.android.server.appbinding.finders.SupervisionAppServiceFinder;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.supervision.SupervisionUserData.PolicyData;
 import com.android.server.utils.Slogf;
+
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -579,6 +582,33 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 PendingIntent.FLAG_IMMUTABLE,
                 /* options= */ null,
                 UserHandle.of(userId));
+    }
+
+    @Override
+    public List<UserInfo> getUsersThatRequirePlatformCredential() {
+        if (!Flags.enableSupervisionSettingsUiUpdates()) {
+            return List.of();
+        }
+        List<UserInfo> users = mInjector
+                .getUserManagerInternal()
+                .getUsers(UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS);
+        return users.stream().filter(userInfo -> {
+            if (!isSupervisionEnabledForUser(userInfo.id)) {
+                return false;
+            }
+            // Get active supervision role holders for this user.
+            List<String> roleHolders =
+                    mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userInfo.id));
+            // Get all packages that have a supervision approval activity for this user.
+            List<String> packagesWithSupervisionApprovalActivities =
+                    querySupervisionApprovalActivities(userInfo.id)
+                            .stream()
+                            .map(resolveInfo -> resolveInfo.activityInfo.packageName)
+                            .toList();
+            return roleHolders.isEmpty() || roleHolders
+                    .stream()
+                    .anyMatch(pkg -> !packagesWithSupervisionApprovalActivities.contains(pkg));
+        }).toList();
     }
 
     /**
