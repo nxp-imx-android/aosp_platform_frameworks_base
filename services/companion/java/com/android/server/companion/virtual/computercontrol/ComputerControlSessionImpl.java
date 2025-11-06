@@ -312,8 +312,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 PixelFormat.RGBA_8888, /* maxImages= */ 1);
 
         try {
-            mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
-                    virtualDeviceParams);
+            mVirtualDevice = Binder.withCleanCallingIdentity(
+                    () -> virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
+                            virtualDeviceParams));
             mVirtualDeviceId = mVirtualDevice.getDeviceId();
             mVirtualDevice.addActivityListener(mScheduler, new ComputerControlActivityListener());
 
