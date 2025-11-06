@@ -16,11 +16,8 @@
 
 package com.android.systemui.dreams.ui.viewmodel
 
-import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
-import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -31,7 +28,6 @@ import com.android.systemui.shade.ui.viewmodel.splitShadeActions
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
@@ -39,7 +35,6 @@ import kotlinx.coroutines.flow.map
 class DreamUserActionsViewModel
 @AssistedInject
 constructor(
-    private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
 ) : UserActionsViewModel() {
@@ -50,17 +45,8 @@ constructor(
                 if (!isShadeTouchable) {
                     flowOf(emptyMap())
                 } else {
-                    combine(
-                        deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked },
-                        shadeModeInteractor.shadeMode,
-                    ) { isDeviceUnlocked, shadeMode ->
+                    shadeModeInteractor.shadeMode.map { shadeMode ->
                         buildList {
-                                if (isDeviceUnlocked) {
-                                    add(Swipe.Up to Scenes.Gone)
-                                } else {
-                                    add(Swipe.Up to Scenes.Lockscreen)
-                                }
-
                                 addAll(
                                     when (shadeMode) {
                                         ShadeMode.Single -> singleShadeActions()
