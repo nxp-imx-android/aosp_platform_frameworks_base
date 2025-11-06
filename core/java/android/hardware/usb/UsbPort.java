@@ -278,6 +278,24 @@ public final class UsbPort {
     public @interface AltModeType {}
 
     /** @hide */
+    public UsbPort(Builder builder) {
+        Objects.requireNonNull(builder.mId);
+        Preconditions.checkFlagsArgument(builder.mSupportedModes,
+                MODE_DFP | MODE_UFP | MODE_AUDIO_ACCESSORY | MODE_DEBUG_ACCESSORY);
+
+        mUsbManager = builder.mUsbManager;
+        mId = builder.mId;
+        mSupportedModes = builder.mSupportedModes;
+        mSupportedContaminantProtectionModes = builder.mSupportedContaminantProtectionModes;
+        mSupportsEnableContaminantPresenceProtection =
+                builder.mSupportsEnableContaminantPresenceProtection;
+        mSupportsEnableContaminantPresenceDetection =
+                builder.mSupportsEnableContaminantPresenceDetection;
+        mSupportsComplianceWarnings = builder.mSupportsComplianceWarnings;
+        mSupportedAltModes = builder.mSupportedAltModes;
+    }
+
+    /** @hide */
     public UsbPort(@NonNull UsbManager usbManager, @NonNull String id, int supportedModes,
             int supportedContaminantProtectionModes,
             boolean supportsEnableContaminantPresenceProtection,
@@ -894,5 +912,130 @@ public final class UsbPort {
                 + mSupportsEnableContaminantPresenceDetection
                 + ", supportsComplianceWarnings="
                 + mSupportsComplianceWarnings;
+    }
+
+    /**
+     * Builder is used to create {@link UsbPort} objects.
+     *
+     * @hide
+     */
+    public static final class Builder {
+        private String mId;
+        private int mSupportedModes;
+        private UsbManager mUsbManager;
+        private int mSupportedContaminantProtectionModes;
+        private boolean mSupportsEnableContaminantPresenceProtection;
+        private boolean mSupportsEnableContaminantPresenceDetection;
+        private boolean mSupportsComplianceWarnings;
+        private @AltModeType int mSupportedAltModes;
+
+        public Builder() {
+            mId = "";
+            mSupportedModes = 0;
+            mUsbManager = null;
+            mSupportedContaminantProtectionModes = 0;
+            mSupportsEnableContaminantPresenceProtection = false;
+            mSupportsEnableContaminantPresenceDetection = false;
+            mSupportsComplianceWarnings = false;
+            mSupportedAltModes = 0;
+        }
+
+        /**
+         * Sets the id of {@link UsbPort}
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setId(@NonNull String id) {
+            mId = id;
+            return this;
+        }
+
+        /**
+         * Sets the supported modes of {@link UsbPort}
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setSupportedModes(int modes) {
+            mSupportedModes = modes;
+            return this;
+        }
+
+        /**
+         * Sets the UsbManager of {@link UsbPort}
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setUsbManager(@NonNull UsbManager usbManager) {
+            mUsbManager = usbManager;
+            return this;
+        }
+
+        /**
+         * Sets the supported contaminant protection modes of {@link UsbPort}
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setSupportedContaminantProtectionModes(int modes) {
+            mSupportedContaminantProtectionModes = modes;
+            return this;
+        }
+
+        /**
+         * Sets whether or not the {@link UsbPort} supports enabling contaminant presence
+         * protection
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setSupportsEnableContaminantPresenceProtection(boolean supportsFeature) {
+            mSupportsEnableContaminantPresenceProtection = supportsFeature;
+            return this;
+        }
+
+        /**
+         * Sets whether or not the {@link UsbPort} supports enabling contaminant presence
+         * detection
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setSupportsEnableContaminantPresenceDetection(boolean supportsFeature) {
+            mSupportsEnableContaminantPresenceDetection = supportsFeature;
+            return this;
+        }
+
+        /**
+         * Sets whether or not the {@link UsbPort} supports reporting compliance warnings
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setSupportsComplianceWarnings(boolean supportsFeature) {
+            mSupportsComplianceWarnings = supportsFeature;
+            return this;
+        }
+
+        /**
+         * Sets the supported alt modes of {@link UsbPort}
+         *
+         * @return Instance of {@link Builder}
+         */
+        @NonNull
+        public Builder setSupportedAltModes(@AltModeType int altModes) {
+            mSupportedAltModes = altModes;
+            return this;
+        }
+
+        /**
+         * Creates the {@link UsbPort} object.
+         */
+        @NonNull
+        public UsbPort build() {
+            return new UsbPort(this);
+        }
     }
 }
