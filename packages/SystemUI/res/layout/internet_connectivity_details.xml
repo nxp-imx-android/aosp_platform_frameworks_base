@@ -96,8 +96,7 @@
 
                         <TextView
                             style="@style/InternetDetails.EntryTitle.Active"
-                            android:text="@string/ethernet_label"
-                            android:textSize="14sp" />
+                            android:text="@string/ethernet_label" />
 
                         <TextView
                             style="@style/InternetDetails.EntrySubTitle.Active"

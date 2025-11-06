@@ -92,20 +92,30 @@ public class InternetAdapter extends RecyclerView.Adapter<InternetAdapter.Intern
                 viewGroup, false);
 
         if (mIsInDetailsView) {
+            // Customize the wifi list's dimensions.
             LinearLayout wifiList = mHolderView.findViewById(R.id.wifi_list);
             Resources res = mHolderView.getContext().getResources();
-            LinearLayout.LayoutParams layoutParams =
+            LinearLayout.LayoutParams wifiListLayoutParams =
                     (LinearLayout.LayoutParams) wifiList.getLayoutParams();
 
-            layoutParams.height = res.getDimensionPixelSize(R.dimen.tile_details_entry_height);
+            wifiListLayoutParams.height =
+                    res.getDimensionPixelSize(R.dimen.tile_details_entry_height);
 
             final int horizontalMargin =
                     res.getDimensionPixelSize(R.dimen.tile_details_entry_horizontal_margin);
 
-            layoutParams.setMarginStart(horizontalMargin);
-            layoutParams.setMarginEnd(horizontalMargin);
+            wifiListLayoutParams.setMarginStart(horizontalMargin);
+            wifiListLayoutParams.setMarginEnd(horizontalMargin);
 
-            wifiList.setLayoutParams(layoutParams);
+            wifiList.setLayoutParams(wifiListLayoutParams);
+
+            // Customize the wifi network layout's dimensions.
+            LinearLayout wifiNetworkLayout = mHolderView.findViewById(R.id.wifi_network_layout);
+            LinearLayout.LayoutParams wifiNetworkLayoutParams =
+                    (LinearLayout.LayoutParams) wifiNetworkLayout.getLayoutParams();
+
+            wifiNetworkLayoutParams.height = wifiListLayoutParams.height;
+            wifiNetworkLayout.setLayoutParams(wifiNetworkLayoutParams);
         }
 
         return new InternetViewHolder(mHolderView, mInternetDetailsContentController,
