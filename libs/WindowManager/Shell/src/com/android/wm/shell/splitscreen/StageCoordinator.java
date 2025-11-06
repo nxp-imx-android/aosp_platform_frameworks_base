@@ -33,8 +33,6 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
-
-import static com.android.window.flags.Flags.enableFullScreenWindowOnRemovingSplitScreenStageBugfix;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
@@ -1051,8 +1049,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }
         Bundle[] outOptions = new Bundle[]{options};
         RunningTaskInfo taskInfo = mTaskOrganizer.getRunningTaskInfo(taskId);
-        if (enableFullScreenWindowOnRemovingSplitScreenStageBugfix() && taskInfo != null
-                && taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM) {
+        if (taskInfo != null && taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM) {
             RunningTaskInfo task = mTaskOrganizer.getRunningTaskInfo(taskId);
             prepareTasksForSplitScreen(new int[]{taskId}, wct, outOptions);
             if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
