@@ -128,12 +128,15 @@ constructor(
      */
     val dialogViewModel: StateFlow<DialogViewModel?> = _dialogViewModel.asStateFlow()
 
-    private val _actionButton = MutableStateFlow<BouncerActionButtonModel?>(null)
     /**
      * The bouncer action button (Return to Call / Emergency Call). If `null`, the button should not
      * be shown.
      */
-    val actionButton: StateFlow<BouncerActionButtonModel?> = _actionButton.asStateFlow()
+    val actionButton: BouncerActionButtonModel? by
+        bouncerActionButtonInteractor.actionButton.hydratedStateOf(
+            traceName = "actionButton",
+            initialValue = bouncerActionButtonInteractor.currentActionButton,
+        )
 
     private val _isOneHandedModeSupported = MutableStateFlow(false)
     /**
@@ -261,8 +264,6 @@ constructor(
                 combine(wipeDialogMessage, lockoutDialogMessage) { _, _ -> createDialogViewModel() }
                     .collect { _dialogViewModel.value = it }
             }
-
-            launch { actionButtonInteractor.actionButton.collect { _actionButton.value = it } }
 
             launch {
                 combine(

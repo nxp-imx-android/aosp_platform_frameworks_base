@@ -332,7 +332,7 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
             assertThat(upDestinationOverlayKey).isEqualTo(Overlays.Bouncer)
             emulateUserDrivenOverlayTransition(show = upDestinationOverlayKey)
 
-            val bouncerActionButton by collectLastValue(bouncerOverlayContentViewModel.actionButton)
+            val bouncerActionButton = bouncerOverlayContentViewModel.actionButton
             assertWithMessage("Bouncer action button not visible")
                 .that(bouncerActionButton)
                 .isNotNull()
@@ -352,7 +352,7 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
             assertThat(upDestinationOverlayKey).isEqualTo(Overlays.Bouncer)
             emulateUserDrivenOverlayTransition(show = upDestinationOverlayKey)
 
-            val bouncerActionButton by collectLastValue(bouncerOverlayContentViewModel.actionButton)
+            val bouncerActionButton = bouncerOverlayContentViewModel.actionButton
             assertWithMessage("Bouncer action button not visible during call")
                 .that(bouncerActionButton)
                 .isNotNull()

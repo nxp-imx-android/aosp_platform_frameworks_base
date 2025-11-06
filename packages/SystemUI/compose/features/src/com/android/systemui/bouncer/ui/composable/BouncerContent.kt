@@ -111,7 +111,6 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.Flags
-import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.AuthMethodBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerMessageViewModel
@@ -822,13 +821,11 @@ private fun InputArea(
 
 @Composable
 private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
-    val actionButton: BouncerActionButtonModel? by
-        viewModel.actionButton.collectAsStateWithLifecycle()
     val appearFadeInAnimatable = remember { Animatable(0f) }
     val appearMoveAnimatable = remember { Animatable(0f) }
     val appearAnimationInitialOffset = with(LocalDensity.current) { 80.dp.toPx() }
 
-    actionButton?.let { actionButtonModel ->
+    viewModel.actionButton?.let { actionButtonModel ->
         LaunchedEffect(Unit) {
             appearFadeInAnimatable.animateTo(
                 targetValue = 1f,
@@ -867,10 +864,8 @@ private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modi
                     .background(color = MaterialTheme.colorScheme.secondaryContainer)
                     .semantics { role = Role.Button }
                     .combinedClickable(
-                        onClick = { actionButton?.let { viewModel.onActionButtonClicked(it) } },
-                        onLongClick = {
-                            actionButton?.let { viewModel.onActionButtonLongClicked(it) }
-                        },
+                        onClick = { viewModel.onActionButtonClicked(actionButtonModel) },
+                        onLongClick = { viewModel.onActionButtonLongClicked(actionButtonModel) },
                     )
         ) {
             Text(
