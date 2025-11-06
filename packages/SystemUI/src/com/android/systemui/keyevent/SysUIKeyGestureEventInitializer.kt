@@ -21,6 +21,7 @@ import android.content.res.Resources
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
@@ -74,6 +75,7 @@ constructor(
         // devices.
         if (enablePartialScreenshotKeyboardShortcut()) {
             supportedGestures.add(KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT)
+            supportedGestures.add(KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT)
         }
         if (enableContextualSearchDesktopEntrypoints()) {
             supportedGestures.add(KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH)
@@ -85,6 +87,9 @@ constructor(
             when (event.keyGestureType) {
                 KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT -> {
                     screenCaptureKeyboardShortcutInteractor.attemptPartialRegionScreenshot()
+                }
+                KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT -> {
+                    screenCaptureKeyboardShortcutInteractor.attemptAppWindowScreenshot()
                 }
                 KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL -> {
                     shadeExpansionTargetDisplayInteractor.onNotificationPanelKeyboardShortcut()

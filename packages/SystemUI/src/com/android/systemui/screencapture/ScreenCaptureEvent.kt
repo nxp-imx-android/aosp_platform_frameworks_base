@@ -30,7 +30,7 @@ enum class ScreenCaptureEvent(private val mId: Int) : UiEventEnum {
     SCREEN_CAPTURE_LARGE_SCREEN_FULLSCREEN_SCREENSHOT_REQUESTED(2490),
     @UiEvent(doc = "Requested a partial screenshot from the large-screen pre-capture UI")
     SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_REQUESTED(2491),
-    @UiEvent(doc = "Invoked partial screenshot using the keyboard shortcut \"Meta + Ctrl + S\"")
+    @UiEvent(doc = "Invoked partial screenshot using the keyboard shortcut")
     SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT(2495),
     @UiEvent(doc = "Selected fullscreen screenshot in the large-screen pre-capture UI")
     SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_FULLSCREEN_SCREENSHOT(2501),
@@ -43,7 +43,9 @@ enum class ScreenCaptureEvent(private val mId: Int) : UiEventEnum {
     @UiEvent(doc = "Selected app window screenshot in the large-screen pre-capture UI")
     SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_SCREENSHOT(2505),
     @UiEvent(doc = "Selected app window recording in the large-screen pre-capture UI")
-    SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_RECORDING(2506);
+    SCREEN_CAPTURE_LARGE_SCREEN_SELECTED_APP_WINDOW_RECORDING(2506),
+    @UiEvent(doc = "Invoked app window screenshot using the keyboard shortcut")
+    SCREEN_CAPTURE_LARGE_SCREEN_APP_WINDOW_SCREENSHOT_KEYBOARD_SHORTCUT(2529);
 
     override fun getId(): Int = mId
 
