@@ -612,6 +612,11 @@ public class CallLog {
         public static final int FEATURES_VONR = 1 << 8;
 
         /**
+         * Indicates that this was a group call.
+         */
+        @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+        public static final int FEATURES_GROUP_CALL = 1 << 9;
+        /**
          * The phone number as the user entered it.
          * <P>Type: TEXT</P>
          */

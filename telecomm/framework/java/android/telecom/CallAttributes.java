@@ -63,6 +63,13 @@ public final class CallAttributes implements Parcelable {
 
     /** Indicate whether the call is excluded from the system call logs **/
     private final boolean mIsLogExcluded;
+    /** Indicate whether this call was a group call **/
+    private final boolean mIsGroupCall;
+    /**
+     * The VoIP contact directory lookup URI that will be used by the system dialer to get the
+     * enriched call info.
+     */
+    private final Uri mContactUri;
 
     /** @hide **/
     public static final String CALL_CAPABILITIES_KEY = "TelecomCapabilities";
@@ -82,7 +89,9 @@ public final class CallAttributes implements Parcelable {
             int direction,
             int callType,
             int callCapabilities,
-            boolean isLogExcluded) {
+            boolean isLogExcluded,
+            boolean isGroupCall,
+            Uri contactUri) {
         mPhoneAccountHandle = phoneAccountHandle;
         mDisplayName = displayName;
         mAddress = address;
@@ -90,6 +99,8 @@ public final class CallAttributes implements Parcelable {
         mCallType = callType;
         mCallCapabilities = callCapabilities;
         mIsLogExcluded = isLogExcluded;
+        mIsGroupCall = isGroupCall;
+        mContactUri = contactUri;
     }
 
     /** @hide */
@@ -175,6 +186,8 @@ public final class CallAttributes implements Parcelable {
         @CallType private int mCallType = CallAttributes.AUDIO_CALL;
         @CallCapability private int mCallCapabilities = SUPPORTS_SET_INACTIVE;
         private boolean mIsLogExcluded;
+        private boolean mIsGroupCall;
+        private Uri mContactUri;
 
         /**
          * Constructor for the CallAttributes.Builder class
@@ -242,6 +255,31 @@ public final class CallAttributes implements Parcelable {
         }
 
         /**
+         * Sets whether or not this call should be considered a group call.
+         * @param isGroupCall whether the call is a group call.
+         * @return Builder
+         */
+        @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+        @NonNull
+        public Builder setIsGroupCall(boolean isGroupCall) {
+            mIsGroupCall = isGroupCall;
+            return this;
+        }
+
+        /**
+         * Sets the contact directory URI for the VoIP app. This must be a valid URI pointing to the
+         * VoIP contact directory.
+         * @param contactUri The contact URI pointing to the VoIP contact directory.
+         * @return Builder
+         */
+        @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+        @NonNull
+        public Builder setContactUri(@NonNull Uri contactUri) {
+            mContactUri = contactUri;
+            return this;
+        }
+
+        /**
          * Build an instance of {@link CallAttributes} based on the last values passed to the
          * setters or default values.
          *
@@ -250,7 +288,7 @@ public final class CallAttributes implements Parcelable {
         @NonNull
         public CallAttributes build() {
             return new CallAttributes(mPhoneAccountHandle, mDisplayName, mAddress, mDirection,
-                    mCallType, mCallCapabilities, mIsLogExcluded);
+                    mCallType, mCallCapabilities, mIsLogExcluded, mIsGroupCall, mContactUri);
         }
 
         /** @hide */
@@ -307,6 +345,22 @@ public final class CallAttributes implements Parcelable {
     }
 
     /**
+     * @return Whether the call is a group call
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    public boolean isGroupCall() {
+        return mIsGroupCall;
+    }
+
+    /**
+     * @return The contact URI pointing to the VoIP contact directory
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    public @Nullable Uri getContactUri() {
+        return mContactUri;
+    }
+
+    /**
      * @return The allowed capabilities of the new call
      */
     public @CallCapability int getCallCapabilities() {
@@ -327,6 +381,8 @@ public final class CallAttributes implements Parcelable {
         dest.writeInt(mCallType);
         dest.writeInt(mCallCapabilities);
         dest.writeBoolean(mIsLogExcluded);
+        dest.writeBoolean(mIsGroupCall);
+        dest.writeParcelable(mContactUri, flags);
     }
 
     /**
@@ -345,7 +401,9 @@ public final class CallAttributes implements Parcelable {
                             source.readInt(),
                             source.readInt(),
                             source.readInt(),
-                            source.readBoolean());
+                            source.readBoolean(),
+                            source.readBoolean(),
+                            source.readParcelable(Uri.class.getClassLoader(), Uri.class));
                 }
 
                 @Override
@@ -375,6 +433,10 @@ public final class CallAttributes implements Parcelable {
                 .append(mCallCapabilities)
                 .append("], [mIsLogExcluded=")
                 .append(mIsLogExcluded)
+                .append("], [mIsGroupCall=")
+                .append(mIsGroupCall)
+                .append("], [mContactUri=")
+                .append(mContactUri)
                 .append("]  }");
 
         return sb.toString();
@@ -395,7 +457,9 @@ public final class CallAttributes implements Parcelable {
                 && Objects.equals(this.mPhoneAccountHandle, that.mPhoneAccountHandle)
                 && Objects.equals(this.mAddress, that.mAddress)
                 && TextUtils.equals(this.mDisplayName, that.mDisplayName)
-                && this.mIsLogExcluded == that.mIsLogExcluded;
+                && this.mIsLogExcluded == that.mIsLogExcluded
+                && this.mIsGroupCall == that.mIsGroupCall
+                && Objects.equals(this.mContactUri, that.mContactUri);
     }
 
     /**
@@ -404,6 +468,7 @@ public final class CallAttributes implements Parcelable {
     @Override
     public int hashCode() {
         return Objects.hash(mPhoneAccountHandle, mAddress, mDisplayName,
-                mDirection, mCallType, mCallCapabilities, mIsLogExcluded);
+                mDirection, mCallType, mCallCapabilities, mIsLogExcluded,
+                mIsGroupCall, mContactUri);
     }
 }
