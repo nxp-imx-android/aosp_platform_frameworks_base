@@ -124,7 +124,7 @@ public final class CallAttributes implements Parcelable {
      * Intended for handling callback support for VoIP calls to indicate that the app's messaging
      * interface should be brought up.
      */
-    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
     public static final int MESSAGING = 3;
 
     /** @hide */
