@@ -888,9 +888,14 @@ public class MediaQualityService extends SystemService {
                     cursor.moveToFirst();
                     PictureProfile p = MediaQualityUtils.convertCursorToPictureProfileWithTempId(
                             cursor, mPictureProfileTempIdMap);
+                    if (p == null || p.getHandle() == null) {
+                        Slog.e(TAG, "getPictureProfileForTvInput: retrieved profile or handle"
+                                + "is null");
+                        return -1;
+                    }
                     handle = p.getHandle().getId();
                     PictureProfile current = mOriginalHandleToCurrentPictureProfile.get(handle);
-                    if (current != null) {
+                    if (current != null && current.getHandle() != null) {
                         if (DEBUG) {
                             Slog.d(TAG, "handle returned is " + current.getHandle().getId());
                         }
