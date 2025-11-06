@@ -55,7 +55,6 @@ val Kosmos.bouncerOverlayContentViewModel by Fixture {
         devicePolicyManager = devicePolicyManager,
         bouncerMessageViewModelFactory = bouncerMessageViewModelFactory,
         userSwitcher = userSwitcherViewModel,
-        actionButtonInteractor = bouncerActionButtonInteractor,
         pinViewModelFactory = pinBouncerViewModelFactory,
         patternViewModelFactory = patternBouncerViewModelFactory,
         passwordViewModelFactory = passwordBouncerViewModelFactory,

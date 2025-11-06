@@ -20,7 +20,9 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyResources
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.type
@@ -50,6 +52,7 @@ import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,10 +60,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
 /** Models UI state for the content of the bouncer overlay. */
+@OptIn(ExperimentalCoroutinesApi::class)
 class BouncerOverlayContentViewModel
 @AssistedInject
 constructor(
@@ -70,7 +77,6 @@ constructor(
     private val devicePolicyManager: DevicePolicyManager,
     private val bouncerMessageViewModelFactory: BouncerMessageViewModel.Factory,
     private val userSwitcher: UserSwitcherViewModel,
-    private val actionButtonInteractor: BouncerActionButtonInteractor,
     private val pinViewModelFactory: PinBouncerViewModel.Factory,
     private val patternViewModelFactory: PatternBouncerViewModel.Factory,
     private val passwordViewModelFactory: PasswordBouncerViewModel.Factory,
@@ -96,11 +102,6 @@ constructor(
 
     private val _isUserSwitcherVisible = MutableStateFlow(false)
     val isUserSwitcherVisible: StateFlow<Boolean> = _isUserSwitcherVisible.asStateFlow()
-
-    /** View-model for the current UI, based on the current authentication method. */
-    private val _authMethodViewModel = MutableStateFlow<AuthMethodBouncerViewModel?>(null)
-    val authMethodViewModel: StateFlow<AuthMethodBouncerViewModel?> =
-        _authMethodViewModel.asStateFlow()
 
     /**
      * A message for a dialog to show when the user has attempted the wrong credential too many
@@ -156,13 +157,6 @@ constructor(
     val showBackButton =
         Flags.backButtonOnBouncerFix() && bouncerInteractor.isImproveLargeScreenInteractionEnabled
 
-    private val _showSignInButton = MutableStateFlow(showSignInButton(authMethodViewModel.value))
-    val showSignInButton: StateFlow<Boolean> = _showSignInButton.asStateFlow()
-
-    private val _isSignInButtonEnabled =
-        MutableStateFlow(authMethodViewModel.value?.readyToTryAuthenticate?.value ?: false)
-    val isSignInButtonEnabled: StateFlow<Boolean> = _isSignInButtonEnabled.asStateFlow()
-
     /** Whether to show the accessibility button on the bouncer. */
     val showAccessibilityButton =
         Flags.bouncerAccessibilityButtonForDesktop() &&
@@ -170,14 +164,6 @@ constructor(
 
     private val _isInputPreferredOnLeftSide = MutableStateFlow(false)
     val isInputPreferredOnLeftSide = _isInputPreferredOnLeftSide.asStateFlow()
-
-    private val _isFoldSplitRequired =
-        MutableStateFlow(isFoldSplitRequired(authMethodViewModel.value))
-    /**
-     * Whether the splitting the UI around the fold seam (where the hinge is on a foldable device)
-     * is required.
-     */
-    val isFoldSplitRequired: StateFlow<Boolean> = _isFoldSplitRequired.asStateFlow()
 
     /** How much the bouncer UI should be scaled. */
     val scale: StateFlow<Float> = bouncerInteractor.scale
@@ -198,18 +184,49 @@ constructor(
     private val _isInputEnabled = MutableStateFlow(authenticationInteractor.lockoutEndTime == null)
     private val isInputEnabled: StateFlow<Boolean> = _isInputEnabled.asStateFlow()
 
+    private val authenticationMethod: AuthenticationMethodModel? by
+        authenticationInteractor.authenticationMethod
+            .filter { it !is AuthenticationMethodModel.Biometric }
+            .distinctUntilChanged()
+            .hydratedStateOf(
+                traceName = "authenticationMethod",
+                initialValue =
+                    authenticationInteractor.authenticationMethod.value.takeIf {
+                        it !is AuthenticationMethodModel.Biometric
+                    },
+            )
+
+    /** View-model for the current UI, based on the current authentication method. */
+    val authMethodViewModel: AuthMethodBouncerViewModel? by derivedStateOf {
+        authenticationMethod?.let { getChildViewModel(it) }
+    }
+
+    val showSignInButton: Boolean
+        get() = showSignInButton(authMethodViewModel)
+
+    val isSignInButtonEnabled: Boolean by
+        snapshotFlow { authMethodViewModel }
+            .filterNotNull()
+            .flatMapLatest { it.readyToTryAuthenticate }
+            .hydratedStateOf(
+                traceName = "isSignInButtonEnabled",
+                initialValue = authMethodViewModel?.readyToTryAuthenticate?.value ?: false,
+            )
+
+    /**
+     * Whether the splitting the UI around the fold seam (where the hinge is on a foldable device)
+     * is required.
+     */
+    val isFoldSplitRequired: Boolean
+        get() = isFoldSplitRequired(authMethodViewModel)
+
     override suspend fun onActivated(): Nothing {
         bouncerInteractor.resetScale()
         coroutineScope {
             launch { message.activate() }
             launch {
-                authenticationInteractor.authenticationMethod
-                    .filter { it !is AuthenticationMethodModel.Biometric }
-                    .map(::getChildViewModel)
-                    .collectLatest { childViewModelOrNull ->
-                        _authMethodViewModel.value = childViewModelOrNull
-                        childViewModelOrNull?.let { traceCoroutine(it.traceName) { it.activate() } }
-                    }
+                snapshotFlow { authMethodViewModel }
+                    .collectLatest { it?.let { traceCoroutine(it.traceName) { it.activate() } } }
             }
 
             launch {
@@ -304,24 +321,6 @@ constructor(
             }
 
             launch {
-                authMethodViewModel.collect {
-                    _showSignInButton.value = showSignInButton(it)
-                    _isFoldSplitRequired.value = isFoldSplitRequired(it)
-                }
-            }
-
-            launch {
-                authMethodViewModel
-                    .filter { it != null }
-                    .map { it!! }
-                    .collectLatest { authVM ->
-                        authVM.readyToTryAuthenticate.collect { isReady ->
-                            _isSignInButtonEnabled.value = isReady
-                        }
-                    }
-            }
-
-            launch {
                 message.isLockoutMessagePresent
                     .map { lockoutMessagePresent -> !lockoutMessagePresent }
                     .collect { _isInputEnabled.value = it }
@@ -342,13 +341,6 @@ constructor(
     private fun getChildViewModel(
         authenticationMethod: AuthenticationMethodModel
     ): AuthMethodBouncerViewModel? {
-        // If the current child view-model matches the authentication method, reuse it instead of
-        // creating a new instance.
-        val childViewModel = authMethodViewModel.value
-        if (authenticationMethod == childViewModel?.authenticationMethod) {
-            return childViewModel
-        }
-
         return when (authenticationMethod) {
             is AuthenticationMethodModel.Pin ->
                 pinViewModelFactory.create(
@@ -486,7 +478,7 @@ constructor(
      */
     fun onKeyEvent(keyEvent: KeyEvent): Boolean {
         if (keyguardMediaKeyInteractor.processMediaKeyEvent(keyEvent.nativeKeyEvent)) return true
-        return authMethodViewModel.value?.onKeyEvent(keyEvent.type, keyEvent.nativeKeyEvent.keyCode)
+        return authMethodViewModel?.onKeyEvent(keyEvent.type, keyEvent.nativeKeyEvent.keyCode)
             ?: false
     }
 
@@ -536,7 +528,7 @@ constructor(
     }
 
     fun onSignIn() {
-        authMethodViewModel.value?.tryAuthenticate()
+        authMethodViewModel?.tryAuthenticate()
     }
 
     fun showAccessibilityDialog() {
