@@ -92,6 +92,14 @@ constructor(
     val regionBox: Rect? by regionBoxSource.hydratedStateOf()
 
     fun updateCaptureType(selectedType: ScreenCaptureType) {
+        // This fixes the crash when select partial capture region first and then click Record radio
+        // button (b/458133150). We need to remove this code once region recording is supported.
+        if (
+            selectedType == ScreenCaptureType.RECORDING &&
+                captureRegion == ScreenCaptureRegion.PARTIAL
+        ) {
+            captureRegionSource.value = ScreenCaptureRegion.FULLSCREEN
+        }
         captureTypeSource.value = selectedType
         uiEventLogger.log(
             ScreenCaptureEvent.fromRegionAndType(captureRegionSource.value, selectedType)
