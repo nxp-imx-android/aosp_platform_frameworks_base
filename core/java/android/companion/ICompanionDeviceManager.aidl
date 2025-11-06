@@ -188,4 +188,6 @@ interface ICompanionDeviceManager {
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
     void removeOnActionResultListener(in String serviceName, in int userId);
+
+    boolean isSystemDataTransportAttached(in int associationId);
 }
