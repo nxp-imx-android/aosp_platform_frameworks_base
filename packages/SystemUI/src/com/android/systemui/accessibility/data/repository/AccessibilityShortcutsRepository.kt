@@ -33,7 +33,7 @@ import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutT
 import com.android.internal.accessibility.dialog.AccessibilityTarget
 import com.android.internal.accessibility.dialog.AccessibilityTargetHelper
 import com.android.internal.accessibility.util.FrameworkObjectProvider
-import com.android.internal.accessibility.util.ShortcutUtils.convertToKey
+import com.android.internal.accessibility.util.ShortcutUtils
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.accessibility.keygesture.shared.model.DialogContentSection
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
@@ -94,6 +94,13 @@ interface AccessibilityShortcutsRepository {
         @UserShortcutType shortcutType: Int
     ): List<AccessibilityTargetModel>
 
+    /**
+     * Get a flow of all accessibility targets that emits updates when service state or settings
+     * change.
+     *
+     * @param shortcutType The shortcut type.
+     * @return The flow of list of [AccessibilityTargetModel].
+     */
     fun getAllAccessibilityTargets(
         @UserShortcutType shortcutType: Int
     ): Flow<List<AccessibilityTargetModel>>
@@ -109,6 +116,17 @@ interface AccessibilityShortcutsRepository {
     fun getSelectedAccessibilityTargetsInfo(
         @UserShortcutType shortcutType: Int
     ): List<AccessibilityTargetModel>
+
+    /**
+     * Get a flow of selected/assigned accessibility targets that emits updates when service state
+     * or settings change.
+     *
+     * @param shortcutType The shortcut type.
+     * @return The flow of list of [AccessibilityTargetModel].
+     */
+    fun getSelectedAccessibilityTargets(
+        @UserShortcutType shortcutType: Int
+    ): Flow<List<AccessibilityTargetModel>>
 }
 
 @SysUISingleton
@@ -297,14 +315,32 @@ constructor(
         @UserShortcutType shortcutType: Int
     ): List<AccessibilityTargetModel> =
         AccessibilityTargetHelper.getInstalledTargets(context, shortcutType).map {
-            it.toAccessibilityTargetModel(shortcutType)
+            it.toAccessibilityTargetModel()
         }
 
     override fun getAllAccessibilityTargets(
         @UserShortcutType shortcutType: Int
     ): Flow<List<AccessibilityTargetModel>> =
+        getTargetsAsFlow(shortcutType, ::getAllAccessibilityTargetsInfo)
+
+    override fun getSelectedAccessibilityTargetsInfo(
+        @UserShortcutType shortcutType: Int
+    ): List<AccessibilityTargetModel> =
+        AccessibilityTargetHelper.getTargets(context, shortcutType).map {
+            it.toAccessibilityTargetModel()
+        }
+
+    override fun getSelectedAccessibilityTargets(
+        @UserShortcutType shortcutType: Int
+    ): Flow<List<AccessibilityTargetModel>> =
+        getTargetsAsFlow(shortcutType, ::getSelectedAccessibilityTargetsInfo)
+
+    private fun getTargetsAsFlow(
+        @UserShortcutType shortcutType: Int,
+        getTargetsBlock: (Int) -> List<AccessibilityTargetModel>,
+    ): Flow<List<AccessibilityTargetModel>> =
         callbackFlow {
-                val sendTargets = { trySend(getAllAccessibilityTargetsInfo(shortcutType)) }
+                val sendTargets = { trySend(getTargetsBlock(shortcutType)) }
 
                 // Listen for state changes from AccessibilityServices.
                 val listener =
@@ -319,12 +355,12 @@ constructor(
                         }
                     }
                 AccessibilityTargetHelper.getInstalledTargets(context, shortcutType)
-                    // Only want toggleable targets backed by secure settings, which will have
-                    // keys that are not just the shortcut type.
-                    .filter { it.isToggleable && it.key != convertToKey(shortcutType) }
-                    .map { target ->
-                        secureSettings.registerContentObserverAsync(target.key, observer)
-                    }
+                    .filter { it.isToggleable && it.key != null }
+                    .map { it.key }
+                    .toMutableSet()
+                    // This observes targets being assigned/unassigned to the shortcut.
+                    .apply { add(ShortcutUtils.convertToKey(shortcutType)) }
+                    .map { key -> secureSettings.registerContentObserverAsync(key, observer) }
                     .joinAll()
 
                 // Emits the initial state of the list of accessibility targets.
@@ -338,18 +374,9 @@ constructor(
             .conflate()
             .flowOn(backgroundDispatcher)
 
-    override fun getSelectedAccessibilityTargetsInfo(
-        @UserShortcutType shortcutType: Int
-    ): List<AccessibilityTargetModel> =
-        AccessibilityTargetHelper.getTargets(context, shortcutType).map {
-            it.toAccessibilityTargetModel(shortcutType)
-        }
-
-    private fun AccessibilityTarget.toAccessibilityTargetModel(
-        @UserShortcutType shortcutType: Int
-    ): AccessibilityTargetModel =
+    private fun AccessibilityTarget.toAccessibilityTargetModel() =
         AccessibilityTargetModel(
-            shortcutType,
+            shortcutType = shortcutType,
             targetName = id,
             featureName = label.toString(),
             icon = icon,
