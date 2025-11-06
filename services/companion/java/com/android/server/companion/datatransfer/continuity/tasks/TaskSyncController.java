@@ -22,6 +22,7 @@ import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.util.Slog;
+import com.android.internal.annotations.GuardedBy;
 import com.android.server.companion.datatransfer.continuity.FeatureController;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
@@ -41,6 +42,9 @@ import java.util.Objects;
  * local store of tasks from connected devices.
  */
 public class TaskSyncController extends FeatureController implements RemoteTaskStore.Listener {
+
+    @GuardedBy("this")
+    private boolean mIsRegistered = false;
 
     private final TaskBroadcaster mTaskBroadcaster;
     private final RemoteTaskStore mRemoteTaskStore;
@@ -87,24 +91,22 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
     @Override
     public void onEnabled() {
         Slog.v(getTag(), "Registering listeners from ActivityTaskManager");
-        mActivityTaskManager.registerTaskStackListener(mTaskBroadcaster);
-        mActivityTaskManagerInternal.registerHandoffEnablementListener(mTaskBroadcaster);
+        maybeListenToActivityTaskManager();
         mRemoteTaskStore.addListener(this);
     }
 
     @Override
     public void onDisabled() {
         Slog.v(getTag(), "Unregistering listeners from ActivityTaskManager");
-        mActivityTaskManager.unregisterTaskStackListener(mTaskBroadcaster);
-        mActivityTaskManagerInternal.unregisterHandoffEnablementListener(mTaskBroadcaster);
+        unlistenFromActivityTaskManager();
         mRemoteTaskStore.removeListener(this);
-
         Slog.v(getTag(), "Clearing all tasks from RemoteTaskStore");
         mRemoteTaskStore.clear();
     }
 
     @Override
     public void onAssociationConnected(@NonNull AssociationInfo associationInfo) {
+        maybeListenToActivityTaskManager();
         int associationId = Objects.requireNonNull(associationInfo).getId();
         Slog.v(getTag(), "Association connected: " + associationId);
         mTaskBroadcaster.onDeviceConnected(associationId);
@@ -114,6 +116,14 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
     public void onAssociationDisconnected(int associationId) {
         Slog.v(getTag(), "Association disconnected: " + associationId);
         mRemoteTaskStore.removeAssociation(associationId);
+        synchronized (this) {
+            if (mTaskContinuityMessenger
+                    .getConnectedAssociationStore()
+                    .getConnectedAssociations()
+                    .isEmpty()) {
+                unlistenFromActivityTaskManager();
+            }
+        }
     }
 
     @Override
@@ -179,5 +189,29 @@ public class TaskSyncController extends FeatureController implements RemoteTaskS
         }
 
         mRemoteTaskListenerHolder.notifyListeners(remoteTasks);
+    }
+
+    private void maybeListenToActivityTaskManager() {
+        synchronized (this) {
+            if (!mIsRegistered
+                    && !mTaskContinuityMessenger
+                            .getConnectedAssociationStore()
+                            .getConnectedAssociations()
+                            .isEmpty()) {
+                mActivityTaskManager.registerTaskStackListener(mTaskBroadcaster);
+                mActivityTaskManagerInternal.registerHandoffEnablementListener(mTaskBroadcaster);
+                mIsRegistered = true;
+            }
+        }
+    }
+
+    private void unlistenFromActivityTaskManager() {
+        synchronized (this) {
+            if (mIsRegistered) {
+                mActivityTaskManager.unregisterTaskStackListener(mTaskBroadcaster);
+                mActivityTaskManagerInternal.unregisterHandoffEnablementListener(mTaskBroadcaster);
+                mIsRegistered = false;
+            }
+        }
     }
 }

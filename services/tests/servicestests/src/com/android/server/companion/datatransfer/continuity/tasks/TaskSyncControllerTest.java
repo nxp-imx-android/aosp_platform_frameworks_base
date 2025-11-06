@@ -18,6 +18,8 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +29,7 @@ import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
@@ -55,12 +58,15 @@ public class TaskSyncControllerTest {
     @Mock private RemoteTaskListenerHolder mMockRemoteTaskListenerHolder;
     @Mock private ActivityTaskManager mMockActivityTaskManager;
     @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
+    @Mock private ConnectedAssociationStore mMockConnectedAssociationStore;
 
     private TaskSyncController mTaskSyncController;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mMockTaskContinuityMessenger.getConnectedAssociationStore())
+                .thenReturn(mMockConnectedAssociationStore);
         mTaskSyncController =
                 new TaskSyncController(
                         USER_ID,
@@ -73,7 +79,13 @@ public class TaskSyncControllerTest {
     }
 
     @Test
-    public void onEnableAndDisable_registersAndUnregistersListeners() {
+    public void onEnableAndDisable_associationConnected_registersAndUnregistersListeners() {
+        when(mMockConnectedAssociationStore.getConnectedAssociations())
+                .thenReturn(
+                        List.of(
+                                new AssociationInfo.Builder(1, 0, "test_package")
+                                        .setDisplayName("test_device")
+                                        .build()));
         mTaskSyncController.enable();
         verify(mMockActivityTaskManager).registerTaskStackListener(mMockTaskBroadcaster);
         verify(mMockActivityTaskManagerInternal)
@@ -82,6 +94,20 @@ public class TaskSyncControllerTest {
         mTaskSyncController.disable();
         verify(mMockActivityTaskManager).unregisterTaskStackListener(mMockTaskBroadcaster);
         verify(mMockActivityTaskManagerInternal)
+                .unregisterHandoffEnablementListener(mMockTaskBroadcaster);
+    }
+
+    @Test
+    public void onEnableAndDisable_associationNotConnected_doesNotListenToActivityTaskManager() {
+        when(mMockConnectedAssociationStore.getConnectedAssociations()).thenReturn(List.of());
+        mTaskSyncController.enable();
+        verify(mMockActivityTaskManager, never()).registerTaskStackListener(mMockTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal, never())
+                .registerHandoffEnablementListener(mMockTaskBroadcaster);
+
+        mTaskSyncController.disable();
+        verify(mMockActivityTaskManager, never()).unregisterTaskStackListener(mMockTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal, never())
                 .unregisterHandoffEnablementListener(mMockTaskBroadcaster);
     }
 
@@ -122,15 +148,57 @@ public class TaskSyncControllerTest {
                 new AssociationInfo.Builder(associationId, 0, "test_package")
                         .setDisplayName("test_device")
                         .build();
+        when(mMockConnectedAssociationStore.getConnectedAssociations())
+                .thenReturn(List.of(associationInfo));
         mTaskSyncController.onAssociationConnected(associationInfo);
         verify(mMockTaskBroadcaster).onDeviceConnected(1);
+
+        verify(mMockActivityTaskManager).registerTaskStackListener(mMockTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal)
+                .registerHandoffEnablementListener(mMockTaskBroadcaster);
+    }
+
+    @Test
+    public void onSecondAssociationConnected_onlyRegistersListenersOnce() {
+        int associationId = 1;
+        AssociationInfo associationInfo =
+                new AssociationInfo.Builder(associationId, 0, "test_package")
+                        .setDisplayName("test_device")
+                        .build();
+        when(mMockConnectedAssociationStore.getConnectedAssociations())
+                .thenReturn(List.of(associationInfo));
+        mTaskSyncController.onAssociationConnected(associationInfo);
+        mTaskSyncController.onAssociationConnected(associationInfo);
+        verify(mMockActivityTaskManager, times(1)).registerTaskStackListener(mMockTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal, times(1))
+                .registerHandoffEnablementListener(mMockTaskBroadcaster);
     }
 
     @Test
     public void onAssociationDisconnected_notifiesStoreAndBroadcaster() {
         int associationId = 1;
+        AssociationInfo associationInfo =
+                new AssociationInfo.Builder(associationId, 0, "test_package")
+                        .setDisplayName("test_device")
+                        .build();
+        when(mMockConnectedAssociationStore.getConnectedAssociations())
+                .thenReturn(List.of(associationInfo));
+        mTaskSyncController.onAssociationConnected(associationInfo);
+        when(mMockConnectedAssociationStore.getConnectedAssociations()).thenReturn(List.of());
         mTaskSyncController.onAssociationDisconnected(associationId);
         verify(mMockRemoteTaskStore).removeAssociation(associationId);
+        verify(mMockActivityTaskManager).unregisterTaskStackListener(mMockTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal)
+                .unregisterHandoffEnablementListener(mMockTaskBroadcaster);
+    }
+
+    @Test
+    public void onAssociationDisconnected_notListening_doesNotUnregisterListeners() {
+        int associationId = 1;
+        mTaskSyncController.onAssociationDisconnected(associationId);
+        verify(mMockActivityTaskManager, never()).unregisterTaskStackListener(mMockTaskBroadcaster);
+        verify(mMockActivityTaskManagerInternal, never())
+                .unregisterHandoffEnablementListener(mMockTaskBroadcaster);
     }
 
     @Test
