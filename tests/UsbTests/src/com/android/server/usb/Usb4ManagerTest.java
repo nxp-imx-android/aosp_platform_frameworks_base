@@ -20,20 +20,28 @@ import static android.hardware.usb.InternalPciTunnelControlDisableReason.PCI_TUN
 import static android.hardware.usb.InternalPciTunnelControlDisableReason.PCI_TUNNEL_CONTROL_DISABLE_REASON_ENTERPRISE;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.UserInfo;
 import android.hardware.usb.UsbManager;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.LocalServices;
@@ -46,12 +54,22 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 /** Tests for {@link com.android.server.usb.Usb4Manager} atest UsbTests:Usb4ManagerTest */
 @RunWith(AndroidJUnit4.class)
+@EnableFlags({
+    Flags.FLAG_ENABLE_USB4,
+    Flags.FLAG_DEFAULT_ALLOW_PCI_TUNNELS,
+    android.hardware.usb.flags.Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL
+})
 public class Usb4ManagerTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
-    @Mock private Context mContext;
+    private Context mContext = InstrumentationRegistry.getInstrumentation().getContext();
+    private SharedPreferences mSettings;
     @Mock private UserManager mUserManager;
     @Mock private Usb4Manager.Usb4ManagerNative mUsb4ManagerNative;
 
@@ -69,9 +87,6 @@ public class Usb4ManagerTest {
 
     @Before
     public void setUp() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_USB4);
-        mSetFlagsRule.enableFlags(Flags.FLAG_DEFAULT_ALLOW_PCI_TUNNELS);
-        mSetFlagsRule.enableFlags(android.hardware.usb.flags.Flags.FLAG_ENABLE_PCI_TUNNEL_CONTROL);
         LocalServices.removeAllServicesForTest();
         MockitoAnnotations.initMocks(this);
 
@@ -81,7 +96,11 @@ public class Usb4ManagerTest {
 
         when(mUsb4ManagerNative.checkPciTunnelsSupported()).thenReturn(true);
 
-        mUsb4Manager = new Usb4Manager(mContext, mUserManager, mUsb4ManagerNative);
+        File prefsFile = new File(mContext.getCacheDir(), "tmpPrefs.xml");
+        mSettings = spy(mContext.getSharedPreferences(prefsFile, Context.MODE_PRIVATE));
+        mSettings.edit().clear().commit();
+
+        mUsb4Manager = new Usb4Manager(mContext, mUserManager, mUsb4ManagerNative, mSettings);
     }
 
     /** Test that enabling PCI tunnels succeeds for a full admin user. */
@@ -89,7 +108,7 @@ public class Usb4ManagerTest {
     public void testSetPciTunnelingEnabled_successWithFullAdminUser() {
         mUsb4Manager.onUpdateLoggedInState(true, TEST_USER_ID);
         mUsb4Manager.setPciTunnelingEnabled(true);
-        verify(mUsb4ManagerNative, times(2)).enablePciTunnels(true);
+        verify(mUsb4ManagerNative, atLeast(1)).enablePciTunnels(true);
         assertTrue(mUsb4Manager.isPciTunnelingEnabled());
     }
 
@@ -122,7 +141,7 @@ public class Usb4ManagerTest {
 
         // Disabling PCI tunnels is still allowed when not supported.
         mUsb4Manager.setPciTunnelingEnabled(false);
-        verify(mUsb4ManagerNative, times(1)).enablePciTunnels(false);
+        verify(mUsb4ManagerNative, atLeast(1)).enablePciTunnels(false);
     }
 
     /** Test an invalid disable reason on setPciTunnelingControlAllowed */
@@ -194,5 +213,30 @@ public class Usb4ManagerTest {
     public void testOnUpdateLoggedInState_systemUser_ignored() {
         mUsb4Manager.onUpdateLoggedInState(true, UserHandle.USER_SYSTEM);
         verify(mUsb4ManagerNative, never()).updateLoggedInState(true, UserHandle.USER_SYSTEM);
+    }
+
+    /** Test that checks pci tunnel preferences are persisted and loaded correctly on init. */
+    @Test
+    public void testPciTunnelPreferencePersistence() throws InterruptedException {
+        assertTrue(mUsb4Manager.isPciTunnelingEnabled());
+        mSettings.edit().clear().putBoolean(Usb4Manager.ENABLE_PCI_TUNNELS_PREF, false).commit();
+
+        CountDownLatch latch = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            Object result = invocation.callRealMethod();
+            latch.countDown();
+            return result;
+        }).when(mSettings).getBoolean(anyString(), anyBoolean());
+
+        mUsb4Manager = new Usb4Manager(mContext, mUserManager, mUsb4ManagerNative, mSettings);
+        // Wait for async work to read from persisted values.
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        assertFalse(mUsb4Manager.isPciTunnelingEnabled());
+
+        mUsb4Manager.onUpdateLoggedInState(true, TEST_USER_ID);
+        mUsb4Manager.setPciTunnelingEnabled(true);
+        assertTrue(mUsb4Manager.isPciTunnelingEnabled());
+
+        assertTrue(mSettings.getBoolean(Usb4Manager.ENABLE_PCI_TUNNELS_PREF, false));
     }
 }

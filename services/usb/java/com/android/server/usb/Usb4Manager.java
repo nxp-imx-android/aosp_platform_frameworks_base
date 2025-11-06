@@ -22,8 +22,11 @@ import static android.hardware.usb.InternalPciTunnelControlDisableReason.PCI_TUN
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.UserInfo;
 import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.ArraySet;
@@ -32,6 +35,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.io.File;
 import java.util.Set;
 
 /**
@@ -40,9 +44,14 @@ import java.util.Set;
  */
 public class Usb4Manager {
     private static final String TAG = Usb4Manager.class.getSimpleName();
+    private static final String USB4_PREFS_XML = "usb4_manager_prefs.xml";
+
+    @VisibleForTesting public static final String ENABLE_PCI_TUNNELS_PREF = "enable-pci-tunnels";
 
     private final Context mContext;
     private final UserManager mUserManager;
+
+    private SharedPreferences mSettings;
 
     @GuardedBy("mLock")
     private @UserIdInt int mCurrentUserId;
@@ -105,13 +114,19 @@ public class Usb4Manager {
 
     @VisibleForTesting
     public Usb4Manager(
-            Context context, UserManager userManager, Usb4ManagerNative usb4ManagerNative) {
+            Context context,
+            UserManager userManager,
+            Usb4ManagerNative usb4ManagerNative,
+            SharedPreferences sharedPreferences) {
         mContext = context;
         mUserManager = userManager;
         mUsb4ManagerNative = usb4ManagerNative;
+        mSettings = sharedPreferences;
 
         // Default to the system user.
         mCurrentUserId = UserHandle.USER_SYSTEM;
+        // Default to tunnels disabled.
+        mPciTunnelsEnabled = false;
 
         // Initialize the native methods.
         mUsb4ManagerNative.init(this);
@@ -121,49 +136,79 @@ public class Usb4Manager {
             mPciTunnelsEnabled = true;
         }
 
-        // Call the native method directly (bypassing user checks) to set initial state.
-        mUsb4ManagerNative.enablePciTunnels(mPciTunnelsEnabled);
-
         // Update tunnel control configuration.
         synchronized (mLock) {
             updatePciTunnelControlAllowed();
+            setPciTunnelingEnabledInternal(mPciTunnelsEnabled, /* storePreference= */ false);
+        }
+
+        // Load stored preference asynchronously and apply it.
+        if (android.hardware.usb.flags.Flags.enablePciTunnelControl()) {
+            AsyncTask.execute(() -> {
+                synchronized (mLock) {
+                    loadPciTunnelPreference();
+                    setPciTunnelingEnabledInternal(mPciTunnelsEnabled, /* storePreference= */false);
+                }
+            });
         }
     }
 
     public Usb4Manager(Context context, UserManager userManager) {
-        this(context, userManager, new Usb4ManagerNative());
+        this(context, userManager, new Usb4ManagerNative(), getSharedPreferences(context));
+    }
+
+    private static SharedPreferences getSharedPreferences(Context context) {
+        final File prefsFile = new File(
+                Environment.getDataSystemDeDirectory(UserHandle.USER_SYSTEM), USB4_PREFS_XML);
+        return context.createDeviceProtectedStorageContext()
+                .getSharedPreferences(prefsFile, Context.MODE_PRIVATE);
+    }
+
+    void loadPciTunnelPreference() {
+        if (mSettings.contains(ENABLE_PCI_TUNNELS_PREF)) {
+            try {
+                mPciTunnelsEnabled =
+                        mSettings.getBoolean(ENABLE_PCI_TUNNELS_PREF, mPciTunnelsEnabled);
+            } catch (ClassCastException cce) {
+                Slog.e(TAG, "PCI Tunnels pref is wrong type. Not loading stored value.");
+            }
+        }
+    }
+
+    void storePciTunnelPreference() {
+        // Update the tunnel preference and `apply` asynchronously.
+        mSettings.edit().putBoolean(ENABLE_PCI_TUNNELS_PREF, mPciTunnelsEnabled).apply();
+    }
+
+    @GuardedBy("mLock")
+    private void setPciTunnelingEnabledInternal(boolean enable, boolean storePreference) {
+        Slog.d(TAG, "setPciTunnelingEnabledInternal: " + enable + ", " + storePreference);
+
+        mPciTunnelsEnabled = enable;
+        mUsb4ManagerNative.enablePciTunnels(mPciTunnelsEnabled);
+
+        if (storePreference) {
+            storePciTunnelPreference();
+        }
     }
 
     /**
      * Enable or disable PCI tunnels.
      *
      * @param enable true to enable PCI tunnels, false to disable PCI tunnels.
-     * @throws IllegalStateException if the currently logged in user is not full or admin.
-     * @throws IllegalStateException if enabling and PCI tunnels are not supported.
+     * @throws IllegalStateException if enabling and PCI tunnels are anything but supported
      */
     @SuppressLint("AndroidFrameworkRequiresPermission") // TODO(b/440646300)
     public void setPciTunnelingEnabled(boolean enable) {
         Slog.d(TAG, "enablePciTunnels: " + enable);
 
         synchronized (mLock) {
-            UserInfo userInfo = mUserManager.getUserInfo(mCurrentUserId);
-            if (userInfo == null) {
-                Slog.e(TAG, "enablePciTunnels: UserInfo is null");
-                return;
-            }
-
-            if (!userInfo.isFull() || !userInfo.isAdmin()) {
-                Slog.e(TAG, "enablePciTunnels: User is not full or admin");
-                throw new IllegalStateException("User is not full or admin");
-            }
-
             if (enable && isPciTunnelingControlAllowed() != UsbManager.PCI_TUNNEL_CTRL_SUPPORTED) {
                 Slog.e(TAG, "enablePciTunnels: PCI tunnel control is not allowed");
                 throw new IllegalStateException("PCI tunnel control is not allowed");
             }
 
-            mPciTunnelsEnabled = enable;
-            mUsb4ManagerNative.enablePciTunnels(mPciTunnelsEnabled);
+            setPciTunnelingEnabledInternal(enable, /* storePreference= */ true);
         }
     }
 
@@ -284,9 +329,12 @@ public class Usb4Manager {
             updatePciTunnelControlAllowed();
         }
 
-        // Disable tunnels if control is disallowed.
+        // Disable tunnels if control is disallowed. Store the preference so user
+        // needs to explicitly re-enable this if disabled for another reason.
         if (!allowed && isPciTunnelingEnabled()) {
-            setPciTunnelingEnabled(false);
+            synchronized (mLock) {
+                setPciTunnelingEnabledInternal(/* enable= */ false, /* storePreference= */ true);
+            }
         }
 
         return true;
