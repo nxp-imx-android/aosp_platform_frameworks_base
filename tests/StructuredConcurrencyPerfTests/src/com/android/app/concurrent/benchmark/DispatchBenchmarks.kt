@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:OptIn(ExperimentalBlackHoleApi::class)
 
 package com.android.app.concurrent.benchmark
 
 import androidx.benchmark.BlackHole
-import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.BaseSchedulerBenchmark
 import com.android.app.concurrent.benchmark.base.ConcurrentBenchmarkRule
 import com.android.app.concurrent.benchmark.event.BaseEventBenchmark

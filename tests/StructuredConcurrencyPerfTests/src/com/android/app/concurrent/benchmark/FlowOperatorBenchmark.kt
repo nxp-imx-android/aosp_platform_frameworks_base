@@ -16,7 +16,6 @@
 package com.android.app.concurrent.benchmark
 
 import androidx.benchmark.BlackHole
-import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.BaseSchedulerBenchmark
 import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder
 import com.android.app.concurrent.benchmark.util.LooperThreadWithHandlerDispatcherBuilder
@@ -111,7 +110,6 @@ class FlowOperatorBenchmark(
                 )
     }
 
-    @OptIn(ExperimentalBlackHoleApi::class)
     @Test
     fun benchmark() {
         val sourceState = MutableStateFlow(0)
@@ -138,7 +136,6 @@ class FlowOperatorBenchmark(
                 expectedStr = "receivedVal == n + chainLength",
                 expectedCalc = { n -> "$receivedVal == $n + $chainLength" },
             )
-            @OptIn(ExperimentalBlackHoleApi::class)
             afterLastIteration { BlackHole.consume(receivedVal) }
         }
     }
