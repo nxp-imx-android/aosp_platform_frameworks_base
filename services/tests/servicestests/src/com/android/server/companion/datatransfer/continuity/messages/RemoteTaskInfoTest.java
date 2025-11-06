@@ -29,13 +29,13 @@ public class RemoteTaskInfoTest extends ProtoCreatorTest<RemoteTaskInfo> {
     public void testReadFromProto_noData_returnsDefault() throws Exception {
         verifyDefaultValue(
                 RemoteTaskInfo.CREATOR,
-                new RemoteTaskInfo(0, "", 0, new HandoffOptions(false, false)));
+                new RemoteTaskInfo(0, "", false, 0, new HandoffOptions(false, false)));
     }
 
     @Test
     public void testWriteAndRead_roundTrip_works() throws Exception {
         RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(1, "package_name", 100L, new HandoffOptions(true, true));
+                new RemoteTaskInfo(1, "package_name", true, 100L, new HandoffOptions(true, true));
         verifyRoundTrip(RemoteTaskInfo.CREATOR, remoteTaskInfo);
     }
 }

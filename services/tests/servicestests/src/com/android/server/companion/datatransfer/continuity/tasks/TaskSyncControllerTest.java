@@ -222,7 +222,7 @@ public class TaskSyncControllerTest {
                                 .setDisplayName(associationDisplayName)
                                 .build());
         RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(1, "package_name", 100, new HandoffOptions(true, true));
+                new RemoteTaskInfo(1, "package_name", true, 100, new HandoffOptions(true, true));
         RemoteTask remoteTask =
                 new RemoteTask.Builder(1, 1).setAssociationDisplayName("test_device").build();
         when(mMockRemoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo))

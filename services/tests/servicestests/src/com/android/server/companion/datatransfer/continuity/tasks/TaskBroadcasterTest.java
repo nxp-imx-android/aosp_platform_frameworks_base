@@ -50,6 +50,7 @@ public class TaskBroadcasterTest {
                     new RemoteTaskInfo(
                             100 /* taskId */,
                             "package_name" /* packageName */,
+                            true /* isResumed */,
                             100 /* lastActiveTime */,
                             new HandoffOptions(true, true)));
 

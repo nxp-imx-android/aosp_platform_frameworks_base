@@ -52,6 +52,7 @@ public class RemoteTaskFactory {
                 .setLastUsedTimestampMillis(remoteTaskInfo.lastUsedTimeMillis())
                 .setAssociationDisplayName(associationDisplayName)
                 .setIcon(getPackageIcon(remoteTaskInfo.packageName()))
+                .setTaskInForeground(remoteTaskInfo.isInForeground())
                 .setHandoffEnabled(remoteTaskInfo.handoffOptions().isHandoffEnabled())
                 .build();
     }
