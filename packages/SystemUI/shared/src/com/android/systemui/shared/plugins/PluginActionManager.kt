@@ -20,11 +20,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.view.LayoutInflater
 import androidx.core.net.toUri
 import com.android.internal.messages.nano.SystemMessageProto
 import com.android.systemui.dagger.qualifiers.Application
@@ -62,7 +60,7 @@ private constructor(
     private val env: PluginEnvironment,
     private val notificationManager: NotificationManager,
     private val pluginEnabler: PluginEnabler,
-    private val config: PluginManager.Config,
+    private val packages: PackageConfig,
     private val pluginInstanceFactory: PluginInstance.Factory,
     private val pluginPrefs: PluginPrefs,
 ) {
@@ -124,7 +122,7 @@ private constructor(
     private fun disable(pluginInstance: PluginInstance<T>, reason: DisableReason): Boolean {
         val pluginComponent = pluginInstance.componentName
 
-        if (config.isPrivileged(pluginComponent)) {
+        if (packages.isPrivileged(pluginComponent)) {
             logger.i({ "Ignoring request to disable privileged plugin: $str1" }) {
                 str1 = pluginComponent.flattenToShortString()
             }
@@ -229,7 +227,7 @@ private constructor(
 
     private fun loadPluginComponent(component: ComponentName): PluginInstance<T>? {
         // Do not load non-privileged plugins in production builds.
-        if (!env.isDebuggable && !config.isPrivileged(component)) {
+        if (!env.isDebuggable && !packages.isPrivileged(component)) {
             logger.e({ "Plugin cannot be loaded in production: $str1" }) { str1 = "$component" }
             return null
         }
@@ -314,7 +312,12 @@ private constructor(
         logger.e("Error loading plugin", ex)
     }
 
-    /** Construct a [PluginActionManager] */
+    /**
+     * Construct a [PluginActionManager]
+     *
+     * Note: This doesn't use @AssistedFactory because dagger doesn't support generic return types
+     * from factory methods. See https://github.com/google/dagger/issues/2279 for more information.
+     */
     @Singleton
     class Factory
     @Inject
@@ -325,7 +328,7 @@ private constructor(
         @Named(PluginManagerImpl.PLUGIN_THREAD) private val bgExecutor: Executor,
         private val notificationManager: NotificationManager,
         private val pluginEnabler: PluginEnabler,
-        private val config: PluginManager.Config,
+        private val packages: PackageConfig,
         private val pluginInstanceFactory: PluginInstance.Factory,
         private val pluginPrefs: PluginPrefs,
         private val env: PluginEnvironment,
@@ -348,29 +351,10 @@ private constructor(
                 env,
                 notificationManager,
                 pluginEnabler,
-                config,
+                packages,
                 pluginInstanceFactory,
                 pluginPrefs,
             )
-        }
-    }
-
-    /** Wrapper for PluginInstance contexts */
-    class PluginContextWrapper(base: Context?, private val classLoader: ClassLoader) :
-        ContextWrapper(base) {
-        private val inflater: LayoutInflater by lazy {
-            LayoutInflater.from(baseContext).cloneInContext(this)
-        }
-
-        override fun getClassLoader(): ClassLoader {
-            return classLoader
-        }
-
-        override fun getSystemService(name: String): Any? {
-            if (LAYOUT_INFLATER_SERVICE == name) {
-                return inflater
-            }
-            return baseContext.getSystemService(name)
         }
     }
 
