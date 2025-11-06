@@ -3663,24 +3663,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 }
                 final long ident = Binder.clearCallingIdentity();
                 try {
-                    // Verify if IMMS is in the process of switching user.
-                    if (!mConcurrentMultiUserModeEnabled && mUserSwitchHandlerTask != null) {
-                        // There is already an on-going pending user switch task.
-                        final int nextUserId = mUserSwitchHandlerTask.mToUserId;
-                        if (userId == nextUserId) {
-                            scheduleSwitchUserTaskLocked(userId, cs.mClient);
-                            return InputBindResult.USER_SWITCHING;
-                        }
-                        final int[] profileIdsWithDisabled = getProfileIds(mCurrentImeUserId);
-                        for (int profileId : profileIdsWithDisabled) {
-                            if (profileId == userId) {
-                                scheduleSwitchUserTaskLocked(userId, cs.mClient);
-                                return InputBindResult.USER_SWITCHING;
-                            }
-                        }
-                        return InputBindResult.INVALID_USER;
-                    }
-
                     // Ensure that caller's focused window and display parameters are allowed to
                     // display input method.
                     final int imeClientFocus = mWindowManagerInternal.hasInputMethodClientFocus(
@@ -3702,6 +3684,24 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                             return InputBindResult.NOT_IME_TARGET_WINDOW;
                         case WindowManagerInternal.ImeClientFocusResult.INVALID_DISPLAY_ID:
                             return InputBindResult.INVALID_DISPLAY_ID;
+                    }
+
+                    // Verify if IMMS is in the process of switching user.
+                    if (!mConcurrentMultiUserModeEnabled && mUserSwitchHandlerTask != null) {
+                        // There is already an on-going pending user switch task.
+                        final int nextUserId = mUserSwitchHandlerTask.mToUserId;
+                        if (userId == nextUserId) {
+                            scheduleSwitchUserTaskLocked(userId, cs.mClient);
+                            return InputBindResult.USER_SWITCHING;
+                        }
+                        final int[] profileIdsWithDisabled = getProfileIds(mCurrentImeUserId);
+                        for (int profileId : profileIdsWithDisabled) {
+                            if (profileId == userId) {
+                                scheduleSwitchUserTaskLocked(userId, cs.mClient);
+                                return InputBindResult.USER_SWITCHING;
+                            }
+                        }
+                        return InputBindResult.INVALID_USER;
                     }
 
                     // Verify if caller is a background user.
