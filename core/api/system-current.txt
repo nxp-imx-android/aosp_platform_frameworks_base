@@ -3329,7 +3329,7 @@ package android.app.usage {
 
 package android.app.voiceinteraction {
 
-  @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public class VoiceInteractionManager {
+  @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public final class VoiceInteractionManager {
     field @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public static final String ACTION_REQUEST_ASSIST_STRUCTURE = "android.app.voiceinteraction.action.REQUEST_ASSIST_STRUCTURE";
   }
 
