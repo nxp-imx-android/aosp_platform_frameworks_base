@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
+import android.graphics.Bitmap
 import android.graphics.Rect
 import android.os.Handler
 import android.view.WindowManager
@@ -82,7 +83,24 @@ constructor(
         )
     }
 
-    // TODO(b/422833825): Implement takeAppWindowScreenshot
+    suspend fun requestAppWindowScreenshot(taskId: Int, displayId: Int) {
+        val bitmap =
+            withContext(backgroundContext) { requireNotNull(imageCapture.captureTask(taskId)) }
+        val request = makeAppWindowRequest(bitmap, displayId)
+
+        takeScreenshot(request)
+    }
+
+    private fun makeAppWindowRequest(bitmap: Bitmap, displayId: Int): ScreenshotRequest {
+        return ScreenshotRequest.Builder(
+                WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE,
+                WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI,
+            )
+            .setBitmap(bitmap)
+            .setDisplayId(displayId)
+            .setUserId(userRepository.getSelectedUserInfo().id)
+            .build()
+    }
 
     private suspend fun takeScreenshot(request: ScreenshotRequest) {
         withContext(backgroundContext) {
