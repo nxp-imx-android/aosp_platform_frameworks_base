@@ -447,7 +447,7 @@ public class ActivityStartInterceptorTest {
         assertTrue(shouldIntercept);
     }
 
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_AUTOMATED_APP_LAUNCH_INTERCEPTION)
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
     @Test
     public void testShouldInterceptStartActivityFromRecents_nullOptions() {
         // GIVEN the package we're about to launch is automated
