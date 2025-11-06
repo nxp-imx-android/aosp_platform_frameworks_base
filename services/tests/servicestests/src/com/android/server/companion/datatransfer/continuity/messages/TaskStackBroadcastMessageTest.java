@@ -23,48 +23,49 @@ import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
-public class RemoteTaskAddedMessageTest {
+public class TaskStackBroadcastMessageTest {
 
     @Test
-    public void testConstructor_fromObjects() {
-        RemoteTaskInfo expected =
-                new RemoteTaskInfo(1, "label", 0, new byte[0], new HandoffOptions(true, true));
-
-        RemoteTaskAddedMessage remoteTaskAddedMessage = new RemoteTaskAddedMessage(expected);
-
-        assertThat(remoteTaskAddedMessage.task()).isEqualTo(expected);
+    public void testRoundTrip_notEmpty_works() throws IOException {
+        verifyRoundTrip(
+                new TaskStackBroadcastMessage(
+                        Arrays.asList(
+                                new RemoteTaskInfo(
+                                        1, "package_name", 50, new HandoffOptions(true, true)))));
     }
 
     @Test
-    public void testWriteAndReadFromProto_roundTrip_works() throws IOException {
-        RemoteTaskAddedMessage expected =
-                new RemoteTaskAddedMessage(
-                        new RemoteTaskInfo(
-                                1, "label", 0, new byte[0], new HandoffOptions(true, true)));
-
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        expected.writeToProto(pos);
-        pos.flush();
-
-        final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final RemoteTaskAddedMessage actual = RemoteTaskAddedMessage.readFromProto(pis);
-
-        assertThat(actual).isEqualTo(expected);
+    public void testRoundTrip_isEmpty_works() throws IOException {
+        verifyRoundTrip(new TaskStackBroadcastMessage(List.of()));
     }
 
     @Test
     public void testGetFieldNumber_returnsCorrectValue() {
-        RemoteTaskAddedMessage remoteTaskAddedMessage =
-                new RemoteTaskAddedMessage(
-                        new RemoteTaskInfo(
-                                1, "label", 0, new byte[0], new HandoffOptions(true, true)));
+        TaskStackBroadcastMessage TaskStackBroadcastMessage =
+                new TaskStackBroadcastMessage(new ArrayList<>());
 
-        assertThat(remoteTaskAddedMessage.getFieldNumber())
-                .isEqualTo(android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED);
+        assertThat(TaskStackBroadcastMessage.getFieldNumber())
+                .isEqualTo(android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST);
+    }
+
+    private void verifyRoundTrip(TaskStackBroadcastMessage expected) throws IOException {
+        final ProtoOutputStream pos = new ProtoOutputStream();
+        expected.writeToProto(pos);
+        pos.flush();
+
+        assertThat(pos.getBytes()).isNotEmpty();
+
+        final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
+        final TaskStackBroadcastMessage actual = TaskStackBroadcastMessage.readFromProto(pis);
+
+        assertThat(actual).isEqualTo(expected);
     }
 }

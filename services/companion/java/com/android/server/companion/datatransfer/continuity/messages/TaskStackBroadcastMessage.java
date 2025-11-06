@@ -25,29 +25,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/** Deserialized version of the {@link ContinuityDeviceConnected} proto. */
-public record ContinuityDeviceConnected(@NonNull List<RemoteTaskInfo> remoteTasks)
+/** Deserialized version of the {@link TaskStackBroadcastMessage} proto. */
+public record TaskStackBroadcastMessage(@NonNull List<RemoteTaskInfo> remoteTasks)
         implements TaskContinuityMessage {
 
-    private static final String TAG = ContinuityDeviceConnected.class.getSimpleName();
+    private static final String TAG = TaskStackBroadcastMessage.class.getSimpleName();
 
-    public ContinuityDeviceConnected {
+    public TaskStackBroadcastMessage {
         Objects.requireNonNull(remoteTasks);
     }
 
     @NonNull
-    public static ContinuityDeviceConnected readFromProto(@NonNull ProtoInputStream pis)
+    public static TaskStackBroadcastMessage readFromProto(@NonNull ProtoInputStream pis)
             throws IOException {
 
         Objects.requireNonNull(pis);
 
+        boolean isStackEmpty = false;
         List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
-                case (int) android.companion.ContinuityDeviceConnected.REMOTE_TASKS:
+                case (int) android.companion.TaskStackBroadcastMessage.IS_STACK_EMPTY:
+                    isStackEmpty =
+                            pis.readBoolean(
+                                    android.companion.TaskStackBroadcastMessage.IS_STACK_EMPTY);
+                    break;
+                case (int) android.companion.TaskStackBroadcastMessage.REMOTE_TASKS:
                     RemoteTaskInfo remoteTaskInfo =
                             RemoteTaskInfo.CREATOR.read(
-                                    pis, android.companion.ContinuityDeviceConnected.REMOTE_TASKS);
+                                    pis, android.companion.TaskStackBroadcastMessage.REMOTE_TASKS);
                     if (remoteTaskInfo != null) {
                         remoteTasks.add(remoteTaskInfo);
                     } else {
@@ -57,13 +63,20 @@ public record ContinuityDeviceConnected(@NonNull List<RemoteTaskInfo> remoteTask
             }
         }
 
-        return new ContinuityDeviceConnected(remoteTasks);
+        if (isStackEmpty && !remoteTasks.isEmpty()) {
+            Slog.w(
+                    TAG,
+                    "Received TaskStackBroadcastMessage which indiciated the stack was empty but"
+                            + " also contains tasks.");
+        }
+
+        return new TaskStackBroadcastMessage(remoteTasks);
     }
 
     /** Returns the proto field number for this message type. */
     @Override
     public long getFieldNumber() {
-        return android.companion.TaskContinuityMessage.DEVICE_CONNECTED;
+        return android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST;
     }
 
     /** Writes this object to a proto output stream. */
@@ -71,9 +84,15 @@ public record ContinuityDeviceConnected(@NonNull List<RemoteTaskInfo> remoteTask
     public void writeToProto(@NonNull ProtoOutputStream pos) throws IOException {
         Objects.requireNonNull(pos);
 
-        for (RemoteTaskInfo remoteTaskInfo : remoteTasks()) {
-            RemoteTaskInfo.CREATOR.write(
-                    pos, android.companion.ContinuityDeviceConnected.REMOTE_TASKS, remoteTaskInfo);
+        if (remoteTasks().isEmpty()) {
+            pos.writeBool(android.companion.TaskStackBroadcastMessage.IS_STACK_EMPTY, true);
+        } else {
+            for (RemoteTaskInfo remoteTaskInfo : remoteTasks()) {
+                RemoteTaskInfo.CREATOR.write(
+                        pos,
+                        android.companion.TaskStackBroadcastMessage.REMOTE_TASKS,
+                        remoteTaskInfo);
+            }
         }
     }
 }

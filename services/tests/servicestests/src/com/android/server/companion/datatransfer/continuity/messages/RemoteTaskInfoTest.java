@@ -16,13 +16,8 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-import static com.google.common.truth.Truth.assertThat;
-
-import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,44 +29,13 @@ public class RemoteTaskInfoTest extends ProtoCreatorTest<RemoteTaskInfo> {
     public void testReadFromProto_noData_returnsDefault() throws Exception {
         verifyDefaultValue(
                 RemoteTaskInfo.CREATOR,
-                new RemoteTaskInfo(0, "", 0, new byte[0], new HandoffOptions(false, false)));
+                new RemoteTaskInfo(0, "", 0, new HandoffOptions(false, false)));
     }
 
     @Test
     public void testWriteAndRead_roundTrip_works() throws Exception {
         RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(1, "label", 100L, new byte[0], new HandoffOptions(true, true));
+                new RemoteTaskInfo(1, "package_name", 100L, new HandoffOptions(true, true));
         verifyRoundTrip(RemoteTaskInfo.CREATOR, remoteTaskInfo);
-    }
-
-    @Test
-    public void testToRemoteTask_works() {
-        // Setup the RemoteTaskInfo
-        int expectedId = 1;
-        String expectedLabel = "test";
-        long expectedLastActiveTime = 100;
-        String expectedAssociationDisplayName = "test_device";
-        int expectedAssociationId = 2;
-        boolean expectedIsHandoffEnabled = true;
-        RemoteTaskInfo remoteTaskInfo =
-                new RemoteTaskInfo(
-                        expectedId,
-                        expectedLabel,
-                        expectedLastActiveTime,
-                        new byte[0],
-                        new HandoffOptions(expectedIsHandoffEnabled, false));
-
-        // Convert to RemoteTask
-        RemoteTask remoteTask =
-                remoteTaskInfo.toRemoteTask(expectedAssociationId, expectedAssociationDisplayName);
-
-        // Verify the fields
-        assertThat(remoteTask.getTaskId()).isEqualTo(expectedId);
-        assertThat(remoteTask.getLabel()).isEqualTo(expectedLabel);
-        assertThat(remoteTask.getLastUsedTimestampMillis()).isEqualTo(expectedLastActiveTime);
-        assertThat(remoteTask.getCompanionDeviceAssociationId()).isEqualTo(expectedAssociationId);
-        assertThat(remoteTask.getAssociationDisplayName())
-                .isEqualTo(expectedAssociationDisplayName);
-        assertThat(remoteTask.isHandoffEnabled()).isEqualTo(expectedIsHandoffEnabled);
     }
 }

@@ -21,13 +21,10 @@ import android.companion.AssociationInfo;
 import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import java.util.Objects;
 
 /**
@@ -99,40 +96,13 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
     protected abstract String getTag();
 
     /**
-     * Called when a ContinuityDeviceConnected message is received.
+     * Called when a TaskStackBroadcastMessage message is received.
      *
      * @param associationId The association ID of the device that sent the message.
-     * @param continuityDeviceConnected The ContinuityDeviceConnected message.
+     * @param taskStackBroadcastMessage The TaskStackBroadcastMessage message.
      */
-    protected void onContinuityDeviceConnectedMessageReceived(
-            int associationId, @NonNull ContinuityDeviceConnected continuityDeviceConnected) {}
-
-    /**
-     * Called when a RemoteTaskAddedMessage message is received.
-     *
-     * @param associationId The association ID of the device that sent the message.
-     * @param remoteTaskAddedMessage The RemoteTaskAddedMessage message.
-     */
-    protected void onRemoteTaskAddedMessageReceived(
-            int associationId, @NonNull RemoteTaskAddedMessage remoteTaskAddedMessage) {}
-
-    /**
-     * Called when a RemoteTaskRemovedMessage message is received.
-     *
-     * @param associationId The association ID of the device that sent the message.
-     * @param remoteTaskRemovedMessage The RemoteTaskRemovedMessage message.
-     */
-    protected void onRemoteTaskRemovedMessageReceived(
-            int associationId, @NonNull RemoteTaskRemovedMessage remoteTaskRemovedMessage) {}
-
-    /**
-     * Called when a RemoteTaskUpdatedMessage message is received.
-     *
-     * @param associationId The association ID of the device that sent the message.
-     * @param remoteTaskUpdatedMessage The RemoteTaskUpdatedMessage message.
-     */
-    protected void onRemoteTaskUpdatedMessageReceived(
-            int associationId, @NonNull RemoteTaskUpdatedMessage remoteTaskUpdatedMessage) {}
+    protected void onTaskStackBroadcastMessageReceived(
+            int associationId, @NonNull TaskStackBroadcastMessage taskStackBroadcastMessage) {}
 
     /**
      * Called when a HandoffRequestMessage message is received.
@@ -174,18 +144,8 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
             int associationId, @NonNull TaskContinuityMessage taskContinuityMessage) {
         Slog.v(getTag(), "Received message from association " + associationId);
         switch (Objects.requireNonNull(taskContinuityMessage)) {
-            case ContinuityDeviceConnected continuityDeviceConnected:
-                onContinuityDeviceConnectedMessageReceived(
-                        associationId, continuityDeviceConnected);
-                break;
-            case RemoteTaskAddedMessage remoteTaskAddedMessage:
-                onRemoteTaskAddedMessageReceived(associationId, remoteTaskAddedMessage);
-                break;
-            case RemoteTaskRemovedMessage remoteTaskRemovedMessage:
-                onRemoteTaskRemovedMessageReceived(associationId, remoteTaskRemovedMessage);
-                break;
-            case RemoteTaskUpdatedMessage remoteTaskUpdatedMessage:
-                onRemoteTaskUpdatedMessageReceived(associationId, remoteTaskUpdatedMessage);
+            case TaskStackBroadcastMessage taskStackBroadcastMessage:
+                onTaskStackBroadcastMessageReceived(associationId, taskStackBroadcastMessage);
                 break;
             case HandoffRequestMessage handoffRequestMessage:
                 onHandoffRequestMessageReceived(associationId, handoffRequestMessage);
