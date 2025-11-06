@@ -570,6 +570,28 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             .restoreDisplay(eq(externalDisplayId), eq(mockPreservedDisplay), eq(PRIMARY_USER_ID))
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION)
+    fun testKeyguardUnlock_defaultDisplay_warmsUpIfNeeded() =
+        testScope.runTest {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            whenever(keyguardManager.isKeyguardLocked).thenReturn(false)
+            whenever(displayController.allDisplaysByUniqueId)
+                .thenReturn(mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DISPLAY))
+
+            handler.onKeyguardVisibilityChanged(
+                visible = false,
+                occluded = false,
+                animatingDismiss = false,
+            )
+
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
+            runCurrent()
+
+            verify(mockDesksOrganizer)
+                .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
+        }
+
     private fun addDisplay(displayId: Int, withTda: Boolean = false) {
         onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(displayId)
         if (withTda) {
