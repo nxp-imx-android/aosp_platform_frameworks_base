@@ -96,13 +96,13 @@ public final class DisplayManagerGlobal {
     private static final String EXTRA_LOGGING_PACKAGE_NAME =
             DisplayProperties.debug_vri_package().orElse(null);
     private static String sCurrentPackageName = ActivityThread.currentPackageName();
+    // To enable these logs, run:
+    // adb shell setprop persist.debug.vri_package <package_name>
     private static boolean sExtraDisplayListenerLogging = initExtraLogging();
 
     // To enable these logs, run:
     // 'adb shell setprop persist.log.tag.DisplayManager DEBUG && adb reboot'
-    @SuppressWarnings("DebugTrue") // See b/449949226
-    private static final boolean DEBUG = true; // See b/449949226
-    private static final boolean DEBUG_2 = DisplayManager.DEBUG; // See b/449949226
+    private static final boolean DEBUG = DisplayManager.DEBUG || sExtraDisplayListenerLogging;
 
 
     @IntDef(prefix = {"EVENT_DISPLAY_"}, flag = true, value = {
@@ -311,7 +311,7 @@ public final class DisplayManagerGlobal {
             registerCallbackIfNeededLocked();
         }
 
-        if (DEBUG_2) {
+        if (DEBUG) {
             Log.d(TAG, "getDisplayInfo: displayId=" + displayId + ", info=" + info);
         }
         return info;
@@ -1739,12 +1739,8 @@ public final class DisplayManagerGlobal {
 
         void sendDisplayEvents(int displayId, int eventMask, @Nullable DisplayInfo info,
                 boolean forceUpdate) {
-            if (extraLogging() && (((eventMask & EVENT_DISPLAY_STATE_CHANGED) != 0) || (
-                    (eventMask & EVENT_DISPLAY_BASIC_CHANGED) != 0) || (
-                    (eventMask & EVENT_DISPLAY_COMMITTED_STATE_CHANGED) != 0))) {
+            if (extraLogging()) {
                 Slog.i(TAG, "Sending Display Events: " + eventsToString(eventMask));
-                final String infoState = (info != null) ? String.valueOf(info.state) : "null";
-                Slog.d(TAG, "Display" + displayId + ": state changed to: " + infoState);
             }
             if (Flags.displayListenerSnapshot()
                     && (mIsConnectedSnapshotExpected || mIsAddedSnapshotExpected)
@@ -1882,9 +1878,7 @@ public final class DisplayManagerGlobal {
 
         private void handleDisplayEventInner(int displayId, @DisplayEvent int event,
                 @Nullable DisplayInfo info, boolean forceUpdate) {
-            if (extraLogging() && (event == EVENT_DISPLAY_STATE_CHANGED
-                    || event == EVENT_DISPLAY_COMMITTED_STATE_CHANGED
-                    || event == EVENT_DISPLAY_BASIC_CHANGED)) {
+            if (extraLogging()) {
                 Slog.i(TAG,
                         "DLD(" + eventToString(event) + ", display=" + displayId + ", mEventsMask="
                                 + Long.toBinaryString(internalEventFlagsMask) + ", mPackageName="
@@ -2191,11 +2185,11 @@ public final class DisplayManagerGlobal {
             sExtraDisplayListenerLogging = !TextUtils.isEmpty(EXTRA_LOGGING_PACKAGE_NAME)
                     && EXTRA_LOGGING_PACKAGE_NAME.equals(sCurrentPackageName);
         }
-        return true; // See b/449949226
+        return sExtraDisplayListenerLogging;
     }
 
     private static boolean extraLogging() {
-        return true; // See b/449949226
+        return sExtraDisplayListenerLogging;
     }
 
 

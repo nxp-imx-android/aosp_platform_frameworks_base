@@ -556,6 +556,8 @@ public final class ViewRootImpl implements ViewParent,
     @NonNull Display mDisplay;
     final String mBasePackageName;
 
+    // If we would like to keep a particular eye on the corresponding package.
+    final boolean mExtraDisplayListenerLogging;
 
     final int[] mTmpLocation = new int[2];
 
@@ -1292,6 +1294,8 @@ public final class ViewRootImpl implements ViewParent,
         mWindowLayout = windowLayout;
         mDisplay = display;
         mBasePackageName = context.getBasePackageName();
+        final String name = DisplayProperties.debug_vri_package().orElse(null);
+        mExtraDisplayListenerLogging = !TextUtils.isEmpty(name) && name.equals(mBasePackageName);
         mThread = Thread.currentThread();
         mLocation = new WindowLeaked(null);
         mWidth = -1;
@@ -1732,7 +1736,9 @@ public final class ViewRootImpl implements ViewParent,
                 // We should update mAttachInfo.mDisplayState after registerDisplayListener
                 // because displayState might be changed before registerDisplayListener.
                 mAttachInfo.mDisplayState = mDisplay.getState();
-                logAndTrace("Initial DisplayState: " + mAttachInfo.mDisplayState);
+                if (mExtraDisplayListenerLogging) {
+                    logAndTrace("Initial DisplayState: " + mAttachInfo.mDisplayState);
+                }
 
                 if (view instanceof RootViewSurfaceTaker) {
                     mInputQueueCallback =
@@ -1831,8 +1837,10 @@ public final class ViewRootImpl implements ViewParent,
                         mHandler,
                         eventsToBeRegistered,
                         mBasePackageName);
-        logAndTrace("Registered listeners events=" + eventsToBeRegistered
-                + " mBasePackageName=" + mBasePackageName);
+        if (mExtraDisplayListenerLogging) {
+            logAndTrace("Registered listeners events=" + eventsToBeRegistered
+                    + " mBasePackageName=" + mBasePackageName);
+        }
 
         if (forceInvertColor()) {
             if (mForceInvertStateChangeListener == null) {
@@ -1870,7 +1878,9 @@ public final class ViewRootImpl implements ViewParent,
             }
         }
 
-        logAndTrace("Unregistered listeners");
+        if (mExtraDisplayListenerLogging) {
+            logAndTrace("Unregistered listeners");
+        }
     }
 
     private void setTag() {
@@ -2464,11 +2474,13 @@ public final class ViewRootImpl implements ViewParent,
         @Override
         public void onDisplayChanged(int displayId) {
             final String viewState = (mView != null) ? "non-null" : "null";
-            logAndTrace("onDisplayChanged view=" + viewState
-                    + " display=" + displayId
-                    + " state=" + mAttachInfo.mDisplayState
-                    + " new display=" + mDisplay.getDisplayId()
-                    + " state=" + mDisplay.getState());
+            if (mExtraDisplayListenerLogging) {
+                logAndTrace("onDisplayChanged view=" + viewState
+                        + " display=" + displayId
+                        + " state=" + mAttachInfo.mDisplayState
+                        + " new display=" + mDisplay.getDisplayId()
+                        + " state=" + mDisplay.getState());
+            }
 
             if (mView != null && mDisplay.getDisplayId() == displayId) {
                 final int oldDisplayState = mAttachInfo.mDisplayState;
@@ -2527,7 +2539,9 @@ public final class ViewRootImpl implements ViewParent,
         updateInternalDisplay(displayId, mView.getResources());
         mImeFocusController.onMovedToDisplay();
         mAttachInfo.mDisplayState = mDisplay.getState();
-        logAndTrace("onMovedToDisplay DisplayState: " + mAttachInfo.mDisplayState);
+        if (mExtraDisplayListenerLogging) {
+            logAndTrace("onMovedToDisplay DisplayState: " + mAttachInfo.mDisplayState);
+        }
 
         // Internal state updated, now notify the view hierarchy.
         mView.dispatchMovedToDisplay(mDisplay, config);
