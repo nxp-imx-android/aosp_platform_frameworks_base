@@ -84,6 +84,15 @@ class DesktopTaskChangeListener(
             return
         }
         if (isDesktopTask(taskInfo) && !isActiveTask) {
+            // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
+            // [DesktopWallpaperActivity] launch which should always be in fullscreen.
+            if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
+                logE(
+                    "Trying to add freeform DesktopWallpaperActivity to DesktopRepository, " +
+                        "returning early instead"
+                )
+                return
+            }
             addTask(desktopRepository, taskInfo)
         }
     }
@@ -95,6 +104,25 @@ class DesktopTaskChangeListener(
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         val isTaskPinned = isTaskPinned(taskInfo)
         val isDesktopTask = isDesktopTask(taskInfo)
+        if (
+            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            logD(
+                "onTaskChanging for taskId=%d, displayId=%d - desktop not supported",
+                taskInfo.taskId,
+                taskInfo.displayId,
+            )
+            if (!isDesktopTask && isActiveTask) {
+                logD(
+                    "Removing previous desktop task moved to non-desktop display",
+                    taskInfo.taskId,
+                    taskInfo.displayId,
+                )
+                removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
+            }
+            return
+        }
         logD(
             "onTaskChanging for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
                 "parentTaskId=%d isFreeform=%b isActive=%b isPinned=%b isDesktopTask=%b",
@@ -108,21 +136,6 @@ class DesktopTaskChangeListener(
             isTaskPinned,
             isDesktopTask,
         )
-        if (!isDesktopTask && isActiveTask) {
-            removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
-            return
-        }
-        if (
-            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
-            logD(
-                "onTaskOpening for taskId=%d, displayId=%d - desktop not supported",
-                taskInfo.taskId,
-                taskInfo.displayId,
-            )
-            return
-        }
         // TODO: b/394281403 - with multiple desks, it's possible to have a non-freeform task
         //  inside a desk, so this should be decoupled from windowing mode.
         //  Also, changes in/out of desks are handled by the [DesksTransitionObserver], which has
@@ -132,7 +145,18 @@ class DesktopTaskChangeListener(
         // Case 1: When the task change is from a task in the desktop repository which is now
         // no longer a desktop task.
         // remove the task from the desktop repository since it is no longer a desktop task.
-        if (isDesktopTask) {
+        if (!isDesktopTask && isActiveTask) {
+            removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
+        } else if (isDesktopTask) {
+            // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
+            // [DesktopWallpaperActivity] launch which should always be in fullscreen.
+            if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
+                logE(
+                    "Trying to add freeform DesktopWallpaperActivity to DesktopRepository, " +
+                        "returning early instead"
+                )
+                return
+            }
             // If the task is already active in the repository, then moves task to the front,
             // else adds the task.
             addTask(desktopRepository, taskInfo)
@@ -218,6 +242,14 @@ class DesktopTaskChangeListener(
             removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
         }
         if (isDesktopTask) {
+            // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
+            // [DesktopWallpaperActivity] launch which should always be in fullscreen.
+            if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
+                logE(
+                    "Trying to add freeform DesktopWallpaperActivity to DesktopRepository, returning early instead"
+                )
+                return
+            }
             // If the task is already active in the repository, then it only moves the task to the
             // front.
             addTask(desktopRepository, taskInfo)
@@ -329,16 +361,6 @@ class DesktopTaskChangeListener(
             desksOrganizer.getDeskIdFromTaskInfo(taskInfo)
                 ?: desktopRepository.getActiveDeskId(displayId)
                 ?: error("Expected desk for displayId=$displayId")
-        // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
-        // [DesktopWallpaperActivity] launch which should always be in fullscreen.
-        if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
-            logE(
-                "Trying to add freeform DesktopWallpaperActivity to DesktopRepository, " +
-                    "returning early instead"
-            )
-            return
-        }
-
         desktopRepository.addTaskToDesk(
             displayId,
             deskId,
