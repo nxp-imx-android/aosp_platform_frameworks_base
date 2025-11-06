@@ -16,35 +16,31 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import static android.Manifest.permission.READ_REMOTE_TASKS;
-import static android.Manifest.permission.REQUEST_TASK_HANDOFF;
 import static android.Manifest.permission.MODIFY_HANDOFF_SETTINGS;
 import static android.Manifest.permission.READ_HANDOFF_SETTINGS;
+import static android.Manifest.permission.READ_REMOTE_TASKS;
+import static android.Manifest.permission.REQUEST_TASK_HANDOFF;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOrCanInteractWithUserId;
 
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
-import android.companion.datatransfer.continuity.IHandoffRequestCallback;
-import android.companion.datatransfer.continuity.ITaskContinuityManager;
-import android.companion.datatransfer.continuity.IRemoteTaskListener;
+import android.companion.CompanionDeviceManager;
 import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
-import android.companion.datatransfer.continuity.RemoteTask;
+import android.companion.datatransfer.continuity.IHandoffRequestCallback;
+import android.companion.datatransfer.continuity.IRemoteTaskListener;
+import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.content.Context;
 import android.os.Binder;
-import android.util.Slog;
-
+import com.android.server.SystemService;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
-import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncControllerCache;
+import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessengerCache;
 import com.android.server.companion.datatransfer.continuity.handoff.HandoffController;
 import com.android.server.companion.datatransfer.continuity.handoff.HandoffControllerCache;
-import com.android.server.companion.datatransfer.continuity.settings.HandoffSettingsManager;
-import com.android.server.companion.datatransfer.continuity.settings.HandoffPreferenceStore;
 import com.android.server.companion.datatransfer.continuity.settings.HandoffPolicyManager;
-
-import com.android.server.SystemService;
-
-import java.util.Collection;
+import com.android.server.companion.datatransfer.continuity.settings.HandoffPreferenceStore;
+import com.android.server.companion.datatransfer.continuity.settings.HandoffSettingsManager;
+import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
+import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncControllerCache;
 import java.util.Objects;
 
 /**
@@ -61,8 +57,8 @@ public final class TaskContinuityManagerService extends SystemService {
     private HandoffPreferenceStore mHandoffPreferenceStore;
     private HandoffPolicyManager mHandoffPolicyManager;
     private HandoffSettingsManager mHandoffSettingsManager;
+    private final MultiUserResourceCache<TaskContinuityMessenger> mTaskContinuityMessengerCache;
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
-    private TaskContinuityMessenger mTaskContinuityMessenger;
 
     public TaskContinuityManagerService(Context context) {
         super(context);
@@ -71,11 +67,16 @@ public final class TaskContinuityManagerService extends SystemService {
         mHandoffPolicyManager = new HandoffPolicyManager();
         mHandoffSettingsManager =
                 new HandoffSettingsManager(mHandoffPreferenceStore, mHandoffPolicyManager);
-        mTaskContinuityMessenger = new TaskContinuityMessenger(context);
-        mTaskSyncControllerCache = new TaskSyncControllerCache(context, mTaskContinuityMessenger);
+        mTaskContinuityMessengerCache =
+                new TaskContinuityMessengerCache(
+                        Objects.requireNonNull(
+                                context.getSystemService(CompanionDeviceManager.class)),
+                        Objects.requireNonNull(context.getMainExecutor()));
+        mTaskSyncControllerCache = new TaskSyncControllerCache(context,
+                mTaskContinuityMessengerCache);
         mHandoffControllerCache =
                 new HandoffControllerCache(
-                        context, mTaskContinuityMessenger, mTaskSyncControllerCache);
+                        context, mTaskContinuityMessengerCache, mTaskSyncControllerCache);
     }
 
     @Override

@@ -37,7 +37,9 @@ public class ConnectedAssociationStore {
 
     private static final String TAG = "ConnectedAssociationStore";
 
+    int mUserId;
     private final CompanionDeviceManager mCompanionDeviceManager;
+    private final AssociationProfileManager mAssociationProfileManager;
     private final Listener mListener;
     private final Executor mExecutor;
     private final Map<Integer, AssociationInfo> mConnectedAssociations = new HashMap<>();
@@ -52,17 +54,17 @@ public class ConnectedAssociationStore {
     }
 
     ConnectedAssociationStore(
+            int userId,
             @NonNull CompanionDeviceManager companionDeviceManager,
             @NonNull Executor executor,
-            @NonNull Listener listener) {
+            @NonNull Listener listener,
+            @NonNull AssociationProfileManager associationProfileManager) {
 
-        Objects.requireNonNull(companionDeviceManager);
-        Objects.requireNonNull(executor);
-        Objects.requireNonNull(listener);
-
-        mCompanionDeviceManager = companionDeviceManager;
-        mListener = listener;
-        mExecutor = executor;
+        mUserId = userId;
+        mCompanionDeviceManager = Objects.requireNonNull(companionDeviceManager);
+        mAssociationProfileManager = Objects.requireNonNull(associationProfileManager);
+        mListener = Objects.requireNonNull(listener);
+        mExecutor = Objects.requireNonNull(executor);
     }
 
     public void enable() {
@@ -105,7 +107,9 @@ public class ConnectedAssociationStore {
             int taskContinuityFlag =
                     associationInfo.getSystemDataSyncFlags()
                             & CompanionDeviceManager.FLAG_TASK_CONTINUITY;
-            if (taskContinuityFlag != 0) {
+            if (taskContinuityFlag != 0
+                    && mAssociationProfileManager.isAssociationAvailableForUser(
+                    mUserId, associationInfo)) {
                 newTaskContinuityAssociations.add(associationInfo);
             }
         }
