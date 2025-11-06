@@ -38,7 +38,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.doze.DozeLogger
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
 import com.android.systemui.telephony.domain.interactor.TelephonyInteractor
@@ -203,7 +203,7 @@ constructor(
 
     private fun prepareToPerformAction() {
         if (SceneContainerFlag.isEnabled) {
-            sceneInteractor.get().changeScene(Scenes.Lockscreen, "Bouncer action button clicked")
+            sceneInteractor.get().changeScene(SceneFamilies.Home, "Bouncer action button clicked")
         }
 
         metricsLogger.action(MetricsEvent.ACTION_EMERGENCY_CALL)
