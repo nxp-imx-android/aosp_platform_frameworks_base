@@ -40,7 +40,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
-import static com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -265,10 +264,10 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
     }
 
     @Test
-    @DisableFlags({Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES,
-            FLAG_ENABLE_CAMERA_COMPAT_SANDBOX_DISPLAY_ROTATION_ON_EXTERNAL_DISPLAYS_BUGFIX})
+    @DisableFlags(Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testDisplayTypeExternal_noForceRotationOrRefresh() {
         runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
             robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT,
                     WINDOWING_MODE_FULLSCREEN, ORIENTATION_PORTRAIT, TYPE_EXTERNAL);
 
@@ -280,7 +279,7 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
 
     @Test
     @DisableFlags(Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
-    public void testDisplaTypeyWifi_noForceRotationOrRefresh() {
+    public void testDisplayTypeyWifi_noForceRotationOrRefresh() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT,
                     WINDOWING_MODE_FULLSCREEN, ORIENTATION_PORTRAIT, TYPE_WIFI);
