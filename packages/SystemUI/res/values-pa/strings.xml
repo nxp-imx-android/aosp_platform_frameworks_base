@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ਆਡੀਓ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ਐਪ ਵਿੰਡੋ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ਟੈਬ ਸਾਂਝੀ ਕਰੋ"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"ਸਾਂਝਾ ਕਰਨ ਵੇਲੇ, ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਦੀ ਸਮੱਗਰੀ ਦਿਖਾਈ ਦਿੰਦੀ ਹੈ"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ਵਿੰਡੋ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ਵਿੰਡੋ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ਚੁਣੇ ਹੋਏ ਖੇਤਰ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ਕਾਲ ਸੰਬੰਧੀ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ਇਹ ਸੂਚਨਾਵਾਂ ਦਾ ਗਰੁੱਪ ਇੱਥੇ ਸੰਰੂਪਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ਇੱਕ ਐਪ ਦੀ ਥਾਂ \'ਤੇ ਦੂਜੀ ਐਪ ਰਾਹੀਂ ਦਿੱਤੀ ਗਈ ਸੂਚਨਾ"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"ਸਾਰੀਆਂ <xliff:g id="APP_NAME">%1$s</xliff:g> ਸੂਚਨਾਵਾਂ"</string>
     <string name="see_more_title" msgid="7409317011708185729">"ਹੋਰ ਦੇਖੋ"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ਸਿਸਟਮ ਨੇ ਇਸ ਸੂਚਨਾ ਦਾ ਸਵੈਚਲਿਤ ਤੌਰ \'ਤੇ &lt;b&gt;ਦਰਜਾ ਵਧਾ ਕੇ ਪੂਰਵ-ਨਿਰਧਾਰਤ&lt;/b&gt; \'ਤੇ ਸੈੱਟ ਕਰ ਦਿੱਤਾ ਹੈ।"</string>
@@ -1156,7 +1163,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ਚਾਲੂ ਨਾ ਕਰੋ"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ਸ਼ਾਰਟਕੱਟ ਚਾਲੂ ਕਰੋ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਚਾਲੂ ਕੀਤਾ ਗਿਆ"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> <xliff:g id="ID_4">^4</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ, ਜੋ ਇੱਕ ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾ ਹੈ। ਇਹ ਤੁਹਾਨੂੰ ਸਮੱਗਰੀ ਨੂੰ ਵੱਡਾ ਕਰਨ ਲਈ ਸਕ੍ਰੀਨ \'ਤੇ ਤੇਜ਼ੀ ਨਾਲ ਜ਼ੂਮ ਵਧਾਉਣ ਦੀ ਆਗਿਆ ਦਿੰਦਾ ਹੈ। ਵੱਡਦਰਸ਼ੀਕਰਨ ਚਾਲੂ ਹੋਣ ਤੋਂ ਬਾਅਦ, ਜ਼ੂਮ ਨੂੰ ਵਿਵਸਥਿਤ ਕਰਨ ਲਈ <xliff:g id="ID_5">^1</xliff:g>"<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> ਅਤੇ \"+\" ਜਾਂ \"-\" ਦਬਾਓ।"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> <xliff:g id="ID_4">^4</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ, ਜੋ ਇੱਕ ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾ ਹੈ। ਇਸ ਨਾਲ ਤੁਸੀਂ ਸਮੱਗਰੀ ਨੂੰ ਵੱਡਾ ਕਰਨ ਲਈ ਸਕ੍ਰੀਨ \'ਤੇ ਤੇਜ਼ੀ ਨਾਲ ਜ਼ੂਮ ਵਧਾ ਸਕਦੇ ਹੋ। ਵੱਡਦਰਸ਼ੀਕਰਨ ਚਾਲੂ ਹੋਣ ਤੋਂ ਬਾਅਦ, ਜ਼ੂਮ ਨੂੰ ਵਿਵਸਥਿਤ ਕਰਨ ਲਈ <xliff:g id="ID_5">^1</xliff:g>"<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> ਅਤੇ \"+\" ਜਾਂ \"-\" ਦਬਾਓ।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ਸ਼ਾਰਟਕੱਟ ਬੰਦ ਕਰੋ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ਚਾਲੂ ਰੱਖੋ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ਪ੍ਰਤੀਕ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> <xliff:g id="ID_4">^4</xliff:g> ਨੂੰ ਵਰਤਣ ਦਾ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਹੈ। <xliff:g id="ID_5">^4</xliff:g> ਇੱਕ ਸਕ੍ਰੀਨ ਰੀਡਰ ਹੈ, ਜੋ ਤੁਹਾਨੂੰ ਉੱਚੀ ਅਵਾਜ਼ ਵਿੱਚ ਬੋਲੀਆਂ ਜਾਣ ਵਾਲੀਆਂ ਆਈਟਮਾਂ ਨੂੰ ਸੁਣਨ ਦਿੰਦੀ ਹੈ। ਇਹ ਉਨ੍ਹਾਂ ਲੋਕਾਂ ਲਈ ਲਾਹੇਵੰਦ ਹੋ ਸਕਦੀ ਹੈ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇਖਣ ਵਿੱਚ ਮੁਸ਼ਕਲ ਆਉਂਦੀ ਹੈ। ਇਸ ਨਾਲ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦੇ ਕੰਮ ਕਰਨ ਦਾ ਤਰੀਕਾ ਬਦਲ ਸਕਦਾ ਹੈ।"</string>
@@ -1729,8 +1736,7 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ਸੂਚਨਾਵਾਂ ਖੋਲ੍ਹਣ ਲਈ ਸਿਖਰਲੇ ਖੱਬੇ ਪਾਸੇ ਤੋਂ ਸਵਾਈਪ ਕਰੋ"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹਣ ਲਈ ਸਿਖਰਲੇ ਸੱਜੇ ਪਾਸੇ ਤੋਂ ਸਵਾਈਪ ਕਰੋ"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ਪਿੱਛੇ ਜਾਓ"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"ਸਾਈਨ-ਇਨ ਕਰੋ"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"ਪਹੁੰਚਯੋਗਤਾ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ਪਿੱਛੇ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ਅੱਗੇ"</string>

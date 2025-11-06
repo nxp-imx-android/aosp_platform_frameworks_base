@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Աուդիոյի փոխանցում"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Հավելվածի պատուհանի ցուցադրում"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Կիսվեք ներդիրով"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Էկրանը ցուցադրելու ժամանակ դրա ամբողջ բովանդակությունը երևում է"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Պատուհանի սքրինշոթ անել"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Տեսագրել պատուհանը"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Ընտրված տարածքի սքրինշոթ անել"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Զանգերի մասին ծանուցումները հնարավոր չէ փոփոխել։"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Ծանուցումների տվյալ խումբը հնարավոր չէ կարգավորել այստեղ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Ծանուցումն ուղարկվել է պրոքսի սերվերի միջոցով"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածի բոլոր ծանուցումները"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Իմանալ ավելին"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Այս ծանուցման կարևորության մակարդակը ավտոմատ &lt;b&gt;բարձրացվել է և դարձել կանխադրված&lt;/b&gt;։"</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Սնուցման կոճակի ընտրացանկ"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Էջ <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Միացնե՞լ «<xliff:g id="ID_1">%1$s</xliff:g>» գործառույթը"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"պատկերակ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>․ սա ստեղնային դյուրանցում է, որը միացնում է «<xliff:g id="ID_4">^4</xliff:g>» գործառույթը։ <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Նորից սեղմեք <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g>՝ «<xliff:g id="ID_4">%4$s</xliff:g>» գործառույթը միացնելու համար։"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Միացնե՞լ <xliff:g id="ID_1">%1$s</xliff:g>-ի ստեղնային դյուրանցումը"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Չմիացնել"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Միացնել դյուրանցումը"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"«<xliff:g id="ID_1">%1$s</xliff:g>» գործառույթի ստեղնային դյուրանցումը միացված է"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"պատկերակ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>․ սա ստեղնային դյուրանցում է, որը միացնում է «<xliff:g id="ID_4">^4</xliff:g>» հատուկ գործառույթը։ Այն թույլ է տալիս արագ խոշորացնել էկրանը՝ բովանդակությունն ավելի պարզ տեսնելու համար։ Երբ խոշորացումը միացված է, սեղմեք <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"պատկերակը"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> և «+» կամ «–»՝ մասշտաբը փոխելու համար։"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Անջատել դյուրանցումը"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Թողնել միացված"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"պատկերակ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>․ սա ստեղնային դյուրանցում է, որը միացնում է «<xliff:g id="ID_4">^4</xliff:g>» գործառույթը։ <xliff:g id="ID_5">^4</xliff:g>-ն էկրանի ընթերցիչ է, որը բարձրաձայն հնչեցնում է ցուցադրված տարրերը։ Սա կարող է օգտակար լինել այն մարդկանց համար, որոնք էկրանը տեսնելու հետ կապված դժվարություններ ունեն։ Դրա արդյունքում սարքի աշխատաեղանակը կարող է փոխվել։"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Միացնելով ստեղնային դյուրանցումը՝ դուք թույլ կտաք TalkBack-ին ամբողջությամբ վերահսկել ձեր սարքը։"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Լրիվ վերահսկողությունն անհրաժեշտ է միայն այն հավելվածներին, որոնք օգնում են ձեզ հատուկ գործառույթներից օգտվելիս։"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Էկրանի դիտում և կառավարում"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Այս գործառույթը կարող է կարդալ էկրանի ամբողջ բովանդակությունը և ցուցադրել բովանդակություն այլ հավելվածների վրայից։"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Գործողությունների դիտում և կատարում"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Այս գործառույթը կարող է հետագծել ձեր փոխազդեցությունները հավելվածների և սարքակազմի սենսորների հետ, ինչպես նաև օգտագործել հավելվածները ձեր անունից։"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"պատկերակ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ստեղների դյուրանցումը միացնում է «<xliff:g id="ID_4">^4</xliff:g>» հատուկ գործառույթը, որը թույլ է տալիս կառավարել սարքը ձայնային հրահանգների միջոցով։"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Հատուկ գործառույթներ"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Պատրաստ է"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Կողպէկրան"</string>
@@ -1599,7 +1601,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Կառավարել հասանելիությունը"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Օգտագործվում է հեռախոսազանգի կողմից"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Վերջերս օգտագործվել է հեռախոսազանգի ժամանակ"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Օգտագործվում է <xliff:g id="APP_NAME">%1$s</xliff:g>-ի կողմից"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Օգտագործող՝ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Վերջերս օգտագործվել է <xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածի կողմից"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Օգտագործվում է <xliff:g id="APP_NAME">%1$s</xliff:g>ի կողմից (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Վերջերս օգտագործվել է <xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածի կողմից (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>

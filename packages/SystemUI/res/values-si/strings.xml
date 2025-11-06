@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ශ්‍රව්‍ය බෙදා ගන්න"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"යෙදුම් කවුළුව බෙදා ගන්න"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"පටිත්ත බෙදා ගන්න"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"බෙදා ගැනීමේ දී, ඔබේ තිරයේ අන්තර්ගතය දෘශ්‍යමාන වේ"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"කවුළුවේ තිර රුවක් ගන්න"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"පටිගත කිරීමේ කවුළුව"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"තෝරා ගත් ප්‍රදේශයේ තිර රුවක් ගන්න"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ඇමතුම් දැනුම්දීම් වෙනස් කළ නොහැකිය."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"මෙම දැනුම්දීම් සමූහය මෙහි වින්‍යාස කළ නොහැක"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ප්‍රොක්සි කළ දැනුම්දීම"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"සියලු <xliff:g id="APP_NAME">%1$s</xliff:g> දැනුම්දීම්"</string>
     <string name="see_more_title" msgid="7409317011708185729">"තවත් බලන්න"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"පද්ධතිය මගින් මෙම දැනුම්දීම ස්වයංක්‍රියව &lt;b&gt;පෙරනිමි වෙත ප්‍රවර්ධනය කරන ලදි&lt;/b&gt;."</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"බල මෙනුව"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g> න් <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ක්‍රියාත්මක කරන්න ද?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"නිරූපකය"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> යනු <xliff:g id="ID_4">^4</xliff:g> භාවිතා කිරීමට ඇති යතුරු පුවරු කෙටිමඟයි. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"<xliff:g id="ID_4">%4$s</xliff:g> සබල කිරීමට <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> නැවත ඔබන්න"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> යතුරු පුවරු කෙටිමඟ ක්‍රියාත්මක කරන්න ද?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ක්‍රියාත්මක නොකරන්න"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"කෙටිමඟ ක්‍රියාත්මක කරන්න"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> යතුරු පුවරු කෙටිමඟ ක්‍රියාත්මක කර ඇත"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"නිරූපකය"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> යනු ප්‍රවේශ්‍යතා විශේෂාංගයක් වන, <xliff:g id="ID_4">^4</xliff:g> භාවිත කිරීමට යතුරු පුවරු කෙටිමඟයි. අන්තර්ගතය විශාල කිරීම සඳහා තිරය ඉක්මනින් විශාලනය කිරීමට මෙය ඔබට ඉඩ දෙයි. විශාලනය කිරීම ක්‍රියාත්මක වූ පසු, විශාලනය සකස් කිරීමට <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"නිරූපකය"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> සහ \"+\" හෝ \"-\" ඔබන්න."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"කෙටිමඟ ක්‍රියාවිරහිත කරන්න"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ක්‍රියාත්මක කර තබන්න"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"නිරූපකය"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> යනු <xliff:g id="ID_4">^4</xliff:g> භාවිතා කිරීමට ඇති යතුරු පුවරු කෙටිමඟයි. <xliff:g id="ID_5">^4</xliff:g> යනු ඔබට ශබ්ද නඟා කථා කරන අයිතම ඇසීමට ඉඩ සලසන තිර කියවනයකි. එය තිරය බැලීමට අසීරු පුද්ගලයන් සඳහා ප්‍රයෝජනවත් විය හැක. මෙය ඔබේ උපාංගය ක්‍රියා කරන ආකාරය වෙනස් කළ හැක."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"යතුරු පුවරු කෙටිමඟ ක්‍රියාත්මක කිරීමෙන්, ඔබ TalkBack හට ඔබේ උපාංගයේ සම්පූර්ණ පාලනය තබා ගැනීමට ඉඩ දෙනු ඇත."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"පූර්ණ පාලනය ඔබට ප්‍රවේශ්‍යතා අවශ්‍යතා සමඟ උදවු කරන යෙදුම් සඳහා සුදුසු වන නමුත් බොහෝ යෙදුම් සඳහා සුදුසු නොවේ."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"තිරය බලන්න සහ පාලනය කරන්න"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"එයට තිරයේ සියලු ම අන්තර්ගත කියවිය හැකි අතර අනෙකුත් යෙදුම් මත අන්තර්ගතය සංදර්ශනය කළ හැක."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"බලන්න සහ ක්‍රියා කරන්න"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"මෙයට යෙදුමක් හෝ දෘඪාංග සංවේදකයක් සමඟ ඔබේ අන්තර්ක්‍රියා හඹා යෑමට, සහ ඔබ වෙනුවෙන් යෙදුම් සමඟ අන්තර්ක්‍රියාවේ යෙදීමට හැකි ය."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"නිරූපකය"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> එබීමෙන් ප්‍රවේශ්‍යතා විශේෂාංගයක් වන <xliff:g id="ID_4">^4</xliff:g> ක්‍රියාත්මක කරයි. මෙය ඔබේ උපාංගය දෑත් නොයොදන ලෙස පාලනය කිරීමට ඔබට ඉඩ දෙයි."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ප්‍රවේශ්‍යතාව"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"නිමයි"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"අගුලු තිරය"</string>

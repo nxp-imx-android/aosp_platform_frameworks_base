@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Compartilhar áudio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Compartilhar janela do app"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Compartilhar guia"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Durante o compartilhamento, o conteúdo da sua tela fica visível"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Fazer captura de tela da janela"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Gravar janela"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Fazer captura da área selecionada"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Não é possível modificar as notificações de chamada."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Não é possível configurar esse grupo de notificações aqui"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Notificação salva no proxy"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Todas as notificações do app <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Ver mais"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Esta notificação foi automaticamente &lt;b&gt;promovida a Padrão&lt;/b&gt; pelo sistema."</string>
@@ -1155,10 +1162,10 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Ativar o atalho do teclado para <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Não ativar"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Ativar atalho"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> atalho do teclado ativado"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Atalho de teclado para <xliff:g id="ID_1">%1$s</xliff:g> atalho ativado"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"O atalho do teclado para usar o recurso de acessibilidade <xliff:g id="ID_4">^4</xliff:g> é o "<annotation id="action_key_icon">"ícone"</annotation>" de <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Com ele, você aumenta o zoom na tela para ampliar o conteúdo. Depois de ativar a ampliação, pressione o <xliff:g id="ID_5">^1</xliff:g>ícone"<annotation id="action_key_icon">" de ação + "</annotation>" + <xliff:g id="ID_6">^2</xliff:g> \"+\" ou \"-\" para ajustar o zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desativar atalho"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Deixar ativada"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Manter assim"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"O atalho do teclado para usar o <xliff:g id="ID_4">^4</xliff:g> é o "<annotation id="action_key_icon">"ícone"</annotation>" de <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. O <xliff:g id="ID_5">^4</xliff:g> é um leitor de tela que fala itens em voz alta. Ele pode ser útil para pessoas com dificuldade de ver a tela. Esse recurso pode mudar o funcionamento do dispositivo."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ao ativar o atalho do teclado, você permite que o TalkBack tenha controle total do dispositivo."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"O controle total é adequado para apps que ajudam você com as necessidades de acessibilidade, mas não para a maioria dos apps."</string>
@@ -1476,7 +1483,7 @@
     <string name="wifi_empty_list_wifi_on" msgid="3864376632067585377">"Procurando redes…"</string>
     <string name="wifi_failed_connect_message" msgid="4161863112079000071">"Falha ao conectar à rede"</string>
     <string name="wifi_wont_autoconnect_for_now" msgid="5782282612749867762">"A conexão automática ao Wi-Fi ficará indisponível"</string>
-    <string name="see_all_networks" msgid="3773666844913168122">"Ver tudo"</string>
+    <string name="see_all_networks" msgid="3773666844913168122">"Ver todas"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"Para mudar de rede, desconecte o cabo Ethernet"</string>
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Para melhorar a experiência no dispositivo, os apps e serviços ainda podem procurar redes Wi-Fi a qualquer momento, mesmo quando o Wi-Fi estiver desativado. Você pode mudar essa opção nas configurações de busca por Wi-Fi. "<annotation id="link">"Mudar"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Desativar modo avião"</string>
@@ -1584,7 +1591,7 @@
     <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Conectado à tela externa"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Microfone, câmera e localização"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Uso recente do app"</string>
-    <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Consultar acessos recentes"</string>
+    <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Ver acessos recentes"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Concluído"</string>
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"Abrir e mostrar opções"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"Fechar"</string>

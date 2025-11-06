@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Аудио хуваалцах"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Аппын цонхыг хуваалцах"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Таб хуваалцах"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Хуваалцах үед таны дэлгэцийн контент харагдана"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Цонхны дэлгэцийн агшныг авах"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Цонхыг бичих"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Сонгосон хэсгийн дэлгэцийн агшныг авах"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Дуудлагын мэдэгдлийг өөрчлөх боломжгүй."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Энэ бүлэг мэдэгдлийг энд тохируулах боломжгүй байна"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Прокси хийсэн мэдэгдэл"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g>-н бүх мэдэгдэл"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Дэлгэрэнгүй үзэх"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Энэ мэдэгдлийг систем автоматаар &lt;b&gt;Өгөгдмөл болгож дэвшүүлсэн&lt;/b&gt; байна."</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Асаах/унтраах цэс"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>-н <xliff:g id="ID_1">%1$d</xliff:g>-р хуудас"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g>-г асаах уу?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> нь <xliff:g id="ID_4">^4</xliff:g>-г ашиглах товчлуурын шууд холбоос юм. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"<xliff:g id="ID_4">%4$s</xliff:g>-г идэвхжүүлэхийн тулд <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> дээр дахин дарна уу"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> товчлуурын шууд холбоосыг асаах уу?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Бүү асаа"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Товчлолыг асаах"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> товчлуурын шууд холбоосыг асаалаа"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> нь хандалтын онцлог болох <xliff:g id="ID_4">^4</xliff:g>-г ашиглах товчлуурын шууд холбоос юм. Та үүнийг ашиглан контентыг томруулахын тулд дэлгэц дээр хурдан томруулж болно. Томруулах ассаны дараа томруулалтыг тохируулахын тулд <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> болон \"+\" эсвэл \"-\" дээр дарна уу."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Товчлолыг унтраах"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Асаалттай хэвээр байлгах"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> нь <xliff:g id="ID_4">^4</xliff:g>-г ашиглах товчлуурын шууд холбоос юм. <xliff:g id="ID_5">^4</xliff:g> нь танд зүйлсийг чангаар уншихыг сонсох боломжийг олгодог дэлгэц уншигч юм. Энэ нь дэлгэц харахад хүндрэлтэй хүмүүст тустай. Энэ нь таны төхөөрөмжийн ажиллах зарчмыг өөрчилж болзошгүй."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Та товчлуурын шууд холбоосыг асааснаар TalkBack-д төхөөрөмжийг тань бүрэн хянахыг зөвшөөрнө."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Бүрэн хянах нь таны хандалтын хэрэгцээнд тусалдаг аппуудад тохиромжтой боловч ихэнх аппад тохиромжгүй байдаг."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Дэлгэцийг харж, хянах"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Энэ нь дэлгэц дээрх бүх контентыг унших болон контентыг бусад апп дээр харуулах боломжтой."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Үйлдлийг харж, гүйцэтгэх"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Энэ нь таны апп, техник хангамжийн мэдрэгчтэй хийх харилцан үйлдлийг хянах болон таны өмнөөс апптай харилцан үйлдэл хийх боломжтой."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"дүрс тэмдэг"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> дээр дарснаар хандалтын онцлог болох <xliff:g id="ID_4">^4</xliff:g>-г асаана. Энэ нь танд төхөөрөмжөө гараас хамаарахгүй хянахад тусална."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Хандалт"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Болсон"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Түгжээтэй дэлгэц"</string>

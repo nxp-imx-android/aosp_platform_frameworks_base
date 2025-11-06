@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Compartir audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Compartir a ventá da aplicación"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Compartir a pestana"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Cando compartes a pantalla, pode verse o seu contido"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Facer unha captura de pantalla da ventá"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Ventá de gravación"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Facer unha captura da área seleccionada da pantalla"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"As notificacións de chamadas non se poden modificar."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Aquí non se pode configurar este grupo de notificacións"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Notificación mediante proxy"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"As <xliff:g id="APP_NAME">%1$s</xliff:g> notificacións"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Ver máis"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"O sistema &lt;b&gt;ascendeu a Predeterminada&lt;/b&gt; esta notificación de forma automática."</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menú de acendido"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Páxina <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Queres activar <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"O atallo de teclado para usar <xliff:g id="ID_4">^4</xliff:g> é <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Preme de novo <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> para activar <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Queres activar o atallo de teclado <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Non activar"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activar atallo"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"O atallo do teclado para <xliff:g id="ID_1">%1$s</xliff:g> está activado"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"O atallo de teclado para usar <xliff:g id="ID_4">^4</xliff:g>, unha función de accesibilidade, é <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Isto permíteche achegar a pantalla rapidamente para ter o contido a maior tamaño. Cando a ampliación estea activada, preme a <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> e \"+\" ou \"-\" para axustar o zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactivar atallo"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Deixar opción activada"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"O atallo de teclado para usar <xliff:g id="ID_4">^4</xliff:g> é <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> é un lector de pantalla que fai que se lean os elementos en alto para que os oias. Esta función pode ser útil para as persoas que teñan dificultades para ver a pantalla. O seu uso pode afectar ao funcionamento do dispositivo."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ao activar o atallo de teclado, permitirás que TalkBack teña o control total do teu dispositivo."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"O control total é adecuado para as aplicacións que che axudan coa accesibilidade, pero non para a maioría das aplicacións."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Ver e controlar a pantalla"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Pode ler todo o contido da pantalla e mostralo sobre outras aplicacións."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Ver e realizar accións"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Pode facer un seguimento das túas interaccións cunha aplicación ou cun sensor de hardware, así como interactuar por ti coas aplicacións."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Se premes <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, activarase <xliff:g id="ID_4">^4</xliff:g>, unha función de accesibilidade. Así poderás controlar o dispositivo sen usar as mans."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accesibilidade"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Feito"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueo"</string>

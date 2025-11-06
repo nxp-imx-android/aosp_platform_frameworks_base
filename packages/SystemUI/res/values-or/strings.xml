@@ -171,7 +171,12 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ଅଡିଓ ସେୟାର କରନ୍ତୁ"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ଆପ ୱିଣ୍ଡୋ ସେୟାର କରନ୍ତୁ"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ଟାବ ସେୟାର କରନ୍ତୁ"</string>
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"ସେୟାର କରିବା ସମୟରେ, ଆପଣଙ୍କ ସ୍କ୍ରିନର ବିଷୟବସ୍ତୁ ଦେଖାଯାଏ"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ୱିଣ୍ଡୋର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ୱିଣ୍ଡୋ ରେକର୍ଡ କରନ୍ତୁ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ଚୟନିତ ଏରିଆର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
@@ -945,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"କଲ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପରିବର୍ତ୍ତନ କରାଯାଇପାରିବ ନାହିଁ।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ଏଠାରେ ଏହି ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକର ଗ୍ରୁପ୍ କନଫ୍ୟୁଗର୍ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ବିଜ୍ଞପ୍ତି ପ୍ରକ୍ସୀ ହୋଇଛି"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"ସମସ୍ତ <xliff:g id="APP_NAME">%1$s</xliff:g>ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ"</string>
     <string name="see_more_title" msgid="7409317011708185729">"ଅଧିକ ଦେଖନ୍ତୁ"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ସିଷ୍ଟମ୍ ଏହି ବିଜ୍ଞପ୍ତିକୁ ସ୍ୱଚାଳିତ ଭାବେ &lt;b&gt;ଡିଫଲ୍ଟକୁ ପ୍ରମୋଟ୍ କରିଛି&lt;/b&gt;।"</string>
@@ -1150,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"ପାୱାର ମେନୁ"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"ପୃଷ୍ଠା <xliff:g id="ID_1">%1$d</xliff:g> ମୋଟ <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ଚାଲୁ କରିବେ?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ହେଉଛି <xliff:g id="ID_4">^4</xliff:g> ବ୍ୟବହାର କରିବା ପାଇଁ କୀବୋର୍ଡ ସର୍ଟକଟ। <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"<xliff:g id="ID_4">%4$s</xliff:g>କୁ ସକ୍ଷମ କରିବା ପାଇଁ <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g>କୁ ପୁଣି ଦବାନ୍ତୁ"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> କୀବୋର୍ଡ ସର୍ଟକଟ ଚାଲୁ କରିବେ?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"ଚାଲୁ କରନ୍ତୁ ନାହିଁ"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"ସର୍ଟକଟ ଚାଲୁ କରନ୍ତୁ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> କୀବୋର୍ଡ ସର୍ଟକଟ ଚାଲୁ କରାଯାଇଛି"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ହେଉଛି ଏକ ଆକ୍ସେସିବିଲିଟୀ ଫିଚର <xliff:g id="ID_4">^4</xliff:g>କୁ ବ୍ୟବହାର କରିବା ପାଇଁ କୀବୋର୍ଡ ସର୍ଟକଟ। ଏହା ଆପଣଙ୍କୁ ବିଷୟବସ୍ତୁକୁ ଆହୁରି ବଡ଼ କରିବା ପାଇଁ ସ୍କ୍ରିନରେ ଶୀଘ୍ର ଜୁମ ଇନ କରିବାକୁ ଅନୁମତି ଦିଏ। ମେଗ୍ନିଫିକେସନ ଚାଲୁ କରିବା ପରେ, ଜୁମକୁ ଆଡଜଷ୍ଟ କରିବା ପାଇଁ <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> ଏବଂ \"+\" କିମ୍ବା \"-\" ଦବାନ୍ତୁ।"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"ସର୍ଟକଟ ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"ଚାଲୁ ରଖନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ହେଉଛି <xliff:g id="ID_4">^4</xliff:g> ବ୍ୟବହାର କରିବା ପାଇଁ କୀବୋର୍ଡ ସର୍ଟକଟ। <xliff:g id="ID_5">^4</xliff:g> ହେଉଛି ଏକ ସ୍କ୍ରିନ ରିଡର ଯାହା ଆପଣଙ୍କୁ ବଡ଼ ପାଟିରେ ଆଇଟମଗୁଡ଼ିକୁ ଶୁଣିବାକୁ ଅନୁମତି ଦିଏ। ସ୍କ୍ରିନ ଦେଖିବାରେ ଅସୁବିଧାର ସମ୍ମୁଖୀନ ହେଉଥିବା ଲୋକମାନଙ୍କ ପାଇଁ ଏହା ଉପଯୋଗୀ ହୋଇପାରିବ। ଏହା ଆପଣଙ୍କ ଡିଭାଇସ କିପରି କାମ କରେ ତାହା ପରିବର୍ତ୍ତନ କରିପାରେ।"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"କୀବୋର୍ଡ ସର୍ଟକଟକୁ ଚାଲୁ କରି ଆପଣଙ୍କ ଡିଭାଇସର ସମ୍ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ କରିବାକୁ ଆପଣ TalkBackକୁ ଅନୁମତି ଦେବେ।"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"ଆପଣଙ୍କୁ ଆକ୍ସେସିବିଲିଟୀ ଆବଶ୍ୟକତାରେ ସହାୟତା କରୁଥିବା ଆପ୍ସ ପାଇଁ ସମ୍ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ ଉପଯୁକ୍ତ, କିନ୍ତୁ ଅଧିକାଂଶ ଆପ୍ସ ପାଇଁ ନୁହେଁ।"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"ଭ୍ୟୁ ଏବଂ ସ୍କ୍ରିନ ନିୟନ୍ତ୍ରଣ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ଏହା ସ୍କ୍ରିନରେ ସମସ୍ତ ବିଷୟବସ୍ତୁ ପଢ଼ିପାରେ ଏବଂ ଅନ୍ୟ ଆପ୍ସରେ ବିଷୟବସ୍ତୁକୁ ଡିସପ୍ଲେ କରିପାରେ।"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ଭ୍ୟୁ କରି କାର୍ଯ୍ୟଗୁଡ଼ିକ କରନ୍ତୁ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ଏହା କୌଣସି ଆପ କିମ୍ବା ହାର୍ଡୱେର ସେନ୍ସର ସହ ଆପଣଙ୍କର ଇଣ୍ଟେରାକ୍ସନକୁ ଟ୍ରାକ କରିପାରେ ଏବଂ ଆପଣଙ୍କ ତରଫରୁ ଆପ୍ସ ସହ ଇଣ୍ଟରାକ୍ଟ କରିପାରେ।"</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>କୁ ଦବାଇବା ଫଳରେ ଏକ ଆକ୍ସେସିବିଲିଟୀ ଫିଚର <xliff:g id="ID_4">^4</xliff:g> ଚାଲୁ ହୁଏ। ଏହା ଆପଣଙ୍କୁ ଆପଣଙ୍କ ଡିଭାଇସକୁ ହେଣ୍ଡ୍ସ-ଫ୍ରି ଭାବରେ ନିୟନ୍ତ୍ରଣ କରିବାକୁ ଦିଏ।"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ଆକ୍ସେସିବିଲିଟୀ"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"ହୋଇଗଲା"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ଲକ ସ୍କ୍ରିନ"</string>
