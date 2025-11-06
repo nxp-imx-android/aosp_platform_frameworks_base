@@ -138,7 +138,7 @@ public class PipSchedulerTest {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_PIP_BOX_SHADOWS);
+                Flags.FLAG_ENABLE_PIP_BOX_SHADOWS_V2);
     }
 
     @Rule

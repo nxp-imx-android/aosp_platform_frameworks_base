@@ -133,7 +133,7 @@ public class WindowDecorationTests extends ShellTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS);
+                Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2);
     }
 
     private final WindowDecoration.RelayoutResult<TestView> mRelayoutResult =
@@ -197,7 +197,7 @@ public class WindowDecorationTests extends ShellTestCase {
                 (ctx, display) -> WindowDecoration.loadDimensionPixelSize(ctx.getResources(),
                         R.dimen.test_freeform_decor_caption_height);
         mCaptionMenuWidthId = R.dimen.test_freeform_decor_caption_menu_width;
-        if (Flags.enableFreeformBoxShadows()) {
+        if (Flags.enableFreeformBoxShadowsV2()) {
             mRelayoutParams.mBoxShadowSettingsIds = new int[]{R.style.BoxShadowParamsKeyFocused};
             mRelayoutParams.mBorderSettingsId = R.style.BorderSettingsFocusedDark;
         } else {
@@ -327,7 +327,7 @@ public class WindowDecorationTests extends ShellTestCase {
         verifyAddedInsets(1, taskInfo.token, 0 /* index */, WindowInsets.Type.captionBar(),
                 new Rect(100, 300, 400, 364));
 
-        if (Flags.enableFreeformBoxShadows()) {
+        if (Flags.enableFreeformBoxShadowsV2()) {
             if (inSyncWithTransition) {
                 verify(mMockSurfaceControlStartT).setBoxShadowSettings(eq(mMockTaskSurface), any());
                 verify(mMockSurfaceControlFinishT).setBoxShadowSettings(eq(mMockTaskSurface),

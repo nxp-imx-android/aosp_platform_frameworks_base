@@ -588,7 +588,7 @@ constructor(
         hasGlobalFocus: Boolean,
     ): IntArray? =
         if (
-            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue ||
+            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS_V2.isTrue ||
                 !shouldDecorateBorders(captionType) ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
         ) {
@@ -605,7 +605,7 @@ constructor(
         hasGlobalFocus: Boolean,
     ): Int =
         if (
-            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue ||
+            !DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS_V2.isTrue ||
                 !shouldDecorateBorders(captionType) ||
                 !desktopConfig.useWindowShadow(isFocusedWindow = hasGlobalFocus)
         ) {
@@ -625,7 +625,7 @@ constructor(
         captionType: CaptionController.CaptionType,
         hasGlobalFocus: Boolean,
     ): Int =
-        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue) {
+        if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS_V2.isTrue) {
             ID_NULL
         } else if (
             !shouldDecorateBorders(captionType) ||

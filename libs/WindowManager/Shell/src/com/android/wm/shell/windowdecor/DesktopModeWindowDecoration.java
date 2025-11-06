@@ -1228,7 +1228,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
         if (isAppHeader
                 && desktopConfig.useWindowShadow(/* isFocusedWindow= */ hasGlobalFocus)) {
-            if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue()) {
+            if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS_V2.isTrue()) {
                 // Shadows are same for light and dark theme.
                 relayoutParams.mBoxShadowSettingsIds = hasGlobalFocus
                         ? new int[]{R.style.BoxShadowParamsKeyFocused,
@@ -1252,7 +1252,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         : R.dimen.freeform_decor_shadow_unfocused_thickness;
             }
         } else {
-            if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue()) {
+            if (DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS_V2.isTrue()) {
                 relayoutParams.mBoxShadowSettingsIds = null;
                 relayoutParams.mBorderSettingsId = Resources.ID_NULL;
             } else {
