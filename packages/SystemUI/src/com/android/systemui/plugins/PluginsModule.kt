@@ -16,9 +16,12 @@
 package com.android.systemui.plugins
 
 import android.content.Context
+import android.os.SystemProperties
 import com.android.systemui.dagger.PluginModule
+import com.android.systemui.dagger.qualifiers.TestHarness
 import com.android.systemui.res.R
 import com.android.systemui.shared.plugins.PluginEnabler
+import com.android.systemui.shared.plugins.PluginEnvironment
 import com.android.systemui.shared.plugins.PluginManagerImpl
 import com.android.systemui.shared.plugins.PluginPrefs
 import com.android.systemui.shared.plugins.VersionChecker
@@ -62,6 +65,12 @@ abstract class PluginsModule {
         @Provides
         fun providesPluginPrefs(context: Context): PluginPrefs {
             return PluginPrefs(context)
+        }
+
+        @Provides
+        fun providesEnvironment(@TestHarness isTestHarness: Boolean): PluginEnvironment {
+            val isDebugPropSet = SystemProperties.getBoolean("debug.sysui.plugins", false)
+            return PluginEnvironment(isTestHarness = isTestHarness, isDebugPropSet = isDebugPropSet)
         }
 
         @Provides

@@ -108,7 +108,7 @@ class PluginInstanceTest : SysuiTestCase() {
                 mVersionChecker,
                 javaClass.classLoader!!,
                 PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
-                BuildInfo(BuildVariant.User, isDebuggable = false),
+                PluginEnvironment(BuildVariant.User, isDebuggable = false),
             ) { _ ->
                 val plugin = TestPluginImpl(mCounter)
                 mPlugin = WeakReference(plugin)

@@ -28,7 +28,7 @@ interface PluginManager {
 
     fun <T> dependsOn(p: Plugin, cls: Class<T>): Boolean
 
-    class Config(privilegedNames: List<String> = listOf()) {
+    class Config @JvmOverloads constructor(privilegedNames: List<String> = listOf()) {
         private val privilegedPackages: Set<String>
         private val privilegedComponents: Set<ComponentName>
 

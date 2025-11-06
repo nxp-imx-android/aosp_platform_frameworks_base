@@ -19,7 +19,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.SystemProperties
 import androidx.annotation.VisibleForTesting
 import com.android.internal.messages.nano.SystemMessageProto
 import com.android.systemui.Dumpable
@@ -47,6 +46,7 @@ constructor(
     private val pluginEnabler: PluginEnabler,
     private val pluginPrefs: PluginPrefs,
     private val config: PluginManager.Config,
+    private val env: PluginEnvironment,
 ) : BroadcastReceiver(), PluginManager, Dumpable {
     private val pluginMap = mutableMapOf<PluginListener<*>, PluginActionManager<*>>()
     private val logger = Logger(DEFAULT_LOGBUFFER, TAG)
@@ -205,7 +205,7 @@ constructor(
 
     private inner class PluginExceptionHandler : Thread.UncaughtExceptionHandler {
         override fun uncaughtException(thread: Thread, throwable: Throwable) {
-            if (SystemProperties.getBoolean("plugin.debugging", false)) {
+            if (env.isTestMode) {
                 return
             }
 
@@ -259,11 +259,17 @@ constructor(
             bgExecutor: Executor,
             preHandlerManager: UncaughtExceptionPreHandlerManager?,
         ): PluginManagerImpl {
+            val env = PluginEnvironment()
             val pluginPrefs = PluginPrefs(context)
             val config = PluginManager.Config(privilegedPlugins)
 
             val instanceFactory =
-                PluginInstance.Factory(VersionCheckerImpl(), this::class.java.classLoader!!, config)
+                PluginInstance.Factory(
+                    VersionCheckerImpl(),
+                    this::class.java.classLoader!!,
+                    config,
+                    env,
+                )
 
             val pluginActionManagerFactory =
                 PluginActionManager.Factory(
@@ -276,6 +282,7 @@ constructor(
                     config,
                     instanceFactory,
                     pluginPrefs,
+                    env,
                 )
 
             return PluginManagerImpl(
@@ -285,6 +292,7 @@ constructor(
                 pluginEnabler,
                 pluginPrefs,
                 config,
+                env,
             )
         }
     }
