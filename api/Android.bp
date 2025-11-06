@@ -403,7 +403,7 @@ stubs_defaults {
     srcs: [":android-non-updatable-stub-sources"],
     sdk_version: "none",
     system_modules: "none",
-    java_version: "1.8",
+    java_version: "17",
     arg_files: [":frameworks-base-core-AndroidManifest.xml"],
     aidl: {
         include_dirs: [
