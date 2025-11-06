@@ -1101,7 +1101,7 @@ public final class Display {
     }
 
     /**
-     * @deprecated Use {@link WindowMetrics#getBounds#width()} instead.
+     * @deprecated Use width from {@link WindowMetrics#getBounds()} instead.
      */
     @Deprecated
     public int getWidth() {
@@ -1112,7 +1112,7 @@ public final class Display {
     }
 
     /**
-     * @deprecated Use {@link WindowMetrics#getBounds()#height()} instead.
+     * @deprecated Use height from {@link WindowMetrics#getBounds()} instead.
      */
     @Deprecated
     public int getHeight() {

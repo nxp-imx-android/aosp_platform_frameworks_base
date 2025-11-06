@@ -6172,7 +6172,7 @@ public class AccessibilityNodeInfo implements Parcelable {
         /**
          * Action that clears input focus of the node.
          * <p>The node that is cleared should return {@code false} for
-         * {@link AccessibilityNodeInfo#isFocused)}.
+         * {@link AccessibilityNodeInfo#isFocused()}.
          */
         public static final AccessibilityAction ACTION_CLEAR_FOCUS =
                 new AccessibilityAction(AccessibilityNodeInfo.ACTION_CLEAR_FOCUS);
