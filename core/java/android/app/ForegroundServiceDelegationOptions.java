@@ -47,14 +47,24 @@ public class ForegroundServiceDelegationOptions {
     public static final int DELEGATION_SERVICE_SPECIAL_USE = 1;
 
     /**
-     * Used to identify delegation service related to a phone call.
+     * Used to identify delegation service related to a phone call. Use a more specific
+     * type instead.
+     * @see #DELEGATION_SERVICE_VOIP
+     * @deprecated
      */
     public static final int DELEGATION_SERVICE_PHONE_CALL = 2;
+
+    /**
+     * Used to identify delegation service related to a voip call.
+     */
+    public static final int DELEGATION_SERVICE_VOIP = 3;
+
 
     @IntDef(flag = false, prefix = { "DELEGATION_SERVICE_" }, value = {
             DELEGATION_SERVICE_DEFAULT,
             DELEGATION_SERVICE_SPECIAL_USE,
             DELEGATION_SERVICE_PHONE_CALL,
+            DELEGATION_SERVICE_VOIP,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface DelegationService {}
@@ -190,6 +200,8 @@ public class ForegroundServiceDelegationOptions {
                 return "SPECIAL_USE";
             case DELEGATION_SERVICE_PHONE_CALL:
                 return "PHONE_CALL";
+            case DELEGATION_SERVICE_VOIP:
+                return "VOIP";
             default:
                 return "(unknown:" + serviceCode + ")";
         }
