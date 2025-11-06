@@ -1135,3 +1135,14 @@ test_module_config {
     ],
     include_filters: ["com.android.server.companion.virtual"],
 }
+
+test_module_config {
+    name: "FrameworksServicesTests_contextual_mode",
+    base: "FrameworksServicesTests",
+    team: "trendy_team_notifications",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.modes"],
+}

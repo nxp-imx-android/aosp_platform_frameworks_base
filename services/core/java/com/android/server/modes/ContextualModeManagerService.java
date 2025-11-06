@@ -15,22 +15,113 @@
  */
 package com.android.server.modes;
 
+import android.Manifest;
+import android.annotation.EnforcePermission;
+import android.annotation.RequiresNoPermission;
+import android.app.modes.ContextualMode;
+import android.app.modes.ContextualModeManager;
+import android.app.modes.ContextualModesMutation;
+import android.app.modes.IContextualModeListener;
+import android.app.modes.IContextualModeManager;
+import android.app.modes.IContextualModeSyncListener;
 import android.content.Context;
-import android.util.Slog;
+import android.os.PermissionEnforcer;
+import android.os.UserHandle;
 
 import androidx.annotation.NonNull;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.SystemService;
 
-/** A system service managing contextual modes. E.g. Do not disturb. */
+import java.util.List;
+
+/**
+ * A system service managing contextual modes. E.g. Do not disturb. See {@link
+ * ContextualModeManager}.
+ */
 public final class ContextualModeManagerService extends SystemService {
     private static final String TAG = "CtxModeManagerService";
 
+    private final BinderService mBinderService;
+
     public ContextualModeManagerService(@NonNull Context context) {
+        this(context, PermissionEnforcer.fromContext(context));
+    }
+
+    @VisibleForTesting
+    ContextualModeManagerService(Context context, PermissionEnforcer permissionEnforcer) {
         super(context);
+        mBinderService = new BinderService(permissionEnforcer);
     }
 
     @Override
     public void onStart() {
+        publishBinderService(Context.CONTEXTUAL_MODE_SERVICE, mBinderService);
+    }
+
+    @VisibleForTesting
+    IContextualModeManager getBinderService() {
+        return mBinderService;
+    }
+
+    /** Binder service for clients to interact with. */
+    // TODO(b/430676215): implement
+    private class BinderService extends IContextualModeManager.Stub {
+
+        BinderService(PermissionEnforcer permissionEnforcer) {
+            super(permissionEnforcer);
+        }
+
+        @Override
+        @RequiresNoPermission
+        public boolean isModeSyncSupported() {
+            return false;
+        }
+
+        @Override
+        @RequiresNoPermission
+        public boolean isModeSyncEnabled(UserHandle userHandle) {
+            return false;
+        }
+
+        @Override
+        @EnforcePermission(Manifest.permission.WRITE_SECURE_SETTINGS)
+        public void setModeSyncEnabled(boolean enabled) {
+            setModeSyncEnabled_enforcePermission();
+        }
+
+        @Override
+        @EnforcePermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
+        public List<ContextualMode> getModes(UserHandle userHandle) {
+            getModes_enforcePermission();
+            return List.of();
+        }
+
+        @Override
+        @EnforcePermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
+        public void mutateModes(UserHandle userHandle, ContextualModesMutation mutation) {
+            mutateModes_enforcePermission();
+        }
+
+        @Override
+        @RequiresNoPermission
+        public void registerModeSyncListener(
+                UserHandle userHandle, IContextualModeSyncListener listener) {}
+
+        @Override
+        @RequiresNoPermission
+        public void unregisterModeSyncListener(IContextualModeSyncListener listener) {}
+
+        @Override
+        @EnforcePermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
+        public void registerModeListener(UserHandle userHandle, IContextualModeListener listener) {
+            registerModeListener_enforcePermission();
+        }
+
+        @Override
+        @EnforcePermission(Manifest.permission.MANAGE_CONTEXTUAL_MODES)
+        public void unregisterModeListener(IContextualModeListener listener) {
+            unregisterModeListener_enforcePermission();
+        }
     }
 }
