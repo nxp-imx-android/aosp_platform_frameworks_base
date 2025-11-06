@@ -35,6 +35,7 @@ import static org.mockito.Mockito.mock;
 
 import android.annotation.UserIdInt;
 import android.app.IApplicationThread;
+import android.content.pm.ActivityInfo;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -133,6 +134,34 @@ public final class ActivityStarterHsuAllowlistIntegrationTests extends ActivityS
 
     @Test
     @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testExecute_allowedWhenNotAllowlistedButShowForAllSet_notifyBecauseItsHsum() {
+        ActivityStarter starter = createStarter(HSUM);
+        addActivityInfoFlags(starter, ActivityInfo.FLAG_SHOW_FOR_ALL_USERS);
+        mockActivityAllowlistedForHsu(false);
+
+        int result = starter.execute();
+
+        assertWithMessage("result of execute()").that(result).isEqualTo(START_SUCCESS);
+        verifyUmiNotNotifiedActivityBlocked();
+        verifyUmiNotifiedActivityLaunched();
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testExecute_allowedWhenNotAllowlistedButShowForAllSet_dontNotifyBecauseNotHsum() {
+        ActivityStarter starter = createStarter(NON_HSUM);
+        addActivityInfoFlags(starter, ActivityInfo.FLAG_SHOW_FOR_ALL_USERS);
+        mockActivityAllowlistedForHsu(false);
+
+        int result = starter.execute();
+
+        assertWithMessage("result of execute()").that(result).isEqualTo(START_SUCCESS);
+        verifyUmiNotNotifiedActivityBlocked();
+        verifyUmiNotNotifiedActivityLaunched();
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
     public void testExecute_umiNotCalledWhenNotAllowed() {
         ActivityStarter starter = createStarter();
         starter.mRequest.caller = mock(IApplicationThread.class);
@@ -171,10 +200,8 @@ public final class ActivityStarterHsuAllowlistIntegrationTests extends ActivityS
         return starter;
     }
 
-    private ActivityStarter createStarterForUser(@UserIdInt int userId) {
-        ActivityStarter starter = createStarter();
-        starter.mRequest.activityInfo.applicationInfo.uid = userId * UserHandle.PER_USER_RANGE;
-        return starter;
+    private void addActivityInfoFlags(ActivityStarter starter, int flags) {
+        starter.mRequest.activityInfo.flags |= flags;
     }
 
     private void mockActivityAllowlistedForHsu(boolean value) {

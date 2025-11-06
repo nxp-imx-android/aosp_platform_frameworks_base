@@ -72,6 +72,7 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_PERMISSIONS_REVIEW;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_RESULTS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_USER_LEAVING;
+import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_USER_VISIBILITY;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_CONFIGURATION;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_FOCUS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_RESULTS;
@@ -97,6 +98,7 @@ import static com.android.window.flags.Flags.balReportAbortedActivityStarts;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.IApplicationThread;
@@ -1201,19 +1203,32 @@ class ActivityStarter {
                 && aInfo != null) {
             var compName = intent.getComponent();
             if (compName != null) {
-                var umi = mService.getUserManagerInternal();
-                var allowlist = umi.getActivitiesAllowlist(userId);
-                if (allowlist != null && !allowlist.isAllowed(compName)) {
-                    Slogf.w(TAG, "Activity %s is not allowed for user %d",
-                            compName.flattenToShortString(), userId);
-                    // TODO(b/414326600): consolidate with the logLaunchedHsuActivity() on
-                    // handleResult and/or log for all users (once the final API for logging is
-                    // defined)
-                    if (mIsHeadlessSystemUserMode && userId == UserHandle.USER_SYSTEM) {
-                        umi.logBlockedHsuActivity(compName);
+                boolean showForAllUsers = (aInfo.flags
+                        & ActivityInfo.FLAG_SHOW_FOR_ALL_USERS) != 0;
+                if (!showForAllUsers) {
+                    var umi = mService.getUserManagerInternal();
+                    var allowlist = umi.getActivitiesAllowlist(userId);
+                    if (allowlist != null && !allowlist.isAllowed(compName)) {
+                        Slogf.w(TAG, "Activity %s is not allowlisted for user %d",
+                                compName.flattenToShortString(), userId);
+                        // TODO(b/414326600): consolidate with the logLaunchedHsuActivity() on
+                        // handleResult and/or log for all users (once the final API for logging is
+                        // defined)
+                        if (mIsHeadlessSystemUserMode && userId == UserHandle.USER_SYSTEM) {
+                            umi.logBlockedHsuActivity(compName);
+                        }
+                        err = ActivityManager.START_NOT_ALLOWED_FOR_USER;
+                    } else if (DEBUG_USER_VISIBILITY) {
+                        Slogf.d(TAG, "Activity %s is allowlisted for user %d (currentUser=%d)",
+                                compName.flattenToShortString(), userId, getCurrentUserId());
                     }
-                    err = ActivityManager.START_NOT_ALLOWED_FOR_USER;
+                } else if (DEBUG_USER_VISIBILITY && intent.getComponent() != null) {
+                    Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
+                            + "its marked as 'showForAllUsers' (currentUserId=%d)",
+                            intent.getComponent().flattenToShortString(), userId,
+                            getCurrentUserId());
                 }
+
             } else {
                 // Should not be happen, but better be safe than sorry....
                 Slogf.wtf(TAG, "Could not check if %s is allowed for HSU because its intent (%s) "
@@ -3654,10 +3669,14 @@ class ActivityStarter {
         return this;
     }
 
+    private @UserIdInt int getCurrentUserId() {
+        return mRootWindowContainer.mCurrentUser;
+    }
+
     void dump(PrintWriter pw, String prefix) {
         pw.print(prefix);
         pw.print("mCurrentUser=");
-        pw.println(mRootWindowContainer.mCurrentUser);
+        pw.println(getCurrentUserId());
         pw.print(prefix);
         pw.print("mLastStartReason=");
         pw.println(mLastStartReason);
