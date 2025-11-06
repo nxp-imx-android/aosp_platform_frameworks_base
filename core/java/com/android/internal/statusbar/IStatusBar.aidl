@@ -153,9 +153,9 @@ oneway interface IStatusBar
     void showPictureInPictureMenu();
 
     /**
-     * Shows the global actions menu.
+     * Shows the global actions menu if not showing. Hides it if already showing
      */
-    void showGlobalActionsMenu();
+    void showOrHideGlobalActionsMenu();
 
     /**
      * Notifies the status bar that a new rotation suggestion is available.
