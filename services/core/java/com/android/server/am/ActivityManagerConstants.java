@@ -1166,7 +1166,7 @@ final class ActivityManagerConstants extends ContentObserver {
     public int TIERED_CACHED_ADJ_UI_TIER_SIZE;
 
     /** @see #KEY_ENABLE_BATCHING_OOM_ADJ */
-    public boolean ENABLE_BATCHING_OOM_ADJ = DEFAULT_ENABLE_BATCHING_OOM_ADJ;
+    private boolean mEnableBatchingOomAdj;
 
     /** @see #KEY_FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION */
     public long FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION =
@@ -1490,7 +1490,8 @@ final class ActivityManagerConstants extends ContentObserver {
         CUR_TRIM_EMPTY_PROCESSES = rawMaxEmptyProcesses / 2;
         CUR_TRIM_CACHED_PROCESSES = (Integer.min(CUR_MAX_CACHED_PROCESSES, MAX_CACHED_PROCESSES)
                     - rawMaxEmptyProcesses) / 3;
-        loadNativeBootDeviceConfigConstants();
+        mEnableBatchingOomAdj = getDeviceConfigBoolean(KEY_ENABLE_BATCHING_OOM_ADJ,
+                DEFAULT_ENABLE_BATCHING_OOM_ADJ);
         mDefaultDisableAppProfilerPssProfiling = context.getResources().getBoolean(
                 R.bool.config_am_disablePssProfiling);
         APP_PROFILER_PSS_PROFILING_DISABLED = mDefaultDisableAppProfilerPssProfiling;
@@ -1542,11 +1543,6 @@ final class ActivityManagerConstants extends ContentObserver {
         mOnDeviceConfigChangedForComponentAliasListener.onPropertiesChanged(
                 DeviceConfig.getProperties(
                         DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_COMPONENT_ALIAS));
-    }
-
-    private void loadNativeBootDeviceConfigConstants() {
-        ENABLE_BATCHING_OOM_ADJ = getDeviceConfigBoolean(KEY_ENABLE_BATCHING_OOM_ADJ,
-                DEFAULT_ENABLE_BATCHING_OOM_ADJ);
     }
 
     public void setOverrideMaxCachedProcesses(int value) {
@@ -2357,13 +2353,6 @@ final class ActivityManagerConstants extends ContentObserver {
                 PSS_TO_RSS_THRESHOLD_MODIFIER);
     }
 
-    private void updateEnableBatchingOomAdj() {
-        ENABLE_BATCHING_OOM_ADJ = DeviceConfig.getBoolean(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
-                KEY_ENABLE_BATCHING_OOM_ADJ,
-                DEFAULT_ENABLE_BATCHING_OOM_ADJ);
-    }
-
     /** Creates and initializes an {@link OomAdjuster.Constants} instance with values. */
     OomAdjuster.Constants createOomConstants() {
         OomAdjuster.Constants oomConstants = new OomAdjuster.Constants();
@@ -2394,6 +2383,7 @@ final class ActivityManagerConstants extends ContentObserver {
         oomConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis =
                 mNoKillCachedProcessesPostBootCompletedDurationMillis;
         oomConstants.mFreezerCutoffAdj = mFreezerCutoffAdj;
+        oomConstants.mEnableBatchingOomAdj = mEnableBatchingOomAdj;
 
         return oomConstants;
     }
@@ -2607,7 +2597,7 @@ final class ActivityManagerConstants extends ContentObserver {
         pw.print("="); pw.println(mMaxPreviousTime);
 
         pw.print("  "); pw.print(KEY_ENABLE_BATCHING_OOM_ADJ);
-        pw.print("="); pw.println(ENABLE_BATCHING_OOM_ADJ);
+        pw.print("="); pw.println(mEnableBatchingOomAdj);
 
         pw.println();
         if (mOverrideMaxCachedProcesses >= 0) {
