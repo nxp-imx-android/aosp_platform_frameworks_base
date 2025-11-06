@@ -226,7 +226,7 @@ constructor(
 
         // Get dimension resources
         wifiNetworkHeight =
-            context.resources.getDimensionPixelSize(R.dimen.internet_dialog_wifi_network_height)
+            context.resources.getDimensionPixelSize(R.dimen.tile_details_entry_height)
 
         // Initialize LiveData observer
         internetContentData.observe(lifecycleOwner!!) { internetContent ->
