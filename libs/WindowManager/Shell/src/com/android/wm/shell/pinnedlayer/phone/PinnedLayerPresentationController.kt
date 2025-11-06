@@ -17,18 +17,21 @@
 package com.android.wm.shell.pinnedlayer.phone
 
 import android.app.TaskInfo
+import android.app.WindowConfiguration
 import android.content.Context
 import android.graphics.Rect
 import android.util.Slog
 import android.util.TypedValue
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import kotlin.math.max
 
 /** A controller that tracks the available display area for the pinned layer. */
 class PinnedLayerPresentationController(
     private val context: Context,
     private val displayController: DisplayController,
+    private val desktopState: DesktopState,
 ) {
 
     private val entryBoundsPadding: Int
@@ -100,6 +103,21 @@ class PinnedLayerPresentationController(
         val top = bottom - finalHeight.toInt()
 
         return Rect(left, top, right, bottom)
+    }
+
+    /**
+     * Checks if the task is in a state that is supported for pinning.
+     *
+     * @param task The task to check.
+     * @return True if the task is supported, false otherwise.
+     */
+    fun isTaskSupportedForPinning(task: TaskInfo): Boolean {
+        // Freeform ensures tasks is not in pip/split/fullscreen/bubble.
+        val isFreeform = task.windowingMode == WindowConfiguration.WINDOWING_MODE_FREEFORM
+        // Limit to pining only in same display and require desktop mode support.
+        val displaySupportsDesktopMode =
+            desktopState.isDesktopModeSupportedOnDisplay(task.displayId)
+        return isFreeform && displaySupportsDesktopMode
     }
 
     private companion object {

@@ -25,6 +25,7 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPresentationController
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import dagger.Module
@@ -62,6 +63,7 @@ object PinnedLayerModule {
         shellInit: ShellInit,
         transitions: Transitions,
         displayController: DisplayController,
+        desktopState: DesktopState,
     ): Optional<PinnedLayerController> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
@@ -69,7 +71,7 @@ object PinnedLayerModule {
                     shellInit = shellInit,
                     transitions = transitions,
                     presentationController =
-                        PinnedLayerPresentationController(context, displayController),
+                        PinnedLayerPresentationController(context, displayController, desktopState),
                 )
             )
         }
