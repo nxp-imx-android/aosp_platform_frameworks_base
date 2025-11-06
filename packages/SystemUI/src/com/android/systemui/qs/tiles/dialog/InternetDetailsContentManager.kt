@@ -831,7 +831,6 @@ constructor(
                 }
             }
         }
-        wifiSettingsIcon.setColorFilter(context.getColor(R.color.connected_network_primary_color))
 
         val canShareWifi =
             internetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
