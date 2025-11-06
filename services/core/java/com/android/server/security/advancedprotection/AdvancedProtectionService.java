@@ -29,10 +29,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.StatsManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.UserInfo;
 import android.os.Binder;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -41,7 +39,6 @@ import android.os.ParcelFileDescriptor;
 import android.os.PermissionEnforcer;
 import android.os.RemoteException;
 import android.os.UserHandle;
-import android.provider.Settings;
 import android.security.advancedprotection.AdvancedProtectionFeature;
 import android.security.advancedprotection.AdvancedProtectionManager;
 import android.security.advancedprotection.AdvancedProtectionManager.FeatureId;
@@ -68,7 +65,6 @@ import com.android.server.security.advancedprotection.features.DisallowInstallUn
 import com.android.server.security.advancedprotection.features.MemoryTaggingExtensionHook;
 import com.android.server.security.advancedprotection.features.UsbDataAdvancedProtectionHook;
 
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -323,6 +319,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 return AdvancedProtectionProtoEnums.FEATURE_ID_ENABLE_MTE;
             case AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN:
                 return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN;
+            case AdvancedProtectionManager.FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES:
+                return AdvancedProtectionProtoEnums.FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES;
             default:
                 return AdvancedProtectionProtoEnums.FEATURE_ID_UNKNOWN;
         }

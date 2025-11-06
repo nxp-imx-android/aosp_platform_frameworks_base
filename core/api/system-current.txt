@@ -13206,6 +13206,7 @@ package android.security.advancedprotection {
     field public static final int FEATURE_ID_DISALLOW_USB = 2; // 0x2
     field public static final int FEATURE_ID_DISALLOW_WEP = 3; // 0x3
     field public static final int FEATURE_ID_ENABLE_MTE = 4; // 0x4
+    field @FlaggedApi("android.security.extend_aapm_to_a11y_services") public static final int FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES = 6; // 0x6
   }
 
 }

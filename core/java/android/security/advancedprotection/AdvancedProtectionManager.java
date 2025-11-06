@@ -120,7 +120,22 @@ public final class AdvancedProtectionManager {
     @FlaggedApi(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
     public static final int FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN = 5;
 
-    /** @hide */
+    /**
+     * Feature identifier for restricting the use of the {@code AccessibilityService} API
+     * to only applications designated as accessibility tools when Advanced Protection Mode
+     * (AAPM) is enabled.
+     *
+     * <p>When this protection is active, services not declaring themselves as an
+     * {@link android.accessibilityservice.AccessibilityServiceInfo#isAccessibilityTool} are
+     * disabled and blocked from running. Accessibility tools intended for users
+     * with disabilities are unaffected by this restriction.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public static final int FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES = 6;
+
     /**
      * Defines the set of integer identifiers for Advanced Protection features.
      *
@@ -136,12 +151,13 @@ public final class AdvancedProtectionManager {
     @IntDef(
             prefix = {"FEATURE_ID_"},
             value = {
-                FEATURE_ID_DISALLOW_CELLULAR_2G,
-                FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
-                FEATURE_ID_DISALLOW_USB,
-                FEATURE_ID_DISALLOW_WEP,
-                FEATURE_ID_ENABLE_MTE,
-                FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN,
+                    FEATURE_ID_DISALLOW_CELLULAR_2G,
+                    FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
+                    FEATURE_ID_DISALLOW_USB,
+                    FEATURE_ID_DISALLOW_WEP,
+                    FEATURE_ID_ENABLE_MTE,
+                    FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN,
+                    FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface FeatureId {}
@@ -158,6 +174,10 @@ public final class AdvancedProtectionManager {
         map.put(FEATURE_ID_ENABLE_MTE, "ENABLE_MTE");
         if (Flags.aapmFeatureDisableInsecureWifiAutojoin()) {
             map.put(FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN, "DISALLOW_INSECURE_WIFI_AUTOJOIN");
+        }
+        if (Flags.extendAapmToA11yServices()) {
+            map.put(FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES,
+                    "DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES");
         }
         return map;
     }
