@@ -1,7 +1,7 @@
 {
   "imports": [
     {
-      "path": "frameworks/base/ravenwood/test-mapping-frameworks"
+      "path": "frameworks/base/ravenwood-framework-test-mapping"
     }
   ],
   "desktop-presubmit": [
