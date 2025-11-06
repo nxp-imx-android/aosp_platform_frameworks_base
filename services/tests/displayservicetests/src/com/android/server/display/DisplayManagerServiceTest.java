@@ -16,11 +16,11 @@
 
 package com.android.server.display;
 
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
 import static android.Manifest.permission.CAPTURE_VIDEO_OUTPUT;
 import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
+import static android.Manifest.permission.CONFIGURE_WIFI_DISPLAY;
 import static android.Manifest.permission.MANAGE_DISPLAYS;
 import static android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE;
 import static android.Manifest.permission.WRITE_SETTINGS;
@@ -4374,7 +4374,7 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    public void getWifiDisplayStatus_withoutFineLocationPermission_shouldReturnFakeAddress() {
+    public void getWifiDisplayStatus_withoutConfigureWifiDispPermission_shouldReturnFakeAddress() {
         doNothing().when(mContext).sendBroadcastAsUser(any(), any(), isNull(), any());
         doReturn(mMockedWifiP2pManager).when(mContext).getSystemService(Context.WIFI_P2P_SERVICE);
         doReturn(true).when(mResources).getBoolean(R.bool.config_enableWifiDisplay);
@@ -4402,11 +4402,11 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    public void getWifiDisplayStatus_withFineLocationPermission_shouldReturnRealAddress() {
+    public void getWifiDisplayStatus_withConfigureWifiDisplayPermission_shouldReturnRealAddress() {
         doNothing().when(mContext).sendBroadcastAsUser(any(), any(), isNull(), any());
         doReturn(mMockedWifiP2pManager).when(mContext).getSystemService(Context.WIFI_P2P_SERVICE);
         doReturn(true).when(mResources).getBoolean(R.bool.config_enableWifiDisplay);
-        when(mContext.checkCallingPermission(ACCESS_FINE_LOCATION)).thenReturn(
+        when(mContext.checkCallingPermission(CONFIGURE_WIFI_DISPLAY)).thenReturn(
                 PackageManager.PERMISSION_GRANTED);
         mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerService.BinderService displayManagerBinderService =
