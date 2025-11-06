@@ -168,6 +168,12 @@ class FakeAccessibilityShortcutsRepository(
         return selectedTargetsList
     }
 
+    override fun getSelectedAccessibilityTargets(
+        @UserShortcutType shortcutType: Int
+    ): Flow<List<AccessibilityTargetModel>> = flow {
+        emit(getSelectedAccessibilityTargetsInfo(shortcutType))
+    }
+
     fun setSelectedAccessibilityTargetsList(list: List<AccessibilityTargetModel>) {
         selectedTargetsList = list.toList()
     }

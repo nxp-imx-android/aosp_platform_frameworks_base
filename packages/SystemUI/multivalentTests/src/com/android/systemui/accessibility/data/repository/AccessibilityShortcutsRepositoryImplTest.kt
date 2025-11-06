@@ -42,7 +42,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.hardware.input.Flags
 import com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME
-import com.android.internal.accessibility.common.ShortcutConstants
+import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
+import com.android.internal.accessibility.util.ShortcutUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.concurrency.fakeExecutor
@@ -301,14 +302,14 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
             underTest.enableShortcutsForTargets(
                 enable = true,
-                ShortcutConstants.UserShortcutType.KEY_GESTURE,
+                UserShortcutType.KEY_GESTURE,
                 targetNames,
             )
 
             verify(accessibilityManager)
                 .enableShortcutsForTargets(
                     eq(true),
-                    eq(ShortcutConstants.UserShortcutType.KEY_GESTURE),
+                    eq(UserShortcutType.KEY_GESTURE),
                     eq(targetNames),
                     anyInt(),
                 )
@@ -324,14 +325,14 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
             underTest.enableShortcutsForTargets(
                 enable = true,
-                ShortcutConstants.UserShortcutType.KEY_GESTURE,
+                UserShortcutType.KEY_GESTURE,
                 targetNames,
             )
 
             verify(accessibilityManager)
                 .enableShortcutsForTargets(
                     eq(true),
-                    eq(ShortcutConstants.UserShortcutType.KEY_GESTURE),
+                    eq(UserShortcutType.KEY_GESTURE),
                     eq(targetNames),
                     anyInt(),
                 )
@@ -345,14 +346,14 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
             underTest.enableShortcutsForTargets(
                 enable = true,
-                ShortcutConstants.UserShortcutType.KEY_GESTURE,
+                UserShortcutType.KEY_GESTURE,
                 targetNames,
             )
 
             verify(accessibilityManager)
                 .enableShortcutsForTargets(
                     eq(true),
-                    eq(ShortcutConstants.UserShortcutType.KEY_GESTURE),
+                    eq(UserShortcutType.KEY_GESTURE),
                     eq(targetNames),
                     anyInt(),
                 )
@@ -366,14 +367,14 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
             underTest.enableShortcutsForTargets(
                 enable = true,
-                ShortcutConstants.UserShortcutType.KEY_GESTURE,
+                UserShortcutType.KEY_GESTURE,
                 targetNames,
             )
 
             verify(accessibilityManager)
                 .enableShortcutsForTargets(
                     eq(true),
-                    eq(ShortcutConstants.UserShortcutType.KEY_GESTURE),
+                    eq(UserShortcutType.KEY_GESTURE),
                     eq(targetNames),
                     anyInt(),
                 )
@@ -387,14 +388,14 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
             underTest.performAccessibilityShortcut(
                 DEFAULT_DISPLAY,
-                ShortcutConstants.UserShortcutType.TOP_ROW_KEY,
+                UserShortcutType.TOP_ROW_KEY,
                 targetName,
             )
 
             verify(accessibilityManager)
                 .performAccessibilityShortcut(
                     eq(DEFAULT_DISPLAY),
-                    eq(ShortcutConstants.UserShortcutType.TOP_ROW_KEY),
+                    eq(UserShortcutType.TOP_ROW_KEY),
                     eq(targetName),
                 )
         }
@@ -405,10 +406,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             whenever(accessibilityManager.getInstalledAccessibilityServiceList())
                 .thenReturn(listOf(getMockAccessibilityServiceInfo("Test Service")))
 
-            val targets =
-                underTest
-                    .getAllAccessibilityTargets(ShortcutConstants.UserShortcutType.HARDWARE)
-                    .first()
+            val targets = underTest.getAllAccessibilityTargets(UserShortcutType.HARDWARE).first()
 
             assertThat(targets.any { it.featureName == "Test Service" }).isTrue()
             assertThat(targets.any { it.featureName == "Magnification" }).isTrue()
@@ -426,9 +424,9 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             val emissions = mutableListOf<List<AccessibilityTargetModel>>()
             val job =
                 testScope.launch {
-                    underTest
-                        .getAllAccessibilityTargets(ShortcutConstants.UserShortcutType.HARDWARE)
-                        .collect { emissions.add(it) }
+                    underTest.getAllAccessibilityTargets(UserShortcutType.HARDWARE).collect {
+                        emissions.add(it)
+                    }
                 }
             advanceUntilIdle()
 
@@ -474,9 +472,9 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             val emissions = mutableListOf<List<AccessibilityTargetModel>>()
             val job =
                 testScope.launch {
-                    underTest
-                        .getAllAccessibilityTargets(ShortcutConstants.UserShortcutType.HARDWARE)
-                        .collect { emissions.add(it) }
+                    underTest.getAllAccessibilityTargets(UserShortcutType.HARDWARE).collect {
+                        emissions.add(it)
+                    }
                 }
             advanceUntilIdle()
 
@@ -491,6 +489,53 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
             assertThat(emissions).hasSize(2)
             assertThat(emissions.last().any { it.featureName == mouseKeysFeatureName }).isTrue()
+
+            job.cancel()
+
+            assertThat(getContentObservers()).isEmpty()
+        }
+
+    @Test
+    fun getSelectedAccessibilityTargets_whenAssignedTargetsChange_emitsUpdatedList() =
+        kosmos.runTest {
+            val quickAccessTargetsSettingsKey =
+                ShortcutUtils.convertToKey(UserShortcutType.QUICK_ACCESS)
+            val getContentObservers = {
+                fakeSettings.getContentObservers(
+                    fakeSettings.getUriFor(quickAccessTargetsSettingsKey),
+                    fakeSettings.userId,
+                )
+            }
+
+            assertThat(getContentObservers()).isEmpty()
+
+            val emissions = mutableListOf<List<AccessibilityTargetModel>>()
+            val job =
+                testScope.launch {
+                    underTest
+                        .getSelectedAccessibilityTargets(UserShortcutType.QUICK_ACCESS)
+                        .collect { emissions.add(it) }
+                }
+            advanceUntilIdle()
+
+            assertThat(emissions).hasSize(1)
+            assertThat(emissions.last()).isEmpty()
+            assertThat(getContentObservers()).hasSize(1)
+
+            // Simulate assigning a target to the shortcut type.
+            whenever(
+                    accessibilityManager.getAccessibilityShortcutTargets(
+                        UserShortcutType.QUICK_ACCESS
+                    )
+                )
+                .thenReturn(listOf(MAGNIFICATION_CONTROLLER_NAME))
+            fakeSettings.putString(quickAccessTargetsSettingsKey, MAGNIFICATION_CONTROLLER_NAME)
+            kosmos.fakeExecutor.runAllReady()
+            advanceUntilIdle()
+
+            assertThat(emissions).hasSize(2)
+            assertThat(emissions.last().any { it.targetName == MAGNIFICATION_CONTROLLER_NAME })
+                .isTrue()
 
             job.cancel()
 
