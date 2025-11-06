@@ -32,6 +32,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.TransitionKeys.SystemCommunalTransition
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.util.kotlin.emitOnStart
 import com.android.systemui.util.kotlin.sample
@@ -104,13 +106,11 @@ constructor(
                 .launchIn(bgScope)
 
             // The hub mode timeout should start as soon as the user enters hub mode. At the end of
-            // the
-            // timer, if the device is dreaming, hub mode should closed and reveal the dream. If the
-            // dream is not running, nothing will happen. However if the dream starts again
-            // underneath
-            // hub mode after the initial timeout expires, such as if the device is docked or the
-            // dream
-            // app is updated by the Play store, a new timeout should be started.
+            // the timer, if the device is dreaming, hub mode should closed and reveal the dream. If
+            // the dream is not running, nothing will happen. However if the dream starts again
+            // underneath hub mode after the initial timeout expires, such as if the device is
+            // docked or the dream app is updated by the Play store, a new timeout should be
+            // started.
             bgScope.launch {
                 combine(
                         communalSceneInteractor.currentScene,
@@ -135,19 +135,19 @@ constructor(
                         this@CommunalSceneStartable.isDreaming = isDreaming
                         if (scene.isCommunal() && isDreaming && timeoutJob == null) {
                             // If dreaming starts after timeout has expired, ex. if dream restarts
-                            // under
-                            // the hub, wait for IS_ABLE_TO_DREAM_DELAY_MS and then close the hub.
-                            // The
-                            // delay is necessary so the KeyguardInteractor.isAbleToDream flow
-                            // passes
-                            // through that same amount of delay and publishes a new value which is
-                            // then
-                            // picked up by the HomeSceneFamilyResolver such that the next call to
-                            // SceneInteractor.changeScene(Home) will resolve "Home" to "Dream".
+                            // under the hub, wait for IS_ABLE_TO_DREAM_DELAY_MS and then close the
+                            // hub. The delay is necessary so the KeyguardInteractor.isAbleToDream
+                            // flow passes through that same amount of delay and publishes a new
+                            // value which is then picked up by the HomeSceneFamilyResolver such
+                            // that the next call to SceneInteractor.changeScene(Home) will resolve
+                            // "Home" to "Dream".
                             delay(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
                             communalSceneInteractor.changeScene(
                                 CommunalScenes.Blank,
                                 "dream started after timeout",
+                                transitionKey =
+                                    if (SceneContainerFlag.isEnabled) SystemCommunalTransition
+                                    else null,
                             )
                             uiEventLogger.log(CommunalUiEvent.COMMUNAL_HUB_TIMEOUT)
                         }
@@ -171,9 +171,16 @@ constructor(
                             newScene = CommunalScenes.Blank,
                             loggingReason = "hub timeout",
                             transitionKey =
-                                if (communalSettingsInteractor.isV2FlagEnabled())
+                                if (
+                                    SceneContainerFlag.isEnabled &&
+                                        communalSettingsInteractor.isV2FlagEnabled()
+                                ) {
+                                    SystemCommunalTransition
+                                } else if (communalSettingsInteractor.isV2FlagEnabled()) {
                                     CommunalTransitionKeys.SimpleFade
-                                else null,
+                                } else {
+                                    null
+                                },
                         )
                         uiEventLogger.log(CommunalUiEvent.COMMUNAL_HUB_TIMEOUT)
                     }
@@ -183,6 +190,6 @@ constructor(
     }
 
     companion object {
-        val DEFAULT_SCREEN_TIMEOUT = 15000
+        const val DEFAULT_SCREEN_TIMEOUT = 15000
     }
 }
