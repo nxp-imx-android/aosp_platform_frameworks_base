@@ -149,6 +149,66 @@ public class ProcessStateController {
         mOomConstants.mPssToRssThresholdModifier = value;
     }
 
+    public void setMaxEmptyTimeMillis(long value) {
+        mOomConstants.mMaxEmptyTimeMillis = value;
+    }
+
+    public void setTopToFgsGraceDuration(long value) {
+        mOomConstants.mTopToFgsGraceDuration = value;
+    }
+
+    public void setTopToAlmostPerceptibleGraceDuration(long value) {
+        mOomConstants.mTopToAlmostPerceptibleGraceDuration = value;
+    }
+
+    public void setMaxPreviousTime(long value) {
+        mOomConstants.mMaxPreviousTime = value;
+    }
+
+    public void setMaxServiceInactivity(long value) {
+        mOomConstants.mMaxServiceInactivity = value;
+    }
+
+    public void setContentProviderRetainTime(long value) {
+        mOomConstants.mContentProviderRetainTime = value;
+    }
+
+    public void setEnableProcStateStacktrace(boolean value) {
+        mOomConstants.mEnableProcStateStacktrace = value;
+    }
+
+    public void setProcStateDebugSetProcStateDelay(int value) {
+        mOomConstants.mProcStateDebugSetProcStateDelay = value;
+    }
+
+    public void setProcStateDebugSetUidStateDelay(int value) {
+        mOomConstants.mProcStateDebugSetUidStateDelay = value;
+    }
+
+    public void setOomadjUpdateQuick(boolean value) {
+        mOomConstants.mOomadjUpdateQuick = value;
+    }
+
+    public void setProactiveKillsEnabled(boolean value) {
+        mOomConstants.mProactiveKillsEnabled = value;
+    }
+
+    public void setLowSwapThresholdPercent(float value) {
+        mOomConstants.mLowSwapThresholdPercent = value;
+    }
+
+    public void setNoKillCachedProcessesUntilBootCompleted(boolean value) {
+        mOomConstants.mNoKillCachedProcessesUntilBootCompleted = value;
+    }
+
+    public void setNoKillCachedProcessesPostBootCompletedDurationMillis(long value) {
+        mOomConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis = value;
+    }
+
+    public void setFreezerCutoffAdj(int value) {
+        mOomConstants.mFreezerCutoffAdj = value;
+    }
+
     /**
      * Start a batch session for specifically service state changes. ProcessStateController updates
      * will not be triggered until until the returned SyncBatchSession is closed.

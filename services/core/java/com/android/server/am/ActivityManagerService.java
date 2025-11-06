@@ -19492,8 +19492,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             // TODO: b/441879937 - Pass useFreezer() information to OomAdjuster and move the trace
             // logging back to OomAdjuster.
             if (Flags.traceUpdateAppFreezeStateLsp()) {
-                final boolean oomAdjChanged = (app.getCurAdj() >= mConstants.FREEZER_CUTOFF_ADJ
-                        ^ oldOomAdj >= mConstants.FREEZER_CUTOFF_ADJ) || oldOomAdj == UNKNOWN_ADJ;
+                final boolean oomAdjChanged = (app.getCurAdj() >= mConstants.mFreezerCutoffAdj
+                        ^ oldOomAdj >= mConstants.mFreezerCutoffAdj) || oldOomAdj == UNKNOWN_ADJ;
                 final boolean hasCpuCapability =
                         (PROCESS_CAPABILITY_CPU_TIME & app.getCurCapability())
                                 == PROCESS_CAPABILITY_CPU_TIME;
@@ -19718,6 +19718,54 @@ public class ActivityManagerService extends IActivityManager.Stub
             mAppProfiler.updateLowMemStateLSP(numCached, numEmpty, now);
             mProcessStateController.setIsLastMemoryLevelNormal(
                     mAppProfiler.isLastMemoryLevelNormal());
+        }
+
+        @Override
+        public void onUpdateUidsStarted() {
+            if (mLocalPowerManager != null) {
+                mLocalPowerManager.startUidChanges();
+            }
+        }
+
+        @Override
+        public void onUpdateUidsFinished(ActiveUidsInternal activeUids, long nowElapsed,
+                ArrayList<UidRecordInternal> becameIdle) {
+            for (int i = activeUids.size() - 1; i >= 0; i--) {
+                mInternal.deletePendingTopUid(activeUids.valueAt(i).getUid(), nowElapsed);
+            }
+
+            if (mLocalPowerManager != null) {
+                mLocalPowerManager.finishUidChanges();
+            }
+
+            // If we have any new uids that became idle this time, we need to make sure
+            // they aren't left with running services.
+            for (int i = becameIdle.size() - 1; i >= 0; i--) {
+                mServices.stopInBackgroundLocked(becameIdle.get(i).getUid());
+            }
+        }
+
+        @Override
+        public void onUidUpdated(UidRecordInternal uidRec, int uidChange) {
+            if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0
+                    || (uidChange & UidRecord.CHANGE_CAPABILITY) != 0) {
+                mAtmInternal.onUidProcStateChanged(
+                        uidRec.getUid(), uidRec.getSetProcState());
+            }
+            if (uidChange != 0) {
+                enqueueUidChangeLocked((UidRecord) uidRec, -1, uidChange);
+            }
+            if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0
+                    || (uidChange & UidRecord.CHANGE_CAPABILITY) != 0) {
+                noteUidProcessStateAndCapability(uidRec.getUid(),
+                        uidRec.getCurProcState(), uidRec.getCurCapability());
+            }
+            if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0) {
+                noteUidProcessState(uidRec.getUid(), uidRec.getCurProcState());
+            }
+            if (uidRec.getHasForegroundServices()) {
+                mServices.foregroundServiceProcStateChangedLocked((UidRecord) uidRec);
+            }
         }
 
         @Override

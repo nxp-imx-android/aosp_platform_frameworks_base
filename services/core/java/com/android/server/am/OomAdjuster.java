@@ -448,6 +448,29 @@ public abstract class OomAdjuster {
          */
         void onProcessUpdatedAndTrimmed(int numCached, int numEmpty, long now);
 
+        /** Notifies at the start of the UIDs update process. */
+        void onUpdateUidsStarted();
+
+        /**
+         * Notifies at the end of the UIDs update process.
+         *
+         * @param activeUids The set of all UIDs that were active during this update cycle.
+         * @param nowElapsed The timestamp (in elapsed realtime) at which the update occurred.
+         * @param becameIdle A list of UIDs that became idle during this update cycle.
+         */
+        void onUpdateUidsFinished(ActiveUidsInternal activeUids, long nowElapsed,
+                ArrayList<UidRecordInternal> becameIdle);
+
+        /**
+         * Notifies when a UID's state has been updated.
+         *
+         * @param uidRec The UidRecordInternal that was updated.
+         * @param uidChange A bitmask of flags indicating what specific parts of the UID's state
+         *                  have changed, such as {@link UidRecord#CHANGE_PROCSTATE} or
+         *                  {@link UidRecord#CHANGE_CAPABILITY}.
+         */
+        void onUidUpdated(UidRecordInternal uidRec, int uidChange);
+
         /** Notifies when a process becomes effectively background restricted. */
         void onProcessBackgroundRestricted(ProcessRecordInternal app);
 
@@ -539,6 +562,82 @@ public abstract class OomAdjuster {
          * comparable behavior.
          */
         public volatile float mPssToRssThresholdModifier;
+        /**
+         * The maximum time in milliseconds an empty process can exist before it is considered for
+         * trimming due to age.
+         */
+        public volatile long mMaxEmptyTimeMillis;
+        /**
+         * The grace period in milliseconds for an app that transitions from the TOP state to
+         * having a foreground service, during which it retains a higher oom_adj score.
+         */
+        public volatile long mTopToFgsGraceDuration;
+        /**
+         * The grace period in milliseconds for an app that has just left the TOP state but still
+         * has an "almost perceptible" service running. During this period, the app retains a
+         * higher oom_adj score.
+         */
+        public volatile long mTopToAlmostPerceptibleGraceDuration;
+        /**
+         * The maximum duration in milliseconds a process can remain in the 'previous' oom_adj
+         * state before being demoted to a cached state.
+         */
+        public volatile long mMaxPreviousTime;
+        /**
+         * The maximum time in milliseconds that a service can remain inactive (with no new
+         * activity) before its process is considered non-essential and can be moved to the LRU
+         * background list.
+         */
+        public volatile long mMaxServiceInactivity;
+        /**
+         * The duration in milliseconds to retain a process hosting a content provider in the
+         * "last activity" state before allowing it to be demoted to the regular cached LRU list.
+         */
+        public volatile long mContentProviderRetainTime;
+        /**
+         * When enabled, logs a stack trace whenever the process state or UID state is updated
+         * for a debuggable UID.
+         */
+        public volatile boolean mEnableProcStateStacktrace;
+        /**
+         * A delay in milliseconds to introduce when updating the proc state for a debuggable UID.
+         */
+        public volatile int mProcStateDebugSetProcStateDelay;
+        /**
+         * A delay in milliseconds to introduce when updating the UID state for a debuggable UID.
+         */
+        public volatile int mProcStateDebugSetUidStateDelay;
+        /**
+         * If true, the OOM adjuster uses a quick path for updates, skipping further actions if
+         * there are no significant adj/proc state changes for a process.
+         * Otherwise, it uses the traditional slow path, updating all processes in the LRU list.
+         */
+        public volatile boolean mOomadjUpdateQuick;
+        /**
+         * If true, enables the proactive killing of cached apps to manage memory.
+         */
+        public volatile boolean mProactiveKillsEnabled;
+        /**
+         * The minimum percentage of free swap space. If free swap falls below this threshold,
+         * LRU cached apps may be trimmed.
+         * This is only active if {@link #mProactiveKillsEnabled} is true.
+         */
+        public volatile float mLowSwapThresholdPercent;
+        /**
+         * If true, prevents proactive killing of excessive cached processes until the primary user
+         * has unlocked.
+         */
+        public volatile boolean mNoKillCachedProcessesUntilBootCompleted;
+        /**
+         * The duration in milliseconds after each user unlock during which excessive cached
+         * processes will not be proactively killed.
+         */
+        public volatile long mNoKillCachedProcessesPostBootCompletedDurationMillis;
+        /**
+         * The oom_adj score cutoff. Processes with an oom_adj score greater than or equal to this
+         * value may be frozen if they do not hold the CPU_TIME capability.
+         */
+        public volatile int mFreezerCutoffAdj;
     }
 
     // TODO(b/346822474): hook up global state usage.
@@ -613,7 +712,7 @@ public abstract class OomAdjuster {
 
         mConstants = mService.mConstants;
 
-        mLogger = new OomAdjusterDebugLogger(this, mOomConstants, mService.mConstants);
+        mLogger = new OomAdjusterDebugLogger(this, mOomConstants);
 
         mProcessGroupHandler = new Handler(adjusterThread.getLooper(), msg -> {
             final int group = msg.what;
@@ -706,7 +805,7 @@ public abstract class OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     private boolean updateOomAdjLSP(ProcessRecordInternal app, @OomAdjReason int oomAdjReason) {
-        if (app == null || !mConstants.OOMADJ_UPDATE_QUICK) {
+        if (app == null || !mOomConstants.mOomadjUpdateQuick) {
             updateOomAdjLSP(oomAdjReason);
             return true;
         }
@@ -1186,8 +1285,8 @@ public abstract class OomAdjuster {
         int numEmpty = 0;
         int numTrimming = 0;
 
-        final boolean proactiveKillsEnabled = mConstants.PROACTIVE_KILLS_ENABLED;
-        final double lowSwapThresholdPercent = mConstants.LOW_SWAP_THRESHOLD_PERCENT;
+        final boolean proactiveKillsEnabled = mOomConstants.mProactiveKillsEnabled;
+        final double lowSwapThresholdPercent = mOomConstants.mLowSwapThresholdPercent;
         final double freeSwapPercent = proactiveKillsEnabled ? getFreeSwapPercent() : 1.00;
         ProcessRecordInternal lruCachedApp = null;
 
@@ -1375,9 +1474,7 @@ public abstract class OomAdjuster {
         becameIdle.clear();
 
         // Update from any uid changes.
-        if (mService.mLocalPowerManager != null) {
-            mService.mLocalPowerManager.startUidChanges();
-        }
+        mCallback.onUpdateUidsStarted();
         for (int i = activeUids.size() - 1; i >= 0; i--) {
             final UidRecordInternal uidRec = activeUids.valueAt(i);
             if (uidRec.getCurProcState() != PROCESS_STATE_NONEXISTENT) {
@@ -1465,44 +1562,11 @@ public abstract class OomAdjuster {
                                 uidRec.getSetCapability(), oldCapability,
                                 flags);
                     }
-                    if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0
-                            || (uidChange & UidRecord.CHANGE_CAPABILITY) != 0) {
-                        mService.mAtmInternal.onUidProcStateChanged(
-                                uidRec.getUid(), uidRec.getSetProcState());
-                    }
-                    if (uidChange != 0) {
-                        // TODO: b/441408003 - Convert to Callback and move the casting at AMS side.
-                        mService.enqueueUidChangeLocked((UidRecord) uidRec, -1, uidChange);
-                    }
-                    if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0
-                            || (uidChange & UidRecord.CHANGE_CAPABILITY) != 0) {
-                        mService.noteUidProcessStateAndCapability(uidRec.getUid(),
-                                uidRec.getCurProcState(), uidRec.getCurCapability());
-                    }
-                    if ((uidChange & UidRecord.CHANGE_PROCSTATE) != 0) {
-                        mService.noteUidProcessState(uidRec.getUid(), uidRec.getCurProcState());
-                    }
-                    if (uidRec.getHasForegroundServices()) {
-                        // TODO: b/441408003 - Convert to Callback and move the casting at AMS side.
-                        mService.mServices.foregroundServiceProcStateChangedLocked(
-                                (UidRecord) uidRec);
-                    }
+                    mCallback.onUidUpdated(uidRec, uidChange);
                 }
             }
-            mService.mInternal.deletePendingTopUid(uidRec.getUid(), nowElapsed);
         }
-        if (mService.mLocalPowerManager != null) {
-            mService.mLocalPowerManager.finishUidChanges();
-        }
-
-        int size = becameIdle.size();
-        if (size > 0) {
-            // If we have any new uids that became idle this time, we need to make sure
-            // they aren't left with running services.
-            for (int i = size - 1; i >= 0; i--) {
-                mService.mServices.stopInBackgroundLocked(becameIdle.get(i).getUid());
-            }
-        }
+        mCallback.onUpdateUidsFinished(activeUids, nowElapsed, becameIdle);
     }
 
     /**
@@ -1513,10 +1577,10 @@ public abstract class OomAdjuster {
 
         if (lastUserUnlockingUptime == 0) {
             // No users have been unlocked.
-            return !mConstants.mNoKillCachedProcessesUntilBootCompleted;
+            return !mOomConstants.mNoKillCachedProcessesUntilBootCompleted;
         }
         final long noKillCachedProcessesPostBootCompletedDurationMillis =
-                mConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis;
+                mOomConstants.mNoKillCachedProcessesPostBootCompletedDurationMillis;
         if ((lastUserUnlockingUptime + noKillCachedProcessesPostBootCompletedDurationMillis)
                 > nowUptime) {
             return false;
@@ -1967,8 +2031,8 @@ public abstract class OomAdjuster {
 
     // Grant PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to processes based on oom adj score.
     protected int getImplicitCpuCapability(ProcessRecordInternal app, int adj) {
-        if (adj < mConstants.FREEZER_CUTOFF_ADJ
-                || app.getMaxAdj() < mConstants.FREEZER_CUTOFF_ADJ) {
+        if (adj < mOomConstants.mFreezerCutoffAdj
+                || app.getMaxAdj() < mOomConstants.mFreezerCutoffAdj) {
             app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
         }
