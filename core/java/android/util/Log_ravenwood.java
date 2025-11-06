@@ -164,7 +164,12 @@ public class Log_ravenwood {
     private static ThreadLocal<Integer> sTid = ThreadLocal.withInitial(Process::myTid);
 
     private static int getPid() {
-        return RavenwoodEnvironment.getInstance().getPid();
+        try {
+            return RavenwoodEnvironment.getInstance().getPid();
+        } catch (Exception e) {
+            // If RavenwoodEnvironment isn't initialized yet, just use 0.
+            return 0;
+        }
     }
 
     private static long getTid() {
