@@ -316,7 +316,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // Then: updatedEndHeight should be determined by the stack cutoffs
         float updatedEndHeight = Math.max(
-                0f, mAmbientState.getStackCutoff() - mAmbientState.getStackTop());
+                0f, mAmbientState.getStackCutoff() - mAmbientState.getStackScrollTop());
         float expected = mStackScroller.calculateInterpolatedStackHeight(
                 updatedEndHeight, expansionFraction);
         assertThat(mAmbientState.getInterpolatedStackHeight()).isEqualTo(expected);
@@ -426,7 +426,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         final float stackTop = 200f;
         final float stackBottom = 1000f;
         final float stackEndHeight = stackBottom - stackTop;
-        mAmbientState.setStackTop(stackTop);
+        mAmbientState.setStackScrollTop(stackTop);
         mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
@@ -445,7 +445,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         final float stackTop = 200f;
         final float stackBottom = 1000f;
         final float stackEndHeight = stackBottom - stackTop;
-        mAmbientState.setStackTop(stackTop);
+        mAmbientState.setStackScrollTop(stackTop);
         mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
@@ -466,7 +466,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         final float stackTop = -2000f;
         final float stackBottom = 1000f;
         final float stackEndHeight = stackBottom - stackTop;
-        mAmbientState.setStackTop(stackTop);
+        mAmbientState.setStackScrollTop(stackTop);
         mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
@@ -487,7 +487,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         final float stackBottom = 1000f;
         final float stackWidth = 400f;
         final float stackHeight = stackBottom - stackTop;
-        mAmbientState.setStackTop(stackTop);
+        mAmbientState.setStackScrollTop(stackTop);
         mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.SHADE);
         mStackScroller.setMaxDisplayedNotifications(-1); // no limit on the shade

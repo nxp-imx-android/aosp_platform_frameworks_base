@@ -69,7 +69,7 @@ public class AmbientState implements Dumpable {
      *  Used to read bouncer states.
      */
     private StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
-    private float mStackTop;
+    private float mStackScrollTop;
     private YSpace mStackBounds = new YSpace(0, 0);
     private float mHeadsUpTop;
     private int mScrollY;
@@ -397,16 +397,20 @@ public class AmbientState implements Dumpable {
         return mZDistanceBetweenElements;
     }
 
-    /** Y coordinate in view pixels of the top of the notification stack */
-    public float getStackTop() {
+    /**
+     * The Y coordinate for the top of the notification stack, in pixels. This value accounts for
+     * scrolling, so it can be negative if the stack is scrolled off-screen. It defines the top
+     * position where the first notification is placed.
+     */
+    public float getStackScrollTop() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
-        return mStackTop;
+        return mStackScrollTop;
     }
 
-    /** @see #getStackTop() */
-    public void setStackTop(float mStackTop) {
+    /** @see #getStackScrollTop() */
+    public void setStackScrollTop(float mStackScrollTop) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        this.mStackTop = mStackTop;
+        this.mStackScrollTop = mStackScrollTop;
     }
 
     /** @return bounds of the area in view pixels where the NSSL's content can be placed. */
@@ -884,7 +888,7 @@ public class AmbientState implements Dumpable {
     @Override
     public void dump(PrintWriter pw, String[] args) {
         if (SceneContainerFlag.isEnabled()) {
-            pw.println("mStackTop=" + mStackTop);
+            pw.println("mStackScrollTop=" + mStackScrollTop);
             pw.println("mStackBounds=" + mStackBounds);
             pw.println("mHeadsUpTop=" + mHeadsUpTop);
         } else {

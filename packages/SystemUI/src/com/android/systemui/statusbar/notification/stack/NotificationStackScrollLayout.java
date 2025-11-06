@@ -866,8 +866,8 @@ public class NotificationStackScrollLayout
         drawDebugInfo(canvas, y, Color.RED, /* label= */ "y = " + y);
 
         if (SceneContainerFlag.isEnabled()) {
-            y = (int) mAmbientState.getStackTop();
-            drawDebugInfo(canvas, y, Color.RED, /* label= */ "getStackTop() = " + y);
+            y = (int) mAmbientState.getStackScrollTop();
+            drawDebugInfo(canvas, y, Color.RED, /* label= */ "getStackScrollTop() = " + y);
 
             y = (int) mAmbientState.getStackCutoff();
             drawDebugInfo(canvas, y, Color.MAGENTA, /* label= */ "getStackCutoff() = " + y);
@@ -875,7 +875,7 @@ public class NotificationStackScrollLayout
             y = (int) mAmbientState.getHeadsUpTop();
             drawDebugInfo(canvas, y, Color.GREEN, /* label= */ "getHeadsUpTop() = " + y);
 
-            y = (int) (mAmbientState.getStackTop() + mScrollViewFields.intrinsicStackHeight);
+            y = (int) (mAmbientState.getStackScrollTop() + mScrollViewFields.intrinsicStackHeight);
             drawDebugInfo(canvas, y, Color.BLUE,
                     /* label= */ "getStackTop() + getIntrinsicStackHeight() = " + y);
 
@@ -1359,8 +1359,8 @@ public class NotificationStackScrollLayout
     @Override
     public void setStackTop(float stackTop) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (mAmbientState.getStackTop() != stackTop) {
-            mAmbientState.setStackTop(stackTop);
+        if (mAmbientState.getStackScrollTop() != stackTop) {
+            mAmbientState.setStackScrollTop(stackTop);
             onTopPaddingChanged(/* animate = */ isAddOrRemoveAnimationPending());
         }
     }
@@ -1862,7 +1862,8 @@ public class NotificationStackScrollLayout
             // in the max number of notifications (e.g. as in keyguard).
             height = mScrollViewFields.intrinsicStackHeight;
         } else {
-            height = Math.max(0f, mAmbientState.getStackCutoff() - mAmbientState.getStackTop());
+            height = Math.max(0f,
+                    mAmbientState.getStackCutoff() - mAmbientState.getStackScrollTop());
         }
         mAmbientState.setStackEndHeight(height);
         return height;

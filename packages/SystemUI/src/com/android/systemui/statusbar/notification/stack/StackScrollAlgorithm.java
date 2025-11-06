@@ -360,7 +360,7 @@ public class StackScrollAlgorithm {
 
     private void updateClipping(StackScrollAlgorithmState algorithmState,
             AmbientState ambientState) {
-        float stackTop = SceneContainerFlag.isEnabled() ? ambientState.getStackTop()
+        float stackTop = SceneContainerFlag.isEnabled() ? ambientState.getStackScrollTop()
                 : ambientState.getStackY() - ambientState.getScrollY();
         float drawStart = ambientState.isOnKeyguard() ? 0
                 : stackTop;
@@ -716,7 +716,7 @@ public class StackScrollAlgorithm {
         viewState.setYTranslation(algorithmState.mCurrentYPosition);
 
         float stackTop = SceneContainerFlag.isEnabled()
-                ? ambientState.getStackTop()
+                ? ambientState.getStackScrollTop()
                 : ambientState.getStackY();
         float viewEnd = stackTop + viewState.getYTranslation() + viewState.height;
         maybeUpdateHeadsUpIsVisible(viewState, ambientState.isShadeExpanded(),
@@ -756,7 +756,7 @@ public class StackScrollAlgorithm {
         } else {
             if (isEmptyShadeView(view)) {
                 float fullHeight = SceneContainerFlag.isEnabled()
-                        ? ambientState.getStackCutoff() - ambientState.getStackTop()
+                        ? ambientState.getStackCutoff() - ambientState.getStackScrollTop()
                         : ambientState.getLayoutMaxHeight() + mMarginBottom
                         - ambientState.getStackY();
                 viewState.setYTranslation((fullHeight - getMaxAllowedChildHeight(view)) / 2f);
@@ -992,19 +992,19 @@ public class StackScrollAlgorithm {
                                 /* viewState = */ childState
                         );
                         float baseZ = ambientState.getBaseZHeight();
-                        if (headsUpTranslation > ambientState.getStackTop()
+                        if (headsUpTranslation > ambientState.getStackScrollTop()
                                 && row.isAboveShelf()) {
                             // HUN displayed outside of the stack during transition from Gone/LS;
                             // add a shadow that corresponds to the transition progress.
                             float fraction = 1 - ambientState.getExpansionFraction();
                             childState.setZTranslation(baseZ + fraction * mPinnedZTranslationExtra);
-                        } else if (headsUpTranslation < ambientState.getStackTop()
+                        } else if (headsUpTranslation < ambientState.getStackScrollTop()
                                 && row.isAboveShelf()) {
                             // HUN displayed outside of the stack during transition from QS;
                             // add a shadow that corresponds to the transition progress.
                             float fraction = ambientState.getQsExpansionFraction();
                             childState.setZTranslation(baseZ + fraction * mPinnedZTranslationExtra);
-                        } else if (headsUpTranslation > ambientState.getStackTop()) {
+                        } else if (headsUpTranslation > ambientState.getStackScrollTop()) {
                             // HUN displayed within the stack, add a shadow if it overlaps with
                             // other elements.
                             //
@@ -1012,7 +1012,7 @@ public class StackScrollAlgorithm {
                             // (before clamping) to the stack top, to determine the starting
                             // point for the remaining content.
                             float scrollingContentTop =
-                                    ambientState.getStackTop() + unmodifiedChildHeight;
+                                    ambientState.getStackScrollTop() + unmodifiedChildHeight;
                             updateZTranslationForHunInStack(
                                     /* scrollingContentTop = */ scrollingContentTop,
                                     /* scrollingContentTopPadding = */ mGapHeight,
@@ -1029,7 +1029,8 @@ public class StackScrollAlgorithm {
                                     /* headsUpBottom =  */ headsUpBottom,
                                     /* viewState = */ childState
                             );
-                            updateCornerRoundnessForPinnedHun(row, ambientState.getStackTop());
+                            updateCornerRoundnessForPinnedHun(row,
+                                    ambientState.getStackScrollTop());
                             childState.hidden = false;
                         }
                     }
