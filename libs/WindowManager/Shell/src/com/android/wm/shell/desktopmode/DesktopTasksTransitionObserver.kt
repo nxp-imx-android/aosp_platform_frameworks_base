@@ -94,9 +94,8 @@ class DesktopTasksTransitionObserver(
         }
         updateWallpaperToken(info)
         if (
-            DesktopExperienceFlags.ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX.isTrue &&
-                !desktopMixedTransitionHandler.hasTransition(transition) &&
-                containsClosingTaskInDesktop(info)
+            !desktopMixedTransitionHandler.hasTransition(transition) &&
+            containsClosingTaskInDesktop(info)
         ) {
             desktopMixedTransitionHandler.addPendingMixedTransition(
                 DesktopMixedTransitionHandler.PendingMixedTransition.Close(transition)
