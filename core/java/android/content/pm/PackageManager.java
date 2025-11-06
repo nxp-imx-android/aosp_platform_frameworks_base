@@ -346,14 +346,14 @@ public abstract class PackageManager {
      * &lt;service android:isolatedProcess="true"
                    android:nativeService="true"&gt;
      *   &lt;property
-     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME"
+     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_LIBRARY_NAME"
      *     android:value="libnativeservice.so"/&gt;
      * &lt;/service&gt;
      * </pre>
      */
     @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
-    public static final String PROPERTY_NATIVE_SERVICE_LIB_NAME =
-            "android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME";
+    public static final String PROPERTY_NATIVE_SERVICE_LIBRARY_NAME =
+            "android.app.PROPERTY_NATIVE_SERVICE_LIBRARY_NAME";
 
     /**
      * Service level {@link android.content.pm.PackageManager.Property} tag for native services
@@ -365,14 +365,14 @@ public abstract class PackageManager {
      * &lt;service android:isolatedProcess="true"
                    android:nativeService="true"&gt;
      *   &lt;property
-     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME"
+     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNCTION_NAME"
      *     android:value="native_service_createService"/&gt;
      * &lt;/service&gt;
      * </pre>
      */
     @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
-    public static final String PROPERTY_NATIVE_SERVICE_FUNC_NAME =
-            "android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME";
+    public static final String PROPERTY_NATIVE_SERVICE_FUNCTION_NAME =
+            "android.app.PROPERTY_NATIVE_SERVICE_FUNCTION_NAME";
 
     /**
      * A property value set within the manifest.

@@ -3354,8 +3354,8 @@
              the process and then starts the service from a function named
              <code>ANativeService_onCreate</code> in the library. The library and function names
              can be configured by setting the properties
-             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_LIB_NAME} and
-             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_FUNC_NAME}
+             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_LIBRARY_NAME} and
+             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_FUNCTION_NAME}
              respectively.
              <p>
              Attempts to start services that enable this attribute may fail in system running older
