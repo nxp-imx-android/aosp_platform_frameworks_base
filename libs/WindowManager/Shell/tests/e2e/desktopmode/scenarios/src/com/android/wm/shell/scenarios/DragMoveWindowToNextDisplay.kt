@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.ActivityOptions
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.graphics.Point
 import android.hardware.display.DisplayManager
 import android.platform.test.annotations.RequiresFlagsEnabled
@@ -28,17 +29,14 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayInfo
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
-import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.Until
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
-import com.android.server.wm.flicker.helpers.ImmersiveAppHelper
+import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.google.common.truth.Truth.assertThat
-import java.time.Duration
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -56,11 +54,11 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
     Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG,
 )
 abstract class DragMoveWindowToNextDisplay {
-    private val wmHelper = WindowManagerStateHelper(getInstrumentation())
+    private val wmHelper =
+        WindowManagerStateHelper(getInstrumentation(), ignoreLayersInVirtualDisplay = false)
     private val device = UiDevice.getInstance(getInstrumentation())
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
-    private val immersiveAppHelper = ImmersiveAppHelper(getInstrumentation())
-    private val immersiveApp = DesktopModeAppHelper(immersiveAppHelper)
+    private val fullscreenApp = DesktopModeAppHelper(MailAppHelper(getInstrumentation()))
     private val displayManager =
         getInstrumentation().targetContext.getSystemService(DisplayManager::class.java)
 
@@ -104,14 +102,13 @@ abstract class DragMoveWindowToNextDisplay {
         testApp.enterDesktopMode(wmHelper, device)
         val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
         wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayId).waitForAndVerify()
-        immersiveAppHelper.launchViaIntent(
-            wmHelper,
-            waitConditionsBuilder =
-                wmHelper.StateSyncBuilder().withAppTransitionIdle(connectedDisplayId),
-            options = ActivityOptions.makeBasic().setLaunchDisplayId(connectedDisplayId),
-        )
-        immersiveApp.enterImmersiveMode(wmHelper, device)
-        dismissImmersiveModeClingIfNeeded()
+
+        val options = ActivityOptions.makeBasic()
+        options.setLaunchDisplayId(connectedDisplayId)
+        options.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN)
+        fullscreenApp.launchViaIntent(wmHelper = wmHelper, options = options)
+        wmHelper.StateSyncBuilder().withAppTransitionIdle(connectedDisplayId).waitForAndVerify()
+
         val initialBounds =
             checkNotNull(testApp.getCaptionForTheApp(wmHelper, device)?.visibleBounds)
 
@@ -159,28 +156,5 @@ abstract class DragMoveWindowToNextDisplay {
         )
         desktopMouseRule.stopDrag()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
-    }
-
-    private fun dismissImmersiveModeClingIfNeeded() {
-        if (
-            device.wait(
-                Until.hasObject(By.res(SYSTEMUI_PACKAGE_NAME, VIEW_FULL_SCREEN_ID)),
-                UI_RESPONSE_TIMEOUT_MS,
-            )
-        ) {
-            device
-                .wait(
-                    Until.findObject(By.res(SYSTEMUI_PACKAGE_NAME, GOT_IT_ID)),
-                    UI_RESPONSE_TIMEOUT_MS,
-                )
-                ?.click()
-        }
-    }
-
-    companion object {
-        private const val VIEW_FULL_SCREEN_ID = "immersive_cling_title"
-        private const val SYSTEMUI_PACKAGE_NAME = "com.android.systemui"
-        private const val GOT_IT_ID = "ok"
-        private val UI_RESPONSE_TIMEOUT_MS = Duration.ofSeconds(5).toMillis()
     }
 }
