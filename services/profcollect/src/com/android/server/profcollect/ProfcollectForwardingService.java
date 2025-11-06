@@ -93,6 +93,11 @@ public final class ProfcollectForwardingService extends SystemService {
     private final ScheduledExecutorService mScheduledExecutorService =
             Executors.newSingleThreadScheduledExecutor();
 
+    // For exponential backoff reconnect.
+    private static final long INITIAL_CONNECTION_RETRY_DELAY = TimeUnit.SECONDS.toMillis(5);
+    private static final long MAX_CONNECTION_RETRY_DELAY = TimeUnit.MINUTES.toMillis(60);
+    private long mConnectionRetryDelay = INITIAL_CONNECTION_RETRY_DELAY;
+
     private IProviderStatusCallback mProviderStatusCallback = new IProviderStatusCallback.Stub() {
         public void onProviderReady() {
             mHandler.sendEmptyMessage(ProfcollectdHandler.MESSAGE_REGISTER_SCHEDULERS);
@@ -183,7 +188,7 @@ public final class ProfcollectForwardingService extends SystemService {
 
     @Override
     public void onStart() {
-        connectNativeService();
+        tryConnectNativeService();
     }
 
     @Override
@@ -249,10 +254,17 @@ public final class ProfcollectForwardingService extends SystemService {
 
     private boolean tryConnectNativeService() {
         if (connectNativeService()) {
+            // Reset delay on successful connection.
+            mConnectionRetryDelay = INITIAL_CONNECTION_RETRY_DELAY;
             return true;
         }
-        // Cannot connect to the native service at this time, retry after a short delay.
-        mHandler.sendEmptyMessageDelayed(ProfcollectdHandler.MESSAGE_BINDER_CONNECT, 5000);
+
+        // Cannot connect to the native service at this time, retry with backoff.
+        Log.w(LOG_TAG, "Failed to connect to profcollectd. Retrying in "
+                + mConnectionRetryDelay + "ms");
+        mHandler.sendEmptyMessageDelayed(ProfcollectdHandler.MESSAGE_BINDER_CONNECT,
+                mConnectionRetryDelay);
+        mConnectionRetryDelay = Math.min(mConnectionRetryDelay * 2, MAX_CONNECTION_RETRY_DELAY);
         return false;
     }
 
@@ -282,7 +294,7 @@ public final class ProfcollectForwardingService extends SystemService {
         public void handleMessage(android.os.Message message) {
             switch (message.what) {
                 case MESSAGE_BINDER_CONNECT:
-                    connectNativeService();
+                    tryConnectNativeService();
                     break;
                 case MESSAGE_REGISTER_SCHEDULERS:
                     // Register trace hint events observers.
