@@ -107,6 +107,11 @@ public final class WindowManagerGlobal {
     public static final int RELAYOUT_RES_CANCEL_AND_REDRAW = 1 << 3;
 
     /**
+     * The window manager has an ongoing buffer-sync that this relayout is part of.
+     */
+    public static final int RELAYOUT_RES_BUFFER_SYNC = 1 << 4;
+
+    /**
      * Flag for relayout: the client will be later giving
      * internal insets; as a result, the window will not impact other window
      * layouts until the insets are given.

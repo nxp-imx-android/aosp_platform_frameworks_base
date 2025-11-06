@@ -112,6 +112,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_SANDBOXING_VIEW_BOUNDS_APIS;
+import static android.view.WindowManagerGlobal.RELAYOUT_RES_BUFFER_SYNC;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_CANCEL_AND_REDRAW;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
@@ -775,16 +776,6 @@ public final class ViewRootImpl implements ViewParent,
     int mLastSeqId = 0;
     int mSyncSeqId = 0;
     int mLastSyncSeqId = 0;
-
-    /**
-     * Specific optimization where a sync relayout (WM) has determined that the results of a
-     * relayout are likely-valid despite this client providing parameters based on an out-dated
-     * configuration. In this case, relayout will provide a (later) seqId (this one) which it
-     * believes doesn't require another sync relayout and then will NOT cancel. This allows the
-     * VRI to assume the frames are already correct, layout/draw immediately, and then skip the
-     * next sync relayout.
-     */
-    int mNonSyncEarlySeqId = 0;
 
     /** @hide */
     public static final class NoPreloadHolder {
@@ -9660,8 +9651,7 @@ public final class ViewRootImpl implements ViewParent,
                 && mWindowAttributes.type != TYPE_APPLICATION_STARTING
                 && mSyncSeqId <= mLastSyncSeqId
                 && (!NoPreloadHolder.sAlwaysSeqId
-                    || mSeqId <= mLastSeqId
-                    || mSeqId <= mNonSyncEarlySeqId)
+                    || mSeqId <= mLastSeqId)
                 && winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */) == 0) {
             final InsetsState state = mInsetsController.getState();
             final Rect displayCutoutSafe = mTempRect;
@@ -9753,10 +9743,14 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
             if (NoPreloadHolder.sAlwaysSeqId) {
-                // mRelayoutResult.syncSeqId is a legacy name. In practice, with sAlwaysSeqId, it
-                // has been repurposed to be "the highest (non-sync) seqId that this relayout
-                // result is valid for". See docstring on mNonSyncEarlySeqId for more info.
-                mNonSyncEarlySeqId = Math.max(mRelayoutResult.syncSeqId, mNonSyncEarlySeqId);
+                // With sAlwaysSeqId, mRelayoutResult.syncSeqId has been repurposed to be "the
+                // highest seqId that this relayout result is valid for".
+                if (mRelayoutResult.syncSeqId >= 0) {
+                    mSeqId = mRelayoutResult.syncSeqId;
+                    if ((relayoutResult & RELAYOUT_RES_BUFFER_SYNC) != 0) {
+                        mSyncSeqId = mSeqId;
+                    }
+                }
             } else if (mRelayoutResult.syncSeqId > 0) {
                 mSyncSeqId = mRelayoutResult.syncSeqId;
             }
