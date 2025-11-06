@@ -16,11 +16,11 @@
 
 package android.service.personalcontext;
 
-import android.content.ComponentName;
 import android.os.ParcelUuid;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 
@@ -34,6 +34,8 @@ interface IPersonalContextManager {
             in List<ContextHintWrapper> hints, in RenderToken renderToken, int userId);
 
     oneway void publishInsight(in List<ContextInsightWrapper> insights, int userId);
+
+    ContextHintWithSignature signHint(in ContextHintWrapper hint);
 
     oneway void registerInsightSurfaceClient(
             in List<ContextHintWrapper> clientHints,
