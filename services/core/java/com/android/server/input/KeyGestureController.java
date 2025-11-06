@@ -65,6 +65,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.util.IndentingPrintWriter;
@@ -129,7 +130,7 @@ final class KeyGestureController {
 
     private static final int MSG_NOTIFY_KEY_GESTURE_EVENT = 1;
     private static final int MSG_PERSIST_CUSTOM_GESTURES = 2;
-    private static final int MSG_LOAD_CUSTOM_GESTURES = 3;
+    private static final int MSG_LOAD_ALL_USER_CUSTOM_GESTURES = 3;
     private static final int MSG_ACCESSIBILITY_SHORTCUT = 4;
     private static final int MSG_SCREENSHOT_SHORTCUT = 5;
     private static final int MSG_EXIT_FOCUSED_APP = 6;
@@ -522,13 +523,7 @@ final class KeyGestureController {
         mAppLaunchShortcutManager.init();
         mInputGestureManager.init(mAppLaunchShortcutManager.getBookmarks());
         initKeyGestures();
-
-        int userId;
-        synchronized (mUserLock) {
-            userId = mCurrentUserId;
-        }
-        // Load the system user's input gestures.
-        mIoHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
+        mIoHandler.sendEmptyMessage(MSG_LOAD_ALL_USER_CUSTOM_GESTURES);
     }
 
     @SuppressLint("MissingPermission")
@@ -1301,7 +1296,6 @@ final class KeyGestureController {
             mCurrentUserId = userId;
         }
         mAccessibilityShortcutController.setCurrentUser(userId);
-        mIoHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
     }
 
 
@@ -1378,9 +1372,8 @@ final class KeyGestureController {
                 persistInputGestures(userId);
                 break;
             }
-            case MSG_LOAD_CUSTOM_GESTURES: {
-                final int userId = (Integer) msg.obj;
-                loadInputGestures(userId);
+            case MSG_LOAD_ALL_USER_CUSTOM_GESTURES: {
+                loadAllUserInputGestures();
                 break;
             }
         }
@@ -1517,7 +1510,7 @@ final class KeyGestureController {
         for (final InputGestureData inputGestureData : inputGestureDataList) {
             mInputGestureManager.addCustomInputGesture(userId, inputGestureData);
         }
-        mHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
+        mIoHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
     }
 
     // A record of a registered key gesture event listener from one process.
@@ -1637,6 +1630,15 @@ final class KeyGestureController {
                     mInputGestureManager.getCustomInputGestures(userId,
                             null);
             mInputDataStore.saveData(userId, inputGestureDataList, InputGestureData.class);
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void loadAllUserInputGestures() {
+        UserManager userManager = Objects.requireNonNull(
+                mContext.getSystemService(UserManager.class));
+        for (UserHandle userHandle : userManager.getUserHandles(true /* excludeDying */)) {
+            loadInputGestures(userHandle.getIdentifier());
         }
     }
 
