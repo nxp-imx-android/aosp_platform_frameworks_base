@@ -80,7 +80,7 @@ public class DefaultSurfaceAnimator implements Runnable {
             @NonNull TransactionPool pool, @NonNull ShellExecutor mainExecutor,
             @NonNull AnimationAdapter updateListener) {
         final SurfaceControl.Transaction transaction;
-        if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction()) {
+        if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction2()) {
             transaction = null;
             updateListener.mTransactionPool = pool;
         } else {
@@ -92,7 +92,7 @@ public class DefaultSurfaceAnimator implements Runnable {
         va.overrideDurationScale(1.0f);
         va.setDuration(anim.computeDurationHint());
         setupValueAnimator(va, updateListener, (vanim) -> {
-            if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction()) {
+            if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction2()) {
                 updateListener.releaseTransactionIfNeeded();
             } else {
                 pool.release(transaction);
@@ -148,7 +148,7 @@ public class DefaultSurfaceAnimator implements Runnable {
                     ? animator.getDuration()
                     : Math.min(animator.getDuration(), animator.getCurrentPlayTime());
             applyTransformation(animator, currentPlayTime);
-            if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction()) {
+            if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction2()) {
                 mSurfaceAnimator.schedule();
                 return;
             }
@@ -251,7 +251,7 @@ public class DefaultSurfaceAnimator implements Runnable {
 
             @Override
             public void onAnimationStart(Animator animation) {
-                if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction()
+                if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction2()
                         && updateListener instanceof AnimationAdapter animationAdapter) {
                     animationAdapter.setSurfaceAnimator();
                 }

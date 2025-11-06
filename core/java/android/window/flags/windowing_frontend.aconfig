@@ -139,10 +139,10 @@ flag {
 }
 
 flag {
-  name: "default_animator_single_transaction"
+  name: "default_animator_single_transaction2"
   namespace: "windowing_frontend"
   description: "Reduce binder transaction to SF if there are multiple default animations"
-  bug: "377689543"
+  bug: "456665218"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
