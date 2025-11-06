@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.record.camera.domain.interactor
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.ColorInt
+import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.camera.data.repository.ScreenRecordCameraRepository
@@ -26,16 +27,21 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @ScreenCaptureScope
 class ScreenRecordCameraInteractor
 @Inject
 constructor(
-    private val repository: ScreenRecordCameraRepository,
     @ScreenCapture private val coroutineScope: CoroutineScope,
+    private val repository: ScreenRecordCameraRepository,
 ) {
 
     val cameraBackgroundColors =
@@ -47,35 +53,69 @@ constructor(
     private val _cameraBackground = MutableStateFlow(cameraBackgroundColors.first())
     val cameraBackground: StateFlow<Int> = _cameraBackground
 
+    val isCameraSupported: Flow<Boolean> =
+        repository.isConnected
+            .map { repository.isCameraSupported() }
+            .stateInTraced(
+                "ScreenRecordCameraInteractor#isCameraSupported",
+                coroutineScope,
+                SharingStarted.Eagerly,
+                null,
+            )
+            .filterNotNull()
+    val isOnTapSupported: Flow<Boolean> =
+        repository.isConnected
+            .map { repository.isOnTapSupported() }
+            .stateInTraced(
+                "ScreenRecordCameraInteractor#isOnTapSupported",
+                coroutineScope,
+                SharingStarted.Eagerly,
+                null,
+            )
+            .filterNotNull()
+    val isBackgroundColorSupported: Flow<Boolean> =
+        repository.isConnected
+            .map { repository.isBackgroundColorSupported() }
+            .stateInTraced(
+                "ScreenRecordCameraInteractor#isBackgroundColorSupported",
+                coroutineScope,
+                SharingStarted.Eagerly,
+                null,
+            )
+            .filterNotNull()
+    val optimalCameraStreamSize: Flow<Size> =
+        repository.isConnected
+            .map { repository.getOptimalCameraStreamSize() }
+            .stateInTraced(
+                "ScreenRecordCameraInteractor#optimalCameraStreamSize",
+                coroutineScope,
+                SharingStarted.Eagerly,
+                null,
+            )
+            .filterNotNull()
+
     init {
+        // Keep the service connected throughout the recording for faster camera on/off
+        coroutineScope.launch { setup() }
+
         cameraBackground
             .onEach { color -> repository.setBackgroundColor(color) }
             .launchIn(coroutineScope)
     }
 
-    fun connect() {
+    private suspend fun setup(): Nothing = suspendCancellableCoroutine { continuation ->
         repository.connect()
+
+        continuation.invokeOnCancellation { repository.disconnect() }
     }
 
-    fun disconnect() {
-        repository.disconnect()
-    }
-
-    suspend fun startStream(surface: Surface, size: Size) {
-        repository.startStream(surface, size)
+    suspend fun startStream(surface: Surface) {
+        repository.getOptimalCameraStreamSize()?.let { repository.startStream(surface, it) }
     }
 
     suspend fun stopStream() {
         repository.stopStream()
     }
-
-    suspend fun isCameraSupported(): Boolean = repository.isCameraSupported()
-
-    suspend fun isOnTapSupported(): Boolean = repository.isOnTapSupported()
-
-    suspend fun isBackgroundColorSupported(): Boolean = repository.isBackgroundColorSupported()
-
-    suspend fun getOptimalCameraStreamSize(): Size? = repository.getOptimalCameraStreamSize()
 
     fun setBackgroundColor(@ColorInt color: Int) {
         require(color in cameraBackgroundColors) { "color should be one of cameraBackgroundColors" }

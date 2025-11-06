@@ -30,7 +30,7 @@ import kotlinx.coroutines.CoroutineScope
  * Capture or the UI is visible.
  */
 @ScreenCaptureScope
-@Subcomponent(modules = [ScreenCaptureUiModule::class])
+@Subcomponent(modules = [ScreenCaptureUiModule::class, ReferenceScreenCaptureCameraModule::class])
 interface ScreenCaptureComponent {
 
     @ScreenCapture fun coroutineScope(): CoroutineScope
