@@ -2355,6 +2355,8 @@ final class ActivityManagerConstants extends ContentObserver {
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
                 KEY_FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION,
                 DEFAULT_FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION);
+        mService.mProcessStateController.setFollowUpOomadjUpdateWaitDuration(
+                FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION);
     }
 
     private void updateFGSPermissionEnforcementFlagsIfNecessary(@NonNull String name) {
@@ -2407,6 +2409,7 @@ final class ActivityManagerConstants extends ContentObserver {
                 mNoKillCachedProcessesPostBootCompletedDurationMillis;
         oomConstants.mFreezerCutoffAdj = mFreezerCutoffAdj;
         oomConstants.mEnableBatchingOomAdj = mEnableBatchingOomAdj;
+        oomConstants.mFollowUpOomadjUpdateWaitDuration = FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION;
 
         return oomConstants;
     }
