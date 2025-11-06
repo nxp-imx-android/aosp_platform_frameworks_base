@@ -77,6 +77,16 @@ flag {
 }
 
 flag {
+    name: "tap_to_wake_cd"
+    namespace: "lse_desktop_experience"
+    description: "Feature flag to enable tap to wake on connected displays"
+    bug: "425279223"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_app_wakelock_data_source"
     namespace: "power"
     description: "Feature flag to enable a new Perfetto data source for tracing app wakelocks."
