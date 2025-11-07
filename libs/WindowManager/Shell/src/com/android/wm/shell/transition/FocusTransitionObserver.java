@@ -29,7 +29,6 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static com.android.wm.shell.transition.Transitions.TransitionObserver;
 
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.os.RemoteException;
 import android.util.ArraySet;
@@ -116,8 +115,7 @@ public class FocusTransitionObserver {
                     // With ENABLE_INTERACTIVE_PICTURE_IN_PICTURE enabled, transitions include
                     // task with global focus (if changed).
                     updateFocusedTaskPerDisplay(task, task.displayId);
-                }
-                else if (change.hasFlags(FLAG_MOVED_TO_TOP) || change.getMode() == TRANSIT_OPEN) {
+                } else if (change.hasFlags(FLAG_MOVED_TO_TOP) || change.getMode() == TRANSIT_OPEN) {
                     updateFocusedTaskPerDisplay(task, task.displayId);
                 } else {
                     // Update focus assuming that any task moved to another display is focused in
