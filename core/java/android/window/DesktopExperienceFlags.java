@@ -240,9 +240,6 @@ public enum DesktopExperienceFlags {
             false, Flags.FLAG_ENABLE_PER_DISPLAY_WINDOW_DECOR_VIEW_HOST_POOL),
     ENABLE_PINNING_APP_WITH_CONTEXT_MENU(Flags::enablePinningAppWithContextMenu, true,
             Flags.FLAG_ENABLE_PINNING_APP_WITH_CONTEXT_MENU),
-    ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK(
-            Flags::enablePresentationDisallowedOnUnfocusedHostTask, false,
-            Flags.FLAG_ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK),
     ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS(Flags::enablePresentationForConnectedDisplays, true,
             Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, true,

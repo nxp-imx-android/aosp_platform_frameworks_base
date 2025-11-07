@@ -32,7 +32,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
-import static com.android.window.flags.Flags.FLAG_ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
 import static org.junit.Assert.assertEquals;
@@ -165,8 +164,7 @@ public class PresentationControllerTests extends WindowTestsBase {
         assertFalse(window.isVisible());
     }
 
-    @EnableFlags({FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS,
-            FLAG_ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK})
+    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testPresentationCannotCoverUnfocusedHostTask() {
         int uid = Binder.getCallingUid();
@@ -194,8 +192,7 @@ public class PresentationControllerTests extends WindowTestsBase {
         assertAddPresentationWindowFails(uid, presentationDisplay.mDisplayId);
     }
 
-    @EnableFlags({FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS,
-            FLAG_ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK})
+    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testPresentationCanLaunchWithUnfocusedHostTaskOnDifferentDisplay() {
         // This test verifies that a presentation can be launched on a display when its host task
