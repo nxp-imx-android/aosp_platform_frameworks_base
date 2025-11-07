@@ -119,9 +119,7 @@ constructor(
     val blurRadius: Flow<Float> =
         blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->
             if (blurSupported) {
-                combine(reEmitBlurRadius, _blurRadius) { _, _blurRadius ->
-                    _blurRadius
-                }
+                combine(reEmitBlurRadius, _blurRadius) { _, _blurRadius -> _blurRadius }
             } else {
                 flowOf(0f)
             }
@@ -160,7 +158,7 @@ constructor(
      * composited with the alpha channels from the surfaces below while rendering.
      */
     val isSurfaceOpaque: Flow<Boolean> =
-        if (Flags.notificationShadeBlur() || !blurInteractor.isBlurredWallpaperSupported) {
+        if (Flags.notificationShadeBlur()) {
             flowOf(false)
         } else {
             shadeInteractor.isAnyFullyExpanded
