@@ -84,6 +84,16 @@ flag {
 }
 
 flag {
+  name: "use_client_surface"
+  namespace: "windowing_frontend"
+  description: "Let regular windows create their own surface"
+  bug: "308662081"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"

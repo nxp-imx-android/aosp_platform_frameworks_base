@@ -1322,6 +1322,9 @@ public abstract class WallpaperService extends Service {
 
                         mInputEventReceiver = new WallpaperInputEventReceiver(
                                 inputChannel, Looper.myLooper());
+                        if (WindowManager.useClientSurface()) {
+                            mSurfaceControl = initializeSurface(true /* useClientSurface */);
+                        }
                     }
 
                     mSurfaceHolder.mSurfaceLock.lock();
@@ -1332,9 +1335,16 @@ public abstract class WallpaperService extends Service {
                     } else {
                         mLayout.surfaceInsets.set(0, 0, 0, 0);
                     }
-                    final int relayoutResult = mSession.relayout(mWindow, mLayout, mWidth, mHeight,
-                            View.VISIBLE, 0, 0, mAlwaysSeqId ? seqId : 0,
-                            mRelayoutResult, mSurfaceControl);
+                    int relayoutResult = 0;
+                    if (WindowManager.useClientSurface()) {
+                        mSession.relayout2(mWindow, mLayout, mWidth, mHeight,
+                                View.VISIBLE, 0, 0, mAlwaysSeqId ? seqId : 0,
+                                mSurfaceControl, mRelayoutResult);
+                    } else {
+                        relayoutResult = mSession.relayout(mWindow, mLayout, mWidth, mHeight,
+                                View.VISIBLE, 0, 0, mAlwaysSeqId ? seqId : 0,
+                                mRelayoutResult, mSurfaceControl);
+                    }
                     final Rect outMaxBounds = mMergedConfiguration.getMergedConfiguration()
                             .windowConfiguration.getMaxBounds();
                     if (!outMaxBounds.equals(maxBounds)) {
@@ -1363,31 +1373,7 @@ public abstract class WallpaperService extends Service {
                             (mDisplay.getInstallOrientation() + mDisplay.getRotation()) % 4);
                         mSurfaceControl.setTransformHint(transformHint);
                         if (mBbqSurfaceControl == null) {
-                            mTransformSurfaceControl = new SurfaceControl.Builder()
-                                    .setName("Wallpaper Transform wrapper")
-                                    .setHidden(false)
-                                    .setParent(mSurfaceControl)
-                                    .setCallsite("Wallpaper#relayout")
-                                    .build();
-                            mBbqSurfaceControl = new SurfaceControl.Builder()
-                                    .setName("Wallpaper BBQ wrapper")
-                                    .setHidden(false)
-                                    .setBLASTLayer()
-                                    .setParent(mTransformSurfaceControl)
-                                    .setCallsite("Wallpaper#relayout")
-                                    .build();
-                            SurfaceControl.Transaction transaction =
-                                    new SurfaceControl.Transaction();
-                            final int frameRateCompat = getResources().getInteger(
-                                    R.integer.config_wallpaperFrameRateCompatibility);
-                            if (DEBUG) {
-                                Log.d(TAG, "Set frame rate compatibility value for Wallpaper: "
-                                        + frameRateCompat);
-                            }
-                            transaction.setDefaultFrameRateCompatibility(mBbqSurfaceControl,
-                                    frameRateCompat).apply();
-                            // TODO: b/406967924 - remove after creating public APIs
-                            sendTransformSurfaceControl();
+                            initializeSurface(false /* useClientSurface */);
                         }
                         // Propagate transform hint from WM, so we can use the right hint for the
                         // first frame.
@@ -1590,6 +1576,38 @@ public abstract class WallpaperService extends Service {
                     TAG, "Layout: x=" + mLayout.x + " y=" + mLayout.y +
                     " w=" + mLayout.width + " h=" + mLayout.height);
             }
+        }
+
+        private SurfaceControl initializeSurface(boolean useClientSurface) {
+            final SurfaceControl.Builder builder = new SurfaceControl.Builder()
+                    .setName("Wallpaper Transform wrapper")
+                    .setHidden(false)
+                    .setCallsite("Wallpaper#initializeSurface");
+            if (useClientSurface) {
+                builder.setNotAddToRoot();
+            } else {
+                builder.setParent(mSurfaceControl);
+            }
+            mTransformSurfaceControl = builder.build();
+            mBbqSurfaceControl = new SurfaceControl.Builder()
+                    .setName("Wallpaper BBQ wrapper")
+                    .setHidden(false)
+                    .setBLASTLayer()
+                    .setParent(mTransformSurfaceControl)
+                    .setCallsite("Wallpaper#initializeSurface")
+                    .build();
+            final SurfaceControl.Transaction transaction = new SurfaceControl.Transaction();
+            final int frameRateCompat = getResources().getInteger(
+                    R.integer.config_wallpaperFrameRateCompatibility);
+            if (DEBUG) {
+                Log.d(TAG, "Set frame rate compatibility value for Wallpaper: "
+                        + frameRateCompat);
+            }
+            transaction.setDefaultFrameRateCompatibility(mBbqSurfaceControl,
+                    frameRateCompat).apply();
+            // TODO: b/406967924 - remove after creating public APIs
+            sendTransformSurfaceControl();
+            return mBbqSurfaceControl;
         }
 
         private void sendTransformSurfaceControl() {

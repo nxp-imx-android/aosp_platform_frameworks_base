@@ -104,7 +104,6 @@ public class TaskSnapshotWindow {
         final int displayId = runningTaskInfo.displayId;
 
         final IWindowSession session = WindowManagerGlobal.getWindowSession();
-        final SurfaceControl surfaceControl = new SurfaceControl();
         final ClientWindowFrames tmpFrames = new ClientWindowFrames();
 
         final InsetsSourceControl.Array tmpControls = new InsetsSourceControl.Array();
@@ -135,6 +134,32 @@ public class TaskSnapshotWindow {
         } catch (RemoteException e) {
             snapshotSurface.clearWindowSynced();
         }
+
+        if (WindowManager.useClientSurface()) {
+            final SurfaceControl surfaceControl = new SurfaceControl.Builder()
+                    .setName(layoutParams.getTitle() + " - task-snapshot-surface")
+                    .setBLASTLayer().setNotAddToRoot()
+                    .setFormat(snapshot.getHardwareBufferFormat())
+                    .setCallsite("TaskSnapshotWindow#create").build();
+            final Runnable reportDrawn = () -> {
+                try {
+                    Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "TaskSnapshot#relayoutAsync2");
+                    snapshotSurface.mSession.relayoutAsync2(snapshotSurface.mWindow, layoutParams,
+                            -1, -1, View.VISIBLE, 0, 0, 0, surfaceControl);
+                    snapshotSurface.mHasDrawn = true;
+                    snapshotSurface.reportDrawn();
+                } catch (Throwable e) {
+                    snapshotSurface.clearWindowSynced();
+                } finally {
+                    Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+                }
+            };
+            SnapshotDrawerUtils.drawSnapshotOnSurface(layoutParams, surfaceControl, snapshot,
+                    info.taskBounds, reportDrawn);
+            return snapshotSurface.mHasDrawn ? snapshotSurface : null;
+        }
+
+        final SurfaceControl surfaceControl = new SurfaceControl();
         try {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "TaskSnapshot#relayout");
             final WindowRelayoutResult outRelayoutResult = new WindowRelayoutResult(tmpFrames,

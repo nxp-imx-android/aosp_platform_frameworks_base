@@ -940,6 +940,14 @@ public final class SurfaceControl implements Parcelable {
     public static final int NO_COLOR_FILL = 0x00004000;
 
     /**
+     * Surface creation flag: Indicates that if a surface is created with null parent, it will be an
+     * offscreen layer. Because if the caller is privileged (SurfaceFlinger::
+     * callingThreadHasUnscopedSurfaceFlingerAccess), the layer will be added to root by default.
+     * @hide
+     */
+    public static final int NOT_ADD_TO_ROOT = 0x00008000;
+
+    /**
      * Surface creation flag: Creates a normal surface.
      * This is the default.
      *
@@ -1411,6 +1419,15 @@ public final class SurfaceControl implements Parcelable {
         public Builder setParent(@Nullable SurfaceControl parent) {
             mParent = parent;
             return this;
+        }
+
+        /**
+         * Makes sure that this surface will be offscreen if parent is not specified.
+         * @hide
+         */
+        @NonNull
+        public Builder setNotAddToRoot() {
+            return setFlags(NOT_ADD_TO_ROOT, NOT_ADD_TO_ROOT);
         }
 
         /**
