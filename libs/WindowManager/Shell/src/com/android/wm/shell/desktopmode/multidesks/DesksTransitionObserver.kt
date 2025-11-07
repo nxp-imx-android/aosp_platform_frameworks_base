@@ -36,6 +36,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterRe
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.keyguard.KeyguardTransitionHandler.isKeyguardAppearing
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -376,36 +377,60 @@ class DesksTransitionObserver(
                                 fullImmersiveDesktopTaskChanges.any { c ->
                                     desksOrganizer.getDeskAtEnd(c) == activeDeskId
                                 }
-                            val deactivateDesk =
-                                !(hasFullImmersiveTask &&
-                                    Flags.makeFillingBoundsChangeEffectLifecycle())
-                            if (deactivateDesk) {
-                                // Always let the organizer deactivate to clear the launch root.
+
+                            // Even though the desk/wallpaper was moved to the back, we'd like it
+                            // to remain active sometimes.
+                            val deactivateDeskInRepo =
+                                when {
+                                    // (1) When keyguard is appearing, so that we return to the
+                                    // active desk when it unlocks.
+                                    Flags.keepDeskActiveOnKeyguardAppear() &&
+                                        isKeyguardAppearing(info) -> false
+                                    // (2) When a task is going full-immersive, this task is
+                                    // considered "in" the desk, it just happens to occlude/stop
+                                    // everything behind it.
+                                    Flags.makeFillingBoundsChangeEffectLifecycle() &&
+                                        hasFullImmersiveTask -> false
+                                    // Otherwise deactivate.
+                                    else -> true
+                                }
+                            // Usually the we make the organizer deactivate the desk when we're
+                            // deactivating it in the repository, but there are some cases where we
+                            // want to make the organizer deactivate it (move to back and disable
+                            // the launch root) despite wanting it to keep it active from the
+                            // repository pov.
+                            val deactivateDeskInOrganizer =
+                                when {
+                                    // Always disable on deactivation.
+                                    deactivateDeskInRepo -> true
+                                    // Disable if keyguard is appearing, the desk remains active so
+                                    // that we can return to it, but we also don't want things
+                                    // to launch in it while the keyguard is showing.
+                                    Flags.keepDeskActiveOnKeyguardAppear() &&
+                                        isKeyguardAppearing(info) -> true
+                                    else -> false
+                                }
+
+                            logD(
+                                "Desktop wallpaper of user=%d moved to back without a visible " +
+                                    "desk (hasFullImmersiveTask=%b isKeyguardAppearing=%b) - " +
+                                    "deactivateDeskInRepo=%b deactivateDeskInOrganizer=%b",
+                                hasFullImmersiveTask,
+                                isKeyguardAppearing(info),
+                                deactivateDeskInRepo,
+                                deactivateDeskInOrganizer,
+                            )
+
+                            if (deactivateDeskInOrganizer) {
                                 desksOrganizer.deactivateDesk(wct, activeDeskId, skipReorder = true)
+                            }
+                            if (deactivateDeskInRepo) {
                                 desktopModeEventLogger.logPendingSessionExit(
                                     activeDeskId,
                                     ExitReason.UNKNOWN_EXIT,
                                 )
                                 repository.setDeskInactive(activeDeskId)
-                                logD(
-                                    "Desktop wallpaper of user=%d moved to back without visible " +
-                                        "desk, will let the organizer deactivate and the " +
-                                        "repository will deactivate",
-                                    userId,
-                                )
-                            } else {
-                                logD(
-                                    "Desktop wallpaper of user=%d moved to back without visible " +
-                                        "desk because a task entered full-immersive. No need " +
-                                        "to deactivate."
-                                )
                             }
-                        } else {
-                            logD(
-                                "Desktop wallpaper of user=%d moved to back with no active desk" +
-                                    ", skipping",
-                                userId,
-                            )
                         }
                     }
                     change.isToTop() -> {
