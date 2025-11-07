@@ -34,6 +34,7 @@ import android.annotation.NonNull;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -89,6 +90,7 @@ public class ComputerControlAllowlistControllerTest {
     private File mSessionOwnerAllowlistFile;
     private File mAutomatableAppAllowlistFile;
     private File mAutomatableAppDenylistFile;
+    private Context mSpyContext;
     private final DeviceConfigWriter mDeviceConfigWriter = new DeviceConfigWriter();
     private final Context mContext =
             InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -96,8 +98,8 @@ public class ComputerControlAllowlistControllerTest {
     @Before
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        final Context spyContext = spy(new ContextWrapper(mContext));
-        when(spyContext.getPackageManager()).thenReturn(mPackageManager);
+        mSpyContext = spy(new ContextWrapper(mContext));
+        when(mSpyContext.getPackageManager()).thenReturn(mPackageManager);
         // Use a separate folder for each test case, for better isolation.
         final String folderName = String.valueOf(RANDOM.nextInt() & Integer.MAX_VALUE);
         mSessionOwnerAllowlistFile =
@@ -106,10 +108,7 @@ public class ComputerControlAllowlistControllerTest {
                 new File(new File(mContext.getFilesDir(), folderName), "automatable_apps.txt");
         mAutomatableAppDenylistFile =
                 new File(new File(mContext.getFilesDir(), folderName), "blocked_apps.txt");
-        mAllowlistController = new ComputerControlAllowlistController(spyContext,
-                MoreExecutors.directExecutor(), mSessionOwnerAllowlistFile,
-                mAutomatableAppAllowlistFile, mAutomatableAppDenylistFile);
-        mAllowlistController.initialize();
+        createAllowlistController(true);
     }
 
     @After
@@ -136,6 +135,51 @@ public class ComputerControlAllowlistControllerTest {
         assertTrue(mAllowlistController.isPackageAutomatable("hello"));
         assertTrue(mAllowlistController.isPackageAutomatable(mContext.getPackageName()));
         assertTrue(mAllowlistController.isPackageAutomatable(null));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAllowedToCreateSession_preInstalledPackageName_returnsTrue()
+            throws Exception {
+        createAllowlistController(false);
+        final String packageName = "com.hello.app3";
+        final Signature signature = generateSignature((byte) 2);
+        final String certificateDigest = preparePackage(packageName, signature);
+        // Make PackageManager infer that the given package is associated with the calling uid.
+        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+                .thenReturn(Process.myUid());
+        // Make PackageManager infer that the given package is pre-installed.
+        final ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.flags = ApplicationInfo.FLAG_SYSTEM;
+        when(mPackageManager.getApplicationInfo(eq(packageName), anyInt()))
+                .thenReturn(applicationInfo);
+
+        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        assertTrue(mAllowlistController.isPackageAllowedToCreateSession(packageName));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAllowedToCreateSession_notPreInstalledPackageName_returnsFalse()
+            throws Exception {
+        createAllowlistController(false);
+        final String packageName = "com.hello.app3";
+        final Signature signature = generateSignature((byte) 2);
+        final String certificateDigest = preparePackage(packageName, signature);
+        // Make PackageManager infer that the given package is associated with the calling uid.
+        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+                .thenReturn(Process.myUid());
+        // Make PackageManager infer that the given package is not pre-installed.
+        final ApplicationInfo applicationInfo = new ApplicationInfo();
+        when(mPackageManager.getApplicationInfo(eq(packageName), anyInt()))
+                .thenReturn(applicationInfo);
+
+        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        assertFalse(mAllowlistController.isPackageAllowedToCreateSession(packageName));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
@@ -500,6 +544,13 @@ public class ComputerControlAllowlistControllerTest {
 
         // Verify that the denylist is cleared.
         assertEquals("", Files.readString(filePath));
+    }
+
+    private void createAllowlistController(boolean buildIsDebuggable) {
+        mAllowlistController = new ComputerControlAllowlistController(mSpyContext,
+                MoreExecutors.directExecutor(), mSessionOwnerAllowlistFile,
+                mAutomatableAppAllowlistFile, mAutomatableAppDenylistFile, buildIsDebuggable);
+        mAllowlistController.initialize();
     }
 
     private String preparePackage(@NonNull String packageName, @NonNull Signature signature)

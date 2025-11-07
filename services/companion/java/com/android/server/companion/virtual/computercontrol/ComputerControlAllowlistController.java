@@ -21,10 +21,12 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.SigningDetails;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.DeviceConfig;
 import android.text.TextUtils;
@@ -74,6 +76,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
     private final RemoteList mSessionOwnerAllowlist;
     private final RemoteList mAutomatableAppAllowlist;
     private final RemoteList mAutomatableAppDenylist;
+    private final boolean mBuildIsDebuggable;
 
     ComputerControlAllowlistController(@NonNull Context context) {
         this(context, BackgroundThread.getExecutor(),
@@ -82,13 +85,14 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 new File(new File(Environment.getDataSystemDirectory(), COMPUTER_CONTROL_DIR),
                         AUTOMATABLE_APP_ALLOWLIST_FILE_NAME),
                 new File(new File(Environment.getDataSystemDirectory(), COMPUTER_CONTROL_DIR),
-                        AUTOMATABLE_APP_DENYLIST_FILE_NAME));
+                        AUTOMATABLE_APP_DENYLIST_FILE_NAME),
+                Build.isDebuggable());
     }
 
     @VisibleForTesting
     ComputerControlAllowlistController(@NonNull Context context, @NonNull Executor executor,
             @NonNull File agentAllowlistFile, @NonNull File automatableAppsAllowlistFile,
-            @NonNull File automatableAppsDenylistFile) {
+            @NonNull File automatableAppsDenylistFile, boolean buildIsDebuggable) {
         mPackageManager = context.getPackageManager();
         mBackgroundExecutor = executor;
         mSessionOwnerAllowlist = new RemoteList(agentAllowlistFile,
@@ -97,6 +101,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY);
         mAutomatableAppDenylist = new RemoteList(automatableAppsDenylistFile,
                 COMPUTER_CONTROL_AUTOMATABLE_APP_DENYLIST_KEY);
+        mBuildIsDebuggable = buildIsDebuggable;
     }
 
     @Override
@@ -144,6 +149,11 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             return false;
         }
 
+        if (!mBuildIsDebuggable && !isPreInstalledApp(packageName)) {
+            Slog.i(TAG, packageName + " is not pre-installed, hence cannot be a session owner");
+            return false;
+        }
+
         final SigningDetails signingDetails = getSigningDetails(packageName);
         if (signingDetails == null) {
             Slog.e(TAG, "isPackageAllowedToCreateSession: Failed to fetch signing details for "
@@ -184,6 +194,18 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         Slog.i(TAG, "isPackageAutomatable: Is there any allowlist entry for " + packageName
                 + " : " + isInAllowlist);
         return isInAllowlist;
+    }
+
+    private boolean isPreInstalledApp(@NonNull String packageName) {
+        try {
+            final ApplicationInfo applicationInfo = mPackageManager.getApplicationInfo(packageName,
+                    0);
+            return applicationInfo.isSystemApp();
+        } catch (PackageManager.NameNotFoundException e) {
+            Slog.e(TAG, "isPreInstalledApp: Failed to fetch application info for "
+                    + packageName);
+            return false;
+        }
     }
 
     private boolean packageAssociatedToCallingUid(@NonNull String packageName) {
