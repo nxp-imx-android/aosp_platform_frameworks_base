@@ -107,6 +107,7 @@ public final class AssociationInfo implements Parcelable {
      */
     @NonNull
     private final PersistableBundle mMetadata;
+    private final long mTimeMetadataSentMs;
 
     /**
      * A device icon displayed on a selfManaged association dialog.
@@ -153,6 +154,7 @@ public final class AssociationInfo implements Parcelable {
         mDeviceId = builder.mDeviceId;
         mPackagesToNotify = builder.mPackagesToNotify;
         mMetadata = builder.mMetadata;
+        mTimeMetadataSentMs = builder.mTimeMetadataSentMs;
         mExtraPermissions = builder.mExtraPermissions;
     }
 
@@ -392,6 +394,19 @@ public final class AssociationInfo implements Parcelable {
     }
 
     /**
+     * @return the timestamp at which the local metadata was last sent to the remote device.
+     * If the local metadata was never sent, then it returns 0.
+     *
+     * The metadata that was sent is not necessarily the same as the current local metadata. The
+     * metadata can be updated without sync if transports are not available.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public long getMetadataSentTimestamp() {
+        return mTimeMetadataSentMs;
+    }
+
+    /**
      * Utility method for checking if the association represents a device with the given MAC
      * address.
      *
@@ -463,6 +478,7 @@ public final class AssociationInfo implements Parcelable {
                 + ", mDeviceId=" + mDeviceId
                 + ", mPackagesToNotify=" + mPackagesToNotify
                 + ", mMetadata=" + mMetadata
+                + ", mTimeMetadataSentMs=" + new Date(mTimeMetadataSentMs)
                 + ", mExtraPermissions=" + mExtraPermissions
                 + '}';
     }
@@ -492,6 +508,7 @@ public final class AssociationInfo implements Parcelable {
                 && Objects.equals(mDeviceId, that.mDeviceId)
                 && Objects.equals(mPackagesToNotify, that.mPackagesToNotify)
                 && BaseBundle.kindofEquals(mMetadata, that.mMetadata)
+                && mTimeMetadataSentMs == that.mTimeMetadataSentMs
                 && Objects.equals(mExtraPermissions, that.mExtraPermissions);
     }
 
@@ -549,6 +566,7 @@ public final class AssociationInfo implements Parcelable {
 
         dest.writeStringList(mPackagesToNotify);
         dest.writePersistableBundle(mMetadata);
+        dest.writeLong(mTimeMetadataSentMs);
         dest.writeStringList(new ArrayList<>(mExtraPermissions));
     }
 
@@ -582,6 +600,7 @@ public final class AssociationInfo implements Parcelable {
         }
         mPackagesToNotify = in.createStringArrayList();
         mMetadata = in.readPersistableBundle();
+        mTimeMetadataSentMs = in.readLong();
         mExtraPermissions = new HashSet<>(in.createStringArrayList());
     }
 
@@ -625,6 +644,7 @@ public final class AssociationInfo implements Parcelable {
         private DeviceId mDeviceId;
         private List<String> mPackagesToNotify;
         private PersistableBundle mMetadata = new PersistableBundle(); // Empty bundle by default.
+        private long mTimeMetadataSentMs;
         private Set<String> mExtraPermissions = new HashSet<>();
 
         /** @hide */
@@ -638,26 +658,7 @@ public final class AssociationInfo implements Parcelable {
         /** @hide */
         @TestApi
         public Builder(@NonNull AssociationInfo info) {
-            mId = info.mId;
-            mUserId = info.mUserId;
-            mPackageName = info.mPackageName;
-            mDeviceMacAddress = info.mDeviceMacAddress;
-            mDisplayName = info.mDisplayName;
-            mDeviceProfile = info.mDeviceProfile;
-            mAssociatedDevice = info.mAssociatedDevice;
-            mSelfManaged = info.mSelfManaged;
-            mNotifyOnDeviceNearby = info.mNotifyOnDeviceNearby;
-            mRevoked = info.mRevoked;
-            mPending = info.mPending;
-            mTimeApprovedMs = info.mTimeApprovedMs;
-            mLastTimeConnectedMs = info.mLastTimeConnectedMs;
-            mSystemDataSyncFlags = info.mSystemDataSyncFlags;
-            mTransportFlags = info.mTransportFlags;
-            mDeviceIcon = info.mDeviceIcon;
-            mDeviceId = info.mDeviceId;
-            mPackagesToNotify = info.mPackagesToNotify;
-            mMetadata = info.mMetadata;
-            mExtraPermissions = info.mExtraPermissions;
+            this(info.mId, info.mUserId, info.mPackageName, info);
         }
 
         /**
@@ -686,6 +687,7 @@ public final class AssociationInfo implements Parcelable {
             mDeviceId = info.mDeviceId;
             mPackagesToNotify = info.mPackagesToNotify;
             mMetadata = info.mMetadata;
+            mTimeMetadataSentMs = info.mTimeMetadataSentMs;
             mExtraPermissions = info.mExtraPermissions;
         }
 
@@ -835,6 +837,16 @@ public final class AssociationInfo implements Parcelable {
         @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
         public Builder setMetadata(@NonNull PersistableBundle metadata) {
             mMetadata = metadata;
+            return this;
+        }
+
+        /** @hide */
+        @TestApi
+        @NonNull
+        @SuppressLint("MissingGetterMatchingBuilder")
+        @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+        public Builder setTimeMetadataSent(long timestamp) {
+            mTimeMetadataSentMs = timestamp;
             return this;
         }
 
