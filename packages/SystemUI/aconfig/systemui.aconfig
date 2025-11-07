@@ -1323,6 +1323,13 @@ flag {
 }
 
 flag {
+    name: "desktop_optimized_notification"
+    namespace: "systemui"
+    description: "Enables improved notification UX for Desktop."
+    bug: "456554989"
+}
+
+flag {
     name: "bouncer_ui_revamp"
     namespace: "systemui"
     description: "Updates to background (blur) for bouncer"
