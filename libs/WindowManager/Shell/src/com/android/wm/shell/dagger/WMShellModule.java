@@ -143,6 +143,7 @@ import com.android.wm.shell.desktopmode.DisplayFocusResolver;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
+import com.android.wm.shell.desktopmode.NormalAppLayerController;
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler;
 import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator;
@@ -2089,13 +2090,25 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static Optional<NormalAppLayerHandler> provideNormalAppLayerHandler(
-            Optional<DesktopTasksController> desktopTasksControllerOptional,
+            Optional<NormalAppLayerController> normalAppLayerController,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional) {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                     new NormalAppLayerHandler(
-                            desktopUserRepositoriesOptional.get(),
-                            desktopTasksControllerOptional.get()));
+                            normalAppLayerController.get(), desktopUserRepositoriesOptional.get()));
+        }
+        return Optional.empty();
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<NormalAppLayerController> provideNormalAppLayerController(
+            Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositoriesOptional) {
+        if (PinnedLayerFlags.isPinnedLayerEnabled()) {
+            return Optional.of(
+                    new NormalAppLayerController(
+                            desktopUserRepositoriesOptional.get(), desktopTasksController.get()));
         }
         return Optional.empty();
     }
