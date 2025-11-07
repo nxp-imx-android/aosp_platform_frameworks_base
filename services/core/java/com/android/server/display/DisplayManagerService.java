@@ -5033,9 +5033,11 @@ public final class DisplayManagerService extends SystemService {
                                     + eventsToString(eventMask) + " to " + mUid + "/" + mPid
                                     + ". New mask: " + eventsToString(newMask));
                         }
+                        return eventMask & ~last.eventMask; // get only the new events
                     }
-                    return eventMask & ~last.eventMask; // get only the new events
                 }
+                // else if we found that the last event is non-display event, e.g. Snapshot
+                // we need to add the new event to the end to preserve order.
             }
             mPendingDisplayEvents.add(new PendingDisplayEvent(displayId, eventMask));
             return eventMask;
