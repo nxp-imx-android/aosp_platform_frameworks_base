@@ -77,11 +77,11 @@ class OpenActivityFromBubbleOnLockscreenTest(flicker: FlickerTest) :
                 instrumentation.uiAutomation.syncInputTransactions()
 
                 val notification =
-                    device.wait(
-                        Until.findObject(By.text("BubbleChat").clickable(true)),
-                        FIND_OBJECT_TIMEOUT
-                    )
-                notification?.click() ?: error("Notification not found")
+                    device.wait(Until.findObject(By.text("BubbleChat")), FIND_OBJECT_TIMEOUT)
+                    ?: error("Notification not found")
+                notification.wait(Until.clickable(true), FIND_OBJECT_TIMEOUT)
+                    ?: error("Notification not clickable")
+                notification.click()
                 instrumentation.uiAutomation.syncInputTransactions()
                 Root.get().bubble.click()
                 instrumentation.uiAutomation.syncInputTransactions()
