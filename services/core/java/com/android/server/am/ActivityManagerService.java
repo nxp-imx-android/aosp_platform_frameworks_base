@@ -2837,7 +2837,9 @@ public class ActivityManagerService extends IActivityManager.Stub
         // violate the rules about which services they have access to.
         if (isolated) {
             if (mIsolatedAppBindArgs == null) {
-                mIsolatedAppBindArgs = new ArrayMap<>(1);
+                // Reserve capacity for the two services we know we need.
+                mIsolatedAppBindArgs = new ArrayMap<>(2);
+
                 // See b/79378449 about the following exemption.
                 addServiceToMap(mIsolatedAppBindArgs, "package");
                 addServiceToMap(mIsolatedAppBindArgs, "permissionmgr");
@@ -2846,7 +2848,9 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         if (mAppBindArgs == null) {
-            mAppBindArgs = new ArrayMap<>();
+            // Reserve capacity for the services that are added below.
+            // If adding more services, please update the capacity accordingly.
+            mAppBindArgs = new ArrayMap<>(22);
 
             // Add common services.
             // IMPORTANT: Before adding services here, make sure ephemeral apps can access them too.
