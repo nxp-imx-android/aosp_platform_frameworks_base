@@ -94,4 +94,15 @@ public class ComputerControlSessionParamsTest {
                         .setName(SESSION_NAME)
                         .build());
     }
+
+    @Test
+    public void build_withNullPreviewIntent_setsPreviewIntentToNull() {
+        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
+                .setName(SESSION_NAME)
+                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                .setPreviewIntent(null)
+                .build();
+
+        assertThat(params.getPreviewIntent()).isNull();
+    }
 }
