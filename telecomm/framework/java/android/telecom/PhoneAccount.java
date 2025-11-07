@@ -548,7 +548,15 @@ public final class PhoneAccount implements Parcelable {
      */
     public static final int CAPABILITY_SUPPORTS_CALL_STREAMING = 0x80000;
 
-    /* NEXT CAPABILITY: [0x100000, 0x200000, 0x400000] */
+    /**
+     * Flag indicating that this {@link PhoneAccount} is capable of changing an RTT (Real-time text)
+     * call to a voice call.
+     * When set, The in-call app will display the change to voice option.
+     * User can chose to change the call to only voice from the in-call app.
+     * Only applicable for a phone account with {@link #CAPABILITY_RTT}.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_CHANGE_RTT_TO_AUDIO)
+    public static final int CAPABILITY_CHANGE_RTT_CALL_TO_AUDIO_CALL = 0x100000;
 
     /**
      * URI scheme for telephone number URIs.
@@ -1462,6 +1470,9 @@ public final class PhoneAccount implements Parcelable {
         }
         if (hasCapabilities(CAPABILITY_SUPPORTS_CALL_STREAMING)) {
             sb.append("Stream ");
+        }
+        if (hasCapabilities(CAPABILITY_CHANGE_RTT_CALL_TO_AUDIO_CALL)) {
+            sb.append("RttToAudio ");
         }
         return sb.toString();
     }
