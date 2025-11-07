@@ -724,12 +724,6 @@ public class MediaSwitchingController
                 currentConnectedMediaDevice);
     }
 
-    boolean isCurrentOutputDeviceHasSessionOngoing() {
-        MediaDevice currentConnectedMediaDevice = getCurrentConnectedMediaDevice();
-        return currentConnectedMediaDevice != null
-                && (currentConnectedMediaDevice.isHostForOngoingSession());
-    }
-
     protected void connectDevice(MediaDevice device) {
         mInfoMediaManager.setDeviceState(
                 device, LocalMediaManager.MediaDeviceState.STATE_CONNECTING);

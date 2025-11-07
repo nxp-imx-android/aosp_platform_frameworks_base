@@ -144,7 +144,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                         && !mController.isCurrentConnectedDeviceRemote()) {
                     connectionState = ConnectionState.CONNECTED;
                     restrictVolumeAdjustment = true;
-                    clickListener = v -> onItemClick(v, device);
+                    clickListener = v -> transferOutput(device);
                 } else if (currentlyConnected && isMutingExpectedDeviceExist
                         && !mController.isCurrentConnectedDeviceRemote()) {
                     // mark as disconnected and set special click listener
@@ -160,13 +160,13 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                         deviceStatusIcon = mContext.getDrawable(
                                 R.drawable.media_output_status_failed);
                         subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
-                        clickListener = v -> onItemClick(v, device);
+                        clickListener = v -> transferOutput(device);
                     } else if (currentlyConnected || device.isSelected()) {
                         connectionState = ConnectionState.CONNECTED;
                     } else { // disconnected
                         if (device.isSelectable()) { // groupable device
                             if (device.isTransferable() || device.hasRouteListingPreferenceItem()) {
-                                clickListener = v -> onItemClick(v, device);
+                                clickListener = v -> transferOutput(device);
                             }
                         } else {
                             deviceStatusIcon = getDeviceStatusIcon(device);
@@ -226,7 +226,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
         private View.OnClickListener getClickListenerBasedOnSelectionBehavior(
                 @NonNull MediaDevice device) {
             return Api34Impl.getClickListenerBasedOnSelectionBehavior(
-                    device, mController, v -> onItemClick(v, device));
+                    device, mController, v -> transferOutput(device));
         }
 
         @Nullable
@@ -246,14 +246,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
             }
         }
 
-        private void onItemClick(View view, MediaDevice device) {
-            if (mController.isCurrentOutputDeviceHasSessionOngoing()) {
-                showCustomEndSessionDialog(device);
-            } else {
-                transferOutput(device);
-            }
-        }
-
         private void transferOutput(MediaDevice device) {
             if (mController.isAnyDeviceTransferring()) {
                 return;
@@ -266,13 +258,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
             mCurrentActivePosition = -1;
             mController.connectDevice(device);
             notifyDataSetChanged();
-        }
-
-        @VisibleForTesting
-        void showCustomEndSessionDialog(MediaDevice device) {
-            MediaSessionReleaseDialog mediaSessionReleaseDialog = new MediaSessionReleaseDialog(
-                    mContext, () -> transferOutput(device), mController.getColorScheme());
-            mediaSessionReleaseDialog.show();
         }
 
         private void cancelMuteAwaitConnection() {
