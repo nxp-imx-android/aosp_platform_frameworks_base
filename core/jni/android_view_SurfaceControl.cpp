@@ -2373,6 +2373,48 @@ public:
         env->DeleteWeakGlobalRef(mOnJankDataListenerWeak);
     }
 
+    int getJavaJankType(int sfJankType) {
+        // The exposed constants in SurfaceControl are simplified, so we need to translate the
+        // jank type we get from SF to what is exposed in Java.
+        constexpr int JANK_NONE = 0x0;        // SurfaceControl.JankData.JANK_NONE
+        constexpr int JANK_COMPOSER = 0x1;    // SurfaceControl.JankData.JANK_COMPOSER
+        constexpr int JANK_APPLICATION = 0x2; // SurfaceControl.JankData.JANK_APPLICATION
+        constexpr int JANK_OTHER = 0x4;       // SurfaceControl.JankData.JANK_OTHER
+
+        constexpr int kComposerJankMask = JankType::DisplayHAL |
+                JankType::SurfaceFlingerCpuDeadlineMissed |
+                JankType::SurfaceFlingerGpuDeadlineMissed | JankType::PredictionError |
+                JankType::SurfaceFlingerScheduling;
+
+        constexpr int kApplicationJankMask =
+                JankType::AppDeadlineMissed | JankType::AppResyncedJitter;
+
+        constexpr int kNoneReportedJankMask = JankType::None | JankType::BufferStuffing |
+                JankType::SurfaceFlingerStuffing | JankType::Dropped | JankType::NonAnimating |
+                JankType::DisplayNotOn;
+
+        constexpr int kAllHandledJankMask =
+                kComposerJankMask | kApplicationJankMask | kNoneReportedJankMask;
+
+        static_assert((kJankTypeAll & ~(kAllHandledJankMask | JankType::Unknown)) == 0,
+                      "Missing a JankType handling");
+
+        int javaJankType = JANK_NONE;
+        if (sfJankType & kComposerJankMask) {
+            javaJankType |= JANK_COMPOSER;
+        }
+
+        if (sfJankType & kApplicationJankMask) {
+            javaJankType |= JANK_APPLICATION;
+        }
+
+        if (sfJankType & ~kAllHandledJankMask) {
+            javaJankType |= JANK_OTHER;
+        }
+
+        return javaJankType;
+    }
+
     bool onJankDataAvailable(const std::vector<gui::JankData>& jankData) override {
         // Don't invoke the listener if we've been force removed and got this
         // out-of-order callback.
@@ -2390,31 +2432,13 @@ public:
         jobjectArray jJankDataArray =
                 env->NewObjectArray(jankData.size(), gJankDataClassInfo.clazz, nullptr);
         for (size_t i = 0; i < jankData.size(); i++) {
-            // The exposed constants in SurfaceControl are simplified, so we need to translate the
-            // jank type we get from SF to what is exposed in Java.
-            int sfJankType = jankData[i].jankType;
-            int javaJankType = 0x0; // SurfaceControl.JankData.JANK_NONE
-            if (sfJankType &
-                (JankType::DisplayHAL | JankType::SurfaceFlingerCpuDeadlineMissed |
-                 JankType::SurfaceFlingerGpuDeadlineMissed | JankType::PredictionError |
-                 JankType::SurfaceFlingerScheduling)) {
-                javaJankType |= 0x1; // SurfaceControl.JankData.JANK_COMPOSER
-            }
-            if (sfJankType & JankType::AppDeadlineMissed) {
-                javaJankType |= 0x2; // SurfaceControl.JankData.JANK_APPLICATION
-            }
-            if (sfJankType &
-                ~(JankType::DisplayHAL | JankType::SurfaceFlingerCpuDeadlineMissed |
-                  JankType::SurfaceFlingerGpuDeadlineMissed | JankType::AppDeadlineMissed |
-                  JankType::PredictionError | JankType::SurfaceFlingerScheduling |
-                  JankType::BufferStuffing | JankType::SurfaceFlingerStuffing)) {
-                javaJankType |= 0x4; // SurfaceControl.JankData.JANK_OTHER
-            }
-
+            const int javaJankTypeLegacy = getJavaJankType(jankData[i].jankTypeLegacy);
+            const int javaJankTypeExperimental = getJavaJankType(jankData[i].jankTypeExperimental);
             jobject jJankData =
                     env->NewObject(gJankDataClassInfo.clazz, gJankDataClassInfo.ctor,
-                                   jankData[i].frameVsyncId, javaJankType,
-                                   jankData[i].frameIntervalNs, jankData[i].scheduledAppFrameTimeNs,
+                                   jankData[i].frameVsyncId, javaJankTypeLegacy,
+                                   javaJankTypeExperimental, jankData[i].frameIntervalNs,
+                                   jankData[i].scheduledAppFrameTimeNs,
                                    jankData[i].actualAppFrameTimeNs, jankData[i].presentDelayNs);
             env->SetObjectArrayElement(jJankDataArray, i, jJankData);
             env->DeleteLocalRef(jJankData);
@@ -3134,7 +3158,7 @@ int register_android_view_SurfaceControl(JNIEnv* env)
                 FindClassOrDie(env, "android/view/SurfaceControl$JankData");
     gJankDataClassInfo.clazz = MakeGlobalRefOrDie(env, jankDataClazz);
     gJankDataClassInfo.ctor =
-            GetMethodIDOrDie(env, gJankDataClassInfo.clazz, "<init>", "(JIJJJJ)V");
+            GetMethodIDOrDie(env, gJankDataClassInfo.clazz, "<init>", "(JIIJJJJ)V");
     jclass onJankDataListenerClazz =
             FindClassOrDie(env, "android/view/SurfaceControl$OnJankDataListener");
     gJankDataListenerClassInfo.clazz = MakeGlobalRefOrDie(env, onJankDataListenerClazz);
