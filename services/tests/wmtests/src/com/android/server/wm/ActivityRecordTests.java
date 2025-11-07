@@ -38,6 +38,7 @@ import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_IF_ALLOWLIST
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_NEVER;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT;
+import static android.content.pm.ActivityInfo.PERSIST_ACROSS_REBOOTS;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
@@ -101,6 +102,7 @@ import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_INVISI
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
+import static com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -1044,6 +1046,28 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(savedState, activity.getSavedState());
         assertEquals(persistentSavedState, activity.getPersistentSavedState());
         assertEquals(handoffActivityData, activity.getHandoffActivityData());
+    }
+
+    /**
+     * Verify that when the root activity of a task is stopped, persistent state provided is saved
+     * to its' task.
+     */
+    @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void onRootActivityStopped_stateSavedToPackageUpdateManager() {
+        final ActivityRecord activity = createActivityWithTask();
+        activity.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        final Bundle savedState = new Bundle();
+        savedState.putString("test", "string");
+        final PersistableBundle persistentSavedState = new PersistableBundle();
+        persistentSavedState.putString("persist", "string");
+
+        // Set state to STOPPING, or ActivityRecord#activityStoppedLocked() call will be ignored.
+        activity.setState(STOPPING, "test");
+        activity.activityStopped(savedState, persistentSavedState, null, "desc");
+        assertTrue(activity.hasSavedState());
+        assertEquals(persistentSavedState,
+                mAtm.mPackageUpdateManager.getPersistentStateForTask(activity.getTask()));
     }
 
     @Test

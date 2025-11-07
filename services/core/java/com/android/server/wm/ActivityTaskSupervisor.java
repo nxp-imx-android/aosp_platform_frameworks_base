@@ -135,6 +135,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PersistableBundle;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -1051,11 +1052,14 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         final boolean isTransitionForward = r.isTransitionForward();
         final IBinder fragmentToken = r.getTaskFragment().getFragmentToken();
         final int deviceId = getDeviceIdForDisplayId(r.getDisplayId());
+        final PersistableBundle persistentState =
+                r.getPersistentSavedState() != null ? r.getPersistentSavedState()
+                        : mService.mPackageUpdateManager.getPersistentStateForTask(task);
         final LaunchActivityItem launchActivityItem = new LaunchActivityItem(r.token,
                 r.intent, System.identityHashCode(r), r.info,
                 procConfig, overrideConfig, deviceId,
                 r.getFilteredReferrer(r.launchedFromPackage), task.voiceInteractor,
-                proc.getReportedProcState(), r.getSavedState(), r.getPersistentSavedState(),
+                proc.getReportedProcState(), r.getSavedState(), persistentState,
                 results, newIntents, r.takeSceneTransitionInfo(), isTransitionForward,
                 proc.createProfilerInfoIfNeeded(), r.assistToken, activityClientController,
                 r.shareableActivityToken, r.getLaunchedFromBubble(), fragmentToken,
