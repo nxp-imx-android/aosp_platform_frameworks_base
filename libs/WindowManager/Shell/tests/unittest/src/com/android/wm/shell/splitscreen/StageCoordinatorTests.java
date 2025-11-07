@@ -682,13 +682,14 @@ public class StageCoordinatorTests extends ShellTestCase {
     @Test(expected = IllegalStateException.class)
     public void moveSplitScreenRoot_whenRootNotFound_throwsException() {
         mStageCoordinator.mSplitRootTaskInfo = null;
-        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, DEFAULT_DISPLAY + 1);
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, DEFAULT_DISPLAY + 1,
+                true /* OnTop */);
     }
 
     @Test
     public void moveSplitScreenRoot_whenTargetIsSameDisplay_doesNothing() {
         final int targetDisplayId = mSplitRootTaskInfo.displayId;
-        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId);
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId, true /* OnTop */);
 
         verify(mWct, never()).reparent(any(), any(), anyBoolean());
     }
@@ -704,7 +705,7 @@ public class StageCoordinatorTests extends ShellTestCase {
                 targetDisplayId, 0);
         when(mRootTDAOrganizer.getDisplayAreaInfo(targetDisplayId))
                 .thenReturn(targetDisplayAreaInfo);
-        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId);
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId, true /* OnTop */);
 
         verify(mWct).reparent(eq(splitRootTaskInfoToken), eq(targetDisplayAreaToken), eq(true));
     }
@@ -717,7 +718,50 @@ public class StageCoordinatorTests extends ShellTestCase {
         // Setup current root, but no target display area
         WindowContainerToken splitRootTaskInfoToken = mSplitRootTaskInfo.getToken();
         when(mRootTDAOrganizer.getDisplayAreaInfo(targetDisplayId)).thenReturn(null);
-        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId);
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId, true /* OnTop */);
+
+        verify(mWct, never()).reparent(any(), any(), anyBoolean());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void moveSplitScreenRoot_notOnTop_whenRootNotFound_throwsException() {
+        mStageCoordinator.mSplitRootTaskInfo = null;
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, DEFAULT_DISPLAY + 1,
+                false /* onTop */);
+    }
+
+    @Test
+    public void moveSplitScreenRoot_notOnTop_whenTargetIsSameDisplay_doesNothing() {
+        final int targetDisplayId = mSplitRootTaskInfo.displayId;
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId, false /* onTop */);
+
+        verify(mWct, never()).reparent(any(), any(), anyBoolean());
+    }
+
+    @Test
+    public void moveSplitScreenRoot_notOnTop_whenTargetIsDifferentDisplay_reparentsRoot() {
+        final int currentDisplayId = mSplitRootTaskInfo.displayId;
+        final int targetDisplayId = currentDisplayId + 1;
+
+        WindowContainerToken splitRootTaskInfoToken = mSplitRootTaskInfo.getToken();
+        WindowContainerToken targetDisplayAreaToken = new MockToken().token();
+        DisplayAreaInfo targetDisplayAreaInfo = new DisplayAreaInfo(targetDisplayAreaToken,
+                targetDisplayId, 0);
+        when(mRootTDAOrganizer.getDisplayAreaInfo(targetDisplayId))
+                .thenReturn(targetDisplayAreaInfo);
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId, false /* onTop */);
+
+        verify(mWct).reparent(eq(splitRootTaskInfoToken), eq(targetDisplayAreaToken), eq(false));
+    }
+
+    @Test
+    public void moveSplitScreenRoot_notOnTop_whenTargetDisplayAreaNotFound_doesNothing() {
+        final int currentDisplayId = mSplitRootTaskInfo.displayId;
+        final int targetDisplayId = currentDisplayId + 1;
+
+        // Setup current root, but no target display area
+        when(mRootTDAOrganizer.getDisplayAreaInfo(targetDisplayId)).thenReturn(null);
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId, false /* onTop */);
 
         verify(mWct, never()).reparent(any(), any(), anyBoolean());
     }
