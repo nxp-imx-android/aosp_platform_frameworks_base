@@ -88,6 +88,17 @@ flag {
 }
 
 flag {
+    name: "notification_x_button_clip_fix"
+    namespace: "systemui"
+    description: "fix the clipped notification x button which shows when the group notification is "
+        "under mouse hover"
+    bug: "455839877"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "notification_async_group_header_inflation"
     namespace: "systemui"
     description: "Inflates the notification group summary header views from the background thread."
