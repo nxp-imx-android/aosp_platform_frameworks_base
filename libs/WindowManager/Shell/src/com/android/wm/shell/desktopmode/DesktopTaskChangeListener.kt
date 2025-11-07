@@ -354,13 +354,22 @@ class DesktopTaskChangeListener(
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
+    private fun logWtf(msg: String, vararg arguments: Any?) {
+        ProtoLog.wtf(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
     private fun addTask(desktopRepository: DesktopRepository, taskInfo: RunningTaskInfo) {
         val taskId = taskInfo.taskId
         val displayId = taskInfo.displayId
-        val deskId =
-            desksOrganizer.getDeskIdFromTaskInfo(taskInfo)
-                ?: desktopRepository.getActiveDeskId(displayId)
-                ?: error("Expected desk for displayId=$displayId")
+        val deskId = desksOrganizer.getDeskIdFromTaskInfo(taskInfo)
+        if (deskId == null) {
+            logWtf(
+                "A seemingly 'desktop' task launched outside a desk, " +
+                    "will not add it to the repository. " +
+                    "This is illegal state, please file a bug."
+            )
+            return
+        }
         desktopRepository.addTaskToDesk(
             displayId,
             deskId,
