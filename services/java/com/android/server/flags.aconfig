@@ -2,13 +2,6 @@ package: "android.server"
 container: "system"
 
 flag {
-     name: "remove_wearable_sensing_service_from_wear"
-     namespace: "wear_frameworks"
-     description: "Remove WearableSensingManagerService on Wear"
-     bug: "340929916"
-}
-
-flag {
      namespace: "system_performance"
      name: "enable_theme_service"
      description: "Switches from SystemUi's ThemeOverlayController to Server's ThemeService."
