@@ -24,13 +24,12 @@ import static android.hardware.usb.InternalUsbDataSignalDisableReason.USB_DISABL
 import static android.hardware.usb.UsbOperationInternal.USB_OPERATION_ERROR_INTERNAL;
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_DEVICE;
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_HOST;
+import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 import static android.hardware.usb.UsbPortStatus.MODE_DFP;
 import static android.hardware.usb.UsbPortStatus.MODE_DUAL;
 import static android.hardware.usb.UsbPortStatus.MODE_UFP;
 import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SINK;
 import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SOURCE;
-import static android.os.Binder.clearCallingIdentity;
-import static android.os.Binder.restoreCallingIdentity;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
@@ -38,6 +37,7 @@ import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.DevicePolicyManagerInternal;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -67,6 +67,7 @@ import android.os.UserManager;
 import android.service.usb.UsbServiceDumpProto;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.Log;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
@@ -159,6 +160,8 @@ public class UsbService extends IUsbManager.Stub {
     private final Context mContext;
     private final UserManager mUserManager;
 
+    private final DevicePolicyManagerInternal mDevicePolicyManagerInternal;
+
     private UsbDeviceManager mDeviceManager;
     private UsbHostManager mHostManager;
     private UsbPortManager mPortManager;
@@ -203,7 +206,7 @@ public class UsbService extends IUsbManager.Stub {
 
     public UsbService(Context context) {
         mContext = context;
-
+        mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
         mUserManager = context.getSystemService(UserManager.class);
         mSettingsManager = new UsbSettingsManager(context, this);
         mPermissionManager = new UsbPermissionManager(context, this);
@@ -238,12 +241,18 @@ public class UsbService extends IUsbManager.Stub {
                         mDeviceManager.updateUserRestrictions();
                     }
                 }
+                if (android.app.admin.flags.Flags.fixUsbDataSignalingRestrictionAfterReboot()
+                        && UsbManager.ACTION_USB_PORT_CHANGED.equals(action)) {
+                    boolean enabled = mDevicePolicyManagerInternal.isUsbDataSignalingEnabled();
+                    setUsbDataSignal(enabled);
+                }
             }
         };
 
         final IntentFilter filter = new IntentFilter();
         filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
         filter.addAction(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED);
+        filter.addAction(UsbManager.ACTION_USB_PORT_CHANGED);
         mContext.registerReceiverAsUser(receiver, UserHandle.ALL, filter, null, null);
         if(android.hardware.usb.flags.Flags.enableUsbDataSignalStakingInternal()) {
             LocalServices.addService(IUsbManagerInternal.class, new UsbManagerInternalImpl());
@@ -259,6 +268,7 @@ public class UsbService extends IUsbManager.Stub {
                       UsbSettingsManager usbSettingsManager,
                       IUsbOperationInternalProvider usbOperationInternalProvider) {
         mContext = context;
+        mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
         mPortManager = usbPortManager;
         mAlsaManager = usbAlsaManager;
         mUserManager = userManager;
@@ -298,6 +308,22 @@ public class UsbService extends IUsbManager.Stub {
         if (mAuthManager != null) {
             mAuthManager.onUpdateScreenLockedState(locked);
         }
+    }
+
+    private void setUsbDataSignal(boolean enabled) {
+        for (UsbPort port: mPortManager.getPorts()) {
+            if (isPortDisabled(port) == enabled) {
+                if (port.enableUsbData(enabled) != UsbPort.ENABLE_USB_DATA_SUCCESS) {
+                    Log.e(TAG, "Failed to set usb data signal for portID(" + port.getId()
+                            + ")");
+                }
+            }
+        }
+    }
+
+    private boolean isPortDisabled(UsbPort usbPort) {
+        return (getPortStatus(usbPort.getId()).getUsbDataStatus() & DATA_STATUS_DISABLED_FORCE)
+                == DATA_STATUS_DISABLED_FORCE;
     }
 
     /**
