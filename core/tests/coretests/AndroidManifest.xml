@@ -1783,6 +1783,16 @@
             </intent-filter>
         </activity>
 
+        <!-- Application components used for autofill tests -->
+        <activity android:name="android.view.autofill.AutofillTestActivity"
+            android:label="Autofill Test"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.FRAMEWORK_INSTRUMENTATION_TEST" />
+            </intent-filter>
+        </activity>
+
         <!-- Used by WallpaperInstanceTest -->
         <service
             android:name="stub.StubWallpaperService"
