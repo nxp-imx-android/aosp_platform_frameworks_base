@@ -147,15 +147,15 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskOpening_freeformTask_notActiveInDesktopRepo_addsTaskToRepository() {
+    fun onTaskOpening_freeformTask_notActiveInDesktopRepo_notAddedToRepository() {
         val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = false }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
         whenever(desksOrganizer.getDeskIdFromTaskInfo(task)).thenReturn(null)
 
         desktopTaskChangeListener.onTaskOpening(task)
 
-        verify(desktopUserRepositories.current)
-            .addTaskToDesk(task.displayId, ACTIVE_DESK_ID, task.taskId, task.isVisible, TASK_BOUNDS)
+        verify(desktopUserRepositories.current, never())
+            .addTaskToDesk(eq(task.displayId), any(), eq(task.taskId), any(), any())
     }
 
     @Test
@@ -246,14 +246,14 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskChanging_freeformTaskNotInDesk_addsTaskToActiveDesk() {
+    fun onTaskChanging_freeformTaskNotInDesk_notAddedToRepository() {
         val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = true }
         whenever(desksOrganizer.getDeskIdFromTaskInfo(task)).thenReturn(null)
 
         desktopTaskChangeListener.onTaskChanging(task)
 
-        verify(desktopUserRepositories.current)
-            .addTaskToDesk(task.displayId, ACTIVE_DESK_ID, task.taskId, task.isVisible, TASK_BOUNDS)
+        verify(desktopUserRepositories.current, never())
+            .addTaskToDesk(eq(task.displayId), any(), eq(task.taskId), any(), any())
     }
 
     @Test
