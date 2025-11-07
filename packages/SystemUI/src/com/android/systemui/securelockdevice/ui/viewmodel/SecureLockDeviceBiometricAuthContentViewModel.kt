@@ -224,6 +224,8 @@ constructor(
         authenticateAfterError: Boolean,
         hapticFeedback: Boolean = true,
         failedModality: BiometricModality = BiometricModality.None,
+        // False for screenshot testing only - displays an error without clearing it
+        clearError: Boolean = true,
     ) = coroutineScope {
         if (_isAuthenticated.value.isAuthenticated) {
             return@coroutineScope
@@ -238,12 +240,14 @@ constructor(
         }
 
         displayErrorJob?.cancel()
-        displayErrorJob = launch {
-            delay(displayErrorLength)
-            if (authenticateAfterError) {
-                showAuthenticating()
-            } else {
-                showHelp()
+        if (clearError) {
+            displayErrorJob = launch {
+                delay(displayErrorLength)
+                if (authenticateAfterError) {
+                    showAuthenticating()
+                } else {
+                    showHelp()
+                }
             }
         }
     }
