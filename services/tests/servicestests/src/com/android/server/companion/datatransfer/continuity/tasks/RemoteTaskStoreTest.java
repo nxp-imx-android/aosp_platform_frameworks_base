@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 public class RemoteTaskStoreTest implements RemoteTaskStore.Listener {
 
     private static RemoteTaskInfo TASK =
-            new RemoteTaskInfo(1, "packageName", 0, new HandoffOptions(true, true));
+            new RemoteTaskInfo(1, "packageName", true, 0, new HandoffOptions(true, true));
 
     private RemoteTaskStore mRemoteTaskStore = new RemoteTaskStore();
 
@@ -67,7 +67,7 @@ public class RemoteTaskStoreTest implements RemoteTaskStore.Listener {
         mRemoteTaskStore.upsertTask(associationId, TASK);
         RemoteTaskInfo updatedTask =
                 new RemoteTaskInfo(
-                        TASK.id(), "newPackageName", 100, new HandoffOptions(true, true));
+                        TASK.id(), "newPackageName", true, 100, new HandoffOptions(true, true));
         mRemoteTaskStore.upsertTask(associationId, updatedTask);
         verifyListenerEvents(
                 List.of(new RemoteTaskStore.Task(associationId, TASK)),

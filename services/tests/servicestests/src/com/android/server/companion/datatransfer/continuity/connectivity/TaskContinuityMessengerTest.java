@@ -65,6 +65,12 @@ public class TaskContinuityMessengerTest {
 
     private TaskContinuityMessenger mTaskContinuityMessenger;
 
+    private static final TaskStackBroadcastMessage TEST_MESSAGE =
+            new TaskStackBroadcastMessage(
+                    List.of(
+                            new RemoteTaskInfo(
+                                    1, "package_name", true, 50, new HandoffOptions(true, true))));
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -99,17 +105,11 @@ public class TaskContinuityMessengerTest {
         // Send a message to the listener.
         int expectedAssociationId = 1;
         connectAssociations(List.of(expectedAssociationId));
-        TaskStackBroadcastMessage expectedMessage =
-                new TaskStackBroadcastMessage(
-                        List.of(
-                                new RemoteTaskInfo(
-                                        1, "package_name", 1000, new HandoffOptions(true, true))));
-
         listener.onMessageReceived(
-                expectedAssociationId, TaskContinuityMessageSerializer.serialize(expectedMessage));
+                expectedAssociationId, TaskContinuityMessageSerializer.serialize(TEST_MESSAGE));
         TestableLooper.get(this).processAllMessages();
         verify(mMockListener, times(1))
-                .onMessageReceived(eq(expectedAssociationId), eq(expectedMessage));
+                .onMessageReceived(eq(expectedAssociationId), eq(TEST_MESSAGE));
 
         // Stop listening, verifying the message listener is removed.
         mTaskContinuityMessenger.removeListener(mMockListener);
@@ -145,17 +145,12 @@ public class TaskContinuityMessengerTest {
 
         mTaskContinuityMessenger.addListener(mMockListener);
         connectAssociations(List.of(associationId));
-        TaskStackBroadcastMessage expectedMessage =
-                new TaskStackBroadcastMessage(
-                        List.of(
-                                new RemoteTaskInfo(
-                                        1, "package_name", 1000, new HandoffOptions(true, true))));
         TaskContinuityMessenger.SendMessageResult result =
-                mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
+                mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
         verify(mMockCompanionDeviceManagerService, times(1))
                 .sendMessage(
                         eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                        eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                        eq(TaskContinuityMessageSerializer.serialize(TEST_MESSAGE)),
                         aryEq(new int[] {associationId}));
         assertThat(result).isEqualTo(TaskContinuityMessenger.SendMessageResult.SUCCESS);
     }
@@ -165,17 +160,12 @@ public class TaskContinuityMessengerTest {
             throws RemoteException, IOException {
 
         int associationId = 1;
-        TaskStackBroadcastMessage expectedMessage =
-                new TaskStackBroadcastMessage(
-                        List.of(
-                                new RemoteTaskInfo(
-                                        1, "package_name", 1000, new HandoffOptions(true, true))));
         TaskContinuityMessenger.SendMessageResult result =
-                mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
+                mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
         verify(mMockCompanionDeviceManagerService, never())
                 .sendMessage(
                         eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                        eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                        eq(TaskContinuityMessageSerializer.serialize(TEST_MESSAGE)),
                         aryEq(new int[] {associationId}));
         assertThat(result)
                 .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);

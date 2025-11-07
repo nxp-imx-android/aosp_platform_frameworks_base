@@ -26,6 +26,7 @@ import java.util.Objects;
 public record RemoteTaskInfo(
         int id,
         @NonNull String packageName,
+        boolean isInForeground,
         long lastUsedTimeMillis,
         @NonNull HandoffOptions handoffOptions) {
 
@@ -47,6 +48,7 @@ public record RemoteTaskInfo(
                     int id = 0;
                     String packageName = "";
                     long lastUsedTimeMillis = 0;
+                    boolean isInForeground = false;
                     HandoffOptions handoffOptions = new HandoffOptions(false, false);
                     while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
                         switch (pis.getFieldNumber()) {
@@ -72,10 +74,16 @@ public record RemoteTaskInfo(
                                                 pis,
                                                 android.companion.RemoteTaskInfo.HANDOFF_OPTIONS);
                                 break;
+                            case (int) android.companion.RemoteTaskInfo.IS_IN_FOREGROUND:
+                                isInForeground =
+                                        pis.readBoolean(
+                                                android.companion.RemoteTaskInfo.IS_IN_FOREGROUND);
+                                break;
                         }
                     }
 
-                    return new RemoteTaskInfo(id, packageName, lastUsedTimeMillis, handoffOptions);
+                    return new RemoteTaskInfo(
+                            id, packageName, isInForeground, lastUsedTimeMillis, handoffOptions);
                 }
 
                 @Override
@@ -89,6 +97,9 @@ public record RemoteTaskInfo(
                     pos.writeInt32(android.companion.RemoteTaskInfo.ID, value.id());
                     pos.writeString(
                             android.companion.RemoteTaskInfo.PACKAGE_NAME, value.packageName());
+                    pos.writeBool(
+                            android.companion.RemoteTaskInfo.IS_IN_FOREGROUND,
+                            value.isInForeground());
                     pos.writeInt64(
                             android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS,
                             value.lastUsedTimeMillis());

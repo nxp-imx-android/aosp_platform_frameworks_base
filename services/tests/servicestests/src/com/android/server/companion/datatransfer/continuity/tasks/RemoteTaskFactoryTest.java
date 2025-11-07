@@ -61,7 +61,8 @@ public class RemoteTaskFactoryTest {
         String label = "label";
         setupMockApplicationInfo(packageName, label, R.drawable.black_32x32);
         HandoffOptions handoffOptions = new HandoffOptions(true, true);
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, packageName, 100, handoffOptions);
+        RemoteTaskInfo remoteTaskInfo =
+                new RemoteTaskInfo(1, packageName, true, 100, handoffOptions);
 
         RemoteTask remoteTask =
                 remoteTaskFactory.create(associationId, associationDisplayName, remoteTaskInfo);
@@ -70,6 +71,7 @@ public class RemoteTaskFactoryTest {
         assertThat(remoteTask.getPackageName()).isEqualTo(packageName);
         assertThat(remoteTask.getLabel()).isEqualTo(label);
         assertThat(remoteTask.isHandoffEnabled()).isTrue();
+        assertThat(remoteTask.isTaskInForeground()).isTrue();
     }
 
     private void setupMockApplicationInfo(String packageName, String label, int iconResourceId) {

@@ -41,8 +41,9 @@ message HandoffRequestMessage {
 message RemoteTaskInfo {
   int32 id = 1;
   string package_name = 2;
-  int64 lastUsedTimeMillis = 3;
-  HandoffOptions handoffOptions = 4;
+  bool is_in_foreground = 3;
+  int64 lastUsedTimeMillis = 4;
+  HandoffOptions handoffOptions = 5;
 }
 
 message HandoffOptions {

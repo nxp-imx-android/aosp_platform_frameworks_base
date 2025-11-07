@@ -168,7 +168,7 @@ public class RunningTaskFetcherTest {
             boolean isOpContinueAcrossDevicesAllowed) {
 
         public RemoteTaskInfo toRemoteTaskInfo() {
-            return new RemoteTaskInfo(taskId, packageName, lastActiveTime, handoffOptions);
+            return new RemoteTaskInfo(taskId, packageName, true, lastActiveTime, handoffOptions);
         }
     }
 
@@ -187,6 +187,7 @@ public class RunningTaskFetcherTest {
         taskInfo.userId = task.userId;
         taskInfo.baseActivity = new ComponentName(task.packageName, "com.example.app.MainActivity");
         taskInfo.lastActiveTime = task.lastActiveTime;
+        taskInfo.isVisible = true;
         when(mockActivityTaskManagerInternal.isHandoffEnabledForTask(task.taskId))
                 .thenReturn(task.handoffOptions.isHandoffEnabled());
         when(mockActivityTaskManagerInternal.getHandoffActivityParamsForTask(task.taskId))

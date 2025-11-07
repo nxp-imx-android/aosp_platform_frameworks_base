@@ -39,7 +39,11 @@ public class TaskStackBroadcastMessageTest {
                 new TaskStackBroadcastMessage(
                         Arrays.asList(
                                 new RemoteTaskInfo(
-                                        1, "package_name", 50, new HandoffOptions(true, true)))));
+                                        1,
+                                        "package_name",
+                                        true,
+                                        50,
+                                        new HandoffOptions(true, true)))));
     }
 
     @Test
