@@ -137,6 +137,7 @@ flag {
 
 flag {
     name: "trusted_devices"
+    is_exported: true
     namespace: "companion"
     description: "Enable APIs to support trusted devices"
     bug: "437224522"
