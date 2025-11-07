@@ -21,7 +21,7 @@ import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.lockscreenToOverlayTransition(durationScale: Double = 1.0) {
+fun TransitionBuilder.lockscreenFadeOutTransition(durationScale: Double = 1.0) {
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
 
     fractionRange(end = 0.05f) { fade(LockscreenElementKeys.StatusBar) }

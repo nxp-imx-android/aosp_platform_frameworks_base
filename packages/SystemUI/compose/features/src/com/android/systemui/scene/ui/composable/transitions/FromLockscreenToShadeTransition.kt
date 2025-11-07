@@ -18,6 +18,6 @@ package com.android.systemui.scene.ui.composable.transitions
 import com.android.compose.animation.scene.TransitionBuilder
 
 fun TransitionBuilder.lockscreenToShadeSceneTransition(durationScale: Double = 1.0) {
-    lockscreenToOverlayTransition(durationScale = durationScale)
+    lockscreenFadeOutTransition(durationScale = durationScale)
     toShadeSceneTransition(durationScale = durationScale)
 }

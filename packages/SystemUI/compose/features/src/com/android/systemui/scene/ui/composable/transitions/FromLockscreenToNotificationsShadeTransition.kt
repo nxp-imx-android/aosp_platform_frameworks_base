@@ -25,7 +25,7 @@ fun TransitionBuilder.lockscreenToNotificationsShadeTransition(
     shadeExpansionMotion: VerticalExpandContainerSpec,
     revealHaptics: ContainerRevealHaptics,
 ) {
-    lockscreenToOverlayTransition(durationScale = durationScale)
+    lockscreenFadeOutTransition(durationScale = durationScale)
     toNotificationsShadeTransition(
         durationScale = durationScale,
         shadeExpansionMotion = shadeExpansionMotion,
