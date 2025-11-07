@@ -471,6 +471,33 @@ final class UpdatableFontDir {
     }
 
     /**
+     * Atomically adds a new dynamic font fallback chain to the system.
+     *
+     * This method adds a new prioritized font family list to the existing set of dynamic fallbacks.
+     * The order of the families within the fallback list determines their fallback priority. For
+     * any given language script (e.g., "und-Zsye"), the families in this list will be checked
+     * before the system's preinstalled fallback fonts for that script.
+     *
+     * The {@link android.graphics.fonts.FallbackFontUpdateRequest} has the priority attribute to
+     * represent the priority of the new fallback. The new font family fallback can only be added
+     * with a higher priority value than any existing ones.
+     *
+     * This operation is transactional. If any font referenced in the families does not exist
+     * or if the request is invalid, the entire operation will fail and the existing dynamic
+     * fallback configuration will be preserved.
+     *
+     * @param fallbackRequests A list of {@link android.graphics.fonts.FallbackFontUpdateRequest}
+     *                         objects. Each request must contain an unnamed family with a 'lang'
+     *                         tag. Font files referenced by these families must already be
+     *                         installed via the update() method.
+     * @throws SystemFontException if the update fails due to a downgrade or invalid configuration.
+     */
+    public void updateFontFallbacks(List<FontUpdateRequest> fallbackRequests)
+            throws SystemFontException {
+        // TODO: Implement.
+    }
+
+    /**
      * Installs a new font file, or updates an existing font file.
      *
      * <p>The new font will be immediately available for new Zygote-forked processes through

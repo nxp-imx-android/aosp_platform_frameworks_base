@@ -236,6 +236,7 @@ android.graphics.drawable.shapes.RectShape
 android.graphics.drawable.shapes.RoundRectShape
 android.graphics.drawable.shapes.Shape
 
+android.graphics.fonts.FallbackFontUpdateRequest
 android.graphics.fonts.Font
 android.graphics.fonts.FontCustomizationParser
 android.graphics.fonts.FontFamily

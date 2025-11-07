@@ -26,6 +26,7 @@ import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.content.Context;
+import android.os.LocaleList;
 import android.os.RemoteException;
 import android.text.FontConfig;
 
@@ -59,7 +60,8 @@ public class FontManager {
                     RESULT_ERROR_INVALID_FONT_FILE, RESULT_ERROR_INVALID_FONT_NAME,
                     RESULT_ERROR_DOWNGRADING, RESULT_ERROR_FAILED_UPDATE_CONFIG,
                     RESULT_ERROR_FONT_UPDATER_DISABLED, RESULT_ERROR_FONT_NOT_FOUND,
-                    RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE})
+                    RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE,
+                    RESULT_ERROR_INVALID_ARGUMENT, RESULT_ERROR_INVALID_PRIORITY})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ResultCode {}
 
@@ -143,6 +145,18 @@ public class FontManager {
      */
     @FlaggedApi(com.android.text.flags.Flags.FLAG_INSERT_FONT_FAMILY)
     public static final int RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE = -10;
+
+    /**
+     * Indicates that a failure occurred due to an invalid argument provided to the API.
+     */
+    @FlaggedApi(com.android.text.flags.Flags.FLAG_INSERT_FONT_FAMILY)
+    public static final int RESULT_ERROR_INVALID_ARGUMENT = -11;
+
+    /**
+     * Indicates that a failure occurred due to an invalid priority level.
+     */
+    @FlaggedApi(com.android.text.flags.Flags.FLAG_INSERT_FONT_FAMILY)
+    public static final int RESULT_ERROR_INVALID_PRIORITY = -12;
 
     /**
      * Indicates a failure of opening font file.
@@ -390,6 +404,85 @@ public class FontManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    private static List<FontUpdateRequest> convertToFontUpdateRequestList(
+            List<FallbackFontUpdateRequest> requests) {
+        ArrayList<FontUpdateRequest> result = new ArrayList<>();
+        for (int i = 0; i < requests.size(); i++) {
+            FallbackFontUpdateRequest req = requests.get(i);
+            result.add(new FontUpdateRequest(
+                    LocaleList.forLanguageTags(req.getLanguages()), req.getFonts(),
+                    req.getPriority()));
+        }
+        return result;
+    }
+
+    /**
+     * This method allows for layering of dynamic font fallback configurations. Each call with a
+     * given {@code priority} will add a new fallback chain at that priority. If a chain has higher
+     * priority font family that this priority, this operation will be rejected with
+     * {@link #RESULT_ERROR_INVALID_PRIORITY}.
+     * Higher priority values indicate that the associated font families will be checked *before*
+     * those with lower priority values.
+     *
+     * When rendering text, the system will first attempt to find a glyph in the font families
+     * within the highest priority dynamic fallback chain. If the glyph is not found there,
+     * it will then proceed to check font families in the next highest priority dynamic fallback
+     * chain, and so on. Finally, if the glyph is still not found in any dynamic fallback chains,
+     * the system's preinstalled fallback fonts will be used.
+     *
+     * This operation is transactional. If any font referenced in the families does not exist
+     * or if the request is invalid, the entire operation will fail and the existing dynamic
+     * fallback configuration will be preserved.
+     *
+     * <p> You can add new font files by calling
+     * {@link FontManager#updateFontFamily(FontFamilyUpdateRequest, int)}}.
+     * And then call this method to add a new dynamic fallback chain with the installed new font
+     * files and priority.
+     * </p>
+     * <pre>
+     * FontManager fm = getContext().getSystemService(FontManager.class);
+     * fm.updateFontFamily(new FontFamilyUpdateRequest.Builder()
+     *     .addFontFileUpdateRequest(new FontFileUpdateRequest(yourFontFd, signature))
+     *     .build(), fm.getFontConfig().getConfigVersion());
+     *
+     * List&lt;FallbackFontUpdateRequest&gt; fallbackRequests = new ArrayList&lt;&gt;();
+     * FontFamilyUpdateRequest.Font newFont =
+     *     new FontFamilyUpdateRequest.Font.Builder(
+     *         "myNewFont",
+     *         new FontStyle(FontStyle.FONT_WEIGHT_NORMAL, FontStyle.FONT_SLANT_UPRIGHT))
+     *     .build();
+     * fallbackRequests.add(new FallbackFontUpdateRequest.Builder()
+     *                         .addFont(newFont)
+     *                         .setLanguages("und-Zsye") // BCP 47 language tag
+     *                         .setPriority(10)
+     *                         .build());
+     *
+     * fm.updateFallbackFont(fallbackRequests);
+     * </pre>
+     *
+     * @param fallbackRequests A list of FallbackFontUpdateRequest objects. Each request must
+     *                         contain an unnamed family with a 'lang' tag. Font files referenced
+     *                         by these families must already be installed via the update() method.
+     * @return A result code.
+     * @see #RESULT_SUCCESS
+     * @see #RESULT_ERROR_FONT_UPDATER_DISABLED
+     * @see #RESULT_ERROR_FONT_NOT_FOUND
+     * @see #RESULT_ERROR_INVALID_ARGUMENT
+     * @see #RESULT_ERROR_INVALID_PRIORITY
+     */
+    @FlaggedApi(com.android.text.flags.Flags.FLAG_INSERT_FONT_FAMILY)
+    @RequiresPermission(Manifest.permission.UPDATE_FONTS)
+    public @ResultCode int updateFontFallbacks(
+            @NonNull List<FallbackFontUpdateRequest> fallbackRequests) {
+        List<FontUpdateRequest> requests = convertToFontUpdateRequestList(fallbackRequests);
+        try {
+            return mIFontManager.updateFontFallbacks(requests);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
 
     /**
      * Factory method of the FontManager.
