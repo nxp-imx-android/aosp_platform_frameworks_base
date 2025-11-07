@@ -243,6 +243,11 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
         instrumentation.addMonitor(mActivityStartMonitor);
         foldingFeatureProducer.addDataChangedCallback(new FoldingFeatureListener());
 
+        // Load override rules if applicable.
+        if (com.android.window.flags.Flags.virtualGamepadOverride()) {
+            setEmbeddingRules(AppCompatEmbeddingRuleController.loadAppCompatRules(application));
+        }
+
         synchronized (mLock) {
             // Abort the restoration if any and the application already has running activities.
             abortRebuildingTaskContainersIfNeeded(null /* launchingActivity */);
