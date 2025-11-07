@@ -28,6 +28,7 @@ import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.lockscreenSceneTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
@@ -60,14 +61,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -821,7 +819,7 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun changeScene_notifiesAboutToChangeListener() =
+    fun changeScene_setsKeyguardState() =
         kosmos.runTest {
             val currentScene by collectLastValue(underTest.currentScene)
             // Unlock so transitioning to the Gone scene becomes possible.
@@ -832,29 +830,17 @@ class SceneInteractorTest : SysuiTestCase() {
             underTest.changeScene(toScene = Scenes.Gone, loggingReason = "")
             assertThat(currentScene).isEqualTo(Scenes.Gone)
 
-            val processor = mock<SceneInteractor.OnSceneAboutToChangeListener>()
-            underTest.registerSceneStateProcessor(processor)
-
             underTest.changeScene(
                 toScene = Scenes.Lockscreen,
-                sceneState = KeyguardState.AOD,
+                keyguardState = KeyguardState.AOD,
                 loggingReason = "",
             )
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
-            verify(processor).onSceneAboutToChange(Scenes.Lockscreen, KeyguardState.AOD)
-        }
-
-    @Test
-    fun changeScene_noOp_whenFromAndToAreTheSame() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
-            val processor = mock<SceneInteractor.OnSceneAboutToChangeListener>()
-            underTest.registerSceneStateProcessor(processor)
-
-            underTest.changeScene(toScene = checkNotNull(currentScene), loggingReason = "")
-
-            verify(processor, never()).onSceneAboutToChange(any(), any())
+            assertEquals(
+                kosmos.lockscreenSceneTransitionRepository.nextLockscreenTargetState.value,
+                KeyguardState.AOD,
+            )
         }
 
     @Test
@@ -862,19 +848,19 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val currentScene by collectLastValue(underTest.currentScene)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            val processor = mock<SceneInteractor.OnSceneAboutToChangeListener>()
-            underTest.registerSceneStateProcessor(processor)
-            verify(processor, never()).onSceneAboutToChange(any(), any())
             assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
 
             underTest.changeScene(
                 toScene = Scenes.Lockscreen,
                 loggingReason = "test",
-                sceneState = KeyguardState.AOD,
+                keyguardState = KeyguardState.AOD,
                 forceSettleToTargetScene = true,
             )
 
-            verify(processor).onSceneAboutToChange(Scenes.Lockscreen, KeyguardState.AOD)
+            assertEquals(
+                kosmos.lockscreenSceneTransitionRepository.nextLockscreenTargetState.value,
+                KeyguardState.AOD,
+            )
             assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(1)
         }
 
@@ -883,19 +869,19 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val currentScene by collectLastValue(underTest.currentScene)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            val processor = mock<SceneInteractor.OnSceneAboutToChangeListener>()
-            underTest.registerSceneStateProcessor(processor)
-            verify(processor, never()).onSceneAboutToChange(any(), any())
             assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
 
             underTest.changeScene(
                 toScene = Scenes.Lockscreen,
                 loggingReason = "test",
-                sceneState = KeyguardState.AOD,
+                keyguardState = KeyguardState.AOD,
                 forceSettleToTargetScene = false,
             )
 
-            verify(processor, never()).onSceneAboutToChange(any(), any())
+            assertEquals(
+                KeyguardState.AOD,
+                kosmos.lockscreenSceneTransitionRepository.nextLockscreenTargetState.value,
+            )
             assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
         }
 

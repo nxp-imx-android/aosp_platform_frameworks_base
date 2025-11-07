@@ -51,6 +51,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteract
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardScenes
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
 import com.android.systemui.model.SceneContainerPluginImpl
@@ -686,7 +687,7 @@ constructor(
                     switchToScene(
                         targetSceneKey = Scenes.Lockscreen,
                         loggingReason = "device is starting to sleep",
-                        sceneState = keyguardInteractor.asleepKeyguardState.value,
+                        keyguardState = keyguardInteractor.asleepKeyguardState.value,
                         freezeAndAnimateToCurrentState = true,
                     )
                 } else {
@@ -1135,7 +1136,7 @@ constructor(
     private fun switchToScene(
         targetSceneKey: SceneKey,
         loggingReason: String,
-        sceneState: Any? = null,
+        keyguardState: KeyguardState? = null,
         freezeAndAnimateToCurrentState: Boolean = false,
         hideOverlays: HideOverlayCommand = HideOverlayCommand.HideAll,
         instantlySnapScenes: Boolean = false,
@@ -1149,6 +1150,7 @@ constructor(
         if (instantlySnapScenes) {
             sceneInteractor.snapToScene(
                 toScene = targetSceneKey,
+                keyguardState = keyguardState,
                 loggingReason = loggingReason,
                 hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
             )
@@ -1156,7 +1158,7 @@ constructor(
             sceneInteractor.changeScene(
                 toScene = targetSceneKey,
                 loggingReason = loggingReason,
-                sceneState = sceneState,
+                keyguardState = keyguardState,
                 forceSettleToTargetScene = freezeAndAnimateToCurrentState,
                 hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
             )

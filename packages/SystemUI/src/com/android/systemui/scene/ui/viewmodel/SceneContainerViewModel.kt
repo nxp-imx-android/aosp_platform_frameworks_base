@@ -298,7 +298,7 @@ constructor(
         logger.logSceneChanged(
             from = currentScene.value,
             to = toScene,
-            sceneState = null,
+            keyguardState = null,
             reason = "user interaction",
             isInstant = false,
         )

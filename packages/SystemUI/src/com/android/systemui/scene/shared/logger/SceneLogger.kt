@@ -23,6 +23,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.logging.UiEventLogger.UiEventEnum
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.dagger.SceneFrameworkLog
@@ -60,7 +61,7 @@ constructor(
     fun logSceneChanged(
         from: SceneKey,
         to: SceneKey,
-        sceneState: Any?,
+        keyguardState: KeyguardState?,
         reason: String,
         isInstant: Boolean,
     ) {
@@ -70,13 +71,13 @@ constructor(
             messageInitializer = {
                 str1 = "${from.debugName} → ${to.debugName}"
                 str2 = reason
-                str3 = sceneState?.toString()
+                str3 = keyguardState?.toString()
                 bool1 = isInstant
             },
             messagePrinter = {
                 buildString {
                     append("Scene changed: $str1")
-                    str3?.let { append(" (sceneState=$it)") }
+                    str3?.let { append(" (keyguardState=$it)") }
                     if (isInstant) {
                         append(" (instant)")
                     }
@@ -86,15 +87,15 @@ constructor(
         )
     }
 
-    fun logSceneChangeCancellation(scene: SceneKey, sceneState: Any?) {
+    fun logSceneChangeCancellation(scene: SceneKey, keyguardState: Any?) {
         logBuffer.log(
             tag = TAG,
             level = LogLevel.INFO,
             messageInitializer = {
                 str1 = scene.debugName
-                str2 = sceneState?.toString()
+                str2 = keyguardState?.toString()
             },
-            messagePrinter = { "CANCELED scene change. scene: $str1, sceneState: $str2" },
+            messagePrinter = { "CANCELED scene change. scene: $str1, keyguardState: $str2" },
         )
     }
 

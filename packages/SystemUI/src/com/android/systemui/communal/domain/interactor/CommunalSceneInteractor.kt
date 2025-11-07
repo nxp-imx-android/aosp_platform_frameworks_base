@@ -133,7 +133,7 @@ constructor(
                     toScene = newScene.toSceneContainerSceneKey(),
                     loggingReason = loggingReason,
                     transitionKey = transitionKey,
-                    sceneState = keyguardState,
+                    keyguardState = keyguardState,
                 )
                 return@launch
             }
