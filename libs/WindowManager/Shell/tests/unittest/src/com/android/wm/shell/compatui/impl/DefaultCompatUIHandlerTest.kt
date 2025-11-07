@@ -28,7 +28,7 @@ import com.android.wm.shell.compatui.api.CompatUIComponentRepository
 import com.android.wm.shell.compatui.api.CompatUIComponentState
 import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUIRepository
-import com.android.wm.shell.compatui.api.CompatUIState
+import com.android.wm.shell.compatui.api.CompatUISharedStateRepository
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -48,8 +48,8 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
 
     lateinit var compatUIRepository: CompatUIRepository
     lateinit var compatUIHandler: DefaultCompatUIHandler
-    lateinit var compatUIState: CompatUIState
     lateinit var compatUICompatUIRepository: CompatUIComponentRepository
+    lateinit var sharedStateRepository: CompatUISharedStateRepository
     lateinit var fakeIdGenerator: FakeCompatUIComponentIdGenerator
     lateinit var syncQueue: SyncTransactionQueue
     lateinit var displayController: DisplayController
@@ -60,8 +60,8 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
     fun setUp() {
         shellExecutor = TestShellExecutor()
         compatUIRepository = CompatUIRepository()
-        compatUIState = CompatUIState()
         compatUICompatUIRepository = CompatUIComponentRepository()
+        sharedStateRepository = CompatUISharedStateRepository()
         fakeIdGenerator = FakeCompatUIComponentIdGenerator("compId")
         syncQueue = mock<SyncTransactionQueue>()
         displayController = mock<DisplayController>()
@@ -71,12 +71,13 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
                 syncQueue,
                 displayController,
                 compatUICompatUIRepository,
+                sharedStateRepository,
             )
         compatUIHandler =
             DefaultCompatUIHandler(
                 compatUIRepository,
                 compatUICompatUIRepository,
-                compatUIState,
+                sharedStateRepository,
                 fakeIdGenerator,
                 componentFactory,
                 shellExecutor,

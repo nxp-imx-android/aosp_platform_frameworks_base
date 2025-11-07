@@ -20,7 +20,7 @@ import com.android.wm.shell.compatui.api.CompatUIComponentState
 import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUILifecyclePredicates
 import com.android.wm.shell.compatui.api.CompatUISharedState
-import junit.framework.Assert.assertEquals
+import kotlin.test.assertEquals
 
 /** Fake class for {@link CompatUILifecycle} */
 class FakeCompatUILifecyclePredicates(

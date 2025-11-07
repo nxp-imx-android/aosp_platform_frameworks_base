@@ -35,7 +35,7 @@ class CompatUIComponent(
     private val spec: CompatUISpec,
     private val id: String,
     private var context: Context,
-    private val state: CompatUIState,
+    private val sharedStateRepository: CompatUISharedStateRepository,
     private val componentUIComponentRepository: CompatUIComponentRepository,
     private var compatUIInfo: CompatUIInfo,
     private val syncQueue: SyncTransactionQueue,
@@ -71,7 +71,7 @@ class CompatUIComponent(
      */
     fun update(newInfo: CompatUIInfo) {
         updateComponentState(newInfo, componentUIComponentRepository.stateForComponent(id))
-        updateUI(state)
+        updateUI()
     }
 
     fun release() {
@@ -147,14 +147,16 @@ class CompatUIComponent(
     protected fun updateSurfacePosition() {
         spec.log("$tag updateSurfacePosition on layout $layout")
         layout?.let {
-            updateSurfacePosition(
-                spec.layout.positionFactory(
-                    it,
-                    compatUIInfo,
-                    state.sharedState,
-                    componentUIComponentRepository.stateForComponent(id),
+            sharedStateRepository.find(compatUIInfo.taskId)?.let { sharedState ->
+                updateSurfacePosition(
+                    spec.layout.positionFactory(
+                        it,
+                        compatUIInfo,
+                        sharedState,
+                        componentUIComponentRepository.stateForComponent(id),
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -208,15 +210,17 @@ class CompatUIComponent(
         compatUIInfo = newInfo
     }
 
-    private fun updateUI(state: CompatUIState) {
+    private fun updateUI() {
         spec.log("$tag updating ui")
         setConfiguration(compatUIInfo.taskInfo.configuration)
         val componentState: CompatUIComponentState? =
             componentUIComponentRepository.stateForComponent(id)
         layout?.run {
             spec.log("$tag viewBinder execution...")
-            spec.layout.viewBinder(this, compatUIInfo, state.sharedState, componentState)
-            relayout()
+            sharedStateRepository.find(compatUIInfo.taskId)?.let { sharedState ->
+                spec.layout.viewBinder(this, compatUIInfo, sharedState, componentState)
+                relayout()
+            }
         }
     }
 
