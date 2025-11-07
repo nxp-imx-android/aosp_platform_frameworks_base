@@ -4451,7 +4451,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             if (attributedOp.isRunning() || attributedOp.isPaused()) {
                 attributedOp.finished(clientId);
             } else {
-                Slog.e(TAG, "Operation not started: uid=" + proxiedUid
+                Slog.w(TAG, "Operation not started: uid=" + proxiedUid
                         + " pkg=" + proxiedPackageName + "("
                         + attributionTag + ") op=" + AppOpsManager.opToName(code));
             }
