@@ -1782,15 +1782,15 @@ public class ActivityManagerServiceTest {
                 .setClientAppThread(app.getThread())
                 .setSticky(false)
                 .setClientInstanceName(
-                        "SystemExemptedFgsDelegate_"
+                        "SpecialUseFgsDelegate_"
                         + Process.myUid()
                         + "_"
                         + app.uid
                         + "_"
                         + app.info.packageName)
-                .setForegroundServiceTypes(ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED)
+                .setForegroundServiceTypes(ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
                 .setDelegationService(
-                        ForegroundServiceDelegationOptions.DELEGATION_SERVICE_SYSTEM_EXEMPTED);
+                        ForegroundServiceDelegationOptions.DELEGATION_SERVICE_SPECIAL_USE);
         if (withNotification) {
             optionsBuilder.setClientNotification(notificationId, notification);
         }
