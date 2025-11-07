@@ -65,6 +65,13 @@ flag {
 }
 
 flag {
+    name: "enable_key_gesture_shortcut_settings"
+    namespace: "accessibility"
+    description: "Adds the keyboard gesture to relevant accessibility shortcut settings pages"
+    bug: "453743837"
+}
+
+flag {
     name: "enable_low_vision_generic_feedback"
     namespace: "accessibility"
     description: "Use generic feedback for low vision."
