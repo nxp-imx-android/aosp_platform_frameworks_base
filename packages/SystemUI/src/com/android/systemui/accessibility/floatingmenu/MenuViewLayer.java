@@ -445,6 +445,12 @@ class MenuViewLayer extends FrameLayout implements
             );
 
             setClipBounds(bounds);
+
+            if (Flags.floatingMenuTuckSkipsTooltip()) {
+                // If the user tucks, skip the dock tooltip.
+                mMenuViewModel.updateDockTooltipVisibility(/* hasSeen= */ true);
+                mShouldShowDockTooltip = false;
+            }
         }
         // Instead of clearing clip bounds when moveToTuck is false,
         // wait until the spring animation finishes.
