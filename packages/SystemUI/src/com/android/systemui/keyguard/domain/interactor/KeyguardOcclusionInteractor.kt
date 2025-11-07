@@ -39,7 +39,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -159,15 +158,26 @@ constructor(
         repository.setShowWhenLockedActivityInfo(showWhenLockedActivityOnTop, taskInfo)
     }
 
-    /** Has the device been entered (Gone state) or on AOD? */
-    private val isGoneOrAod: StateFlow<Boolean> =
-        anyOf(
-                transitionInteractor
-                    .transitionValue(KeyguardState.AOD)
-                    .onStart { emit(0f) }
-                    .map { it > 0 },
-                deviceEntryInteractor.isDeviceEntered,
+    private val isAsleep: StateFlow<Boolean> =
+        combine(
+                transitionInteractor.startedKeyguardTransitionStep.map { it.to },
+                sceneInteractor.get().currentScene,
+            ) { startedKeyguardTransitionTo, currentScene ->
+                // We use the KeyguardState and Scene to determine whether the device is asleep
+                // instead of using PowerInteractor#isAsleep to avoid unnecessary updates to the
+                // asleep state that get sent when outer/inner displays go to sleep and wake up
+                // after fold and unfold events on foldables.
+                KeyguardState.deviceIsAsleepInState(startedKeyguardTransitionTo, currentScene)
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
             )
+
+    /** Has the device been entered (Gone state) or on AOD? */
+    private val isGoneOrAsleep: StateFlow<Boolean> =
+        anyOf(isAsleep, deviceEntryInteractor.isDeviceEntered)
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
@@ -179,22 +189,22 @@ constructor(
      * AOD should always take precedence.
      */
     val isKeyguardOccluded: StateFlow<Boolean> =
-        combine(isShowWhenLockedActivityOnTop, isGoneOrAod) {
+        combine(isShowWhenLockedActivityOnTop, isGoneOrAsleep) {
                 isShowWhenLockedActivityOnTop,
-                isGoneOrAod ->
-                isKeyguardOccluded(isShowWhenLockedActivityOnTop, isGoneOrAod)
+                isGoneOrAsleep ->
+                isKeyguardOccluded(isShowWhenLockedActivityOnTop, isGoneOrAsleep)
             }
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue =
-                    isKeyguardOccluded(isShowWhenLockedActivityOnTop.value, isGoneOrAod.value),
+                    isKeyguardOccluded(isShowWhenLockedActivityOnTop.value, isGoneOrAsleep.value),
             )
 
     private fun isKeyguardOccluded(
         isOccludingActivityShown: Boolean,
-        isGoneOrAod: Boolean,
+        isGoneOrAsleep: Boolean,
     ): Boolean {
-        return isOccludingActivityShown && !isGoneOrAod
+        return isOccludingActivityShown && !isGoneOrAsleep
     }
 }

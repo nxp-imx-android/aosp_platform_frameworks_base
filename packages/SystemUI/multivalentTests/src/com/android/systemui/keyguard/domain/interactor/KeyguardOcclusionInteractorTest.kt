@@ -345,4 +345,38 @@ class KeyguardOcclusionInteractorTest : SysuiTestCase() {
             keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true)
             assertThat(values).isFalse()
         }
+
+    @Test
+    @EnableSceneContainer
+    fun isKeyguardOccluded_whenDozing_isFalse() =
+        kosmos.runTest {
+            val values by collectLastValue(underTest.isKeyguardOccluded)
+            setSceneTransition(Transition(Scenes.Gone, Scenes.Lockscreen))
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.AOD,
+                testScope = testScope,
+                throughTransitionState = TransitionState.RUNNING,
+            )
+
+            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true)
+            assertThat(values).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isKeyguardOccluded_whenDream_isFalse() =
+        kosmos.runTest {
+            val values by collectLastValue(underTest.isKeyguardOccluded)
+            setSceneTransition(Transition(Scenes.Gone, Scenes.Lockscreen))
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.UNDEFINED,
+                testScope = testScope,
+                throughTransitionState = TransitionState.FINISHED,
+            )
+            sceneInteractor.changeScene(Scenes.Dream, "")
+            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true)
+            assertThat(values).isFalse()
+        }
 }
