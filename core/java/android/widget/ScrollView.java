@@ -16,7 +16,6 @@
 
 package android.widget;
 
-import static android.view.flags.Flags.enableScrollFeedbackForTouch;
 import static android.view.flags.Flags.viewVelocityApi;
 
 import android.annotation.ColorInt;
@@ -934,17 +933,15 @@ public class ScrollView extends FrameLayout {
                 }
 
                 // TODO: b/360198915 - Add unit tests.
-                if (enableScrollFeedbackForTouch()) {
-                    if (hitTopLimit || hitBottomLimit) {
-                        initHapticScrollFeedbackProviderIfNotExists();
-                        mHapticScrollFeedbackProvider.onScrollLimit(vtev.getDeviceId(),
-                                vtev.getSource(), MotionEvent.AXIS_Y,
-                                /* isStart= */ hitTopLimit);
-                    } else if (Math.abs(deltaY) != 0) {
-                        initHapticScrollFeedbackProviderIfNotExists();
-                        mHapticScrollFeedbackProvider.onScrollProgress(vtev.getDeviceId(),
-                                vtev.getSource(), MotionEvent.AXIS_Y, deltaY);
-                    }
+                if (hitTopLimit || hitBottomLimit) {
+                    initHapticScrollFeedbackProviderIfNotExists();
+                    mHapticScrollFeedbackProvider.onScrollLimit(vtev.getDeviceId(),
+                            vtev.getSource(), MotionEvent.AXIS_Y,
+                            /* isStart= */ hitTopLimit);
+                } else if (Math.abs(deltaY) != 0) {
+                    initHapticScrollFeedbackProviderIfNotExists();
+                    mHapticScrollFeedbackProvider.onScrollProgress(vtev.getDeviceId(),
+                            vtev.getSource(), MotionEvent.AXIS_Y, deltaY);
                 }
                 break;
             case MotionEvent.ACTION_UP:
