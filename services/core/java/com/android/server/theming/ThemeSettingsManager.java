@@ -36,8 +36,8 @@ import android.content.theming.ThemeStyle;
 import android.graphics.Color;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.Pair;
+import android.util.Slog;
 
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
@@ -97,7 +97,7 @@ class ThemeSettingsManager {
                     Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, userId);
             return fromJson(jsonString);
         } catch (Exception e) {
-            Log.w(TAG, "Error loading theme settings: " + e);
+            Slog.w(TAG, "Error loading theme settings: " + e);
             return null;
         }
     }
@@ -120,7 +120,7 @@ class ThemeSettingsManager {
                     userId);
             return true;
         } catch (Exception e) {
-            Log.w(TAG, "Error writings theme settings:" + e.getMessage());
+            Slog.w(TAG, "Error writings theme settings:" + e.getMessage());
             return false;
         }
     }
@@ -143,7 +143,7 @@ class ThemeSettingsManager {
                 themeMap.put(themeComponents[0],
                         new Pair<>(ThemeStyle.valueOf(themeComponents[1]), themeComponents[2]));
             } catch (IllegalArgumentException e) {
-                Log.w(TAG, "Invalid style in theming_defaults: " + themeComponents[1], e);
+                Slog.w(TAG, "Invalid style in theming_defaults: " + themeComponents[1], e);
             }
         }
 
@@ -157,7 +157,7 @@ class ThemeSettingsManager {
         String deviceColorPropertyValue = systemPropertiesReader.get(deviceColorProperty, "");
         Pair<Integer, String> styleAndSource = themeMap.get(deviceColorPropertyValue);
         if (styleAndSource == null) {
-            Log.d(TAG, "Sysprop `" + deviceColorProperty + "` of value '"
+            Slog.d(TAG, "Sysprop `" + deviceColorProperty + "` of value '"
                     + deviceColorPropertyValue
                     + "' not found in theming_defaults: " + Arrays.toString(themeData)
                     + ". Using wildcard fallback.");
@@ -167,11 +167,12 @@ class ThemeSettingsManager {
         try {
             return buildSettingsFromConfig(styleAndSource, userId);
         } catch (Exception e) {
-            Log.w(TAG, "Could not build theme from device config, falling back to wildcard.", e);
+            Slog.w(TAG, "Could not build theme from device config, falling back to wildcard.", e);
             try {
                 return buildSettingsFromConfig(fallbackTheme, userId);
             } catch (Exception e2) {
-                Log.e(TAG, "Wildcard fallback theme is also invalid! Using hardcoded default.", e2);
+                Slog.e(TAG, "Wildcard fallback theme is also invalid! Using hardcoded default.",
+                        e2);
                 return HARDCODED_FALLBACK;
             }
         }
@@ -188,7 +189,8 @@ class ThemeSettingsManager {
             WallpaperColors wallpaperColors = mWallpaperManagerInternal.getWallpaperColors(
                     WallpaperManager.FLAG_SYSTEM, userId);
             if (wallpaperColors == null) {
-                throw new IllegalStateException("Wallpaper colors could not be retrieved.");
+                throw new IllegalStateException(
+                        "User's " + userId + " Wallpaper colors could not be retrieved.");
             }
             seedColor = wallpaperColors.getPrimaryColor();
             colorSource = VALUE_HOME_WALLPAPER;
@@ -239,7 +241,7 @@ class ThemeSettingsManager {
         if (json.has(TIMESTAMP)) {
             timestamp = Instant.ofEpochMilli(json.getLong(TIMESTAMP));
         } else {
-            Log.w(TAG, "JSON missing timestamp, using current time as fallback.");
+            Slog.w(TAG, "JSON missing timestamp, using current time as fallback.");
             timestamp = Instant.EPOCH;
         }
 

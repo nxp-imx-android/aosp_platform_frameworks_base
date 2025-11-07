@@ -48,6 +48,7 @@ import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.UiModeManagerInternal;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
@@ -106,6 +107,7 @@ public class ThemeManagerService extends SystemService {
 
     private final WallpaperManagerInternal mWallpaperManagerInternal;
     private UiModeManagerInternal mUiModeManagerInternal;
+    private UserManagerInternal mUserManagerInternal;
     private final SystemPropertiesReader mSystemPropertiesReader;
 
 
@@ -142,6 +144,7 @@ public class ThemeManagerService extends SystemService {
     public void onBootPhase(@BootPhase int phase) {
         Slog.d(TAG, "onBootPhase: " + phase);
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
+            mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
             setupListeners();
             mStateManager.onServicesReady();
         }
@@ -154,6 +157,9 @@ public class ThemeManagerService extends SystemService {
 
     @Override
     public void onUserStarting(@NonNull TargetUser user) {
+        if (shouldIgnoreForHsum(user.getUserHandle(), "onUserStarting")) {
+            return;
+        }
         int userId = user.getUserHandle().getIdentifier();
 
         // check if seed color comes from wallpaper or preset
@@ -176,6 +182,9 @@ public class ThemeManagerService extends SystemService {
 
     @Override
     public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
+        if (shouldIgnoreForHsum(to.getUserHandle(), "onUserSwitching")) {
+            return;
+        }
         Slog.d(TAG, "User switch from:" + (from != null ? from.getUserIdentifier() : "-") + " to:"
                 + to.getUserIdentifier());
         mStateManager.onUserSwitching(from.getUserIdentifier(), to.getUserIdentifier());
@@ -183,6 +192,9 @@ public class ThemeManagerService extends SystemService {
 
     @Override
     public void onUserCompletedEvent(@NonNull TargetUser user, UserCompletedEventType eventType) {
+        if (shouldIgnoreForHsum(user.getUserHandle(), "onUserCompletedEvent")) {
+            return;
+        }
         Slog.d(TAG, "User: " + user.getUserIdentifier() + " completed eventType: "
                 + eventType.toString());
     }
@@ -217,6 +229,9 @@ public class ThemeManagerService extends SystemService {
 
                     int newUserOrProfileId = newUserHandle.getIdentifier();
                     int parentId = mStateManager.parentOf(newUserOrProfileId);
+                    if (shouldIgnoreForHsum(UserHandle.of(parentId), "onProfileAdd")) {
+                        return;
+                    }
 
                     Slog.d(TAG, "User: " + newUserOrProfileId + " added to parent: " + parentId);
                     mStateManager.onProfileAdd(parentId, newUserOrProfileId);
@@ -224,10 +239,12 @@ public class ThemeManagerService extends SystemService {
             }
         }, filter);
 
-
         // Wallpaper Color Change
         mWallpaperManagerInternal.addOnColorsChangedListener(
                 (wallpaperColors, which, displayId, userId, fromForegroundApp) -> {
+                    if (shouldIgnoreForHsum(UserHandle.of(userId), "onColorsChanged")) {
+                        return;
+                    }
                     ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
                     if (userSettings.colorSource().equals(VALUE_PRESET)) {
                         Slog.d(TAG, "Wallpaper color change ignored due to preset color source");
@@ -240,7 +257,12 @@ public class ThemeManagerService extends SystemService {
                 }, bgHandler);
 
 
-        mUiModeManagerInternal.addContrastListener(mStateManager::onContrastChange, mainExecutor);
+        mUiModeManagerInternal.addContrastListener((userId, contrast) -> {
+            if (shouldIgnoreForHsum(UserHandle.of(userId), "onContrastChange")) {
+                return;
+            }
+            mStateManager.onContrastChange(userId, contrast);
+        }, mainExecutor);
 
         // Sleep
         keyguardManager.addKeyguardLockedStateListener(mainExecutor, isKeyguardLocked -> {
@@ -258,6 +280,9 @@ public class ThemeManagerService extends SystemService {
                     @Override
                     public void onChange(boolean selfChange, @NonNull Collection<Uri> uris,
                             int flags, int userId) {
+                        if (shouldIgnoreForHsum(UserHandle.of(userId), "onFinishSetup")) {
+                            return;
+                        }
                         Slog.d(TAG, "User: " + userId + " setup complete");
                         mStateManager.onFinishSetup(userId);
                     }
@@ -273,6 +298,9 @@ public class ThemeManagerService extends SystemService {
                     @Override
                     public void onChange(boolean selfChange, @NonNull Collection<Uri> uris,
                             int flags, int userId) {
+                        if (shouldIgnoreForHsum(UserHandle.of(userId), "onStyleChange")) {
+                            return;
+                        }
                         ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
 
                         // notifies other listeners of the Theme Settings
@@ -306,5 +334,23 @@ public class ThemeManagerService extends SystemService {
         Settings.Global.putString(mContext.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
                 Build.ID);
         return true;
+    }
+
+    /**
+     * Gates calls to prevent processing for the system user when in Headless System User Mode
+     * (HSUM). In these ThemeOverlayHelper ensures the System user adopts current user's overlays.
+     *
+     * @param userHandle The {@link UserHandle} to check.
+     * @param methodName The name of the method being gated, for logging purposes.
+     * @return {@code true} if the call should be ignored (i.e., it's the system user in HSUM),
+     * {@code false} otherwise.
+     */
+    private boolean shouldIgnoreForHsum(UserHandle userHandle, String methodName) {
+        if (mUserManagerInternal != null && mUserManagerInternal.isHeadlessSystemUserMode()
+                && userHandle.isSystem()) {
+            Slog.d(TAG, "Ignoring " + methodName + " for system user in HSUM");
+            return true;
+        }
+        return false;
     }
 }
