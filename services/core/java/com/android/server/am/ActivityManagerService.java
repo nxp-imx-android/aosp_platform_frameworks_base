@@ -17809,7 +17809,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void startProcess(String processName, ApplicationInfo info, boolean knownToBeDead,
-                boolean isTop, String hostingType, ComponentName hostingName) {
+                boolean isTop, String hostingType, ComponentName hostingName, boolean isPcc) {
             try {
                 if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                     Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "startProcess:"
@@ -17820,8 +17820,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     // started, the top priority can be applied immediately to avoid cpu being
                     // preempted by other processes before attaching the process of top app.
                     HostingRecord hostingRecord =
-                            new HostingRecord(hostingType, hostingName, isTop);
-                    ProcessRecord rec = getProcessRecordLocked(processName, info.uid);
+                            new HostingRecord(hostingType, hostingName, isTop, isPcc);
                     ProcessRecord app = startProcessLocked(processName, info, knownToBeDead,
                             0 /* intentFlags */, hostingRecord,
                             ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE, false /* allowWhileBooting */,
