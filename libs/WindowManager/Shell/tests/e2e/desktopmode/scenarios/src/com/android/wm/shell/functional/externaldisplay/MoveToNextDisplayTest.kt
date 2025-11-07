@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.externaldisplay
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
-import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.SettingsToggleMirroringSwitch
+import com.android.wm.shell.scenarios.MoveToNextDisplay
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [ToggleDisplayMirroringSwitch]. */
+/* Functional test for [MoveToNextDisplay]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
-@ScreenRecordRule.ScreenRecord
-class SettingsToggleMirroringSwitchTest : SettingsToggleMirroringSwitch()
+class MoveToNextDisplayTest : MoveToNextDisplay()

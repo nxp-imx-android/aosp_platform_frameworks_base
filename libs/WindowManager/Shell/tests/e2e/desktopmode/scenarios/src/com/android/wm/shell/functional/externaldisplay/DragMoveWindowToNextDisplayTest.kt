@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.externaldisplay
 
 import android.platform.test.annotations.Presubmit
-import com.android.wm.shell.scenarios.MoveToNextDisplayProjected
+import android.platform.test.annotations.RequiresDesktopDevice
+import android.platform.test.rule.ScreenRecordRule
+import com.android.wm.shell.scenarios.DragMoveWindowToNextDisplay
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [MoveToNextDisplayProjected]. */
+/* Functional test for [DragMoveWindowToNextDisplay]. */
 @RunWith(BlockJUnit4ClassRunner::class)
+@RequiresDesktopDevice
 @Presubmit
-class MoveToNextDisplayProjectedTest : MoveToNextDisplayProjected()
+@ScreenRecordRule.ScreenRecord
+class DragMoveWindowToNextDisplayTest : DragMoveWindowToNextDisplay()
