@@ -73,7 +73,6 @@ test_module_config {
         "com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest",
         "com.android.wm.shell.functional.CloseAllAppsWithAppHeaderExitTest",
         "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",
-        "com.android.wm.shell.functional.DragMoveWindowToNextDisplayTest",
         "com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest",
         "com.android.wm.shell.functional.EnterDesktopViaMenuOfLiveOverviewTaskTest",
         "com.android.wm.shell.functional.EnterDesktopViaMenuOfStaticOverviewTaskTest",
@@ -95,8 +94,11 @@ test_module_config {
         "com.android.wm.shell.functional.exit.ExitDesktopToFullScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.exit.ExitDesktopToSplitScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.exit.ExitDesktopWithDragToTopDragZoneTest",
+        "com.android.wm.shell.functional.externaldisplay.DragMoveWindowToNextDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
         "com.android.wm.shell.functional.externaldisplay.OpenAppWithExternalDisplayConnectedTest",
+        "com.android.wm.shell.functional.externaldisplay.SettingsToggleMirroringSwitchTest",
+        "com.android.wm.shell.functional.externaldisplay.SettingsUpdateRotationTest",
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsViaAppHeaderExitTest",
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.functional.fundamentals.DragAppWindowMultiWindowAndPipTest",
@@ -189,13 +191,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-DragMoveWindowToNextDisplayTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.DragMoveWindowToNextDisplayTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-EnableDisplayMirroringSwitchTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -256,20 +251,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.FocusAppFromTaskbarOverflowTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-MoveToNextDisplayTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.MoveToNextDisplayTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-MoveToNextDisplayProjectedTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.MoveToNextDisplayProjectedTest"],
 }
 
 test_module_config {
@@ -343,6 +324,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-DragMoveWindowToNextDisplayTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.DragMoveWindowToNextDisplayTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-externaldisplay-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -350,10 +338,38 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayProjectedTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-externaldisplay-OpenAppWithExternalDisplayConnectedTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.externaldisplay.OpenAppWithExternalDisplayConnectedTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-SettingsToggleMirroringSwitchTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.SettingsToggleMirroringSwitchTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-SettingsUpdateRotationTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.SettingsUpdateRotationTest"],
 }
 
 test_module_config {
