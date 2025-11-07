@@ -215,9 +215,9 @@ public abstract class Transport {
      *
      * @param message the message type
      * @param data the message payload
-     * @return Future object containing the result of the sent message.
+     * @return CompletableFuture object containing the result of the sent message.
      */
-    public Future<byte[]> sendMessage(int message, byte[] data) {
+    public CompletableFuture<byte[]> sendMessage(int message, byte[] data) {
         final CompletableFuture<byte[]> pending = new CompletableFuture<>();
         if (isOneway(message)) {
             return sendAndForget(message, data);
@@ -243,7 +243,7 @@ public abstract class Transport {
      * @see #sendMessage(int, byte[])
      */
     @Deprecated
-    public Future<byte[]> requestForResponse(int message, byte[] data) {
+    public CompletableFuture<byte[]> requestForResponse(int message, byte[] data) {
         if (DEBUG) Slog.d(TAG, "Requesting for response");
         final int sequence = mNextSequence.incrementAndGet();
         final CompletableFuture<byte[]> pending = new CompletableFuture<>();
@@ -263,7 +263,7 @@ public abstract class Transport {
         return pending;
     }
 
-    private Future<byte[]> sendAndForget(int message, byte[]data) {
+    private CompletableFuture<byte[]> sendAndForget(int message, byte[]data) {
         if (DEBUG) Slog.d(TAG, "Sending a one-way message");
         final CompletableFuture<byte[]> pending = new CompletableFuture<>();
 

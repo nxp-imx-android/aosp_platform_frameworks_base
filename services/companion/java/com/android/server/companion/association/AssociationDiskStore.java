@@ -214,6 +214,7 @@ public final class AssociationDiskStore {
     private static final String XML_ATTR_KEY_DEVICE_ID = "key_device_id";
     private static final String XML_ATTR_PACKAGE_TO_NOTIFY = "package_to_notify";
     private static final String XML_ATTR_METADATA = "metadata";
+    private static final String XML_ATTR_TIME_METADATA_SENT = "time_metadata_sent";
     private static final String XML_ATTR_EXTRA_PERMISSIONS = "extra_permissions";
 
     private static final String LEGACY_XML_ATTR_DEVICE = "device";
@@ -554,6 +555,7 @@ public final class AssociationDiskStore {
                 readByteArrayAttribute(parser, XML_ATTR_DEVICE_ICON));
         final String permissionsString = readStringAttribute(parser, XML_ATTR_EXTRA_PERMISSIONS);
         final Set<String> extraPermissions = deserializeExtraPermissions(permissionsString);
+        final long timeMetadataSent = readLongAttribute(parser, XML_ATTR_TIME_METADATA_SENT, 0L);
 
         // Read nested tags
         DeviceId deviceId = null;
@@ -592,6 +594,7 @@ public final class AssociationDiskStore {
                 .setDeviceId(deviceId)
                 .setPackagesToNotify(packagesToNotify)
                 .setMetadata(metadata)
+                .setTimeMetadataSent(timeMetadataSent)
                 .setExtraPermissions(extraPermissions)
                 .build();
     }
@@ -669,6 +672,7 @@ public final class AssociationDiskStore {
         writeIntAttribute(serializer, XML_ATTR_TRANSPORT_FLAGS, a.getTransportFlags());
         writeByteArrayAttribute(
                 serializer, XML_ATTR_DEVICE_ICON, iconToByteArray(a.getDeviceIcon()));
+        writeLongAttribute(serializer, XML_ATTR_TIME_METADATA_SENT, a.getMetadataSentTimestamp());
         Set<String> extraPermissions = a.getExtraPermissions();
         if (!CollectionUtils.isEmpty(extraPermissions)) {
             writeStringAttribute(serializer, XML_ATTR_EXTRA_PERMISSIONS,
