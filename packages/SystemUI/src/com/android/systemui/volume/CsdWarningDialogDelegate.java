@@ -46,12 +46,14 @@ import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.util.NotificationChannels;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 
-import java.util.List;
-import java.util.Optional;
-
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * A class that implements the three Computed Sound Dose-related warnings defined in
@@ -75,10 +77,13 @@ import dagger.assisted.AssistedInject;
  * communication between the native audio framework that implements the dose computation and the
  * audio service.
  */
-public class CsdWarningDialog extends SystemUIDialog
-        implements DialogInterface.OnDismissListener, DialogInterface.OnClickListener {
+public class CsdWarningDialogDelegate implements
+        SystemUIDialog.Delegate,
+        DialogInterface.OnDismissListener,
+        DialogInterface.OnKeyListener,
+        DialogInterface.OnClickListener {
 
-    private static final String TAG = Util.logTag(CsdWarningDialog.class);
+    private static final String TAG = Util.logTag(CsdWarningDialogDelegate.class);
 
     private static final int KEY_CONFIRM_ALLOWED_AFTER_MS = 1000; // milliseconds
     // time after which action is taken when the user hasn't ack'd or dismissed the dialog
@@ -97,18 +102,20 @@ public class CsdWarningDialog extends SystemUIDialog
      * taken on their behalf.
      */
     @GuardedBy("mTimerLock")
-    private Runnable mNoUserActionRunnable;
+    private final Runnable mNoUserActionRunnable;
     private Runnable mCancelScheduledNoUserActionRunnable = null;
 
     private final DelayableExecutor mDelayableExecutor;
-    private NotificationManager mNotificationManager;
-    private Runnable mOnCleanup;
+    private final NotificationManager mNotificationManager;
+    private final Runnable mOnCleanup;
 
     private long mShowTime;
+    private final Set<DialogInterface> mDialogs = new HashSet<>();
 
     @VisibleForTesting public int mCachedMediaStreamVolume;
-    private Optional<List<CsdWarningAction>> mActionIntents;
+    private final Optional<List<CsdWarningAction>> mActionIntents;
     private final BroadcastDispatcher mBroadcastDispatcher;
+    private final SystemUIDialog.Factory mSystemUIDialogFactory;
 
     /**
      * To inject dependencies and allow for easier testing
@@ -116,14 +123,14 @@ public class CsdWarningDialog extends SystemUIDialog
     @AssistedFactory
     public interface Factory {
         /** Create a dialog object */
-        CsdWarningDialog create(
+        CsdWarningDialogDelegate create(
                 int csdWarning,
                 Runnable onCleanup,
                 Optional<List<CsdWarningAction>> actionIntents);
     }
 
     @AssistedInject
-    public CsdWarningDialog(
+    public CsdWarningDialogDelegate(
             @Assisted @AudioManager.CsdWarning int csdWarning,
             Context context,
             AudioManager audioManager,
@@ -131,25 +138,17 @@ public class CsdWarningDialog extends SystemUIDialog
             @Background DelayableExecutor delayableExecutor,
             @Assisted Runnable onCleanup,
             @Assisted Optional<List<CsdWarningAction>> actionIntents,
-            BroadcastDispatcher broadcastDispatcher) {
-        super(context);
+            BroadcastDispatcher broadcastDispatcher,
+            SystemUIDialog.Factory systemUIDialogFactory) {
         mCsdWarning = csdWarning;
         mContext = context;
         mAudioManager = audioManager;
         mNotificationManager = notificationManager;
         mOnCleanup = onCleanup;
-
         mDelayableExecutor = delayableExecutor;
         mActionIntents = actionIntents;
         mBroadcastDispatcher = broadcastDispatcher;
-        getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
-        setShowForAllUsers(true);
-        setMessage(mContext.getString(getStringForWarning(csdWarning)));
-        setButton(DialogInterface.BUTTON_POSITIVE,
-                mContext.getString(R.string.csd_button_keep_listening), this);
-        setButton(DialogInterface.BUTTON_NEGATIVE,
-                mContext.getString(R.string.csd_button_lower_volume), this);
-        setOnDismissListener(this);
+        mSystemUIDialogFactory = systemUIDialogFactory;
 
         final IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         context.registerReceiver(mReceiver, filter,
@@ -172,21 +171,41 @@ public class CsdWarningDialog extends SystemUIDialog
         }
     }
 
+    @Override
+    public SystemUIDialog createDialog() {
+        SystemUIDialog dialog = mSystemUIDialogFactory.create(this);
+
+        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+        dialog.setShowForAllUsers(true);
+        dialog.setMessage(mContext.getString(getStringForWarning(mCsdWarning)));
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE,
+                mContext.getString(R.string.csd_button_keep_listening), this);
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+                mContext.getString(R.string.csd_button_lower_volume), this);
+        dialog.setOnDismissListener(this);
+
+        mDialogs.add(dialog);
+
+        return dialog;
+    }
+
     private void cleanUp() {
         if (mOnCleanup != null) {
             mOnCleanup.run();
         }
     }
 
-    @Override
-    public void show() {
+    /**
+     * Conditionally shows the dialog based on AudioManager warning.
+     */
+    public void maybeShow(SystemUIDialog dialog) {
         if (mCsdWarning == AudioManager.CSD_WARNING_DOSE_REPEATED_5X) {
             // only show a notification in case we reached 500% of dose
             show5XNotification();
-            dismissCsdDialog();
+            dismissCsdDialog(dialog);
             return;
         }
-        super.show();
+        dialog.show();
     }
 
     // NOT overriding onKeyDown as we're not allowing a dismissal on any key other than
@@ -196,9 +215,8 @@ public class CsdWarningDialog extends SystemUIDialog
     //public boolean onKeyDown(int keyCode, KeyEvent event) {
     //    return super.onKeyDown(keyCode, event);
     //}
-
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
+    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
         // never allow to raise volume
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             return true;
@@ -207,9 +225,9 @@ public class CsdWarningDialog extends SystemUIDialog
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
                 && (System.currentTimeMillis() - mShowTime) > KEY_CONFIRM_ALLOWED_AFTER_MS) {
             Log.i(TAG, "Confirmed CSD exposure warning via VOLUME_DOWN");
-            dismiss();
+            dialog.dismiss();
         }
-        return super.onKeyUp(keyCode, event);
+        return false;
     }
 
     @Override
@@ -217,13 +235,13 @@ public class CsdWarningDialog extends SystemUIDialog
         if (which == DialogInterface.BUTTON_NEGATIVE) {
             Log.d(TAG, "Lower volume pressed for CSD warning " + mCsdWarning);
             mAudioManager.lowerVolumeToRs1();
-            dismiss();
+            dialog.dismiss();
         }
         if (D.BUG) Log.d(TAG, "on click " + which);
     }
 
     @Override
-    protected void start() {
+    public void onStart(SystemUIDialog dialog) {
         mShowTime = System.currentTimeMillis();
         synchronized (mTimerLock) {
             if (mNoUserActionRunnable != null) {
@@ -234,7 +252,7 @@ public class CsdWarningDialog extends SystemUIDialog
     }
 
     @Override
-    protected void stop() {
+    public void onStop(SystemUIDialog dialog) {
         synchronized (mTimerLock) {
             if (mCancelScheduledNoUserActionRunnable != null) {
                 mCancelScheduledNoUserActionRunnable.run();
@@ -243,11 +261,12 @@ public class CsdWarningDialog extends SystemUIDialog
     }
 
     @Override
-    public void onDismiss(DialogInterface unused) {
-        dismissCsdDialog();
+    public void onDismiss(DialogInterface dialogInterface) {
+        dismissCsdDialog(dialogInterface);
     }
 
-    private void dismissCsdDialog() {
+    private void dismissCsdDialog(DialogInterface dialogInterface) {
+        mDialogs.remove(dialogInterface);
         try {
             mContext.unregisterReceiver(mReceiver);
         } catch (IllegalArgumentException e) {
@@ -262,7 +281,8 @@ public class CsdWarningDialog extends SystemUIDialog
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(intent.getAction())) {
                 if (D.BUG) Log.d(TAG, "Received ACTION_CLOSE_SYSTEM_DIALOGS");
-                cancel();
+                mDialogs.forEach(DialogInterface::cancel);
+                mDialogs.clear();
                 cleanUp();
             }
         }
