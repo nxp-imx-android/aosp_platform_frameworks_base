@@ -792,11 +792,7 @@ class DesktopTasksController(
             onResult(displayId)
             return
         }
-        if (
-            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_HSUM.isTrue &&
-                UserManager.isHeadlessSystemUserMode() &&
-                UserHandle.USER_SYSTEM == userId
-        ) {
+        if (UserManager.isHeadlessSystemUserMode() && UserHandle.USER_SYSTEM == userId) {
             logW("createDesk ignoring attempt for system user")
             onResult(null)
             return
@@ -826,11 +822,7 @@ class DesktopTasksController(
             logD("createDeskRootImmediate reusing displayId=%d for single-desk", displayId)
             return displayId
         }
-        if (
-            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_HSUM.isTrue &&
-                UserManager.isHeadlessSystemUserMode() &&
-                UserHandle.USER_SYSTEM == userId
-        ) {
+        if (UserManager.isHeadlessSystemUserMode() && UserHandle.USER_SYSTEM == userId) {
             logW("createDeskRootImmediate ignoring attempt for system user")
             return null
         }

@@ -484,10 +484,8 @@ class DesktopDisplayEventHandler(
         return true
     }
 
-    private fun isUserDesktopEligible(userId: Int): Boolean =
-        !(DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_HSUM.isTrue &&
-            UserManager.isHeadlessSystemUserMode() &&
-            UserHandle.USER_SYSTEM == userId)
+    private fun isUserDesktopEligible(userId: Int): Boolean = !(UserManager.isHeadlessSystemUserMode() &&
+        UserHandle.USER_SYSTEM == userId)
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
