@@ -38734,6 +38734,7 @@ package android.provider {
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String ACTION_PICK_CONTACTS = "android.provider.action.PICK_CONTACTS";
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String AUTHORITY = "com.android.contacts.picker.sessions";
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") @NonNull public static final android.net.Uri AUTHORITY_URI;
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_MATCH_ALL_DATA_FIELDS = "android.provider.extra.PICK_CONTACTS_MATCH_ALL_DATA_FIELDS";
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_REQUESTED_DATA_FIELDS = "android.provider.extra.PICK_CONTACTS_REQUESTED_DATA_FIELDS";
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_SELECTION_LIMIT = "android.provider.extra.PICK_CONTACTS_SELECTION_LIMIT";
   }
