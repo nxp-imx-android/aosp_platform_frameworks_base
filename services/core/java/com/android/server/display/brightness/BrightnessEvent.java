@@ -70,6 +70,8 @@ public final class BrightnessEvent {
     private float mUnclampedBrightness;
     private float mRecommendedBrightness;
     private float mPreThresholdBrightness;
+    private float mBrightnessMin;
+    private float mBrightnessMax;
     private int mHbmMode;
     private float mHbmMax;
     private int mRbcStrength;
@@ -122,6 +124,8 @@ public final class BrightnessEvent {
         mUnclampedBrightness = that.getUnclampedBrightness();
         mRecommendedBrightness = that.getRecommendedBrightness();
         mPreThresholdBrightness = that.getPreThresholdBrightness();
+        mBrightnessMin = that.mBrightnessMin;
+        mBrightnessMax = that.mBrightnessMax;
         // Different brightness modulations
         mHbmMode = that.getHbmMode();
         mHbmMax = that.getHbmMax();
@@ -164,6 +168,8 @@ public final class BrightnessEvent {
         mUnclampedBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         mRecommendedBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         mPreThresholdBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
+        mBrightnessMin = PowerManager.BRIGHTNESS_INVALID_FLOAT;
+        mBrightnessMax = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         // Different brightness modulations
         mHbmMode = BrightnessInfo.HIGH_BRIGHTNESS_MODE_OFF;
         mHbmMax = PowerManager.BRIGHTNESS_MAX;
@@ -217,6 +223,10 @@ public final class BrightnessEvent {
                 == Float.floatToRawIntBits(that.mRecommendedBrightness)
                 && Float.floatToRawIntBits(mPreThresholdBrightness)
                 == Float.floatToRawIntBits(that.mPreThresholdBrightness)
+                && Float.floatToRawIntBits(mBrightnessMin)
+                == Float.floatToRawIntBits(that.mBrightnessMin)
+                && Float.floatToRawIntBits(mBrightnessMax)
+                == Float.floatToRawIntBits(that.mBrightnessMax)
                 && mHbmMode == that.mHbmMode
                 && Float.floatToRawIntBits(mHbmMax) == Float.floatToRawIntBits(that.mHbmMax)
                 && mRbcStrength == that.mRbcStrength
@@ -265,6 +275,9 @@ public final class BrightnessEvent {
                 + autoBrightnessModeToString(mAutoBrightnessMode) + ")"
                 // Throttling info
                 + ", unclampedBrt=" + mUnclampedBrightness
+                + (!BrightnessSynchronizer.floatEquals(mBrightnessMin, 0)
+                || !BrightnessSynchronizer.floatEquals(mBrightnessMax, getHbmMax()) ? ", brtRange=["
+                + mBrightnessMin + ", " + mBrightnessMax + "]" : "")
                 + ", hbmMax=" + mHbmMax
                 + ", hbmMode=" + BrightnessInfo.hbmToString(mHbmMode)
                 + ", thrmMax=" + mThermalMax
@@ -424,6 +437,14 @@ public final class BrightnessEvent {
 
     public void setPreThresholdBrightness(float preThresholdBrightness) {
         this.mPreThresholdBrightness = preThresholdBrightness;
+    }
+
+    public void setBrightnessMin(float brightnessMin) {
+        mBrightnessMin = brightnessMin;
+    }
+
+    public void setBrightnessMax(float brightnessMax) {
+        mBrightnessMax = brightnessMax;
     }
 
     public int getHbmMode() {
