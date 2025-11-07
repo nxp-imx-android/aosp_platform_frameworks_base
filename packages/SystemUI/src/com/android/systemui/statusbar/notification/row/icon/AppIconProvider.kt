@@ -119,12 +119,17 @@ constructor(
                             colorProvider = { ctx ->
                                 val res = ctx.resources
                                 intArrayOf(
-                                    /* background */ res.getColor(R.color.materialColorPrimary),
+                                    /* background */ res.getColor(
+                                        R.color.materialColorPrimary,
+                                        null,
+                                    ),
                                     /* icon */ res.getColor(
-                                        R.color.materialColorSurfaceContainerHigh
+                                        R.color.materialColorSurfaceContainerHigh,
+                                        null,
                                     ),
                                     /* adaptive background */ res.getColor(
-                                        R.color.materialColorPrimary
+                                        R.color.materialColorPrimary,
+                                        null,
                                     ),
                                 )
                             },
