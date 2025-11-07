@@ -100,6 +100,8 @@ import android.view.WindowManager;
 
 import androidx.test.filters.MediumTest;
 
+import com.android.server.wm.utils.StubOrganizer;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1651,7 +1653,17 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
-    public void testStopAndKillAppForUpdate_processWithActivities_stopsAndKillsProcess() {
+    public void testStopAndKillAppForUpdate_processWithActivities_callsOrganizer() {
+        class PackageUpdateOrganizer extends StubOrganizer {
+            List<ActivityManager.RunningTaskInfo> mUpdatingTaskInfos = new ArrayList<>();
+            @Override
+            public void onPackageUpdateRequested(
+                    List<ActivityManager.RunningTaskInfo> updatingTaskInfos) {
+                mUpdatingTaskInfos = updatingTaskInfos;
+            }
+        }
+        PackageUpdateOrganizer o = new PackageUpdateOrganizer();
+        mWm.mAtmService.mTaskOrganizerController.registerTaskOrganizer(o);
         mAtm.mAmInternal = mock(ActivityManagerInternal.class);
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         activity.getTask().mHandlePackageUpdate = true;
@@ -1663,11 +1675,9 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         int appId = activity.app.mUid;
         doReturn(true).when(mAtm).isCallerSystem(anyInt());
 
-        // When stopAndKillApp is called
         mAtm.mInternal.stopAndKillAppForUpdate(packageName, userId, appId);
-        activity.activityStopped(null, null, null, "test");
 
-        verify(mAtm).onProcessReadyToBeKilled(activity.packageName, activity.app);
+        assertEquals(o.mUpdatingTaskInfos.get(0).taskId, activity.getTask().mTaskId);
     }
 
     private WindowProcessController createWindowProcessController(String packageName,

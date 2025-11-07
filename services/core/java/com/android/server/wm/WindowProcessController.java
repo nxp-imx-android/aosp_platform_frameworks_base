@@ -29,6 +29,7 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_APP_CRASHED;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURATION;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_PACKAGE_UPDATE;
 import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.am.psc.Constants.INVALID_ADJ;
 import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
@@ -247,6 +248,8 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
     /** All activities that are waiting to be stopped due to package update. */
     private final ArrayList<ActivityRecord> mActivitiesToBeStopped = new ArrayList<>();
+    /** All tasks that are waiting to be handled as part of package update. */
+    private final ArraySet<Task> mUpdatingTasks = new ArraySet<>();
 
     /** The activities will be removed but still belong to this process. */
     private ArrayList<ActivityRecord> mInactiveActivities;
@@ -1596,33 +1599,37 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
      */
     void stopAndKillProcessForUpdate(String pkg) {
         final ArrayList<ActivityRecord> activities = new ArrayList<>(mActivities);
-        final ArraySet<Task> updatingTasks = new ArraySet<>();
 
         for (int i = 0; i < activities.size(); i++) {
             final ActivityRecord r = activities.get(i);
             final Task task = r.getTask();
-            if (task.mHandlePackageUpdate && r.isRootOfTask()) {
-                updatingTasks.add(task);
-            }
-            // Only stop activities that are resumed and the package name of the root activity is
-            // also the same as desired package.
-            if (r.isState(RESUMED) && r.isRootOfTask()
-                    && r.info.persistableMode == PERSIST_ACROSS_REBOOTS) {
-                mActivitiesToBeStopped.add(r);
+            if (pkg.equals(r.packageName) && r.isRootOfTask()) {
+                if (task.mHandlePackageUpdate) {
+                    mUpdatingTasks.add(task);
+                }
+                // Only stop activities that are resumed and the package name of the root
+                // activity is also the same as desired package.
+                if (r.isState(RESUMED) && r.info.persistableMode == PERSIST_ACROSS_REBOOTS) {
+                    mActivitiesToBeStopped.add(r);
+                }
             }
         }
 
-        if (!updatingTasks.isEmpty()) {
-            // TODO: b/455568724 - Send signal to shell
-            if (mActivitiesToBeStopped.isEmpty()) {
-                // There are no activities to be stopped but we need Shell to handle this update.
-                mAtm.onProcessReadyToBeKilled(pkg, this);
-            } else {
-                // Stop the activities needed, this should give enough time to handle presentation
-                // before the process is killed in onActivityStoppedForUpdate().
-                for (int i = 0; i < mActivitiesToBeStopped.size(); i++) {
-                    final ActivityRecord ar = mActivitiesToBeStopped.get(i);
+        if (!mUpdatingTasks.isEmpty()) {
+            // TODO: b/455568724 - Wait for shells response to go ahead with killing
+            mAtm.mTaskOrganizerController.onPackageUpdateRequest(mUpdatingTasks);
+
+            // Only stop the activities that are not meant to be handled by Shell.
+            for (int i = 0; i < mActivitiesToBeStopped.size(); i++) {
+                final ActivityRecord ar = mActivitiesToBeStopped.get(i);
+                if (!mUpdatingTasks.contains(ar.getTask())) {
+                    final Task task = ar.getTask();
+                    task.moveTaskToBack(task);
                     ar.stopIfPossible();
+                    ProtoLog.w(WM_DEBUG_PACKAGE_UPDATE,
+                            "Process has tasks that are partially handled, so stopping and "
+                                    + "hiding %d instead",
+                            task.mTaskId);
                 }
             }
         } else {
@@ -1646,8 +1653,30 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     }
 
     void onActivityStopped(ActivityRecord r) {
-        if (mActivitiesToBeStopped.remove(r) && mActivitiesToBeStopped.isEmpty()) {
-            mAtm.onProcessReadyToBeKilled(r.packageName, this);
+        // Only check for completion if the removal was successful
+        if (mActivitiesToBeStopped.remove(r)) {
+            checkAndNotifyProcessKill(r.packageName);
+        }
+    }
+
+    /**
+     * Called when a task that was marked with {@link Task#mHandlePackageUpdate} has finished
+     * its external handling process during a package update.
+     * @param task The task that has completed its package update handling.
+     */
+    void onTaskPackageUpdateHandled(Task task) {
+        if (mUpdatingTasks.remove(task)) {
+            checkAndNotifyProcessKill(task.getBasePackageName());
+        }
+    }
+
+    /**
+     * Checks if all pending activities and tasks are finished.
+     * If so, notifies the ATM that the process is ready to be killed.
+     */
+    private void checkAndNotifyProcessKill(String packageName) {
+        if (mActivitiesToBeStopped.isEmpty() && mUpdatingTasks.isEmpty()) {
+            mAtm.onProcessReadyToBeKilled(packageName, this);
         }
     }
 

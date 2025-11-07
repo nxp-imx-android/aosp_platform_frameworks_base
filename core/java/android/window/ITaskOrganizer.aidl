@@ -117,4 +117,13 @@ oneway interface ITaskOrganizer {
      * @param request Information about this particular request.
      */
     void requestStartTransition(in IBinder transitionToken, in TransitionRequestInfo request);
+
+    /**
+     * Called when a group of tasks belonging to a package are going through the update process.
+     *
+     * @param updatingTaskInfos Information about the tasks that are going through the package
+     *                          update process that WMShell previously registered to handle through
+     *                          {@link WindowContainerTransaction#setHandlePackageUpdateForTask}.
+     */
+    void onPackageUpdateRequested(in List<ActivityManager.RunningTaskInfo> updatingTaskInfos);
 }

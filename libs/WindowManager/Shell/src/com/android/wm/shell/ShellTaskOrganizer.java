@@ -1316,6 +1316,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         mTransitions.requestStartTransition(iBinder, request);
     }
 
+    @Override
+    public void onPackageUpdateRequested(List<RunningTaskInfo> updatingTasks) {
+        super.onPackageUpdateRequested(updatingTasks);
+    }
+
     public void dump(@NonNull PrintWriter pw, String prefix) {
         synchronized (mLock) {
             final String innerPrefix = prefix + "  ";

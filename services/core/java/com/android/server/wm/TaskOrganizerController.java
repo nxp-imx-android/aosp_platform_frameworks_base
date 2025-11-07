@@ -40,6 +40,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
@@ -989,6 +990,33 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 state.mOrganizer.mTaskOrganizer.onImeDrawnOnTask(task.mTaskId);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception sending onImeDrawnOnTask callback", e);
+            }
+        }
+    }
+
+    void onPackageUpdateRequest(ArraySet<Task> tasks) {
+        final ArrayMap<TaskOrganizerState, ArrayList<ActivityManager.RunningTaskInfo>>
+                stateToTasks = new ArrayMap<>();
+        // Group the given tasks per state
+        for (int i = 0; i < tasks.size(); i++) {
+            final Task task = tasks.valueAt(i);
+            final TaskOrganizerState state = mTaskOrganizerStates.get(
+                    task.mTaskOrganizer.asBinder());
+
+            if (state != null) {
+                stateToTasks.computeIfAbsent(state, k -> new ArrayList<>()).add(task.getTaskInfo());
+            }
+        }
+        for (int i = 0; i < stateToTasks.size(); i++) {
+            final TaskOrganizerState state = stateToTasks.keyAt(i);
+            final ArrayList<ActivityManager.RunningTaskInfo> updatingTasks = stateToTasks.valueAt(
+                    i);
+            if (state != null) {
+                try {
+                    state.mOrganizer.mTaskOrganizer.onPackageUpdateRequested(updatingTasks);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Exception sending onPackageUpdate callback", e);
+                }
             }
         }
     }
