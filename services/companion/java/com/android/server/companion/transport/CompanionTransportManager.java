@@ -231,11 +231,6 @@ public class CompanionTransportManager {
         }
 
         Slog.i(TAG, "Transport attached.");
-
-        AssociationInfo updatedAssociation = new AssociationInfo.Builder(association)
-                .setTransportAttached(true)
-                .build();
-        mAssociationStore.updateAssociation(updatedAssociation);
     }
 
     /**
@@ -259,11 +254,6 @@ public class CompanionTransportManager {
         }
 
         Slog.i(TAG, "Transport detached.");
-
-        AssociationInfo updatedAssociation = new AssociationInfo.Builder(association)
-                .setTransportAttached(false)
-                .build();
-        mAssociationStore.updateAssociation(updatedAssociation);
     }
 
     /**

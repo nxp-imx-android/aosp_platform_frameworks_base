@@ -120,8 +120,6 @@ public final class AssociationInfo implements Parcelable {
     @NonNull
     private final Set<String> mExtraPermissions;
 
-    private final boolean mIsTransportAttached;
-
     /**
      * Creates a new Association.
      *
@@ -156,7 +154,6 @@ public final class AssociationInfo implements Parcelable {
         mPackagesToNotify = builder.mPackagesToNotify;
         mMetadata = builder.mMetadata;
         mExtraPermissions = builder.mExtraPermissions;
-        mIsTransportAttached = builder.mIsTransportAttached;
     }
 
     /**
@@ -395,14 +392,6 @@ public final class AssociationInfo implements Parcelable {
     }
 
     /**
-     * @return true if a transport is currently attached for this association.
-     */
-    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-    public boolean isTransportAttached() {
-        return mIsTransportAttached;
-    }
-
-    /**
      * Utility method for checking if the association represents a device with the given MAC
      * address.
      *
@@ -475,7 +464,6 @@ public final class AssociationInfo implements Parcelable {
                 + ", mPackagesToNotify=" + mPackagesToNotify
                 + ", mMetadata=" + mMetadata
                 + ", mExtraPermissions=" + mExtraPermissions
-                + ", mIsTransportAttached=" + mIsTransportAttached
                 + '}';
     }
 
@@ -504,8 +492,7 @@ public final class AssociationInfo implements Parcelable {
                 && Objects.equals(mDeviceId, that.mDeviceId)
                 && Objects.equals(mPackagesToNotify, that.mPackagesToNotify)
                 && BaseBundle.kindofEquals(mMetadata, that.mMetadata)
-                && Objects.equals(mExtraPermissions, that.mExtraPermissions)
-                && mIsTransportAttached == that.mIsTransportAttached;
+                && Objects.equals(mExtraPermissions, that.mExtraPermissions);
     }
 
     private boolean isSameIcon(Icon iconA, Icon iconB) {
@@ -521,7 +508,7 @@ public final class AssociationInfo implements Parcelable {
                 mDeviceProfile, mAssociatedDevice, mSelfManaged, mNotifyOnDeviceNearby, mRevoked,
                 mPending, mTimeApprovedMs, mLastTimeConnectedMs, mSystemDataSyncFlags,
                 mTransportFlags, mDeviceIcon, mDeviceId, mPackagesToNotify, mMetadata,
-                mExtraPermissions, mIsTransportAttached);
+                mExtraPermissions);
     }
 
     @Override
@@ -563,7 +550,6 @@ public final class AssociationInfo implements Parcelable {
         dest.writeStringList(mPackagesToNotify);
         dest.writePersistableBundle(mMetadata);
         dest.writeStringList(new ArrayList<>(mExtraPermissions));
-        dest.writeBoolean(mIsTransportAttached);
     }
 
     private AssociationInfo(@NonNull Parcel in) {
@@ -597,7 +583,6 @@ public final class AssociationInfo implements Parcelable {
         mPackagesToNotify = in.createStringArrayList();
         mMetadata = in.readPersistableBundle();
         mExtraPermissions = new HashSet<>(in.createStringArrayList());
-        mIsTransportAttached = in.readBoolean();
     }
 
     @NonNull
@@ -641,7 +626,6 @@ public final class AssociationInfo implements Parcelable {
         private List<String> mPackagesToNotify;
         private PersistableBundle mMetadata = new PersistableBundle(); // Empty bundle by default.
         private Set<String> mExtraPermissions = new HashSet<>();
-        private boolean mIsTransportAttached = false;
 
         /** @hide */
         @TestApi
@@ -674,7 +658,6 @@ public final class AssociationInfo implements Parcelable {
             mPackagesToNotify = info.mPackagesToNotify;
             mMetadata = info.mMetadata;
             mExtraPermissions = info.mExtraPermissions;
-            mIsTransportAttached = info.mIsTransportAttached;
         }
 
         /**
@@ -704,7 +687,6 @@ public final class AssociationInfo implements Parcelable {
             mPackagesToNotify = info.mPackagesToNotify;
             mMetadata = info.mMetadata;
             mExtraPermissions = info.mExtraPermissions;
-            mIsTransportAttached = info.mIsTransportAttached;
         }
 
         /** @hide */
@@ -868,16 +850,6 @@ public final class AssociationInfo implements Parcelable {
         @FlaggedApi(Flags.FLAG_ASSOCIATION_EXTRA_PERMISSION)
         public Builder setExtraPermissions(@NonNull Set<String> extraPermissions) {
             mExtraPermissions = extraPermissions;
-            return this;
-        }
-
-        /** @hide */
-        @TestApi
-        @NonNull
-        @SuppressLint("MissingGetterMatchingBuilder")
-        @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-        public Builder setTransportAttached(boolean transportAttached) {
-            mIsTransportAttached = transportAttached;
             return this;
         }
 

@@ -882,6 +882,18 @@ public class CompanionDeviceManagerService extends SystemService {
 
             mActionRequestProcessor.removeOnActionResultListener(serviceName);
         }
+
+        @Override
+        public boolean isSystemDataTransportAttached(int associationId) {
+            mAssociationStore.getAssociationWithCallerChecks(associationId);
+
+            List<AssociationInfo> associationInfos =
+                    mTransportManager.getAssociationsWithTransport();
+
+            return associationInfos.stream()
+                    .anyMatch(association -> association.getId() == associationId);
+        }
+
         @Override
         public int handleShellCommand(@NonNull ParcelFileDescriptor in,
                 @NonNull ParcelFileDescriptor out, @NonNull ParcelFileDescriptor err,

@@ -2407,6 +2407,42 @@ public final class CompanionDeviceManager {
         }
     }
 
+    /**
+     * Checks if a transport is currently attached for a given association id.
+     *
+     * <p>A transport is considered attached if
+     * {@link #attachSystemDataTransport(int, InputStream, OutputStream)} has been successfully
+     * called for the given {@code associationId}, and
+     * {@link #detachSystemDataTransport(int)} has not yet been called.
+     *
+     * <p>This is useful for determining if the system is ready to handle data transfers
+     * before calling {@link #startSystemDataTransfer(int, Executor, OutcomeReceiver)}.
+     *
+     * @param associationId The unique {@link AssociationInfo#getId() id} of the device association
+     *
+     * @return {@code true} if a system data transport is attached for the given association id,
+     *         {@code false} otherwise.
+     *
+     * @see #attachSystemDataTransport(int, InputStream, OutputStream)
+     * @see #detachSystemDataTransport(int)
+     * @see #startSystemDataTransfer(int, Executor, OutcomeReceiver)
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public boolean isSystemDataTransportAttached(int associationId) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return false;
+        }
+
+        try {
+            return mService.isSystemDataTransportAttached(associationId);
+        }  catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+
+
     private static class AssociationRequestCallbackProxy extends IAssociationRequestCallback.Stub {
         private final Handler mHandler;
         private final Callback mCallback;
