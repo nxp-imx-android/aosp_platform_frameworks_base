@@ -14366,6 +14366,7 @@ package android.content.pm {
     method public int getProtectionFlags();
     method @Nullable public CharSequence loadDescription(@NonNull android.content.pm.PackageManager);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.PermissionInfo> CREATOR;
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int FLAG_ALLOWED_IN_PRIVATE_COMPUTE_CORE = 32; // 0x20
     field public static final int FLAG_COSTS_MONEY = 1; // 0x1
     field public static final int FLAG_HARD_RESTRICTED = 4; // 0x4
     field public static final int FLAG_IMMUTABLY_RESTRICTED = 16; // 0x10
