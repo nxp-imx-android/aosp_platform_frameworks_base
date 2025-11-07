@@ -95,26 +95,6 @@ class LargeScreenCaptureParametersInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun setCustomSaveLocation_keepsInitialUriAndInactivates_whenNullUri() =
-        kosmos.runTest {
-            val latestUriValue by collectLastValue(underTest.customSaveLocationUriString)
-            val latestActiveValue by collectLastValue(underTest.isCustomSaveLocationActive)
-            val initialUri =
-                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
-
-            underTest.setCustomSaveLocation(initialUri)
-            runCurrent()
-            assertThat(latestUriValue).isEqualTo(initialUri.toString())
-            assertThat(latestActiveValue).isTrue()
-
-            underTest.setCustomSaveLocation(null)
-            runCurrent()
-
-            assertThat(latestUriValue).isEqualTo(initialUri.toString())
-            assertThat(latestActiveValue).isFalse()
-        }
-
-    @Test
     fun setCustomSaveLocation_keepsInitialUriAndInactivates_whenDefaultUri() =
         kosmos.runTest {
             val latestUriValue by collectLastValue(underTest.customSaveLocationUriString)

@@ -19,73 +19,42 @@ package com.android.systemui.screencapture.record.largescreen.data.repository
 import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
-import com.android.systemui.common.data.datastore.DataStoreWrapper
-import com.android.systemui.common.data.datastore.DataStoreWrapperFactory
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.user.data.repository.UserRepository
 import java.io.File
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
-import kotlin.text.substringAfter
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class LargeScreenCaptureParametersRepository
 @Inject
 constructor(
-    private val dataStoreWrapperFactory: DataStoreWrapperFactory,
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
-    @Background private val backgroundContext: CoroutineContext,
-    @Background private val backgroundScope: CoroutineScope,
-    private val userRepository: UserRepository,
+    private val secureSettingsRepository: SecureSettingsRepository,
+    userRepository: UserRepository,
 ) {
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val dataStore: Flow<DataStoreWrapper> =
-        userRepository.selectedUserInfo
-            .map { it.id }
-            .distinctUntilChanged()
-            .transformLatest { userId ->
-                withContext(backgroundContext) {
-                    emit(
-                        dataStoreWrapperFactory.create(
-                            dataStoreFileName = DATA_STORE_FILE_NAME,
-                            userId = userId,
-                            scope = this@withContext,
-                        )
-                    )
-                    awaitCancellation()
-                }
-            }
-            .stateIn(scope = backgroundScope, started = SharingStarted.Lazily, initialValue = null)
-            .filterNotNull()
 
+    /** [Flow] that observes the custom save location URI string for the current user */
     @OptIn(ExperimentalCoroutinesApi::class)
     val customSaveLocationUriString: Flow<String> =
-        dataStore
-            .flatMapLatest { it.data }
-            .map { preferencesMap -> preferencesMap[CUSTOM_SAVE_LOCATION_URI_KEY_NAME].orEmpty() }
+        userRepository.selectedUserInfo
+            .flatMapLatest { userInfo ->
+                secureSettingsRepository.stringSetting(CUSTOM_SAVE_LOCATION_URI_KEY_NAME).map {
+                    it.orEmpty()
+                }
+            }
             .distinctUntilChanged()
 
+    /** [Flow] that observes the custom save location active status for the current user */
     @OptIn(ExperimentalCoroutinesApi::class)
     val isCustomSaveLocationActive: Flow<Boolean> =
-        dataStore
-            .flatMapLatest { it.data }
-            .map { preferencesMap ->
-                preferencesMap[CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME].toBoolean()
+        userRepository.selectedUserInfo
+            .flatMapLatest {
+                secureSettingsRepository.boolSetting(CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME)
             }
             .distinctUntilChanged()
 
@@ -98,12 +67,7 @@ constructor(
      *
      * @param uri The [Uri] of the custom save location, or null to deactivate it.
      */
-    suspend fun updateCustomSaveLocationUriString(uri: Uri?) {
-        if (uri == null) {
-            updateIsCustomSaveLocationActive(false)
-            return
-        }
-
+    suspend fun updateCustomSaveLocationUriString(uri: Uri) {
         val documentId = DocumentsContract.getTreeDocumentId(uri)
         val path = documentId?.substringAfter("primary:")
 
@@ -112,48 +76,26 @@ constructor(
         } else {
             val uriString = uri.toString()
             updateIsCustomSaveLocationActive(true)
-            withContext(backgroundDispatcher) {
-                val currentDataStore = dataStore.first()
-
-                currentDataStore.edit { preferencesMap ->
-                    val keyName = CUSTOM_SAVE_LOCATION_URI_KEY_NAME
-
-                    val currentUri = preferencesMap[keyName].orEmpty()
-
-                    if (currentUri != uriString) {
-                        preferencesMap[keyName] = uriString
-                    }
-                }
-            }
+            secureSettingsRepository.setString(CUSTOM_SAVE_LOCATION_URI_KEY_NAME, uriString)
         }
     }
 
     /**
-     * Updates whether the custom save location is active.
+     * Updates whether the custom save location is active. This is ran by System User (user 0),
+     * performing action on behalf of the specific user.
      *
      * If active, it means we should be using the custom save location If inactive, it means we
      * should use the default save location
      *
      * @param isActive Whether the custom save location is active.
      */
-    suspend fun updateIsCustomSaveLocationActive(isActive: Boolean) =
-        withContext(backgroundDispatcher) {
-            val currentDataStore = dataStore.first()
-
-            currentDataStore.edit { preferencesMap ->
-                val keyName = CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME
-                val currentIsActive = preferencesMap[keyName].toBoolean()
-
-                if (currentIsActive != isActive) {
-                    preferencesMap[keyName] = isActive.toString()
-                }
-            }
-        }
+    suspend fun updateIsCustomSaveLocationActive(isActive: Boolean) {
+        secureSettingsRepository.setBoolean(CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME, isActive)
+    }
 
     companion object {
         private const val CUSTOM_SAVE_LOCATION_URI_KEY_NAME = "custom_save_location_uri"
         private const val CUSTOM_SAVE_LOCATION_IS_ACTIVE_KEY_NAME = "custom_save_location_is_active"
-        private const val DATA_STORE_FILE_NAME = "screen_capture_settings.preferences_pb"
         private val DEFAULT_SCREENSHOTS_FOLDER =
             Environment.DIRECTORY_PICTURES + File.separator + Environment.DIRECTORY_SCREENSHOTS
     }

@@ -32,7 +32,7 @@ constructor(private val largeScreenSettingsRepository: LargeScreenCaptureParamet
     val isCustomSaveLocationActive: Flow<Boolean> =
         largeScreenSettingsRepository.isCustomSaveLocationActive
 
-    suspend fun setCustomSaveLocation(uri: Uri?) {
+    suspend fun setCustomSaveLocation(uri: Uri) {
         largeScreenSettingsRepository.updateCustomSaveLocationUriString(uri)
     }
 
