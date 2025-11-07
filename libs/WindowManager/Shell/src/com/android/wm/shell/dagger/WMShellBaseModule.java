@@ -91,6 +91,8 @@ import com.android.wm.shell.compatui.api.CompatUIComponentIdGenerator;
 import com.android.wm.shell.compatui.api.CompatUIComponentRepository;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUIRepository;
+import com.android.wm.shell.compatui.api.CompatUISharedRepositoryCleanUp;
+import com.android.wm.shell.compatui.api.CompatUISharedStateRepository;
 import com.android.wm.shell.compatui.api.CompatUIState;
 import com.android.wm.shell.compatui.components.RestartButtonSpecKt;
 import com.android.wm.shell.compatui.impl.DefaultCompatUIComponentFactory;
@@ -388,6 +390,20 @@ public abstract class WMShellBaseModule {
             @NonNull DisplayController displayController) {
         return new DefaultCompatUIComponentFactory(context, syncQueue, displayController,
                 compatUIComponentRepository);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<CompatUISharedRepositoryCleanUp> provideCompatUISharedStateManager(
+            @NonNull ShellInit shellInit,
+            @NonNull ShellTaskOrganizer shellTaskOrganizer,
+            @NonNull CompatUISharedStateRepository sharedStateRepository
+    ) {
+        if (Flags.appCompatUiFramework()) {
+            return Optional.of(new CompatUISharedRepositoryCleanUp(shellInit, shellTaskOrganizer,
+                    sharedStateRepository));
+        }
+        return Optional.empty();
     }
 
     @WMSingleton
