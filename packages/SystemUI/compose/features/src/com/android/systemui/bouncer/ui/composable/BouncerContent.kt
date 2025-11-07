@@ -200,6 +200,21 @@ fun ContentScope.BouncerContent(
             label = "offsetY",
         )
 
+    fun contentAlpha(): Float {
+        return if (isDraggingToBouncer()) {
+            min(
+                appearAnimationInterpolator.transform(
+                    // animate in along with the layout's transition
+                    layoutState.currentTransition!!.progress
+                ),
+                animatedAlpha,
+            )
+        } else {
+            // animate in separately from the layout's transition
+            animatedAlpha
+        }
+    }
+
     LaunchedEffect(Unit) {
         appearAnimationDelay =
             BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY.takeIf { viewModel.shouldDelayBouncerContent() }
@@ -235,21 +250,8 @@ fun ContentScope.BouncerContent(
                         }
                     IntOffset(x = 0, y = yOffset.toInt())
                 }
-                .graphicsLayer {
-                    alpha =
-                        if (isDraggingToBouncer()) {
-                            min(
-                                appearAnimationInterpolator.transform(
-                                    // animate in along with the layout's transition
-                                    layoutState.currentTransition!!.progress
-                                ),
-                                animatedAlpha,
-                            )
-                        } else {
-                            // animate in separately from the layout's transition
-                            animatedAlpha
-                        }
-                },
+                .graphicsLayer { alpha = contentAlpha() },
+        alphaOnEntry = { contentAlpha() },
     )
 }
 
@@ -260,6 +262,7 @@ fun ContentScope.BouncerContentLayout(
     viewModel: BouncerOverlayContentViewModel,
     dialogFactory: BouncerDialogFactory,
     modifier: Modifier,
+    alphaOnEntry: () -> Float,
 ) {
     val scale by viewModel.scale.collectAsStateWithLifecycle()
     Box(
@@ -271,12 +274,14 @@ fun ContentScope.BouncerContentLayout(
                 .pointerInput(Unit) { detectTapGestures { viewModel.backgroundTap() } }
     ) {
         when (layout) {
-            BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
+            BouncerOverlayLayout.STANDARD_BOUNCER ->
+                StandardLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
             BouncerOverlayLayout.BESIDE_USER_SWITCHER ->
-                BesideUserSwitcherLayout(viewModel = viewModel)
+                BesideUserSwitcherLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
             BouncerOverlayLayout.BELOW_USER_SWITCHER ->
-                BelowUserSwitcherLayout(viewModel = viewModel)
-            BouncerOverlayLayout.SPLIT_BOUNCER -> SplitLayout(viewModel = viewModel)
+                BelowUserSwitcherLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
+            BouncerOverlayLayout.SPLIT_BOUNCER ->
+                SplitLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
         }
 
         Dialog(bouncerViewModel = viewModel, dialogFactory = dialogFactory)
@@ -315,6 +320,7 @@ fun ContentScope.BouncerContentLayout(
 @Composable
 private fun ContentScope.StandardLayout(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val isHeightExpanded =
@@ -334,6 +340,7 @@ private fun ContentScope.StandardLayout(
 
                 OutputArea(
                     viewModel = viewModel,
+                    alphaOnEntry = alphaOnEntry,
                     modifier = Modifier.padding(top = if (isHeightExpanded) 96.dp else 64.dp),
                 )
             }
@@ -373,6 +380,7 @@ private fun ContentScope.StandardLayout(
 @Composable
 private fun ContentScope.SplitLayout(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -399,6 +407,7 @@ private fun ContentScope.SplitLayout(
                     )
                     OutputArea(
                         viewModel = viewModel,
+                        alphaOnEntry = alphaOnEntry,
                         modifier =
                             Modifier.align(Alignment.Center).sysuiResTag("bouncer_text_entry"),
                     )
@@ -449,6 +458,7 @@ private fun ContentScope.SplitLayout(
                         StatusMessage(viewModel = viewModel.message)
                         OutputArea(
                             viewModel = viewModel,
+                            alphaOnEntry = alphaOnEntry,
                             modifier =
                                 Modifier.padding(top = 24.dp).sysuiResTag("bouncer_text_entry"),
                         )
@@ -467,6 +477,7 @@ private fun ContentScope.SplitLayout(
 @Composable
 private fun ContentScope.BesideUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val isLeftToRight = LocalLayoutDirection.current == LayoutDirection.Ltr
@@ -596,6 +607,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
                     StatusMessage(viewModel = viewModel.message)
                     OutputArea(
                         viewModel = viewModel,
+                        alphaOnEntry = alphaOnEntry,
                         modifier = Modifier.padding(top = 24.dp).sysuiResTag("bouncer_text_entry"),
                     )
                 }
@@ -628,6 +640,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
 @Composable
 private fun ContentScope.BelowUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -646,7 +659,11 @@ private fun ContentScope.BelowUserSwitcherLayout(
 
         Spacer(Modifier.weight(1f))
 
-        OutputArea(viewModel = viewModel, modifier = Modifier.padding(top = 24.dp))
+        OutputArea(
+            viewModel = viewModel,
+            alphaOnEntry = alphaOnEntry,
+            modifier = Modifier.padding(top = 24.dp),
+        )
 
         Spacer(Modifier.weight(1f))
 
@@ -787,6 +804,7 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
 @Composable
 private fun ContentScope.OutputArea(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     when (val nonNullViewModel = viewModel.authMethodViewModel) {
@@ -798,6 +816,7 @@ private fun ContentScope.OutputArea(
         is PasswordBouncerViewModel ->
             PasswordBouncer(
                 viewModel = nonNullViewModel,
+                alphaOnEntry = alphaOnEntry,
                 modifier = modifier.sysuiResTag("bouncer_text_entry"),
             )
         else -> Unit

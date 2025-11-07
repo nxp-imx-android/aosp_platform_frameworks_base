@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -48,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onInterceptKeyBeforeSoftKeyboard
+import androidx.compose.ui.platform.InterceptPlatformTextInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -58,16 +60,20 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformIconButton
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.bouncer.ui.viewmodel.PasswordBouncerViewModel
 import com.android.systemui.common.ui.compose.SelectedUserAwareInputConnection
 import com.android.systemui.common.ui.compose.SelectedUserAwareLocalContext
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.model.Overlays
+import kotlinx.coroutines.awaitCancellation
 
 /** UI for the input part of a password-requiring version of the bouncer. */
 @Composable
 internal fun ContentScope.PasswordBouncer(
     viewModel: PasswordBouncerViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -92,52 +98,53 @@ internal fun ContentScope.PasswordBouncer(
 
     val color = MaterialTheme.colorScheme.onSurfaceVariant
 
-    SelectedUserAwareInputConnection(selectedUserId) {
-        SelectedUserAwareLocalContext(selectedUserId) {
-            OutlinedSecureTextField(
-                state = viewModel.textFieldState,
-                enabled = isInputEnabled,
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                keyboardOptions =
-                    KeyboardOptions(
-                        autoCorrectEnabled = false,
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done,
-                    ),
-                onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
-                textObfuscationMode =
-                    if (isPasswordRevealed) TextObfuscationMode.Visible
-                    // Note that [TextObfuscationMode.RevealLastTyped] is a misleading name.
-                    // On Android it means "briefly reveal last typed character *if and only if*
-                    // the System.TEXT_SHOW_PASSWORD setting is enabled, otherwise it behaves as
-                    // [TextObfuscationMode.Hidden].
-                    // With this being in a [SelectedUserAwareLocalContext] block, the
-                    // setting will be read from the user identified by [selectedUserId].
-                    else TextObfuscationMode.RevealLastTyped,
-                modifier =
-                    modifier
-                        .width(dimensionResource(id = R.dimen.keyguard_password_field_width))
-                        .sysuiResTag("bouncer_text_entry")
-                        .focusRequester(focusRequester)
-                        .onFocusChanged { viewModel.onTextFieldFocusChanged(it.isFocused) }
-                        .onInterceptKeyBeforeSoftKeyboard { keyEvent ->
-                            if (keyEvent.key == Key.Back) {
-                                viewModel.onImeDismissed()
-                                true
-                            } else {
-                                false
-                            }
-                        },
-                trailingIcon = {
-                    trailingIcons(viewModel, color, isImeSwitcherButtonVisible, isPasswordRevealed)
-                },
-                shape = RoundedCornerShape(28.dp),
-                colors =
-                    OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = color,
-                        unfocusedBorderColor = color,
-                    ),
-            )
+    DisableSoftKeyboardWhenNotVisible(alphaOnEntry = alphaOnEntry) {
+        SelectedUserAwareInputConnection(selectedUserId) {
+            SelectedUserAwareLocalContext(selectedUserId) {
+                OutlinedSecureTextField(
+                    state = viewModel.textFieldState,
+                    enabled = isInputEnabled,
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            autoCorrectEnabled = false,
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done,
+                        ),
+                    onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
+                    textObfuscationMode =
+                        if (isPasswordRevealed) TextObfuscationMode.Visible
+                        else TextObfuscationMode.Hidden,
+                    modifier =
+                        modifier
+                            .width(dimensionResource(id = R.dimen.keyguard_password_field_width))
+                            .sysuiResTag("bouncer_text_entry")
+                            .focusRequester(focusRequester)
+                            .onFocusChanged { viewModel.onTextFieldFocusChanged(it.isFocused) }
+                            .onInterceptKeyBeforeSoftKeyboard { keyEvent ->
+                                if (keyEvent.key == Key.Back) {
+                                    viewModel.onImeDismissed()
+                                    true
+                                } else {
+                                    false
+                                }
+                            },
+                    trailingIcon = {
+                        trailingIcons(
+                            viewModel,
+                            color,
+                            isImeSwitcherButtonVisible,
+                            isPasswordRevealed,
+                        )
+                    },
+                    shape = RoundedCornerShape(28.dp),
+                    colors =
+                        OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = color,
+                            unfocusedBorderColor = color,
+                        ),
+                )
+            }
         }
     }
 }
@@ -214,4 +221,52 @@ private fun RequestFocus(focusRequester: FocusRequester, viewModel: PasswordBoun
             focusRequester.requestFocus()
         }
     }
+}
+
+/** Disables the visibility of the IME when the bouncer is not visible. */
+@Composable
+fun ContentScope.DisableSoftKeyboardWhenNotVisible(
+    alphaOnEntry: () -> Float,
+    content: @Composable () -> Unit,
+) {
+    val contentVisible by remember {
+        derivedStateOf { contentVisible(alphaOnEntry, layoutState.currentTransition) }
+    }
+
+    DisableSoftKeyboard(!contentVisible) { content() }
+}
+
+/** Disables the visibility of the IME without affecting the text field focus. */
+@Composable
+fun DisableSoftKeyboard(disabled: Boolean, content: @Composable () -> Unit) {
+    InterceptPlatformTextInput(
+        interceptor = { request, nextHandler ->
+            if (disabled) {
+                awaitCancellation()
+            } else {
+                nextHandler.startInputMethod(request)
+            }
+        }
+    ) {
+        content()
+    }
+}
+
+/**
+ * Calculates whether the content of the bouncer is visible based on the alpha value from the entry
+ * animation and the current transition state.
+ */
+private fun contentVisible(
+    alphaOnEntry: () -> Float,
+    currentTransition: TransitionState.Transition?,
+): Boolean {
+    if (currentTransition == null || currentTransition.isTransitioning(to = Overlays.Bouncer)) {
+        return alphaOnEntry() > 0.5
+    }
+
+    if (currentTransition.isTransitioning(from = Overlays.Bouncer)) {
+        return currentTransition.progress <= 0.5
+    }
+
+    return false
 }
