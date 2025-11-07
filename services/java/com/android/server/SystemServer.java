@@ -3257,7 +3257,7 @@ public final class SystemServer implements Dumpable {
         }
         t.traceEnd();
 
-        if (!isWatch || !android.server.Flags.removeGameManagerServiceFromWear()) {
+        if (!isWatch) {
             t.traceBegin("GameManagerService");
             mSystemServiceManager.startService(GameManagerService.Lifecycle.class);
             t.traceEnd();
