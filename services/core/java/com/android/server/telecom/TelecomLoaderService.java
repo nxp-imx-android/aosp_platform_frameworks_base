@@ -22,24 +22,22 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManagerInternal;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.telecom.PhoneAccountHandle;
+import android.telecom.TelecomLoaderServiceConnection;
 import android.telecom.TelecomManager;
 import android.telephony.CarrierConfigManager;
 import android.telephony.SubscriptionManager;
 import android.util.IntArray;
 import android.util.Slog;
 
+import androidx.annotation.NonNull;
+
 import com.android.internal.annotations.GuardedBy;
-import com.android.internal.telecom.ITelecomLoader;
-import com.android.internal.telecom.ITelecomService;
 import com.android.internal.telephony.SmsApplication;
-import com.android.server.DeviceIdleInternal;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.pm.UserManagerService;
@@ -56,49 +54,45 @@ import java.util.List;
 public class TelecomLoaderService extends SystemService {
     private static final String TAG = "TelecomLoaderService";
 
-    private class TelecomServiceConnection implements ServiceConnection {
+    private class LoaderServiceConnection extends TelecomLoaderServiceConnection {
+
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+        public void onConnected(@NonNull TelecomLoader service) {
             // Normally, we would listen for death here, but since telecom runs in the same process
             // as this loader (process="system") that's redundant here.
-            try {
-                ITelecomLoader telecomLoader = ITelecomLoader.Stub.asInterface(service);
-                PackageManagerInternal packageManagerInternal =
-                        LocalServices.getService(PackageManagerInternal.class);
-                ITelecomService telecomService = telecomLoader.createTelecomService(
-                        packageManagerInternal.getSystemUiServiceComponent().getPackageName());
+            PackageManagerInternal packageManagerInternal =
+                    LocalServices.getService(PackageManagerInternal.class);
+            IBinder telecomService = service.createTelecomService(
+                    packageManagerInternal.getSystemUiServiceComponent().getPackageName());
 
-                SmsApplication.getDefaultMmsApplication(mContext, false);
-                ServiceManager.addService(Context.TELECOM_SERVICE, telecomService.asBinder());
+            SmsApplication.getDefaultMmsApplication(mContext, false);
+            ServiceManager.addService(Context.TELECOM_SERVICE, telecomService);
 
-                synchronized (mLock) {
-                    final LegacyPermissionManagerInternal permissionManager =
-                            LocalServices.getService(LegacyPermissionManagerInternal.class);
-                    if (mDefaultSimCallManagerRequests != null) {
-                        TelecomManager telecomManager =
-                                (TelecomManager) mContext.getSystemService(Context.TELECOM_SERVICE);
-                        PhoneAccountHandle phoneAccount = telecomManager.getSimCallManager();
-                        if (phoneAccount != null) {
-                            final int requestCount = mDefaultSimCallManagerRequests.size();
-                            final String packageName =
-                                    phoneAccount.getComponentName().getPackageName();
-                            for (int i = requestCount - 1; i >= 0; i--) {
-                                final int userId = mDefaultSimCallManagerRequests.get(i);
-                                mDefaultSimCallManagerRequests.remove(i);
-                                permissionManager
-                                        .grantDefaultPermissionsToDefaultSimCallManager(
-                                                packageName, userId);
-                            }
+            synchronized (mLock) {
+                final LegacyPermissionManagerInternal permissionManager =
+                        LocalServices.getService(LegacyPermissionManagerInternal.class);
+                if (mDefaultSimCallManagerRequests != null) {
+                    TelecomManager telecomManager =
+                            (TelecomManager) mContext.getSystemService(Context.TELECOM_SERVICE);
+                    PhoneAccountHandle phoneAccount = telecomManager.getSimCallManager();
+                    if (phoneAccount != null) {
+                        final int requestCount = mDefaultSimCallManagerRequests.size();
+                        final String packageName =
+                                phoneAccount.getComponentName().getPackageName();
+                        for (int i = requestCount - 1; i >= 0; i--) {
+                            final int userId = mDefaultSimCallManagerRequests.get(i);
+                            mDefaultSimCallManagerRequests.remove(i);
+                            permissionManager
+                                    .grantDefaultPermissionsToDefaultSimCallManager(
+                                            packageName, userId);
                         }
                     }
                 }
-            } catch (RemoteException e) {
-                Slog.w(TAG, "Failed linking to death.");
             }
         }
 
         @Override
-        public void onServiceDisconnected(ComponentName name) {
+        public void onDisconnected() {
             connectToTelecom();
         }
     }
@@ -117,7 +111,7 @@ public class TelecomLoaderService extends SystemService {
     private final Context mContext;
 
     @GuardedBy("mLock")
-    private TelecomServiceConnection mServiceConnection;
+    private LoaderServiceConnection mServiceConnection;
 
     public TelecomLoaderService(Context context) {
         super(context);
@@ -147,7 +141,7 @@ public class TelecomLoaderService extends SystemService {
                 mServiceConnection = null;
             }
 
-            TelecomServiceConnection serviceConnection = new TelecomServiceConnection();
+            LoaderServiceConnection serviceConnection = new LoaderServiceConnection();
             Intent intent = new Intent(SERVICE_ACTION);
             intent.setComponent(SERVICE_COMPONENT);
             int flags = Context.BIND_IMPORTANT | Context.BIND_FOREGROUND_SERVICE
@@ -253,9 +247,10 @@ public class TelecomLoaderService extends SystemService {
     private void updateSimCallManagerPermissions(int userId) {
         final LegacyPermissionManagerInternal permissionManager =
                 LocalServices.getService(LegacyPermissionManagerInternal.class);
+        Context userContext = mContext.createContextAsUser(UserHandle.of(userId), 0);
         TelecomManager telecomManager =
-            (TelecomManager) mContext.getSystemService(Context.TELECOM_SERVICE);
-        PhoneAccountHandle phoneAccount = telecomManager.getSimCallManager(userId);
+                (TelecomManager) userContext.getSystemService(Context.TELECOM_SERVICE);
+        PhoneAccountHandle phoneAccount = telecomManager.getSimCallManager();
         if (phoneAccount != null) {
             Slog.i(TAG, "updating sim call manager permissions for userId:" + userId);
             String packageName = phoneAccount.getComponentName().getPackageName();
