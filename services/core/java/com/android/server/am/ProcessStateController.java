@@ -50,6 +50,7 @@ import com.android.server.am.psc.ContentProviderRecordInternal;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterImpl;
 import com.android.server.am.psc.ProcessListInternal;
+import com.android.server.am.psc.ProcessProviderRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.SyncBatchSession;
@@ -766,9 +767,9 @@ public class ProcessStateController {
      * Note that a process is hosting a content provider.
      */
     @GuardedBy("mLock")
-    public boolean addPublishedProvider(@NonNull ProcessRecord proc, String name,
-            ContentProviderRecord cpr) {
-        final ProcessProviderRecord providers = proc.mProviders;
+    public boolean addPublishedProvider(@NonNull ProcessRecordInternal proc, String name,
+            ContentProviderRecordInternal cpr) {
+        final ProcessProviderRecordInternal providers = proc.getProviders();
         if (providers.hasProvider(name)) return false;
         providers.installProvider(name, cpr);
         return true;
@@ -778,8 +779,8 @@ public class ProcessStateController {
      * Remove a published content provider from a process.
      */
     @GuardedBy("mLock")
-    public void removePublishedProvider(@NonNull ProcessRecord proc, String name) {
-        final ProcessProviderRecord providers = proc.mProviders;
+    public void removePublishedProvider(@NonNull ProcessRecordInternal proc, String name) {
+        final ProcessProviderRecordInternal providers = proc.getProviders();
         providers.removeProvider(name);
     }
 

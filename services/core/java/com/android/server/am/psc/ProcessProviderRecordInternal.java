@@ -16,6 +16,8 @@
 
 package com.android.server.am.psc;
 
+import android.util.ArrayMap;
+
 /**
  * Internal abstraction for accessing content provider-related information within a process.
  * It is primarily used by the OomAdjuster.
@@ -23,6 +25,13 @@ package com.android.server.am.psc;
 public abstract class ProcessProviderRecordInternal {
     /** The last time someone else was using a provider in this process. */
     private long mLastProviderTime = Long.MIN_VALUE;
+
+    /**
+     * Map of all content providers published by this process.
+     * The key is the provider's class name, and the value is the corresponding
+     * {@link ContentProviderRecordInternal}.
+     */
+    private final ArrayMap<String, ContentProviderRecordInternal> mPubProviders = new ArrayMap<>();
 
     public long getLastProviderTime() {
         return mLastProviderTime;
@@ -33,13 +42,55 @@ public abstract class ProcessProviderRecordInternal {
     }
 
     /** Returns the number of published providers in this process. */
-    public abstract int numberOfProviders();
+    public int numberOfProviders() {
+        return mPubProviders.size();
+    }
+
+    /** Retrieves the name of the published content provider at the specified index. */
+    protected String getProviderNameAt(int index) {
+        return mPubProviders.keyAt(index);
+    }
 
     /**
      * Returns the {@link ContentProviderRecordInternal} at the specified index from the list of
      * published providers.
      */
-    public abstract ContentProviderRecordInternal getProviderAt(int index);
+    protected ContentProviderRecordInternal getProviderInternalAt(int index) {
+        return mPubProviders.valueAt(index);
+    }
+
+    /** Checks if this process publishes a content provider with the given name. */
+    public boolean hasProvider(String name) {
+        return mPubProviders.containsKey(name);
+    }
+
+    /** Returns the {@link ContentProviderRecordInternal} for the given name. */
+    protected ContentProviderRecordInternal getProviderInternal(String name) {
+        return mPubProviders.get(name);
+    }
+
+    /** Adds a new published content provider to this process. */
+    public void installProvider(String name, ContentProviderRecordInternal provider) {
+        mPubProviders.put(name, provider);
+    }
+
+    /** Removes a published content provider from this process. */
+    public void removeProvider(String name) {
+        mPubProviders.remove(name);
+    }
+
+    /** Removes all published content providers from this process. */
+    protected void clearProvider() {
+        mPubProviders.clear();
+    }
+
+    /**
+     * Ensures that the internal map for published providers can hold at least the given
+     * number of items.
+     */
+    public void ensureProviderCapacity(int capacity) {
+        mPubProviders.ensureCapacity(capacity);
+    }
 
     /** Returns the number of content provider connections associated with this process. */
     public abstract int numberOfProviderConnections();

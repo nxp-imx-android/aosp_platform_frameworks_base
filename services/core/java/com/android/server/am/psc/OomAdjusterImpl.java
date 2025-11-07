@@ -1052,7 +1052,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         final ProcessProviderRecordInternal ppr = app.getProviders();
         for (int i = ppr.numberOfProviders() - 1; i >= 0; i--) {
-            final ContentProviderRecordInternal cpr = ppr.getProviderAt(i);
+            final ContentProviderRecordInternal cpr = ppr.getProviderInternalAt(i);
             for (int j = cpr.numberOfConnections() - 1; j >= 0; j--) {
                 final ContentProviderConnectionInternal conn = cpr.getConnectionsAt(j);
                 connectionConsumer.accept(conn, conn.getClient());
@@ -1634,7 +1634,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                         || schedGroup == SCHED_GROUP_BACKGROUND
                         || procState > PROCESS_STATE_TOP);
                 provi--) {
-            ContentProviderRecordInternal cpr = ppr.getProviderAt(provi);
+            final ContentProviderRecordInternal cpr = ppr.getProviderInternalAt(provi);
             // If the provider has external (non-framework) process
             // dependencies, ensure that its adjustment is at least
             // FOREGROUND_APP_ADJ.
