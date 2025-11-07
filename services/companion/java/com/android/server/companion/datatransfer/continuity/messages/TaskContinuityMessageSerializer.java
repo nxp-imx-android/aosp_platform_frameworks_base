@@ -39,17 +39,8 @@ public final class TaskContinuityMessageSerializer {
         int fieldNumber = pis.getFieldNumber();
         final long dataToken = pis.start(fieldNumber);
         switch (fieldNumber) {
-            case (int) android.companion.TaskContinuityMessage.DEVICE_CONNECTED:
-                message = ContinuityDeviceConnected.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED:
-                message = RemoteTaskAddedMessage.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED:
-                message = RemoteTaskRemovedMessage.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_UPDATED:
-                message = RemoteTaskUpdatedMessage.readFromProto(pis);
+            case (int) android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST:
+                message = TaskStackBroadcastMessage.readFromProto(pis);
                 break;
             case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
                 message = HandoffRequestMessage.readFromProto(pis);

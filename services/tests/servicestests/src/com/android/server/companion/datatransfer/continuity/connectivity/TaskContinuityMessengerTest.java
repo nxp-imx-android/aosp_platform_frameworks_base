@@ -38,10 +38,10 @@ import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import androidx.test.platform.app.InstrumentationRegistry;
-import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
+import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -99,15 +99,11 @@ public class TaskContinuityMessengerTest {
         // Send a message to the listener.
         int expectedAssociationId = 1;
         connectAssociations(List.of(expectedAssociationId));
-        ContinuityDeviceConnected expectedMessage =
-                new ContinuityDeviceConnected(
+        TaskStackBroadcastMessage expectedMessage =
+                new TaskStackBroadcastMessage(
                         List.of(
                                 new RemoteTaskInfo(
-                                        1,
-                                        "label",
-                                        1000,
-                                        new byte[0],
-                                        new HandoffOptions(true, true))));
+                                        1, "package_name", 1000, new HandoffOptions(true, true))));
 
         listener.onMessageReceived(
                 expectedAssociationId, TaskContinuityMessageSerializer.serialize(expectedMessage));
@@ -149,15 +145,11 @@ public class TaskContinuityMessengerTest {
 
         mTaskContinuityMessenger.addListener(mMockListener);
         connectAssociations(List.of(associationId));
-        ContinuityDeviceConnected expectedMessage =
-                new ContinuityDeviceConnected(
+        TaskStackBroadcastMessage expectedMessage =
+                new TaskStackBroadcastMessage(
                         List.of(
                                 new RemoteTaskInfo(
-                                        1,
-                                        "label",
-                                        1000,
-                                        new byte[0],
-                                        new HandoffOptions(true, true))));
+                                        1, "package_name", 1000, new HandoffOptions(true, true))));
         TaskContinuityMessenger.SendMessageResult result =
                 mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
         verify(mMockCompanionDeviceManagerService, times(1))
@@ -173,15 +165,11 @@ public class TaskContinuityMessengerTest {
             throws RemoteException, IOException {
 
         int associationId = 1;
-        ContinuityDeviceConnected expectedMessage =
-                new ContinuityDeviceConnected(
+        TaskStackBroadcastMessage expectedMessage =
+                new TaskStackBroadcastMessage(
                         List.of(
                                 new RemoteTaskInfo(
-                                        1,
-                                        "label",
-                                        1000,
-                                        new byte[0],
-                                        new HandoffOptions(true, true))));
+                                        1, "package_name", 1000, new HandoffOptions(true, true))));
         TaskContinuityMessenger.SendMessageResult result =
                 mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
         verify(mMockCompanionDeviceManagerService, never())

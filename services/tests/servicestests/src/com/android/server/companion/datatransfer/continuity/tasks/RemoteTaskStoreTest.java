@@ -34,6 +34,9 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidTestingRunner.class)
 public class RemoteTaskStoreTest implements RemoteTaskStore.Listener {
 
+    private static RemoteTaskInfo TASK =
+            new RemoteTaskInfo(1, "packageName", 0, new HandoffOptions(true, true));
+
     private RemoteTaskStore mRemoteTaskStore = new RemoteTaskStore();
 
     private List<List<RemoteTaskStore.Task>> mListenerEvents;
@@ -47,38 +50,36 @@ public class RemoteTaskStoreTest implements RemoteTaskStore.Listener {
     @Test
     public void setTasks_deviceExists_notifiesListener() {
         int associationId = 1;
-        RemoteTaskInfo task = createRemoteTaskInfo(1, "label");
-        mRemoteTaskStore.setTasks(associationId, List.of(task));
-        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, task)));
+        mRemoteTaskStore.setTasks(associationId, List.of(TASK));
+        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, TASK)));
     }
 
     @Test
     public void upsertTask_taskAdded_notifiesListener() {
         int associationId = 1;
-        RemoteTaskInfo task = createRemoteTaskInfo(1, "label");
-        mRemoteTaskStore.upsertTask(associationId, task);
-        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, task)));
+        mRemoteTaskStore.upsertTask(associationId, TASK);
+        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, TASK)));
     }
 
     @Test
     public void upsertTask_taskUpdated_notifiesListener() {
         int associationId = 1;
-        RemoteTaskInfo task = createRemoteTaskInfo(1, "label");
-        mRemoteTaskStore.upsertTask(associationId, task);
-        RemoteTaskInfo updatedTask = createRemoteTaskInfo(1, "newLabel");
+        mRemoteTaskStore.upsertTask(associationId, TASK);
+        RemoteTaskInfo updatedTask =
+                new RemoteTaskInfo(
+                        TASK.id(), "newPackageName", 100, new HandoffOptions(true, true));
         mRemoteTaskStore.upsertTask(associationId, updatedTask);
         verifyListenerEvents(
-                List.of(new RemoteTaskStore.Task(associationId, task)),
+                List.of(new RemoteTaskStore.Task(associationId, TASK)),
                 List.of(new RemoteTaskStore.Task(associationId, updatedTask)));
     }
 
     @Test
     public void upsertTask_taskUnchanged_doesNotNotifyListener() {
         int associationId = 1;
-        RemoteTaskInfo task = createRemoteTaskInfo(1, "label");
-        mRemoteTaskStore.upsertTask(associationId, task);
-        mRemoteTaskStore.upsertTask(associationId, task);
-        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, task)));
+        mRemoteTaskStore.upsertTask(associationId, TASK);
+        mRemoteTaskStore.upsertTask(associationId, TASK);
+        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, TASK)));
     }
 
     @Test
@@ -90,10 +91,9 @@ public class RemoteTaskStoreTest implements RemoteTaskStore.Listener {
     @Test
     public void removeTask_taskRemoved_notifiesListener() {
         int associationId = 1;
-        RemoteTaskInfo task = createRemoteTaskInfo(1, "label");
-        mRemoteTaskStore.upsertTask(associationId, task);
+        mRemoteTaskStore.upsertTask(associationId, TASK);
         mRemoteTaskStore.removeTask(associationId, 1);
-        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, task)), List.of());
+        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, TASK)), List.of());
     }
 
     @Test
@@ -105,10 +105,9 @@ public class RemoteTaskStoreTest implements RemoteTaskStore.Listener {
     @Test
     public void removeAssociation_deviceRemoved_notifiesListener() {
         int associationId = 1;
-        RemoteTaskInfo task = createRemoteTaskInfo(1, "label");
-        mRemoteTaskStore.upsertTask(associationId, task);
+        mRemoteTaskStore.upsertTask(associationId, TASK);
         mRemoteTaskStore.removeAssociation(associationId);
-        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, task)), List.of());
+        verifyListenerEvents(List.of(new RemoteTaskStore.Task(associationId, TASK)), List.of());
     }
 
     @Override
@@ -121,10 +120,5 @@ public class RemoteTaskStoreTest implements RemoteTaskStore.Listener {
         for (int i = 0; i < expectedEvents.length; i++) {
             assertThat(mListenerEvents.get(i)).containsExactlyElementsIn(expectedEvents[i]);
         }
-    }
-
-    private RemoteTaskInfo createRemoteTaskInfo(int id, String label) {
-        return new RemoteTaskInfo(
-                id, label, 0, new byte[] {1, 2, 3}, new HandoffOptions(true, true));
     }
 }

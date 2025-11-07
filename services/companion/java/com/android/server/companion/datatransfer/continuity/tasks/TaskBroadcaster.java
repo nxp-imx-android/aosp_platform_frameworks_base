@@ -20,20 +20,12 @@ import android.annotation.NonNull;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.TaskStackListener;
 import android.content.ComponentName;
-import android.content.Context;
 import android.os.RemoteException;
 import android.util.Slog;
-
-import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
-import com.android.server.companion.datatransfer.continuity.tasks.RunningTaskFetcher;
+import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import com.android.server.wm.ActivityTaskManagerInternal;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -45,7 +37,7 @@ import java.util.Objects;
 public class TaskBroadcaster extends TaskStackListener
         implements ActivityTaskManagerInternal.HandoffEnablementListener {
 
-    private static final String TAG = "TaskBroadcaster";
+    private static final String TAG = TaskBroadcaster.class.getSimpleName();
 
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final RunningTaskFetcher mRunningTaskFetcher;
@@ -60,35 +52,25 @@ public class TaskBroadcaster extends TaskStackListener
 
     public void onDeviceConnected(int associationId) {
         Slog.v(TAG, "Transport connected for association id: " + associationId);
-        mTaskContinuityMessenger.sendMessage(
-                associationId,
-                new ContinuityDeviceConnected(mRunningTaskFetcher.getRunningTasks()));
+        broadcastTaskStack();
     }
 
     @Override
     public void onTaskCreated(int taskId, ComponentName componentName) throws RemoteException {
         Slog.v(TAG, "onTaskCreated: taskId=" + taskId);
-
-        RemoteTaskInfo remoteTaskInfo = mRunningTaskFetcher.getRunningTaskById(taskId);
-        if (remoteTaskInfo == null) {
-            Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskId);
-            return;
-        }
-
-        mTaskContinuityMessenger.sendMessage(new RemoteTaskAddedMessage(remoteTaskInfo));
+        broadcastTaskStack();
     }
 
     @Override
     public void onTaskRemoved(int taskId) throws RemoteException {
         Slog.v(TAG, "onTaskRemoved: taskId=" + taskId);
-        mTaskContinuityMessenger.sendMessage(new RemoteTaskRemovedMessage(taskId));
+        broadcastTaskStack();
     }
 
     @Override
     public void onTaskMovedToFront(RunningTaskInfo taskInfo) throws RemoteException {
         Slog.v(TAG, "onTaskMovedToFront: taskId=" + taskInfo.taskId);
-
-        sendTaskUpdatedMessage(taskInfo.taskId);
+        broadcastTaskStack();
     }
 
     @Override
@@ -100,17 +82,13 @@ public class TaskBroadcaster extends TaskStackListener
                         + ", isHandoffEnabled="
                         + isHandoffEnabled);
 
-        sendTaskUpdatedMessage(taskId);
+        broadcastTaskStack();
     }
 
-    private void sendTaskUpdatedMessage(int taskId) {
-        RemoteTaskInfo remoteTaskInfo = mRunningTaskFetcher.getRunningTaskById(taskId);
-        if (remoteTaskInfo == null) {
-            Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskId);
-            return;
-        }
-
-        RemoteTaskUpdatedMessage taskUpdatedMessage = new RemoteTaskUpdatedMessage(remoteTaskInfo);
-        mTaskContinuityMessenger.sendMessage(taskUpdatedMessage);
+    private void broadcastTaskStack() {
+        List<RemoteTaskInfo> remoteTasks = mRunningTaskFetcher.getRunningTasks();
+        TaskStackBroadcastMessage taskStackBroadcastMessage =
+                new TaskStackBroadcastMessage(remoteTasks);
+        mTaskContinuityMessenger.sendMessage(taskStackBroadcastMessage);
     }
 }

@@ -45,7 +45,6 @@ public class RunningTaskFetcher {
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final PackageManager mPackageManager;
-    private final PackageMetadataCache mPackageMetadataCache;
     private final AppOpsManager mAppOps;
 
     public RunningTaskFetcher(
@@ -54,28 +53,10 @@ public class RunningTaskFetcher {
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
             @NonNull PackageManager packageManager,
             @NonNull AppOpsManager appOps) {
-        this(
-                userId,
-                Objects.requireNonNull(activityTaskManager),
-                Objects.requireNonNull(activityTaskManagerInternal),
-                Objects.requireNonNull(packageManager),
-                new PackageMetadataCache(packageManager),
-                Objects.requireNonNull(appOps));
-    }
-
-    public RunningTaskFetcher(
-            int userId,
-            @NonNull ActivityTaskManager activityTaskManager,
-            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-            @NonNull PackageManager packageManager,
-            @NonNull PackageMetadataCache packageMetadataCache,
-            @NonNull AppOpsManager appOps) {
-
         mUserId = userId;
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mPackageManager = Objects.requireNonNull(packageManager);
-        mPackageMetadataCache = Objects.requireNonNull(packageMetadataCache);
         mAppOps = Objects.requireNonNull(appOps);
     }
 
@@ -116,11 +97,6 @@ public class RunningTaskFetcher {
         }
 
         String packageName = taskInfo.baseActivity.getPackageName();
-        PackageMetadata packageMetadata = mPackageMetadataCache.getMetadataForPackage(packageName);
-        if (packageMetadata == null) {
-            Slog.w(TAG, "Could not get package metadata for task: " + taskInfo.taskId);
-            return null;
-        }
 
         boolean isHandoffEnabled =
                 mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId);
@@ -137,9 +113,8 @@ public class RunningTaskFetcher {
 
         return new RemoteTaskInfo(
                 taskInfo.taskId,
-                packageMetadata.label(),
+                packageName,
                 taskInfo.lastActiveTime,
-                packageMetadata.icon(),
                 new HandoffOptions(isHandoffEnabled, requirePackageInstalled));
     }
 
