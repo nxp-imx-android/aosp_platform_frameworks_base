@@ -26,13 +26,13 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
-import android.os.RemoteException;
 import android.util.Size;
+import android.util.SparseArray;
+import android.view.InsetsState;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
-import android.view.WindowManagerGlobal;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.common.DisplayController;
@@ -129,6 +129,11 @@ public class PhonePipMenuController implements PipMenuController,
     @NonNull
     private final PipDisplayLayoutState mPipDisplayLayoutState;
 
+    @NonNull
+    private final DisplayController mDisplayController;
+
+    private final SparseArray<ImeListener> mImeListenersPerDisplay = new SparseArray<>();
+
     private SurfaceControl mLeash;
 
     private boolean mIsImeVisible;
@@ -156,6 +161,7 @@ public class PhonePipMenuController implements PipMenuController,
         mPipTaskListener = pipTaskListener;
         mPipTransitionState = pipTransitionState;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mDisplayController = displayController;
         mMainExecutor = mainExecutor;
         mMainHandler = mainHandler;
         mPipUiEventLogger = pipUiEventLogger;
@@ -173,13 +179,31 @@ public class PhonePipMenuController implements PipMenuController,
                 setAppActions(actions, closeAction);
             }
         });
-        displayInsetsController.addInsetsChangedListener(mPipDisplayLayoutState.getDisplayId(),
-                new ImeListener(displayController, mPipDisplayLayoutState.getDisplayId()) {
+        displayInsetsController.addGlobalInsetsChangedListener(
+                new DisplayInsetsController.OnInsetsChangedListener() {
                     @Override
-                    protected void onImeVisibilityChanged(boolean imeVisible, int imeHeight) {
-                        mIsImeVisible = imeVisible;
+                    public void insetsChanged(int displayId, InsetsState insetsState) {
+                        // ImeListener has to be registered per-display, so we keep track of the
+                        // listeners and dispatch insetsChanged to the appropriate IME listener
+                        if (mImeListenersPerDisplay.contains(displayId)) {
+                            mImeListenersPerDisplay.get(displayId).insetsChanged(insetsState);
+                        } else {
+                            final ImeListener listener = new ImeListener(mDisplayController,
+                                    displayId) {
+                                @Override
+                                protected void onImeVisibilityChanged(boolean imeVisible,
+                                        int imeHeight) {
+                                    if (displayId == mPipDisplayLayoutState.getDisplayId()) {
+                                        mIsImeVisible = imeVisible;
+                                    }
+                                }
+                            };
+                            mImeListenersPerDisplay.put(displayId, listener);
+                            listener.insetsChanged(insetsState);
+                        }
                     }
-                });
+                }
+        );
     }
 
     public boolean isMenuVisible() {
