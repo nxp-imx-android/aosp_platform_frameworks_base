@@ -24,7 +24,8 @@ import android.os.UserHandle;
 import java.util.Objects;
 
 /**
- * Key identifying admin entity for policy accounting purposes.
+ * Key identifying admin entity for policy accounting purposes. Two admins with equal keys are
+ * treated as the same entity by DevicePolicyEngine.
  */
 public class AdminKey {
     // UserId of the admin, USER_SYSTEM for system entities.
