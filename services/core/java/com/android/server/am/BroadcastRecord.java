@@ -54,6 +54,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.IntArray;
 import android.util.PrintWriterPrinter;
@@ -1296,8 +1297,11 @@ final class BroadcastRecord extends Binder {
     public String toShortString() {
         if (mCachedToShortString == null) {
             final String label = intentToString(intent);
-            mCachedToShortString = Integer.toHexString(System.identityHashCode(this))
-                    + " " + label + "/u" + userId;
+            mCachedToShortString = TextUtils.formatSimple("%x %s/u%d/0x%x",
+                    System.identityHashCode(this),
+                    label,
+                    userId,
+                    calculateTypeForLogging());
         }
         return mCachedToShortString;
     }
