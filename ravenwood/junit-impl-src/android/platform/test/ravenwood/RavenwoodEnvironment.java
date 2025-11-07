@@ -113,7 +113,14 @@ public final class RavenwoodEnvironment {
     private final String mTargetResourceApk;
 
     /** Represents the filesystem root. */
+    @NonNull
     private final File mRootDir;
+
+    @NonNull
+    private final File mTempDir;
+
+    @NonNull
+    private final File mArtifactsDir;
 
     @NonNull
     private final Thread mTestThread;
@@ -152,7 +159,20 @@ public final class RavenwoodEnvironment {
         mTestThread = testThread;
 
         mRootDir = Files.createTempDirectory("ravenwood-root-dir-").toFile();
-        mRootDir.mkdirs();
+
+        var tempDir = System.getProperty("java.io.tmpdir");
+        mTempDir = new File(tempDir);
+
+        // Create the artifact directory. The path is passed by tradefed.
+        // Note, after running each test, tradefed will upload all files in it
+        // and delete the whole directory.
+        var artifactsDir = System.getProperty("android.ravenwood.artifacts_path");
+        if (artifactsDir == null) {
+            artifactsDir = Files.createTempDirectory("ravenwood-artifacts-default")
+                    .toAbsolutePath().toString();
+        }
+        mArtifactsDir = new File(artifactsDir);
+        mArtifactsDir.mkdirs();
     }
 
     /**
@@ -239,6 +259,16 @@ public final class RavenwoodEnvironment {
     @NonNull
     public File getRootDir() {
         return mRootDir;
+    }
+
+    @NonNull
+    public File getTempDir() {
+        return mTempDir;
+    }
+
+    @NonNull
+    public File getArtifactsDir() {
+        return mArtifactsDir;
     }
 
     @NonNull

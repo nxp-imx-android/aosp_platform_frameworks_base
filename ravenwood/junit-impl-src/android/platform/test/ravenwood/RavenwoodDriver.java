@@ -193,6 +193,9 @@ public class RavenwoodDriver {
 
         Log.i(TAG, "PWD=" + System.getProperty("user.dir"));
         Log.i(TAG, "RuntimePath=" + System.getProperty(RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP));
+        Log.i(TAG, "RootDir=" + RavenwoodEnvironment.getInstance().getRootDir());
+        Log.i(TAG, "TempDir=" + RavenwoodEnvironment.getInstance().getTempDir());
+        Log.i(TAG, "ArtifactsDir=" + RavenwoodEnvironment.getInstance().getArtifactsDir());
 
         // Make sure libravenwood_runtime is loaded.
         System.load(RavenwoodInternalUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));
