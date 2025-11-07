@@ -30,8 +30,8 @@ import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutT
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.FakeAccessibilityShortcutsRepository
 import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
-import com.android.systemui.accessibility.shortcutchooser.domain.ShortcutChooserDialogInteractor
-import com.android.systemui.accessibility.shortcutchooser.domain.shortcutChooserDialogInteractor
+import com.android.systemui.accessibility.shortcutchooser.domain.interactor.ShortcutChooserDialogInteractor
+import com.android.systemui.accessibility.shortcutchooser.domain.interactor.shortcutChooserDialogInteractor
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
