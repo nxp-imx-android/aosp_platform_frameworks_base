@@ -264,8 +264,8 @@ public abstract class Pip2Module {
     @WMSingleton
     @Provides
     static PipUiStateChangeController providePipUiStateChangeController(
-            PipTransitionState pipTransitionState) {
-        return new PipUiStateChangeController(pipTransitionState);
+            PipTransitionState pipTransitionState, PipDisplayLayoutState pipDisplayLayoutState) {
+        return new PipUiStateChangeController(pipTransitionState, pipDisplayLayoutState);
     }
 
     @WMSingleton

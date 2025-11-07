@@ -296,7 +296,8 @@ public class PipBoundsState implements PipDisplayLayoutState.DisplayIdListener {
         mStashedState = stashedState;
         try {
             ActivityTaskManager.getService().onPictureInPictureUiStateChanged(
-                    new PictureInPictureUiState(stashedState != STASH_TYPE_NONE /* isStashed */)
+                    new PictureInPictureUiState(stashedState != STASH_TYPE_NONE /* isStashed */),
+                    mPipDisplayLayoutState.getDisplayId()
             );
         } catch (RemoteException | IllegalStateException e) {
             ProtoLog.e(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
