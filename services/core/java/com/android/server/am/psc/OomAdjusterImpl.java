@@ -979,7 +979,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         final ProcessProviderRecordInternal ppr = app.getProviders();
         for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
-            ContentProviderConnectionInternal cpc = ppr.getProviderConnectionAt(i);
+            ContentProviderConnectionInternal cpc = ppr.getProviderConnectionInternalAt(i);
             ProcessRecordInternal provider = cpc.getProvider().getHostProcess();
             if (provider == null || provider == app || isHighPriorityProcess(provider)) {
                 continue;

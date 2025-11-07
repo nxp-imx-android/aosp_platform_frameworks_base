@@ -22,7 +22,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.psc.ProcessProviderRecordInternal;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 
 /**
  * The state info of all content providers in the process.
@@ -30,11 +29,6 @@ import java.util.ArrayList;
 final class ProcessProviderRecord extends ProcessProviderRecordInternal {
     final ProcessRecord mApp;
     private final ActivityManagerService mService;
-
-    /**
-     * All ContentProviderRecord process is using.
-     */
-    private final ArrayList<ContentProviderConnection> mConProviders = new ArrayList<>();
 
     ContentProviderRecord getProvider(String name) {
         return (ContentProviderRecord) getProviderInternal(name);
@@ -44,22 +38,8 @@ final class ProcessProviderRecord extends ProcessProviderRecordInternal {
         return (ContentProviderRecord) getProviderInternalAt(index);
     }
 
-    @Override
-    public int numberOfProviderConnections() {
-        return mConProviders.size();
-    }
-
-    @Override
-    public ContentProviderConnection getProviderConnectionAt(int index) {
-        return mConProviders.get(index);
-    }
-
-    void addProviderConnection(ContentProviderConnection connection) {
-        mConProviders.add(connection);
-    }
-
-    boolean removeProviderConnection(ContentProviderConnection connection) {
-        return mConProviders.remove(connection);
+    ContentProviderConnection getProviderConnectionAt(int index) {
+        return (ContentProviderConnection) getProviderConnectionInternalAt(index);
     }
 
     ProcessProviderRecord(ProcessRecord app) {
@@ -101,15 +81,15 @@ final class ProcessProviderRecord extends ProcessProviderRecordInternal {
         }
 
         // Unregister from connected content providers.
-        if (!mConProviders.isEmpty()) {
-            for (int i = mConProviders.size() - 1; i >= 0; i--) {
-                final ContentProviderConnection conn = mConProviders.get(i);
+        if (numberOfProviderConnections() > 0) {
+            for (int i = numberOfProviderConnections() - 1; i >= 0; i--) {
+                final ContentProviderConnection conn = getProviderConnectionAt(i);
                 conn.provider.mConnections.remove(conn);
                 mService.stopAssociationLocked(mApp.uid, mApp.processName, conn.provider.mUid,
                         conn.provider.mAppInfo.longVersionCode, conn.provider.name,
                         conn.provider.mProviderInfo.processName);
             }
-            mConProviders.clear();
+            clearProviderConnection();
         }
 
         return restart;
@@ -128,11 +108,11 @@ final class ProcessProviderRecord extends ProcessProviderRecordInternal {
                 pw.print(prefix); pw.print("    -> "); pw.println(getProviderAt(i));
             }
         }
-        if (mConProviders.size() > 0) {
+        if (numberOfProviderConnections() > 0) {
             pw.print(prefix); pw.println("Connected Providers:");
-            for (int i = 0, size = mConProviders.size(); i < size; i++) {
+            for (int i = 0, size = numberOfProviderConnections(); i < size; i++) {
                 pw.print(prefix); pw.print("  - ");
-                pw.println(mConProviders.get(i).toShortString());
+                pw.println(getProviderConnectionAt(i).toShortString());
             }
         }
     }

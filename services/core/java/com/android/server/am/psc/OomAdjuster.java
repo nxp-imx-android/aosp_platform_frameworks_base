@@ -954,7 +954,7 @@ public abstract class OomAdjuster {
             }
             final ProcessProviderRecordInternal ppr = pr.getProviders();
             for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
-                ContentProviderConnectionInternal cpc = ppr.getProviderConnectionAt(i);
+                ContentProviderConnectionInternal cpc = ppr.getProviderConnectionInternalAt(i);
                 ProcessRecordInternal provider = cpc.getProvider().getHostProcess();
                 if (provider == null || provider == pr
                         || ((provider.getMaxAdj() >= SYSTEM_ADJ)

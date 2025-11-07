@@ -46,6 +46,7 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.AsyncBatchSession;
 import com.android.server.am.psc.BoundServiceSession;
 import com.android.server.am.psc.ConnectionRecordInternal;
+import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.ContentProviderRecordInternal;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterImpl;
@@ -806,18 +807,18 @@ public class ProcessStateController {
      * Note that a process has connected to a content provider.
      */
     @GuardedBy("mLock")
-    public void addProviderConnection(@NonNull ProcessRecord client,
-            ContentProviderConnection cpc) {
-        client.mProviders.addProviderConnection(cpc);
+    public void addProviderConnection(@NonNull ProcessRecordInternal client,
+            ContentProviderConnectionInternal cpc) {
+        client.getProviders().addProviderConnection(cpc);
     }
 
     /**
      * Note that a process is no longer connected to a content provider.
      */
     @GuardedBy("mLock")
-    public void removeProviderConnection(@NonNull ProcessRecord client,
-            ContentProviderConnection cpc) {
-        client.mProviders.removeProviderConnection(cpc);
+    public void removeProviderConnection(@NonNull ProcessRecordInternal client,
+            ContentProviderConnectionInternal cpc) {
+        client.getProviders().removeProviderConnection(cpc);
     }
 
     /*************************** Service State Events **************************/

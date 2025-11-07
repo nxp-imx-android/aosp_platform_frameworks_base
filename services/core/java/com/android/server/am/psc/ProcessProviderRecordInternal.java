@@ -18,11 +18,13 @@ package com.android.server.am.psc;
 
 import android.util.ArrayMap;
 
+import java.util.ArrayList;
+
 /**
  * Internal abstraction for accessing content provider-related information within a process.
  * It is primarily used by the OomAdjuster.
  */
-public abstract class ProcessProviderRecordInternal {
+public class ProcessProviderRecordInternal {
     /** The last time someone else was using a provider in this process. */
     private long mLastProviderTime = Long.MIN_VALUE;
 
@@ -32,6 +34,9 @@ public abstract class ProcessProviderRecordInternal {
      * {@link ContentProviderRecordInternal}.
      */
     private final ArrayMap<String, ContentProviderRecordInternal> mPubProviders = new ArrayMap<>();
+
+    /** All {@link ContentProviderConnectionInternal} this process is using. */
+    private final ArrayList<ContentProviderConnectionInternal> mConProviders = new ArrayList<>();
 
     public long getLastProviderTime() {
         return mLastProviderTime;
@@ -93,11 +98,30 @@ public abstract class ProcessProviderRecordInternal {
     }
 
     /** Returns the number of content provider connections associated with this process. */
-    public abstract int numberOfProviderConnections();
+    public int numberOfProviderConnections() {
+        return mConProviders.size();
+    }
 
     /**
      * Returns the {@link ContentProviderConnectionInternal} at the specified index
      * from the list of connected providers.
      */
-    public abstract ContentProviderConnectionInternal getProviderConnectionAt(int index);
+    public ContentProviderConnectionInternal getProviderConnectionInternalAt(int index) {
+        return mConProviders.get(index);
+    }
+
+    /** Adds a content provider connection to this process's list of connections. */
+    public void addProviderConnection(ContentProviderConnectionInternal connection) {
+        mConProviders.add(connection);
+    }
+
+    /** Removes a content provider connection from this process's list of connections. */
+    public boolean removeProviderConnection(ContentProviderConnectionInternal connection) {
+        return mConProviders.remove(connection);
+    }
+
+    /** Removes all content provider connections from this process. */
+    protected void clearProviderConnection() {
+        mConProviders.clear();
+    }
 }
