@@ -23,6 +23,8 @@ import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AU
 import com.android.systemui.biometrics.domain.interactor.FacePropertyInteractor
 import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor
 import com.android.systemui.biometrics.shared.model.BiometricModalities
+import com.android.systemui.biometrics.shared.model.FaceSensorInfo
+import com.android.systemui.biometrics.shared.model.FingerprintSensorInfo
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.biometrics.ui.viewmodel.PromptAuthState
 import com.android.systemui.dagger.SysUISingleton
@@ -265,30 +267,27 @@ constructor(
     }
 
     /** Strong biometric modalities enrolled and enabled on the device. */
-    val enrolledStrongBiometricModalities: Flow<BiometricModalities> by lazy {
+    val enrolledStrongBiometricModalities: StateFlow<BiometricModalities> by lazy {
         combine(
                 biometricSettingsInteractor.isFingerprintAuthEnrolledAndEnabled,
                 biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled,
                 fingerprintPropertyInteractor.get().sensorInfo,
                 facePropertyInteractor.sensorInfo,
-            ) { fingerprintEnrolledAndEnabled, faceEnrolledAndEnabled, fpSensorInfo, faceSensorInfo
-                ->
-                val hasStrongFingerprint =
-                    fingerprintEnrolledAndEnabled && fpSensorInfo.strength == SensorStrength.STRONG
-                val hasStrongFace =
-                    faceEnrolledAndEnabled && faceSensorInfo?.strength == SensorStrength.STRONG
-
-                if (hasStrongFingerprint && hasStrongFace) {
-                    BiometricModalities(fpSensorInfo, faceSensorInfo)
-                } else if (hasStrongFingerprint) {
-                    BiometricModalities(fpSensorInfo, null)
-                } else if (hasStrongFace) {
-                    BiometricModalities(null, faceSensorInfo)
-                } else {
-                    BiometricModalities()
-                }
-            }
+                ::getBiometricModalities,
+            )
             .distinctUntilChanged()
+            .stateIn(
+                applicationScope,
+                SharingStarted.WhileSubscribed(),
+                getBiometricModalities(
+                    fingerprintEnrolledAndEnabled =
+                        biometricSettingsInteractor.isFingerprintAuthEnrolledAndEnabled.value,
+                    faceEnrolledAndEnabled =
+                        biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled.value,
+                    fpSensorInfo = fingerprintPropertyInteractor.get().sensorInfo.value,
+                    faceSensorInfo = facePropertyInteractor.sensorInfo.value,
+                ),
+            )
     }
 
     /** Whether the device has a strong fingerprint enrollment on the device. */
@@ -408,6 +407,28 @@ constructor(
     fun onDisappearAnimationFinished() {
         SceneContainerFlag.assertInLegacyMode()
         disappearAnimationFinishedRunnable?.run()
+    }
+
+    private fun getBiometricModalities(
+        fingerprintEnrolledAndEnabled: Boolean,
+        faceEnrolledAndEnabled: Boolean,
+        fpSensorInfo: FingerprintSensorInfo,
+        faceSensorInfo: FaceSensorInfo?,
+    ): BiometricModalities {
+        val hasStrongFingerprint =
+            fingerprintEnrolledAndEnabled && fpSensorInfo.strength == SensorStrength.STRONG
+        val hasStrongFace =
+            faceEnrolledAndEnabled && faceSensorInfo?.strength == SensorStrength.STRONG
+
+        return if (hasStrongFingerprint && hasStrongFace) {
+            BiometricModalities(fpSensorInfo, faceSensorInfo)
+        } else if (hasStrongFingerprint) {
+            BiometricModalities(fpSensorInfo, null)
+        } else if (hasStrongFace) {
+            BiometricModalities(null, faceSensorInfo)
+        } else {
+            BiometricModalities()
+        }
     }
 
     companion object {

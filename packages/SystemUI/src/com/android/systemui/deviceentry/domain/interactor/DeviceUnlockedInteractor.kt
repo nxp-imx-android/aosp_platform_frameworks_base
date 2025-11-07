@@ -34,6 +34,7 @@ import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.domain.interactor.BiometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
+import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.keyguard.shared.model.toDeviceUnlockSource
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.log.table.TableLogBuffer
@@ -78,8 +79,8 @@ constructor(
     private val authenticationInteractor: AuthenticationInteractor,
     private val repository: DeviceEntryRepository,
     private val trustInteractor: TrustInteractor,
-    faceAuthInteractor: DeviceEntryFaceAuthInteractor,
-    fingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
+    private val faceAuthInteractor: DeviceEntryFaceAuthInteractor,
+    private val fingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val powerInteractor: PowerInteractor,
     private val biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
@@ -97,6 +98,12 @@ constructor(
     private val faceOrFingerprintOrTrustEnabled: Flow<Triple<Boolean, Boolean, Boolean>> =
         combine(faceEnrolledAndEnabled, fingerprintEnrolledAndEnabled, trustAgentEnabled, ::Triple)
 
+    private val currentFaceOrFingerprintOrTrustEnabled: Boolean
+        get() =
+            faceEnrolledAndEnabled.value ||
+                fingerprintEnrolledAndEnabled.value ||
+                trustAgentEnabled.value
+
     /**
      * Reason why device entry is restricted to certain authentication methods for the current user.
      *
@@ -112,38 +119,12 @@ constructor(
                     fingerprintAuthInteractor.isLockedOut,
                     trustInteractor.isTrustAgentCurrentlyAllowed,
                 ) { authFlags, isFaceLockedOut, isFingerprintLockedOut, trustManaged ->
-                    when {
-                        authFlags.isPrimaryAuthRequiredForSecureLockDevice ->
-                            DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth
-                        authFlags.isStrongBiometricAuthRequiredForSecureLockDevice ->
-                            DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth
-                        authFlags.isPrimaryAuthRequiredAfterReboot &&
-                            wasRebootedForMainlineUpdate() ->
-                            DeviceEntryRestrictionReason.DeviceNotUnlockedSinceMainlineUpdate
-                        authFlags.isPrimaryAuthRequiredAfterReboot ->
-                            DeviceEntryRestrictionReason.DeviceNotUnlockedSinceReboot
-                        authFlags.isPrimaryAuthRequiredAfterDpmLockdown ->
-                            DeviceEntryRestrictionReason.PolicyLockdown
-                        authFlags.isInUserLockdown -> DeviceEntryRestrictionReason.UserLockdown
-                        authFlags.isPrimaryAuthRequiredForUnattendedUpdate ->
-                            DeviceEntryRestrictionReason.UnattendedUpdate
-                        authFlags.isPrimaryAuthRequiredAfterTimeout ->
-                            DeviceEntryRestrictionReason.SecurityTimeout
-                        isFingerprintLockedOut ->
-                            DeviceEntryRestrictionReason.StrongBiometricsLockedOut
-                        isFaceLockedOut && faceAuthInteractor.isFaceAuthStrong() ->
-                            DeviceEntryRestrictionReason.StrongBiometricsLockedOut
-                        isFaceLockedOut -> DeviceEntryRestrictionReason.NonStrongFaceLockedOut
-                        authFlags.isSomeAuthRequiredAfterAdaptiveAuthRequest ->
-                            DeviceEntryRestrictionReason.AdaptiveAuthRequest
-                        (trustEnabled && !trustManaged) &&
-                            (authFlags.someAuthRequiredAfterTrustAgentExpired ||
-                                authFlags.someAuthRequiredAfterUserRequest) ->
-                            DeviceEntryRestrictionReason.TrustAgentDisabled
-                        authFlags.strongerAuthRequiredAfterNonStrongBiometricsTimeout ->
-                            DeviceEntryRestrictionReason.NonStrongBiometricsSecurityTimeout
-                        else -> null
-                    }
+                    authFlags.getDeviceEntryRestrictionReason(
+                        isFaceLockedOut = isFaceLockedOut,
+                        isFingerprintLockedOut = isFingerprintLockedOut,
+                        trustEnabled = trustEnabled,
+                        trustManaged = trustManaged,
+                    )
                 }
             } else {
                 biometricSettingsInteractor.authenticationFlags.map { authFlags ->
@@ -156,6 +137,25 @@ constructor(
                 }
             }
         }
+
+    fun currentDeviceEntryRestrictionReason(): DeviceEntryRestrictionReason? {
+        val authFlags = biometricSettingsInteractor.authenticationFlags.value
+        return if (currentFaceOrFingerprintOrTrustEnabled) {
+            authFlags.getDeviceEntryRestrictionReason(
+                isFaceLockedOut = faceAuthInteractor.isLockedOut.value,
+                isFingerprintLockedOut = fingerprintAuthInteractor.isLockedOut.value,
+                trustEnabled = trustAgentEnabled.value,
+                trustManaged = trustInteractor.isTrustAgentCurrentlyAllowed.value,
+            )
+        } else {
+            when {
+                authFlags.isInUserLockdown -> DeviceEntryRestrictionReason.UserLockdown
+                authFlags.isPrimaryAuthRequiredAfterDpmLockdown ->
+                    DeviceEntryRestrictionReason.PolicyLockdown
+                else -> null
+            }
+        }
+    }
 
     /** Whether the device is in lockdown mode, where bouncer input is required to unlock. */
     val isInLockdown: Flow<Boolean> = deviceEntryRestrictionReason.map { it.isInLockdown() }
@@ -494,6 +494,41 @@ constructor(
 
     private fun wasRebootedForMainlineUpdate(): Boolean {
         return systemPropertiesHelper.get(SYS_BOOT_REASON_PROP) == REBOOT_MAINLINE_UPDATE
+    }
+
+    private fun AuthenticationFlags.getDeviceEntryRestrictionReason(
+        isFaceLockedOut: Boolean,
+        isFingerprintLockedOut: Boolean,
+        trustEnabled: Boolean,
+        trustManaged: Boolean,
+    ): DeviceEntryRestrictionReason? {
+        return when {
+            isPrimaryAuthRequiredForSecureLockDevice ->
+                DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth
+            isStrongBiometricAuthRequiredForSecureLockDevice ->
+                DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth
+            isPrimaryAuthRequiredAfterReboot && wasRebootedForMainlineUpdate() ->
+                DeviceEntryRestrictionReason.DeviceNotUnlockedSinceMainlineUpdate
+            isPrimaryAuthRequiredAfterReboot ->
+                DeviceEntryRestrictionReason.DeviceNotUnlockedSinceReboot
+            isPrimaryAuthRequiredAfterDpmLockdown -> DeviceEntryRestrictionReason.PolicyLockdown
+            isInUserLockdown -> DeviceEntryRestrictionReason.UserLockdown
+            isPrimaryAuthRequiredForUnattendedUpdate ->
+                DeviceEntryRestrictionReason.UnattendedUpdate
+            isPrimaryAuthRequiredAfterTimeout -> DeviceEntryRestrictionReason.SecurityTimeout
+            isFingerprintLockedOut -> DeviceEntryRestrictionReason.StrongBiometricsLockedOut
+            isFaceLockedOut && faceAuthInteractor.isFaceAuthStrong() ->
+                DeviceEntryRestrictionReason.StrongBiometricsLockedOut
+            isFaceLockedOut -> DeviceEntryRestrictionReason.NonStrongFaceLockedOut
+            isSomeAuthRequiredAfterAdaptiveAuthRequest ->
+                DeviceEntryRestrictionReason.AdaptiveAuthRequest
+            (trustEnabled && !trustManaged) &&
+                (someAuthRequiredAfterTrustAgentExpired || someAuthRequiredAfterUserRequest) ->
+                DeviceEntryRestrictionReason.TrustAgentDisabled
+            strongerAuthRequiredAfterNonStrongBiometricsTimeout ->
+                DeviceEntryRestrictionReason.NonStrongBiometricsSecurityTimeout
+            else -> null
+        }
     }
 
     /** [CoreStartable] that activates the [DeviceUnlockedInteractor]. */

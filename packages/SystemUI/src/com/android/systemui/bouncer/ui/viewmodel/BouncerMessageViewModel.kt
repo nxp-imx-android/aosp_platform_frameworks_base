@@ -95,7 +95,7 @@ constructor(
     val isLockoutMessagePresent: Flow<Boolean> = lockoutMessage.map { it != null }
 
     /** The user-facing message to show in the bouncer. */
-    val message: MutableStateFlow<MessageViewModel?> = MutableStateFlow(null)
+    val message: MutableStateFlow<MessageViewModel?> = MutableStateFlow(defaultMessage())
 
     override suspend fun onActivated(): Nothing {
         if (!SceneContainerFlag.isEnabled) {
@@ -131,6 +131,20 @@ constructor(
 
     private var lockoutCountdownJob: Job? = null
 
+    private fun defaultMessage(): MessageViewModel {
+        val authMethod = authenticationInteractor.authenticationMethod.value
+        return if (authMethod == AuthenticationMethodModel.Sim) {
+            MessageViewModel(simBouncerInteractor.getDefaultMessage())
+        } else {
+            val restrictionReason = deviceUnlockedInteractor.currentDeviceEntryRestrictionReason()
+            restrictionReason.toMessage(
+                authMethod,
+                deviceEntryBiometricsAllowedInteractor.isFingerprintCurrentlyAllowedOnBouncer.value,
+                secureLockDeviceInteractor.enrolledStrongBiometricModalities.value,
+            )
+        }
+    }
+
     private suspend fun defaultBouncerMessageInitializer() {
         resetToDefault.emit(Unit)
         authenticationInteractor.authenticationMethod
@@ -159,7 +173,6 @@ constructor(
                             ?: deviceEntryRestrictedReason.toMessage(
                                 authMethod,
                                 isFpAllowedOnBouncer,
-                                isFaceAllowedOnBouncer,
                                 enrolledStrongBiometricModalities,
                             )
                     }
@@ -387,7 +400,6 @@ constructor(
     private fun DeviceEntryRestrictionReason?.toMessage(
         authMethod: AuthenticationMethodModel,
         isFingerprintAllowedOnBouncer: Boolean,
-        isFaceAllowedOnBouncer: Boolean,
         enrolledStrongBiometricModalities: BiometricModalities,
     ): MessageViewModel {
         return when (this) {

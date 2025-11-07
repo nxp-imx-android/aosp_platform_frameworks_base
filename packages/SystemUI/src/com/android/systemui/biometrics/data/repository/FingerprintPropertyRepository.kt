@@ -31,10 +31,10 @@ import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.biometrics.shared.model.toSensorStrength
 import com.android.systemui.biometrics.shared.model.toSensorType
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +62,7 @@ interface FingerprintPropertyRepository {
     val sensorId: Flow<Int>
 
     /** The security strength of sensor (convenience, weak, strong). */
-    val strength: Flow<SensorStrength>
+    val strength: StateFlow<SensorStrength>
 
     /** The types of fingerprint sensor (rear, ultrasonic, optical, etc.). */
     val sensorType: StateFlow<FingerprintSensorType>
@@ -117,7 +117,14 @@ constructor(
 
     override val sensorId: Flow<Int> = props.map { it.sensorId }
 
-    override val strength: Flow<SensorStrength> = props.map { it.sensorStrength.toSensorStrength() }
+    override val strength: StateFlow<SensorStrength> =
+        props
+            .map { it.sensorStrength.toSensorStrength() }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = props.value.sensorStrength.toSensorStrength(),
+            )
 
     override val sensorType: StateFlow<FingerprintSensorType> =
         props
