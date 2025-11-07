@@ -40,7 +40,7 @@ oneway interface IDesktopTaskListener {
      * Shows taskbar corner radius when running desktop tasks are updated if
      * [hasTasksRequiringTaskbarRounding] is true.
      */
-    void onTaskbarCornerRoundingUpdate(boolean hasTasksRequiringTaskbarRounding);
+    void onTaskbarCornerRoundingUpdate(boolean hasTasksRequiringTaskbarRounding, int displayId);
 
     /** Entering desktop mode transition is started, send the signal with transition duration. */
     void onEnterDesktopModeTransitionStarted(int transitionDuration);
