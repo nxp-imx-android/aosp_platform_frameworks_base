@@ -17,7 +17,6 @@
 package com.android.internal.protolog;
 
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.os.ServiceManager;
 import android.util.Log;
 
@@ -88,10 +87,9 @@ public class ProcessedPerfettoProtoLogImpl extends PerfettoProtoLogImpl {
             @NonNull ViewerConfigInputStreamProvider viewerConfigInputStreamProvider,
             @NonNull ProtoLogViewerConfigReader viewerConfigReader,
             @NonNull ProtoLogCacheUpdater cacheUpdater,
-            @NonNull IProtoLogGroup[] groups,
-            @Nullable IProtoLogConfigurationService configurationService)
+            @NonNull IProtoLogGroup[] groups)
             throws ServiceManager.ServiceNotFoundException {
-        super(datasource, cacheUpdater, groups, configurationService);
+        super(datasource, cacheUpdater, groups);
 
         this.mViewerConfigFilePath = viewerConfigFilePath;
 

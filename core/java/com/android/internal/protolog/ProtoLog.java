@@ -90,26 +90,26 @@ public class ProtoLog {
     }
 
     /**
-     * Initialize ProtoLog in this process.
+     * Synchronously initialize ProtoLog in this process.
      * <p>
      * This method MUST be called before any protologging is performed in this process.
      * Ensure that all groups that will be used for protologging are registered.
      * <p>
-     * <strong>Note on asynchronous initialization:</strong> To avoid blocking the calling thread,
-     * particularly during application startup, the initialization of the Perfetto producer and the
-     * registration of the data source are performed on a background thread. This means the
-     * {@code init} method returns immediately.
-     * <p>
-     * There is a brief time window between when this method is called and when the background
-     * initialization completes. If a Perfetto trace is started during this window, ProtoLog
-     * messages may not be captured because the data source has not yet been registered with
-     * Perfetto. This is an intentional trade-off for improved startup performance. For most use
-     * cases, this window is negligible. When the {@code android.tracing.protolog_async_init} flag
-     * is enabled, messages logged during this window are buffered and traced once the data source
-     * is registered, ensuring no messages are lost.
+     * This method will block until the Perfetto producer and data source are initialized.
+     * For a non-blocking alternative, see {@link #initAsync(IProtoLogGroup...)}.
      */
     public static void init(@NonNull IProtoLogGroup... groups) {
         sController.init(groups);
+    }
+
+    /**
+     * Asynchronously initialize ProtoLog in this process.
+     * <p>
+     * This method is the non-blocking equivalent of {@link #init(IProtoLogGroup...)}.
+     * Initialization is performed on a background thread.
+     */
+    public static void initAsync(@NonNull IProtoLogGroup... groups) {
+        sController.initAsync(groups);
     }
 
     /**
@@ -222,33 +222,37 @@ public class ProtoLog {
         return sController.mProtoLogInstance;
     }
 
+    @NonNull
+    public static ProtoLogDataSource getSharedSingleInstanceDataSource() {
+        return getSharedSingleInstanceDataSource(true);
+    }
+
     /**
      * Gets or creates if it doesn't exist yet the protolog datasource to use in this process.
      * We should re-use the same datasource to avoid registering the datasource multiple times in
      * the same process, since there is no way to unregister the datasource after registration.
      *
+     * @param register if true, the datasource will be registered within this call. Otherwise,
+     *                 the caller is expected to register the returned datasource.
      * @return The single ProtoLog datasource instance to be shared across all ProtoLog tracing
      *         objects.
      */
     @NonNull
-    public static ProtoLogDataSource getSharedSingleInstanceDataSource() {
+    public static ProtoLogDataSource getSharedSingleInstanceDataSource(boolean register) {
         synchronized (sDataSourceLock) {
             if (sDataSource == null) {
                 sDataSource = new ProtoLogDataSource();
 
-                if (android.tracing.Flags.protologAsyncInit()) {
-                    return sDataSource;
+                if (register) {
+                    Producer.init(InitArguments.DEFAULTS);
+                    var policy = DataSourceParams
+                            .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP;
+                    DataSourceParams params =
+                            new DataSourceParams.Builder()
+                                    .setBufferExhaustedPolicy(policy)
+                                    .build();
+                    sDataSource.register(params);
                 }
-
-                Producer.init(InitArguments.DEFAULTS);
-                sDataSource = new ProtoLogDataSource();
-                DataSourceParams params =
-                        new DataSourceParams.Builder()
-                                .setBufferExhaustedPolicy(
-                                        DataSourceParams
-                                                .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP)
-                                .build();
-                sDataSource.register(params);
             }
 
             return sDataSource;
