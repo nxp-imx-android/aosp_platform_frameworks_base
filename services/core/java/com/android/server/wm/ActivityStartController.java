@@ -476,7 +476,7 @@ public class ActivityStartController {
                         intentGrants = mSupervisor.mService.mUgmInternal
                                 .checkGrantUriPermissionFromIntent(intent, filterCallingUid,
                                         aInfo.applicationInfo.packageName,
-                                        UserHandle.getUserId(aInfo.applicationInfo.uid));
+                                        UserHandle.getUserId(aInfo.getUid()));
                     } catch (SecurityException e) {
                         Slog.d(TAG, "Not allowed to start activity since no uri permission.");
                         return START_CANCELED;
@@ -487,7 +487,7 @@ public class ActivityStartController {
                             NeededUriGrants creatorIntentGrants = mSupervisor.mService.mUgmInternal
                                     .checkGrantUriPermissionFromIntent(intent, creatorUid,
                                             aInfo.applicationInfo.packageName,
-                                            UserHandle.getUserId(aInfo.applicationInfo.uid));
+                                            UserHandle.getUserId(aInfo.getUid()));
                             if (intentGrants == null) {
                                 intentGrants = creatorIntentGrants;
                             } else {
@@ -505,8 +505,7 @@ public class ActivityStartController {
                         throw new IllegalArgumentException(
                                 "FLAG_CANT_SAVE_STATE not supported here");
                     }
-                    startingUidPkgs.put(aInfo.applicationInfo.uid,
-                            aInfo.applicationInfo.packageName);
+                    startingUidPkgs.put(aInfo.getUid(), aInfo.applicationInfo.packageName);
                 }
 
                 final boolean top = i == intents.length - 1;

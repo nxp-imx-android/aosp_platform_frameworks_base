@@ -571,7 +571,7 @@ class ActivityStarter {
                     final WindowProcessController callerApp = supervisor.mService
                             .getProcessController(caller);
                     if (callerApp != null) {
-                        resolvedCallingUid = callerApp.mInfo.uid;
+                        resolvedCallingUid = callerApp.mUid;
                         resolvedCallingPackage = callerApp.mInfo.packageName;
                     }
                 }
@@ -630,7 +630,7 @@ class ActivityStarter {
                     intentGrants = supervisor.mService.mUgmInternal
                             .checkGrantUriPermissionFromIntent(intent, resolvedCallingUid,
                                     activityInfo.applicationInfo.packageName,
-                                    UserHandle.getUserId(activityInfo.applicationInfo.uid),
+                                    UserHandle.getUserId(activityInfo.getUid()),
                                     activityInfo.requireContentUriPermissionFromCaller,
                                     /* requestHashCode */ this.hashCode());
                     if (intentCreatorUid != DEFAULT_INTENT_CREATOR_UID) {
@@ -638,7 +638,7 @@ class ActivityStarter {
                             NeededUriGrants creatorIntentGrants = supervisor.mService.mUgmInternal
                                     .checkGrantUriPermissionFromIntent(intent, intentCreatorUid,
                                             activityInfo.applicationInfo.packageName,
-                                            UserHandle.getUserId(activityInfo.applicationInfo.uid),
+                                            UserHandle.getUserId(activityInfo.getUid()),
                                             activityInfo.requireContentUriPermissionFromCaller,
                                             /* requestHashCode */ this.hashCode());
                             if (intentGrants == null) {
@@ -657,14 +657,14 @@ class ActivityStarter {
                     intentGrants = supervisor.mService.mUgmInternal
                             .checkGrantUriPermissionFromIntent(intent, resolvedCallingUid,
                                     activityInfo.applicationInfo.packageName,
-                                    UserHandle.getUserId(activityInfo.applicationInfo.uid));
+                                    UserHandle.getUserId(activityInfo.getUid()));
                     if (intentCreatorUid != DEFAULT_INTENT_CREATOR_UID && intentGrants != null) {
                         try {
                             NeededUriGrants creatorIntentGrants = supervisor.mService.mUgmInternal
                                     .checkGrantUriPermissionFromIntent(intent, intentCreatorUid,
                                             activityInfo.applicationInfo.packageName,
                                             UserHandle.getUserId(
-                                                    activityInfo.applicationInfo.uid));
+                                                    activityInfo.getUid()));
                             if (intentGrants == null) {
                                 intentGrants = creatorIntentGrants;
                             } else {
@@ -908,7 +908,7 @@ class ActivityStarter {
                     callerActivityName,
                     // Callee UID
                     mRequest.activityInfo != null
-                            ? mRequest.activityInfo.applicationInfo.uid : INVALID_UID,
+                            ? mRequest.activityInfo.getUid() : INVALID_UID,
                     // Callee Activity name
                     mRequest.activityInfo != null ? mRequest.activityInfo.name : null,
                     // isStartActivityForResult
@@ -941,7 +941,7 @@ class ActivityStarter {
         }
 
         final WindowProcessController heavy = mService.mHeavyWeightProcess;
-        if (heavy == null || (heavy.mInfo.uid == mRequest.activityInfo.applicationInfo.uid
+        if (heavy == null || (heavy.mUid == mRequest.activityInfo.getUid()
                 && heavy.mName.equals(mRequest.activityInfo.processName))) {
             return START_SUCCESS;
         }
@@ -950,7 +950,7 @@ class ActivityStarter {
         if (mRequest.caller != null) {
             WindowProcessController callerApp = mService.getProcessController(mRequest.caller);
             if (callerApp != null) {
-                appCallingUid = callerApp.mInfo.uid;
+                appCallingUid = callerApp.mUid;
             } else {
                 Slog.w(TAG, "Unable to find app for caller " + mRequest.caller + " (pid="
                         + mRequest.callingPid + ") when starting: " + mRequest.intent.toString());
@@ -1066,7 +1066,7 @@ class ActivityStarter {
             callerApp = mService.getProcessController(caller);
             if (callerApp != null) {
                 callingPid = callerApp.getPid();
-                callingUid = callerApp.mInfo.uid;
+                callingUid = callerApp.mUid;
             } else {
                 Slog.w(TAG, "Unable to find app for caller " + caller + " (pid=" + callingPid
                         + ") when starting: " + intent.toString());
@@ -1171,7 +1171,7 @@ class ActivityStarter {
             // session, we can only launch it if it has explicitly said it supports the VOICE
             // category, or it is a part of the calling app.
             if ((launchFlags & FLAG_ACTIVITY_NEW_TASK) == 0
-                    && sourceRecord.info.applicationInfo.uid != aInfo.applicationInfo.uid) {
+                    && sourceRecord.getUid() != aInfo.getUid()) {
                 try {
                     intent.addCategory(Intent.CATEGORY_VOICE);
                     if (!mService.getPackageManager().activitySupportsIntentAsUser(
@@ -1503,7 +1503,7 @@ class ActivityStarter {
         // directly.
         WindowProcessController homeProcess = mService.mHomeProcess;
         boolean isHomeProcess = homeProcess != null
-                && aInfo.applicationInfo.uid == homeProcess.mUid;
+                && aInfo.getUid() == homeProcess.mUid;
         if (balVerdict.allows() && !isHomeProcess) {
             mService.resumeAppSwitches();
         }
@@ -2097,13 +2097,13 @@ class ActivityStarter {
                     mStartActivity.resultTo.info.packageName, 0 /* flags */,
                     mStartActivity.mUserId);
             pmInternal.grantImplicitAccess(mStartActivity.mUserId, mIntent,
-                    UserHandle.getAppId(mStartActivity.info.applicationInfo.uid) /*recipient*/,
+                    UserHandle.getAppId(mStartActivity.getUid()) /*recipient*/,
                     resultToUid /*visible*/, true /*direct*/);
         } else if (mStartActivity.mShareIdentity) {
             final PackageManagerInternal pmInternal =
                     mService.getPackageManagerInternalLocked();
             pmInternal.grantImplicitAccess(mStartActivity.mUserId, mIntent,
-                    UserHandle.getAppId(mStartActivity.info.applicationInfo.uid) /*recipient*/,
+                    UserHandle.getAppId(mStartActivity.getUid()) /*recipient*/,
                     r.launchedFromUid /*visible*/, true /*direct*/);
         }
         final Task startedTask = mStartActivity.getTask();
@@ -3224,7 +3224,7 @@ class ActivityStarter {
         activity.deliverNewIntentLocked(mCallingUid, mStartActivity.intent, intentGrants,
                 mStartActivity.launchedFromPackage, mStartActivity.mShareIdentity,
                 mStartActivity.mUserId,
-                UserHandle.getAppId(mStartActivity.info.applicationInfo.uid));
+                UserHandle.getAppId(mStartActivity.getUid()));
         mIntentDelivered = true;
     }
 

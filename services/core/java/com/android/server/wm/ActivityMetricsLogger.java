@@ -502,6 +502,11 @@ class ActivityMetricsLogger {
         final private int reason;
         final private int startingWindowDelayMs;
         final private int bindApplicationDelayMs;
+        /**
+         * The uid of the launching activity. It can be either ApplicationInfo.uid
+         * or ApplicationInfo.pccuid based on where the activity should run
+         */
+        final private int uid;
         final int windowsDrawnDelayMs;
         final int type;
         final int userId;
@@ -537,6 +542,7 @@ class ActivityMetricsLogger {
             type = info.mTransitionType;
             processRecord = launchedActivity.app;
             processName = launchedActivity.processName;
+            uid = launchedActivity.getUid();
             sourceType = info.mSourceType;
             userId = launchedActivity.mUserId;
             launchedActivityShortComponentName = launchedActivity.shortComponentName;
@@ -721,7 +727,7 @@ class ActivityMetricsLogger {
         final WindowProcessController processRecord = launchedActivity.app != null
                 ? launchedActivity.app
                 : mSupervisor.mService.getProcessController(
-                        launchedActivity.processName, launchedActivity.info.applicationInfo.uid);
+                        launchedActivity.processName, launchedActivity.getUid());
         // Whether the process that will contains the activity is already running.
         final boolean processRunning = processRecord != null;
         // We consider this a "process switch" if the process of the activity that gets launched
@@ -909,7 +915,7 @@ class ActivityMetricsLogger {
         mLoggerHandler.post(
                 () -> mSupervisor.mService.mWindowManager.mAmInternal.addStartInfoTimestamp(
                         ApplicationStartInfo.START_TIMESTAMP_FIRST_FRAME,
-                        timestampNs, infoSnapshot.applicationInfo.uid, pid,
+                        timestampNs, infoSnapshot.uid, pid,
                         infoSnapshot.userId));
 
         return infoSnapshot;
@@ -1176,13 +1182,13 @@ class ActivityMetricsLogger {
         mMetricsLogger.write(builder);
         FrameworkStatsLog.write(
                 FrameworkStatsLog.APP_START_CANCELED,
-                activity.info.applicationInfo.uid,
+                activity.getUid(),
                 activity.packageName,
                 getAppStartTransitionType(type, info.mRelaunched),
                 activity.info.name);
         if (DEBUG_METRICS) {
             Slog.i(TAG, String.format("APP_START_CANCELED(%s, %s, %s, %s)",
-                    activity.info.applicationInfo.uid,
+                    activity.getUid(),
                     activity.packageName,
                     getAppStartTransitionType(type, info.mRelaunched),
                     activity.info.name));
@@ -1273,7 +1279,7 @@ class ActivityMetricsLogger {
 
         FrameworkStatsLog.write(
                 FrameworkStatsLog.APP_START_OCCURRED,
-                info.applicationInfo.uid,
+                info.uid,
                 info.packageName,
                 getAppStartTransitionType(info.type, info.relaunched),
                 info.launchedActivityName,
@@ -1310,7 +1316,7 @@ class ActivityMetricsLogger {
         if (DEBUG_METRICS) {
             Slog.i(TAG, String.format(
                     "APP_START_OCCURRED(%s, %s, %s, %s, %s, wasStopped=%b, firstLaunch=%b)",
-                    info.applicationInfo.uid,
+                    info.uid,
                     info.packageName,
                     getAppStartTransitionType(info.type, info.relaunched),
                     info.launchedActivityName,
@@ -1339,7 +1345,7 @@ class ActivityMetricsLogger {
                     + " transitionDelayMs=" + transitionDelayMs + "ms");
         }
         FrameworkStatsLog.write(FrameworkStatsLog.IN_TASK_ACTIVITY_STARTED,
-                info.applicationInfo.uid,
+                info.uid,
                 getAppStartTransitionType(info.type, info.relaunched),
                 isOpaque,
                 transitionDelayMs,
@@ -1464,7 +1470,7 @@ class ActivityMetricsLogger {
         }
         FrameworkStatsLog.write(
                 FrameworkStatsLog.APP_START_FULLY_DRAWN,
-                info.applicationInfo.uid,
+                info.uid,
                 info.packageName,
                 restoredFromBundle
                         ? FrameworkStatsLog.APP_START_FULLY_DRAWN__TYPE__WITH_BUNDLE
@@ -1567,7 +1573,7 @@ class ActivityMetricsLogger {
         }
 
         final int pid = info.processRecord.getPid();
-        final int uid = info.applicationInfo.uid;
+        final int uid = info.uid;
         final MemoryStat memoryStat = readMemoryStatFromFilesystem(uid, pid);
         if (memoryStat == null) {
             if (DEBUG_METRICS) Slog.i(TAG, "logAppStartMemoryStateCapture memoryStat null");
@@ -1610,7 +1616,7 @@ class ActivityMetricsLogger {
 
         FrameworkStatsLog.write(
                 FrameworkStatsLog.APP_RESTART_OCCURRED,
-                info.applicationInfo.uid,
+                info.uid,
                 startType,
                 millisSinceLastExit,
                 lastExitInfo.getReason(),
@@ -1620,7 +1626,7 @@ class ActivityMetricsLogger {
         if (DEBUG_METRICS) {
             final String message = String.format(
                     "APP_RESTART_OCCURRED(%s, %s, %s, lastExit={%.1fs ago, %s / %s})",
-                    info.applicationInfo.uid,
+                    info.uid,
                     info.packageName,
                     WaitResult.launchStateToString(info.getLaunchState()),
                     millisSinceLastExit / 1000.0,

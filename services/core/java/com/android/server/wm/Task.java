@@ -582,12 +582,12 @@ class Task extends TaskFragment {
                 mRoot = r;
             }
 
-            final int uid = mRoot == r ? effectiveUid : r.info.applicationInfo.uid;
+            final int uid = mRoot == r ? effectiveUid : r.info.getUid();
             if (mIgnoreRelinquishIdentity
                     || (mRoot.info.flags & FLAG_RELINQUISH_TASK_IDENTITY) == 0
-                    || (mRoot.info.applicationInfo.uid != Process.SYSTEM_UID
+                    || (mRoot.info.getUid() != Process.SYSTEM_UID
                     && !mRoot.info.applicationInfo.isSystemApp()
-                    && mRoot.info.applicationInfo.uid != uid)) {
+                    && mRoot.info.getUid() != uid)) {
                 // No need to relinquish identity, end search.
                 return true;
             }
@@ -955,7 +955,7 @@ class Task extends TaskFragment {
         } else if (!mNeverRelinquishIdentity) {
             final ActivityInfo activityInfo = info != null ? info : r.info;
             updateIdentity = (effectiveUid == Process.SYSTEM_UID || mIsEffectivelySystemApp
-                    || effectiveUid == activityInfo.applicationInfo.uid);
+                    || effectiveUid == activityInfo.getUid());
         }
         if (updateIdentity) {
             mCallingUid = r.launchedFromUid;
@@ -980,7 +980,7 @@ class Task extends TaskFragment {
             rootAffinity = affinity;
             mRequiredDisplayCategory = info.requiredDisplayCategory;
         }
-        effectiveUid = info.applicationInfo.uid;
+        effectiveUid = info.getUid();
         mIsEffectivelySystemApp = info.applicationInfo.isSystemApp();
 
         if (info.targetActivity == null) {
@@ -1024,7 +1024,7 @@ class Task extends TaskFragment {
             // task as having a true root activity.
             rootWasReset = true;
         }
-        mUserId = UserHandle.getUserId(info.applicationInfo.uid);
+        mUserId = UserHandle.getUserId(info.getUid());
         mUserSetupComplete = Settings.Secure.getIntForUser(
                 mAtmService.mContext.getContentResolver(), USER_SETUP_COMPLETE, 0, mUserId) != 0;
         if ((info.flags & ActivityInfo.FLAG_AUTO_REMOVE_FROM_RECENTS) != 0) {
@@ -3484,7 +3484,7 @@ class Task extends TaskFragment {
                 baseActivity != null ? baseActivity.getUid() : task.effectiveUid;
 
         if (info.topActivityInfo != null
-                && task.effectiveUid != info.topActivityInfo.applicationInfo.uid) {
+                && task.effectiveUid != info.topActivityInfo.getUid()) {
             // Making a copy to prevent eliminating the info in the original ActivityRecord.
             info.topActivityInfo = new ActivityInfo(info.topActivityInfo);
             info.topActivityInfo.applicationInfo =
@@ -5792,7 +5792,7 @@ class Task extends TaskFragment {
         resultData = resultDataHolder[0];
 
         if (parent != null && foundParentInTask) {
-            final int callingUid = srec.info.applicationInfo.uid;
+            final int callingUid = srec.info.getUid();
             // TODO(b/64750076): Check if calling pid should really be -1.
             final int res = mAtmService.getActivityStartController()
                     .obtainStarter(destIntent, "navigateUpTo")
@@ -6881,8 +6881,8 @@ class Task extends TaskFragment {
             mLastTimeMoved = System.currentTimeMillis();
             mNeverRelinquishIdentity = true;
             if (mActivityInfo != null) {
-                mUserId = UserHandle.getUserId(mActivityInfo.applicationInfo.uid);
-                mCallingUid = mActivityInfo.applicationInfo.uid;
+                mUserId = UserHandle.getUserId(mActivityInfo.getUid());
+                mCallingUid = mActivityInfo.getUid();
                 mCallingPackage = mActivityInfo.packageName;
                 mResizeMode = mActivityInfo.resizeMode;
                 mSupportsPictureInPicture = mActivityInfo.supportsPictureInPicture();
