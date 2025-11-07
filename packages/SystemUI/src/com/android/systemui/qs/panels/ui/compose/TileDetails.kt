@@ -16,7 +16,7 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
-import androidx.compose.foundation.background
+import android.os.Trace
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +45,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.trace
 import com.android.systemui.bluetooth.qsdialog.BluetoothDetailsContent
 import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsViewModel
 import com.android.systemui.plugins.qs.TileDetailsViewModel
@@ -60,6 +61,12 @@ import com.android.systemui.qs.tiles.dialog.ModesDetailsContent
 import com.android.systemui.qs.tiles.dialog.ModesDetailsViewModel
 import com.android.systemui.res.R
 
+private val TileDetailsViewModel.traceName
+    get() =
+        ((this::class.simpleName ?: "TileDetailsViewModel") + "#title#" + title).takeLast(
+            Trace.MAX_SECTION_NAME_LEN
+        )
+
 @Composable
 fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewModel) {
 
@@ -69,83 +76,87 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
 
     val tileDetailedViewModel = detailsViewModel.activeTileDetails ?: return
 
-    DisposableEffect(Unit) { onDispose { detailsViewModel.closeDetailedView() } }
+    trace(tileDetailedViewModel.traceName) {
+        DisposableEffect(Unit) { onDispose { detailsViewModel.closeDetailedView() } }
 
-    val title = tileDetailedViewModel.title
-    val subTitle = tileDetailedViewModel.subTitle
-    val colors = MaterialTheme.colorScheme
+        val title = tileDetailedViewModel.title
+        val subTitle = tileDetailedViewModel.subTitle
+        val colors = MaterialTheme.colorScheme
 
-    Column(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .heightIn(
-                    min = TileDetailsDefaults.DetailsMinHeight,
-                    max = TileDetailsDefaults.DetailsMaxHeight,
-                )
-    ) {
-        CompositionLocalProvider(
-            value = LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant
-        ) {
-            Row(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(
-                            start = TileDetailsDefaults.TitleRowStart,
-                            top = TileDetailsDefaults.TitleRowTop,
-                            end = TileDetailsDefaults.TitleRowEnd,
-                            bottom = TileDetailsDefaults.TitleRowBottom,
-                        ),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(
-                    onClick = { detailsViewModel.closeDetailedView() },
-                    colors = IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
-                    modifier = Modifier
-                        .size(TileDetailsDefaults.TitleRowButtonSize)
-                        .align(Alignment.CenterVertically),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        // Description is TBD
-                        contentDescription = "Back to QS panel",
-                        tint = MaterialTheme.colorScheme.onSurface,
+        Column(
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .heightIn(
+                        min = TileDetailsDefaults.DetailsMinHeight,
+                        max = TileDetailsDefaults.DetailsMaxHeight,
                     )
+        ) {
+            CompositionLocalProvider(
+                value = LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant
+            ) {
+                Row(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(
+                                start = TileDetailsDefaults.TitleRowStart,
+                                top = TileDetailsDefaults.TitleRowTop,
+                                end = TileDetailsDefaults.TitleRowEnd,
+                                bottom = TileDetailsDefaults.TitleRowBottom,
+                            ),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(
+                        onClick = { detailsViewModel.closeDetailedView() },
+                        colors =
+                            IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
+                        modifier =
+                            Modifier.size(TileDetailsDefaults.TitleRowButtonSize)
+                                .align(Alignment.CenterVertically),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            // Description is TBD
+                            contentDescription = "Back to QS panel",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                    Text(
+                        text = title,
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = colors.onSurface,
+                    )
+                    IconButton(
+                        onClick = { tileDetailedViewModel.clickOnSettingsButton() },
+                        colors =
+                            IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
+                        modifier =
+                            Modifier.size(TileDetailsDefaults.TitleRowButtonSize)
+                                .align(Alignment.CenterVertically),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            // Description is TBD
+                            contentDescription = "Go to Settings",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
                 }
                 Text(
-                    text = title,
-                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = subTitle,
+                    modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = colors.onSurface,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
                 )
-                IconButton(
-                    onClick = { tileDetailedViewModel.clickOnSettingsButton() },
-                    colors = IconButtonDefaults.iconButtonColors(contentColor = colors.onSurface),
-                    modifier = Modifier
-                        .size(TileDetailsDefaults.TitleRowButtonSize)
-                        .align(Alignment.CenterVertically),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        // Description is TBD
-                        contentDescription = "Go to Settings",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
             }
-            Text(
-                text = subTitle,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.onSurfaceVariant,
-            )
-        }
 
-        Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-            MapTileDetailsContent(tileDetailedViewModel)
+            Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+                MapTileDetailsContent(tileDetailedViewModel)
+            }
         }
     }
 }
@@ -156,6 +167,7 @@ private fun MapTileDetailsContent(tileDetailsViewModel: TileDetailsViewModel) {
         is InternetDetailsViewModel -> InternetDetailsContent(tileDetailsViewModel)
         is BluetoothDetailsViewModel ->
             BluetoothDetailsContent(tileDetailsViewModel.detailsContentViewModel)
+
         is ModesDetailsViewModel -> ModesDetailsContent(tileDetailsViewModel)
         is CastDetailsViewModel -> CastDetailsContent(tileDetailsViewModel)
         is AudioDetailsViewModel -> AudioDetailsContent(tileDetailsViewModel)
