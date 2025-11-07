@@ -22,15 +22,19 @@ import androidx.annotation.RequiresPermission
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.DreamLog
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @SysUISingleton
@@ -38,7 +42,7 @@ class DreamStartable
 @Inject
 constructor(
     @Application private val applicationScope: CoroutineScope,
-    private val deviceEntryInteractor: DeviceEntryInteractor,
+    private val sceneInteractor: SceneInteractor,
     private val dreamManager: DreamManager,
     private val keyguardInteractor: KeyguardInteractor,
     @DreamLog private val logBuffer: LogBuffer,
@@ -49,19 +53,27 @@ constructor(
     @RequiresPermission(WRITE_DREAM_STATE)
     override fun start() {
         if (SceneContainerFlag.isEnabled) {
-            handleStopDreamWhenUnlocked()
+            handleStopDreamWhenGoingToGone()
         }
     }
 
-    /** Stops dream when device is entered */
+    /**
+     * Stops dream when going from dream to gone.
+     *
+     * This can happen when launching activities from the dream, and once device is authenticated
+     * and goes to the home screen, dream should be stopped.
+     */
     @RequiresPermission(WRITE_DREAM_STATE)
-    private fun handleStopDreamWhenUnlocked() {
+    private fun handleStopDreamWhenGoingToGone() {
         applicationScope.launch {
-            deviceEntryInteractor.isUnlocked
-                .sample(keyguardInteractor.isDreaming, ::Pair)
-                .collect { (isUnlocked, isDreaming) ->
-                    if (isUnlocked && isDreaming) {
-                        logger.i("Stopping dream due to device unlock")
+            sceneInteractor.currentScene
+                .pairwise()
+                .map { (prev, current) -> prev == Scenes.Dream && current == Scenes.Gone }
+                .distinctUntilChanged()
+                .sample(keyguardInteractor.isAbleToDream, ::Pair)
+                .collect { (dreamToGone, isDreaming) ->
+                    if (dreamToGone && isDreaming) {
+                        logger.i("Stopping dream due to going from dream to gone")
                         dreamManager.stopDream()
                     }
                 }
