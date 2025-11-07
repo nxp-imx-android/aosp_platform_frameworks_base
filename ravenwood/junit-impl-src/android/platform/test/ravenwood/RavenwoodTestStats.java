@@ -17,11 +17,14 @@ package android.platform.test.ravenwood;
 
 import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 
+import android.annotation.Nullable;
+import android.platform.test.annotations.internal.InnerRunner;
 import android.util.Log;
 
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import org.junit.runner.Description;
+import org.junit.runner.RunWith;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
@@ -29,6 +32,8 @@ import org.junit.runner.notification.RunNotifier;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,6 +41,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -54,8 +61,9 @@ import java.util.regex.Pattern;
 public class RavenwoodTestStats {
     private static final String TAG = RavenwoodInternalUtils.TAG;
     private static final String HEADER =
-            "Type,Module,Class,Method,RawMethodName,Reason,Passed,Failed,Skipped,DurationMillis";
-    private static final String FORMAT = "%s,%s,%s,%s,%s,%s,%d,%d,%d,%f\n";
+            "Type,Module,Class,Method,RawMethodName,Reason,Annotations,Passed,Failed,Skipped,"
+            + "DurationMillis";
+    private static final String FORMAT = "%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%f\n";
 
     private static RavenwoodTestStats sInstance;
 
@@ -83,7 +91,7 @@ public class RavenwoodTestStats {
         return caller.getClassName() + "#" + caller.getMethodName();
     }
 
-    record Outcome(Result result, Duration duration, Failure failure) {
+    record Outcome(Description testDescription, Result result, Duration duration, Failure failure) {
         /** @return 1 if {@link #result} is "passed". */
         public int passedCount() {
             return result == Result.Passed ? 1 : 0;
@@ -192,6 +200,77 @@ public class RavenwoodTestStats {
         return '"' + s.replace("\"", "\"\"") + '"';
     }
 
+    private static String getAnnotations(@Nullable AnnotatedElement element) {
+        if (element == null) {
+            return "";
+        }
+        return annotationsToResult(Arrays.asList(element.getAnnotations()));
+    }
+
+    private static String getAnnotations(@Nullable Description description) {
+        if (description == null) {
+            return "";
+        }
+        return annotationsToResult(description.getAnnotations());
+    }
+
+    /**
+     * Convert annotations to a comma-separated string, ignoring uninteresting ones.
+     */
+    private static String annotationsToResult(@Nullable Collection<Annotation> annotations) {
+        StringBuilder sb = new StringBuilder();
+        var sep = "";
+        for (Annotation annot : annotations) {
+            var name = annot.annotationType().getName();
+            if (name.equals("org.junit.Test")) {
+                continue;
+            }
+            if (name.contains("HostStubGenProcessed")) {
+                continue;
+            }
+            sb.append(sep);
+            sb.append("@");
+            sb.append(getAnnotationTypeName(annot));
+            appendAnnotationValue(sb, annot);
+            sep = ",";
+        }
+
+        return sb.toString();
+    }
+
+    private static final String[] KNOWN_PACKAGES = {
+            "android.platform.test.annotations.internal.",
+            "android.platform.test.annotations.",
+            "org.junit.runner.",
+    };
+
+    private static String getAnnotationTypeName(Annotation annot) {
+        var name = annot.annotationType().getName();
+
+        for (var kp : KNOWN_PACKAGES) {
+            if (name.startsWith(kp)) {
+                name = name.substring(kp.length());
+                break;
+            }
+        }
+        return name;
+    }
+
+    private static void appendAnnotationValue(StringBuilder sb, Annotation annot) {
+        String value = null;
+        if (annot instanceof RunWith a) {
+            value = a.value().getCanonicalName();
+        } else if (annot instanceof InnerRunner a) {
+            value = a.value().getCanonicalName();
+        }
+        if (value == null) {
+            return;
+        }
+        sb.append("(");
+        sb.append(value);
+        sb.append(")");
+    }
+
     /**
      * Dump all the results and clear it.
      */
@@ -202,6 +281,7 @@ public class RavenwoodTestStats {
             int failed = 0;
             Duration totalDuration = Duration.ZERO;
 
+            Class<?> testClass = null;
             for (var entry : outcomes.entrySet()) {
                 var method = entry.getKey();
                 var outcome = entry.getValue();
@@ -213,11 +293,14 @@ public class RavenwoodTestStats {
 
                 var rawMethodName = extractMethodName(method);
 
+                testClass = outcome.testDescription.getTestClass();
+
                 mOutputWriter.printf(FORMAT,
                         "m", // Type: method
                         mTestModuleName, className,
                         normalize(method), normalize(rawMethodName),
                         normalize(outcome.reason()),
+                        normalize(getAnnotations(outcome.testDescription)),
                         outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
                         outcome.duration.toMillis() / 1000f);
             }
@@ -227,6 +310,7 @@ public class RavenwoodTestStats {
                     mTestModuleName, className,
                     "-", "-", // method name / row method name.
                     "-", // reason.
+                    normalize(getAnnotations(testClass)),
                     passed, failed, skipped,
                     totalDuration.toMillis() / 1000f);
         });
@@ -312,7 +396,7 @@ public class RavenwoodTestStats {
             mStartTime = Instant.now();
         }
 
-        private Outcome createOutcome(Result result, Failure failure) {
+        private Outcome createOutcome(Description testDescription, Result result, Failure failure) {
             var endTime = Instant.now();
 
             // When a class is skipped, force set duration to 0.
@@ -321,11 +405,11 @@ public class RavenwoodTestStats {
             // things.)
             var duration = result == Result.Skipped ? Duration.ZERO
                     : Duration.between(mStartTime, endTime);
-            return new Outcome(result, duration, failure);
+            return new Outcome(testDescription, result, duration, failure);
         }
 
-        private Outcome createOutcome(Result result) {
-            return createOutcome(result, null);
+        private Outcome createOutcome(Description testDescription, Result result) {
+            return createOutcome(testDescription, result, null);
         }
 
         private void addResultWithLogging(
@@ -347,7 +431,7 @@ public class RavenwoodTestStats {
             // we already recorded a result to the same metho, we won't overwrite it.
             addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    createOutcome(Result.Passed),
+                    createOutcome(description, Result.Passed),
                     "  testFinished: ",
                     description);
         }
@@ -357,7 +441,7 @@ public class RavenwoodTestStats {
             var description = failure.getDescription();
             addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    createOutcome(Result.Failed, failure),
+                    createOutcome(description, Result.Failed, failure),
                     "  testFailure: ",
                     failure);
         }
@@ -367,7 +451,7 @@ public class RavenwoodTestStats {
             var description = failure.getDescription();
             addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    createOutcome(Result.Skipped),
+                    createOutcome(description, Result.Skipped),
                     "  testAssumptionFailure: ",
                     failure);
         }
@@ -376,7 +460,7 @@ public class RavenwoodTestStats {
         public void testIgnored(Description description) {
             addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    createOutcome(Result.Skipped),
+                    createOutcome(description, Result.Skipped),
                     "  testIgnored: ",
                     description);
         }
