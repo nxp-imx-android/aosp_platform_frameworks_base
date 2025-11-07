@@ -70,15 +70,15 @@ class AppToWebRepositoryImpl(
 ) : TaskVanishedListener, AppToWebRepository {
     private var appToWebDataByTask = SparseArray<TaskAppToWebData>()
     private val firstRunPromptShownByTaskId = mutableSetOf<Int>()
-    private var firstRunPromptShownPackagesByUserId: MutableMap<Int, MutableSet<String>> =
+    private var firstRunPromptAckedPackagesByUserId: MutableMap<Int, MutableSet<String>> =
         mutableMapOf()
 
     private val launcherAppsCallback = object : LauncherApps.Callback() {
         override fun onPackageRemoved(packageName: String, user: UserHandle) {
             val userId = user.identifier
-            val packageRemoved = firstRunPromptShownPackagesByUserId[userId]?.remove(packageName)
+            val packageRemoved = firstRunPromptAckedPackagesByUserId[userId]?.remove(packageName)
             if (packageRemoved == true) {
-                persistFirstRunPromptShownPackages()
+                persistFirstRunPromptAckedPackages()
             }
         }
 
@@ -103,12 +103,12 @@ class AppToWebRepositoryImpl(
             val userId = user.identifier
             var packageRemoved = false
             packageNames.forEach { packageName ->
-                if (firstRunPromptShownPackagesByUserId[userId]?.remove(packageName) == true) {
+                if (firstRunPromptAckedPackagesByUserId[userId]?.remove(packageName) == true) {
                     packageRemoved = true
                 }
             }
             if (packageRemoved) {
-                persistFirstRunPromptShownPackages()
+                persistFirstRunPromptAckedPackages()
             }
         }
     }
@@ -125,8 +125,8 @@ class AppToWebRepositoryImpl(
             mainCoroutineScope.launch {
                 val appToWebProto = appToWebDatastoreRepository.getAppToWebProto() ?: return@launch
                 appToWebProto.appToWebRepoByUserMap.forEach { (userId, userRepo) ->
-                    firstRunPromptShownPackagesByUserId[userId] = userRepo
-                        .firstRunPromptShownPackagesList.toMutableSet()
+                    firstRunPromptAckedPackagesByUserId[userId] = userRepo
+                        .firstRunPromptAckedPackagesList.toMutableSet()
                 }
             }
         }
@@ -243,10 +243,10 @@ class AppToWebRepositoryImpl(
             // Active prompting is disabled.
             return false
         }
-        val everShown =
-            firstRunPromptShownPackagesByUserId[taskInfo.userId]?.contains(packageName) ?: false
-        if (everShown) {
-            // The prompt has been shown before.
+        val everAcked =
+            firstRunPromptAckedPackagesByUserId[taskInfo.userId]?.contains(packageName) ?: false
+        if (everAcked) {
+            // The prompt has been acknowledged before.
             return false
         }
         return true
@@ -264,19 +264,25 @@ class AppToWebRepositoryImpl(
             return
         }
         firstRunPromptShownByTaskId.add(taskInfo.taskId)
-        val packageName = taskInfo.baseActivity?.packageName ?: return
-        firstRunPromptShownPackagesByUserId.putIfAbsent(taskInfo.userId, mutableSetOf())
-        checkNotNull(firstRunPromptShownPackagesByUserId[taskInfo.userId]) {
-            "firstRunPromptShownPackagesByUserId must be non-null for userId ${taskInfo.userId}"
-        }.add(packageName)
-        persistFirstRunPromptShownPackages()
     }
 
-    private fun persistFirstRunPromptShownPackages() {
+    override fun onFirstRunPromptAcked(taskInfo: RunningTaskInfo) {
+        if (!Flags.enableEnhancedAppToWebTransition()) {
+            return
+        }
+        val packageName = taskInfo.baseActivity?.packageName ?: return
+        firstRunPromptAckedPackagesByUserId.putIfAbsent(taskInfo.userId, mutableSetOf())
+        checkNotNull(firstRunPromptAckedPackagesByUserId[taskInfo.userId]) {
+            "firstRunPromptAckedPackagesByUserId must be non-null for userId ${taskInfo.userId}"
+        }.add(packageName)
+        persistFirstRunPromptAckedPackages()
+    }
+
+    private fun persistFirstRunPromptAckedPackages() {
         bgCoroutineScope.launch {
             try {
-                appToWebDatastoreRepository.updateFirstRunPromptShownPackages(
-                    firstRunPromptShownPackagesByUserId
+                appToWebDatastoreRepository.updateFirstRunPromptAckedPackages(
+                    firstRunPromptAckedPackagesByUserId
                 )
             } catch (exception: Exception) {
                 logE(

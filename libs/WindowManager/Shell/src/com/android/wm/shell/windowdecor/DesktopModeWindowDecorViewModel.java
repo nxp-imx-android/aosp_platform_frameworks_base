@@ -1210,6 +1210,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     public void onFirstRunPromptShown(RunningTaskInfo taskInfo) {
     }
 
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public void onFirstRunPromptAcked(RunningTaskInfo taskInfo) {
+    }
+
     @Override
     public void removeTaskIfTiled(int displayId, int taskId) {
         mDesktopTilingDecorViewModel.removeTaskIfTiled(displayId, taskId);

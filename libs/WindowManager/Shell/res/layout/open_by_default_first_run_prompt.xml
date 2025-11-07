@@ -88,6 +88,18 @@
                     android:minHeight="40dp"
                     android:textColor="@androidprv:color/materialColorOnPrimary"
                     android:background="@drawable/open_by_default_settings_dialog_confirm_button_background"/>
+
+                <Button
+                    android:id="@+id/ask_me_later_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                    android:text="@string/open_by_default_splash_dialog_ask_me_later_text"
+                    android:layout_marginTop="16dp"
+                    android:textSize="14sp"
+                    android:minHeight="40dp"
+                    android:textColor="@androidprv:color/materialColorPrimary"
+                    android:background="@android:color/transparent"/>
             </LinearLayout>
         </ScrollView>
     </FrameLayout>

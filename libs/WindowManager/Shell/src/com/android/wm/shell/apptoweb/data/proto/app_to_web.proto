@@ -20,8 +20,8 @@ option java_package = "com.android.wm.shell.apptoweb.data";
 option java_multiple_files = true;
 
 message AppToWebUserRepository {
-  // Package names of the apps where the first-run prompt is shown.
-  repeated string first_run_prompt_shown_packages = 1;
+  // Package names of the apps where the first-run prompt is acknowledged.
+  repeated string first_run_prompt_acked_packages = 1;
 }
 
 // App-to-Web data

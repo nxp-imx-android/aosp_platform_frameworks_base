@@ -40,6 +40,7 @@ class OpenByDefaultFirstRunPromptView @JvmOverloads constructor(
     private lateinit var dialogTitle: TextView
     private lateinit var openInAppButton: Button
     private lateinit var openInBrowserButton: Button
+    private lateinit var askMeLaterButton: Button
     private lateinit var backgroundDim: Drawable
 
     fun setDismissOnClickListener(callback: (View) -> Unit) {
@@ -58,6 +59,10 @@ class OpenByDefaultFirstRunPromptView @JvmOverloads constructor(
         openInAppButton.setOnClickListener(callback)
     }
 
+    fun setAskMeLaterButtonClickListener(callback: (View) -> Unit) {
+        askMeLaterButton.setOnClickListener(callback)
+    }
+
     override fun getDialogContainerView(): View = dialogContainer
 
     override fun getBackgroundDimDrawable(): Drawable = backgroundDim
@@ -69,6 +74,7 @@ class OpenByDefaultFirstRunPromptView @JvmOverloads constructor(
         dialogTitle = dialogContainer.requireViewById(R.id.title)
         openInBrowserButton = dialogContainer.requireViewById(R.id.open_in_browser_button)
         openInAppButton = dialogContainer.requireViewById(R.id.open_in_app_button)
+        askMeLaterButton = dialogContainer.requireViewById(R.id.ask_me_later_button)
         backgroundDim = background.mutate()
         backgroundDim.alpha = 128
         TypefaceUtils.setTypeface(dialogTitle, TypefaceUtils.FontFamily.GSF_HEADLINE_SMALL)
@@ -99,6 +105,9 @@ class OpenByDefaultFirstRunPromptView @JvmOverloads constructor(
         openInBrowserButton.accessibilityTraversalAfter = R.id.open_in_app_button
 
         openInAppButton.accessibilityTraversalBefore = R.id.open_in_browser_button
-        openInAppButton.accessibilityTraversalAfter = R.id.title
+        openInAppButton.accessibilityTraversalAfter = R.id.ask_me_later_button
+
+        askMeLaterButton.accessibilityTraversalBefore = R.id.open_in_app_button
+        askMeLaterButton.accessibilityTraversalAfter = R.id.title
     }
 }

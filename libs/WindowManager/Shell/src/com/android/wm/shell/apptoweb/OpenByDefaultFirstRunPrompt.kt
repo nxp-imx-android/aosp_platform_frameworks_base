@@ -46,6 +46,7 @@ internal class OpenByDefaultFirstRunPrompt(
     surfaceControlTransactionSupplier: Supplier<SurfaceControl.Transaction>,
     @ShellMainThread mainScope: CoroutineScope,
     listener: DialogLifecycleListener,
+    private val onAckedCallback: () -> Unit,
 ) : BaseOpenByDefaultDialog<OpenByDefaultFirstRunPromptView>(
     context,
     userContext,
@@ -75,10 +76,15 @@ internal class OpenByDefaultFirstRunPrompt(
         dialog.setDismissOnClickListener { closeMenu() }
         dialog.setOpenInAppButtonClickListener {
             setDefaultLinkHandlingSetting(allowed = true)
+            onAckedCallback()
             closeMenu()
         }
         dialog.setOpenInBrowserButtonClickListener {
             setDefaultLinkHandlingSetting(allowed = false)
+            onAckedCallback()
+            closeMenu()
+        }
+        dialog.setAskMeLaterButtonClickListener {
             closeMenu()
         }
     }

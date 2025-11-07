@@ -268,8 +268,8 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
             baseActivity = taskInfo.baseActivity
             capturedLink = TEST_CAPTURED_URI
         }
-        // Show the first-run prompt for `taskInfo`.
-        appToWebRepository.onFirstRunPromptShown(taskInfo)
+        // Ack the first-run prompt for `taskInfo`.
+        appToWebRepository.onFirstRunPromptAcked(taskInfo)
         assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
 
         // Package is removed.
@@ -287,8 +287,8 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
             baseActivity = taskInfo.baseActivity
             capturedLink = TEST_CAPTURED_URI
         }
-        // Show the first-run prompt for `taskInfo`.
-        appToWebRepository.onFirstRunPromptShown(taskInfo)
+        // Ack the first-run prompt for `taskInfo`.
+        appToWebRepository.onFirstRunPromptAcked(taskInfo)
         assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
 
         // Package becomes unavailable.

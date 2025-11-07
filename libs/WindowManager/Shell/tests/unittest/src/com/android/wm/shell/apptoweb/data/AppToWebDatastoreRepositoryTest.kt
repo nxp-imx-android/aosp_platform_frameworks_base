@@ -75,24 +75,24 @@ class AppToWebDatastoreRepositoryTest {
     }
 
     @Test
-    fun test_addFirstRunPromptShownPackage() =
+    fun test_addFirstRunPromptAckedPackage() =
         runTest(StandardTestDispatcher()) {
             val userId = 0
-            val promptShownPackagesByUserId = mutableMapOf<Int, MutableSet<String>>()
-            promptShownPackagesByUserId[userId] = mutableSetOf(GMAIL_PACKAGE_NAME)
-            datastoreRepository.updateFirstRunPromptShownPackages(promptShownPackagesByUserId)
+            val promptAckedPackagesByUserId = mutableMapOf<Int, MutableSet<String>>()
+            promptAckedPackagesByUserId[userId] = mutableSetOf(GMAIL_PACKAGE_NAME)
+            datastoreRepository.updateFirstRunPromptAckedPackages(promptAckedPackagesByUserId)
             assertThat(datastoreRepository.getAppToWebProto().appToWebRepoByUserMap[userId]
-                ?.firstRunPromptShownPackagesList).contains(GMAIL_PACKAGE_NAME)
+                ?.firstRunPromptAckedPackagesList).contains(GMAIL_PACKAGE_NAME)
             assertThat(datastoreRepository.getAppToWebProto().appToWebRepoByUserMap[userId]
-                ?.getFirstRunPromptShownPackagesCount()).isEqualTo(1)
+                ?.getFirstRunPromptAckedPackagesCount()).isEqualTo(1)
 
-            promptShownPackagesByUserId[userId]?.add(YOUTUBE_PACKAGE_NAME)
-            datastoreRepository.updateFirstRunPromptShownPackages(promptShownPackagesByUserId)
+            promptAckedPackagesByUserId[userId]?.add(YOUTUBE_PACKAGE_NAME)
+            datastoreRepository.updateFirstRunPromptAckedPackages(promptAckedPackagesByUserId)
             assertThat(datastoreRepository.getAppToWebProto().appToWebRepoByUserMap[userId]
-                ?.firstRunPromptShownPackagesList)
+                ?.firstRunPromptAckedPackagesList)
                 .containsAtLeast(GMAIL_PACKAGE_NAME, YOUTUBE_PACKAGE_NAME)
             assertThat(datastoreRepository.getAppToWebProto().appToWebRepoByUserMap[userId]
-                ?.getFirstRunPromptShownPackagesCount()).isEqualTo(2)
+                ?.getFirstRunPromptAckedPackagesCount()).isEqualTo(2)
         }
 
     companion object {

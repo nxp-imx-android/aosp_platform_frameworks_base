@@ -982,6 +982,7 @@ constructor(
                         appToWebRepository.onFirstRunPromptShown(taskInfo)
                     }
                 },
+                { appToWebRepository.onFirstRunPromptAcked(taskInfo) },
             )
     }
 
