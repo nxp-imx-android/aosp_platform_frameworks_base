@@ -1536,6 +1536,8 @@ class BubbleStackViewTest {
         override fun clearImeHiddenRunnable() {
             this.onImeHidden = null
         }
+
+        override fun isGestureNavigationMode() = false
     }
 
     private class FakeBubbleExpandListener : BubbleExpandListener {
