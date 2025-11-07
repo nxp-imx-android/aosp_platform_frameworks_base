@@ -22,6 +22,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.service.personalcontext.Flags;
 import android.util.Log;
 
@@ -144,6 +145,17 @@ public abstract class ContextHint {
 
     @NonNull
     abstract Bundle toBundleImpl();
+
+    /**
+     * Writes data should be used to verify the hint has not been tampered with to a {@link Parcel}.
+     *
+     * If your hint stores binders or file descriptors, you must override this method
+     *
+     * @hide
+     */
+    public void writeToSignatureParcel(@NonNull Parcel dest) {
+        dest.writeBundle(toBundle());
+    }
 
     /**
      * Return the {@link Bundle} representation of this hint's data for writing to a {@link
