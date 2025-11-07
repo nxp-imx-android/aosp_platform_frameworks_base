@@ -824,6 +824,14 @@
     -->
     <integer name="config_face_auth_supported_posture">0</integer>
 
+    <!-- The angle threshold that the device must pass in order for the posture detection algorithm
+         to consider it flat. -->
+    <integer name="config_postureDetectionFlatAngleThreshold">30</integer>
+
+    <!-- The angle threshold that the device must pass in order for the posture detection algorithm
+     to consider it upright. -->
+    <integer name="config_postureDetectionUprightAngleThreshold">60</integer>
+
     <!-- Components to allow running fingerprint listening if their activity is occluding the lock screen. -->
     <string-array name="config_fingerprint_listen_on_occluding_activity_packages" translatable="false">
     </string-array>

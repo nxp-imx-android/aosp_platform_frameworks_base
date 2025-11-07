@@ -100,7 +100,7 @@ constructor(
      * smoothing algorithm.
      */
     private val orientationSmoothed: Flow<AggregatedConfidenceState> =
-        repository.positionState.map { it.orientation }.aggregateConfidences()
+        repository.positionState.map { it.postured }.aggregateConfidences()
 
     /**
      * Posturing is composed of the device being stationary and in the correct orientation. If both
