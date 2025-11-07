@@ -699,6 +699,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
             null,
             null,
             windowingLayerChange,
+            null,
             0,
             0,
         )
