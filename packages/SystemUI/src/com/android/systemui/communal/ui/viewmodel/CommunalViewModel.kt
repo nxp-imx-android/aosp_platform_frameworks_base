@@ -20,7 +20,6 @@ import android.content.ComponentName
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags
-import com.android.systemui.Flags.hubEditModeTransition
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.communal.dagger.CommunalModule.Companion.SWIPE_TO_HUB
@@ -263,9 +262,7 @@ constructor(
     // transition to edit mode starts. It then animates back to the original layout before the edit
     // mode activity fully finishes, ensuring a smooth visual transition.
     override val shouldShowEditModeLayout: Flow<Boolean> =
-        if (hubEditModeTransition())
-            communalSceneInteractor.editModeState.map { it != null && it > EditModeState.STARTING }
-        else flowOf(false)
+        communalSceneInteractor.editModeState.map { it != null && it > EditModeState.STARTING }
 
     private val isUiBlurredByBouncer =
         if (Flags.bouncerUiRevamp()) {
@@ -447,9 +444,7 @@ constructor(
      * activity entry and exit animations below the SystemUI window.
      */
     val showBackgroundForEditModeTransition: Flow<Boolean> =
-        if (Flags.hubEditModeTransition())
-            communalSceneInteractor.editModeState.map { it != null && it > EditModeState.STARTING }
-        else flowOf(false)
+        communalSceneInteractor.editModeState.map { it != null && it > EditModeState.STARTING }
 
     /** See [CommunalSettingsInteractor.isV2FlagEnabled] */
     fun v2FlagEnabled(): Boolean = communalSettingsInteractor.isV2FlagEnabled()

@@ -27,7 +27,6 @@ import android.os.UserHandle
 import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import com.android.internal.logging.UiEventLogger
-import com.android.systemui.Flags
 import com.android.systemui.communal.dagger.CommunalModule.Companion.LAUNCHER_PACKAGE
 import com.android.systemui.communal.data.model.CommunalWidgetCategories
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
@@ -108,8 +107,7 @@ constructor(
     private val editModeShowing =
         communalSceneInteractor.editModeState.map { it == EditModeState.SHOWING }
 
-    override val isCommunalContentVisible: Flow<Boolean> =
-        if (Flags.hubEditModeTransition()) flowOf(true) else editModeShowing
+    override val isCommunalContentVisible: Flow<Boolean> = flowOf(true)
 
     override val shouldShowEditModeLayout: Flow<Boolean> = flowOf(true)
 
