@@ -21,6 +21,7 @@ import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCT
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
@@ -32,8 +33,6 @@ import java.util.Objects;
 /**
  * Specifies the query parameters for finding app functions. A search will be performed using a
  * logical AND operation across all provided criteria.
- *
- * @hide
  */
 @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionSearchSpec implements Parcelable {
@@ -78,6 +77,37 @@ public final class AppFunctionSearchSpec implements Parcelable {
         mSchemaCategory = in.readString8();
         mSchemaName = in.readString8();
         mMinSchemaVersion = in.readLong();
+    }
+
+    /** Returns the list of package names to filter by. */
+    @SuppressLint("NullableCollection")
+    @Nullable
+    public List<String> getPackageNames() {
+        return mPackageNames;
+    }
+
+    /** Returns the list of {@link AppFunctionName} to filter by. */
+    @SuppressLint("NullableCollection")
+    @Nullable
+    public List<AppFunctionName> getFunctionNames() {
+        return mFunctionNames;
+    }
+
+    /** Returns the schema category to filter by. */
+    @Nullable
+    public String getSchemaCategory() {
+        return mSchemaCategory;
+    }
+
+    /** Returns the schema name to filter by. */
+    @Nullable
+    public String getSchemaName() {
+        return mSchemaName;
+    }
+
+    /** Returns the minimum schema category to filter by. */
+    public long getMinSchemaVersion() {
+        return mMinSchemaVersion;
     }
 
     @Override
@@ -236,7 +266,7 @@ public final class AppFunctionSearchSpec implements Parcelable {
         }
 
         /**
-         * Sets the schema version to filter by.
+         * Sets the minimum schema version to filter by.
          *
          * @param minSchemaVersion the minimum schema version to filter by. A value of 0 will skip
          *     this filter.
