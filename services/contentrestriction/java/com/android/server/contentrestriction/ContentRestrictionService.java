@@ -17,6 +17,10 @@
 package com.android.server.contentrestriction;
 
 import android.annotation.NonNull;
+import android.annotation.RequiresNoPermission;
+import android.annotation.UserIdInt;
+import android.app.contentrestriction.Content;
+import android.app.contentrestriction.IContentRestrictionCallback;
 import android.app.contentrestriction.IContentRestrictionManager;
 import android.content.Context;
 
@@ -28,6 +32,20 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
 
     public ContentRestrictionService(Context context) {
         mContext = context.createAttributionContext("ContentRestrictionService");
+    }
+
+    @Override
+    @RequiresNoPermission
+    public boolean isContentRestrictionEnabled(@UserIdInt int userId) {
+        // TODO(b/441599653): Implement content restriction enablement check.
+        return true;
+    }
+
+    @Override
+    @RequiresNoPermission
+    public void isContentAllowed(@UserIdInt int userId, Content content,
+            IContentRestrictionCallback callback) {
+        // TODO(b/441599653): Implement content restriction check.
     }
 
     public static class Lifecycle extends SystemService {
