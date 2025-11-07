@@ -116,8 +116,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         boolean hasLaunchWindowingMode = false;
         final boolean inDesktopMode = suggestedDisplayArea.inFreeformWindowingMode()
                 || suggestedDisplayArea.getTopMostVisibleFreeformActivity() != null;
-        if (task == null && (isRequestingFreeformWindowMode(null, options, currentParams)
-                || inDesktopMode)) {
+        if (task == null && (isRequestingFreeformWindowMode(null, options) || inDesktopMode)) {
             if (activity != null) {
                 if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
                         activity.mActivityComponent, activity.isNoDisplay(),
@@ -141,7 +140,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         }
 
         final int desktopFirstOverrideWindowingMode = getWindowingModeForDesktopFirstPolicy(task,
-                source, options, suggestedDisplayArea, currentParams);
+                source, options, suggestedDisplayArea);
         if (desktopFirstOverrideWindowingMode != WINDOWING_MODE_UNDEFINED) {
             outParams.mWindowingMode = desktopFirstOverrideWindowingMode;
             if (task == null) {
@@ -158,7 +157,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
 
-        if (!isEnteringDesktopMode(task, source, options, suggestedDisplayArea, currentParams)) {
+        if (!isEnteringDesktopMode(task, source, options, suggestedDisplayArea)) {
             appendLog("not entering desktop mode, skipping");
             return RESULT_SKIP;
         }
@@ -227,8 +226,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                     sourceTask,
                     source,
                     options,
-                    suggestedDisplayArea,
-                    currentParams)
+                    suggestedDisplayArea)
                     && !isFullscreenInDeskTask) {
                 // If trampoline source is not freeform but we are entering or in desktop mode,
                 // ignore the source windowing mode and set the windowing mode to freeform.
@@ -311,20 +309,19 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             @NonNull Task task,
             @Nullable ActivityRecord source,
             @Nullable ActivityOptions options,
-            @NonNull TaskDisplayArea taskDisplayArea,
-            @NonNull LaunchParamsController.LaunchParams currentParams) {
-        if (isRequestingFreeformWindowMode(task, options, currentParams)) {
+            @NonNull TaskDisplayArea taskDisplayArea) {
+        if (isRequestingFreeformWindowMode(task, options)) {
             // It's launching in freeform without any modifications.
             return true;
         }
 
-        if (!checkSourceWindowModesCompatible(task, options, currentParams)) {
+        if (!checkSourceWindowModesCompatible(task, options)) {
             // It's launching in incompatible mode.
             return false;
         }
 
-        if (getWindowingModeForDesktopFirstPolicy(task, source, options, taskDisplayArea,
-                currentParams) == WINDOWING_MODE_FREEFORM) {
+        if (getWindowingModeForDesktopFirstPolicy(task, source, options, taskDisplayArea)
+                == WINDOWING_MODE_FREEFORM) {
             // It's a target of desktop-first policy.
             return true;
         }
@@ -359,8 +356,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
 
     private boolean isRequestingFreeformWindowMode(
             @Nullable Task task,
-            @Nullable ActivityOptions options,
-            @NonNull LaunchParamsController.LaunchParams currentParams) {
+            @Nullable ActivityOptions options) {
         return (task != null && task.inFreeformWindowingMode())
                 || (options != null && options.getLaunchWindowingMode() == WINDOWING_MODE_FREEFORM);
     }
@@ -373,8 +369,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             @Nullable Task task,
             @Nullable ActivityRecord source,
             @Nullable ActivityOptions options,
-            @NonNull TaskDisplayArea taskDisplayArea,
-            @NonNull LaunchParamsController.LaunchParams currentParams) {
+            @NonNull TaskDisplayArea taskDisplayArea) {
         if (!DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_POLICY_IN_LPM.isTrue()) {
             return WINDOWING_MODE_UNDEFINED;
         }
@@ -384,7 +379,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return WINDOWING_MODE_UNDEFINED;
         }
 
-        if (!checkSourceWindowModesCompatible(task, options, currentParams)) {
+        if (!checkSourceWindowModesCompatible(task, options)) {
             // The task is launching in incompatible mode (e.g., PIP).
             appendLog("desktop-first-but-incompatible-mode");
             return WINDOWING_MODE_UNDEFINED;
@@ -447,8 +442,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
      */
     private boolean checkSourceWindowModesCompatible(
             @Nullable Task task,
-            @Nullable ActivityOptions options,
-            @NonNull LaunchParamsController.LaunchParams currentParams) {
+            @Nullable ActivityOptions options) {
         // 1. Check the task's own windowing mode.
         final boolean isTaskWindowModeCompatible = task == null
                 || isCompatibleDesktopWindowingMode(task.getWindowingMode());
