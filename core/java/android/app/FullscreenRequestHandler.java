@@ -93,4 +93,19 @@ public class FullscreenRequestHandler {
             callback.onError(e);
         }
     }
+
+    /** @hide */
+    @NonNull
+    public static String requestResultToString(@RequestResult int result) {
+        switch (result) {
+            case RESULT_APPROVED: return "RESULT_APPROVED";
+            case RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY:
+                return "RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY";
+            case RESULT_FAILED_NOT_TOP_FOCUSED: return "RESULT_FAILED_NOT_TOP_FOCUSED";
+            case RESULT_FAILED_ALREADY_FULLY_EXPANDED:
+                return "RESULT_FAILED_ALREADY_FULLY_EXPANDED";
+            case RESULT_FAILED_NOT_SUPPORTED: return "RESULT_FAILED_NOT_SUPPORTED";
+            default: return String.valueOf(result);
+        }
+    }
 }

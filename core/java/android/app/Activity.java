@@ -10307,4 +10307,15 @@ public class Activity extends ContextThemeWrapper
                     }
                 });
     }
+
+    /** @hide */
+    public static String fullscreenModeRequestToString(@FullscreenModeRequest int request) {
+        switch (request) {
+            case FULLSCREEN_MODE_REQUEST_ENTER:
+                return "FULLSCREEN_MODE_REQUEST_ENTER";
+            case FULLSCREEN_MODE_REQUEST_EXIT:
+                return "FULLSCREEN_MODE_REQUEST_EXIT";
+            default: return String.valueOf(request);
+        }
+    }
 }
