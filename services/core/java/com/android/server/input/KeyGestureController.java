@@ -894,6 +894,9 @@ final class KeyGestureController {
                     }
                 }
                 break;
+            case KeyEvent.KEYCODE_ACCESSIBILITY:
+                // TODO(b/440411783) Implement Accessibility key shortcut
+                break;
         }
 
         return mWindowManagerCallbacks.interceptKeyBeforeDispatching(focusedToken, event);
@@ -1128,6 +1131,7 @@ final class KeyGestureController {
             case KeyEvent.KEYCODE_LOCK:
             case KeyEvent.KEYCODE_FULLSCREEN:
             case KeyEvent.KEYCODE_DO_NOT_DISTURB:
+            case KeyEvent.KEYCODE_ACCESSIBILITY:
                 return true;
         }
         return false;
