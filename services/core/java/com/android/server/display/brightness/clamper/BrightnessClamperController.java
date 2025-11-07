@@ -334,6 +334,8 @@ public class BrightnessClamperController {
             }
             modifiers.add(new HdrBrightnessModifier(
                     handler, context, flags, pluginManager, listener, data));
+            modifiers.add(new BrightnessPluginModifier(
+                    handler, context, flags, pluginManager, listener, data));
             if (flags.isMinmodeCapBrightnessEnabled()) {
                 modifiers.add(new BrightnessMinModeModifier(handler, context, listener, data));
             }
