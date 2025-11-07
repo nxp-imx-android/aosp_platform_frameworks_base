@@ -94,4 +94,4 @@ constructor(
 }
 
 private const val TAG = "NotifSummaries"
-private const val KEY_SHOW_SUMMARIZATION_ONBOARDING = "show_summarization_onboarding"
+const val KEY_SHOW_SUMMARIZATION_ONBOARDING = "show_summarization_onboarding"
