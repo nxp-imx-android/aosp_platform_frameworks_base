@@ -15,14 +15,14 @@
  */
 package android.app.appfunctions;
 
-import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.app.appsearch.GenericDocument;
 
 /** An interface to be implemented by AppFunction's metadata classes. */
-@FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+@FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 interface AbstractAppFunctionMetadata {
     /** Returns a {@link GenericDocument} representation of the metadata. */
     @NonNull

@@ -23,7 +23,7 @@ import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.AppFunctionManagerHelper.buildCancellationSignal;
 import static android.app.appfunctions.AppFunctionManagerHelper.executionExceptionToErrorCode;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
-import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
 
 import android.Manifest;
@@ -636,7 +636,7 @@ public final class AppFunctionManager {
      *     registered by this app.
      */
     @NonNull
-    @FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+    @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     public AppFunctionRegistration registerAppFunction(
             @NonNull String functionId,
             @NonNull Executor executor,
