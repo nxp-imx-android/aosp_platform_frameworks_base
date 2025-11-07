@@ -15,6 +15,7 @@
  */
 package com.android.systemui.notetask
 
+import com.android.systemui.actioncorner.domain.interactor.ActionCornerInteractor
 import com.android.systemui.notetask.quickaffordance.NoteTaskQuickAffordanceConfig
 import com.android.systemui.notetask.shortcut.LaunchNoteTaskActivity
 import com.android.systemui.screenshot.appclips.AppClipsTrampolineActivity
@@ -47,4 +48,7 @@ enum class NoteTaskEntryPoint {
 
     /** @see [NotesTile] */
     QS_NOTES_TILE,
+
+    /** @see [ActionCornerInteractor] */
+    ACTION_CORNER,
 }

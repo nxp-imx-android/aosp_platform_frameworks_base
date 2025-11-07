@@ -16,8 +16,10 @@
 
 package com.android.systemui.actioncorner.domain.interactor
 
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_HOME
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_LOCKSCREEN
+import android.provider.Settings.Secure.ACTION_CORNER_ACTION_NOTE
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_NOTIFICATIONS
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_OVERVIEW
 import android.provider.Settings.Secure.ACTION_CORNER_ACTION_QUICK_SETTINGS
@@ -29,6 +31,7 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.IWindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion
@@ -48,6 +51,8 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.notetask.NoteTaskController
+import com.android.systemui.notetask.NoteTaskEntryPoint
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.setTransition
 import com.android.systemui.scene.shared.model.Scenes
@@ -81,6 +86,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
     private val Kosmos.windowManager by Fixture { mock<IWindowManager>() }
     private val Kosmos.commandQueue by Fixture { mock<CommandQueue>() }
     private val Kosmos.fakePointerRepository by Fixture { FakePointerDeviceRepository() }
+    private val Kosmos.noteTaskController by Fixture { mock<NoteTaskController>() }
 
     private val Kosmos.underTest by Fixture {
         ActionCornerInteractor(
@@ -92,6 +98,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             fakeUserSetupRepository,
             commandQueue,
             windowManager,
+            noteTaskController,
         )
     }
 
@@ -219,6 +226,14 @@ class ActionCornerInteractorTest : SysuiTestCase() {
         actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
 
         verify(launcherProxyService, times(1)).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_NOTE_IN_ACTION_CORNER)
+    fun bottomLeftCornerActivated_notesActionConfigured_showNoteTask() = unlockScreenAndRunTest {
+        settingsRepository.setInt(ACTION_CORNER_BOTTOM_LEFT_ACTION, ACTION_CORNER_ACTION_NOTE)
+        actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
+        verify(noteTaskController).showNoteTask(entryPoint = NoteTaskEntryPoint.ACTION_CORNER)
     }
 
     private fun unlockScreenAndRunTest(testBody: suspend Kosmos.() -> Unit) =

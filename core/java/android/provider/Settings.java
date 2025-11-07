@@ -13548,6 +13548,8 @@ public final class Settings {
         public static final int ACTION_CORNER_ACTION_QUICK_SETTINGS = 4;
         /** @hide */
         public static final int ACTION_CORNER_ACTION_LOCKSCREEN = 5;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_NOTE = 6;
 
         /**
          * The different actions that can be used for action corners
@@ -13560,6 +13562,7 @@ public final class Settings {
                 ACTION_CORNER_ACTION_NOTIFICATIONS,
                 ACTION_CORNER_ACTION_QUICK_SETTINGS,
                 ACTION_CORNER_ACTION_LOCKSCREEN,
+                ACTION_CORNER_ACTION_NOTE,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ActionCornerActionType {

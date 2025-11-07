@@ -28,6 +28,7 @@ import com.android.systemui.actioncorner.data.model.ActionType
 import com.android.systemui.actioncorner.data.model.ActionType.HOME
 import com.android.systemui.actioncorner.data.model.ActionType.LOCKSCREEN
 import com.android.systemui.actioncorner.data.model.ActionType.NONE
+import com.android.systemui.actioncorner.data.model.ActionType.NOTE
 import com.android.systemui.actioncorner.data.model.ActionType.NOTIFICATIONS
 import com.android.systemui.actioncorner.data.model.ActionType.OVERVIEW
 import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
@@ -37,6 +38,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository
 import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.notetask.NoteTaskController
+import com.android.systemui.notetask.NoteTaskEntryPoint
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
@@ -62,6 +65,7 @@ constructor(
     private val userSetupRepository: UserSetupRepository,
     private val commandQueue: CommandQueue,
     private val windowManager: IWindowManager,
+    private val noteTaskController: NoteTaskController,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
@@ -105,6 +109,11 @@ constructor(
                     NOTIFICATIONS -> commandQueue.toggleNotificationsPanel()
                     QUICK_SETTINGS -> commandQueue.toggleQuickSettingsPanel()
                     LOCKSCREEN -> windowManager.lockNow(/* bundle= */ null)
+                    NOTE -> {
+                        noteTaskController.showNoteTask(
+                            entryPoint = NoteTaskEntryPoint.ACTION_CORNER
+                        )
+                    }
                     NONE -> {}
                 }
             }
