@@ -477,6 +477,11 @@ public class MediaOutputDialog extends SystemUIDialog
 
     @Override
     public void dismissDialog() {
+        // Explicitly use dismiss() to dismiss the dialog, as relying on closeSystemDialogs() for
+        // dismissal is unstable on desktop.
+        // TODO(b/457526674): Remove the dismiss() call once the issue with closeSystemDialogs() is
+        // fixed on desktop.
+        dismiss();
         mBroadcastSender.closeSystemDialogs();
     }
 
