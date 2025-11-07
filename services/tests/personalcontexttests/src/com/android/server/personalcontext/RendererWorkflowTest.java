@@ -123,6 +123,7 @@ public class RendererWorkflowTest {
 
     @Test
     public void testWorkflowWithRenderTokenAndRenderer() throws GeneralSecurityException {
+        final UUID componentId = UUID.randomUUID();
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final Renderer renderer = mock(Renderer.class);
         final RendererWorkflow.EventListener listener = mock(RendererWorkflow.EventListener.class);
@@ -130,11 +131,12 @@ public class RendererWorkflowTest {
                 mock(RendererWorkflow.ComponentProvider.class);
         final ContextInsight insight = buildInsight(
                 new RenderToken.RenderTokenBuilder()
-                        .setRendererComponentId(UUID.randomUUID())
+                        .setRendererComponentId(componentId)
                         .build(),
                 key);
 
-        doReturn(renderer).when(provider).getRendererById(any());
+        doReturn(componentId).when(renderer).getComponentId();
+        doReturn(renderer).when(provider).getRendererById(eq(componentId));
 
         RendererWorkflow.start(
                 provider,
