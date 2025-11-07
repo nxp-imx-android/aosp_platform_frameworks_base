@@ -2051,7 +2051,10 @@ public class BubbleController implements ConfigurationChangeListener,
         }
         mOverflowDataLoadNeeded = false;
         List<UserInfo> users = mUserManager.getAliveUsers();
-        List<Integer> userIds = users.stream().map(userInfo -> userInfo.id).toList();
+        List<Integer> userIds = users.stream()
+                .filter(userInfo -> !userInfo.isQuietModeEnabled())
+                .map(userInfo -> userInfo.id)
+                .toList();
         mDataRepository.loadBubbles(mCurrentUserId, userIds, (bubbles) -> {
             bubbles.forEach(bubble -> {
                 if (mBubbleData.hasAnyBubbleWithKey(bubble.getKey())) {
