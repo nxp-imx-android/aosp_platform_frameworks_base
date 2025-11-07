@@ -38,6 +38,7 @@ import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.runner.RunWith
 
@@ -153,6 +154,84 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
                 ObservableTransitionState.Idle(
                     currentScene = Scenes.Lockscreen,
                     currentOverlays = setOf(Overlays.QuickSettingsShade),
+                )
+            )
+
+            assertShowOnlyFullHeight(lockScreenConfig)
+        }
+
+    @Test
+    fun singleShade_TransitionToShade_noUserInputAndNoProgres_showOnlyFullHeight() =
+        kosmos.runTest {
+            enableSingleShade()
+
+            val lockScreenConfig by
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
+
+            val expectedFraction = 0.1f
+            setTransitionState(
+                ObservableTransitionState.Transition.ChangeScene(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Shade,
+                    currentScene = flowOf(Scenes.Lockscreen),
+                    currentOverlays = emptySet(),
+                    progress = MutableStateFlow(expectedFraction),
+                    isInitiatedByUserInput = true,
+                    isUserInputOngoing = flowOf(true),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+            )
+
+            assertShowOnlyFullHeight(lockScreenConfig)
+        }
+
+    @Test
+    fun singleShade_TransitionToShade_noUserInputAndProgres_noLimit() =
+        kosmos.runTest {
+            enableSingleShade()
+
+            val lockScreenConfig by
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
+
+            val expectedFraction = 0.5f
+            setTransitionState(
+                ObservableTransitionState.Transition.ChangeScene(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Shade,
+                    currentScene = flowOf(Scenes.Lockscreen),
+                    currentOverlays = emptySet(),
+                    progress = MutableStateFlow(expectedFraction),
+                    isInitiatedByUserInput = true,
+                    isUserInputOngoing = flowOf(false),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
+                )
+            )
+
+            assertNoLimit(lockScreenConfig)
+        }
+
+    @Test
+    fun singleShade_TransitionToShade_userInputOngoingAndProgres_showOnlyFullHeight() =
+        kosmos.runTest {
+            enableSingleShade()
+
+            val lockScreenConfig by
+                collectLastValue(underTest.getLockscreenDisplayConfig(calculateMaxNotifications))
+
+            val expectedFraction = 0.5f
+            setTransitionState(
+                ObservableTransitionState.Transition.ChangeScene(
+                    fromScene = Scenes.Lockscreen,
+                    toScene = Scenes.Shade,
+                    currentScene = flowOf(Scenes.Lockscreen),
+                    currentOverlays = emptySet(),
+                    progress = MutableStateFlow(expectedFraction),
+                    isInitiatedByUserInput = true,
+                    isUserInputOngoing = flowOf(true),
+                    previewProgress = flowOf(0f),
+                    isInPreviewStage = flowOf(false),
                 )
             )
 
