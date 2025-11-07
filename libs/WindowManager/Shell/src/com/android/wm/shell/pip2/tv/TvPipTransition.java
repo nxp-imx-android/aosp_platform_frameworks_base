@@ -18,10 +18,17 @@ package com.android.wm.shell.pip2.tv;
 
 import static android.view.WindowManager.TRANSIT_PIP;
 
+import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getPipChange;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE;
 
 import android.annotation.NonNull;
+import android.app.ActivityManager;
+import android.app.PictureInPictureParams;
+import android.content.Context;
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.os.IBinder;
+import android.view.Surface;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
@@ -31,10 +38,14 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip.tv.TvPipBoundsAlgorithm;
 import com.android.wm.shell.pip.tv.TvPipBoundsState;
 import com.android.wm.shell.pip.tv.TvPipMenuController;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
+import com.android.wm.shell.pip2.animation.PipEnterAnimator;
+import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -46,10 +57,15 @@ import com.android.wm.shell.transition.Transitions;
 public class TvPipTransition extends PipTransitionController {
     private static final String TAG = "TvPip2Transition";
 
+    private final Context mContext;
+    private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+    private final TvPipMenuController mTvPipMenuController;
     @Nullable
     private IBinder mEnterPipTransition;
 
     public TvPipTransition(
+            Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @NonNull ShellInit shellInit,
             @NonNull ShellTaskOrganizer shellTaskOrganizer,
             @NonNull Transitions transitions,
@@ -58,6 +74,9 @@ public class TvPipTransition extends PipTransitionController {
             TvPipBoundsAlgorithm tvPipBoundsAlgorithm) {
         super(shellInit, shellTaskOrganizer, transitions, tvPipBoundsState, tvPipMenuController,
                 tvPipBoundsAlgorithm);
+        mContext = context;
+        mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
+        mTvPipMenuController = tvPipMenuController;
     }
 
     @Override
@@ -79,8 +98,71 @@ public class TvPipTransition extends PipTransitionController {
                     "%s: handle PiP enter request", TAG);
             // Cache the token so we can identify this transition in startAnimation().
             mEnterPipTransition = transition;
+            return getEnterPipTransaction(request.getPipChange());
         }
         return null;
+    }
+
+    private WindowContainerTransaction getEnterPipTransaction(
+            @NonNull TransitionRequestInfo.PipChange pipChange) {
+        final ActivityManager.RunningTaskInfo pipTask = pipChange.getTaskInfo();
+        if (pipTask == null) return new WindowContainerTransaction();
+
+        PictureInPictureParams pipParams = pipTask.pictureInPictureParams;
+        mPipBoundsState.setBoundsStateForEntry(pipTask.topActivity, pipTask.topActivityInfo,
+                pipParams, mPipBoundsAlgorithm);
+
+        // Calculate the final PiP bounds.
+        final Rect entryBounds =
+                mPipBoundsAlgorithm.getEntryDestinationBoundsIgnoringKeepClearAreas();
+
+        // Create the transaction that tells the core to pin task and move to final bounds.
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.movePipActivityToPinnedRootTask(pipTask.token, entryBounds);
+        wct.deferConfigToTransitionEnd(pipTask.token);
+        return wct;
+    }
+
+    private boolean startEnterAnimation(@NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTransaction,
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        final TransitionInfo.Change pipChange = getPipChange(info);
+        if (pipChange == null) {
+            return false;
+        }
+
+        TransitionInfo.Change pipActivityChange = PipTransitionUtils.getDeferConfigActivityChange(
+                info, pipChange.getTaskInfo().getToken());
+        if (pipActivityChange == null) {
+            return false;
+        }
+
+        final SurfaceControl leash = pipChange.getLeash();
+        mTvPipMenuController.attach(leash);
+
+        final Rect destinationBounds = pipChange.getEndAbsBounds();
+        final PipEnterAnimator animator = new PipEnterAnimator(mContext,
+                mPipSurfaceTransactionHelper, leash, startTransaction, finishTransaction,
+                destinationBounds, Surface.ROTATION_0);
+
+        // Config-at-end transitions need to have their activities transformed before starting
+        // the animation; this makes the buffer seem like it's been updated to final size.
+        prepareConfigAtEndActivity(startTransaction, finishTransaction, pipChange,
+                pipActivityChange);
+
+        animator.setAnimationStartCallback(() -> animator.setEnterStartState(pipChange));
+        animator.setAnimationEndCallback(() -> {
+            // Show menu, rounded corners, and shadow at the end of the animation.
+            mPipSurfaceTransactionHelper.round(finishTransaction, leash, false);
+            mPipSurfaceTransactionHelper.shadow(finishTransaction, leash, false);
+            mTvPipMenuController.movePipMenu(finishTransaction, destinationBounds, 1f);
+
+            finishCallback.onTransitionFinished(null /* wct */);
+        });
+
+        animator.start();
+        return true;
     }
 
     @Override
@@ -93,7 +175,30 @@ public class TvPipTransition extends PipTransitionController {
         if (transition == mEnterPipTransition || info.getType() == TRANSIT_PIP) {
             ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
                     "%s: starting PiP enter animation", TAG);
+            mEnterPipTransition = null; // Clear the cached token.
+            return startEnterAnimation(info, startTransaction, finishTransaction, finishCallback);
         }
         return false;
+    }
+
+    private void prepareConfigAtEndActivity(@NonNull SurfaceControl.Transaction startTx,
+            @NonNull SurfaceControl.Transaction finishTx,
+            @NonNull TransitionInfo.Change pipChange,
+            @NonNull TransitionInfo.Change pipActivityChange) {
+        PointF initActivityScale = new PointF();
+        PointF initActivityPos = new PointF();
+        PipUtils.calcEndTransform(pipActivityChange, pipChange, initActivityScale,
+                initActivityPos);
+        startTx.setCrop(pipActivityChange.getLeash(), null);
+        startTx.setScale(pipActivityChange.getLeash(), initActivityScale.x,
+                initActivityScale.y);
+        startTx.setPosition(pipActivityChange.getLeash(), initActivityPos.x,
+                initActivityPos.y);
+
+        finishTx.setCrop(pipActivityChange.getLeash(), null);
+        finishTx.setScale(pipActivityChange.getLeash(), initActivityScale.x,
+                initActivityScale.y);
+        finishTx.setPosition(pipActivityChange.getLeash(), initActivityPos.x,
+                initActivityPos.y);
     }
 }
