@@ -74,7 +74,7 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
 
         service = _service;
         info = _info;
-        uid = ai.uid;
+        uid = _info.getUid();
         appInfo = ai;
         singleton = _singleton;
         noReleaseNeeded = (uid == 0 || uid == Process.SYSTEM_UID)
@@ -134,7 +134,7 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
 
     public boolean canRunHere(ProcessRecord app) {
         return (info.multiprocess || info.processName.equals(app.processName))
-                && uid == app.info.uid;
+                && uid == app.uid;
     }
 
     public void addExternalProcessHandleLocked(IBinder token, int callingUid, String callingTag) {
@@ -211,16 +211,16 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
                     if (launchingApp == null) {
                         Slog.w(TAG_AM, "Unable to launch app "
                                 + appInfo.packageName + "/"
-                                + appInfo.uid + " for provider "
+                                + uid + " for provider "
                                 + info.authority + ": launching app became null");
                         EventLogTags.writeAmProviderLostProcess(
-                                UserHandle.getUserId(appInfo.uid),
+                                UserHandle.getUserId(uid),
                                 appInfo.packageName,
-                                appInfo.uid, info.authority);
+                                uid, info.authority);
                     } else {
                         Slog.wtf(TAG_AM, "Timeout waiting for provider "
                                 + appInfo.packageName + "/"
-                                + appInfo.uid + " for provider "
+                                + uid + " for provider "
                                 + info.authority
                                 + " caller=" + client);
                     }
@@ -372,7 +372,7 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
             // is an association between two different processes.
             if (ActivityManagerService.TRACK_PROCSTATS_ASSOCIATIONS
                     && mAssociation == null && provider.proc != null
-                    && (provider.appInfo.uid != mOwningUid
+                    && (provider.uid != mOwningUid
                             || !provider.info.processName.equals(mOwningProcessName))) {
                 ProcessStats.ProcessStateHolder holder =
                         provider.proc.getPkgList().get(provider.name.getPackageName());
