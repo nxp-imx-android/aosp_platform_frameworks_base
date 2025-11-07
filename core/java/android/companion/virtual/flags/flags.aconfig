@@ -82,6 +82,13 @@ flag {
 
 flag {
     namespace: "virtual_devices"
+    name: "virtual_camera_direct_blob_transfer"
+    description: "Pass supported blob types directly from producer to consumer (Camera2 client) without intermediate processing, e.g. transcoding"
+    bug: "456537353"
+}
+
+flag {
+    namespace: "virtual_devices"
     name: "enable_limited_vdm_role"
     description: "New VDM role without trusted displays or input"
     bug: "370657575"

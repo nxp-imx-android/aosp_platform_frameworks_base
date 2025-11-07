@@ -114,6 +114,17 @@ public final class VirtualCameraConfig implements Parcelable {
     public static final CameraCharacteristics DEFAULT_VIRTUAL_CAMERA_CHARACTERISTICS =
             getDefaultVirtualCameraCharacteristics();
 
+    private static final Set<Integer> SUPPORTED_FORMATS = new ArraySet<Integer>();
+
+    static {
+        SUPPORTED_FORMATS.add(ImageFormat.YUV_420_888);
+        SUPPORTED_FORMATS.add(PixelFormat.RGBA_8888);
+        if (Flags.virtualCameraDirectBlobTransfer()) {
+            SUPPORTED_FORMATS.add(ImageFormat.JPEG);
+            SUPPORTED_FORMATS.add(ImageFormat.HEIC);
+        }
+    }
+
     private final String mName;
     private final Set<VirtualCameraStreamConfig> mStreamConfigurations;
     private final IVirtualCameraCallback mCallback;
@@ -602,10 +613,7 @@ public final class VirtualCameraConfig implements Parcelable {
             };
 
     private static boolean isFormatSupported(@ImageFormat.Format int format) {
-        return switch (format) {
-            case ImageFormat.YUV_420_888, PixelFormat.RGBA_8888 -> true;
-            default -> false;
-        };
+        return SUPPORTED_FORMATS.contains(format);
     }
 
     // Set the default keys and values necessary for a valid and usable CameraCharacteristics
