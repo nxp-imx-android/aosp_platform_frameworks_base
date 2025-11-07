@@ -252,3 +252,11 @@ flag {
     bug: "443222861"
 }
 
+flag {
+    name: "enable_new_26q2_keycodes"
+    namespace: "input"
+    description: "Enables new 26Q2 keycodes"
+    bug: "458094955"
+    is_exported: true
+}
+
