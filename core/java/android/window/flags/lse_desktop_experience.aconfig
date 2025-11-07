@@ -438,6 +438,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_first_exempted_source_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes desktop-first policy for the case where the source task is fullscreen but exempted from desktop."
+    bug: "443065273"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_first_fullscreen_refocus_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fix windowing mode handling for the existing fullscreen tasks on desktop-first."
