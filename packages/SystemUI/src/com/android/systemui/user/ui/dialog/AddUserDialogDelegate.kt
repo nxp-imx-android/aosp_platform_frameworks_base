@@ -19,25 +19,50 @@ package com.android.systemui.user.ui.dialog
 import android.app.ActivityManager
 import android.content.Context
 import android.content.DialogInterface
+import android.content.DialogInterface.BUTTON_NEGATIVE
+import android.content.DialogInterface.BUTTON_NEUTRAL
+import android.content.DialogInterface.BUTTON_POSITIVE
 import android.content.Intent
 import android.os.UserHandle
 import com.android.settingslib.R
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastSender
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.SystemUIDialog.setWindowOnTop
 import com.android.systemui.user.CreateUserActivity
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
 /** Dialog for adding a new user to the device. */
-class AddUserDialog(
-    context: Context,
-    userHandle: UserHandle,
-    isKeyguardShowing: Boolean,
-    showEphemeralMessage: Boolean,
+class AddUserDialogDelegate
+@AssistedInject
+constructor(
+    @Application context: Context,
+    @Assisted private val userHandle: UserHandle,
+    @Assisted(KEYGUARD) private val isKeyguardShowing: Boolean,
+    @Assisted(EPHEMERAL) private val showEphemeralMessage: Boolean,
     private val falsingManager: FalsingManager,
     private val broadcastSender: BroadcastSender,
-    private val dialogTransitionAnimator: DialogTransitionAnimator
-) : SystemUIDialog(context) {
+    private val dialogTransitionAnimator: DialogTransitionAnimator,
+    private val dialogFactory: SystemUIDialog.Factory,
+) : SystemUIDialog.Delegate {
+
+    companion object {
+        const val KEYGUARD = "is_keyguard_showing"
+        const val EPHEMERAL = "show_ephemeral_message"
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            userHandle: UserHandle,
+            @Assisted(KEYGUARD) isKeyguardShowing: Boolean,
+            @Assisted(EPHEMERAL) showEphemeralMessage: Boolean,
+        ): AddUserDialogDelegate
+    }
 
     private val onClickListener =
         object : DialogInterface.OnClickListener {
@@ -53,11 +78,11 @@ class AddUserDialog(
                 }
 
                 if (which == BUTTON_NEUTRAL) {
-                    cancel()
+                    dialog.cancel()
                     return
                 }
 
-                dialogTransitionAnimator.dismissStack(this@AddUserDialog)
+                dialogTransitionAnimator.dismissStack(dialog)
                 if (ActivityManager.isUserAMonkey()) {
                     return
                 }
@@ -66,7 +91,7 @@ class AddUserDialog(
                 // another process where normal dagger bindings are not available.
                 broadcastSender.sendBroadcastAsUser(
                     Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS),
-                    userHandle
+                    userHandle,
                 )
 
                 context.startActivityAsUser(
@@ -76,31 +101,28 @@ class AddUserDialog(
             }
         }
 
-    init {
-        setTitle(R.string.user_add_user_title)
-        val message =
-            context.getString(R.string.user_add_user_message_short) +
-                if (showEphemeralMessage) {
-                    context.getString(
-                        com.android.systemui.res.R.string.user_add_user_message_guest_remove
-                    )
-                } else {
-                    ""
-                }
-        setMessage(message)
+    override fun createDialog(): SystemUIDialog {
+        val dialog: SystemUIDialog = dialogFactory.create(this)
+        with(dialog) {
+            setTitle(R.string.user_add_user_title)
+            val message =
+                context.getString(R.string.user_add_user_message_short) +
+                    if (showEphemeralMessage) {
+                        context.getString(
+                            com.android.systemui.res.R.string.user_add_user_message_guest_remove
+                        )
+                    } else {
+                        ""
+                    }
+            setMessage(message)
 
-        setButton(
-            BUTTON_NEUTRAL,
-            context.getString(android.R.string.cancel),
-            onClickListener,
-        )
+            setButton(BUTTON_NEUTRAL, context.getString(android.R.string.cancel), onClickListener)
 
-        setButton(
-            BUTTON_POSITIVE,
-            context.getString(android.R.string.ok),
-            onClickListener,
-        )
+            setButton(BUTTON_POSITIVE, context.getString(android.R.string.ok), onClickListener)
 
-        setWindowOnTop(this, isKeyguardShowing)
+            setWindowOnTop(dialog, isKeyguardShowing)
+        }
+
+        return dialog
     }
 }
