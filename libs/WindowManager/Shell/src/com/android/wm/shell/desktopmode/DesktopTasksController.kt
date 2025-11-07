@@ -1672,12 +1672,22 @@ class DesktopTasksController(
      * [startDragToDesktop].
      */
     private fun finalizeDragToDesktop(taskInfo: RunningTaskInfo) {
-        val deskId = getOrCreateDefaultDeskId(taskInfo.displayId, taskInfo.userId) ?: return
-        ProtoLog.v(
-            WM_SHELL_DESKTOP_MODE,
-            "DesktopTasksController: finalizeDragToDesktop taskId=%d deskId=%d",
+        val deskId =
+            getOrCreateDefaultDeskId(taskInfo.displayId, taskInfo.userId)
+                ?: return.also {
+                    logE(
+                        "finalizeDragToDesktop: default desk not found for " +
+                            "taskId=%d in displayId=%d of userId=%d",
+                        taskInfo.taskId,
+                        taskInfo.displayId,
+                        taskInfo.userId,
+                    )
+                }
+        logV(
+            "finalizeDragToDesktop taskId=%d deskId=%d userId=%d",
             taskInfo.taskId,
             deskId,
+            taskInfo.userId,
         )
         val repository = userRepositories.getProfile(taskInfo.userId)
         val wct = WindowContainerTransaction()
