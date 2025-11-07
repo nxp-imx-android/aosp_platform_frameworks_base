@@ -5386,6 +5386,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             }
             for (int i = mRootWindowContainer.getChildCount() - 1; i >= 0; i--) {
                 final DisplayContent dc = mRootWindowContainer.getChildAt(i);
+                if (dc.getTopMostActivity() == null) {
+                    continue;
+                }
                 dc.collectDisplayChange(transition);
                 transition.setKnownConfigChanges(dc, changes);
             }
