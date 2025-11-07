@@ -341,6 +341,11 @@ package android.app {
     field public static final int DEFAULT_MIN_FRACTION_DIGITS = 0; // 0x0
   }
 
+  @FlaggedApi("android.app.api_projected_extender") public static final class Notification.ProjectedExtender implements android.app.Notification.Extender {
+    field public static final String EXTRA_PROJECTED_EXTENDER = "android.projected.EXTENSIONS";
+    field public static final String KEY_CONTENT_INTENT = "content_intent";
+  }
+
   public final class NotificationChannel implements android.os.Parcelable {
     method @NonNull public android.app.NotificationChannel copy();
     method @FlaggedApi("android.app.nm_contextual_display") public boolean isBundleChannel();

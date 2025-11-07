@@ -1,4 +1,8 @@
 // Baseline format: 1.0
+ActionValue: android.app.Notification.ProjectedExtender#EXTRA_PROJECTED_EXTENDER:
+    Inconsistent extra value; expected `android.app.extra.PROJECTED_EXTENDER`, was `android.extender.projected`
+
+
 BannedThrow: android.os.vibrator.persistence.VibrationXmlSerializer#serialize(android.os.VibrationEffect, java.io.Writer):
     Methods must not throw unchecked exceptions
 

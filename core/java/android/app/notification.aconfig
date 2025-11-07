@@ -336,6 +336,14 @@ flag {
    bug: "438827600"
 }
 
+flag {
+  name: "api_projected_extender"
+  namespace: "notifications"
+  description: "Guards new android.app.Notification.ProjectedExtender api"
+  bug: "455909258"
+  is_exported: true
+}
+
 # End: exported flags that cannot be removed
 
 
