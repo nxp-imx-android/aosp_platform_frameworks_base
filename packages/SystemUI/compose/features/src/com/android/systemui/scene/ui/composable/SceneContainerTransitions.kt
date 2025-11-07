@@ -22,7 +22,10 @@ import com.android.systemui.scene.ui.composable.transitions.communalToShadeTrans
 import com.android.systemui.scene.ui.composable.transitions.dreamToBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToCommunalTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToGoneTransition
+import com.android.systemui.scene.ui.composable.transitions.dreamToNotificationsShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.dreamToQuickSettingsShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.dreamToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.fromBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToShadeSceneTransition
@@ -76,6 +79,14 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_EXPAND,
             ) {
                 dreamToShadeTransition()
+            }
+            from(
+                Scenes.Dream,
+                to = Scenes.QuickSettings,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_EXPAND,
+            ) {
+                dreamToQuickSettingsTransition()
             }
             from(
                 Scenes.Gone,
@@ -191,6 +202,14 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                     enabled = false,
                 )
             }
+            from(
+                Scenes.QuickSettings,
+                to = Scenes.Dream,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_COLLAPSE,
+            ) {
+                reversed { dreamToQuickSettingsTransition() }
+            }
 
             from(
                 Scenes.Shade,
@@ -256,6 +275,54 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             from(Overlays.Bouncer) { fromBouncerTransition() }
             from(Overlays.Bouncer, to = Scenes.Gone) { bouncerToGoneTransition() }
             from(Scenes.Dream, to = Overlays.Bouncer) { dreamToBouncerTransition() }
+            from(
+                Scenes.Dream,
+                to = Overlays.NotificationsShade,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
+                cujTag = TAG_EXPAND,
+            ) {
+                dreamToNotificationsShadeTransition(
+                    shadeExpansionMotion = shadeExpansionMotion,
+                    revealHaptics = revealHaptics,
+                )
+            }
+            from(
+                Scenes.Dream,
+                to = Overlays.QuickSettingsShade,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_EXPAND,
+            ) {
+                dreamToQuickSettingsShadeTransition(
+                    shadeExpansionMotion = shadeExpansionMotion,
+                    revealHaptics = revealHaptics,
+                )
+            }
+            from(
+                Overlays.NotificationsShade,
+                to = Scenes.Dream,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
+                cujTag = TAG_COLLAPSE,
+            ) {
+                reversed {
+                    dreamToNotificationsShadeTransition(
+                        shadeExpansionMotion = shadeExpansionMotion,
+                        revealHaptics = revealHaptics,
+                    )
+                }
+            }
+            from(
+                Overlays.QuickSettingsShade,
+                to = Scenes.Dream,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_COLLAPSE,
+            ) {
+                reversed {
+                    dreamToQuickSettingsShadeTransition(
+                        shadeExpansionMotion = shadeExpansionMotion,
+                        revealHaptics = revealHaptics,
+                    )
+                }
+            }
             from(Overlays.Bouncer, to = Scenes.Dream) { fromBouncerTransition() }
             from(Scenes.Lockscreen, to = Overlays.Bouncer) { lockscreenToBouncerTransition() }
             from(Overlays.Bouncer, to = Scenes.Lockscreen) { bouncerToLockscreenTransition() }
