@@ -173,6 +173,12 @@ public class LightsService extends SystemService {
 
         @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
         @Override
+        public void setEnabledState(boolean enabled) {
+            setEnabledState_enforcePermission();
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
+        @Override
         public void openSession(IBinder token, int priority) {
             openSession_enforcePermission();
             Preconditions.checkNotNull(token);
