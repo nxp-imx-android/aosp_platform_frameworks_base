@@ -149,9 +149,15 @@ public class SystemSensorManager extends SensorManager {
 
     private Optional<Boolean> mHasHighSamplingRateSensorsPermission = Optional.empty();
 
-    private final ISensorClientListener mSensorClientListener = new ISensorClientListener.Stub() {
-        // This is an empty implementation, as the service only needs the Binder object.
-    };
+    private static ISensorClientListener sSensorClientListener;
+
+    static {
+        if (suspendSensorEventDeliveryOnFrozenPid()) {
+            sSensorClientListener = new ISensorClientListener.Stub() {
+                // This is an empty implementation, as the service only needs the Binder object.
+            };
+        }
+    }
 
     /** @hide */
     public SystemSensorManager(Context context, Looper mainLooper) {
@@ -170,7 +176,11 @@ public class SystemSensorManager extends SensorManager {
         mIsPackageDebuggable = (0 != (appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE));
 
         if (suspendSensorEventDeliveryOnFrozenPid()) {
-            nativeRegisterClientListener(mNativeInstance, mSensorClientListener.asBinder());
+            if (sSensorClientListener == null) {
+                Log.e(TAG, "sSensorClientListener is null when flag enabled");
+            } else {
+                nativeRegisterClientListener(mNativeInstance, sSensorClientListener.asBinder());
+            }
         }
        // initialize the sensor list
         if (getSensorPolicy(mContext.getDeviceId()) == DEVICE_POLICY_CUSTOM) {
