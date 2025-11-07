@@ -72,7 +72,6 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_PERMISSIONS_REVIEW;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_RESULTS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_USER_LEAVING;
-import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_USER_VISIBILITY;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_CONFIGURATION;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_FOCUS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_RESULTS;
@@ -98,7 +97,6 @@ import static com.android.window.flags.Flags.balReportAbortedActivityStarts;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.IApplicationThread;
@@ -150,7 +148,6 @@ import com.android.server.pm.PackageArchiver;
 import com.android.server.power.ShutdownCheckPoints;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
-import com.android.server.utils.Slogf;
 import com.android.server.wm.ActivityMetricsLogger.LaunchingState;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
@@ -193,7 +190,8 @@ class ActivityStarter {
     private final ActivityTaskSupervisor mSupervisor;
     private final ActivityStartInterceptor mInterceptor;
     private final ActivityStartController mController;
-    private final boolean mIsHeadlessSystemUserMode;
+    // TODO(b/412177078): remove @Nullable once Flags.hsuAllowlistActivities() is gone
+    private final @Nullable UserHelper mUserHelper;
 
     // Share state variable among methods when starting an activity.
     @VisibleForTesting
@@ -721,7 +719,9 @@ class ActivityStarter {
         mRootWindowContainer = service.mRootWindowContainer;
         mSupervisor = supervisor;
         mInterceptor = interceptor;
-        mIsHeadlessSystemUserMode = service.getUserManagerInternal().isHeadlessSystemUserMode();
+        mUserHelper = android.multiuser.Flags.hsuAllowlistActivities()
+                ? new UserHelper(service.getUserManagerInternal())
+                : null;
         reset(true);
     }
 
@@ -1074,8 +1074,7 @@ class ActivityStarter {
             }
         }
 
-        final int userId = aInfo != null && aInfo.applicationInfo != null
-                ? UserHandle.getUserId(aInfo.applicationInfo.uid) : 0;
+        final int userId = UserHelper.getUserId(aInfo);
         final int launchMode = aInfo != null ? aInfo.launchMode : 0;
         if (err == ActivityManager.START_SUCCESS) {
             request.logMessage.append("START u").append(userId).append(" {")
@@ -1204,41 +1203,9 @@ class ActivityStarter {
             }
         }
 
-        if (android.multiuser.Flags.hsuAllowlistActivities() && err == ActivityManager.START_SUCCESS
-                && aInfo != null) {
-            var compName = intent.getComponent();
-            if (compName != null) {
-                boolean showForAllUsers = (aInfo.flags
-                        & ActivityInfo.FLAG_SHOW_FOR_ALL_USERS) != 0;
-                if (!showForAllUsers) {
-                    var umi = mService.getUserManagerInternal();
-                    var allowlist = umi.getActivitiesAllowlist(userId);
-                    if (allowlist != null && !allowlist.isAllowed(compName)) {
-                        Slogf.w(TAG, "Activity %s is not allowlisted for user %d",
-                                compName.flattenToShortString(), userId);
-                        // TODO(b/414326600): consolidate with the logLaunchedHsuActivity() on
-                        // handleResult and/or log for all users (once the final API for logging is
-                        // defined)
-                        if (mIsHeadlessSystemUserMode && userId == UserHandle.USER_SYSTEM) {
-                            umi.logBlockedHsuActivity(compName);
-                        }
-                        err = ActivityManager.START_NOT_ALLOWED_FOR_USER;
-                    } else if (DEBUG_USER_VISIBILITY) {
-                        Slogf.d(TAG, "Activity %s is allowlisted for user %d (currentUser=%d)",
-                                compName.flattenToShortString(), userId, getCurrentUserId());
-                    }
-                } else if (DEBUG_USER_VISIBILITY && intent.getComponent() != null) {
-                    Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
-                            + "its marked as 'showForAllUsers' (currentUserId=%d)",
-                            intent.getComponent().flattenToShortString(), userId,
-                            getCurrentUserId());
-                }
-
-            } else {
-                // Should not be happen, but better be safe than sorry....
-                Slogf.wtf(TAG, "Could not check if %s is allowed for HSU because its intent (%s) "
-                        + "doesn't have a Component Name", aInfo, intent);
-            }
+        // TODO(b/412177078): remove null check once hsuAllowlistActivities() is gone
+        if (err == START_SUCCESS && mUserHelper != null) {
+            err = mUserHelper.checkRequest(request);
         }
 
         final Task resultRootTask = resultRecord == null
@@ -1947,16 +1914,9 @@ class ActivityStarter {
             }
         }
 
-        if (android.multiuser.Flags.hsuAllowlistActivities()
-                && isStarted && mIsHeadlessSystemUserMode
-                && started.mUserId == UserHandle.USER_SYSTEM) {
-            // TODO(b/412177078): for now we're just logging activities launched on HSU, but once
-            // the allowlist mechanism is in place, we'll need to change this call to log a
-            // successful launch, but also log when it's blocked earlier on (probably before the
-            // check for voice session on executeRequest(), as voice interaction is not supported
-            // on the HSU)
-            var umi = mService.getUserManagerInternal();
-            umi.logLaunchedHsuActivity(started.mActivityComponent);
+        // TODO(b/412177078): remove null check once hsuAllowlistActivities() is gone
+        if (mUserHelper != null) {
+            mUserHelper.logActivityStarted(started, isStarted);
         }
 
         return startedActivityRootTask;
@@ -3674,14 +3634,10 @@ class ActivityStarter {
         return this;
     }
 
-    private @UserIdInt int getCurrentUserId() {
-        return mRootWindowContainer.mCurrentUser;
-    }
-
     void dump(PrintWriter pw, String prefix) {
         pw.print(prefix);
         pw.print("mCurrentUser=");
-        pw.println(getCurrentUserId());
+        pw.println(mRootWindowContainer.mCurrentUser);
         pw.print(prefix);
         pw.print("mLastStartReason=");
         pw.println(mLastStartReason);
@@ -3723,8 +3679,10 @@ class ActivityStarter {
         pw.print(mAddingToTask);
         pw.print(" mInTaskFragment=");
         pw.println(mInTaskFragment);
-        pw.print(" mIsHeadlessSystemUserMode=");
-        pw.println(mIsHeadlessSystemUserMode);
+        // TODO(b/412177078): remove null check once hsuAllowlistActivities() is gone
+        if (mUserHelper != null) {
+            mUserHelper.dump(pw, prefix);
+        }
     }
 
     /**

@@ -33,7 +33,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 
-import android.annotation.UserIdInt;
 import android.app.IApplicationThread;
 import android.content.pm.ActivityInfo;
 import android.os.UserHandle;
@@ -45,6 +44,9 @@ import com.android.server.wm.WindowTestsBase.ActivityBuilder;
 
 import org.junit.Test;
 
+// TODO(b/412177078): this class predates {@link UserHelper} / {@link UserHelperTest}, at some point
+// we should simplify it to just check that UserHelperTest is called at the proper times (and
+// rename it as well).
 /**
  * Tests integration with {@code UserManagerInternal} to block activities that should not be
  * launched when the user is the {@code HSU} (Headless System User).
