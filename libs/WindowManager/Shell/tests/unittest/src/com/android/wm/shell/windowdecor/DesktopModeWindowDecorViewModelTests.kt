@@ -1418,7 +1418,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             }
             mockDesktopTasksController.stub {
                 on {
-                    onDragPositioningEnd(any(), any(), any(), any(), any(), any(), any(), any())
+                    onDragPositioningEnd(any(), any(), any(), any(), any(), any(), any())
                 } doReturn false
             }
 
@@ -1462,7 +1462,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 .onDragPositioningEnd(
                     eq(taskInfo),
                     any<SurfaceControl>(),
-                    eq(SECOND_DISPLAY),
                     eq(PointF(20f, 20f)),
                     eq(BOUNDS_ON_DRAG_END_DESKTOP_ACCEPTED),
                     any<Rect>(),
@@ -1549,7 +1548,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             }
             mockDesktopTasksController.stub {
                 on {
-                    onDragPositioningEnd(any(), any(), any(), any(), any(), any(), any(), any())
+                    onDragPositioningEnd(any(), any(), any(), any(), any(), any(), any())
                 } doReturn true
             }
 
@@ -1627,7 +1626,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 .onDragPositioningEnd(
                     eq(taskInfo),
                     any<SurfaceControl>(),
-                    eq(SECOND_DISPLAY),
                     eq(PointF(30f, 30f)),
                     eq(BOUNDS_IGNORED_ON_NON_DESKTOP),
                     any<Rect>(),
