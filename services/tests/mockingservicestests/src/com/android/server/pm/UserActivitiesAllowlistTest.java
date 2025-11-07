@@ -268,11 +268,12 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: allowlisting disabled
                         permanent activities allowlist is empty.
                         temporary activities allowlist is not set.
-                           """, DEBUG));
+                           """, allowlist, DEBUG));
     }
 
     @Test
@@ -284,12 +285,13 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: using permanent allowlist
                         permanent activities allowlist has 1 activity:
                           allowlisted/I.am
                         temporary activities allowlist is not set.
-                           """, DEBUG));
+                           """, allowlist, DEBUG));
     }
 
     @Test
@@ -301,13 +303,14 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: using permanent allowlist
                         permanent activities allowlist has 2 activities:
                           allowlisted/I.am
                           so/am.I
                         temporary activities allowlist is not set.
-                          """, DEBUG));
+                          """, allowlist, DEBUG));
     }
 
     @Test
@@ -319,11 +322,12 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                         Dumpo:
+                          id: %s
                           DEBUG: %b
                           activities allowlist status: allowlisting disabled
                           permanent activities allowlist is empty.
                           temporary activities allowlist is not set.
-                             """, DEBUG));
+                             """, allowlist, DEBUG));
     }
 
     @Test
@@ -335,13 +339,14 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: using permanent allowlist
                         permanent activities allowlist has 2 activities:
                           allowlisted/I.am
                           so/am.I
                         temporary activities allowlist is not set.
-                          """, DEBUG));
+                          """, allowlist, DEBUG));
     }
 
 
@@ -355,12 +360,13 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: using permanent allowlist
                         permanent activities allowlist has 1 activity:
                           i.am/.groot
                         temporary activities allowlist is not set.
-                          """, DEBUG));
+                          """, allowlist, DEBUG));
     }
 
 
@@ -374,12 +380,13 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: using permanent allowlist
                         permanent activities allowlist has 1 activity:
                           i.am/.groot
                         temporary activities allowlist is not set.
-                          """, DEBUG));
+                          """, allowlist, DEBUG));
     }
 
     @Test
@@ -392,11 +399,12 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: allowlisting disabled
                         permanent activities allowlist is empty.
                         temporary activities allowlist is empty.
-                           """, DEBUG));
+                           """, allowlist, DEBUG));
     }
 
     @Test
@@ -409,13 +417,14 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: allowlisting disabled
                         permanent activities allowlist has 2 activities:
                           allowlisted/I.am
                           so/am.I
                         temporary activities allowlist is empty.
-                           """, DEBUG));
+                           """, allowlist, DEBUG));
     }
 
     @Test
@@ -428,12 +437,13 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: using temporary allowlist
                         permanent activities allowlist is empty.
                         temporary activities allowlist has 1 activity:
                           and/me.too
-                           """, DEBUG));
+                           """, allowlist, DEBUG));
     }
 
     @Test
@@ -448,6 +458,7 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
         expectWithMessage("dump()").that(dump)
                 .isEqualTo(String.format("""
                       Dumpo:
+                        id: %s
                         DEBUG: %b
                         activities allowlist status: using temporary allowlist
                         permanent activities allowlist has 2 activities:
@@ -456,7 +467,19 @@ public final class UserActivitiesAllowlistTest extends ExpectableTestCase {
                         temporary activities allowlist has 2 activities:
                           and/me.too
                           dont/forget.about.me
-                           """, DEBUG));
+                           """, allowlist, DEBUG));
+    }
+
+    @Test
+    public void testToString() {
+        var allowlist1 = createAllowlist();
+        var allowlist2 = createAllowlist();
+        String toString1 = allowlist1.toString();
+        String toString2 = allowlist2.toString();
+
+        expectWithMessage("allowlist1.toString()").that(toString1).isNotEqualTo(toString2);
+        expectWithMessage("allowlist1.toString()").that(toString1).contains("" + allowlist1.mId);
+        expectWithMessage("allowlist2.toString()").that(toString2).contains("" + allowlist2.mId);
     }
 
     private UserActivitiesAllowlist createAllowlist(String... configAllowlist) {
