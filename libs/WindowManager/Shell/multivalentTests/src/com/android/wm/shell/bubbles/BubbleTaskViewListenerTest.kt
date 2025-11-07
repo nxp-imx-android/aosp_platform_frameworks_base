@@ -74,8 +74,8 @@ import org.mockito.kotlin.whenever
  * Tests for [BubbleTaskViewListener].
  *
  * Build/Install/Run:
- *  atest WMShellRobolectricTests:BubbleTaskViewListenerTest (on host)
- *  atest WMShellMultivalentTestsOnDevice:BubbleTaskViewListenerTest (on device)
+ *  - atest WMShellRobolectricTests:BubbleTaskViewListenerTest (on host)
+ *  - atest WMShellMultivalentTestsOnDevice:BubbleTaskViewListenerTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)

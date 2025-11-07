@@ -49,8 +49,8 @@ import org.mockito.kotlin.verify
  * Tests for [BubbleExpandedView].
  *
  * Build/Install/Run:
- *  atest WMShellRobolectricTests:BubbleExpandedViewTest (on host)
- *  atest WMShellMultivalentTestsOnDevice:BubbleExpandedViewTest (on device)
+ *  - atest WMShellRobolectricTests:BubbleExpandedViewTest (on host)
+ *  - atest WMShellMultivalentTestsOnDevice:BubbleExpandedViewTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
