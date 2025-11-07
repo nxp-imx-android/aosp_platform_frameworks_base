@@ -356,7 +356,7 @@ public class TelecomManager {
      * using the specified call type. If this extra is not provided, the application should
      * default to using the original call type associated with the call.</p>
      */
-    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
     public static final String EXTRA_CALL_TYPE = "android.telecom.extra.CALL_TYPE";
 
     // Values for EXTRA_PRIORITY
