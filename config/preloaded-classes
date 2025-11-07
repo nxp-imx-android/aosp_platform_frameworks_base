@@ -9668,6 +9668,7 @@ android.view.ViewRootImpl$$ExternalSyntheticLambda7
 android.view.ViewRootImpl$$ExternalSyntheticLambda8
 android.view.ViewRootImpl$$ExternalSyntheticLambda9
 android.view.ViewRootImpl$10
+android.view.ViewRootImpl$11$$ExternalSyntheticLambda3
 android.view.ViewRootImpl$11
 android.view.ViewRootImpl$1
 android.view.ViewRootImpl$2
@@ -14248,6 +14249,7 @@ com.android.internal.widget.LockPatternUtils$$ExternalSyntheticLambda0
 com.android.internal.widget.LockPatternUtils$1
 com.android.internal.widget.LockPatternUtils$2
 com.android.internal.widget.LockPatternUtils$CheckCredentialProgressCallback
+com.android.internal.widget.LockPatternUtils$RequestThrottledException
 com.android.internal.widget.LockPatternUtils$StrongAuthTracker$1
 com.android.internal.widget.LockPatternUtils$StrongAuthTracker$H
 com.android.internal.widget.LockPatternUtils$StrongAuthTracker
