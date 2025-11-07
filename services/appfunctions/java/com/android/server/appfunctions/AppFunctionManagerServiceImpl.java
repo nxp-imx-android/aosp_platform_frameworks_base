@@ -18,13 +18,15 @@ package com.android.server.appfunctions;
 
 import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
 import static android.app.appfunctions.AppFunctionManager.ACTION_REQUEST_APP_FUNCTION_ACCESS;
+import static android.app.appfunctions.AppFunctionMetadata.FUNCTION_TYPE_DYNAMIC;
+import static android.app.appfunctions.AppFunctionMetadata.FUNCTION_TYPE_STATIC;
+import static android.app.appfunctions.AppFunctionMetadata.getAppFunctionType;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_DENIED;
-import static com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.isDynamicAppFunction;
 
 import android.Manifest;
 import android.annotation.EnforcePermission;
@@ -470,10 +472,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 .thenAccept(
                         canExecuteResult -> {
                             if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
-                                    && isDynamicAppFunction(
-                                            requestInternal
-                                                    .getClientRequest()
-                                                    .getFunctionIdentifier())) {
+                                    && getAppFunctionType(
+                                                    requestInternal
+                                                            .getClientRequest()
+                                                            .getFunctionIdentifier())
+                                            == FUNCTION_TYPE_DYNAMIC) {
                                 mDynamicAppFunctionRegistry.executeAppFunction(
                                         requestInternal,
                                         safeExecuteAppFunctionCallback,
@@ -559,7 +562,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         AndroidFuture<Boolean> future = new AndroidFuture<>();
 
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
-                && isDynamicAppFunction(functionIdentifier)) {
+                && getAppFunctionType(functionIdentifier) == FUNCTION_TYPE_DYNAMIC) {
             future.complete(
                     mDynamicAppFunctionRegistry.isAppFunctionEnabled(
                             targetPackage, functionIdentifier, targetUserHandle));
@@ -1201,6 +1204,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull ExecuteAppFunctionAidlRequest requestInternal,
             @NonNull IExecuteAppFunctionCallback executeAppFunctionCallback,
             int callingUid) {
+        final int functionType =
+                android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()
+                        ? getAppFunctionType(
+                                requestInternal.getClientRequest().getFunctionIdentifier())
+                        : FUNCTION_TYPE_STATIC;
+
         return new SafeOneTimeExecuteAppFunctionCallback(
                 executeAppFunctionCallback,
                 new SafeOneTimeExecuteAppFunctionCallback.BeforeCompletionCallback() {
@@ -1215,7 +1224,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             @NonNull ExecuteAppFunctionResponse result,
                             long executionStartTimeMillis) {
                         mLoggerWrapper.logAppFunctionSuccess(
-                                requestInternal, result, callingUid, executionStartTimeMillis);
+                                requestInternal,
+                                result,
+                                callingUid,
+                                executionStartTimeMillis,
+                                functionType);
                         recordAppFunctionAccess(requestInternal);
                     }
 
@@ -1226,7 +1239,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                 requestInternal,
                                 error.getErrorCode(),
                                 callingUid,
-                                executionStartTimeMillis);
+                                executionStartTimeMillis,
+                                functionType);
                         recordAppFunctionAccess(requestInternal);
                     }
                 });

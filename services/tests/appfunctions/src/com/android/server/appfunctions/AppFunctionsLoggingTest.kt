@@ -19,9 +19,11 @@ import android.app.IUriGrantsManager
 import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.AppFunctionAttribution
 import android.app.appfunctions.AppFunctionException
+import android.app.appfunctions.AppFunctionMetadata
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest
 import android.app.appfunctions.ExecuteAppFunctionRequest
 import android.app.appfunctions.ExecuteAppFunctionResponse
+import android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS
 import android.app.appfunctions.IExecuteAppFunctionCallback
 import android.app.appsearch.GenericDocument
 import android.content.Context
@@ -55,6 +57,7 @@ import org.mockito.kotlin.whenever
 /** Tests that AppFunctionsStatsLog logs AppFunctionsRequestReported with the expected values. */
 @RunWith(AndroidJUnit4::class)
 class AppFunctionsLoggingTest {
+
     @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @get:Rule
@@ -62,6 +65,7 @@ class AppFunctionsLoggingTest {
         ExtendedMockitoRule.Builder(this)
             .mockStatic(AppFunctionsStatsLog::class.java)
             .mockStatic(LocalServices::class.java)
+            .mockStatic(AppFunctionMetadata::class.java)
             .build()
     private val mContext: Context
         get() = ApplicationProvider.getApplicationContext()
@@ -145,6 +149,7 @@ class AppFunctionsLoggingTest {
                 /* interactionType= */ eq<Int>(
                     AppFunctionsLoggerWrapper.INTERACTION_TYPE_UNSPECIFIED
                 ),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_STATIC)
             )
         }
     }
@@ -187,6 +192,7 @@ class AppFunctionsLoggingTest {
                 /* interactionType= */ eq<Int>(
                     AppFunctionsLoggerWrapper.INTERACTION_TYPE_UNSPECIFIED
                 ),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_STATIC)
             )
         }
     }
@@ -242,6 +248,7 @@ class AppFunctionsLoggingTest {
                 /* interactionType= */ eq<Int>(
                     AppFunctionsLoggerWrapper.INTERACTION_TYPE_USER_QUERY
                 ),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_STATIC)
             )
         }
     }
@@ -297,6 +304,7 @@ class AppFunctionsLoggingTest {
                 /* interactionType= */ eq<Int>(
                     AppFunctionsLoggerWrapper.INTERACTION_TYPE_USER_SCHEDULED
                 ),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_STATIC)
             )
         }
     }
@@ -351,6 +359,95 @@ class AppFunctionsLoggingTest {
                 /* requestDurationMs= */ eq<Long>(TEST_EXPECTED_E2E_DURATION_MILLIS),
                 /* requestOverheadMs= */ eq<Long>(TEST_EXPECTED_OVERHEAD_DURATION_MILLIS),
                 /* interactionType= */ eq<Int>(AppFunctionsLoggerWrapper.INTERACTION_TYPE_OTHER),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_STATIC)
+            )
+        }
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS
+    )
+    @Test
+    fun testOnSuccess_logsSuccessResponse_withStaticFunctionType() {
+        val aidlRequest =
+            ExecuteAppFunctionAidlRequest(
+                ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE,
+                    TEST_FUNCTION_ID).build(),
+                UserHandle.CURRENT,
+                TEST_CALLING_PKG,
+                TEST_INITIAL_REQUEST_TIME_MILLIS,
+                System.currentTimeMillis(),
+            )
+        whenever(AppFunctionMetadata.getAppFunctionType(
+            any())).thenReturn(AppFunctionMetadata.FUNCTION_TYPE_STATIC)
+        val safeCallback =
+            mServiceImpl.initializeSafeExecuteAppFunctionCallback(
+                aidlRequest,
+                mock<IExecuteAppFunctionCallback>(),
+                TEST_CALLING_UID,
+            )
+        val response =
+            ExecuteAppFunctionResponse(
+                GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "")
+                    .build()
+            )
+
+        safeCallback.onResult(response)
+
+        ExtendedMockito.verify {
+            AppFunctionsStatsLog.write(
+                /* atomId= */ eq<Int>(AppFunctionsStatsLog.APP_FUNCTIONS_REQUEST_REPORTED),
+                /* callerPackageUid= */ eq<Int>(TEST_CALLING_UID),
+                /* targetPackageUid= */ eq<Int>(TEST_TARGET_UID),
+                /* errorCode= */ eq<Int>(AppFunctionsLoggerWrapper.SUCCESS_RESPONSE_CODE),
+                /* requestSizeBytes= */ any(),
+                /* responseSizeBytes= */ any(),
+                /* requestDurationMs= */ any(),
+                /* requestOverheadMs= */ any(),
+                /* interactionType= */ any(),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_STATIC)
+            )
+        }
+    }
+
+
+    @RequiresFlagsEnabled(
+        FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS
+    )
+    @Test
+    fun testOnError_logsFailureResponse_withDynamicAppFunctionType() {
+        val aidlRequest =
+            ExecuteAppFunctionAidlRequest(
+                ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID).build(),
+                UserHandle.CURRENT,
+                TEST_CALLING_PKG,
+                TEST_INITIAL_REQUEST_TIME_MILLIS,
+                System.currentTimeMillis(),
+            )
+        whenever(AppFunctionMetadata.getAppFunctionType(
+            any())).thenReturn(AppFunctionMetadata.FUNCTION_TYPE_DYNAMIC)
+        val safeCallback =
+            mServiceImpl.initializeSafeExecuteAppFunctionCallback(
+                aidlRequest,
+                mock<IExecuteAppFunctionCallback>(),
+                TEST_CALLING_UID,
+            )
+        safeCallback.onError(
+            AppFunctionException(AppFunctionException.ERROR_DENIED, "Error: permission denied")
+        )
+
+        ExtendedMockito.verify {
+            AppFunctionsStatsLog.write(
+                /* atomId= */ eq<Int>(AppFunctionsStatsLog.APP_FUNCTIONS_REQUEST_REPORTED),
+                /* callerPackageUid= */ eq<Int>(TEST_CALLING_UID),
+                /* targetPackageUid= */ eq<Int>(TEST_TARGET_UID),
+                /* errorCode= */ eq<Int>(AppFunctionException.ERROR_DENIED),
+                /* requestSizeBytes= */ any(),
+                /* responseSizeBytes= */ any(),
+                /* requestDurationMs= */ any(),
+                /* requestOverheadMs= */ any(),
+                /* interactionType= */ any(),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_DYNAMIC)
             )
         }
     }
