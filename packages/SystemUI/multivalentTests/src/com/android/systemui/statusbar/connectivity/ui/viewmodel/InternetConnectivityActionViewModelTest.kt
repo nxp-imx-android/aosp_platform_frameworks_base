@@ -30,6 +30,7 @@ import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager
+import com.android.systemui.retail.domain.interactor.RetailModeInteractor
 import com.android.systemui.scene.shared.model.TransitionKeys
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -58,6 +59,7 @@ class InternetConnectivityActionViewModelTest : SysuiTestCase() {
     private val detailsViewModel: DetailsViewModel = mock()
     private val otherDetailsViewModel: TileDetailsViewModel = FakeTileDetailsViewModel("test")
     private val internetDetailsViewModel: InternetDetailsViewModel = mock()
+    private val retailModeInteractor: RetailModeInteractor = mock()
 
     private lateinit var underTest: InternetConnectivityActionViewModel
 
@@ -66,6 +68,7 @@ class InternetConnectivityActionViewModelTest : SysuiTestCase() {
     @Before
     fun setUp() {
         whenever(detailsViewModel.activeTileDetails).thenReturn(null)
+        whenever(retailModeInteractor.isInRetailMode).thenReturn(false)
 
         underTest =
             InternetConnectivityActionViewModel(
@@ -77,6 +80,7 @@ class InternetConnectivityActionViewModelTest : SysuiTestCase() {
                 shadeInteractor,
                 detailsViewModel,
                 shadeModeInteractor,
+                retailModeInteractor,
             )
     }
 
@@ -156,5 +160,19 @@ class InternetConnectivityActionViewModelTest : SysuiTestCase() {
             .collapseQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", null, true)
         verify(shadeInteractor, never())
             .expandQuickSettingsShade("ACTION_INTERNET_CONNECTIVITY", TransitionKeys.Instant)
+    }
+
+    @Test
+    @EnableFlags(QsDetailedView.FLAG_NAME)
+    fun inRetailMode_showDialog() = runTest {
+        whenever(shadeModeInteractor.isDualShade).thenReturn(true)
+        whenever(retailModeInteractor.isInRetailMode).thenReturn(true)
+        underTest.start()
+        waitForIdleSync(handler)
+
+        interactor.internetConnectivityActionEvent.emit(Unit)
+        waitForIdleSync(handler)
+
+        verify(internetDialogManager).create(eq(true), eq(false), eq(false), isNull())
     }
 }
