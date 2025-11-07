@@ -28,8 +28,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.data.repository.FakeAccessibilityShortcutsRepository
 import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
-import com.android.systemui.accessibility.data.repository.fakeAccessibilityShortcutsRepository
 import com.android.systemui.accessibility.shortcutchooser.domain.interactor.QuickAccessDialogInteractor
 import com.android.systemui.accessibility.shortcutchooser.ui.viewmodel.quickAccessDialogViewModelFactory
 import com.android.systemui.broadcast.broadcastDispatcher
@@ -43,20 +43,20 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.spy
-import org.mockito.kotlin.verify
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class QuickAccessDialogStartableIntegrationTest : SysuiTestCase() {
+    private companion object {
+        const val SHORTCUT_TYPE = QuickAccessDialogInteractor.SHORTCUT_TYPE
+
+        const val TALKBACK_TARGET_NAME =
+            FakeAccessibilityShortcutsRepository.FAKE_TALKBACK_TARGET_NAME
+    }
 
     @get:Rule val composeTestRule = createEmptyComposeRule()
 
-    private val kosmos =
-        testKosmosNew().apply {
-            accessibilityShortcutsRepository = spy(fakeAccessibilityShortcutsRepository)
-        }
+    private val kosmos = testKosmosNew()
     private val viewModel = kosmos.quickAccessDialogViewModelFactory.create()
 
     @Before
@@ -73,18 +73,17 @@ class QuickAccessDialogStartableIntegrationTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG_PERMISSION)
     fun start_someShortcutsEnabled() =
         kosmos.runTest {
-            verify(accessibilityShortcutsRepository)
-                .enableShortcutsForTargets(
-                    eq(true),
-                    eq(QuickAccessDialogInteractor.SHORTCUT_TYPE),
-                    eq(
-                        // These fake target names come from FakeAccessibilityShortcutsRepository.
-                        setOf(
-                            "fakeTargetNameForTalkBack",
-                            "fakeTargetNameForMagnification",
-                            "fakeTargetNameForVoiceAccess",
-                        )
-                    ),
+            assertThat(
+                    accessibilityShortcutsRepository
+                        .getSelectedAccessibilityTargetsInfo(SHORTCUT_TYPE)
+                        .map { it.targetName }
+                        .toSet()
+                )
+                .isEqualTo(
+                    accessibilityShortcutsRepository
+                        .getAllAccessibilityTargetsInfo(SHORTCUT_TYPE)
+                        .map { it.targetName }
+                        .toSet()
                 )
         }
 
@@ -126,29 +125,30 @@ class QuickAccessDialogStartableIntegrationTest : SysuiTestCase() {
 
             assertThat(isDialogVisible()).isTrue()
 
-            composeTestRule.onNodeWithText("Magnification").performClick()
+            composeTestRule.onNodeWithText("Screen Reader").performClick()
             composeTestRule.waitForIdle()
 
-            verify(accessibilityShortcutsRepository)
-                .performAccessibilityShortcut(
-                    eq(DEFAULT_DISPLAY),
-                    eq(QuickAccessDialogInteractor.SHORTCUT_TYPE),
-                    eq("fakeTargetNameForMagnification"),
+            assertThat(
+                    accessibilityShortcutsRepository
+                        .getAllAccessibilityTargetsInfo(SHORTCUT_TYPE)
+                        .filter { it.isToggleOn }
+                        .map { it.targetName }
+                        .toSet()
                 )
+                .isEqualTo(setOf(TALKBACK_TARGET_NAME))
         }
 
     private fun Kosmos.isDialogVisible() = viewModel.isDialogVisible.value
 
     private fun Kosmos.sendIntentOnMainThread() {
-        Intent()
-            .apply {
-                action = QuickAccessDialogInteractor.ACTION
-                putExtra(QuickAccessDialogInteractor.DISPLAY_ID, DEFAULT_DISPLAY)
-            }
-            .let {
-                runOnMainThreadAndWaitForIdleSync {
-                    broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, it)
-                }
-            }
+        runOnMainThreadAndWaitForIdleSync {
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent().apply {
+                    action = QuickAccessDialogInteractor.ACTION
+                    putExtra(QuickAccessDialogInteractor.DISPLAY_ID, DEFAULT_DISPLAY)
+                },
+            )
+        }
     }
 }
