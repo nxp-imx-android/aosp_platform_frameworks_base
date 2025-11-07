@@ -34,7 +34,7 @@ interface IPersonalContextManager {
 
     oneway void publishInsight(in List<ContextInsightWrapper> insights, int userId);
 
-    ParcelUuid registerInsightSurfaceClient(
+    oneway void registerInsightSurfaceClient(
             in List<ContextHintWrapper> clientHints,
             in InsightSurfaceClientInfo clientInfo,
             int userId);
