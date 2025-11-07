@@ -374,7 +374,6 @@ public class DisplayPolicy {
     private final WindowLayout mWindowLayout = new WindowLayout();
 
     private WindowState mTopFullscreenOpaqueWindowState;
-    private boolean mTopIsFullscreen;
     private int mNavBarOpacityMode = NAV_BAR_OPAQUE_WHEN_FREEFORM_OR_DOCKED;
 
     /**
@@ -1484,10 +1483,6 @@ public class DisplayPolicy {
 
     WindowState getTopFullscreenOpaqueWindow() {
         return mTopFullscreenOpaqueWindowState;
-    }
-
-    boolean isTopLayoutFullscreen() {
-        return mTopIsFullscreen;
     }
 
     /**
@@ -2773,10 +2768,6 @@ public class DisplayPolicy {
             }
         }
 
-        // If the top app is not fullscreen, only the default rotation animation is allowed.
-        mTopIsFullscreen = topAppHidesStatusBar
-                && (mNotificationShade == null || !mNotificationShade.isVisible());
-
         int appearance = APPEARANCE_OPAQUE_NAVIGATION_BARS | APPEARANCE_OPAQUE_STATUS_BARS;
         appearance = configureStatusBarOpacity(appearance);
         appearance = configureNavBarOpacity(appearance, adjacentTasksVisible,
@@ -3173,7 +3164,6 @@ public class DisplayPolicy {
                 pw.println(mSystemBarVisibilityOverrideMap.valueAt(i));
             }
         }
-        pw.print(prefix); pw.print("mTopIsFullscreen="); pw.println(mTopIsFullscreen);
         pw.print(prefix); pw.print("mImeInsetsConsumed="); pw.println(mImeInsetsConsumed);
         pw.print(prefix); pw.print("mForceShowNavigationBarEnabled=");
         pw.print(mForceShowNavigationBarEnabled);

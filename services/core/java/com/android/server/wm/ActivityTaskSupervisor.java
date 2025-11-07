@@ -229,9 +229,6 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     private static final int START_HOME_MSG = FIRST_SUPERVISOR_TASK_MSG + 16;
     private static final int TOP_RESUMED_STATE_LOSS_TIMEOUT_MSG = FIRST_SUPERVISOR_TASK_MSG + 17;
 
-    // Used to indicate that windows of activities should be preserved during the resize.
-    static final boolean PRESERVE_WINDOWS = true;
-
     // Used to indicate if an object (e.g. task) should be moved/created
     // at the top of its container (e.g. root task).
     static final boolean ON_TOP = true;

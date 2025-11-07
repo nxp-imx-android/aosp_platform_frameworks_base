@@ -6048,11 +6048,6 @@ public class WindowManagerService extends IWindowManager.Stub
         public static final int REPARENT_TASK_TO_DEFAULT_DISPLAY = 65;
         public static final int INSETS_CHANGED = 66;
 
-        /**
-         * Used to denote that an integer field in a message will not be used.
-         */
-        public static final int UNUSED = 0;
-
         @Override
         public void handleMessage(Message msg) {
             if (DEBUG_WINDOW_TRACE) {

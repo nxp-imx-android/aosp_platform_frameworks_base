@@ -644,7 +644,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     private PowerManager.WakeLock mDrawLock;
 
-    private final Rect mTmpRect = new Rect();
     private final Point mTmpPoint = new Point();
     private final Region mTmpRegion = new Region();
 
