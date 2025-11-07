@@ -305,16 +305,11 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 windowingMode = WINDOWING_MODE_FREEFORM,
                 onCaptionButtonClickListener = onClickListenerCaptor,
             )
-        val taskInfo = decor.taskInfo
+        whenever(mockPinnedLayerController.isPinned(decor.taskInfo.taskId)).thenReturn(true)
 
         val view = mock<View> { on { id } doReturn R.id.close_window }
-        whenever(mockDesktopTasksController.closeTask(taskInfo))
-            .thenReturn(DesktopTasksController.CloseTaskResult.NOT_CLOSED_UNKNOWN_TASK)
-        whenever(mockPinnedLayerController.closeTask(taskInfo)).thenReturn(true)
-
         onClickListenerCaptor.firstValue.onClick(view)
 
-        verify(mockDesktopTasksController).getTopTask(taskInfo.displayId, taskInfo.userId)
         verify(mockPinnedLayerController).closeTask(decor.taskInfo)
     }
 

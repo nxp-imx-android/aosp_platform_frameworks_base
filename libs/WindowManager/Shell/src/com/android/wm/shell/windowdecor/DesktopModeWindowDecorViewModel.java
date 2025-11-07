@@ -1278,8 +1278,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      *
      * TODO(b/448484440): Make the method private.
      */
-    public boolean closeTask(RunningTaskInfo task) {
-        return closeDesktopTask(task) || closePinnedTask(task);
+    public void closeTask(RunningTaskInfo task) {
+        if (mPinnedLayerController != null && mPinnedLayerController.isPinned(task.taskId)) {
+            closePinnedTask(task);
+        } else {
+            closeDesktopTask(task);
+        }
     }
 
     /**
@@ -1289,7 +1293,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      * Must call the method on the shell main executor.
      * @param task Task to be closed.
      */
-    private boolean closeDesktopTask(RunningTaskInfo task) {
+    private void closeDesktopTask(RunningTaskInfo task) {
         if (!DesktopExperienceFlags
                 .CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT.isTrue()) {
             final WindowDecorationWrapper decoration = mWindowDecorByTaskId.get(task.taskId);
@@ -1298,13 +1302,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         "%s: closeDesktopTask(taskId=%d): decoration is null, ignoring",
                         TAG,
                         task.taskId);
-                return false;
             }
         }
         final DesktopTasksController.CloseTaskResult result =
                 mDesktopTasksController.closeTask(task);
         if (result != DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP) {
-            return false;
+            return;
         }
 
         // TODO: b/448483994 - remove manual a11y announcement when it is handled by the decor
@@ -1319,8 +1322,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (nextFocusedWindow != null) {
             nextFocusedWindow.a11yAnnounceNewFocusedWindow();
         }
-
-        return true;
     }
 
     /**
@@ -1328,10 +1329,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      *
      * @param task The pinned task to be closed.
      */
-    private boolean closePinnedTask(RunningTaskInfo task) {
-        final boolean result = mPinnedLayerController.closeTask(task);
-        if (!result) {
-            return false;
+    private void closePinnedTask(RunningTaskInfo task) {
+        if (!mPinnedLayerController.closeTask(task)) {
+            return;
         }
 
         // TODO: b/448483994 - remove manual a11y announcement when it is handled by the decor
@@ -1346,8 +1346,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (nextFocusedWindow != null) {
             nextFocusedWindow.a11yAnnounceNewFocusedWindow();
         }
-
-        return true;
     }
 
     /** Listener for caption touch events. */
