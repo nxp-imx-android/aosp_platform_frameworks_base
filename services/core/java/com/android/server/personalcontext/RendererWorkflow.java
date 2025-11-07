@@ -131,7 +131,8 @@ public final class RendererWorkflow {
 
                 if (renderToken != null) {
                     // If we have a RenderToken, then only send the insight to that renderer.
-                    final Renderer renderer = mProvider.getRendererById(renderToken.getTokenId());
+                    final Renderer renderer =
+                            mProvider.getRendererById(renderToken.getRendererComponentId());
                     if (renderer == null) throw new IllegalStateException("Renderer not found");
 
                     mEventListener.onInsightSentToRenderer(mFlowId, mInsight, renderer);
