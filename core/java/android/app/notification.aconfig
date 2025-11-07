@@ -337,6 +337,14 @@ flag {
 }
 
 flag {
+  name: "notification_semantic_actions_for_playback"
+  namespace: "notifications"
+  description: "Adds semantic action values for PLAY/PAUSE/STOP"
+  is_exported: true
+  bug: "458744035"
+}
+
+flag {
   name: "api_projected_extender"
   namespace: "notifications"
   description: "Guards new android.app.Notification.ProjectedExtender api"
