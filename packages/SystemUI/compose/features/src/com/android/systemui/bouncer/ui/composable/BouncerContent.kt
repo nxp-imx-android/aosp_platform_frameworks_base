@@ -621,29 +621,38 @@ private fun ContentScope.BelowUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.padding(vertical = 128.dp)) {
-        UserSwitcher(viewModel = viewModel, modifier = Modifier.fillMaxWidth())
+    Column(
+        modifier = modifier.fillMaxWidth().padding(vertical = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(Modifier.weight(1f))
+
+        UserSwitcher(viewModel = viewModel)
+
+        // Adding a larger Spacer between the UserSwitcher and the PIN/pattern/password elements, if
+        // there is extra vertical space to be filled in.
+        Spacer(Modifier.weight(3f))
+
+        StatusMessage(viewModel = viewModel.message, modifier = Modifier.padding(top = 48.dp))
 
         Spacer(Modifier.weight(1f))
 
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                StatusMessage(viewModel = viewModel.message)
-                OutputArea(viewModel = viewModel, modifier = Modifier.padding(top = 24.dp))
+        OutputArea(viewModel = viewModel, modifier = Modifier.padding(top = 24.dp))
 
-                InputArea(
-                    viewModel = viewModel,
-                    pinButtonRowVerticalSpacing = 12.dp,
-                    centerPatternDotsVertically = true,
-                    modifier = Modifier.padding(top = 128.dp),
-                )
+        Spacer(Modifier.weight(1f))
 
-                ActionArea(viewModel = viewModel, modifier = Modifier.padding(top = 48.dp))
-            }
-        }
+        InputArea(
+            viewModel = viewModel,
+            pinButtonRowVerticalSpacing = 12.dp,
+            centerPatternDotsVertically = true,
+            modifier = Modifier.padding(top = 24.dp),
+        )
+
+        Spacer(Modifier.weight(1f))
+
+        ActionArea(viewModel = viewModel, modifier = Modifier.padding(top = 48.dp))
+
+        Spacer(Modifier.weight(1f))
     }
 }
 
