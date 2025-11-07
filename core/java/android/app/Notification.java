@@ -1901,11 +1901,13 @@ public class Notification implements Parcelable
      * {@link #extras} key: an arraylist of {@link android.app.Notification.Metric}
      * bundles provided by a {@link android.app.Notification.MetricStyle} notification (as supplied
      * to {@link MetricStyle#addMetric} and related methods.
-     *
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     static final String EXTRA_METRICS = "android.metrics";
+
+    /** {@link #extras} key: Bundle corresponding to {@link CompactContent}. */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    static final String EXTRA_COMPACT_CONTENT = "android.compactContent";
 
     /**
      * {@link InstantSource} used for obtaining "now". Normally {@link InstantSource#system()},
@@ -4356,9 +4358,16 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Associates an {@link ApplicationInfo} object to this notification, which should point to the
+     * package that posted it. This is normally done by {@code NotificationManagerService} before
+     * forwarding the Notification to NLSes, but can be used in tests to fake that mechanism.
+     *
      * @hide
      */
-    public static void addFieldsFromContext(ApplicationInfo ai, Notification notification) {
+    @TestApi
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static void addFieldsFromContext(@NonNull ApplicationInfo ai,
+            @NonNull Notification notification) {
         notification.extras.putParcelable(EXTRA_BUILDER_APPLICATION_INFO, ai);
     }
 
@@ -6371,6 +6380,20 @@ public class Notification implements Parcelable
         public Builder setColor(@ColorInt int argb) {
             mN.color = argb;
             sanitizeColor();
+            return this;
+        }
+
+        /**
+         * Sets the content to be displayed in the compact representation of a
+         * {@link #FLAG_PROMOTED_ONGOING promoted ongoing} notification.
+         *
+         * <p>If {@code null}, {@link #resolveCompactContent(Context)} default content} will be
+         * used.
+         */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+        @NonNull
+        public Builder setCompactContent(@Nullable CompactContent compactContent) {
+            CompactContent.toExtras(compactContent, mN.extras);
             return this;
         }
 
@@ -12448,7 +12471,10 @@ public class Notification implements Parcelable
             return mSemanticStyle;
         }
 
-        /** A superclass for the various value types used by the {@link Metric} class. */
+        /**
+         * A superclass for the various value types used by the {@link Metric} class, or included in
+         * a {@link ResolvedCompactContent}.
+         */
         public abstract static class MetricValue {
 
             private static final String KEY_TYPE = "_type";
@@ -14637,6 +14663,666 @@ public class Notification implements Parcelable
             }
             // Comparison done for all custom RemoteViews, independent of style
             return false;
+        }
+    }
+
+    /**
+     * Base class for the objects that can customize the appearance of a Notification's <i>compact
+     * content</i>, such as the status bar chip when it is {@link #FLAG_PROMOTED_ONGOING promoted
+     * ongoing}.
+     *
+     * @see Builder#setCompactContent
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public abstract static class CompactContent {
+        private static final String KEY_TYPE = "type";
+        private static final int TYPE_BASIC = 1;
+        private static final String KEY_DATA = "bundle";
+
+        private CompactContent() { }
+
+        @Nullable
+        static final CompactContent fromExtras(Bundle notificationExtras) {
+            Bundle container = notificationExtras.getBundle(EXTRA_COMPACT_CONTENT);
+            if (container != null) {
+                int type = container.getInt(KEY_TYPE);
+                if (type == TYPE_BASIC) {
+                    return container.getParcelable(KEY_DATA, BasicCompactContent.class);
+                }
+            }
+
+            return null;
+        }
+
+        static final void toExtras(@Nullable CompactContent content, Bundle notificationExtras) {
+            Bundle container = new Bundle();
+            if (content instanceof BasicCompactContent basicContent) {
+                container.putInt(KEY_TYPE, TYPE_BASIC);
+                container.putParcelable(KEY_DATA, basicContent);
+            }
+            if (!container.isEmpty()) {
+                notificationExtras.putBundle(EXTRA_COMPACT_CONTENT, container);
+            } else {
+                notificationExtras.remove(EXTRA_COMPACT_CONTENT);
+            }
+        }
+    }
+
+    /**
+     * Compact content for a Notification showing an icon plus an optional short text.
+     *
+     * <p>For example, a "navigation" notification could have a chip with a small icon representing
+     * the direction of the next turn, plus a short text displaying the distance until that turn.
+     *
+     * @see Builder#setCompactContent
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static final class BasicCompactContent extends CompactContent implements Parcelable {
+        private final CompactIcon mIcon;
+        private final CompactText mText;
+
+        /**
+         * Creates a {@link BasicCompactContent} instance with a specific icon and text.
+         */
+        public BasicCompactContent(@NonNull CompactIcon icon, @NonNull CompactText text) {
+            mIcon = requireNonNull(icon);
+            mText = requireNonNull(text);
+        }
+
+        /**
+         * Creates a {@link BasicCompactContent} instance with a {@link CompactIcon#auto()} default}
+         * icon and a specific text.
+         */
+        public BasicCompactContent(@NonNull CompactText text) {
+            this(CompactIcon.auto(), text);
+        }
+
+        @NonNull
+        private CompactIcon getIcon() {
+            return mIcon;
+        }
+
+        @NonNull
+        private CompactText getText() {
+            return mText;
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeTypedObject(mIcon, flags);
+            dest.writeTypedObject(mText, flags);
+        }
+
+        public static final @NonNull Creator<BasicCompactContent> CREATOR = new Creator<>() {
+            @Override
+            public BasicCompactContent createFromParcel(Parcel source) {
+                return new BasicCompactContent(
+                        source.readTypedObject(CompactIcon.CREATOR),
+                        source.readTypedObject(CompactText.CREATOR));
+            }
+
+            @Override
+            public BasicCompactContent[] newArray(int size) {
+                return new BasicCompactContent[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+    }
+
+    /** Chooses the icon to show as part of the notification's compact content. */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static final class CompactIcon implements Parcelable {
+        private static final int ICON_AUTO = 0;
+        private static final int ICON_SMALL = 1;
+
+        /** @hide */
+        @IntDef(prefix = { "ICON_" }, value = {
+                ICON_AUTO,
+                ICON_SMALL,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface IconSource {}
+
+        private final @IconSource int mWhich;
+
+        private CompactIcon(@IconSource int which) {
+            mWhich = which;
+        }
+
+        /**
+         * The system chooses what icon to show. For example, posting app's icon, or the
+         * {@link #getSmallIcon() small icon}.
+         */
+        @NonNull
+        public static CompactIcon auto() {
+            return new CompactIcon(ICON_AUTO);
+        }
+
+        /** Shows the notification's {@link #getSmallIcon() small icon}. */
+        @NonNull
+        public static CompactIcon useSmallIcon() {
+            return new CompactIcon(ICON_SMALL);
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(mWhich);
+        }
+
+        public static final @NonNull Creator<CompactIcon> CREATOR = new Creator<>() {
+            @Override
+            public CompactIcon createFromParcel(Parcel source) {
+                return new CompactIcon(source.readInt());
+            }
+
+            @Override
+            public CompactIcon[] newArray(int size) {
+                return new CompactIcon[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+    }
+
+    /** Chooses the text to show as part of the notification's compact content. */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static final class CompactText implements Parcelable {
+        private static final int TEXT_NONE = 1;
+        private static final int TEXT_SHORT_CRITICAL = 2;
+        private static final int TEXT_WHEN_REMAINING_ADAPTIVE = 3;
+        private static final int TEXT_WHEN_STOPWATCH = 4;
+        private static final int TEXT_WHEN_TIMER = 5;
+        private static final int TEXT_STYLE_METRIC = 6;
+        private static final int TEXT_CUSTOM_METRIC = 7;
+
+        /** @hide */
+        @IntDef(prefix = { "TEXT_" }, value = {
+                TEXT_NONE,
+                TEXT_SHORT_CRITICAL,
+                TEXT_WHEN_REMAINING_ADAPTIVE,
+                TEXT_WHEN_STOPWATCH,
+                TEXT_WHEN_TIMER,
+                TEXT_STYLE_METRIC,
+                TEXT_CUSTOM_METRIC
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface TextSource {}
+
+        // This class is sort of a "union type" and doesn't expose getters, so we just mash all
+        // the fields of the different variants here. The result will be exposed properly when
+        // resolved to a MetricValue.
+        private final @TextSource int mWhich;
+        private final int mStyleMetricIndex;
+        private final @Nullable Metric.MetricValue mCustomMetricValue;
+        private @SemanticStyle int mSemanticStyle;
+
+        private CompactText(@TextSource int which, int styleMetricIndex,
+                @Nullable Metric.MetricValue customMetricValue) {
+            mWhich = which;
+            mStyleMetricIndex = styleMetricIndex;
+            mCustomMetricValue = customMetricValue;
+        }
+
+        /** The compact content will show no text. */
+        @NonNull
+        public static CompactText none() {
+            return new CompactText(TEXT_NONE, 0, null);
+        }
+
+        /**
+         * The compact content will show the string from
+         * {@link Notification#getShortCriticalText()}.
+         */
+        @NonNull
+        public static CompactText useShortCriticalText() {
+            return new CompactText(TEXT_SHORT_CRITICAL, 0, null);
+        }
+
+        /**
+         * The compact content will show the time remaining in a brief format until
+         * {@link Notification#when}, as long as that time is still in the future (otherwise, no
+         * text will be shown).
+         */
+        @NonNull
+        public static CompactText useWhenAsTimeRemaining() {
+            return new CompactText(TEXT_WHEN_REMAINING_ADAPTIVE, 0, null);
+        }
+
+        /**
+         * The compact content will show a chronometer, counting up from, or down to,
+         * {@link Notification#when}, as long as that chronometer value is positive (otherwise, no
+         * text will be shown).
+         */
+        @NonNull
+        public static CompactText useWhenAsChronometer(boolean countDown) {
+            return new CompactText(countDown ? TEXT_WHEN_TIMER : TEXT_WHEN_STOPWATCH, 0, null);
+        }
+
+        /**
+         * The compact content will show value of the metric on the attached {@link MetricStyle} at
+         * the given index. If the notification does not use {@link MetricStyle} or does not
+         * have a metric at that index, no text will be shown.
+         */
+        @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+        @NonNull
+        public static CompactText useStyleMetric(int metricIndex) {
+            return new CompactText(TEXT_STYLE_METRIC, metricIndex, null);
+        }
+
+        /** The compact content will show the given {@link Metric.MetricValue}. */
+        @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+        @NonNull
+        public static CompactText fromMetricValue(@NonNull Metric.MetricValue metricValue) {
+            return new CompactText(TEXT_CUSTOM_METRIC, 0, requireNonNull(metricValue));
+        }
+
+        /** Sets the semantic style for the compact content. */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        @NonNull
+        public CompactText setSemanticStyle(@SemanticStyle int semanticStyle) {
+            mSemanticStyle = semanticStyle;
+            return this;
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(mWhich);
+            if (Flags.apiMetricStyle()) {
+                dest.writeInt(mStyleMetricIndex);
+                if (mCustomMetricValue != null) {
+                    // Leverage Metric's bundling (unused but required label).
+                    dest.writeBoolean(true);
+                    dest.writeBundle(Metric.toBundle(new Metric(mCustomMetricValue,  "x")));
+                } else {
+                    dest.writeBoolean(false);
+                }
+            }
+            if (Flags.apiNotificationSemanticStyle()) {
+                dest.writeInt(mSemanticStyle);
+            }
+        }
+
+        public static final @NonNull Creator<CompactText> CREATOR = new Creator<>() {
+            @Override
+            public CompactText createFromParcel(Parcel source) {
+                CompactText res = null;
+                int which = source.readInt();
+                if (Flags.apiMetricStyle()) {
+                    if (source.readBoolean()) {
+                        int styleMetricIndex = source.readInt();
+                        Metric customMetric = Metric.fromBundle(
+                                source.readBundle(getClass().getClassLoader()));
+                        res = new CompactText(which, styleMetricIndex, customMetric.getValue());
+                    } else {
+                        res = new CompactText(which, 0, null);
+                    }
+                } else {
+                    res = new CompactText(which, 0, null);
+                }
+                if (Flags.apiNotificationSemanticStyle()) {
+                    res.setSemanticStyle(source.readInt());
+                }
+                return res;
+            }
+
+            @Override
+            public CompactText[] newArray(int size) {
+                return new CompactText[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+    }
+
+    /**
+     * Base class for the "resolved" compact content to be shown for
+     * {@link #FLAG_PROMOTED_ONGOING promoted ongoing} notifications.
+     *
+     * @see #resolveCompactContent(Context)
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public abstract static class ResolvedCompactContent {
+        private ResolvedCompactContent() {
+            // Constructor private to restrict subclassing.
+        }
+    }
+
+    /**
+     * "Resolved" compact content for a Notification showing an icon plus an optional short text.
+     *
+     * @see BasicCompactContent
+     * @see #resolveCompactContent(Context)
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static final class ResolvedBasicCompactContent extends ResolvedCompactContent {
+        private final @NonNull ResolvedCompactIcon mIcon;
+        private final @Nullable Metric.MetricValue mText;
+        private final @SemanticStyle int mSemanticStyle;
+
+        private ResolvedBasicCompactContent(@NonNull ResolvedCompactIcon icon,
+                @Nullable Metric.MetricValue text, @SemanticStyle int semanticStyle) {
+            mIcon = icon;
+            mText = text;
+            mSemanticStyle = semanticStyle;
+        }
+
+        /** The icon to be shown as part of the compact content. */
+        @NonNull
+        public ResolvedCompactIcon getIcon() {
+            return mIcon;
+        }
+
+        /**
+         * The text, if any, to be shown as part of the compact content. This can be either a
+         * "fixed" text, e.g. a string, or dynamic (such as a timer or stopwatch).
+         */
+        @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+        @Nullable
+        public Metric.MetricValue getText() {
+            return mText;
+        }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        @SemanticStyle
+        public int getSemanticStyle() {
+            return mSemanticStyle;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ResolvedBasicCompactContent that)) return false;
+            if (this == that) return true;
+            return Objects.equals(this.mIcon, that.mIcon)
+                    && Objects.equals(this.mText, that.mText)
+                    && this.mSemanticStyle == that.mSemanticStyle;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mIcon, mText, mSemanticStyle);
+        }
+
+        @Override
+        public String toString() {
+            return "ResolvedBasicCompactContent{"
+                    + "mIcon=" + mIcon
+                    + ", mText=" + mText
+                    + ", mSemanticStyle=" + mSemanticStyle
+                    + "}";
+        }
+    }
+
+    /**
+     * Resolved icon to show as part of the notification's compact content.
+     *
+     * @see ResolvedBasicCompactContent
+     * @see BasicCompactContent#BasicCompactContent(CompactIcon, CompactText)
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static class ResolvedCompactIcon {
+        /** The icon's source is not specifically known. */
+        public static final int SOURCE_UNKNOWN = 0;
+
+        /**
+         * Indicates that the displayed icon should be the notification's small icon (that is,
+         * {@link #getIcon()}} returns the same as {@link Notification#getSmallIcon()}.
+         */
+        public static final int SOURCE_SMALL_ICON = 1;
+
+        /**
+         * Indicates that the displayed icon should be the posting package's application icon in
+         * full color.
+         */
+        public static final int SOURCE_PACKAGE_APP_ICON = 2;
+
+        /** @hide */
+        @IntDef(prefix = { "SOURCE_" }, value = {
+                SOURCE_UNKNOWN,
+                SOURCE_SMALL_ICON,
+                SOURCE_PACKAGE_APP_ICON,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface ResolvedCompactIconSource {}
+
+        private final int mSource;
+        private final @Nullable Icon mIcon;
+
+        private ResolvedCompactIcon(int source, @Nullable Icon icon) {
+            mSource = source;
+            mIcon = icon;
+        }
+
+        /**
+         * Identifies the source of the icon which has been resolved.
+         *
+         * <p>This allows callers who already resolve other content (like the
+         * {@link #getSmallIcon() small icon}) to avoid duplicating that work.
+         */
+        @ResolvedCompactIconSource
+        public int getSource() {
+            return mSource;
+        }
+
+        /** The {@link Icon} representation of the content, if applicable. */
+        @Nullable
+        public Icon getIcon() {
+            return mIcon;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ResolvedCompactIcon that)) return false;
+            if (this == that) return true;
+            return this.mSource == that.mSource
+                    && Objects.equals(this.mIcon, that.mIcon);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mSource, mIcon);
+        }
+
+        @Override
+        public String toString() {
+            return "ResolvedCompactIcon{"
+                    + "mSource=" + mSource
+                    + ", mIcon=" + mIcon
+                    + "}";
+        }
+    }
+
+    /**
+     * Returns the content to be displayed in the compact representation of a
+     * {@link Notification#FLAG_PROMOTED_ONGOING promoted ongoing} notification. This method is
+     * mostly useful for {@link android.service.notification.NotificationListenerService}
+     * implementations.
+     *
+     * <p>If the Notification has a {@link CompactContent}, then this method will return a {@code
+     * Resolved*} version of the content class that was provided. (e.g. if
+     * {@link BasicCompactContent} was set, this will return {@link ResolvedBasicCompactContent}).
+     * This resolved object will contain the data that was provided or referenced by the original.
+     *
+     * <p>If the Notification does not have a {@link CompactContent}, then this method will
+     * return a {@link ResolvedBasicCompactContent}.
+     * <ul>
+     *     <li>The icon will be as if the app provided {@link CompactIcon#auto()}, unless the app
+     *     does not target {@link Build.VERSION_CODES#CINNAMON_BUN}, in which case it will be
+     *     the value of {@link #getSmallIcon()}.
+     *     <li>The text will be a {@link Metric.MetricValue} populated based on the data in the
+     *     Notification, using the following ordered list of checks:
+     *     <ol>
+     *         <li>If the Notification has {@link #getShortCriticalText()}, it will be a
+     *         {@link Metric.FixedText} with that text.
+     *         <li>If the Notification uses {@link MetricStyle}, it will be the value of the
+     *         first metric.
+     *         <li>If the Notification has {@link Builder#setUsesChronometer(boolean)} equal to
+     *         {@code true}, it will be a {@link Metric.TimeDifference} built from {@link #when}
+     *         with {@link Metric.TimeDifference#FORMAT_CHRONOMETER}. It will be a countdown if
+     *         {@link Builder#setChronometerCountDown(boolean)} is {@code true}.
+     *         <li>If the notification has {@link Builder#setShowWhen(boolean)} equal to
+     *         {@code true}, if will be a {@link Metric.TimeDifference}, counting down to
+     *         {@link #when}, with {@link Metric.TimeDifference#FORMAT_ADAPTIVE}.
+     *         <li>Otherwise it will be {@code null}.
+     *     </ol>
+     * </ul>
+     *
+     * <p>NOTE: Even when the returned value contains a text with type
+     * {@link Metric.TimeDifference}, the compact representation UI should not show negative
+     * chronometers or adaptive times that count up.
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    @NonNull
+    public ResolvedCompactContent resolveCompactContent(@NonNull Context context) {
+        requireNonNull(context);
+        Builder builder = Builder.recoverBuilder(context, this);
+
+        try {
+            CompactContent suppliedContent = CompactContent.fromExtras(this.extras);
+            if (suppliedContent != null) {
+                return CompactContentResolver.resolveCompactContent(context, this, builder,
+                        suppliedContent);
+            }
+        } catch (Exception e) {
+            // If there is trash in the extras, also fall back to the default.
+            Log.w(TAG, "Error reading or resolving supplied CompactContent", e);
+        }
+
+        CompactContent defaultContent = getDefaultCompactContent(context, builder);
+        return CompactContentResolver.resolveCompactContent(context, this, builder, defaultContent);
+    }
+
+    /**
+     * See {@link #resolveCompactContent(Context)} for the logic. ("If the Notification does not
+     * have a CompactContent...").
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    @SuppressWarnings("AndroidFrameworkCompatChange") // Cannot use CompatChange -- client side
+    // code, plus the SDK check is on a different package than the caller.
+    private BasicCompactContent getDefaultCompactContent(Context context, Builder builder) {
+        ApplicationInfo appInfo = requireNonNull(getApplicationInfo(context));
+        CompactIcon compactIcon = appInfo.targetSdkVersion >= Build.VERSION_CODES.CINNAMON_BUN
+                ? CompactIcon.auto()
+                : CompactIcon.useSmallIcon();
+
+        CompactText compactText;
+        if (!TextUtils.isEmpty(getShortCriticalText())) {
+            compactText = CompactText.useShortCriticalText();
+        } else if (Flags.apiMetricStyle()
+                && builder.getStyle() instanceof MetricStyle metricStyle
+                && !metricStyle.getMetrics().isEmpty()) {
+            compactText = CompactText.useStyleMetric(0);
+        } else if (showsChronometer()) {
+            boolean isCountdown = extras.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN);
+            compactText = CompactText.useWhenAsChronometer(isCountdown);
+        } else if (showsTime()) {
+            compactText = CompactText.useWhenAsTimeRemaining();
+        } else {
+            compactText = CompactText.none();
+        }
+
+        return new BasicCompactContent(compactIcon, compactText);
+    }
+
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    private static class CompactContentResolver {
+        @NonNull
+        private static ResolvedCompactContent resolveCompactContent(Context context,
+                Notification notification, Notification.Builder builder,
+                @NonNull CompactContent content) {
+            if (content instanceof BasicCompactContent basic) {
+                return resolveBasicCompactContent(context, notification, builder, basic);
+            } else {
+                throw new IllegalStateException("Unexpected CompactContent: " + content);
+            }
+        }
+
+        @NonNull
+        private static ResolvedBasicCompactContent resolveBasicCompactContent(Context context,
+                Notification notification, Notification.Builder builder,
+                @NonNull BasicCompactContent content) {
+            ResolvedCompactIcon resolvedIcon = resolveCompactIcon(context, notification,
+                    content.getIcon());
+            if (Flags.apiMetricStyle()) {
+                Metric.MetricValue resolvedText = resolveCompactText(notification, builder,
+                        content.getText());
+                if (Flags.apiNotificationSemanticStyle()) {
+                    return new ResolvedBasicCompactContent(resolvedIcon, resolvedText,
+                            content.getText().mSemanticStyle);
+                } else {
+                    return new ResolvedBasicCompactContent(resolvedIcon, resolvedText,
+                            SEMANTIC_STYLE_UNSPECIFIED);
+                }
+            } else {
+                if (Flags.apiNotificationSemanticStyle()) {
+                    return new ResolvedBasicCompactContent(resolvedIcon, null,
+                            content.getText().mSemanticStyle);
+                } else {
+                    return new ResolvedBasicCompactContent(resolvedIcon, null,
+                            SEMANTIC_STYLE_UNSPECIFIED);
+                }
+            }
+        }
+
+        private static ResolvedCompactIcon resolveCompactIcon(Context context,
+                Notification notification, CompactIcon icon) {
+            ApplicationInfo appInfo = requireNonNull(notification.getApplicationInfo(context));
+            if (icon.mWhich == CompactIcon.ICON_AUTO) {
+                return new ResolvedCompactIcon(ResolvedCompactIcon.SOURCE_PACKAGE_APP_ICON,
+                        Icon.createWithResource(appInfo.packageName, appInfo.icon));
+            } else if (icon.mWhich == CompactIcon.ICON_SMALL) {
+                return new ResolvedCompactIcon(ResolvedCompactIcon.SOURCE_SMALL_ICON,
+                        notification.getSmallIcon());
+            } else {
+                throw new IllegalArgumentException("Unexpected CompactIcon: " + icon.mWhich);
+            }
+        }
+
+        @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+        @Nullable
+        private static Metric.MetricValue resolveCompactText(Notification notification,
+                Notification.Builder builder, @NonNull CompactText text) {
+            return switch (text.mWhich) {
+                case CompactText.TEXT_NONE -> null;
+                case CompactText.TEXT_SHORT_CRITICAL -> {
+                    String shortCriticalText = notification.getShortCriticalText();
+                    if (!TextUtils.isEmpty(shortCriticalText)) {
+                        yield new Metric.FixedText(shortCriticalText);
+                    } else {
+                        yield null;
+                    }
+                }
+                case CompactText.TEXT_WHEN_REMAINING_ADAPTIVE ->
+                        Metric.TimeDifference.forTimer(Instant.ofEpochMilli(notification.when),
+                                Metric.TimeDifference.FORMAT_ADAPTIVE);
+                case CompactText.TEXT_WHEN_STOPWATCH ->
+                        Metric.TimeDifference.forStopwatch(Instant.ofEpochMilli(notification.when),
+                                Metric.TimeDifference.FORMAT_CHRONOMETER);
+                case CompactText.TEXT_WHEN_TIMER ->
+                        Metric.TimeDifference.forTimer(Instant.ofEpochMilli(notification.when),
+                                Metric.TimeDifference.FORMAT_CHRONOMETER);
+                case CompactText.TEXT_STYLE_METRIC -> {
+                    if (builder.getStyle() instanceof MetricStyle metricStyle
+                            && text.mStyleMetricIndex >= 0
+                            && text.mStyleMetricIndex < metricStyle.getMetrics().size()) {
+                        yield metricStyle.getMetrics().get(text.mStyleMetricIndex).getValue();
+                    } else {
+                        yield null;
+                    }
+                }
+                case CompactText.TEXT_CUSTOM_METRIC -> text.mCustomMetricValue;
+                default -> throw new IllegalArgumentException(
+                        "Unexpected CompactText: " + text.mWhich);
+            };
         }
     }
 
