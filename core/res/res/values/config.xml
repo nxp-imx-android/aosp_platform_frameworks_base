@@ -6463,6 +6463,12 @@
     <!-- Component names of the services which will keep critical code path warm -->
     <string-array name="config_keep_warming_services" translatable="false" />
 
+    <!-- The system virtual gamepad app package name. Empty if not supported on this device. -->
+    <string name="config_virtual_gamepad_package_name" translatable="false" />
+
+    <!-- The system virtual gamepad app activity name. Empty if not supported on this device. -->
+    <string name="config_virtual_gamepad_activity_name" translatable="false" />
+
     <!-- WindowsManager JetPack display features -->
     <string name="config_display_features" translatable="false" />
 
