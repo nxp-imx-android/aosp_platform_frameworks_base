@@ -34,6 +34,7 @@ import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 /**
  * *************************************************************************************************
@@ -87,7 +88,7 @@ interface SystemUiController {
     fun setStatusBarColor(
         color: Color,
         darkIcons: Boolean = color.luminance() > 0.5f,
-        transformColorForLightContent: (Color) -> Color = BlackScrimmed
+        transformColorForLightContent: (Color) -> Color = BlackScrimmed,
     )
 
     /**
@@ -110,7 +111,7 @@ interface SystemUiController {
         color: Color,
         darkIcons: Boolean = color.luminance() > 0.5f,
         navigationBarContrastEnforced: Boolean = true,
-        transformColorForLightContent: (Color) -> Color = BlackScrimmed
+        transformColorForLightContent: (Color) -> Color = BlackScrimmed,
     )
 
     /**
@@ -123,14 +124,14 @@ interface SystemUiController {
         color: Color,
         darkIcons: Boolean = color.luminance() > 0.5f,
         isNavigationBarContrastEnforced: Boolean = true,
-        transformColorForLightContent: (Color) -> Color = BlackScrimmed
+        transformColorForLightContent: (Color) -> Color = BlackScrimmed,
     ) {
         setStatusBarColor(color, darkIcons, transformColorForLightContent)
         setNavigationBarColor(
             color,
             darkIcons,
             isNavigationBarContrastEnforced,
-            transformColorForLightContent
+            transformColorForLightContent,
         )
     }
 
@@ -172,9 +173,7 @@ interface SystemUiController {
  * returned [SystemUiController] will be degraded, but won't throw an exception.
  */
 @Composable
-fun rememberSystemUiController(
-    window: Window? = findWindow(),
-): SystemUiController {
+fun rememberSystemUiController(window: Window? = findWindow()): SystemUiController {
     val view = LocalView.current
     return remember(view, window) { AndroidSystemUiController(view, window) }
 }
@@ -199,12 +198,16 @@ private tailrec fun Context.findWindow(): Window? =
  */
 internal class AndroidSystemUiController(private val view: View, private val window: Window?) :
     SystemUiController {
-    private val windowInsetsController = window?.let { WindowCompat.getInsetsController(it, view) }
+    private val windowInsetsController =
+        window?.let { WindowCompat.getInsetsController(it, view) }
+            ?: view.windowInsetsController?.let {
+                WindowInsetsControllerCompat.toWindowInsetsControllerCompat(it)
+            }
 
     override fun setStatusBarColor(
         color: Color,
         darkIcons: Boolean,
-        transformColorForLightContent: (Color) -> Color
+        transformColorForLightContent: (Color) -> Color,
     ) {
         statusBarDarkContentEnabled = darkIcons
 
@@ -224,7 +227,7 @@ internal class AndroidSystemUiController(private val view: View, private val win
         color: Color,
         darkIcons: Boolean,
         navigationBarContrastEnforced: Boolean,
-        transformColorForLightContent: (Color) -> Color
+        transformColorForLightContent: (Color) -> Color,
     ) {
         navigationBarDarkContentEnabled = darkIcons
         isNavigationBarContrastEnforced = navigationBarContrastEnforced
