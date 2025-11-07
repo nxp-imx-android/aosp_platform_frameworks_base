@@ -2049,8 +2049,15 @@ flag {
 }
 
 flag {
-  name: "use_systemui_views_for_system_toolbar"
-  namespace: "permissions"
-  description: "Use the views moved into system ui from the framework for the system selection toolbar."
-  bug: "450977221"
+    name: "use_systemui_views_for_system_toolbar"
+    namespace: "permissions"
+    description: "Use the views moved into system ui from the framework for the system selection toolbar."
+    bug: "450977221"
+}
+
+flag {
+    name: "enable_note_in_action_corner"
+    namespace: "note"
+    description: "Enables note as a selectable option in the action corner customization."
+    bug: "451913526"
 }
