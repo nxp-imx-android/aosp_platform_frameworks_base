@@ -1258,10 +1258,10 @@ flag {
 }
 
 flag {
-  name: "notes_role_qs_tile"
-  namespace: "systemui"
-  description: "Enables notes role qs tile which opens default notes role app in app bubbles"
-  bug: "357863750"
+  name: "enable_note_qs_tile"
+  namespace: "note"
+  description: "Enables note qs tile which opens default notes role app"
+  bug: "451901620"
 }
 
 flag {
