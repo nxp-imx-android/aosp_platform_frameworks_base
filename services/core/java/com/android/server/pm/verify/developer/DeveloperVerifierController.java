@@ -442,6 +442,8 @@ public class DeveloperVerifierController {
                     }
                     service.onVerificationRetry(session);
                 }
+                // We've sent out a new verification request, so stop auto-disconnection countdown
+                stopAutoDisconnectCountdown(remoteService.getAutoDisconnectCallback());
             }).orTimeout(mInjector.getVerifierConnectionTimeoutMillis(), TimeUnit.MILLISECONDS)
                     .whenComplete((res, err) -> {
                         if (err != null) {
@@ -454,8 +456,6 @@ public class DeveloperVerifierController {
                             removeStatusTracker(verificationId);
                         }
                     });
-            // We've sent out a new verification request, so stop the auto-disconnection countdown.
-            stopAutoDisconnectCountdown(remoteService.getAutoDisconnectCallback());
         }
         // Keep track of the session status with the ID. Start counting down the session timeout.
         final long defaultTimeoutMillis = mInjector.getVerificationRequestTimeoutMillis();
