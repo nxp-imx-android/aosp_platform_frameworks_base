@@ -2299,7 +2299,7 @@ public final class SystemServer implements Dumpable {
             }
             t.traceEnd();
 
-            if (!isWatch || !android.server.Flags.allowRemovingVpnService()) {
+            if (!isWatch) {
                 t.traceBegin("StartVpnManagerService");
                 try {
                     vpnManager = VpnManagerService.create(context);
