@@ -149,10 +149,19 @@ final class AppCompatUtils {
         // Whether the direct top activity is in size compat mode.
         appCompatTaskInfo.setTopActivityInSizeCompat(
                 isTopActivityVisible && top.inSizeCompatMode());
-        if (appCompatTaskInfo.isTopActivityInSizeCompat()
-                && top.mWmService.mAppCompatConfiguration.isTranslucentLetterboxingEnabled()) {
-            // We hide the restart button in case of transparent activities.
-            appCompatTaskInfo.setTopActivityInSizeCompat(top.fillsParent());
+        if (Flags.appCompatUiRestartOnFullTransparency()) {
+            if (appCompatTaskInfo.isTopActivityInSizeCompat()) {
+                // We hide the restart button in case of transparent activities with an opaque
+                // activity below.
+                appCompatTaskInfo.setTopActivityInSizeCompat(
+                        !top.mAppCompatController.getTransparentPolicy().isRunning());
+            }
+        } else {
+            if (appCompatTaskInfo.isTopActivityInSizeCompat()
+                    && top.mWmService.mAppCompatConfiguration.isTranslucentLetterboxingEnabled()) {
+                // We hide the restart button in case of transparent activities.
+                appCompatTaskInfo.setTopActivityInSizeCompat(top.fillsParent());
+            }
         }
         // Whether the direct top activity is eligible for letterbox education.
         appCompatTaskInfo.setEligibleForLetterboxEducation(isTopActivityResumed
