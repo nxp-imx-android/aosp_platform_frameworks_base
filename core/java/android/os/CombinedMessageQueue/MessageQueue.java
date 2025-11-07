@@ -1120,7 +1120,7 @@ public final class MessageQueue {
         @Override
         public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            if (m.target != null && (lastMsg == null || lastMsg.when <= m.when)) {
+            if (m.target != null && (lastMsg == null || Message.compareMessages(lastMsg, m) < 0)) {
                 lastMsg = m;
             }
             return false;

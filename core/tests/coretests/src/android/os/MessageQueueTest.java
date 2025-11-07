@@ -43,11 +43,14 @@ import java.util.concurrent.TimeUnit;
  * Tests internal MessageQueue APIs. For public APIs, please use the MessageQueueTest in CTS.
  */
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.DisabledOnRavenwood(bug = 452987782)
 public class MessageQueueTest {
 
     private static final long LONG_DELAY_MS = 1000;
     private static final long SHORT_DELAY_MS = 100;
+
+    private static final int WHAT_FIRST = 0;
+    private static final int WHAT_MIDDLE = 1;
+    private static final int WHAT_LAST = 2;
 
     private HandlerThread thread;
     private MessageQueue queue;
@@ -69,25 +72,30 @@ public class MessageQueueTest {
     }
 
     @Test
-    @org.junit.Ignore("b/452987782")
     public void testPeekLastMessage() throws Exception {
-        handler.sendEmptyMessageDelayed(0, LONG_DELAY_MS);
-        handler.sendEmptyMessageDelayed(1, LONG_DELAY_MS + 1);
-        handler.sendEmptyMessageDelayed(4, LONG_DELAY_MS + 4);
-        handler.sendEmptyMessageDelayed(3, LONG_DELAY_MS + 3);
-        handler.sendEmptyMessageDelayed(2, LONG_DELAY_MS + 2);
+        final long future = SystemClock.uptimeMillis() + LONG_DELAY_MS;
+        handler.sendEmptyMessageAtTime(0, future);
+        handler.sendEmptyMessageAtTime(1, future + 1);
+        handler.sendEmptyMessageAtTime(4, future + 4);
+        handler.sendEmptyMessageAtTime(3, future + 3);
+        handler.sendEmptyMessageAtTime(2, future + 2);
         Message m = queue.peekLastMessageForTest();
         assertEquals(m.what, 4);
     }
 
     @Test
-    @org.junit.Ignore("b/452987782")
     public void testPeekLastMessageWithEqualWhen() throws Exception {
-        handler.sendEmptyMessageDelayed(0, LONG_DELAY_MS);
-        handler.sendEmptyMessageDelayed(4, LONG_DELAY_MS + 1);
-        handler.sendEmptyMessageDelayed(1, LONG_DELAY_MS + 1);
+        final long future = SystemClock.uptimeMillis() + LONG_DELAY_MS;
+        handler.sendEmptyMessageAtTime(WHAT_FIRST, future);
+        // We send a large number of messages of the same latest-timestamp to make it more likely
+        // that we hit a race condition in the distribution of messages within the internal data
+        // structures used in different MQ implementations.
+        for (int i = 0; i < 100; i++) {
+            handler.sendEmptyMessageAtTime(WHAT_MIDDLE, future + 1);
+        }
+        handler.sendEmptyMessageAtTime(WHAT_LAST, future + 1);
         Message m = queue.peekLastMessageForTest();
-        assertEquals(m.what, 1);
+        assertEquals(m.what, WHAT_LAST);
     }
 
     @Test
