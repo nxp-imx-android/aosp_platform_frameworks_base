@@ -38,6 +38,7 @@ import android.view.Surface;
 
 import androidx.test.InstrumentationRegistry;
 
+import com.android.internal.R;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.os.AtomsProto.Atom;
@@ -69,6 +70,12 @@ public class CameraServiceProxyTest {
     public void testGetCropRotateScale() {
 
         Context ctx = InstrumentationRegistry.getContext();
+        if (ctx.getResources().getBoolean(
+                    R.bool.config_isWindowManagerCameraCompatTreatmentEnabled)) {
+            //'getCropRotateScale' is overridden in case the WM Camera compat treatment
+            //is enabled.
+            return;
+        }
 
         // Check resizeability and SDK
         CameraServiceProxy.TaskInfo taskInfo = new CameraServiceProxy.TaskInfo();
