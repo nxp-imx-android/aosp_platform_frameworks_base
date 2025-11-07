@@ -44,6 +44,7 @@ import com.android.compose.PlatformSliderDefaults
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel.ContentViewModel.SwitcherPageViewModel
 import com.android.systemui.res.R
 import com.android.systemui.volume.panel.component.shared.model.VolumePanelComponents
+import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderViewModel
 import com.android.systemui.volume.panel.component.volume.ui.composable.VolumeSlider
 import com.android.systemui.volume.panel.ui.composable.ComposeVolumePanelUiComponent
 import com.android.systemui.volume.panel.ui.composable.VolumePanelComposeScope
@@ -106,6 +107,8 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
     modifier: Modifier = Modifier,
 ) {
     val volumeComponentsFactory = viewModel.volumeComponentsFactory
+    val a11yVolumeSliderViewModel by
+        viewModel.a11yVolumeSliderViewModel.collectAsStateWithLifecycle()
     Column(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(TILE_DETAILS_VERTICAL_PADDING))
     ) {
@@ -115,21 +118,9 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
             val outputComponent = factory.createComponent(VolumePanelComponents.MEDIA_OUTPUT)
             with(outputComponent as ComposeVolumePanelUiComponent) { Content(Modifier) }
 
-            viewModel.volumeSliderViewModel?.let { volumeSliderViewModel ->
-                val volumeSliderState by volumeSliderViewModel.slider.collectAsStateWithLifecycle()
-                VolumeSlider(
-                    showLabel = false,
-                    state = volumeSliderState,
-                    onValueChange = { newValue: Float ->
-                        volumeSliderViewModel.onValueChanged(volumeSliderState, newValue)
-                    },
-                    onValueChangeFinished = { volumeSliderViewModel.onValueChangeFinished() },
-                    onIconTapped = { volumeSliderViewModel.toggleMuted(volumeSliderState) },
-                    sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),
-                    hapticsViewModelFactory =
-                        volumeSliderViewModel.getSliderHapticsViewModelFactory(),
-                )
-            }
+            viewModel.volumeSliderViewModel?.let { AudioStreamVolumeSlider(it) }
+
+            a11yVolumeSliderViewModel?.let { AudioStreamVolumeSlider(it) }
 
             SectionTitle(R.string.quick_settings_audio_input_section_title)
 
@@ -179,6 +170,22 @@ fun VolumePanelComposeScope.AudioContentsDefaultPage(
             }
         }
     }
+}
+
+@Composable
+private fun AudioStreamVolumeSlider(viewModel: AudioStreamSliderViewModel) {
+    val volumeSliderState by viewModel.slider.collectAsStateWithLifecycle()
+    VolumeSlider(
+        showLabel = false,
+        state = volumeSliderState,
+        onValueChange = { newValue: Float ->
+            viewModel.onValueChanged(volumeSliderState, newValue)
+        },
+        onValueChangeFinished = { viewModel.onValueChangeFinished() },
+        onIconTapped = { viewModel.toggleMuted(volumeSliderState) },
+        sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),
+        hapticsViewModelFactory = viewModel.getSliderHapticsViewModelFactory(),
+    )
 }
 
 @Composable

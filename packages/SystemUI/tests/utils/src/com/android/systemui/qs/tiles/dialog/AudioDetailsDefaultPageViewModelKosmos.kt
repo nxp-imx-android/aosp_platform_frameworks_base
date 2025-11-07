@@ -17,6 +17,7 @@
 package com.android.systemui.qs.tiles.dialog
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.volume.dialog.domain.interactor.volumeDialogStateInteractor
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.audioStreamSliderViewModelFactory
 import com.android.systemui.volume.panel.ui.viewmodel.volumePanelViewModelFactory
 
@@ -25,6 +26,7 @@ val Kosmos.audioDetailsDefaultPageViewModel: AudioDetailsDefaultPageViewModel by
         AudioDetailsDefaultPageViewModel(
             volumePanelViewModelFactory = volumePanelViewModelFactory,
             audioStreamSliderViewModelFactory = audioStreamSliderViewModelFactory,
+            volumeDialogStateInteractor = volumeDialogStateInteractor,
         )
     }
 

@@ -27,6 +27,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.testKosmosNew
+import com.android.systemui.volume.dialog.data.repository.volumeDialogStateRepository
 import com.android.systemui.volume.panel.shared.model.VolumePanelComponentKey
 import com.android.systemui.volume.panel.shared.model.mockVolumePanelUiComponentProvider
 import com.android.systemui.volume.panel.ui.composable.componentByKey
@@ -74,6 +75,28 @@ class AudioDetailsDefaultPageViewModelTest : SysuiTestCase() {
             // Slider should be associated with `AudioStream(AudioManager.STREAM_MUSIC)`.
             assertThat(checkNotNull(slider).label)
                 .isEqualTo(context.getString(R.string.stream_music))
+        }
+
+    @Test
+    fun a11yVolumeSliderViewModel_isAvailable_whenA11ySliderIsShown() =
+        kosmos.runTest {
+            underTest.activateIn(kosmos.testScope)
+
+            assertThat(underTest.a11yVolumeSliderViewModel.value).isNull()
+
+            // Show a11y slider
+            volumeDialogStateRepository.updateState { it.copy(shouldShowA11ySlider = true) }
+
+            val a11yViewModel = underTest.a11yVolumeSliderViewModel.value
+            assertThat(a11yViewModel).isNotNull()
+            val slider by collectLastValue(checkNotNull(a11yViewModel).slider)
+            assertThat(checkNotNull(slider).label)
+                .isEqualTo(context.getString(R.string.stream_accessibility))
+
+            // Hide a11y slider
+            volumeDialogStateRepository.updateState { it.copy(shouldShowA11ySlider = false) }
+
+            assertThat(underTest.a11yVolumeSliderViewModel.value).isNull()
         }
 
     private companion object {

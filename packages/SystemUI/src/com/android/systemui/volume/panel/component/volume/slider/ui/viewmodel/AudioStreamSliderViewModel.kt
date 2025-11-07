@@ -83,6 +83,7 @@ constructor(
             AudioStream(AudioManager.STREAM_RING) to R.string.stream_ring,
             AudioStream(AudioManager.STREAM_NOTIFICATION) to R.string.stream_notification,
             AudioStream(AudioManager.STREAM_ALARM) to R.string.stream_alarm,
+            AudioStream(AudioManager.STREAM_ACCESSIBILITY) to R.string.stream_accessibility,
         )
     private val uiEventByStream =
         mapOf(
@@ -96,6 +97,8 @@ constructor(
                 VolumePanelUiEvent.VOLUME_PANEL_NOTIFICATION_SLIDER_TOUCHED,
             AudioStream(AudioManager.STREAM_ALARM) to
                 VolumePanelUiEvent.VOLUME_PANEL_ALARM_SLIDER_TOUCHED,
+            AudioStream(AudioManager.STREAM_ACCESSIBILITY) to
+                VolumePanelUiEvent.VOLUME_PANEL_ACCESSIBILITY_SLIDER_TOUCHED,
         )
 
     override val slider: StateFlow<SliderState> =
@@ -306,6 +309,7 @@ constructor(
             AudioManager.STREAM_RING -> R.drawable.ic_ring_volume
             AudioManager.STREAM_NOTIFICATION -> R.drawable.ic_volume_ringer
             AudioManager.STREAM_ALARM -> R.drawable.ic_volume_alarm
+            AudioManager.STREAM_ACCESSIBILITY -> R.drawable.ic_volume_accessibility
             else -> {
                 Log.wtf(TAG, "No icon for the stream: $audioStream")
                 R.drawable.ic_music_note
@@ -361,6 +365,7 @@ object AudioStreamSliderTestTags {
             AudioStream(AudioManager.STREAM_RING) to "Ring",
             AudioStream(AudioManager.STREAM_NOTIFICATION) to "Notification",
             AudioStream(AudioManager.STREAM_ALARM) to "Alarm",
+            AudioStream(AudioManager.STREAM_ACCESSIBILITY) to "Accessibility",
         )
 
     fun testTag(audioStream: AudioStream): String =
