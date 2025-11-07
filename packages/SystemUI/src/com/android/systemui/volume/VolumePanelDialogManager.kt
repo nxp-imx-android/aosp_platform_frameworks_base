@@ -19,55 +19,64 @@ package com.android.systemui.volume
 import android.content.Context
 import android.util.Log
 import android.view.View
+import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import javax.inject.Inject
 
 private const val TAG = "VolumePanelFactory"
 private val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
 
 /**
- * Factory to create [VolumePanelDialog] objects. This is the dialog that allows the user to adjust
- * multiple streams with sliders.
+ * Factory to create [VolumePanelDialogDelegate] objects. This is the dialog that allows the user to
+ * adjust multiple streams with sliders.
  */
 @SysUISingleton
-class VolumePanelFactory @Inject constructor(
+class VolumePanelDialogManager
+@Inject
+constructor(
     private val context: Context,
-    private val activityStarter: ActivityStarter,
-    private val dialogTransitionAnimator: DialogTransitionAnimator
+    private val dialogTransitionAnimator: DialogTransitionAnimator,
+    private val volumPanelDialogDelegateFactory: VolumePanelDialogDelegate.Factory,
 ) {
     companion object {
-        var volumePanelDialog: VolumePanelDialog? = null
+        var dialog: SystemUIDialog? = null
     }
 
-    /** Creates a [VolumePanelDialog]. The dialog will be animated from [view] if it is not null. */
+    /**
+     * Creates a [VolumePanelDialogDelegate]. The dialog will be animated from [view] if it is not
+     * null.
+     */
     fun create(aboveStatusBar: Boolean, view: View? = null) {
-        if (volumePanelDialog?.isShowing == true) {
+        if (dialog?.isShowing == true) {
             return
         }
 
-        val dialog = VolumePanelDialog(context, activityStarter, aboveStatusBar)
-        volumePanelDialog = dialog
+        val localBluetoothManager = LocalBluetoothManager.getInstance(context, null)
+        dialog =
+            volumPanelDialogDelegateFactory
+                .create(localBluetoothManager?.getProfileManager(), aboveStatusBar)
+                .createDialog()
 
         // Show the dialog.
         if (view != null) {
             dialogTransitionAnimator.showFromView(
-                dialog,
+                dialog!!,
                 view,
-                animateBackgroundBoundsChange = true
+                animateBackgroundBoundsChange = true,
             )
         } else {
-            dialog.show()
+            dialog?.show()
         }
     }
 
-    /** Dismiss [VolumePanelDialog] if exist. */
+    /** Dismiss [VolumePanelDialogDelegate] if exist. */
     fun dismiss() {
         if (DEBUG) {
             Log.d(TAG, "dismiss dialog")
         }
-        volumePanelDialog?.dismiss()
-        volumePanelDialog = null
+        dialog?.dismiss()
+        dialog = null
     }
 }
