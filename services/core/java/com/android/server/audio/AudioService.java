@@ -4244,6 +4244,16 @@ public class AudioService extends IAudioService.Stub
             return;
         }
 
+        if (mMode.get() == AudioSystem.MODE_ASSISTANT_CONVERSATION
+                && flagsContainsAbsoluteDevices(flags)  // external volume event
+                && streamType != AudioManager.STREAM_ASSISTANT) {
+            Slog.w(TAG,
+                    "MODE_ASSISTANT_CONVERSATION active, directing volume event to "
+                            + "STREAM_ASSISTANT");
+            streamType = AudioManager.STREAM_ASSISTANT;
+            streamTypeAlias = sStreamVolumeAlias.get(streamType, AudioManager.STREAM_ASSISTANT);
+        }
+
         // If we are being called by the system (e.g. hardware keys) check for current user
         // so we handle user restrictions correctly.
         if (uid == android.os.Process.SYSTEM_UID) {
@@ -4553,7 +4563,7 @@ public class AudioService extends IAudioService.Stub
                     avrcpIndex = rescaleIndex(avrcpIndex, streamType, AudioSystem.STREAM_MUSIC);
                 }
                 if (DEBUG_VOL) {
-                    Log.d(TAG, "adjustStreamVolume: postSetAvrcpAbsoluteVolumeIndex index="
+                    Slog.d(TAG, "adjustStreamVolume: postSetAvrcpAbsoluteVolumeIndex index="
                             + newIndex + "stream=" + streamType + "avrcpIndex=" + avrcpIndex);
                 }
                 mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(avrcpIndex);
@@ -4564,7 +4574,7 @@ public class AudioService extends IAudioService.Stub
                     && AudioSystem.isLeAudioDeviceType(deviceType)
                     && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
                 if (DEBUG_VOL) {
-                    Log.d(TAG, "adjustStreamVolume postSetLeAudioVolumeIndex index="
+                    Slog.d(TAG, "adjustStreamVolume postSetLeAudioVolumeIndex index="
                             + newIndex + " stream=" + streamType);
                 }
                 mDeviceBroker.postSetLeAudioVolumeIndex(newIndex,
@@ -4577,15 +4587,15 @@ public class AudioService extends IAudioService.Stub
             // the one expected by the hearing aid.
             if (streamType == getBluetoothContextualVolumeStream()
                     && deviceType == AudioSystem.DEVICE_OUT_HEARING_AID) {
-                if (DEBUG_VOL) {
-                    Log.d(TAG, "adjustStreamVolume postSetHearingAidVolumeIndex index="
-                            + newIndex + " stream=" + streamType);
-                }
-                int haIndex;
+                int haIndex = newIndex;
                 final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
                 synchronized (mVolumeStateLock) {
                     haIndex = (int) (vss.getMinIndex() + (newIndex - vss.getMinIndex())
                             / vss.getIndexStepFactor());
+                }
+                if (DEBUG_VOL) {
+                    Slog.d(TAG, "adjustStreamVolume postSetHearingAidVolumeIndex index="
+                            + newIndex + " stream=" + streamType + " haIndex=" + haIndex);
                 }
                 mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
                 volumeHandled = true;
@@ -5042,6 +5052,14 @@ public class AudioService extends IAudioService.Stub
         int streamType = replaceBtScoStreamWithVoiceCall(vi.getStreamType(),
                 "notifyAbsoluteVolumeChanged");
 
+        if (mMode.get() == AudioSystem.MODE_ASSISTANT_CONVERSATION
+                && streamType != AudioManager.STREAM_ASSISTANT) {
+            Slog.w(TAG,
+                    "MODE_ASSISTANT_CONVERSATION active, directing volume event to "
+                            + "STREAM_ASSISTANT");
+            streamType = AudioManager.STREAM_ASSISTANT;
+        }
+
         final VolumeStreamState vss = getVssForStream(streamType);
         if (vss == null) {
             Slog.e(TAG, "No VolumeStreamState for stream type " + streamType);
@@ -5058,6 +5076,7 @@ public class AudioService extends IAudioService.Stub
 
         int flags = FLAG_ABSOLUTE_VOLUME;
         int index = rescaleVolumeInfoIndex(vi, vss);
+
         if (currDevIsAda && index != VolumeInfo.INDEX_NOT_SET && (vss.getIndex(
                 ada.getInternalType()) + 5) / 10 != index) {
             flags |= AudioManager.FLAG_SHOW_UI;
@@ -5763,6 +5782,18 @@ public class AudioService extends IAudioService.Stub
                 && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) != 0) {
             return;
         }
+
+        if (mMode.get() == AudioSystem.MODE_ASSISTANT_CONVERSATION
+                && flagsContainsAbsoluteDevices(flags)  // external volume event
+                && streamType != AudioManager.STREAM_ASSISTANT) {
+            index = rescaleIndex(index * 10, streamType, AudioManager.STREAM_ASSISTANT) / 10;
+            streamType = AudioManager.STREAM_ASSISTANT;
+            streamTypeAlias = sStreamVolumeAlias.get(streamType, AudioManager.STREAM_ASSISTANT);
+            Slog.w(TAG,
+                    "MODE_ASSISTANT_CONVERSATION active, directing volume event to "
+                            + "STREAM_ASSISTANT with new index " + index);
+        }
+
         // If we are being called by the system (e.g. hardware keys) check for current user
         // so we handle user restrictions correctly.
         if (uid == android.os.Process.SYSTEM_UID) {
