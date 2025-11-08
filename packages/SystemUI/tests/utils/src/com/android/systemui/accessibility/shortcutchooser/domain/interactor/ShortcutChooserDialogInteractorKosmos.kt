@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.accessibility.shortcutchooser.domain
+package com.android.systemui.accessibility.shortcutchooser.domain.interactor
 
 import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
 import com.android.systemui.broadcast.broadcastDispatcher
