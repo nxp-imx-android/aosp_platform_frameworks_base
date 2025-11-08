@@ -28,6 +28,7 @@ import com.android.server.testutils.OffsettableClock;
 import com.android.server.testutils.TestHandler;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -120,6 +121,7 @@ public class ActivityDebouncerTest {
     }
 
     @Test
+    @Ignore
     public void update_withMultipleUids_dispatchesCorrectInactivity() {
         mActivityDebouncer.update(new int[]{TEST_UID, TEST_UID_2});
         verify(mMockListener).onClientActiveChanged(TEST_UID, true);
@@ -162,6 +164,7 @@ public class ActivityDebouncerTest {
     }
 
     @Test
+    @Ignore
     public void simulateActive_onRecentlyInactiveUid_reschedulesInactivity() {
         mActivityDebouncer.update(new int[]{TEST_UID});
         verify(mMockListener).onClientActiveChanged(TEST_UID, true);

@@ -24,7 +24,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.ArrayMap;
-import android.util.Log;
 
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -45,26 +44,17 @@ import java.util.function.Predicate;
  * {@link Handler#sendMessageDelayed} or {@link Handler#postDelayed} without resorting to
  * synchronously {@link Thread#sleep}ing in your test.
  *
- * Note, this class works by enqueuing messages infinitely in the future to correctly test message
- * removal on the handler. When doing so, there is a design choice: either remove these sentinel
- * messages when the message is manually dispatched, or retain the message. In the former case,
- * duplicate messages (at the level of msg/obj or runnable identity), won't be handled correctly,
- * since handler removal operates at this level of granularity. In the latter case, handler
- * introspection (i.e. checking if messages exist), won't be handled correctly, as they will always
- * show as present even if within the test logic, the message already "ran". As such, this behavior
- * can be parametrized, defaulting to the former.
- *
- * Enqueuing messages should be synchronized against ungating their dispatch.
  * @see OffsettableClock for a useful custom clock implementation to use with this handler
  */
 public class TestHandler extends Handler {
     private static final LongSupplier DEFAULT_CLOCK = SystemClock::uptimeMillis;
-    private static final String TAG = "TestHandler";
-    private static final boolean DEBUG = false;
 
     private final PriorityQueue<MsgInfo> mMessages = new PriorityQueue<>();
-    private final boolean mRemoveMessages;
-
+    /**
+     * Map of: {@code message id -> count of such messages currently pending }
+     */
+    // Boxing is ok here - both msg ids and their pending counts tend to be well below 128
+    private final Map<Integer, Integer> mPendingMsgTypeCounts = new ArrayMap<>();
     private final LongSupplier mClock;
     private int  mMessageCount = 0;
 
@@ -77,19 +67,15 @@ public class TestHandler extends Handler {
     }
 
     public TestHandler(Looper looper, Callback callback, LongSupplier clock) {
-        this(looper, callback, clock, false);
-    }
-
-    public TestHandler(
-            Looper looper, Callback callback, LongSupplier clock, boolean removeMessagesOnRun) {
         super(looper, callback);
         mClock = clock;
-        mRemoveMessages = removeMessagesOnRun;
     }
 
     @Override
     public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
         ++mMessageCount;
+        mPendingMsgTypeCounts.put(msg.what,
+                mPendingMsgTypeCounts.getOrDefault(msg.what, 0) + 1);
 
         // uptimeMillis is an absolute time obtained as SystemClock.uptimeMillis() + offsetMillis
         // if custom clock is given, recalculate the time with regards to it
@@ -97,29 +83,21 @@ public class TestHandler extends Handler {
             uptimeMillis = uptimeMillis - SystemClock.uptimeMillis() + mClock.getAsLong();
         }
 
-        MsgInfo m = new MsgInfo(Message.obtain(msg), uptimeMillis, mMessageCount);
-        if (DEBUG) {
-            Log.d(TAG, "Enqueue message: " + m);
-        }
         // post a sentinel queue entry to keep track of message removal
         return super.sendMessageAtTime(msg, Long.MAX_VALUE)
-                && mMessages.add(m);
+                && mMessages.add(new MsgInfo(Message.obtain(msg), uptimeMillis, mMessageCount));
     }
 
     /** @see TestHandler */
     public void timeAdvance() {
         long now = mClock.getAsLong();
-        if (DEBUG) {
-            Log.d(TAG, "Advancing time: " + now);
-        }
         while (!mMessages.isEmpty() && mMessages.peek().sendTime <= now) {
             dispatch(mMessages.poll());
         }
     }
 
     /**
-     * Dispatch all messages in order. Dispatches pending messages in the "future" with respect to
-     * the clock.
+     * Dispatch all messages in order
      *
      * @see TestHandler
      */
@@ -159,28 +137,19 @@ public class TestHandler extends Handler {
 
     private void dispatch(MsgInfo msg) {
         int msgId = msg.message.what;
-        Object obj = msg.message.obj;
-        Runnable cb = msg.message.getCallback();
 
-        if (cb != null && hasCallbacks(cb)) {
-            if (mRemoveMessages) {
-                removeCallbacks(cb, obj);
-            }
-        } else if (hasMessages(msgId, obj)) {
-            if (mRemoveMessages) {
-                removeMessages(msgId, msg.message.obj);
-            }
-        } else {
-            if (DEBUG) {
-                Log.d(TAG, "Dispatch message skipped due to message removal: " + msg);
-            }
+        if (!hasMessages(msgId)) {
+            // Handler.removeMessages(msgId) must have been called
             return;
         }
 
-        if (DEBUG) {
-            Log.d(TAG, "Dispatch message: " + msg);
-        }
         try {
+            Integer pendingMsgCount = mPendingMsgTypeCounts.getOrDefault(msgId, 0);
+            if (pendingMsgCount <= 1) {
+                removeMessages(msgId);
+            }
+            mPendingMsgTypeCounts.put(msgId, pendingMsgCount - 1);
+
             dispatchMessage(msg.message);
         } catch (Throwable t) {
             // Append stack trace of this message being posted as a cause for a helpful
