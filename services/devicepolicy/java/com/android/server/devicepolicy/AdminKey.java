@@ -27,95 +27,83 @@ import java.util.Objects;
  * Key identifying admin entity for policy accounting purposes. Two admins with equal keys are
  * treated as the same entity by DevicePolicyEngine.
  */
-public class AdminKey {
-    // UserId of the admin, USER_SYSTEM for system entities.
-    private final @UserIdInt int mUserId;
-    // Name of the package. Cannot be set together with mSystemEntity.
-    private final String mPackageName;
-    // Name of the system entity. Cannot be set together with mPackageName.
-    private final String mSystemEntity;
-    // Name of the admin component. Must only be set for legacy DA admins. Must not be set for
-    // device and profile owners.
-    private final ComponentName mComponent;
-
-    private AdminKey(int userId, String packageName, String systemEntity, ComponentName component) {
-        mUserId = userId;
-        mPackageName = packageName;
-        mSystemEntity = systemEntity;
-        mComponent = component;
-    }
+public sealed interface AdminKey permits AdminKey.System, AdminKey.Package, AdminKey.Legacy {
+    /**
+     * Returns user id of the admin, USER_SYSTEM for system entities.
+     */
+    @UserIdInt int getUserId();
 
     /**
-     * Creates an admin key representing a system entity.
+     * Returns package name for package based admin, empty string otherwise.
      */
-    public static AdminKey ofSystemEntity(@NonNull String systemEntity) {
-        Objects.requireNonNull(systemEntity);
-
-        return new AdminKey(
-                UserHandle.USER_SYSTEM,
-                null, /* packageName */
-                systemEntity,
-                null /* component */
-        );
-    }
+    // Ideally it should return null, but keeping the existing behavior to avoid causing NPEs.
+    String getPackageName();
 
     /**
-     * Creates an admin key representing a package. This includes DPCs and role holders, but
-     * doesn't include legacy DAs.
+     * Returns system entity for system admins, null otherwise.
      */
-    public static AdminKey ofPackage(@UserIdInt int userId, @NonNull String packageName) {
-        Objects.requireNonNull(packageName);
+    String getSystemEntity();
 
-        return new AdminKey(
-                userId,
-                packageName,
-                null, /* systemEntity */
-                null /* component */
-        );
+    record System(@NonNull String systemEntity) implements AdminKey {
+        public System {
+            Objects.requireNonNull(systemEntity);
+        }
+
+        @Override
+        public @UserIdInt int getUserId() {
+            return UserHandle.USER_SYSTEM;
+        }
+
+        @Override
+        public String getPackageName() {
+            return "";
+        }
+
+        @Override
+        public String getSystemEntity() {
+            return systemEntity;
+        }
     }
 
-    /**
-     * Creates an admin key representing a legacy device admin component.
-     */
-    public static AdminKey ofLegacyAdminComponent(
-            @UserIdInt int userId, @NonNull ComponentName component) {
-        Objects.requireNonNull(component);
+    record Package(@UserIdInt int userId, @NonNull String packageName) implements AdminKey {
+        public Package {
+            Objects.requireNonNull(packageName);
+        }
 
-        return new AdminKey(
-                userId,
-                component.getPackageName(),
-                null, /* systemEntity */
-                component);
+        @Override
+        public @UserIdInt int getUserId() {
+            return userId;
+        }
+
+        @Override
+        public String getPackageName() {
+            return packageName;
+        }
+
+        @Override
+        public String getSystemEntity() {
+            return null;
+        }
     }
 
-    public @UserIdInt int getUserId() {
-        return mUserId;
-    }
+    record Legacy(@UserIdInt int userId, @NonNull ComponentName component) implements AdminKey {
+        public Legacy {
+            Objects.requireNonNull(component);
+        }
 
-    public String getPackageName() {
-        // Ideally it should return null instead of empty string but keeping the existing behavior.
-        return mSystemEntity != null ? "" : mPackageName;
-    }
+        @Override
+        public @UserIdInt int getUserId() {
+            return userId;
+        }
 
-    boolean isSystemEntity() {
-        return mSystemEntity != null;
-    }
+        @Override
+        public String getPackageName() {
+            return component.getPackageName();
+        }
 
-    public String getSystemEntity() {
-        return mSystemEntity;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof AdminKey other)) return false;
-        return mUserId == other.mUserId
-                && Objects.equals(mPackageName, other.mPackageName)
-                && Objects.equals(mSystemEntity, other.mSystemEntity)
-                && Objects.equals(mComponent, other.mComponent);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(mUserId, mPackageName, mSystemEntity, mComponent);
+        @Override
+        public String getSystemEntity() {
+            return null;
+        }
     }
 }
