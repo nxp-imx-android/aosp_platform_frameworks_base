@@ -3431,8 +3431,9 @@ public class TelecomManager {
             return mTelecomServiceOverride;
         }
         if (sTelecomService == null) {
-            ITelecomService temp = ITelecomService.Stub.asInterface(
-                    ServiceManager.getService(Context.TELECOM_SERVICE));
+            ITelecomService temp =
+                    ITelecomService.Stub.asInterface(
+                            ServiceManager.getService(Context.TELECOM_SERVICE));
             synchronized (CACHE_LOCK) {
                 if (sTelecomService == null && temp != null) {
                     try {
