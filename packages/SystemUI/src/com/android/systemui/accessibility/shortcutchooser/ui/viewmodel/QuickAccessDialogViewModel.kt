@@ -17,8 +17,6 @@
 package com.android.systemui.accessibility.shortcutchooser.ui.viewmodel
 
 import android.view.Display.INVALID_DISPLAY
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.accessibility.shortcutchooser.domain.interactor.QuickAccessDialogInteractor
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
