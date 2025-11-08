@@ -1242,6 +1242,16 @@ flag {
 }
 
 flag {
+  name: "notification_smart_replies_edit_before_sending"
+  namespace: "systemui"
+  description: "This flag enables the tap-to-send behavior on smart replies."
+  bug: "450898813"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
    name: "notification_transparent_header_fix"
    namespace: "systemui"
    description: "fix the transparent group header issue for async header inflation."
