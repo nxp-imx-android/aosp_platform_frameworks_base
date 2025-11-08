@@ -16,7 +16,6 @@
 
 package com.android.systemui.screencapture.sharescreen.ui.viewmodel
 
-import android.app.ActivityManager
 import android.app.WaitResult
 import android.content.ComponentName
 import android.content.Intent
@@ -24,7 +23,6 @@ import android.content.testableContext
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.app.activityTaskManager
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.collectLastValue
@@ -33,6 +31,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.mediaprojection.appselector.data.RecentTask
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.data.repository.fakeScreenCaptureRecentTaskRepository
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
@@ -120,6 +119,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                     userId = 3,
                     topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
                     baseIntentComponent = ComponentName("FakeBasePackage", "FakeBaseClass"),
+                    baseIntent = Intent(),
                     colorBackground = 0x12345699,
                     isForegroundTask = true,
                     userType = RecentTask.UserType.STANDARD,
@@ -129,14 +129,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 kosmos.recentTaskViewModelFactory.create(ScreenCaptureRecentTask(fakeRecentTask))
 
             // Setup the interactor's dependencies for this specific test.
-            whenever(kosmos.activityTaskManager.getTasks(any())).thenAnswer {
-                listOf(
-                    ActivityManager.RunningTaskInfo().apply {
-                        taskId = target.taskId
-                        baseIntent = Intent()
-                    }
-                )
-            }
+            kosmos.fakeScreenCaptureRecentTaskRepository.setRecentTasks(fakeRecentTask)
             whenever(
                     kosmos.mockAsyncActivityLauncher.startActivityAsUser(any(), any(), any(), any())
                 )

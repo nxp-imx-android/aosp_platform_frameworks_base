@@ -21,7 +21,6 @@ import com.android.systemui.screencapture.common.data.repository.ScreenCaptureRe
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 
 @ScreenCaptureUiScope

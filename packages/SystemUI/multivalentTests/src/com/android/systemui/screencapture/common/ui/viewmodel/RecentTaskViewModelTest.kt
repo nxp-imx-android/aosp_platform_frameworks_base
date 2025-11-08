@@ -56,6 +56,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
                     component = fakeComponent,
                     backgroundColor = 0x99123456.toInt(),
                     splitBounds = null,
+                    baseIntent = null,
                 )
 
             // Act
@@ -89,6 +90,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
                     component = fakeComponent,
                     backgroundColor = null,
                     splitBounds = null,
+                    baseIntent = null,
                 )
 
             // Act
@@ -122,6 +124,7 @@ class RecentTaskViewModelTest : SysuiTestCase() {
                     component = fakeComponent,
                     backgroundColor = 0x99123456.toInt(),
                     splitBounds = null,
+                    baseIntent = null,
                 )
             val viewModel =
                 RecentTaskViewModel(
