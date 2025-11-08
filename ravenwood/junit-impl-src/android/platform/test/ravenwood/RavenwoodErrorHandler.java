@@ -25,6 +25,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.ravenwood.OpenJdkWorkaround;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
@@ -69,15 +70,19 @@ public class RavenwoodErrorHandler {
     // Several callbacks regarding test lifecycle
 
     static void init() {
-        if (ENABLE_UNCAUGHT_EXCEPTION_DETECTION) {
-            Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
-        }
+        setDefaultUncaughtExceptionHandler();
 
         // `pkill -USR1 -f tradefed-isolation.jar` will trigger a full thread dumps
         OpenJdkWorkaround.registerSignalHandler("USR1", () -> {
             sRawStdErr.println("-----SIGUSR1 HANDLER-----");
             RavenwoodErrorHandler.doBugreport(null, null, false);
         });
+    }
+
+    public static void setDefaultUncaughtExceptionHandler() {
+        if (ENABLE_UNCAUGHT_EXCEPTION_DETECTION) {
+            Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
+        }
     }
 
     static void enterTestRunner() {
@@ -201,12 +206,14 @@ public class RavenwoodErrorHandler {
     static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread thread, Throwable inner) {
-            if (isThrowableRecoverable(inner)) {
+            Log.w(TAG, "Uncaught exception detected on thread " + Thread.currentThread(), inner);
+            var isRecoverable = isThrowableRecoverable(inner);
+            if (isRecoverable) {
                 setPendingRecoverableUncaughtException(inner);
-                return;
+            } else {
+                setPendingUnrecoverableUncaughtException(thread, inner);
             }
-            setPendingUnrecoverableUncaughtException(thread, inner);
-            doBugreport(thread, inner, DIE_ON_UNCAUGHT_EXCEPTION);
+            doBugreport(thread, inner, !isRecoverable && DIE_ON_UNCAUGHT_EXCEPTION);
         }
     }
 
@@ -319,6 +326,12 @@ public class RavenwoodErrorHandler {
         if (pending != null) {
             SneakyThrow.sneakyThrow(pending);
         }
+    }
+
+    @VisibleForTesting
+    @Nullable
+    public static Throwable getPendingRecoverableUncaughtException() {
+        return sPendingRecoverableUncaughtException.get();
     }
 
     // Dump all thread stack traces
