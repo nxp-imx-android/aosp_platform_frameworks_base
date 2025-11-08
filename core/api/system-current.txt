@@ -16139,8 +16139,12 @@ package android.telephony {
     method public int getIntegrity();
     method public boolean isUnprotectedEmergency();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field public static final int CONNECTION_EVENT_AS_SIGNALLING_5G = 11; // 0xb
-    field public static final int CONNECTION_EVENT_AS_SIGNALLING_LTE = 5; // 0x5
+    field @Deprecated public static final int CONNECTION_EVENT_AS_SIGNALLING_5G = 11; // 0xb
+    field @FlaggedApi("com.android.internal.telephony.flags.drb_security_transparency") public static final int CONNECTION_EVENT_AS_SIGNALLING_5G_DRB = 18; // 0x12
+    field @FlaggedApi("com.android.internal.telephony.flags.drb_security_transparency") public static final int CONNECTION_EVENT_AS_SIGNALLING_5G_NON_DRB = 19; // 0x13
+    field @Deprecated public static final int CONNECTION_EVENT_AS_SIGNALLING_LTE = 5; // 0x5
+    field @FlaggedApi("com.android.internal.telephony.flags.drb_security_transparency") public static final int CONNECTION_EVENT_AS_SIGNALLING_LTE_DRB = 16; // 0x10
+    field @FlaggedApi("com.android.internal.telephony.flags.drb_security_transparency") public static final int CONNECTION_EVENT_AS_SIGNALLING_LTE_NON_DRB = 17; // 0x11
     field public static final int CONNECTION_EVENT_CS_SIGNALLING_3G = 2; // 0x2
     field public static final int CONNECTION_EVENT_CS_SIGNALLING_GSM = 0; // 0x0
     field public static final int CONNECTION_EVENT_NAS_SIGNALLING_5G = 10; // 0xa
