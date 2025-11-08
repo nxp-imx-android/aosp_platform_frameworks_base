@@ -10376,15 +10376,6 @@ public final class ViewRootImpl implements ViewParent,
             doDie();
             return false;
         }
-
-        if (!com.android.graphics.hwui.flags.Flags.removeVriSketchyDestroy()) {
-            if (!mIsDrawing) {
-                destroyHardwareRenderer();
-            } else {
-                Log.e(mTag, "Attempting to destroy the window while drawing!\n"
-                        + "  window=" + this + ", title=" + mWindowAttributes.getTitle());
-            }
-        }
         mHandler.sendEmptyMessage(MSG_DIE);
         return true;
     }
