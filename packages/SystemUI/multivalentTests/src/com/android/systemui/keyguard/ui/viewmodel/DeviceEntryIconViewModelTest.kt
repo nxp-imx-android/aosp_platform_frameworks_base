@@ -152,6 +152,40 @@ class DeviceEntryIconViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    fun deviceEntryViewAlpha_fromAodToGone() =
+        testScope.runTest {
+            val deviceEntryViewAlpha by collectLastValue(underTest.deviceEntryViewAlpha)
+            kosmos.sceneInteractor.changeScene(
+                toScene = Scenes.Lockscreen,
+                loggingReason = "test: deviceEntryViewAlpha_toAod",
+            )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.AOD,
+                to = KeyguardState.UNDEFINED,
+                testScope = testScope,
+            )
+            assertThat(deviceEntryViewAlpha).isEqualTo(0f)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun deviceEntryViewAlpha_fromDozingToGone() =
+        testScope.runTest {
+            val deviceEntryViewAlpha by collectLastValue(underTest.deviceEntryViewAlpha)
+            kosmos.sceneInteractor.changeScene(
+                toScene = Scenes.Lockscreen,
+                loggingReason = "test: deviceEntryViewAlpha_toDozing",
+            )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.DOZING,
+                to = KeyguardState.UNDEFINED,
+                testScope = testScope,
+            )
+            assertThat(deviceEntryViewAlpha).isEqualTo(0f)
+        }
+
+    @Test
+    @EnableSceneContainer
     fun deviceEntryViewAlpha_aodToLockscreen() =
         testScope.runTest {
             val deviceEntryViewAlpha by collectLastValue(underTest.deviceEntryViewAlpha)

@@ -148,7 +148,14 @@ constructor(
                             Edge.create(from = KeyguardState.DOZING, to = null)
                         ),
                     )
-                    .map { step -> step.to != KeyguardState.DOZING && step.to != KeyguardState.AOD }
+                    .map { step ->
+                        val goingToAodOrDozing =
+                            step.to == KeyguardState.AOD || step.to == KeyguardState.DOZING
+                        val leavingAodOrDozingForGone =
+                            (step.from == KeyguardState.AOD || step.from == KeyguardState.DOZING) &&
+                                step.to == KeyguardState.UNDEFINED
+                        !goingToAodOrDozing && !leavingAodOrDozingForGone
+                    }
                     .onStart { emit(true) }
             }
         }
