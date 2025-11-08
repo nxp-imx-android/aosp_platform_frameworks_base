@@ -587,6 +587,14 @@ abstract class LogModule {
             return factory.create("PackageChangeRepo", 50)
         }
 
+        /** Provides a [LogBuffer] for [PowerMenuViewModel]. */
+        @Provides
+        @SysUISingleton
+        @PowerMenuLog
+        fun providePowerMenuLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("PowerMenuLog", 100)
+        }
+
         /** Provides a [LogBuffer] for NavBarButtonClicks. */
         @Provides
         @SysUISingleton

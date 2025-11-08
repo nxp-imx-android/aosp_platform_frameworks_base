@@ -17,10 +17,12 @@
 package com.android.systemui.globalactions.domain.interactor
 
 import android.os.userManager
+import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.globalactions.data.repository.globalActionsRepository
 import com.android.systemui.globalactions.globalActionsManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
 import com.android.systemui.user.data.repository.fakeUserRepository
 
 val Kosmos.globalActionsInteractor by
@@ -31,5 +33,7 @@ val Kosmos.globalActionsInteractor by
             userManager = userManager,
             userRepository = fakeUserRepository,
             bgDispatcher = testDispatcher,
+            deviceProvisioningInteractor = deviceProvisioningInteractor,
+            deviceUnlockedInteractor = deviceUnlockedInteractor,
         )
     }

@@ -33,6 +33,7 @@ import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.globalactions.GlobalActionsDialogLite
+import com.android.systemui.globalactions.shared.model.GlobalActionsEvent
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.qs.QSSecurityFooterUtils
 import com.android.systemui.qs.footer.FooterActionsTestUtils
@@ -106,7 +107,7 @@ class FooterActionsInteractorTest : SysuiTestCase() {
         val logs = uiEventLogger.logs
         assertThat(logs)
             .comparingElementsUsing(FakeUiEvent.EVENT_ID)
-            .containsExactly(GlobalActionsDialogLite.GlobalActionsEvent.GA_OPEN_QS.id)
+            .containsExactly(GlobalActionsEvent.GA_OPEN_QS.id)
 
         // Dialog is shown.
         verify(globalActionsDialogLite)

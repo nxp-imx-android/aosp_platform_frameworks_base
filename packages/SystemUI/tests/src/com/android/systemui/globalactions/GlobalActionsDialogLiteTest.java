@@ -71,6 +71,7 @@ import com.android.systemui.display.data.repository.FakeDisplayWindowPropertiesR
 import com.android.systemui.globalactions.data.repository.FakeGlobalActionsRepository;
 import com.android.systemui.globalactions.domain.interactor.GlobalActionsInteractor;
 import com.android.systemui.globalactions.shared.model.GlobalActionType;
+import com.android.systemui.globalactions.shared.model.GlobalActionsEvent;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.GlobalActions;
@@ -235,24 +236,24 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     public void testShouldLogShow() {
         mGlobalActionsDialogLite.onShow(null);
         mTestableLooper.processAllMessages();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_POWER_MENU_OPEN);
+        verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_OPEN);
     }
 
     @Test
     public void testShouldLogDismiss() {
         mGlobalActionsDialogLite.onDismiss(mGlobalActionsDialogLite.mDialog);
         mTestableLooper.processAllMessages();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_POWER_MENU_CLOSE);
+        verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_CLOSE);
     }
 
     @Test
     public void testShouldLogTimeout() {
         mGlobalActionsDialogLite.onShow(null);
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_POWER_MENU_OPEN);
+        verifyLogPosted(GlobalActionsEvent.GA_POWER_MENU_OPEN);
         mGlobalActionsDialogLite.rescheduleBurninTimeout(20); // ms
         mTestableLooper.moveTimeForward(30);
         mTestableLooper.processAllMessages();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_CLOSE_TIMEOUT);
+        verifyLogPosted(GlobalActionsEvent.GA_CLOSE_TIMEOUT);
     }
 
     @Test
@@ -270,7 +271,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.ActionsDialogLite dialog = mGlobalActionsDialogLite.createDialog();
         dialog.onBackPressed();
         mTestableLooper.processAllMessages();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_CLOSE_BACK);
+        verifyLogPosted(GlobalActionsEvent.GA_CLOSE_BACK);
     }
 
     @Test
@@ -324,7 +325,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         dialog.getWindow().injectInputEvent(
                 new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
         mTestableLooper.processAllMessages();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_CLOSE_BACK);
+        verifyLogPosted(GlobalActionsEvent.GA_CLOSE_BACK);
         assertThat(dialog.isShowing()).isFalse();
     }
 
@@ -344,7 +345,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         GestureDetector.SimpleOnGestureListener gestureListener = spy(dialog.mGestureListener);
         gestureListener.onSingleTapUp(null);
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_CLOSE_TAP_OUTSIDE);
+        verifyLogPosted(GlobalActionsEvent.GA_CLOSE_TAP_OUTSIDE);
     }
 
     @Test
@@ -366,7 +367,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         MotionEvent start = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
         MotionEvent end = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 500, 0);
         gestureListener.onFling(start, end, 0, 1000);
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_CLOSE_TAP_OUTSIDE);
+        verifyLogPosted(GlobalActionsEvent.GA_CLOSE_TAP_OUTSIDE);
         verify(mShadeController).animateExpandQs();
     }
 
@@ -389,7 +390,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         MotionEvent start = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
         MotionEvent end = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 500, 0);
         gestureListener.onFling(start, end, 0, 1000);
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_CLOSE_TAP_OUTSIDE);
+        verifyLogPosted(GlobalActionsEvent.GA_CLOSE_TAP_OUTSIDE);
         verify(mShadeController).animateExpandShade();
     }
 
@@ -425,7 +426,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.BugReportAction bugReportAction =
                 mGlobalActionsDialogLite.makeBugReportActionForTesting();
         bugReportAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_BUGREPORT_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_BUGREPORT_PRESS);
     }
 
     @Test
@@ -433,7 +434,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.BugReportAction bugReportAction =
                 mGlobalActionsDialogLite.makeBugReportActionForTesting();
         bugReportAction.onLongPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_BUGREPORT_LONG_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_BUGREPORT_LONG_PRESS);
     }
 
     @Test
@@ -441,7 +442,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.EmergencyDialerAction emergencyDialerAction =
                 mGlobalActionsDialogLite.makeEmergencyDialerActionForTesting();
         emergencyDialerAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_EMERGENCY_DIALER_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_EMERGENCY_DIALER_PRESS);
     }
 
     @Test
@@ -449,7 +450,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.ScreenshotAction screenshotAction =
                 mGlobalActionsDialogLite.makeScreenshotActionForTesting();
         screenshotAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_SCREENSHOT_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_SCREENSHOT_PRESS);
     }
 
     @Test
@@ -474,7 +475,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         assertThat(screenshotAction.shouldShow()).isFalse();
     }
 
-    private void verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent event) {
+    private void verifyLogPosted(GlobalActionsEvent event) {
         mTestableLooper.processAllMessages();
         verify(mUiEventLogger, times(1))
                 .log(event);
@@ -577,7 +578,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.LockDownAction lockDownAction =
                 mGlobalActionsDialogLite.new LockDownAction();
         lockDownAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_LOCKDOWN_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_LOCKDOWN_PRESS);
     }
 
     @Test
@@ -585,7 +586,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.ShutDownAction shutDownAction =
                 mGlobalActionsDialogLite.new ShutDownAction();
         shutDownAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_SHUTDOWN_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_SHUTDOWN_PRESS);
     }
 
     @Test
@@ -593,7 +594,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.ShutDownAction shutDownAction =
                 mGlobalActionsDialogLite.new ShutDownAction();
         shutDownAction.onLongPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_SHUTDOWN_LONG_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_SHUTDOWN_LONG_PRESS);
     }
 
     @Test
@@ -601,7 +602,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.RestartAction restartAction =
                 mGlobalActionsDialogLite.new RestartAction();
         restartAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_REBOOT_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_REBOOT_PRESS);
     }
 
     @Test
@@ -609,7 +610,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.RestartAction restartAction =
                 mGlobalActionsDialogLite.new RestartAction();
         restartAction.onLongPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_REBOOT_LONG_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_REBOOT_LONG_PRESS);
     }
 
     @Test
@@ -685,7 +686,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.SystemUpdateAction systemUpdateAction =
                 mGlobalActionsDialogLite.new SystemUpdateAction();
         systemUpdateAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_SYSTEM_UPDATE_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_SYSTEM_UPDATE_PRESS);
     }
 
     @Test
@@ -820,7 +821,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.StandbyAction standbyAction =
                 mGlobalActionsDialogLite.new StandbyAction();
         standbyAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_STANDBY_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_STANDBY_PRESS);
     }
 
     @Test
@@ -965,7 +966,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         assertThat(action1.mIconView.isFocusable()).isTrue();
 
         assertThat(action.mIconView.performClick()).isTrue();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_STANDBY_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_STANDBY_PRESS);
 
         dialog.dismiss();
     }
@@ -975,7 +976,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         GlobalActionsDialogLite.LockAction lockAction =
                 mGlobalActionsDialogLite.new LockAction();
         lockAction.onPress();
-        verifyLogPosted(GlobalActionsDialogLite.GlobalActionsEvent.GA_LOCK_PRESS);
+        verifyLogPosted(GlobalActionsEvent.GA_LOCK_PRESS);
     }
 
     @Test

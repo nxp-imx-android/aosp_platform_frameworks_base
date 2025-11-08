@@ -20,13 +20,17 @@ import android.app.ActivityManager
 import android.os.UserManager
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
 import com.android.systemui.globalactions.data.repository.GlobalActionsRepository
 import com.android.systemui.globalactions.shared.model.GlobalActionType
 import com.android.systemui.plugins.GlobalActions.GlobalActionsManager
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 
 @SysUISingleton
@@ -38,6 +42,8 @@ constructor(
     private val globalActionsManager: GlobalActionsManager,
     private val userManager: UserManager,
     private val userRepository: UserRepository,
+    deviceUnlockedInteractor: DeviceUnlockedInteractor,
+    deviceProvisioningInteractor: DeviceProvisioningInteractor,
 ) {
     /** Is the global actions dialog visible. */
     val isVisible: StateFlow<Boolean> = repository.isVisible
@@ -49,6 +55,27 @@ constructor(
      */
     val possibleGlobalActions: List<GlobalActionType>
         get() = repository.possibleGlobalActions
+
+    /**
+     * The list of global actions that are currently available to be displayed to the user.
+     *
+     * This flow combines the possible global actions with the current device state (provisioned,
+     * locked) to determine which actions should be filtered out.
+     */
+    val availableGlobalActions: Flow<List<GlobalActionType>> =
+        combine(
+            deviceProvisioningInteractor.isDeviceProvisioned,
+            deviceUnlockedInteractor.deviceUnlockStatus,
+        ) { isProvisioned, unlockStatus ->
+            repository.possibleGlobalActions.filterNot { action ->
+                val isBlockedByLock =
+                    !unlockStatus.isUnlocked && action in repository.lockedDeviceStateBlockList
+                val isBlockedByProvisioning =
+                    !isProvisioned && action in repository.unprovisionedDeviceStateBlockList
+
+                isBlockedByLock || isBlockedByProvisioning
+            }
+        }
 
     /** Notifies that the global actions dialog is shown. */
     fun onShown() {
