@@ -21,7 +21,6 @@ import static com.android.systemui.statusbar.notification.NotificationUtils.logK
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
-import android.graphics.RectF;
 import android.util.MathUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -43,6 +42,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.BypassController;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider;
+import com.android.systemui.statusbar.notification.stack.ui.YSpace;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 
 import java.io.PrintWriter;
@@ -70,7 +70,7 @@ public class AmbientState implements Dumpable {
      */
     private StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
     private float mStackTop;
-    private RectF mDrawBounds = new RectF();
+    private YSpace mStackBounds = new YSpace(0, 0);
     private float mHeadsUpTop;
     private int mScrollY;
     private float mOverScrollTopAmount;
@@ -411,15 +411,15 @@ public class AmbientState implements Dumpable {
 
     /** @return bounds of the area in view pixels where the NSSL's content can be placed. */
     @NonNull
-    public RectF getDrawBounds() {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return new RectF();
-        return mDrawBounds;
+    public YSpace getStackBounds() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return new YSpace(0, 0);
+        return mStackBounds;
     }
 
-    /** @see #getDrawBounds()  */
-    public void setDrawBounds(@NonNull RectF drawBounds) {
+    /** @see #getStackBounds()  */
+    public void setStackBounds(@NonNull YSpace drawBounds) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mDrawBounds = drawBounds;
+        mStackBounds = drawBounds;
     }
 
     /**
@@ -428,7 +428,7 @@ public class AmbientState implements Dumpable {
      */
     public float getStackCutoff() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
-        return mDrawBounds.bottom;
+        return mStackBounds.bottom;
     }
 
     /** y coordinate of the top position of a pinned HUN */
@@ -885,7 +885,7 @@ public class AmbientState implements Dumpable {
     public void dump(PrintWriter pw, String[] args) {
         if (SceneContainerFlag.isEnabled()) {
             pw.println("mStackTop=" + mStackTop);
-            pw.println("mDrawBounds=" + mDrawBounds);
+            pw.println("mStackBounds=" + mStackBounds);
             pw.println("mHeadsUpTop=" + mHeadsUpTop);
         } else {
             // fields which will be removed with SceneContainer
