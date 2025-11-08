@@ -2561,8 +2561,8 @@ public class AudioDeviceBroker {
         Set<Integer> inDeviceSet = null;
         // Special case for SCO because several device types are equivalent
         if (isBluetoothScoOutDevice(deviceType)) {
-            outDeviceSet = DEVICE_OUT_ALL_SCO_SET;
-            inDeviceSet = DEVICE_IN_ALL_SCO_SET;
+            outDeviceSet = new HashSet<>(DEVICE_OUT_ALL_SCO_SET);
+            inDeviceSet = new HashSet<>(DEVICE_IN_ALL_SCO_SET);
         } else {
             outDeviceSet = new HashSet<>();
             outDeviceSet.add(deviceType);
