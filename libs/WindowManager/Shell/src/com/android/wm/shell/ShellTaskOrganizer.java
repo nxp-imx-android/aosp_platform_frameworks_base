@@ -224,6 +224,15 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
+     * Callbacks for events on tasks that are going through package update.
+     */
+    public interface PackageUpdateListener {
+        /**
+         * Notifies when a package update is requested for a list of tasks.
+         */
+        void onPackageUpdateRequested(List<RunningTaskInfo> updatingTasks);
+    }
+    /**
      * Keys map from either a task id or {@link TaskListenerType}.
      * @see #addListenerForTaskId
      * @see #addListenerForType
@@ -261,6 +270,10 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
     // Listeners that should be notified when a task is updated
     private final CopyOnWriteArrayList<TaskInfoChangedListener> mTaskInfoChangedListeners =
+            new CopyOnWriteArrayList<>();
+
+    // Listeners that should be notified when a task is updated
+    private final CopyOnWriteArrayList<PackageUpdateListener> mPackageUpdateListeners =
             new CopyOnWriteArrayList<>();
 
     private final Object mLock = new Object();
@@ -716,6 +729,24 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     public void removeTaskInfoChangedListener(TaskInfoChangedListener listener) {
         synchronized (mLock) {
             mTaskInfoChangedListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Adds a listener to be notified about package updates in tasks.
+     */
+    public void addPackageUpdateListener(PackageUpdateListener listener) {
+        synchronized (mLock) {
+            mPackageUpdateListeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a package-update listener.
+     */
+    public void removePackageUpdateListener(PackageUpdateListener listener) {
+        synchronized (mLock) {
+            mPackageUpdateListeners.remove(listener);
         }
     }
 
@@ -1321,8 +1352,12 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     @Override
-    public void onPackageUpdateRequested(List<RunningTaskInfo> updatingTasks) {
-        super.onPackageUpdateRequested(updatingTasks);
+    public void onPackageUpdateRequested(@NonNull List<RunningTaskInfo> updatingTasks) {
+        synchronized (mLock) {
+            for (PackageUpdateListener listener : mPackageUpdateListeners) {
+                listener.onPackageUpdateRequested(updatingTasks);
+            }
+        }
     }
 
     public void dump(@NonNull PrintWriter pw, String prefix) {
