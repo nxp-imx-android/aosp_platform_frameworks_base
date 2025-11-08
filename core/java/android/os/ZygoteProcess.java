@@ -137,6 +137,7 @@ public class ZygoteProcess implements IZygoteProcess {
         mUsapPoolSupported = false;
     }
 
+    @Override
     public LocalSocketAddress getPrimarySocketAddress() {
         return mZygoteSocketAddress;
     }
@@ -795,9 +796,7 @@ public class ZygoteProcess implements IZygoteProcess {
         return false;
     }
 
-    /**
-     * Closes the connections to the zygote, if they exist.
-     */
+    @Override
     public void close() {
         if (primaryZygoteState != null) {
             primaryZygoteState.close();
@@ -1079,10 +1078,7 @@ public class ZygoteProcess implements IZygoteProcess {
         sAppZygotePreloadTimeoutMs = timeoutMs;
     }
 
-    /**
-     * Instructs the zygote to pre-load the application code for the given Application.
-     * Only the app zygote supports this function.
-     */
+    @Override
     public boolean preloadApp(ApplicationInfo appInfo, String abi)
             throws ZygoteStartFailedEx, IOException {
         synchronized (mLock) {
@@ -1285,6 +1281,6 @@ public class ZygoteProcess implements IZygoteProcess {
             throw new RuntimeException("Starting child-zygote through Zygote failed", ex);
         }
 
-        return new ChildZygoteProcess(serverAddress, result.pid, uid);
+        return ChildZygoteProcess.createManagedChildZygoteProcess(serverAddress, result.pid, uid);
     }
 }

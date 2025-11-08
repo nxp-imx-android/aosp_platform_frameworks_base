@@ -52,10 +52,10 @@ public class WebViewZygote {
 
     public static ZygoteProcess getProcess() {
         synchronized (sLock) {
-            if (sZygote != null) return sZygote;
+            if (sZygote != null) return sZygote.getZygoteProcessAsManaged();
 
             connectToZygoteIfNeededLocked();
-            return sZygote;
+            return sZygote.getZygoteProcessAsManaged();
         }
     }
 
@@ -85,7 +85,7 @@ public class WebViewZygote {
             // child processes to be killed by itself. But if this is called in response to
             // setMultiprocessEnabled() or onWebViewProviderChanged(), the WebViewUpdater
             // will kill all processes that depend on the WebView package.
-            sZygote.close();
+            sZygote.getZygoteProcessAsManaged().close();
             Process.killProcess(sZygote.getPid());
             sZygote = null;
         }
@@ -121,8 +121,9 @@ public class WebViewZygote {
                     null, // instructionSet
                     Process.FIRST_ISOLATED_UID,
                     Integer.MAX_VALUE); // TODO(b/123615476) deal with user-id ranges properly
-            ZygoteProcess.waitForConnectionToZygote(sZygote.getPrimarySocketAddress());
-            sZygote.preloadApp(sPackage.applicationInfo, abi);
+            ZygoteProcess.waitForConnectionToZygote(
+                    sZygote.getZygoteProcessAsManaged().getPrimarySocketAddress());
+            sZygote.getZygoteProcessAsManaged().preloadApp(sPackage.applicationInfo, abi);
         } catch (Exception e) {
             Log.e(LOGTAG, "Error connecting to webview zygote", e);
             stopZygoteLocked();

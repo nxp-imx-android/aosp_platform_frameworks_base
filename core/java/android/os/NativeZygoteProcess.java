@@ -18,8 +18,10 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.pm.ApplicationInfo;
 import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
+import android.util.Log;
 import android.util.Pair;
 
 import com.android.internal.os.Zygote;
@@ -38,12 +40,18 @@ import java.util.Map;
  * @hide
  */
 public class NativeZygoteProcess implements IZygoteProcess {
+    private static final String LOG_TAG = "NativeZygoteProcess";
+
     private LocalSocketAddress mSocketAddress;
     private LocalSocket mSocket;
 
     public NativeZygoteProcess() {
         mSocketAddress = new LocalSocketAddress(Zygote.NATIVE_SOCKET_NAME,
                                                 LocalSocketAddress.Namespace.RESERVED);
+    }
+
+    public NativeZygoteProcess(LocalSocketAddress socketAddress) {
+        mSocketAddress = socketAddress;
     }
 
     private void connectToZygote() throws IOException {
@@ -58,9 +66,9 @@ public class NativeZygoteProcess implements IZygoteProcess {
         }
     }
 
-    private static native int nativeStartNativeProcess(FileDescriptor fd, int uid, int gid,
-            long startSeq, String packageName, String niceName, int targetSdkVersion,
-            boolean startChildZygote, int runtimeFlags, String seInfo);
+    private static native int nativeStartNativeProcess(
+            FileDescriptor fd, int uid, int gid, long startSeq, String packageName, String niceName,
+            int targetSdkVersion, boolean startChildZygote, int runtimeFlags, String seInfo);
 
     @Override
     public final Process.ProcessStartResult start(@NonNull final String processClass,
@@ -101,5 +109,26 @@ public class NativeZygoteProcess implements IZygoteProcess {
         result.pid = pid;
         result.usingWrapper = false;
         return result;
+    }
+
+    @Override
+    public LocalSocketAddress getPrimarySocketAddress() {
+        return mSocketAddress;
+    }
+
+    @Override
+    public boolean preloadApp(ApplicationInfo appInfo, String abi) {
+        return false;
+    }
+
+    @Override
+    public void close() {
+        if (mSocket != null) {
+            try {
+                mSocket.close();
+            } catch (IOException ex) {
+                Log.e(LOG_TAG, "I/O exception on routine close", ex);
+            }
+        }
     }
 }

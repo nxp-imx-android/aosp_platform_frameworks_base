@@ -148,7 +148,7 @@ public class AppZygote {
             long startSeq,
             @Nullable String[] zygoteArgs) {
         try {
-            return getProcess().start(processClass,
+            return getProcess().getZygoteProcess().start(processClass,
                     niceName, uid, uid, gids, runtimeFlags, mountExternal,
                     targetSdkVersion, seInfo, abi, instructionSet,
                     appDataDir, null, packageName,
@@ -165,7 +165,7 @@ public class AppZygote {
         // Retry here if the previous start fails.
         Log.w(LOG_TAG, "retry starting process " + niceName);
         stopZygote();
-        return getProcess().start(processClass,
+        return getProcess().getZygoteProcess().start(processClass,
                 niceName, uid, uid, gids, runtimeFlags, mountExternal,
                 targetSdkVersion, seInfo, abi, instructionSet,
                 appDataDir, null, packageName,
@@ -178,7 +178,7 @@ public class AppZygote {
     @GuardedBy("mLock")
     private void stopZygoteLocked() {
         if (mZygote != null) {
-            mZygote.close();
+            mZygote.getZygoteProcess().close();
             // use killProcessGroup() here, so we kill all untracked children as well.
             if (!mZygote.isDead()) {
                 Process.killProcessGroup(mZygoteUid, mZygote.getPid());
@@ -211,10 +211,11 @@ public class AppZygote {
                     mZygoteUidGidMin,
                     mZygoteUidGidMax);
 
-            ZygoteProcess.waitForConnectionToZygote(mZygote.getPrimarySocketAddress());
+            ZygoteProcess.waitForConnectionToZygote(
+                    mZygote.getZygoteProcess().getPrimarySocketAddress());
             // preload application code in the zygote
             Log.i(LOG_TAG, "Starting application preload.");
-            mZygote.preloadApp(mAppInfo, abi);
+            mZygote.getZygoteProcess().preloadApp(mAppInfo, abi);
             Log.i(LOG_TAG, "Application preload done.");
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error connecting to app zygote", e);

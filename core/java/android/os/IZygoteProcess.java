@@ -18,8 +18,11 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.pm.ApplicationInfo;
+import android.net.LocalSocketAddress;
 import android.util.Pair;
 
+import java.io.IOException;
 import java.util.Map;
 
 /** @hide */
@@ -90,4 +93,21 @@ interface IZygoteProcess {
                                      boolean bindOverrideSysprops,
                                      long startSeq,
                                      @Nullable String[] zygoteArgs);
+
+    /**
+     * Return the socket address for the primary zygote.
+     */
+    LocalSocketAddress getPrimarySocketAddress();
+
+    /**
+     * Instructs the zygote to pre-load the application code for the given Application.
+     * Only the app zygote supports this function.
+     */
+    boolean preloadApp(ApplicationInfo appInfo, String abi)
+                throws ZygoteStartFailedEx, IOException;
+
+    /**
+     * Closes the connections to the zygote, if they exist.
+     */
+    void close();
 }
