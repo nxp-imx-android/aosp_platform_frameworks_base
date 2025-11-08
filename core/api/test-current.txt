@@ -4314,6 +4314,8 @@ package android.view.inputmethod {
 
   public final class InputMethodManager {
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void addVirtualStylusIdForTestSession();
+    method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public boolean disableInputMethodForTesting(@NonNull String, int);
+    method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public boolean enableInputMethodForTesting(@NonNull String, int);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void finishTrackingPendingRequests();
     method public int getDisplayId();
     method @NonNull @RequiresPermission(value=android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional=true) public java.util.List<android.view.inputmethod.InputMethodInfo> getEnabledInputMethodListAsUser(@NonNull android.os.UserHandle);
@@ -4325,7 +4327,9 @@ package android.view.inputmethod {
     method public boolean isImeBoundForTesting();
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public boolean isInputMethodPickerShown();
     method @NonNull @RequiresPermission(value=android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional=true) public boolean isStylusHandwritingAvailableAsUser(@NonNull android.os.UserHandle);
+    method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void resetInputMethodsForTesting(int);
     method @FlaggedApi("android.view.inputmethod.enforce_device_policy_ime") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setAllowedImesByPolicyForTest(@Nullable java.util.List<java.lang.String>);
+    method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public boolean setInputMethodForTesting(@NonNull String, int);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setStylusWindowIdleTimeoutForTest(long);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public boolean shouldShowImeSwitcherButtonForTest();
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void waitUntilNoPendingRequests(long);

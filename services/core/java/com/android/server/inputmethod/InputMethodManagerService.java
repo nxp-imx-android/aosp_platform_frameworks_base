@@ -68,6 +68,8 @@ import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UiThread;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
@@ -524,6 +526,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @Nullable
     private ImeShellCommandController mShellCommandController;
 
+    @GuardedBy("ImfLock.class")
+    @SharedByAllUsersField
+    @Nullable
+    private EnabledInputMethodsController mEnabledInputMethodsController;
+
     /**
      * Set once the system is ready to run third party code.
      */
@@ -549,6 +556,15 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             mShellCommandController = new ImeShellCommandController(this);
         }
         return mShellCommandController;
+    }
+
+    @GuardedBy("ImfLock.class")
+    @NonNull
+    EnabledInputMethodsController getEnabledInputMethodsControllerLocked() {
+        if (mEnabledInputMethodsController == null) {
+            mEnabledInputMethodsController = new EnabledInputMethodsController(this);
+        }
+        return mEnabledInputMethodsController;
     }
 
     /**
@@ -4591,6 +4607,72 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
     }
 
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+    public boolean enableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        synchronized (ImfLock.class) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                return getEnabledInputMethodsControllerLocked().
+                        enableInputMethodForTesting(imeId, userId);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+    }
+
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+    public boolean disableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        synchronized (ImfLock.class) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                return getEnabledInputMethodsControllerLocked()
+                        .disableInputMethodForTesting(imeId, userId);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+    }
+
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+    public boolean setInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        synchronized (ImfLock.class) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                return getEnabledInputMethodsControllerLocked()
+                        .setInputMethodForTesting(imeId, userId);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+    }
+
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+    public void resetInputMethodsForTesting(@CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        synchronized (ImfLock.class) {
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                getEnabledInputMethodsControllerLocked().resetInputMethodsForTesting(userId);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+    }
+
     @BinderThread
     @IInputMethodManagerImpl.PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
     @Override
@@ -6306,6 +6388,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             });
         }
     }
+
     @GuardedBy("ImfLock.class")
     boolean setImeVisibilityOnFocusedWindowClient(boolean visible, UserData userData,
             @NonNull ImeTracker.Token statsToken) {
