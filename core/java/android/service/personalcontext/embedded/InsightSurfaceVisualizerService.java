@@ -285,10 +285,10 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                     return;
                 }
 
-                // Release an existing host before creating a new one. This can happen if the
-                // service is asked to create a new visualization after it has already created one.
-                // Not properly releasing a host can result in a thrown exception.
-                releaseHostForClient(clientInfo);
+                // Disconnect from the client if we are connected to it. This will also release
+                // the host, in case one already exists. We will re-connect below. This is to
+                // make sure the lifecycle is maintained.
+                disconnectClient(clientInfo, service);
 
                 final SurfaceControlViewHost surfaceControlViewHost =
                         mSurfaceControlViewHostFactory.createSurfaceControlViewHost(
@@ -300,6 +300,10 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                         MeasureSpec.getSize(clientInfo.getWidthMeasureSpec()),
                         MeasureSpec.getSize(clientInfo.getHeightMeasureSpec()));
                 clientInfo.onSurfaceCreated(surfaceControlViewHost.getSurfacePackage());
+
+                // Tell the visualizer the client is now connected.
+                service.onClientConnected(clientInfo);
+
                 sendResult(/*visualizationCreated= */ true, callback);
             });
         }
@@ -311,18 +315,26 @@ public abstract class InsightSurfaceVisualizerService extends Service {
 
         @Override
         public void onClientDisconnected(InsightSurfaceClientInfo client) {
-            post(service -> {
-                releaseHostForClient(client);
-                service.onClientDisconnected(client);
-            });
+            post(service -> disconnectClient(client, service));
         }
 
-        private void releaseHostForClient(InsightSurfaceClientInfo client) {
+        // This method must be called on the executor thread.
+        private void disconnectClient(
+                InsightSurfaceClientInfo client, InsightSurfaceVisualizerService service) {
+            if (releaseHostForClient(client)) {
+                service.onClientDisconnected(client);
+            }
+        }
+
+        private boolean releaseHostForClient(InsightSurfaceClientInfo client) {
             final SurfaceControlViewHost host =
                     mSurfaceControlViewHostsByClient.remove(client.getId());
-            if (host != null) {
-                host.release();
+            if (host == null) {
+                return false;
             }
+
+            host.release();
+            return true;
         }
 
         private void sendResult(

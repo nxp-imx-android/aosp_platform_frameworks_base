@@ -146,7 +146,8 @@ public class InsightSurfaceVisualizerServiceTest {
 
     @Test
     public void testOnClientDisconnectedCalled() throws RemoteException {
-        final IEmbeddedInsightSurfaceVisualizer visualizer = createVisualizer();
+        final IEmbeddedInsightSurfaceVisualizer visualizer = createVisualizer(mock(View.class));
+        visualizer.createVisualizationForClient(List.of(), mClientInfo, mCallback);
         visualizer.onClientDisconnected(mClientInfo);
         verify(mMonitor).onClientDisconnected(mClientInfo);
     }
