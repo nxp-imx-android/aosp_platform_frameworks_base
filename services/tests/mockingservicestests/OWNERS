@@ -9,3 +9,4 @@ per-file res/xml/game_manager* = file:/GAME_MANAGER_OWNERS
 
 # General utilities
 per-file services/tests/mockingservicestests/src/com/android/server/*.java=felipeal@google.com
+per-file GenericAllowlistTestCase.java = file:/MULTIUSER_OWNERS
