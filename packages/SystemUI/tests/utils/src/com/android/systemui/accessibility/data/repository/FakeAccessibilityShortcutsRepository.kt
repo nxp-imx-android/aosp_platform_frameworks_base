@@ -38,7 +38,7 @@ class FakeAccessibilityShortcutsRepository(
     companion object {
         const val FAKE_TALKBACK_TARGET_NAME = "com.android.test/.FakeTalkBack"
         const val FAKE_MAGNIFICATION_TARGET_NAME = "com.android.test/.FakeMagnification"
-        const val FAKE_VOICE_ACCESS_TARGET_NAME = "com.android.text/.FakeVoiceAccess"
+        const val FAKE_VOICE_ACCESS_TARGET_NAME = "com.android.test/.FakeVoiceAccess"
     }
 
     private data class TargetInfo(
