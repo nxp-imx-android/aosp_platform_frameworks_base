@@ -711,7 +711,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         // GIVEN a view is scrolled into the shelf, no pulsing currently
         val stackTop = 200f
         val stackHeight = 800f
-        whenever(ambientState.stackTop).thenReturn(stackTop)
+        whenever(ambientState.stackScrollTop).thenReturn(stackTop)
         whenever(ambientState.interpolatedStackHeight).thenReturn(stackHeight)
         val shelfTop = stackTop + stackHeight - shelf.height
         val stackScrollAlgorithmState = StackScrollAlgorithmState()
@@ -748,7 +748,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         // GIVEN a view is scrolled into the shelf, and a notification is pulsing
         val stackTop = 200f
         val stackHeight = 800f
-        whenever(ambientState.stackTop).thenReturn(stackTop)
+        whenever(ambientState.stackScrollTop).thenReturn(stackTop)
         whenever(ambientState.interpolatedStackHeight).thenReturn(stackHeight)
         val shelfTop = stackTop + stackHeight - shelf.height
         val stackScrollAlgorithmState = StackScrollAlgorithmState()
@@ -783,7 +783,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         // GIVEN
         val stackTop = 200f
         val stackHeight = 800f
-        whenever(ambientState.stackTop).thenReturn(stackTop)
+        whenever(ambientState.stackScrollTop).thenReturn(stackTop)
         whenever(ambientState.interpolatedStackHeight).thenReturn(stackHeight)
         val paddingBetweenElements =
             context.resources.getDimensionPixelSize(R.dimen.notification_divider_height)
@@ -838,7 +838,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         // GIVEN
         val stackTop = 200f
         val stackHeight = 800f
-        whenever(ambientState.stackTop).thenReturn(stackTop)
+        whenever(ambientState.stackScrollTop).thenReturn(stackTop)
         whenever(ambientState.interpolatedStackHeight).thenReturn(stackHeight)
         val paddingBetweenElements =
             context.resources.getDimensionPixelSize(R.dimen.notification_divider_height)
@@ -893,7 +893,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         // GIVEN
         val stackTop = 200f
         val stackHeight = 800f
-        whenever(ambientState.stackTop).thenReturn(stackTop)
+        whenever(ambientState.stackScrollTop).thenReturn(stackTop)
         whenever(ambientState.interpolatedStackHeight).thenReturn(stackHeight)
         val paddingBetweenElements =
             context.resources.getDimensionPixelSize(R.dimen.notification_divider_height)
@@ -948,7 +948,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         // GIVEN
         val stackTop = 200f
         val stackHeight = 800f
-        whenever(ambientState.stackTop).thenReturn(stackTop)
+        whenever(ambientState.stackScrollTop).thenReturn(stackTop)
         whenever(ambientState.interpolatedStackHeight).thenReturn(stackHeight)
         val paddingBetweenElements =
             context.resources.getDimensionPixelSize(R.dimen.notification_divider_height)

@@ -273,7 +273,7 @@ public class NotificationShelf extends ActivatableNotificationView {
         }
 
         final float stackBottom = SceneContainerFlag.isEnabled()
-                ? ambientState.getStackTop() + ambientState.getInterpolatedStackHeight()
+                ? ambientState.getStackScrollTop() + ambientState.getInterpolatedStackHeight()
                 : ambientState.getStackY() + ambientState.getInterpolatedStackHeight();
 
         if (viewState.hidden) {
