@@ -123,6 +123,7 @@ fun ColumnVolumeSliders(
                     } else {
                         null
                     },
+                materialSliderColors = VolumeSliderColors.Defaults,
             )
 
             if (!Flags.volumeRedesign()) {
@@ -193,6 +194,7 @@ fun ColumnVolumeSliders(
                             sliderColors = sliderColors,
                             hapticsViewModelFactory =
                                 sliderViewModel.getSliderHapticsViewModelFactory(),
+                            materialSliderColors = VolumeSliderColors.Defaults,
                         )
                     }
                 }
