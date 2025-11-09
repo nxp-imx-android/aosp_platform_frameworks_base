@@ -99,7 +99,7 @@ internal class BuildScopeImpl(
 
     override fun <In, Out> coalescingEvents(
         getInitialValue: KairosScope.() -> Out,
-        coalesce: (old: Out, new: In) -> Out,
+        coalesce: KairosScope.(old: Out, new: In) -> Out,
         name: NameTag?,
         builder: suspend CoalescingEventProducerScope<In>.() -> Unit,
     ): Events<Out> {

@@ -142,7 +142,7 @@ constructor(
     private val callbackEvents: Events<TelephonyCallbackState> = buildEvents {
         coalescingEvents(
             initialValue = TelephonyCallbackState(),
-            coalesce = TelephonyCallbackState::applyEvent,
+            coalesce = { state, event -> state.applyEvent(event) },
         ) {
             val callback =
                 object :

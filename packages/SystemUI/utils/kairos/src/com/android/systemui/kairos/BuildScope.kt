@@ -202,7 +202,7 @@ interface BuildScope : HasNetwork, StateScope {
     // TODO: see TODO for [events]
     fun <In, Out> coalescingEvents(
         getInitialValue: KairosScope.() -> Out,
-        coalesce: (old: Out, new: In) -> Out,
+        coalesce: KairosScope.(old: Out, new: In) -> Out,
         name: NameTag? = null,
         builder: suspend CoalescingEventProducerScope<In>.() -> Unit,
     ): Events<Out>
@@ -1010,7 +1010,7 @@ internal fun BuildScope.launchScope(
  */
 fun <In, Out> BuildScope.coalescingEvents(
     initialValue: Out,
-    coalesce: (old: Out, new: In) -> Out,
+    coalesce: KairosScope.(old: Out, new: In) -> Out,
     builder: suspend CoalescingEventProducerScope<In>.() -> Unit,
 ): Events<Out> =
     coalescingEvents(
@@ -1023,7 +1023,7 @@ fun <In, Out> BuildScope.coalescingEvents(
 internal fun <In, Out> BuildScope.coalescingEvents(
     nameData: NameData,
     initialValue: Out,
-    coalesce: (old: Out, new: In) -> Out,
+    coalesce: KairosScope.(old: Out, new: In) -> Out,
     builder: suspend CoalescingEventProducerScope<In>.() -> Unit,
 ): Events<Out> = coalescingEvents(getInitialValue = { initialValue }, coalesce, nameData, builder)
 
@@ -1383,6 +1383,7 @@ internal fun <A> BuildScope.toState(nameData: NameData, stateFlow: StateFlow<A>)
 }
 
 internal fun <A> BuildScope.toEvents(nameData: NameData, flow: Flow<A>): Events<A> =
+    // TODO: can be run in Dispatchers.Unconfined, since the emit is thread-safe
     events(nameData) { flow.collect { emit(it) } }
 
 internal fun <A> BuildScope.toState(nameData: NameData, flow: Flow<A>, initialValue: A): State<A> =
