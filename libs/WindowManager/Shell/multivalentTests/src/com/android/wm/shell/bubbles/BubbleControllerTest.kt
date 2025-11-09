@@ -124,8 +124,8 @@ import platform.test.runner.parameterized.Parameters
 /** Tests for [BubbleController].
  *
  * Build/Install/Run:
- *  atest WMShellRobolectricTests:BubbleControllerTest (on host)
- *  atest WMShellMultivalentTestsOnDevice:BubbleControllerTest (on device)
+ *  - atest WMShellRobolectricTests:BubbleControllerTest (on host)
+ *  - atest WMShellMultivalentTestsOnDevice:BubbleControllerTest (on device)
  */
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)

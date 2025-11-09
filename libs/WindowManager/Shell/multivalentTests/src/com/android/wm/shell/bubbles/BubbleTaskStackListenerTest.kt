@@ -53,8 +53,8 @@ import org.mockito.kotlin.verifyNoInteractions
  * Unit tests for [BubbleTaskStackListener].
  *
  * Build/Install/Run:
- *  atest WMShellRobolectricTests:BubbleTaskStackListenerTest (on host)
- *  atest WMShellMultivalentTestsOnDevice:BubbleTaskStackListenerTest (on device)
+ *  - atest WMShellRobolectricTests:BubbleTaskStackListenerTest (on host)
+ *  - atest WMShellMultivalentTestsOnDevice:BubbleTaskStackListenerTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)

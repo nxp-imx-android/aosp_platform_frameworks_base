@@ -73,7 +73,7 @@ import java.util.function.Consumer
  * Unit tests for [BubbleStackView].
  *
  * Build/Install/Run:
- *  atest WMShellMultivalentTestsOnDevice:BubbleStackViewTest (on device)
+ *  - atest WMShellMultivalentTestsOnDevice:BubbleStackViewTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
