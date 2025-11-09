@@ -56,7 +56,7 @@ var Kosmos.mobileConnectionsRepositoryKairos: MobileConnectionsRepositoryKairos 
 }
 
 val Kosmos.fakeMobileConnectionsRepositoryKairos by ActivatedKairosFixture {
-    FakeMobileConnectionsRepositoryKairos(kairos, logcatTableLogBuffer(this), mobileMappingsProxy)
+    FakeMobileConnectionsRepositoryKairos(logcatTableLogBuffer(this), mobileMappingsProxy)
 }
 
 val Kosmos.demoMobileConnectionsRepositoryKairos by ActivatedKairosFixture {
@@ -88,7 +88,7 @@ val Kosmos.wifiDataSourceKairos: DemoModeWifiDataSourceKairos by ActivatedKairos
 
 class FakeDemoModeMobileConnectionDataSourceKairos(kairos: KairosNetwork) :
     DemoModeMobileConnectionDataSourceKairos {
-    override val mobileEvents = MutableEvents<FakeNetworkEventModel?>(kairos)
+    override val mobileEvents = MutableEvents<FakeNetworkEventModel?>()
 }
 
 val DemoModeMobileConnectionDataSourceKairos.fake
@@ -146,7 +146,7 @@ val Kosmos.summaryLogger: TableLogBuffer by Fixture { logcatTableLogBuffer(this,
 
 val Kosmos.mobileConnectionRepositoryKairosFactory by Fixture {
     MobileConnectionsRepositoryKairosImpl.ConnectionRepoFactory { subId ->
-        buildSpec { FakeMobileConnectionRepositoryKairos(subId, kairos, mock()) }
+        buildSpec { FakeMobileConnectionRepositoryKairos(subId, mock()) }
     }
 }
 

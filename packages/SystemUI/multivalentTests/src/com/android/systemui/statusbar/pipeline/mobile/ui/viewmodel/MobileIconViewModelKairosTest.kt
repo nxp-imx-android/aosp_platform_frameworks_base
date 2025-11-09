@@ -98,7 +98,7 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
     }
     private val Kosmos.repository: FakeMobileConnectionRepositoryKairos by
         Kosmos.Fixture {
-            FakeMobileConnectionRepositoryKairos(SUB_1_ID, kairos, tableLogBuffer)
+            FakeMobileConnectionRepositoryKairos(SUB_1_ID, tableLogBuffer)
                 .also {
                     mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(
                         SUB_1_ID

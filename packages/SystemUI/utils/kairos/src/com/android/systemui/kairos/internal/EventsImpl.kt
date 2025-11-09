@@ -39,8 +39,10 @@ internal data class NodeConnection<out A>(
     val schedulerUpstream: PushNode<*>,
 )
 
-internal fun <A> NodeConnection<A>.removeDownstreamAndDeactivateIfNeeded(downstream: Schedulable) =
-    schedulerUpstream.removeDownstreamAndDeactivateIfNeeded(downstream)
+internal fun <A> NodeConnection<A>.removeDownstreamAndDeactivateIfNeeded(
+    downstream: Schedulable,
+    evalScope: EvalScope,
+) = schedulerUpstream.removeDownstreamAndDeactivateIfNeeded(downstream, evalScope)
 
 internal fun <A> NodeConnection<A>.scheduleDeactivationIfNeeded(evalScope: EvalScope) =
     schedulerUpstream.scheduleDeactivationIfNeeded(evalScope)

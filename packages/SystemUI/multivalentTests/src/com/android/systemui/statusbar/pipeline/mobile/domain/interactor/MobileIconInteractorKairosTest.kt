@@ -30,7 +30,6 @@ import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kairos.ActivatedKairosFixture
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.MutableState
-import com.android.systemui.kairos.kairos
 import com.android.systemui.kairos.map
 import com.android.systemui.kairos.runKairosTest
 import com.android.systemui.kosmos.Kosmos
@@ -76,25 +75,25 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
         MobileIconCarrierIdOverridesImpl()
     }
 
-    private val Kosmos.defaultSubscriptionHasDataEnabled by Fixture { MutableState(kairos, true) }
+    private val Kosmos.defaultSubscriptionHasDataEnabled by Fixture { MutableState(true) }
 
-    private val Kosmos.alwaysShowDataRatIcon by Fixture { MutableState(kairos, false) }
+    private val Kosmos.alwaysShowDataRatIcon by Fixture { MutableState(false) }
 
-    private val Kosmos.alwaysUseCdmaLevel by Fixture { MutableState(kairos, false) }
+    private val Kosmos.alwaysUseCdmaLevel by Fixture { MutableState(false) }
 
-    private val Kosmos.isSingleCarrier by Fixture { MutableState(kairos, true) }
+    private val Kosmos.isSingleCarrier by Fixture { MutableState(true) }
 
-    private val Kosmos.mobileIsDefault by Fixture { MutableState(kairos, false) }
+    private val Kosmos.mobileIsDefault by Fixture { MutableState(false) }
 
     private val Kosmos.defaultMobileIconMapping by Fixture {
-        MutableState(kairos, fakeMobileIconsInteractor.TEST_MAPPING)
+        MutableState(fakeMobileIconsInteractor.TEST_MAPPING)
     }
 
-    private val Kosmos.defaultMobileIconGroup by Fixture { MutableState(kairos, TelephonyIcons.G) }
+    private val Kosmos.defaultMobileIconGroup by Fixture { MutableState(TelephonyIcons.G) }
 
-    private val Kosmos.isDefaultConnectionFailed by Fixture { MutableState(kairos, false) }
+    private val Kosmos.isDefaultConnectionFailed by Fixture { MutableState(false) }
 
-    private val Kosmos.isForceHidden by Fixture { MutableState(kairos, false) }
+    private val Kosmos.isForceHidden by Fixture { MutableState(false) }
 
     private val Kosmos.underTest by ActivatedKairosFixture {
         MobileIconInteractorKairosImpl(
@@ -114,7 +113,7 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
     }
 
     private val Kosmos.connectionRepo by Fixture {
-        FakeMobileConnectionRepositoryKairos(SUB_1_ID, kairos, tableLogBuffer).apply {
+        FakeMobileConnectionRepositoryKairos(SUB_1_ID, tableLogBuffer).apply {
             dataEnabled.setValue(true)
             isInService.setValue(true)
         }

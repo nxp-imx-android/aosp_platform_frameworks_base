@@ -19,26 +19,20 @@ package com.android.systemui.kairos
 import com.android.systemui.kairos.internal.CompletableLazy
 import com.android.systemui.kairos.internal.Init
 import com.android.systemui.kairos.internal.InitScope
-import com.android.systemui.kairos.internal.Network
+import com.android.systemui.kairos.internal.MutableStateImpl
 import com.android.systemui.kairos.internal.NoScope
-import com.android.systemui.kairos.internal.Schedulable
 import com.android.systemui.kairos.internal.StateImpl
-import com.android.systemui.kairos.internal.StateSource
-import com.android.systemui.kairos.internal.activated
 import com.android.systemui.kairos.internal.constInit
 import com.android.systemui.kairos.internal.constState
-import com.android.systemui.kairos.internal.distinctChanges
 import com.android.systemui.kairos.internal.flatMapStateImpl
 import com.android.systemui.kairos.internal.init
-import com.android.systemui.kairos.internal.mapImpl
 import com.android.systemui.kairos.internal.mapStateImpl
 import com.android.systemui.kairos.internal.mapStateImplCheap
 import com.android.systemui.kairos.internal.util.hashString
 import com.android.systemui.kairos.util.NameData
+import com.android.systemui.kairos.util.NameTag
 import com.android.systemui.kairos.util.NameTaggingDisabled
 import com.android.systemui.kairos.util.WithPrev
-import com.android.systemui.kairos.util.forceInit
-import com.android.systemui.kairos.util.mapName
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairos.util.plus
 import com.android.systemui.kairos.util.toNameData
@@ -205,54 +199,13 @@ internal fun <A> State<State<A>>.flatten(nameData: NameData) = flatMap(nameData)
  *
  * Effectively equivalent to:
  * ```
- *     ConflatedMutableEvents(kairosNetwork).holdState(initialValue)
+ *     ConflatedMutableEvents().holdState(initialValue)
  * ```
  */
-class MutableState<T>
-internal constructor(
-    internal val nameData: NameData,
-    internal val network: Network,
-    initialValue: Lazy<T>,
-) : State<T>() {
-
-    init {
-        nameData.forceInit()
-    }
-
-    private val input: CoalescingMutableEvents<(T) -> T, ((T) -> T)> =
-        CoalescingMutableEvents(
-            nameData = nameData.mapName { "$it-inputEvents" },
-            coalesce = { old, new -> { new(old.value(it)) } },
-            network = network,
-            getInitialValue = { { it } },
-        )
+class MutableState<T> internal constructor(internal val impl: MutableStateImpl<T>) : State<T>() {
 
     override val init: Init<StateImpl<T>>
-        get() = state.init
-
-    // TODO: not convinced this is totally safe
-    //  - at least for the BuildScope smart-constructor, we can avoid the network.transaction { }
-    //    call since we're already in a transaction
-    internal val state = run {
-        val updates = input.impl
-        val state: StateSource<T> = StateSource(initialValue, nameData)
-        val changes =
-            mapImpl({ updates.activated() }, nameData + "forced") { update, _ ->
-                update(state.getCurrentWithEpoch(this).first)
-            }
-        val calm = distinctChanges({ changes }, nameData + "calm", state)
-        @Suppress("DeferredResultUnused")
-        network.transaction("MutableState.init") {
-            calm.activate(evalScope = this, downstream = Schedulable.S(state))?.let {
-                (connection, needsEval) ->
-                state.upstreamConnection = connection
-                if (needsEval) {
-                    state.schedule(0, this)
-                }
-            }
-        }
-        StateInit(constInit(nameData, StateImpl(nameData, calm, state)))
-    }
+        get() = impl.init
 
     /**
      * Sets the value held by this [State].
@@ -264,7 +217,7 @@ internal constructor(
      * Multiple invocations of [setValue] that occur before a transaction are conflated; only the
      * most recent value is used.
      */
-    fun setValue(value: T) = input.emit { value }
+    fun setValue(value: T) = update { value }
 
     /**
      * Updates the value held by this [State] to the value returned from applying the current state
@@ -277,7 +230,7 @@ internal constructor(
      * Multiple invocations of [update] that occur before a transaction are coalesced and applied in
      * order during the next transaction.
      */
-    fun update(block: (T) -> T) = input.emit(block)
+    fun update(block: (T) -> T) = impl.update(block)
 
     /**
      * Sets the value held by this [State]. The [DeferredValue] will not be queried until this
@@ -290,10 +243,26 @@ internal constructor(
      * Multiple invocations of [setValue] that occur before a transaction are conflated; only the
      * most recent value is used.
      */
-    fun setValueDeferred(value: DeferredValue<T>) = input.emit { value.unwrapped.value }
+    fun setValueDeferred(value: DeferredValue<T>) = update { value.unwrapped.value }
 
-    override fun toString(): String = "${super.toString()}[$nameData]"
+    override fun toString(): String = impl.toString()
 }
+
+/** Returns a [MutableState] with initial state [initialValue]. */
+fun <T> MutableState(initialValue: T, name: NameTag? = null): MutableState<T> =
+    MutableState(lazyOf(initialValue), name)
+
+/** Returns a [MutableState] with initial state [initialValue]. */
+fun <T> MutableState(initialValue: DeferredValue<T>, name: NameTag? = null): MutableState<T> =
+    MutableState(initialValue.unwrapped, name)
+
+/** Returns a [MutableState] with initial state [initialValue]. */
+fun <T> MutableState(name: NameTag? = null, initialValue: () -> T): MutableState<T> =
+    MutableState(lazy(initialValue), name)
+
+/** Returns a [MutableState] with initial state [initialValue]. */
+fun <T> MutableState(initialValue: Lazy<T>, name: NameTag? = null): MutableState<T> =
+    MutableState(MutableStateImpl(name.toNameData("MutableState"), initialValue))
 
 /**
  * A forward-reference to a [State]. Useful for recursive definitions.

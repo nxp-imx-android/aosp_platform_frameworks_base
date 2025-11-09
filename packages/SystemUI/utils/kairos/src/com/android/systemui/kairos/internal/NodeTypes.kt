@@ -83,12 +83,12 @@ internal sealed interface PushNode<A> : PullNode<A> {
     fun removeDownstream(downstream: Schedulable)
 
     /** called during cleanup phase */
-    fun deactivateIfNeeded()
+    fun deactivateIfNeeded(evalScope: EvalScope)
 
     /** called from mux nodes after severs */
     fun scheduleDeactivationIfNeeded(evalScope: EvalScope)
 
     fun addDownstream(downstream: Schedulable)
 
-    fun removeDownstreamAndDeactivateIfNeeded(downstream: Schedulable)
+    fun removeDownstreamAndDeactivateIfNeeded(downstream: Schedulable, evalScope: EvalScope)
 }

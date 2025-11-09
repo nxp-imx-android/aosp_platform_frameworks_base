@@ -34,6 +34,7 @@ import com.android.systemui.kairos.util.appendNames
 import com.android.systemui.kairos.util.forceInit
 import com.android.systemui.kairos.util.maybeOf
 import com.android.systemui.kairos.util.plus
+import java.util.concurrent.atomic.AtomicReference
 
 internal open class StateImpl<out A>(
     val nameData: NameData,
@@ -1013,4 +1014,104 @@ internal class DerivedZippedList<V>(
     }
 
     override fun toString(): String = "${this::class.simpleName}@$hashString[$nameData]"
+}
+
+internal class MutableStateImpl<T>(internal val nameData: NameData, initialValue: Lazy<T>) :
+    StateStore<T>() {
+
+    init {
+        nameData.forceInit()
+    }
+
+    private val transactionCache = TransactionCache<Pair<T, Long>>()
+    private val dataRef =
+        AtomicReference(Data(initialValue, readEpoch = null, connectedData = null))
+
+    private data class Data<out T>(
+        val lastEmit: Lazy<T>,
+        val readEpoch: Long?,
+        val connectedData: ConnectedData<T>?,
+    )
+
+    private data class ConnectedData<out T>(
+        val network: Network,
+        val emitScheduled: Boolean,
+        val currentValue: Lazy<T>,
+        val writeEpoch: Long,
+    )
+
+    private val inputNode =
+        InputNode<T>(
+            nameData,
+            activate = {
+                dataRef.updateAndGet { data ->
+                    check(data.connectedData == null) { "Network mismatch" }
+                    data.copy(connectedData = ConnectedData(network, false, data.lastEmit, epoch))
+                }
+            },
+            deactivate = {
+                dataRef.updateAndGet { data ->
+                    checkNotNull(data.connectedData) { "Network mismatch" }
+                    data.copy(connectedData = null)
+                }
+            },
+        )
+
+    val init: Init<StateImpl<T>> =
+        constInit(nameData, StateImpl(nameData, inputNode.activated(), this))
+
+    fun update(block: (T) -> T) {
+        // update local storage, regardless of network connection
+        val data =
+            dataRef.getAndUpdate { data ->
+                val newEmit = lazyOf(block(data.lastEmit.value))
+                val connData = data.connectedData?.copy(emitScheduled = true)
+                data.copy(lastEmit = newEmit, readEpoch = null, connectedData = connData)
+            }
+        // if connected to network, go through input event emitter
+        @Suppress("DeferredResultUnused")
+        data.connectedData
+            ?.takeUnless { it.emitScheduled }
+            ?.let { it.network.transaction("MutableState.update") { pushUpdate(this) } }
+    }
+
+    private fun pushUpdate(evalScope: EvalScope) {
+        var changed = false
+        val data =
+            dataRef.getAndUpdate { data ->
+                val new = data.lastEmit
+                val current = data.connectedData!!.currentValue
+                changed = new.value != current.value
+                data.copy(
+                    readEpoch = evalScope.epoch,
+                    connectedData =
+                        data.connectedData.copy(
+                            emitScheduled = false,
+                            currentValue = if (changed) new else current,
+                            writeEpoch =
+                                if (changed) evalScope.epoch + 1 else data.connectedData.writeEpoch,
+                        ),
+                )
+            }
+        transactionCache.put(
+            evalScope,
+            data.connectedData!!.let { it.currentValue.value to it.writeEpoch },
+        )
+        val new = data.lastEmit.value
+        if (changed) {
+            inputNode.visit(evalScope, new)
+        }
+    }
+
+    override fun toString(): String = "${super.toString()}[$nameData]"
+
+    override fun getCurrentWithEpoch(evalScope: EvalScope): Pair<T, Long> =
+        transactionCache.getOrPut(evalScope) {
+            val data =
+                dataRef.updateAndGet { data ->
+                    if (data.readEpoch == null) data.copy(readEpoch = evalScope.epoch) else data
+                }
+            data.connectedData?.let { it.currentValue.value to it.writeEpoch }
+                ?: (data.lastEmit.value to data.readEpoch!!)
+        }
 }

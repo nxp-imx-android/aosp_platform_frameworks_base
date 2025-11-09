@@ -264,7 +264,7 @@ interface BuildScope : HasNetwork, StateScope {
      * Returns a [SharedFlow] configured with a replay cache of size [replay] that emits the current
      * [value][State.sample] of this [State] followed by all [changes].
      */
-    fun <A> State<A>.toSharedFlow(replay: Int = 0): SharedFlow<A> =
+    fun <A> State<A>.toSharedFlow(replay: Int = 0, name: NameTag? = null): SharedFlow<A> =
         toSharedFlow(nameTag("State.toSharedFlow").toNameData("State.toSharedFlow"), this, replay)
 
     /**
