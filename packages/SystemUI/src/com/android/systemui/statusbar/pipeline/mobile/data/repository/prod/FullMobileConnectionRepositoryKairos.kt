@@ -18,13 +18,11 @@ package com.android.systemui.statusbar.pipeline.mobile.data.repository.prod
 
 import android.util.IndentingPrintWriter
 import androidx.annotation.VisibleForTesting
-import com.android.systemui.KairosBuilder
 import com.android.systemui.kairos.BuildSpec
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatMap
 import com.android.systemui.kairos.util.nameTag
-import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
@@ -32,6 +30,8 @@ import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameMode
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
+import com.android.systemui.util.lifecycle.kairos.KairosBuilder
+import com.android.systemui.util.lifecycle.kairos.kairosBuilder
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject

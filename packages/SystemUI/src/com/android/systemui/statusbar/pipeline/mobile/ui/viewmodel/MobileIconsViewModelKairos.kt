@@ -21,7 +21,6 @@ import androidx.compose.runtime.State as ComposeState
 import androidx.compose.runtime.getValue
 import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.KairosActivatable
-import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.SysUISingleton
@@ -38,7 +37,6 @@ import com.android.systemui.kairos.map
 import com.android.systemui.kairos.mapValues
 import com.android.systemui.kairos.stateOf
 import com.android.systemui.kairos.util.nameTag
-import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.statusbar.phone.StatusBarLocation
@@ -58,6 +56,8 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernStatusBarMob
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.util.composable.kairos.toComposeState
+import com.android.systemui.util.lifecycle.kairos.KairosBuilder
+import com.android.systemui.util.lifecycle.kairos.kairosBuilder
 import dagger.Provides
 import dagger.multibindings.ElementsIntoSet
 import javax.inject.Inject

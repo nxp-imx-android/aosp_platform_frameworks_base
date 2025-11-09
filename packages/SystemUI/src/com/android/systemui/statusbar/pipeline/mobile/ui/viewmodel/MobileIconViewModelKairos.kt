@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import com.android.settingslib.R as settingsLibR
-import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -28,7 +27,6 @@ import com.android.systemui.kairos.flatMap
 import com.android.systemui.kairos.map
 import com.android.systemui.kairos.stateOf
 import com.android.systemui.kairos.util.nameTag
-import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.NewStatusBarIcons
@@ -40,6 +38,8 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.model.MobileContentDesc
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
+import com.android.systemui.util.lifecycle.kairos.KairosBuilder
+import com.android.systemui.util.lifecycle.kairos.kairosBuilder
 
 /** Common interface for all of the location-based mobile icon view models. */
 interface MobileIconViewModelKairosCommon {
