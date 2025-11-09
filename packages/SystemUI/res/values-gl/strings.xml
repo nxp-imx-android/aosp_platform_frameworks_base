@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Gardando captura de pantalla no perfil privado"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Gardouse a captura de pantalla"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Non se puido gardar a captura de pantalla"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Pantalla externa"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Para que se poida gardar a captura de pantalla, o dispositivo debe estar desbloqueado"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Volve tentar crear unha captura de pantalla"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Ao recibir moitas notificacións, o volume e as alertas redúcense automaticamente ata dous minutos."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Desactivar"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Desbloquea para ver máis notificacións"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"O teu pai ou nai xestiona este dispositivo"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Algunhas opcións de configuración do dispositivo están protexidas cun PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"A túa organización é propietaria deste dispositivo e pode controlar o tráfico de rede"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> é a organización propietaria deste dispositivo e pode controlar o tráfico de rede"</string>
@@ -1163,7 +1170,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Non activar"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activar atallo"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"O atallo do teclado para <xliff:g id="ID_1">%1$s</xliff:g> está activado"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"O atallo de teclado para usar <xliff:g id="ID_4">^4</xliff:g>, unha función de accesibilidade, é <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Isto permíteche achegar a pantalla rapidamente para ter o contido a maior tamaño. Cando a ampliación estea activada, preme a <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> e \"+\" ou \"-\" para axustar o zoom."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"O atallo de teclado para usar <xliff:g id="ID_4">^4</xliff:g>, unha función de accesibilidade, é <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. Isto permíteche achegar a pantalla rapidamente para ter o contido a maior tamaño. Cando a ampliación estea activada, preme <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> e \"+\" ou \"-\" para axustar o zoom."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Desactivar atallo"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Deixar opción activada"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"O atallo de teclado para usar <xliff:g id="ID_4">^4</xliff:g> é <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> é un lector de pantalla que fai que se lean os elementos en alto para que os oias. Esta función pode ser útil para as persoas que teñan dificultades para ver a pantalla. O seu uso pode afectar ao funcionamento do dispositivo."</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Para abrir as notificacións, pasa o dedo desde a parte superior esquerda"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Para abrir Configuración rápida, pasa o dedo desde a parte superior dereita"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Volver"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Iniciar sesión"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Accesibilidade"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Anterior"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Seguinte"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"vai á páxina seguinte"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autocompletar"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"despregar"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

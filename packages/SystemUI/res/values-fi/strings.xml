@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Tallennetaan kuvakaappausta yksityiseen profiiliin"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Kuvakaappaus tallennettu"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Kuvakaappauksen tallennus epäonnistui"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Ulkoinen näyttö"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Laitteen lukitus täytyy avata ennen kuin kuvakaappaus voidaan tallentaa"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Yritä ottaa kuvakaappaus uudelleen."</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Äänenvoimakkuus ja ilmoitukset vaimennetaan enintään 2 minuutiksi, kun saat paljon ilmoituksia."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Laita pois päältä"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Avaa lukitus niin näet ilmoituksia"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Vanhempasi ylläpitää tätä laitetta"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Jotkin laiteasetukset on suojattu PIN-koodilla."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Organisaatiosi omistaa laitteen ja voi valvoa verkkoliikennettä"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> omistaa laitteen ja voi valvoa verkkoliikennettä"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Avaa ilmoitukset pyyhkäisemällä vasemmasta yläkulmasta"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Avaa pika-asetukset pyyhkäisemällä oikeasta yläkulmasta"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Takaisin"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Kirjaudu sisään"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Saavutettavuus"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Edellinen"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Seuraava"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"siirtyäksesi seuraavalle sivulle"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automaattinen täyttö"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"laajenna"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

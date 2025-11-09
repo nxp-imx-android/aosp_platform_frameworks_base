@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Zapisuję zrzut ekranu w profilu prywatnym"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Zrzut ekranu został zapisany"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Nie udało się zapisać zrzutu ekranu"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Wyświetlacz zewnętrzny"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Przed zapisaniem zrzutu ekranu musisz odblokować urządzenie"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Spróbuj jeszcze raz wykonać zrzut ekranu"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Gdy w krótkim czasie otrzymasz za dużo powiadomień, dźwięki zostaną automatycznie wyciszone na maks. 2 min."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Wyłącz"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Odblokuj i zobacz starsze powiadomienia"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Tym urządzeniem zarządza Twój rodzic"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Niektóre ustawienia urządzenia są chronione kodem PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Twoja organizacja jest właścicielem tego urządzenia i może monitorować ruch w sieci"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Organizacja <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> jest właścicielem tego urządzenia i może monitorować ruch w sieci"</string>
@@ -1601,11 +1608,11 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Zarządzaj dostępem"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Używany podczas rozmowy telefonicznej"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Ostatnio używany podczas rozmowy telefonicznej"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Uprawnienie używane przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"W użyciu przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Ostatnio używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
+    <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"W użyciu przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Ostatnio używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
-    <string name="privacy_dialog_active_app_usage_2" msgid="2770926061339921767">"Używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>)"</string>
+    <string name="privacy_dialog_active_app_usage_2" msgid="2770926061339921767">"W użyciu przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_2" msgid="2874689735085367167">"Ostatnio używany przez aplikację <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>)"</string>
     <string name="shortcut_helper_category_system" msgid="462110876978937359">"System"</string>
     <string name="shortcut_helper_category_system_controls" msgid="3153344561395751020">"Systemowe elementy sterujące"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Przesuń palcem z lewego górnego rogu ekranu, aby otworzyć powiadomienia"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Przesuń palcem z prawego górnego rogu ekranu, aby otworzyć Szybkie ustawienia"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Wstecz"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Zaloguj się"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Ułatwienia dostępu"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Wstecz"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Dalej"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"przejść do następnej strony"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autouzupełnianie"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"rozwinięcie"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Screenshot wird im vertraulichen Profil gespeichert"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Screenshot gespeichert"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Screenshot konnte nicht gespeichert werden"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Äußeres Display"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Damit Screenshots gespeichert werden können, muss das Gerät entsperrt sein"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Versuche noch einmal, den Screenshot zu erstellen"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Wenn du zu viele Benachrichtigungen auf einmal erhältst, wird die Lautstärke automatisch bis zu 2 min lang verringert und Benachrichtigungen werden minimiert."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Deaktivieren"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Für ältere Benachrichtigungen entsperren"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Dieses Gerät wird von deinen Eltern verwaltet"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Einige Geräteeinstellungen sind durch eine PIN geschützt."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Deine Organisation verwaltet dieses Gerät und kann den Netzwerkverkehr überwachen"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> ist der Eigentümer dieses Geräts und kann den Netzwerkverkehr überwachen"</string>
@@ -1306,7 +1313,7 @@
     <string name="accessibility_floating_button_docking_tooltip" msgid="6814897496767461517">"Durch Ziehen an den Rand wird die Schaltfläche zeitweise ausgeblendet"</string>
     <string name="accessibility_floating_button_undo" msgid="511112888715708241">"Rückgängig machen"</string>
     <string name="accessibility_floating_button_hidden_notification_title" msgid="4115036997406994799">"Button „Bedienungshilfen“ ausgeblendet"</string>
-    <string name="accessibility_floating_button_hidden_notification_text" msgid="1457021647040915658">"Tippen, um die Schaltfläche „Bedienungshilfen“ aufzurufen"</string>
+    <string name="accessibility_floating_button_hidden_notification_text" msgid="1457021647040915658">"Tippen, um den Button „Bedienungshilfen“ aufzurufen"</string>
     <string name="accessibility_floating_button_undo_message_label_text" msgid="9017658016426242640">"Verknüpfung für „<xliff:g id="FEATURE_NAME">%s</xliff:g>“ entfernt"</string>
     <string name="accessibility_floating_button_undo_message_number_text" msgid="4909270290725226075">"{count,plural, =1{# Verknüpfung entfernt}other{# Verknüpfungen entfernt}}"</string>
     <string name="accessibility_floating_button_action_move_top_left" msgid="6253520703618545705">"Nach oben links verschieben"</string>
@@ -1590,8 +1597,8 @@
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Bildschirm verbunden"</string>
     <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Mit externem Display verbunden"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofon, Kamera &amp; Standort"</string>
-    <string name="privacy_dialog_summary" msgid="2458769652125995409">"Kürzliche App-Nutzung"</string>
-    <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Kürzliche Zugriffe ansehen"</string>
+    <string name="privacy_dialog_summary" msgid="2458769652125995409">"Von folgenden Apps zuletzt verwendet"</string>
+    <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Letzte Zugriffe ansehen"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Fertig"</string>
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"Maximieren und Optionen einblenden"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"Minimieren"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Zum Öffnen von Benachrichtigungen von links oben nach unten wischen"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Zum Öffnen der Schnelleinstellungen von rechts oben nach unten wischen"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Zurück"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Anmelden"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Bedienungshilfen"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Zurück"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Weiter"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"zur nächsten Seite zu gehen"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatisch ausfüllen"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"maximieren"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

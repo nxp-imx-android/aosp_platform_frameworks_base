@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Shranjevanje posnetka zaslona v zasebni profil"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Posnetek zaslona je shranjen"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Posnetka zaslona ni bilo mogoče shraniti"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Zunanji zaslon"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Pred shranjevanjem posnetka zaslona morate odkleniti napravo"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Poskusite znova ustvariti posnetek zaslona"</string>
@@ -171,12 +175,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Deljenje zvoka"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Deljenje okna aplikacije"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Deljenje zavihka"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Deljenje celotnega zaslona"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Pri deljenju aplikacije je aplikaciji [APP NAME] vidno vse, kar je prikazano ali predvajano v deljeni aplikaciji. Zato bodite previdni z gesli, podatki za plačilo, sporočili, fotografijami ter z zvokom in videom."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Pri deljenju celotnega zaslona je aplikaciji [APP NAME] vidno vse na zaslonu. Zato bodite previdni z gesli, podatki za plačilo, sporočili, fotografijami ter z zvokom in videom."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Ustvarjanje posnetka zaslona okna"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Okno za snemanje"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Ustvarjanje posnetka izbranega območja zaslona"</string>
@@ -727,7 +728,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Ko prejmete preveč obvestil naenkrat, se glasnost naprave in opozoril samodejno zmanjša za največ 2 minuti."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Izklopi"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Odklenite za ogled starejših obvestil"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"To napravo upravlja tvoj starš"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Nekatere nastavitve naprave so zaščitene s kodo PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Vaša organizacija je lastnica te naprave in lahko nadzira omrežni promet"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Organizacija <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> je lastnica te naprave in lahko nadzira omrežni promet"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Obvestil o klicih ni mogoče spreminjati."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Te skupine obvestil ni mogoče konfigurirati tukaj"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Posredovano obvestilo"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"Povzetek je ustvarila aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Vsa obvestila aplikacije <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Pokaži več"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Sistem je to obvestilo samodejno &lt;b&gt;uvrstil višje – med privzeta obvestila&lt;/b&gt;."</string>
@@ -1163,7 +1166,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne vklopi"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Vklopi bližnjico"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Bližnjična tipka za funkcijo <xliff:g id="ID_1">%1$s</xliff:g> je vklopljena"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"Ikone <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> so bližnjične tipke za uporabo funkcije dostopnosti <xliff:g id="ID_4">^4</xliff:g>. Tako lahko hitro povečate zaslon za povečavo vsebine. Ko je povečava vklopljena, pritisnite "<annotation id="action_key_icon">"ikono"</annotation>" <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> in »+« ali »–«, če želite prilagoditi povečavo."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"Ikona"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> so bližnjične tipke za uporabo funkcije dostopnosti <xliff:g id="ID_4">^4</xliff:g>. Tako lahko hitro povečate zaslon in s tem vsebino na njem. Ko je povečava vklopljena, pritisnite "<annotation id="action_key_icon">"ikono"</annotation>" <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> in »+« ali »–«, če želite prilagoditi povečavo."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Izklopi bližnjico"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Pusti vklopljeno"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"Ikona"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> so bližnjične tipke za uporabo funkcije <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> je bralnik zaslona, ki vam omogoča, da so elementi na zaslonu izgovorjeni. To je lahko uporabno za osebe s težavami pri razločevanju vsebine zaslona. To morda spremeni način delovanja naprave."</string>
@@ -1736,12 +1739,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Povlecite iz zgornjega levega kota, da odprete obvestila."</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Povlecite iz zgornjega desnega kota, da odprete hitre nastavitve"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Nazaj"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Prijava"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Dostopnost"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Nazaj"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Naprej"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"pomik na naslednjo stran"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"samodejno izpolnjevanje"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"razširitev"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

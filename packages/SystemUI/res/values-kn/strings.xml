@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ ಅನ್ನು ಖಾಸಗಿ ಪ್ರೊಫೈಲ್‌ಗೆ ಸೇವ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ ಅನ್ನು ಸೇವ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ಬಾಹ್ಯ ಡಿಸ್‌ಪ್ಲೇ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಉಳಿಸುವ ಮೊದಲು ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಬೇಕು"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ಪುನಃ ತೆಗೆದುಕೊಳ್ಳಲು ಪ್ರಯತ್ನಿಸಿ"</string>
@@ -171,12 +175,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ಆಡಿಯೋ ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ಆ್ಯಪ್ ವಿಂಡೋವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ಟ್ಯಾಬ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ನೀವು ಆ್ಯಪ್ ಹಂಚಿಕೊಳ್ಳುತ್ತಿರುವಾಗ, ಆ ಆ್ಯಪ್‌ನಲ್ಲಿ ತೋರಿಸಿದ ಅಥವಾ ಪ್ಲೇ ಆದ ಏನಾದರೂ [APP NAME] ಗೆ ಕಾಣಿಸುತ್ತದೆ. ಹಾಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್, ಪಾವತಿ ವಿವರ, ಸಂದೇಶ, ಫೋಟೋ, ಆಡಿಯೋ, ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಬಗ್ಗೆ ಜಾಗರೂಕರಾಗಿರಿ."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ನೀವು ಹಂಚಿಕೊಳ್ಳುತ್ತಿರುವಾಗ, ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿರುವ ಏನಾದರೂ [APP NAME] ಗೆ ಕಾಣಿಸುತ್ತದೆ. ಹಾಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಪಾವತಿ ವಿವರಗಳು, ಸಂದೇಶಗಳು, ಫೋಟೋಗಳು ಮತ್ತು ಆಡಿಯೋ ಹಾಗೂ ವೀಡಿಯೊದಂತಹ ವಿಷಯಗಳ ಬಗ್ಗೆ ಜಾಗರೂಕರಾಗಿರಿ."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ವಿಂಡೋದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ವಿಂಡೋ ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ಆಯ್ಕೆಮಾಡಿದ ಪ್ರದೇಶದ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ"</string>
@@ -727,7 +728,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ನೀವು ಏಕಕಾಲದಲ್ಲಿ ತೀರಾ ಹೆಚ್ಚು ನೋಟಿಫಿಕೇಶನ್‌‍‍ಗಳನ್ನು ಪಡೆದಾಗ 2 ನಿಮಿಷಗಳವರೆಗೆ ನಿಮ್ಮ ಸಾಧನದ ವಾಲ್ಯೂಮ್ ಮತ್ತು ಅಲರ್ಟ್‌‍‍ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಡಿಮೆ ಮಾಡಲಾಗುತ್ತದೆ."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ಆಫ್ ಮಾಡಿ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ಹಳೆಯ ಅಧಿಸೂಚನೆಗಳನ್ನು ನೋಡಲು ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"ಈ ಸಾಧನವನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ಕೆಲವು ಸಾಧನ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಪಿನ್ ಮೂಲಕ ಸಂರಕ್ಷಿತವಾಗಿವೆ."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ನಿಮ್ಮ ಸಂಸ್ಥೆಯು ಈ ಸಾಧನದ ಮಾಲೀಕತ್ವವನ್ನು ಹೊಂದಿದೆ ಮತ್ತು ಅದು ನೆಟ್‌ವರ್ಕ್ ಟ್ರಾಫಿಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> ಈ ಸಾಧನದ ಮಾಲೀಕತ್ವವನ್ನು ಹೊಂದಿದೆ ಮತ್ತು ಅದು ನೆಟ್‌ವರ್ಕ್ ಟ್ರಾಫಿಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ಕರೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ಈ ಗುಂಪಿನ ಅಧಿಸೂಚನೆಗಳನ್ನು ಇಲ್ಲಿ ಕಾನ್ಫಿಗರ್‌ ಮಾಡಲಾಗಿರುವುದಿಲ್ಲ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ಪ್ರಾಕ್ಸಿ ಮಾಡಿದ ಅಧಿಸೂಚನೆಗಳು"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಸಾರಾಂಶಗೊಳಿಸಿದೆ"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g> ನ ಎಲ್ಲಾ ಅಧಿಸೂಚನೆಗಳು"</string>
     <string name="see_more_title" msgid="7409317011708185729">"ಇನ್ನಷ್ಟು ನೋಡಿ"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ಈ ಅಧಿಸೂಚನೆಯು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಿಸ್ಟಂನಿಂದ &lt;b&gt; ಡೀಫಾಲ್ಟ್‌ಗೆ ಬಡ್ತಿ ಹೊಂದಿದೆ&lt;/b&gt;."</string>
@@ -1736,12 +1739,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ತೆರೆಯಲು ಮೇಲಿನ ಎಡದಿಂದ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಲು ಮೇಲಿನ ಬಲದಿಂದ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ಹಿಂದಕ್ಕೆ"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"ಸೈನ್ ಇನ್ ಮಾಡಿ"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ಹಿಂದಿನದು"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ಮುಂದಿನದು"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ಮುಂದಿನ ಪುಟಕ್ಕೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ಆಟೋಫಿಲ್ ಮಾಡಿ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ವಿಸ್ತೃತಗೊಳಿಸಿ"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

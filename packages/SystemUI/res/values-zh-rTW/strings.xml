@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"正在將螢幕截圖儲存到個人資料夾"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"螢幕截圖已儲存"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"無法儲存螢幕截圖"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"外接螢幕"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"必須先解鎖裝置，才能儲存螢幕截圖"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"請再次嘗試拍攝螢幕截圖"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"如果一次收到過多通知，裝置就會自動降低音量並減少通知數量，持續時間最多 2 分鐘。"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"關閉"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"解鎖即可查看舊通知"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"這個裝置是由你的家長管理"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"部分裝置設定受到 PIN 碼保護。"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"貴機構擁有這部裝置，而且可能會監控網路流量"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"這部裝置的擁有者為「<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>」，而且該機構可能會監控網路流量"</string>
@@ -1601,7 +1608,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"管理存取權"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"正用於手機通話"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"最近曾用於手機通話"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"正由「<xliff:g id="APP_NAME">%1$s</xliff:g>」使用"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」正在使用"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」最近用過這項權限"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"正由「<xliff:g id="APP_NAME">%1$s</xliff:g>」使用 (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」最近用過這項權限 (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"從左上角向下滑動即可開啟通知欄"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"從右上角向下滑動即可開啟「快速設定」"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"返回"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"登入"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"無障礙功能"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"上一頁"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"下一頁"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"前往下一頁"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"自動填入"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"展開"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>
