@@ -42,7 +42,6 @@ import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -206,7 +205,7 @@ constructor(
             return
         }
 
-        sceneInteractor.changeScene(Scenes.Lockscreen, "Shade empty space clicked.")
+        sceneInteractor.changeScene(SceneFamilies.Home, "Shade empty space clicked.")
     }
 
     /**
