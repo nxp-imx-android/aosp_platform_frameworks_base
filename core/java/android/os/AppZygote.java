@@ -65,14 +65,16 @@ public class AppZygote {
 
     private final ApplicationInfo mAppInfo;
     private final ProcessInfo mProcessInfo;
+    private final boolean mIsNativeService;
 
     public AppZygote(ApplicationInfo appInfo, ProcessInfo processInfo, int zygoteUid, int uidGidMin,
-            int uidGidMax) {
+            int uidGidMax, boolean isNativeService) {
         mAppInfo = appInfo;
         mProcessInfo = processInfo;
         mZygoteUid = zygoteUid;
         mZygoteUidGidMin = uidGidMin;
         mZygoteUidGidMax = uidGidMax;
+        mIsNativeService = isNativeService;
     }
 
     /**
@@ -197,26 +199,36 @@ public class AppZygote {
 
             final int[] sharedAppGid = {
                     UserHandle.getSharedAppGid(UserHandle.getAppId(mAppInfo.uid)) };
-            mZygote = Process.ZYGOTE_PROCESS.startChildZygote(
+            IZygoteProcess process =
+                    mIsNativeService ? Process.NATIVE_ZYGOTE_PROCESS : Process.ZYGOTE_PROCESS;
+            String seInfo = mIsNativeService ? "native_app_zygote" : "app_zygote";
+            String processSuffix = mIsNativeService ? "_zygote_native" : "_zygote";
+            mZygote = process.startChildZygote(
                     "com.android.internal.os.AppZygoteInit",
-                    mAppInfo.processName + "_zygote",
+                    mAppInfo.processName + processSuffix,
                     mZygoteUid,
                     mZygoteUid,
                     sharedAppGid,  // Zygote gets access to shared app GID for profiles
                     runtimeFlags,
-                    "app_zygote",  // seInfo
+                    seInfo,
                     abi,  // abi
                     abi, // acceptedAbiList
                     VMRuntime.getInstructionSet(abi), // instructionSet
                     mZygoteUidGidMin,
-                    mZygoteUidGidMax);
+                    mZygoteUidGidMax,
+                    mAppInfo);
 
-            ZygoteProcess.waitForConnectionToZygote(
-                    mZygote.getZygoteProcess().getPrimarySocketAddress());
-            // preload application code in the zygote
-            Log.i(LOG_TAG, "Starting application preload.");
-            mZygote.getZygoteProcess().preloadApp(mAppInfo, abi);
-            Log.i(LOG_TAG, "Application preload done.");
+            if (mIsNativeService) {
+                ZygoteProcess.waitForConnectionToNativeZygote(
+                        mZygote.getZygoteProcess().getPrimarySocketAddress());
+            } else {
+                ZygoteProcess.waitForConnectionToZygote(
+                        mZygote.getZygoteProcess().getPrimarySocketAddress());
+                // preload application code in the zygote
+                Log.i(LOG_TAG, "Starting application preload.");
+                mZygote.getZygoteProcess().preloadApp(mAppInfo, abi);
+                Log.i(LOG_TAG, "Application preload done.");
+            }
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error connecting to app zygote", e);
             stopZygoteLocked();

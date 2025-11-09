@@ -36,6 +36,7 @@ use crate::native_application_thread::{
     BindServiceRequest, CreateServiceRequest, DestroyServiceRequest,
     NativeApplicationThreadRequest, UnbindServiceRequest,
 };
+use crate::preload;
 use crate::task::HandlerCallback;
 use crate::utils::reset_time_zone;
 
@@ -54,7 +55,6 @@ pub struct NativeActivityThread {
     activity_manager: Strong<dyn IActivityManagerStructured>,
     start_seq: i64,
     services: BTreeMap<SpIBinder, NativeService>,
-    namespace_factory: NamespaceFactory,
     process_state: i32,
 }
 
@@ -64,18 +64,31 @@ impl NativeActivityThread {
             activity_manager,
             start_seq,
             services: BTreeMap::new(),
-            namespace_factory: NamespaceFactory::new(format!("native_app_{}", start_seq)),
             process_state: ProcessStateEnum::UNKNOWN.0,
+        }
+    }
+
+    // Create a linker namespace dedicated to the service. A process could host multiple
+    // services but their namespaces must be isolated.
+    fn create_linker_namespace(
+        &self,
+        library_paths: &str,
+        permitted_libs_dir: &str,
+    ) -> Result<LinkerNamespace> {
+        match preload::reuse_namespace(library_paths, permitted_libs_dir) {
+            Some(namespace) => Ok(namespace),
+            None => NamespaceFactory::create_linker_namespace(
+                &format!("native_app_{}", self.start_seq),
+                library_paths,
+                permitted_libs_dir,
+            ),
         }
     }
 
     fn handle_create_service_request(&mut self, req: CreateServiceRequest) -> Result<()> {
         atrace::trace_method!(AtraceTag::ActivityManager);
-        // Create a linker namespace dedicated to the service. A process could host multiple
-        // services but their namespaces must be isolated.
-        let namespace = self
-            .namespace_factory
-            .create_linker_namespace(&req.library_paths, &req.permitted_libs_dir)?;
+        let namespace =
+            self.create_linker_namespace(&req.library_paths, &req.permitted_libs_dir)?;
 
         // SAFETY: The application is responsible for implementing the initialization and
         // termination routines of the library safely.

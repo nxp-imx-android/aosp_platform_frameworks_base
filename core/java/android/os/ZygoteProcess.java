@@ -1149,12 +1149,30 @@ public class ZygoteProcess implements IZygoteProcess {
      * @param zygoteSocketAddress The name of the socket to connect to.
      */
     public static void waitForConnectionToZygote(LocalSocketAddress zygoteSocketAddress) {
+        waitForConnectionToZygote(zygoteSocketAddress, false);
+    }
+
+    /**
+     * Try connecting to the Native Zygote over and over again until we hit a time-out.
+     * @param zygoteSocketAddress The name of the socket to connect to.
+     */
+    public static void waitForConnectionToNativeZygote(LocalSocketAddress zygoteSocketAddress) {
+        waitForConnectionToZygote(zygoteSocketAddress, true);
+    }
+
+    private static void waitForConnectionToZygote(LocalSocketAddress zygoteSocketAddress,
+                                                  boolean isNativeZygote) {
         int numRetries = ZYGOTE_CONNECT_TIMEOUT_MS / ZYGOTE_CONNECT_RETRY_DELAY_MS;
         for (int n = numRetries; n >= 0; n--) {
             try {
-                final ZygoteState zs =
-                        ZygoteState.connect(zygoteSocketAddress, null);
-                zs.close();
+                if (isNativeZygote) {
+                    final LocalSocket socket = new LocalSocket(LocalSocket.SOCKET_SEQPACKET);
+                    socket.connect(zygoteSocketAddress);
+                    socket.close();
+                } else {
+                    final ZygoteState zs = ZygoteState.connect(zygoteSocketAddress, null);
+                    zs.close();
+                }
                 return;
             } catch (IOException ioe) {
                 Log.w(LOG_TAG,
@@ -1222,28 +1240,7 @@ public class ZygoteProcess implements IZygoteProcess {
         }
     }
 
-    /**
-     * Starts a new zygote process as a child of this zygote. This is used to create
-     * secondary zygotes that inherit data from the zygote that this object
-     * communicates with. This returns a new ZygoteProcess representing a connection
-     * to the newly created zygote. Throws an exception if the zygote cannot be started.
-     *
-     * @param processClass The class to use as the child zygote's main entry
-     *                     point.
-     * @param niceName A more readable name to use for the process.
-     * @param uid The user-id under which the child zygote will run.
-     * @param gid The group-id under which the child zygote will run.
-     * @param gids Additional group-ids associated with the child zygote process.
-     * @param runtimeFlags Additional flags.
-     * @param seInfo null-ok SELinux information for the child zygote process.
-     * @param abi non-null the ABI of the child zygote
-     * @param acceptedAbiList ABIs this child zygote will accept connections for; this
-     *                        may be different from <code>abi</code> in case the children
-     *                        spawned from this Zygote only communicate using ABI-safe methods.
-     * @param instructionSet null-ok the instruction set to use.
-     * @param uidRangeStart The first UID in the range the child zygote may setuid()/setgid() to
-     * @param uidRangeEnd The last UID in the range the child zygote may setuid()/setgid() to
-     */
+    @Override
     public ChildZygoteProcess startChildZygote(final String processClass,
                                                final String niceName,
                                                int uid, int gid, int[] gids,
@@ -1253,7 +1250,8 @@ public class ZygoteProcess implements IZygoteProcess {
                                                String acceptedAbiList,
                                                String instructionSet,
                                                int uidRangeStart,
-                                               int uidRangeEnd) {
+                                               int uidRangeEnd,
+                                               ApplicationInfo unused) {
         // Create an unguessable address in the global abstract namespace.
         final LocalSocketAddress serverAddress = new LocalSocketAddress(
                 processClass + "/" + UUID.randomUUID().toString());

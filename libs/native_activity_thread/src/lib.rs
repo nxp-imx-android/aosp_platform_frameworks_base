@@ -29,8 +29,11 @@ use utils::{apply_runtime_flags, setup_process_dumpability};
 mod library_loader;
 mod native_activity_thread;
 mod native_application_thread;
+mod preload;
 mod task;
 mod utils;
+
+pub use preload::preload_lib;
 
 use crate::native_activity_thread::NativeActivityThread;
 use crate::native_application_thread::NativeApplicationThread;

@@ -772,7 +772,8 @@ public class ApplicationStartInfoTest {
         app.setPid(pid);
         app.info.uid = packageUid;
         if (definingUid != null) {
-            app.setHostingRecord(HostingRecord.byAppZygote(COMPONENT, "", definingUid, ""));
+            app.setHostingRecord(HostingRecord.byAppZygote(COMPONENT, "", definingUid, "",
+                                                           /*isNativeService=*/ false));
         }
         return app;
     }
