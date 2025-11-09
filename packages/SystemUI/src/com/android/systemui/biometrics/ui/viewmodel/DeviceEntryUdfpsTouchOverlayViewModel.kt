@@ -25,6 +25,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.statusbar.phone.hideAffordancesRequest
 import dagger.Lazy
@@ -47,6 +48,7 @@ constructor(
     secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     systemUIDialogManager: SystemUIDialogManager,
     sceneInteractor: Lazy<SceneInteractor>,
+    shadeInteractor: ShadeInteractor,
     logger: DeviceEntryIconLogger,
 ) : UdfpsTouchOverlayViewModel {
     private val deviceEntryViewAlphaIsMostlyVisible: Flow<Boolean> =
@@ -55,10 +57,12 @@ constructor(
                 deviceEntryIconViewModel.isVisible,
                 sceneInteractor.get().currentScene,
                 sceneInteractor.get().currentOverlays,
-            ) { isVisible, currentScene, currentOverlays ->
+                shadeInteractor.shadeExpansion,
+            ) { isVisible, currentScene, currentOverlays, shadeExpansion ->
                 isVisible &&
                     currentScene == Scenes.Lockscreen &&
-                    !currentOverlays.contains(Overlays.Bouncer)
+                    !currentOverlays.contains(Overlays.Bouncer) &&
+                    shadeExpansion < ALLOW_TOUCH_SHADE_EXPANSION_MAX_THRESHOLD
             }
         } else {
             deviceEntryIconViewModel.deviceEntryViewAlpha
@@ -100,5 +104,16 @@ constructor(
     companion object {
         // only allow touches if the view is still mostly visible
         const val ALLOW_TOUCH_ALPHA_THRESHOLD = .9f
+
+        /**
+         * The maximum shade expansion (0.0f to 1.0f) allowed for UDFPS touches to be handled.
+         *
+         * This value is derived from `FromLockscreenToOverlayTransition.kt`. The lockscreen fades
+         * out during the first/end 20% of the transition (progress 0.0f to 0.2f). To ensure UDFPS
+         * touches are only handled when the lockscreen alpha is greater than 0.9f, the maximum
+         * allowed shade expansion is set to 0.02f (since 0.02f / 0.2f = 0.1, meaning 10% of the
+         * fade, resulting in 0.9 alpha).
+         */
+        const val ALLOW_TOUCH_SHADE_EXPANSION_MAX_THRESHOLD = .02f
     }
 }

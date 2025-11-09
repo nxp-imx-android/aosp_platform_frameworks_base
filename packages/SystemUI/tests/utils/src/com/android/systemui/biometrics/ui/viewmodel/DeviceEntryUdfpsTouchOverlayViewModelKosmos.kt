@@ -23,6 +23,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.phone.mockSystemUIDialogManager
 import com.android.systemui.util.mockito.mock
 
@@ -34,5 +35,6 @@ val Kosmos.deviceEntryUdfpsTouchOverlayViewModel by Fixture {
         secureLockDeviceInteractor = { secureLockDeviceInteractor },
         logger = mock<DeviceEntryIconLogger>(),
         sceneInteractor = { sceneInteractor },
+        shadeInteractor = shadeInteractor,
     )
 }
