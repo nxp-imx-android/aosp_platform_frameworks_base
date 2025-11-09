@@ -1047,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"输入PIN码进行解锁"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN码有误。"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"要解锁，请先按 MENU 再按 0。"</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"急救或报警电话"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"没有服务"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"屏幕已锁定。"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"按 Menu 解锁或进行紧急呼救。"</string>
@@ -2611,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"系统资源提醒"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"资源过度使用"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"应用“<xliff:g id="APP_NAME">%1$s</xliff:g>”使用的资源过多。"</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"家长进行的更新"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"“<xliff:g id="APP_NAME">%1$s</xliff:g>”目前已移除"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"“<xliff:g id="APP_NAME">%1$s</xliff:g>”现已可用"</string>
 </resources>

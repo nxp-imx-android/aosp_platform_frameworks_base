@@ -1047,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"अनलॉक करने के लिए पिन लिखें"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"गलत पिन कोड."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"लॉक खोलने के लिए, मेन्यू दबाएं और फिर 0 दबाएं."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"आपातकालीन नंबर"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"कोई सेवा नहीं"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"स्‍क्रीन लॉक की गई है."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"लॉक खोलने के लिए मेन्यू दबाएं या आपातलकालीन कॉल करें."</string>
@@ -2611,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"सिस्टम के संसाधन से जुड़ी सूचनाएं"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"संसाधन का ज़्यादा इस्तेमाल"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"<xliff:g id="APP_NAME">%1$s</xliff:g> ऐप्लिकेशन बहुत ज़्यादा संसाधन इस्तेमाल कर रहा है."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"माता-पिता की ओर से किया गया अपडेट"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> को फ़िलहाल हटा दिया गया है"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> अब उपलब्ध है"</string>
 </resources>

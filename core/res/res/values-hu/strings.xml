@@ -1047,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Feloldáshoz írja be a PIN kódot"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Helytelen PIN-kód."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"A feloldáshoz nyomja meg a Menü, majd a 0 gombot."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Segélyhívó szám"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Nincs szolgáltatás"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"A képernyő le van zárva."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"A feloldáshoz vagy segélyhívás kezdeményezéséhez nyomja meg a Menü gombot."</string>
@@ -2611,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Rendszererőforrás-figyelmeztetések"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Erőforrás túlhasználata"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Az „<xliff:g id="APP_NAME">%1$s</xliff:g>” alkalmazás túl sok erőforrást használ."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Frissítés a szülődtől"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> alkalmazás jelenleg el van távolítva"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> alkalmazás már rendelkezésre áll"</string>
 </resources>

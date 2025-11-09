@@ -1047,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Ange PIN-kod för att låsa upp"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Fel PIN-kod."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Tryck på Menu och sedan på 0 för att låsa upp."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Nödsamtalsnummer"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Ingen tjänst"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Skärmen har låsts."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Tryck på Menu för att låsa upp eller ringa nödsamtal."</string>
@@ -2611,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Aviseringar om systemresurser"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Överanvändning av resurser"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Appen <xliff:g id="APP_NAME">%1$s</xliff:g> använder för många resurser."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Uppdatering från din förälder"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> har tagits bort i nuläget"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> är nu tillgänglig"</string>
 </resources>

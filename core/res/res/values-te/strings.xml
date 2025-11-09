@@ -644,7 +644,7 @@
     <string name="permlab_access_local_network" msgid="3420360767259066877">"లోకల్ నెట్‌వర్క్ డివైజ్‌లను యాక్సెస్ చేయడం"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"లోకల్ నెట్‌వర్క్ డివైజ్‌లను యాక్సెస్ చేయడానికి యాప్‌ను అనుమతిస్తుంది"</string>
     <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"లూప్‌బ్యాక్ ఇంటర్‌ఫేస్‌ను ఉపయోగించండి"</string>
-    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"లూప్‌బ్యాక్ ఇంటర్‌ఫేస్ ద్వారా ఇతర యాప్‌లతో ఇంటరాక్ట్ అవ్వడానికి యాప్‌ను అనుమతిస్తుంది"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"ఈ యాప్, లూప్‌బ్యాక్ ఇంటర్‌ఫేస్ ద్వారా ఇతర యాప్‌లతో ఇంటరాక్ట్ అవ్వడానికి అనుమతిస్తుంది"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"సమీపంలో పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించండి"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"సమీపంలోని పరికరాల మధ్య సాపేక్ష స్థానాన్ని నిర్ణయించడానికి యాప్‌ను అనుమతించండి"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"ప్రాధాన్యత ఇవ్వబడిన NFC చెల్లింపు సేవల సమాచారం"</string>
@@ -1047,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"అన్‌లాక్ చేయడానికి పిన్‌ను టైప్ చేయండి"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"చెల్లని పిన్‌ కోడ్."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"అన్‌లాక్ చేయడానికి, మెనూ ఆపై 0ని నొక్కండి."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"అత్యవసర నంబర్"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"సేవ లేదు"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"స్క్రీన్ లాక్ చేయబడింది."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"అన్‌లాక్ చేయడానికి లేదా అత్యవసర కాల్ చేయడానికి మెనూ నొక్కండి."</string>
@@ -2611,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"సిస్టమ్ రిసోర్స్ అలర్ట్‌లు"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"రిసోర్స్‌ల మితిమీరిన వినియోగం"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"<xliff:g id="APP_NAME">%1$s</xliff:g> యాప్ మరీ ఎక్కువ రిసోర్స్‌లను ఉపయోగిస్తోంది."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"మీ పేరెంట్ నుండి అప్‌డేట్"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ప్రస్తుతానికి తీసివేయబడింది"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ఇప్పుడు అందుబాటులో ఉంది"</string>
 </resources>

@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"കേൾവിക്കുള്ള ഉപകരണം"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"ഉപയോഗസഹായി ഉപയോഗം"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"ഡിസ്‌പ്ലേ"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"രക്ഷാകർതൃ നിയന്ത്രണങ്ങൾ"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> ബാറ്ററി ഉപയോഗിക്കുന്നു"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> ആപ്പുകൾ ബാറ്ററി ഉപയോഗിക്കുന്നു"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"ബാറ്ററി, ഡാറ്റ ഉപയോഗം എന്നിവയുടെ വിശദാംശങ്ങളറിയാൻ ടാപ്പുചെയ്യുക"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"അൺലോക്കുചെയ്യുന്നതിന് പിൻ ടൈപ്പുചെയ്യുക"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"പിൻ കോഡ് തെറ്റാണ്."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"അൺലോക്ക് ചെയ്യുന്നതിന് മെനു, 0 എന്നിവ അമർത്തുക."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"അടിയന്തര നമ്പർ"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"സേവനമില്ല"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"സ്‌ക്രീൻ ലോക്കുചെയ്‌തു."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"അൺലോക്ക് ചെയ്യുന്നതിനായി മെനു അമർത്തുക അല്ലെങ്കിൽ അടിയന്തര കോൾ വിളിക്കുക."</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"സിസ്റ്റം ഉറവിട മുന്നറിയിപ്പുകൾ"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ഉറവിടത്തിന്റെ അമിതോപയോഗം"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\'<xliff:g id="APP_NAME">%1$s</xliff:g> ആപ്പ് നിരവധി ഉറവിടങ്ങൾ ഉപയോഗിക്കുന്നു.\""</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"രക്ഷിതാവിൽ നിന്നുള്ള അപ്‌ഡേറ്റ്"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ആപ്പ് ഇപ്പോൾ നീക്കം ചെയ്‌തിരിക്കുന്നു"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ഇപ്പോൾ ലഭ്യമാണ്"</string>
 </resources>
