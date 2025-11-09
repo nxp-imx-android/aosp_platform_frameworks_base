@@ -28,6 +28,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.bubbles.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler
@@ -61,6 +62,7 @@ class DefaultMixedTransitionTest : ShellTestCase() {
     private val mActivityEmbeddingController = mock<ActivityEmbeddingController>()
     private val mDesktopTasksController = mock<DesktopTasksController>()
     private val mBubbleTransitions = mock<BubbleTransitions>()
+    private val mBubbleHelper = mock<BubbleHelper>()
     private val mPinnedLayerHandler = mock<PinnedLayerHandler>()
     private val mMockTransition = mock<IBinder>()
 
@@ -180,7 +182,8 @@ class DefaultMixedTransitionTest : ShellTestCase() {
             mActivityEmbeddingController,
             mDesktopTasksController,
             mBubbleTransitions,
-            mPinnedLayerHandler
+            mBubbleHelper,
+            mPinnedLayerHandler,
         )
     }
 }

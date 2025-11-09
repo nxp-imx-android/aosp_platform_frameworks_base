@@ -55,6 +55,7 @@ import com.android.wm.shell.back.BackAnimationBackground;
 import com.android.wm.shell.back.BackAnimationController;
 import com.android.wm.shell.back.ShellBackAnimationRegistry;
 import com.android.wm.shell.bubbles.BubbleController;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.bubbles.Bubbles;
 import com.android.wm.shell.common.DevicePostureController;
 import com.android.wm.shell.common.DisplayController;
@@ -623,6 +624,9 @@ public abstract class WMShellBaseModule {
     @BindsOptionalOf
     abstract BubbleController optionalBubblesController();
 
+    @BindsOptionalOf
+    abstract BubbleHelper optionalBubbleHepler();
+
     //
     // Fullscreen
     //
@@ -859,8 +863,8 @@ public abstract class WMShellBaseModule {
     @Provides
     static TaskViewTransitions provideTaskViewTransitions(Transitions transitions,
             TaskViewRepository repository, ShellTaskOrganizer organizer,
-            SyncTransactionQueue syncQueue) {
-        return new TaskViewTransitions(transitions, repository, organizer, syncQueue);
+            SyncTransactionQueue syncQueue, Optional<BubbleHelper> bubbleHelper) {
+        return new TaskViewTransitions(transitions, repository, organizer, syncQueue, bubbleHelper);
     }
 
     @WMSingleton

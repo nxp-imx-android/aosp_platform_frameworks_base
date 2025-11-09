@@ -243,7 +243,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 mock<TaskViewRepository>(),
                 bubbleData,
                 taskViewTransitions,
-                bubbleViewInfoTaskFactory
+                bubbleViewInfoTaskFactory,
+                bubbleHelper,
             )
 
         bubbleController =

@@ -51,6 +51,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
@@ -93,6 +94,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     private final KeyguardTransitionHandler mKeyguardHandler;
     private DesktopTasksController mDesktopTasksController;
     private BubbleTransitions mBubbleTransitions;
+    private BubbleHelper mBubbleHelper;
     private UnfoldTransitionHandler mUnfoldHandler;
     private ActivityEmbeddingController mActivityEmbeddingController;
     private @Nullable PinnedLayerHandler mPinnedLayerHandler;
@@ -362,7 +364,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             Optional<DesktopTasksController> desktopTasksControllerOptional,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
-            BubbleTransitions bubbleTransitions) {
+            BubbleTransitions bubbleTransitions,
+            BubbleHelper bubbleHelper) {
         mPlayer = player;
         mKeyguardHandler = keyguardHandler;
         mPipHandler = pipTransitionController;
@@ -386,6 +389,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             mUnfoldHandler = unfoldHandler.orElse(null);
             mActivityEmbeddingController = activityEmbeddingController.orElse(null);
             mBubbleTransitions = bubbleTransitions;
+            mBubbleHelper = bubbleHelper;
             mPlayer.addHandler(this);
         }, this);
     }
@@ -654,7 +658,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         return new DefaultMixedTransition(
                 type, transition, mPlayer, this, mPipHandler, mSplitHandler, mKeyguardHandler,
                 mUnfoldHandler, mActivityEmbeddingController, mDesktopTasksController,
-                mBubbleTransitions, mPinnedLayerHandler);
+                mBubbleTransitions, mBubbleHelper, mPinnedLayerHandler);
     }
 
     @Override
@@ -1098,7 +1102,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             return null;
         }
-        final TransitionInfo.Change change = mBubbleTransitions.getEnterBubbleTask(info);
+        final TransitionInfo.Change change = mBubbleHelper.getEnterBubbleTask(info);
         if (!com.android.wm.shell.Flags.fixTaskViewRotationAnimation()) {
             return change;
         }

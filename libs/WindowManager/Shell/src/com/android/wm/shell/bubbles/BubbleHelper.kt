@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.window.TransitionInfo
 import android.window.WindowContainerToken
 
 /** Helper to query Bubble info from other components. */
@@ -32,4 +33,16 @@ interface BubbleHelper {
 
     /** Whether the given Task info is a Bubbled Task. */
     fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean
+
+    /**
+     * Finds the Task that is entering Bubble. This can be either a Bubble Task that is becoming
+     * visible, or a visible Task that is changing to Bubble from other windowing mode.
+     */
+    fun getEnterBubbleTask(info: TransitionInfo): TransitionInfo.Change?
+
+    /** Finds the Bubble Task that is closing. */
+    fun getClosingBubbleTask(info: TransitionInfo): TransitionInfo.Change?
+
+    /** Whether the transition contains a Bubble switching. */
+    fun containsBubbleSwitch(info: TransitionInfo): Boolean
 }

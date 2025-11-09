@@ -63,6 +63,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
@@ -82,6 +83,7 @@ import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Verifies the behavior of {@link TaskViewTransitions#startAnimation}.
@@ -134,6 +136,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
     private SurfaceControl mSurfaceControl;
     @Mock
     private Transitions.TransitionFinishCallback mFinishCallback;
+    @Mock
+    private BubbleHelper mBubbleHelper;
 
     private final TaskViewRepository mTaskViewRepository = new TaskViewRepository();
     private TaskViewTransitions mTaskViewTransitions;
@@ -167,7 +171,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         mTaskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
 
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mock(ShellTaskOrganizer.class), mock(SyncTransactionQueue.class));
+                mock(ShellTaskOrganizer.class), mock(SyncTransactionQueue.class),
+                Optional.of(mBubbleHelper));
         mTaskViewTransitions.registerTaskView(mTaskViewTaskController);
         when(mTaskViewTaskController.getTaskInfo()).thenReturn(mTaskInfo);
         when(mTaskViewTaskController.getPendingInfo()).thenReturn(mTaskInfo);

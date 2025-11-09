@@ -409,10 +409,13 @@ public class TaskInfo {
      * Whether the Task should be an App Bubble.
      * Please use this with caution. This is just a short-term solution which should be migrated
      * to a more generic model vs. implying the Task is an App Bubble here.
+     *
+     * @deprecated use {@link com.android.wm.shell.bubbles.BubbleHelper#isAppBubbleTask}
      * @hide
      *
      * TODO(b/407669465): remove it once migrated to the new approach
      */
+    @Deprecated
     public boolean isAppBubble;
 
     /**
