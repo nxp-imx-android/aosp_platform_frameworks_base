@@ -30,6 +30,7 @@ import static java.lang.reflect.Modifier.isStatic;
 import android.app.AppGlobals;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
+import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.Postsubmit;
@@ -614,5 +615,20 @@ public class PackageManagerServiceTest {
                     PackageManager.USER_MIN_ASPECT_RATIO_UNSET);
         });
         runShellCommand("pm uninstall " + TEST_PKG_NAME);
+    }
+
+    @Test
+    public void getAppUidForPccUid_nonPccUid_returnsInvalid() throws Exception {
+        // A regular app UID is not a PCC UID, so the method should return INVALID_UID.
+        final int nonPccUid = Process.myUid();
+        Assert.assertEquals(Process.INVALID_UID, mIPackageManager.getAppUidForPccUid(nonPccUid));
+    }
+
+    @Test
+    public void getAppUidForPccUid_unknownPccUid_returnsInvalid() throws Exception {
+        // Use a valid PCC UID that is not associated with any installed package.
+        // The method should return INVALID_UID as no matching package setting will be found.
+        final int pccUid = Process.FIRST_PCC_UID;
+        Assert.assertEquals(Process.INVALID_UID, mIPackageManager.getAppUidForPccUid(pccUid));
     }
 }
