@@ -154,7 +154,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testInitialize() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
 
             assertThat(tracker.initialized).isTrue()
         }
@@ -162,7 +162,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testReceiverRegisteredOnInitialize() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
 
             val captor = ArgumentCaptor.forClass(IntentFilter::class.java)
 
@@ -188,7 +188,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     fun testInitialValuesSet() =
         testScope.runTest {
             val testID = 4
-            tracker.initialize(testID)
+            tracker.initialize { testID }
 
             verify(userManager).getProfiles(testID)
 
@@ -205,7 +205,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testUserSwitch() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val newID = 5
 
             val captor = ArgumentCaptor.forClass(IUserSwitchObserver::class.java)
@@ -231,7 +231,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testManagedProfileAvailable() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val profileID = tracker.userId + 10
 
             whenever(userManager.getProfiles(anyInt())).thenAnswer { invocation ->
@@ -261,7 +261,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testManagedProfileUnavailable() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val profileID = tracker.userId + 10
 
             whenever(userManager.getProfiles(anyInt())).thenAnswer { invocation ->
@@ -291,7 +291,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testManagedProfileStartedAndRemoved() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val profileID = tracker.userId + 10
 
             whenever(userManager.getProfiles(anyInt())).thenAnswer { invocation ->
@@ -333,7 +333,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testCallbackNotCalledOnAdd() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val callback = TestCallback()
 
             tracker.addCallback(callback, executor)
@@ -345,7 +345,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testCallbackCalledOnUserChanging() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val callback = TestCallback()
             tracker.addCallback(callback, executor)
 
@@ -374,7 +374,7 @@ class UserTrackerImplTest : SysuiTestCase() {
             // This is the issue that this feature addresses.
             assume().that(isBackgroundUserTrackerEnabled).isTrue()
 
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val callback = TestCallback()
             val callbackExecutor = FakeExecutor(FakeSystemClock())
             tracker.addCallback(callback, callbackExecutor)
@@ -400,7 +400,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testCallbackCalledOnUserChanged() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val callback = TestCallback()
             tracker.addCallback(callback, executor)
 
@@ -422,7 +422,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testCallbackCalledOnUserInfoChanged() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val callback = TestCallback()
             tracker.addCallback(callback, executor)
             val profileID = tracker.userId + 10
@@ -456,7 +456,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testCallbackRemoved() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val newID = 5
             val profileID = newID + 10
 
@@ -487,7 +487,7 @@ class UserTrackerImplTest : SysuiTestCase() {
     @Test
     fun testisUserSwitching() =
         testScope.runTest {
-            tracker.initialize(0)
+            tracker.initialize { 0 }
             val newID = 5
             val profileID = newID + 10
 
