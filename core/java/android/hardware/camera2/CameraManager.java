@@ -583,31 +583,49 @@ public final class CameraManager {
                 : mVirtualDeviceManager.getDevicePolicy(context.getDeviceId(), POLICY_TYPE_CAMERA);
     }
 
-    // TODO(b/147726300): Investigate how to support foldables/multi-display devices.
     private Size getDisplaySize() {
         Size ret = new Size(0, 0);
+        DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
 
-        try {
-            DisplayManager displayManager =
-                    (DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
-            Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
-            if (display != null) {
-                Point sz = new Point();
-                display.getRealSize(sz);
-                int width = sz.x;
-                int height = sz.y;
-
-                if (height > width) {
-                    height = width;
-                    width = sz.y;
+        if (Flags.capMandatoryPreviewSizeToAllDisplays()) {
+            Display[] builtinDisplays = displayManager.getDisplays(
+                    DisplayManager.DISPLAY_CATEGORY_BUILT_IN_DISPLAYS);
+            for (Display display : builtinDisplays) {
+                Display.Mode[] supportedModes = display.getSupportedModes();
+                for (Display.Mode mode : supportedModes) {
+                    int width = mode.getPhysicalWidth();
+                    int height = mode.getPhysicalHeight();
+                    if (height > width) {
+                        width = height;
+                        height = mode.getPhysicalWidth();
+                    }
+                    if (width * height
+                                    > ret.getWidth() * ret.getHeight()) {
+                        ret = new Size(width, height);
+                    }
                 }
-
-                ret = new Size(width, height);
-            } else {
-                Log.e(TAG, "Invalid default display!");
             }
-        } catch (Exception e) {
-            Log.e(TAG, "getDisplaySize Failed. " + e);
+        } else {
+            try {
+                Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
+                if (display != null) {
+                    Point sz = new Point();
+                    display.getRealSize(sz);
+                    int width = sz.x;
+                    int height = sz.y;
+
+                    if (height > width) {
+                        height = width;
+                        width = sz.y;
+                    }
+
+                    ret = new Size(width, height);
+                } else {
+                    Log.e(TAG, "Invalid default display!");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "getDisplaySize Failed. " + e);
+            }
         }
 
         return ret;
