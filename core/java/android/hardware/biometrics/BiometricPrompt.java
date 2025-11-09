@@ -506,7 +506,7 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
                 throw new IllegalArgumentException(
                         "Maximum fallback option count of " + MAX_FALLBACK_OPTIONS + " exceeded");
             }
-            mPromptInfo.addFallbackOption(new FallbackOption(text, iconType));
+            mPromptInfo.addFallbackOption(new FallbackOption(text, iconType + 4));
             mFallbackOptions[mFallbackOptionCount] = new ButtonInfo(executor, listener);
             mFallbackOptionCount++;
             return this;
@@ -514,11 +514,14 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
 
         @FlaggedApi(FLAG_ADD_FALLBACK)
         private static boolean isValidIconType(@BiometricManager.IconType int iconType) {
-            return iconType == BiometricManager.ICON_TYPE_PASSWORD
-                    || iconType == BiometricManager.ICON_TYPE_QR_CODE
-                    || iconType == BiometricManager.ICON_TYPE_ACCOUNT
-                    || iconType == BiometricManager.ICON_TYPE_GENERIC
-                    || iconType == BiometricManager.ICON_TYPE_SETTING;
+            return switch (iconType) {
+                case BiometricManager.ICON_TYPE_PASSWORD, BiometricManager.ICON_TYPE_QR_CODE,
+                     BiometricManager.ICON_TYPE_ACCOUNT, BiometricManager.ICON_TYPE_GENERIC,
+                     BiometricManager.ICON_TYPE_SETTING -> true;
+                case BiometricManager.ICON_TYPE_RESET, BiometricManager.ICON_TYPE_MESSAGE,
+                     BiometricManager.ICON_TYPE_SUPERVISED -> Flags.addFallbackIcons();
+                default -> false;
+            };
         }
 
         /**

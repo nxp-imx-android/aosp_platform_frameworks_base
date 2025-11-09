@@ -33,11 +33,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.LockReset
 import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.SupervisedUserCircle
 import androidx.compose.material.icons.outlined.ViewStream
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
@@ -295,6 +298,9 @@ private fun getIcon(iconType: IconType): ImageVector {
         IconType.SETTING -> Icons.Outlined.Settings
         IconType.QR_CODE -> Icons.Outlined.QrCode2
         IconType.PASSWORD -> Icons.Outlined.Password
+        IconType.RESET -> Icons.Outlined.LockReset
+        IconType.MESSAGE -> Icons.AutoMirrored.Outlined.Chat
+        IconType.SUPERVISED -> Icons.Outlined.SupervisedUserCircle
         else -> Icons.Outlined.ViewStream // Generic Icon //TODO: This one is a placeholder
     }
 }
