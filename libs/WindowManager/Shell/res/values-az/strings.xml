@@ -176,4 +176,6 @@
     <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"Seçimimi yadda saxlayın"</string>
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Brauzerdə açın"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Tətbiqdə qalın"</string>
+    <!-- no translation found for open_by_default_splash_dialog_ask_me_later_text (2706872945449736432) -->
+    <skip />
 </resources>

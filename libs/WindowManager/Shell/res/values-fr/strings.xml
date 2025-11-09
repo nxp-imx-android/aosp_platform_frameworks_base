@@ -82,13 +82,13 @@
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"Fermer la bulle"</string>
     <string name="bubble_fullscreen_text" msgid="1006758103218086231">"Passer en plein écran"</string>
     <string name="bubbles_dont_bubble_conversation" msgid="310000317885712693">"Ne pas afficher la conversation dans une bulle"</string>
-    <string name="bubbles_user_education_title" msgid="2112319053732691899">"Chatter en utilisant des bulles"</string>
+    <string name="bubbles_user_education_title" msgid="2112319053732691899">"Discuter en utilisant des bulles"</string>
     <string name="bubbles_user_education_description" msgid="4215862563054175407">"Les nouvelles conversations s\'affichent sous forme d\'icônes flottantes ou de bulles. Appuyez sur la bulle pour l\'ouvrir. Faites-la glisser pour la déplacer."</string>
     <string name="bubbles_user_education_manage_title" msgid="7042699946735628035">"Contrôlez les bulles à tout moment"</string>
     <string name="bubbles_user_education_manage" msgid="3460756219946517198">"Appuyez sur \"Gérer\" pour désactiver les bulles de cette application"</string>
     <string name="bubbles_user_education_got_it" msgid="3382046149225428296">"OK"</string>
     <string name="bubble_overflow_empty_title" msgid="2397251267073294968">"Aucune bulle récente"</string>
-    <string name="bubble_overflow_empty_subtitle" msgid="2627417924958633713">"Les bulles récentes et ignorées s\'afficheront ici"</string>
+    <string name="bubble_overflow_empty_subtitle" msgid="2627417924958633713">"Les bulles récentes et les bulles ignorées s\'afficheront ici"</string>
     <string name="bubble_bar_education_stack_title" msgid="2486903590422497245">"Chatter via des bulles"</string>
     <string name="bubble_bar_education_stack_text" msgid="2446934610817409820">"Les nouvelles conversations apparaissent sous forme d\'icônes dans l\'un des coins inférieurs de votre écran. Appuyez dessus pour les développer ou faites-les glisser pour les supprimer."</string>
     <string name="bubble_bar_education_manage_title" msgid="6148404487810835924">"Contrôlez les bulles à tout moment"</string>
@@ -176,4 +176,6 @@
     <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"Mémoriser mon choix"</string>
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Ouvrir dans un navigateur"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Rester dans l\'appli"</string>
+    <!-- no translation found for open_by_default_splash_dialog_ask_me_later_text (2706872945449736432) -->
+    <skip />
 </resources>
