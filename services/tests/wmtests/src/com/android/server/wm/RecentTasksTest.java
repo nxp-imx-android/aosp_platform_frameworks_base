@@ -54,6 +54,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -75,6 +76,8 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -1527,6 +1530,65 @@ public class RecentTasksTest extends WindowTestsBase {
                 true /* getTasksAllowed */);
 
         assertTrue(info.supportsMultiWindow);
+    }
+
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @Test
+    public void testOnPackageAppLockEnabledChanged_appLockFlagOff() {
+        testOnPackageAppLockEnabledChangedInternal(false /* expectTaskUpdated */);
+    }
+
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @Test
+    public void testOnPackageAppLockEnabledChanged() {
+        testOnPackageAppLockEnabledChangedInternal(true /* expectTaskUpdated */);
+    }
+
+    private void testOnPackageAppLockEnabledChangedInternal(boolean expectTaskUpdated) {
+        final String pkg1 = "com.android.pkg1";
+        final String pkg2 = "com.android.pkg2";
+        final int userId = TEST_USER_0_ID;
+
+        final Task task1 = createTaskBuilder(pkg1, ".Task1").setUserId(userId).build();
+        final Task task2 = createTaskBuilder(pkg1, ".Task2").setUserId(TEST_USER_1_ID).build();
+        final Task task3 = createTaskBuilder(pkg2, ".Task3").setUserId(userId).build();
+        mRecentTasks.add(task1);
+        mRecentTasks.add(task2);
+        mRecentTasks.add(task3);
+
+        // Verify initial state
+        assertThat(task1.mRealActivityAppLockEnabled).isFalse();
+        assertThat(task2.mRealActivityAppLockEnabled).isFalse();
+        assertThat(task3.mRealActivityAppLockEnabled).isFalse();
+
+        clearInvocations(mTaskPersister);
+
+        // Enable app lock for pkg1 and user 0
+        mRecentTasks.onPackageAppLockEnabledChanged(pkg1, userId, true);
+
+        // Verify only task1's app lock state is updated, if expected
+        assertThat(task1.mRealActivityAppLockEnabled).isEqualTo(expectTaskUpdated);
+        assertThat(task2.mRealActivityAppLockEnabled).isFalse();
+        assertThat(task3.mRealActivityAppLockEnabled).isFalse();
+
+        final int expectedInvocations = expectTaskUpdated ? 1 : 0;
+        verify(mTaskPersister, times(expectedInvocations)).wakeup(eq(task1), anyBoolean());
+        verify(mTaskPersister, never()).wakeup(eq(task2), anyBoolean());
+        verify(mTaskPersister, never()).wakeup(eq(task3), anyBoolean());
+
+        clearInvocations(mTaskPersister);
+
+        // Disable app lock for pkg1 and user 0
+        mRecentTasks.onPackageAppLockEnabledChanged(pkg1, userId, false);
+
+        // Verify task1's app lock state is reverted
+        assertThat(task1.mRealActivityAppLockEnabled).isFalse();
+        assertThat(task2.mRealActivityAppLockEnabled).isFalse();
+        assertThat(task3.mRealActivityAppLockEnabled).isFalse();
+
+        verify(mTaskPersister, times(expectedInvocations)).wakeup(eq(task1), anyBoolean());
+        verify(mTaskPersister, never()).wakeup(eq(task2), anyBoolean());
+        verify(mTaskPersister, never()).wakeup(eq(task3), anyBoolean());
     }
 
     private TaskSnapshot createSnapshot(Point taskSize, Point bufferSize) {

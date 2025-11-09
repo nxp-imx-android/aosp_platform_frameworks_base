@@ -73,6 +73,7 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -83,11 +84,14 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManagerInternal;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.DisplayMetrics;
@@ -102,6 +106,7 @@ import androidx.test.filters.MediumTest;
 
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.server.LocalServices;
 import com.android.window.flags.Flags;
 
 import org.junit.Assert;
@@ -137,11 +142,13 @@ public class TaskTests extends WindowTestsBase {
     private static final String TASK_TAG = "task";
 
     private Rect mParentBounds;
+    private PackageManagerInternal mMockPmInternal;
 
     @Before
     public void setUp() throws Exception {
         mParentBounds = new Rect(10 /*left*/, 30 /*top*/, 80 /*right*/, 60 /*bottom*/);
         removeGlobalMinSizeRestriction();
+        mMockPmInternal = LocalServices.getService(PackageManagerInternal.class);
     }
 
     @Test
@@ -2404,6 +2411,118 @@ public class TaskTests extends WindowTestsBase {
         task.continuePackageUpdate();
 
         verify(activity.app).onTaskPackageUpdateHandled(task);
+    }
+
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @Test
+    public void testRealActivityAppLockEnabled_appLockFlagIsOff_appLockEnabled_disabled() {
+        internalTestRealActivityAppLockEnabled(
+                /* mockPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* mockUserId= */ 0,
+                /* mockReturnValue= */ true,
+                /* taskPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* taskUserId= */ 0,
+                /* expectedResult= */ false);
+    }
+
+    @DisableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @Test
+    public void testRealActivityAppLockEnabled_appLockFlagIsOff_appLockDisabled_disabled() {
+        internalTestRealActivityAppLockEnabled(
+                /* mockPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* mockUserId= */ 0,
+                /* mockReturnValue= */ false,
+                /* taskPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* taskUserId= */ 0,
+                /* expectedResult= */ false);
+    }
+
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @Test
+    public void testRealActivityAppLockEnabled_appLockEnabled_enabled() {
+        internalTestRealActivityAppLockEnabled(
+                /* mockPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* mockUserId= */ 0,
+                /* mockReturnValue= */ true,
+                /* taskPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* taskUserId= */ 0,
+                /* expectedResult= */ true);
+    }
+
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @Test
+    public void testRealActivityAppLockEnabled_appLockDisabled_disabled() {
+        internalTestRealActivityAppLockEnabled(
+                /* mockPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* mockUserId= */ 0,
+                /* mockReturnValue= */ false,
+                /* taskPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* taskUserId= */ 0,
+                /* expectedResult= */ false);
+    }
+
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @Test
+    public void testRealActivityAppLockEnabled_appLockEnabledOnDifferentUserId_disabled() {
+        internalTestRealActivityAppLockEnabled(
+                /* mockPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* mockUserId= */ 0,
+                /* mockReturnValue= */ true,
+                /* taskPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* taskUserId= */ 1,
+                /* expectedResult= */ false);
+    }
+
+    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @Test
+    public void testRealActivityAppLockEnabled_appLockEnabledOnDifferentPackage_disabled() {
+        internalTestRealActivityAppLockEnabled(
+                /* mockPackageName= */ DEFAULT_COMPONENT_PACKAGE_NAME,
+                /* mockUserId= */ 0,
+                /* mockReturnValue= */ true,
+                /* taskPackageName= */ "other.package.name",
+                /* taskUserId= */ 0,
+                /* expectedResult= */ false);
+    }
+
+    private void internalTestRealActivityAppLockEnabled(String mockPackageName, int mockUserId,
+            boolean mockReturnValue, String taskPackageName, int taskUserId,
+            boolean expectedResult) {
+        when(mMockPmInternal.isPackageAppLockEnabled(eq(mockPackageName), eq(mockUserId)))
+                .thenReturn(mockReturnValue);
+
+        final ActivityInfo aInfo = new ActivityInfo();
+        aInfo.applicationInfo = new ApplicationInfo();
+        aInfo.applicationInfo.uid = UserHandle.getUid(taskUserId,
+                UserHandle.getAppId(mAtm.mContext.getApplicationInfo().uid));
+        aInfo.packageName = taskPackageName;
+        final Task task = new TaskBuilder(mSupervisor)
+                .setActivityInfo(aInfo)
+                .setComponent(getUniqueComponentName(taskPackageName))
+                .setUserId(taskUserId)
+                .build();
+
+        assertEquals(expectedResult, task.mRealActivityAppLockEnabled);
+    }
+
+    @Test
+    public void testRealActivityAppLockEnabled_restoreEnabled() throws Exception {
+        final Task task = getTestTask();
+        task.mRealActivityAppLockEnabled = true;
+
+        final byte[] bytes = serializeToBytes(task);
+        final Task restored = restoreFromBytes(bytes);
+        assertTrue(restored.mRealActivityAppLockEnabled);
+    }
+
+    @Test
+    public void testRealActivityAppLockEnabled_restoreDisabled() throws Exception {
+        final Task task = getTestTask();
+        task.mRealActivityAppLockEnabled = false;
+
+        final byte[] bytes = serializeToBytes(task);
+        final Task restored = restoreFromBytes(bytes);
+        assertFalse(restored.mRealActivityAppLockEnabled);
     }
 
     private Task getTestTask() {
