@@ -145,7 +145,6 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.provider.DeviceConfig;
 import android.util.MutableBoolean;
 import android.view.DisplayInfo;
@@ -1169,95 +1168,6 @@ public class ActivityRecordTests extends WindowTestsBase {
      * Verify that when finishing the top focused activity on top display, the root task order
      * will be changed by adjusting focus.
      */
-    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
-    @Test
-    public void testFinishActivityIfPossible_adjustStackOrder() {
-        final ActivityRecord activity = createActivityWithTask();
-        final Task task = activity.getTask();
-        // Prepare the tasks with order (top to bottom): task, task1, task2.
-        final Task task1 = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
-        task.moveToFront("test");
-        // The task2 is needed here for moving back to simulate the
-        // {@link DisplayContent#mPreferredTopFocusableStack} is cleared, so
-        // {@link DisplayContent#getFocusedStack} will rely on the order of focusable-and-visible
-        // tasks. Then when mActivity is finishing, its task will be invisible (no running
-        // activities in the task) that is the key condition to verify.
-        final Task task2 = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
-        task2.moveToBack("test", task2.getBottomMostTask());
-
-        assertTrue(task.isTopRootTaskInDisplayArea());
-
-        activity.setState(RESUMED, "test");
-        activity.finishIfPossible(0 /* resultCode */, null /* resultData */,
-                null /* resultGrants */, "test", false /* oomAdj */);
-
-        assertTrue(task1.isTopRootTaskInDisplayArea());
-    }
-
-    /**
-     * Verify that when finishing the top focused activity while root task was created by organizer,
-     * the stack order will be changed by adjusting focus.
-     */
-    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
-    @Test
-    public void testFinishActivityIfPossible_adjustStackOrderOrganizedRoot() {
-        // Make mStack be a the root task that created by task organizer
-        final Task rootableTask = new TaskBuilder(mSupervisor)
-                .setCreateParentTask(true).setCreateActivity(true).build();
-        final Task rootTask = rootableTask.getRootTask();
-        rootTask.mCreatedByOrganizer = true;
-
-        // Have two tasks (topRootableTask and rootableTask) as the children of rootTask.
-        ActivityRecord topActivity = new ActivityBuilder(mAtm)
-                .setCreateTask(true)
-                .setParentTask(rootTask)
-                .build();
-        Task topRootableTask = topActivity.getTask();
-        topRootableTask.moveToFront("test");
-        assertTrue(rootTask.isTopRootTaskInDisplayArea());
-
-        // Finish top activity and verify the next focusable rootable task has adjusted to top.
-        topActivity.setState(RESUMED, "test");
-        topActivity.finishIfPossible(0 /* resultCode */, null /* resultData */,
-                null /* resultGrants */, "test", false /* oomAdj */);
-        assertEquals(rootableTask, rootTask.getTopMostTask());
-    }
-
-    /**
-     * Verify that when top focused activity is on secondary display, when finishing the top focused
-     * activity on default display, the preferred top stack on default display should be changed by
-     * adjusting focus.
-     */
-    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
-    @Test
-    public void testFinishActivityIfPossible_PreferredTopStackChanged() {
-        final ActivityRecord activity = createActivityWithTask();
-        final Task task = activity.getTask();
-        final ActivityRecord topActivityOnNonTopDisplay =
-                createActivityOnDisplay(true /* defaultDisplay */, null /* process */);
-        Task topRootableTask = topActivityOnNonTopDisplay.getRootTask();
-        topRootableTask.moveToFront("test");
-        assertTrue(topRootableTask.isTopRootTaskInDisplayArea());
-        assertEquals(topRootableTask, topActivityOnNonTopDisplay.getDisplayArea()
-                .mPreferredTopFocusableRootTask);
-
-        final ActivityRecord secondaryDisplayActivity =
-                createActivityOnDisplay(false /* defaultDisplay */, null /* process */);
-        topRootableTask = secondaryDisplayActivity.getRootTask();
-        topRootableTask.moveToFront("test");
-        assertTrue(topRootableTask.isTopRootTaskInDisplayArea());
-        assertEquals(topRootableTask,
-                secondaryDisplayActivity.getDisplayArea().mPreferredTopFocusableRootTask);
-
-        // The global top focus activity is on secondary display now.
-        // Finish top activity on default display and verify the next preferred top focusable stack
-        // on default display has changed.
-        topActivityOnNonTopDisplay.setState(RESUMED, "test");
-        topActivityOnNonTopDisplay.finishIfPossible(0 /* resultCode */, null /* resultData */,
-                null /* resultGrants */, "test", false /* oomAdj */);
-        assertEquals(task, task.getTopMostTask());
-        assertEquals(task, activity.getDisplayArea().mPreferredTopFocusableRootTask);
-    }
 
     /**
      * Verify that resumed activity is paused due to finish request.
