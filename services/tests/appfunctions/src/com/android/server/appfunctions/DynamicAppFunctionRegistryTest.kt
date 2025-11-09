@@ -17,6 +17,7 @@ package com.android.server.appfunctions
 
 import android.app.appfunctions.AppFunctionException
 import android.app.appfunctions.ExecuteAppFunctionRequest
+import android.app.appfunctions.ExecuteAppFunctionResponse
 import android.app.appfunctions.IAppFunctionExecutor
 import android.app.appfunctions.IExecuteAppFunctionCallback
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback
@@ -41,6 +42,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import org.junit.Before
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 
 
 @RunWith(AndroidJUnit4::class)
@@ -316,6 +319,99 @@ class DynamicAppFunctionRegistryTest {
         verify(safeCallback).onError(exceptionCaptor.capture())
         assertThat(exceptionCaptor.firstValue.errorCode)
             .isEqualTo(AppFunctionException.ERROR_APP_UNKNOWN_ERROR)
+    }
+
+    @Test
+    fun executeAppFunction_attachesDeathListener() {
+        val binder = mock<IBinder>()
+        val executor = createExecutorMock(binder)
+        registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
+
+        val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
+        val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
+        val executionCallback = mock<IExecuteAppFunctionCallback>()
+        whenever(safeCallback.wrapToExecutionCallback()).thenReturn(executionCallback)
+        val cancellationSignal = mock<ICancellationSignal>()
+
+        registry.executeAppFunction(request, safeCallback, cancellationSignal)
+
+        verify(safeCallback).attachOnDeathListener(binder)
+    }
+
+    @Test
+    fun executeAppFunction_binderAlreadyDied_reportsError() {
+        val binder = mock<IBinder>()
+        val executor = createExecutorMock(binder)
+        registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
+
+        val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
+        val safeCallback = mock<SafeOneTimeExecuteAppFunctionCallback>()
+        whenever(safeCallback.wrapToExecutionCallback()).thenReturn(mock<IExecuteAppFunctionCallback>())
+        whenever(safeCallback.attachOnDeathListener(binder)).doThrow(RemoteException("Binder died"))
+        registry.executeAppFunction(request, safeCallback, mock<ICancellationSignal>())
+
+        val exceptionCaptor = argumentCaptor<AppFunctionException>()
+        verify(safeCallback).onError(exceptionCaptor.capture())
+        assertThat(exceptionCaptor.firstValue.errorCode)
+            .isEqualTo(AppFunctionException.ERROR_APP_UNKNOWN_ERROR)
+    }
+
+    @Test
+    fun executeAppFunction_onSuccess_unlinksExecutionDeathListener() {
+        val binder = mock<IBinder>()
+        val executor = createExecutorMock(binder)
+        registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
+
+        val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
+        val safeCallback = SafeOneTimeExecuteAppFunctionCallback(
+            mock<IExecuteAppFunctionCallback>()
+        )
+
+        registry.executeAppFunction(request, safeCallback, mock<ICancellationSignal>())
+
+        val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
+        verify(binder, times(2)).linkToDeath(deathRecipientCaptor.capture(), eq(0))
+
+        val executorCallbackCaptor = argumentCaptor<IExecuteAppFunctionCallback>()
+        verify(executor).execute(eq(request), any(), executorCallbackCaptor.capture())
+
+        val response = mock<ExecuteAppFunctionResponse>()
+        executorCallbackCaptor.firstValue.onSuccess(response)
+
+        // The first is registration listener which shouldn't be unlinked
+        verify(binder, never()).unlinkToDeath(deathRecipientCaptor.firstValue, 0)
+
+        // Second is execution listener should be unlinked
+        verify(binder).unlinkToDeath(deathRecipientCaptor.secondValue, 0)
+    }
+
+    @Test
+    fun executeAppFunction_onError_unlinksExecutionDeathListener() {
+        val binder = mock<IBinder>()
+        val executor = createExecutorMock(binder)
+        registry.registerAppFunction(TEST_PACKAGE, TEST_FUNCTION, executor)
+
+        val request = createMockExecutionRequest(TEST_PACKAGE, TEST_FUNCTION)
+        val safeCallback = SafeOneTimeExecuteAppFunctionCallback(
+            mock<IExecuteAppFunctionCallback>()
+        )
+
+        registry.executeAppFunction(request, safeCallback, mock<ICancellationSignal>())
+
+        val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
+        verify(binder, times(2)).linkToDeath(deathRecipientCaptor.capture(), eq(0))
+
+        val executorCallbackCaptor = argumentCaptor<IExecuteAppFunctionCallback>()
+        verify(executor).execute(eq(request), any(), executorCallbackCaptor.capture())
+
+        val error = AppFunctionException(AppFunctionException.ERROR_APP_UNKNOWN_ERROR, "Test error")
+        executorCallbackCaptor.firstValue.onError(error)
+
+        // The first is registration listener which shouldn't be unlinked
+        verify(binder, never()).unlinkToDeath(deathRecipientCaptor.firstValue, 0)
+
+        // Second is execution listener should be unlinked
+        verify(binder).unlinkToDeath(deathRecipientCaptor.secondValue, 0)
     }
 
     private fun createExecutorMock(binder: IBinder = mock()): IAppFunctionExecutor {
