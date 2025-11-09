@@ -23,6 +23,7 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 
 import static com.android.internal.accessibility.common.MagnificationConstants.SCALE_MAX_VALUE;
 import static com.android.internal.accessibility.common.MagnificationConstants.SCALE_MIN_VALUE;
+import static com.android.systemui.accessibility.AccessibilityLogger.MagnificationSettingsEvent;
 
 import android.annotation.IntDef;
 import android.content.BroadcastReceiver;
@@ -78,6 +79,7 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
     private final Runnable mWindowInsetChangeRunnable;
     private final SfVsyncFrameCallbackProvider mSfVsyncFrameProvider;
+    private final AccessibilityLogger mA11yLogger;
 
     @VisibleForTesting
     final LayoutParams mParams;
@@ -145,12 +147,13 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     @VisibleForTesting
     WindowMagnificationSettings(Context context, WindowMagnificationSettingsCallback callback,
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider, SecureSettings secureSettings,
-            WindowManager windowManager) {
+            WindowManager windowManager, AccessibilityLogger a11yLogger) {
         mContext = context;
         mWindowManager = windowManager;
         mSfVsyncFrameProvider = sfVsyncFrameProvider;
         mCallback = callback;
         mSecureSettings = secureSettings;
+        mA11yLogger = a11yLogger;
 
         mAllowDiagonalScrolling = mSecureSettings.getIntForUser(
                 Settings.Secure.ACCESSIBILITY_ALLOW_DIAGONAL_SCROLLING, 1,
@@ -707,8 +710,15 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     }
 
     public void editMagnifierSizeMode(boolean enable) {
+        @MagnificationSize int index = MagnificationSize.CUSTOM;
         setEditMagnifierSizeMode(enable);
-        updateSelectedButton(MagnificationSize.CUSTOM);
+        updateSelectedButton(index);
+        if (mA11yLogger != null) {
+            mA11yLogger.logWithPosition(
+                    MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_WINDOW_SIZE_SELECTED,
+                    index
+            );
+        }
         hideSettingPanel();
     }
 
@@ -724,7 +734,12 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         } else {
             return;
         }
-
+        if (mA11yLogger != null) {
+            mA11yLogger.logWithPosition(
+                    MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_WINDOW_SIZE_SELECTED,
+                    index
+            );
+        }
         updateSelectedButton(index);
     }
 
