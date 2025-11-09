@@ -46,7 +46,11 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.persistentdata.IPersistentDataBlockService;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -81,7 +85,7 @@ public class PersistentDataBlockServiceTest {
     public static final int DEFAULT_BLOCK_DEVICE_SIZE = -1;
 
     private Context mContext;
-    private PersistentDataBlockService mPdbService;
+    private FakePersistentDataBlockService mPdbService;
     private IPersistentDataBlockService mInterface;
     private PersistentDataBlockManagerInternal mInternalInterface;
     private File mDataBlockFile;
@@ -91,7 +95,12 @@ public class PersistentDataBlockServiceTest {
 
     @Mock private UserManager mUserManager;
 
+    @Rule public final SetFlagsRule mSetFlagsRule =
+            new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
+
     private class FakePersistentDataBlockService extends PersistentDataBlockService {
+
+        private int mCallingUserId = UserHandle.getCallingUserId();
 
         FakePersistentDataBlockService(Context context, String dataBlockFile,
                 long blockDeviceSize, String frpSecretFile, String frpSecretTmpFile) {
@@ -101,6 +110,15 @@ public class PersistentDataBlockServiceTest {
             // it registers the service, etc.  But we need to signal init done to prevent
             // `isFrpActive` from blocking.
             signalInitDone();
+        }
+
+        void setCallingUserId(int userId) {
+            mCallingUserId = userId;
+        }
+
+        @Override
+        protected int getCallingUserId() {
+            return mCallingUserId;
         }
 
         @Override
@@ -510,11 +528,36 @@ public class PersistentDataBlockServiceTest {
     }
 
     @Test
-    public void oemUnlockNotAdmin() throws Exception {
+    @DisableFlags(android.multiuser.Flags.FLAG_HSU_NOT_ADMIN)
+    public void oemUnlockNotAdmin_hsuNotAdminDisabled_throwsSecurityException() throws Exception {
         grantOemUnlockPermission();
         makeUserAdmin(false);
 
         assertThrows(SecurityException.class, () -> mInterface.setOemUnlockEnabled(true));
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_NOT_ADMIN)
+    public void oemUnlockNotAdmin_neitherUserSystemHsuNorAdmin_throwsSecurityException()
+            throws Exception {
+        mPdbService.setCallingUserId(UserHandle.USER_SYSTEM + 1);
+
+        grantOemUnlockPermission();
+        makeUserAdmin(false);
+
+        assertThrows(SecurityException.class, () -> mInterface.setOemUnlockEnabled(true));
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_NOT_ADMIN)
+    public void oemUnlockNotAdmin_userSystemHsuNotAdmin_oemUnlockEnabled() throws Exception {
+        mPdbService.setCallingUserId(UserHandle.USER_SYSTEM);
+
+        grantOemUnlockPermission();
+        makeUserAdmin(false);
+
+        mInterface.setOemUnlockEnabled(true);
+        assertThat(mInterface.getOemUnlockEnabled()).isTrue();
     }
 
     @Test
