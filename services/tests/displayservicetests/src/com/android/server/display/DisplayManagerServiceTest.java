@@ -5110,6 +5110,62 @@ public class DisplayManagerServiceTest {
                 .isEqualTo(DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_DISPLAY_IDS_CACHE)
+    public void testDisplayEvent_noAccessToDisplay() {
+        mDisplayManager = new DisplayManagerService(mContext, new BasicInjector() {
+            @Override
+            boolean doesCallingUidHaveAccessToDisplay(int uid, DisplayInfo info) {
+                return false;
+            }
+        });
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+        LogicalDisplayMapper logicalDisplayMapper = mDisplayManager.getLogicalDisplayMapper();
+        FakeDisplayManagerCallback callback = new FakeDisplayManagerCallback();
+        bs.registerCallbackWithEventMask(callback, STANDARD_AND_CONNECTION_DISPLAY_EVENTS);
+
+        // Connected should not be sent
+        callback.expectsEvent(EVENT_DISPLAY_CONNECTED);
+        FakeDisplayDevice displayDevice =
+                createFakeDisplayDevice(mDisplayManager, new float[]{60f}, Display.TYPE_EXTERNAL);
+        flushHandlers();
+        callback.waitForNonExpectedEvent();
+
+        // Added should not be sent
+        callback.expectsEvent(EVENT_DISPLAY_ADDED);
+        LogicalDisplay display =
+                logicalDisplayMapper.getDisplayLocked(displayDevice, /* includeDisabled= */ true);
+        logicalDisplayMapper.setEnabledLocked(display, /* isEnabled= */ true);
+        logicalDisplayMapper.updateLogicalDisplays();
+        flushHandlers();
+        callback.waitForNonExpectedEvent();
+
+        // Added should not be sent
+        callback.expectsEvent(EVENT_DISPLAY_BASIC_CHANGED);
+        int myUid = Process.myUid();
+        updateFrameRateOverride(mDisplayManager, displayDevice,
+                new DisplayEventReceiver.FrameRateOverride[]{
+                        new DisplayEventReceiver.FrameRateOverride(myUid, 30f),
+                });
+        flushHandlers();
+        callback.waitForNonExpectedEvent();
+
+        // Removed should be sent
+        callback.expectsEvent(EVENT_DISPLAY_REMOVED);
+        logicalDisplayMapper.setEnabledLocked(display, /* isEnabled= */ false);
+        logicalDisplayMapper.updateLogicalDisplays();
+        flushHandlers();
+        callback.waitForExpectedEvent();
+        callback.clear();
+
+        // Disconnected should be sent
+        callback.expectsEvent(EVENT_DISPLAY_DISCONNECTED);
+        mDisplayManager.getDisplayDeviceRepository()
+                .onDisplayDeviceEvent(displayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_REMOVED);
+        flushHandlers();
+        callback.waitForExpectedEvent();
+    }
+
     private DisplayManagerService createDisplayManagerService(boolean canEnterDesktopMode) {
         return new DisplayManagerService(
                 mContext,
@@ -5774,6 +5830,12 @@ public class DisplayManagerServiceTest {
         DisplayManagerService.CallbackRecord callbackRecord =
                 mDisplayManager.new CallbackRecord(
                         CALLBACK_RECORD_PID, CALLBACK_RECORD_UID, mockCallback, -1L);
+        DisplayManagerService.BinderService displayManagerBinderService =
+                mDisplayManager.new BinderService();
+        FakeDisplayDevice device =
+                createFakeDisplayDevice(mDisplayManager, new float[]{60f}, Display.TYPE_INTERNAL);
+        int displayId = getDisplayIdForDisplayDevice(mDisplayManager,
+                displayManagerBinderService, device);
 
         // Simulate app being in the background
         when(mMockActivityManagerInternal.getUidProcessState(CALLBACK_RECORD_UID))
@@ -5784,10 +5846,10 @@ public class DisplayManagerServiceTest {
                 | DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED;
 
         // Act: Notify the callback
-        callbackRecord.notifyDisplayEventAsync(DISPLAY_ID_1, eventMask);
+        callbackRecord.notifyDisplayEventAsync(displayId, eventMask);
 
         // Verify: onDisplayEvent was called with only the non-RR event
-        verify(mockCallback).onDisplayEvent(DISPLAY_ID_1,
+        verify(mockCallback).onDisplayEvent(displayId,
                 DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
     }
 
