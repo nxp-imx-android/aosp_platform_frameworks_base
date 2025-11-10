@@ -149,7 +149,7 @@ interface HeadsUpManager : Dumpable {
     ): Boolean
 
     /** Clears all managed notifications. */
-    fun releaseAllImmediately()
+    fun releaseAllImmediately(reason: String)
 
     fun setAnimationStateHandler(handler: AnimationStateHandler)
 
@@ -301,7 +301,7 @@ class HeadsUpManagerEmptyImpl @Inject constructor() : HeadsUpManager {
 
     override fun onExpandingFinished() {}
 
-    override fun releaseAllImmediately() {}
+    override fun releaseAllImmediately(reason: String) {}
 
     override fun removeListener(listener: OnHeadsUpChangedListener) {}
 

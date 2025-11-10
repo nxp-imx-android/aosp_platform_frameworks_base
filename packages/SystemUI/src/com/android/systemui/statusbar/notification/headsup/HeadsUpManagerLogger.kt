@@ -40,8 +40,13 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
         buffer.log(TAG, INFO, { str1 = snoozeKey }, { "package snoozed when queried $str1" })
     }
 
-    fun logReleaseAllImmediately() {
-        buffer.log(TAG, INFO, {}, { "release all immediately" })
+    fun logReleaseAllImmediately(reason: String) {
+        buffer.log(
+            TAG,
+            INFO,
+            { str1 = reason },
+            { "$str1 => HeadsUpManagerImpl.releaseAllImmediately" },
+        )
     }
 
     fun logShowNotificationRequest(entry: NotificationEntry, isPinnedByUser: Boolean) {
@@ -361,7 +366,12 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
     }
 
     fun logRemoveEntryWhenReorderingAllowed(entry: NotificationEntry) {
-        buffer.log(TAG, VERBOSE, { str1 = entry.logKey }, { "remove entry after reorder allowed: $str1" })
+        buffer.log(
+            TAG,
+            VERBOSE,
+            { str1 = entry.logKey },
+            { "remove entry after reorder allowed: $str1" },
+        )
     }
 
     fun logRemoveEntryAfterExpand(entry: NotificationEntry) {

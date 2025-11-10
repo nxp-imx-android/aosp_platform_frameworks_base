@@ -1592,7 +1592,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 }
             }
         });
-        mHeadsUpManager.releaseAllImmediately();
+        mHeadsUpManager.releaseAllImmediately("CentralSurfacesImpl");
     }
 
     private void onExpandedInvisible() {

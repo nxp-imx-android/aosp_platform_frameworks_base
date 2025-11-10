@@ -333,7 +333,7 @@ class HeadsUpManagerImplTest(flags: FlagsParameterization) : SysuiTestCase() {
             underTest.showNotification(entry, isPinnedByUser)
         }
 
-        underTest.releaseAllImmediately()
+        underTest.releaseAllImmediately("test")
 
         assertThat(underTest.allEntries.count()).isEqualTo(0)
     }
