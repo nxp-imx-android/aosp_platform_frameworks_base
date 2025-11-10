@@ -342,6 +342,12 @@ public interface ViewParent {
      * @param immediate True to forbid animated or delayed scrolling,
      *        false otherwise
      * @return Whether the group scrolled to handle the operation
+     * @see #requestChildRectangleOnScreen(View, Rect, boolean, int)
+     * <p><b>WARNING:</b> Use of this API is discouraged because it does not support
+     * user-configurable options related to display magnification behaviors. Instead, use
+     * {@link #requestChildRectangleOnScreen(View, Rect, boolean, int)} to include a request source.
+     * A request source of {@link View#RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED}
+     * will be inferred from invocations of this original API.
      */
     public boolean requestChildRectangleOnScreen(@NonNull View child, Rect rectangle,
             boolean immediate);
