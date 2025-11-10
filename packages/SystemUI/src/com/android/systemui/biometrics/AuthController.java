@@ -65,7 +65,6 @@ import android.view.DisplayInfo;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.Toast;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -1327,7 +1326,6 @@ public class AuthController implements
     }
 
     private void maybeShowSecondaryDisplayToast() {
-        if (!DesktopExperienceFlags.SHOW_BIOMETRIC_PROMPT_SECONDARY_DISPLAY_MESSAGE.isTrue()) return;
         int focusedDisplayId = mFocusedDisplayRepository.getFocusedDisplayId().getValue();
         if (focusedDisplayId != Display.DEFAULT_DISPLAY) {
             Display focusedDisplay = mDisplayManager.getDisplay(focusedDisplayId);
