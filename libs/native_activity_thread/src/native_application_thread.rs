@@ -23,8 +23,12 @@ use crate::utils::reset_time_zone;
 
 pub struct CreateServiceRequest {
     pub service_token: SpIBinder,
+    pub zip_paths: String,
     pub library_paths: String,
     pub permitted_libs_dir: String,
+    pub target_sdk_version: i32,
+    pub is_shared: bool,
+    pub native_shared_lib_path: String,
     pub library_name: String,
     pub base_symbol_name: String,
     pub _process_state: i32,
@@ -37,18 +41,27 @@ impl CreateServiceRequest {
     ///
     /// Users must ensure that `library_name` specifies a safe dynamic library and it has a
     /// function named `base_symbol_name` with the type signature `ANativeService_createFunc`.
+    #[allow(clippy::too_many_arguments)]
     unsafe fn new(
         service_token: SpIBinder,
+        zip_paths: String,
         library_paths: String,
         permitted_libs_dir: String,
+        target_sdk_version: i32,
+        is_shared: bool,
+        native_shared_lib_path: String,
         library_name: String,
         base_symbol_name: String,
         process_state: i32,
     ) -> Self {
         Self {
             service_token,
+            zip_paths,
             library_paths,
             permitted_libs_dir,
+            target_sdk_version,
+            is_shared,
+            native_shared_lib_path,
             library_name,
             base_symbol_name,
             _process_state: process_state,
@@ -104,8 +117,12 @@ impl INativeApplicationThread for NativeApplicationThread {
     fn scheduleCreateService(
         &self,
         service_token: &SpIBinder,
+        zip_paths: &str,
         library_paths: &str,
         permitted_libs_dir: &str,
+        target_sdk_version: i32,
+        is_shared: bool,
+        native_shared_lib_path: &str,
         library_name: &str,
         base_symbol_name: &str,
         _process_state: i32,
@@ -118,8 +135,12 @@ impl INativeApplicationThread for NativeApplicationThread {
         let req = unsafe {
             CreateServiceRequest::new(
                 service_token.clone(),
+                zip_paths.to_string(),
                 library_paths.to_string(),
                 permitted_libs_dir.to_string(),
+                target_sdk_version,
+                is_shared,
+                native_shared_lib_path.to_string(),
                 library_name.to_string(),
                 base_symbol_name.to_string(),
                 _process_state,

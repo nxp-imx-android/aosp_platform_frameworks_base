@@ -100,23 +100,36 @@ impl NativeActivityThread {
     // services but their namespaces must be isolated.
     fn create_linker_namespace(
         &self,
+        zip_paths: &str,
         library_paths: &str,
         permitted_libs_dir: &str,
+        target_sdk_version: i32,
+        is_shared: bool,
+        native_shared_lib_path: &str,
     ) -> Result<LinkerNamespace> {
         match preload::reuse_namespace(library_paths, permitted_libs_dir) {
             Some(namespace) => Ok(namespace),
             None => NamespaceFactory::create_linker_namespace(
-                &format!("native_app_{}", self.start_seq),
+                target_sdk_version,
+                is_shared,
+                zip_paths,
                 library_paths,
                 permitted_libs_dir,
+                native_shared_lib_path,
             ),
         }
     }
 
     fn handle_create_service_request(&mut self, req: CreateServiceRequest) -> Result<()> {
         atrace::trace_method!(AtraceTag::ActivityManager);
-        let namespace =
-            self.create_linker_namespace(&req.library_paths, &req.permitted_libs_dir)?;
+        let namespace = self.create_linker_namespace(
+            &req.zip_paths,
+            &req.library_paths,
+            &req.permitted_libs_dir,
+            req.target_sdk_version,
+            req.is_shared,
+            &req.native_shared_lib_path,
+        )?;
 
         // SAFETY: The application is responsible for implementing the initialization and
         // termination routines of the library safely.

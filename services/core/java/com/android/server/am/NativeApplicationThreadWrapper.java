@@ -184,7 +184,8 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
         Slog.i(TAG, "libPath: " + params.libPath);
 
         mNativeThread.scheduleCreateService(
-                r, params.libPath, params.permittedLibsDir, libName, funcName, processState);
+                r, params.zipPath, params.libPath, params.permittedLibsDir, params.targetSdkVersion,
+                params.isShared, params.nativeSharedLibs, libName, funcName, processState);
     }
 
     @Override

@@ -88,8 +88,9 @@ public class NativeZygoteProcess implements IZygoteProcess {
     private static native int nativeStartNativeChildZygote(
             FileDescriptor parentFd, int uid, int gid, String niceName, String seInfo,
             int targetSdkVersion, int runtimeFlags, String serverAddress, int uidRangeStart,
-            int uidRangeEnd, String allowedLibPath, String librarySearchPaths, String libraryPath,
-            String preloadFunc) throws IOException;
+            int uidRangeEnd, String allowedLibPath, String librarySearchPaths, boolean isShared,
+            String zipPath, String nativeSharedLibPath, String libraryPath, String preloadFunc)
+            throws IOException;
 
     @Override
     public final Process.ProcessStartResult start(@NonNull final String processClass,
@@ -160,6 +161,7 @@ public class NativeZygoteProcess implements IZygoteProcess {
             pid = nativeStartNativeChildZygote(mSocket.getFileDescriptor(), uid, gid, niceName,
                     seInfo, appInfo.targetSdkVersion, runtimeFlags, serverAddressForNative,
                     uidRangeStart, uidRangeEnd, params.permittedLibsDir, params.libPath,
+                    params.isShared, params.zipPath, params.nativeSharedLibs,
                     appInfo.zygotePreloadNativeLib, appInfo.zygotePreloadNativeFunc);
             if (pid == -1) {
                 throw new RuntimeException("Failed to fork a Native Child Zygote process");
