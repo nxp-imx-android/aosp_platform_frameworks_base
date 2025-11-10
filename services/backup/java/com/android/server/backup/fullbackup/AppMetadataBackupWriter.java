@@ -74,21 +74,7 @@ public class AppMetadataBackupWriter {
         outputStream.write(manifestBytes);
         outputStream.close();
 
-        // We want the manifest block in the archive stream to be constant each time we generate
-        // a backup stream for the app. However, the underlying TAR mechanism sees it as a file and
-        // will propagate its last modified time. We pin the last modified time to zero to prevent
-        // the TAR header from varying.
-        manifestFile.setLastModified(0);
-
-        FullBackup.backupToTar(
-                mPackageInfo.packageName,
-                /* domain= */ null,
-                /* linkDomain= */ null,
-                mFilesDir.getAbsolutePath(),
-                manifestFile.getAbsolutePath(),
-                mOutput);
-
-        manifestFile.delete();
+        backupTempFileAndDeleteFile(manifestFile);
     }
 
     /**
@@ -175,19 +161,7 @@ public class AppMetadataBackupWriter {
         bufferedOutputStream.flush();
         dataOutputStream.close();
 
-        // As with the manifest file, guarantee consistency of the archive metadata for the widget
-        // block by using a fixed last modified time on the metadata file.
-        metadataFile.setLastModified(0);
-
-        FullBackup.backupToTar(
-                packageName,
-                /* domain */ null,
-                /* linkDomain */ null,
-                mFilesDir.getAbsolutePath(),
-                metadataFile.getAbsolutePath(),
-                mOutput);
-
-        metadataFile.delete();
+        backupTempFileAndDeleteFile(metadataFile);
     }
 
     /**
@@ -216,21 +190,28 @@ public class AppMetadataBackupWriter {
             out.write(manifest.toByteArray());
         }
 
+        backupTempFileAndDeleteFile(manifestFile);
+    }
+
+    /**
+     * Back up the specified temp file to {@link #mOutput} and delete the file.
+     */
+    private void backupTempFileAndDeleteFile(File tempFile) {
         // We want the manifest block in the archive stream to be constant each time we generate
         // a backup stream for the app. However, the underlying TAR mechanism sees it as a file
         // and will propagate its last modified time. We pin the last modified time to zero to
         // prevent the TAR header from varying.
-        manifestFile.setLastModified(0);
+        tempFile.setLastModified(0);
 
         FullBackup.backupToTar(
                 mPackageInfo.packageName,
                 /* domain= */ null,
                 /* linkDomain= */ null,
                 mFilesDir.getAbsolutePath(),
-                manifestFile.getAbsolutePath(),
+                tempFile.getAbsolutePath(),
                 mOutput);
 
-        manifestFile.delete();
+        tempFile.delete();
     }
 
     /**
