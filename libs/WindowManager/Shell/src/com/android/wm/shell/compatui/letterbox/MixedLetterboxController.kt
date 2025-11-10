@@ -73,18 +73,32 @@ constructor(
         } else {
             inputController.destroyLetterboxSurface(key, transaction)
         }
-        // Handle RoundedCorners Controller.
         if (Flags.appCompatRefactoringRoundedCorners()) {
-            if (letterboxConfiguration.isLetterboxActivityCornersRounded()) {
-                roundedCornersController.createLetterboxSurface(
-                    key,
-                    transaction,
-                    parentLeash,
-                    token,
-                )
+            if (Flags.appCompatRefactoringRoundedCornersOnTransparent()) {
+                if (controllerStrategy.shouldSupportShellRoundedCorners()) {
+                    roundedCornersController.createLetterboxSurface(
+                        key,
+                        transaction,
+                        parentLeash,
+                        token,
+                    )
+                } else {
+                    roundedCornersController.destroyLetterboxSurface(key, transaction)
+                }
             } else {
-                roundedCornersController.destroyLetterboxSurface(key, transaction)
+                if (letterboxConfiguration.isLetterboxActivityCornersRounded()) {
+                    roundedCornersController.createLetterboxSurface(
+                        key,
+                        transaction,
+                        parentLeash,
+                        token,
+                    )
+                } else {
+                    roundedCornersController.destroyLetterboxSurface(key, transaction)
+                }
             }
+        } else {
+            roundedCornersController.destroyLetterboxSurface(key, transaction)
         }
     }
 }

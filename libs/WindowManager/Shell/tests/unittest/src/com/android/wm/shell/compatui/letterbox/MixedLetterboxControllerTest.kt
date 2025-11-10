@@ -85,6 +85,7 @@ class MixedLetterboxControllerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS)
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
     fun `Corners are created when enabled with radius more than zero`() {
         runTestScenario { r ->
             r.configureStrategyFor(LetterboxMode.SINGLE_SURFACE)
@@ -99,6 +100,7 @@ class MixedLetterboxControllerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS)
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
     fun `Corners are destroyed when enabled with radius less or equals to zero`() {
         runTestScenario { r ->
             r.configureStrategyFor(LetterboxMode.SINGLE_SURFACE)
@@ -121,6 +123,36 @@ class MixedLetterboxControllerTest : ShellTestCase() {
             }
             r.sendCreateSurfaceRequest()
             r.checkCreateInvokedOnRoundedCornersController(times = 0)
+            r.checkDestroyInvokedOnRoundedCornersController(times = 1)
+        }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS,
+        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT,
+    )
+    fun `Corners are destroyed when not supported`() {
+        runTestScenario { r ->
+            r.configureStrategyFor(LetterboxMode.MULTIPLE_SURFACES)
+            r.configureStrategyForRoundedCorners(shouldSupportShellRoundedCorners = false)
+            r.sendCreateSurfaceRequest()
+            r.checkCreateInvokedOnRoundedCornersController(times = 0)
+            r.checkDestroyInvokedOnRoundedCornersController(times = 1)
+        }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS,
+        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT,
+    )
+    fun `Corners are created when supported`() {
+        runTestScenario { r ->
+            r.configureStrategyFor(LetterboxMode.MULTIPLE_SURFACES)
+            r.configureStrategyForRoundedCorners(shouldSupportShellRoundedCorners = true)
+            r.sendCreateSurfaceRequest()
+            r.checkCreateInvokedOnRoundedCornersController(times = 1)
             r.checkDestroyInvokedOnRoundedCornersController(times = 0)
         }
     }
@@ -149,6 +181,12 @@ class MixedLetterboxControllerTest : ShellTestCase() {
             doReturn(shouldSupportInputSurface)
                 .`when`(controllerStrategy)
                 .shouldSupportInputSurface()
+        }
+
+        fun configureStrategyForRoundedCorners(shouldSupportShellRoundedCorners: Boolean) {
+            doReturn(shouldSupportShellRoundedCorners)
+                .`when`(controllerStrategy)
+                .shouldSupportShellRoundedCorners()
         }
 
         fun configureStrategyFor(consumer: (LetterboxConfiguration) -> Unit) {
