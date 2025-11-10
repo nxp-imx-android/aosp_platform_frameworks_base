@@ -281,3 +281,10 @@ flag {
     description: "Feature flag for inserting new font family in front of an existing font family"
     bug: "447199827"
 }
+
+flag {
+    name: "split_show_passwords_to_touch_and_physical"
+    namespace: "systemui"
+    description: "Splits the 'Show passwords' setting into two new settings: one for touch inputs and one for physical inputs."
+    bug: "417951523"
+}
