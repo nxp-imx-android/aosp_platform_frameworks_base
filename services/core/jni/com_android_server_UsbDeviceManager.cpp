@@ -573,46 +573,63 @@ class NativeVendorControlRequestMonitorThread {
     bool handleAccessoryGetProtocol(int fd, uint16_t value, uint16_t index, uint16_t length,
                                     std::vector<char> &buf) {
         if (value != 0 || index != 0 || length != 2) {
-            ALOGE("Malformed Get protocol");
-            return false;
+            ALOGW("Malformed GET_PROTOCOL: (value=%u, index=%u, length=%u) - exp 0,0,2)", value,
+                  index, length);
         }
-        uint16_t *protocolVersion = reinterpret_cast<uint16_t *>(buf.data());
-        protocolVersion[0] = htole16(ACCESSORY_VERSION);
-        return true;
+        if (length >= 2) {
+            uint16_t *protocolVersion = reinterpret_cast<uint16_t *>(buf.data());
+            protocolVersion[0] = htole16(ACCESSORY_VERSION);
+            return true;
+        }
+        ALOGE("Protocol length too short to write version");
+        return false;
     }
 
     bool handleAccessorySendString(int fd, uint16_t index, uint16_t length,
                                    std::vector<char> &buf) {
         if (index >= ACCESSORY_NUM_STRINGS || length > ACCESSORY_STRING_LENGTH || length == 0) {
-            ALOGE("Malformed send string");
-            return false;
+            // Why is ACCESSORY_STRING_LENGTH 256 as opposed to 255
+            ALOGW("Malformed SEND_STRING: (index=%u, length=%u) - exp index<%u, 0<length<=%u",
+                  index, length, ACCESSORY_NUM_STRINGS, ACCESSORY_STRING_LENGTH);
+            if (length == 0) return true;
         }
         if (::read(fd, buf.data(), length) != length) {
             ALOGE("Usb error ctrlreq read string %d", length);
             return false;
         }
-        buf[length] = '\0';
-        std::string str(buf.data());
-        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
-        mAccessoryFields.strings[index] = str;
+        if (index < ACCESSORY_NUM_STRINGS) {
+            buf[length] = '\0';
+            std::string str(buf.data());
+            ALOGI("Saved string index=%u: %s", index, str.c_str());
+            std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+            mAccessoryFields.strings[index] = str;
+        } else {
+            ALOGW("String index out of bounds, data read but ignored.");
+        }
         return true;
     }
 
     bool handleAccessoryStart(int fd, uint16_t value, uint16_t index, uint16_t length,
                               std::vector<char> &buf) {
         if (value != 0 || index != 0 || length != 0) {
-            ALOGE("Malformed start accessory");
-            return false;
+            // Certain headunits have value set to 1.
+            // Log error, but do not return false for legacy headunit compatibility.
+            ALOGW("Malformed ACCESSORY_START (value:%u, index:%u, length:%u) - exp 0,0,0", value,
+                  index, length);
         }
-        if (::read(fd, buf.data(), 0) != 0) {
-            ALOGE("Usb error ctrlreq read data");
+        ssize_t bytesRead = ::read(fd, buf.data(), length);
+        if (bytesRead < 0) {
+            ALOGE("Error reading in data in ACCESSORY_START: %s", strerror(errno));
             return false;
+        } else if (bytesRead > 0) {
+            // Log error, but do not return false for legacy headunit compatibility.
+            ALOGW("Unexpected data in ACCESSORY_START control request. Bytes read: %zd", bytesRead);
         }
         return true;
     }
 
     bool handleRegisterHid(uint16_t hidId, uint16_t index) {
-        if (index <= 0) {
+        if (index == 0) {
             ALOGE("Descriptor length must be > 0.");
             return false;
         }
@@ -630,9 +647,10 @@ class NativeVendorControlRequestMonitorThread {
         if (it != mHidList.end()) {
             unregisterHid(hidId);
             mHidList.erase(it);
-            return true;
+        } else {
+            ALOGW("handleUnregisterHid: hidId=%u not found in mHidList", hidId);
         }
-        return false;
+        return true;
     }
 
     bool handleSetReportHidDescriptor(int fd, uint16_t hidId, uint16_t index, uint16_t length,
