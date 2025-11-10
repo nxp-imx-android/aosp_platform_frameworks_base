@@ -599,16 +599,20 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 layout(width = background.width, height = background.height) {
                     background.place(IntOffset.Zero)
 
-                    val bottomSSNSL =
-                        Shade.Rulers.SingleShadeNestedScrollLayoutBottom.current(-1f)
-                            .takeIf { it != -1f }
-                            ?.toInt()
+                    val bottomRulerY =
+                        Shade.Rulers.SingleShadeNestedScrollLayoutBottom.current(Float.MIN_VALUE)
 
                     val contentConstraints =
-                        if (bottomSSNSL != null) {
-                            constraints.copy(minHeight = bottomSSNSL, maxHeight = bottomSSNSL)
-                        } else {
+                        if (bottomRulerY == Float.MIN_VALUE) {
+                            // no ruler defined
                             constraints
+                        } else {
+                            // maxHeight and minHeight must be >= 0
+                            val constrainedHeight = bottomRulerY.roundToInt().coerceAtLeast(0)
+                            constraints.copy(
+                                minHeight = constrainedHeight,
+                                maxHeight = constrainedHeight,
+                            )
                         }
 
                     contentMeasurable.measure(contentConstraints).place(IntOffset.Zero)
