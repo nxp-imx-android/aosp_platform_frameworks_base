@@ -23,10 +23,6 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * An insight that stores arbitrary data in a {@link Bundle}. Should only be used if there is no
  * appropriate insight type already defined.
@@ -35,21 +31,15 @@ import java.util.List;
 public final class BundleInsight extends ContextInsight {
     private final Bundle mDataBundle;
 
-    /** Private constructor used by the builder. */
-    private BundleInsight(
-            @NonNull List<ContextHintWithSignature> originHints,
-            @NonNull Bundle bundle) {
-        super(originHints);
-        mDataBundle = bundle;
-    }
-
     /**
-     * Internal constructor only for use by
-     * {@link ContextInsight#createInsightFromBundle(Bundle)} (Bundle)}.
+     * Internal constructor only for use by {@link ContextInsight#createInsightFromBundle(Bundle)}
+     * and {@link Builder}.
      */
-    BundleInsight(@NonNull Bundle b) {
-        super(b);
-        mDataBundle = b.getBundle(KEY_INSIGHT_DATA);
+    BundleInsight(
+            @NonNull ContextInsight.ConstructorParams baseParams,
+            @NonNull Bundle bundle) {
+        super(baseParams);
+        mDataBundle = bundle;
     }
 
     /** @hide */
@@ -73,32 +63,28 @@ public final class BundleInsight extends ContextInsight {
 
     /** Builder for {@link BundleInsight}. */
     public static final class Builder {
-        private final List<ContextHintWithSignature> mOriginHints = new ArrayList<>();
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final Bundle mDataBundle = new Bundle();
-
-        /** Construct a new empty builder. */
-        public Builder() {
-        }
 
         /**
          * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
          *
-         * @param hint the origin {@link ContextHint} to add.
+         * @param hint the origin {@link ContextHint} to add
          */
         @NonNull
         public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
-            mOriginHints.add(hint);
+            mBaseBuilder.addOriginHint(hint);
             return this;
         }
 
         /**
-         * Adds origin {@link ContextHint}s to the resulting {@link BundleInsight}.
+         * Adds a tag to the resulting {@link ContextInsight}.
          *
-         * @param hints the origin {@link ContextHint}s to add.
+         * @param tag the tag to add
          */
         @NonNull
-        public Builder addOriginHints(@NonNull Collection<ContextHintWithSignature> hints) {
-            mOriginHints.addAll(hints);
+        public Builder addTag(@NonNull String tag) {
+            mBaseBuilder.addTag(tag);
             return this;
         }
 
@@ -106,7 +92,7 @@ public final class BundleInsight extends ContextInsight {
          * Sets the data in the given {@link Bundle} to the resulting {@link BundleInsight}'s data
          * bundle.
          *
-         * @param dataBundle the {@link Bundle} containing the data to set.
+         * @param dataBundle the {@link Bundle} containing the data to set
          */
         @NonNull
         public Builder setDataBundle(@NonNull Bundle dataBundle) {
@@ -118,7 +104,7 @@ public final class BundleInsight extends ContextInsight {
         /** Create and return a new {@link BundleInsight}. */
         @NonNull
         public BundleInsight build() {
-            return new BundleInsight(mOriginHints, mDataBundle);
+            return new BundleInsight(mBaseBuilder.build(), mDataBundle);
         }
     }
 }
