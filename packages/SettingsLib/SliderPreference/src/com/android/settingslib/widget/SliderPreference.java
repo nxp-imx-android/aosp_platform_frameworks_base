@@ -653,28 +653,25 @@ public class SliderPreference extends Preference {
     void syncValueInternal(@NonNull Slider slider) {
         int sliderValue = (int) slider.getValue();
         if (sliderValue != mSliderValue) {
-            if (setValueInternal(sliderValue, false)) {
-                performHapticFeedbackIfNeeded(slider, sliderValue);
+            if (callChangeListener(sliderValue)) {
+                setValueInternal(sliderValue, false);
+                switch (mHapticFeedbackMode) {
+                    case HAPTIC_FEEDBACK_MODE_ON_TICKS:
+                        slider.performHapticFeedback(CLOCK_TICK);
+                        break;
+                    case HAPTIC_FEEDBACK_MODE_ON_ENDS:
+                        if (mSliderValue == mMax || mSliderValue == mMin) {
+                            slider.performHapticFeedback(CLOCK_TICK);
+                        }
+                        break;
+                }
             } else {
                 slider.setValue(mSliderValue);
             }
         }
     }
 
-    private void performHapticFeedbackIfNeeded(@NonNull Slider slider, int sliderValue) {
-        switch (mHapticFeedbackMode) {
-            case HAPTIC_FEEDBACK_MODE_ON_TICKS:
-                slider.performHapticFeedback(CLOCK_TICK);
-                break;
-            case HAPTIC_FEEDBACK_MODE_ON_ENDS:
-                if (sliderValue == mMax || sliderValue == mMin) {
-                    slider.performHapticFeedback(CLOCK_TICK);
-                }
-                break;
-        }
-    }
-
-    private boolean setValueInternal(int sliderValue, boolean notifyChanged) {
+    private void setValueInternal(int sliderValue, boolean notifyChanged) {
         if (sliderValue < mMin) {
             sliderValue = mMin;
         }
@@ -683,16 +680,12 @@ public class SliderPreference extends Preference {
         }
 
         if (sliderValue != mSliderValue) {
-            if (callChangeListener(sliderValue)) {
-                mSliderValue = sliderValue;
-                persistInt(sliderValue);
-                if (notifyChanged) {
-                    notifyChanged();
-                }
-                return true;
+            mSliderValue = sliderValue;
+            persistInt(sliderValue);
+            if (notifyChanged) {
+                notifyChanged();
             }
         }
-        return false;
     }
 
     @Nullable
