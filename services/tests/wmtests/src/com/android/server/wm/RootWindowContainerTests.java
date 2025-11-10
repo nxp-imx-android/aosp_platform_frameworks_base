@@ -116,7 +116,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
     public void setUp() throws Exception {
         doNothing().when(mAtm).sleepIfNeededLocked();
         doNothing().when(mAtm).wakeIfNeededLocked();
-        doNothing().when(mWm).scheduleAnimationLocked();
     }
 
     @Test
@@ -1629,16 +1628,12 @@ public class RootWindowContainerTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_HOME_ACTIVITY_ALWAYS_PRESENT)
-    public void tesStartHomeOnDisplaysWithNoHome() {
+    public void testStartHomeOnDisplaysWithNoHome() {
         // Create a display with no home activity.
         final TestDisplayContent displayWithNoHome = new TestDisplayContent.Builder(mAtm, 1000,
                 1500).build();
         // Ensure there are no tasks on the display.
         displayWithNoHome.getDefaultTaskDisplayArea().removeIfPossible();
-
-        final TaskDisplayArea taskDisplayAreaWithNoHome =
-                displayWithNoHome.getDefaultTaskDisplayArea();
-        doReturn(true).when(taskDisplayAreaWithNoHome).canHostHomeTask();
 
         // Create a display with a home activity.
         final TestDisplayContent displayWithHome = new TestDisplayContent.Builder(mAtm, 1000,
@@ -1647,7 +1642,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
                 displayWithHome.getDefaultTaskDisplayArea().createRootTask(
                         WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME, true /* onTop */)).build();
 
-        mRootWindowContainer.startHomeOnDisplaysIfNeeded("test");
+        mRootWindowContainer.startHomeOnDisplaysWithNoHome("test");
 
         // Capture the TaskDisplayArea arguments passed to startHomeOnTaskDisplayArea.
         ArgumentCaptor<TaskDisplayArea> tdaCaptor = ArgumentCaptor.forClass(
@@ -1663,44 +1658,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
         // Verify that home was NOT started on the display that already had a home.
         assertFalse(capturedTdas.stream().anyMatch(
                 tda -> tda == displayWithHome.getDefaultTaskDisplayArea()));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HOME_ACTIVITY_ALWAYS_PRESENT)
-    public void testStartHomeOnDisplays_withExistingHome_butDifferentResolvedHome() {
-        // Create a display with an existing home activity.
-        final TestDisplayContent displayWithExistingHome = new TestDisplayContent.Builder(mAtm,
-                1000,
-                1500).build();
-        final TaskDisplayArea taskDisplayArea = displayWithExistingHome.getDefaultTaskDisplayArea();
-        doReturn(true).when(taskDisplayArea).canHostHomeTask();
-        final String existingPkg = "com.android.server.wm.test.existing.app";
-        new ActivityBuilder(mAtm)
-                .setComponent(new ComponentName(existingPkg, ".ExistingHomeActivity"))
-                .setTask(displayWithExistingHome.getDefaultTaskDisplayArea().createRootTask(
-                        WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME, true /* onTop */)).build();
-
-        // Mock that the resolved home activity is different from the existing one.
-        final ActivityInfo resolvedHomeInfo = new ActivityInfo();
-        resolvedHomeInfo.applicationInfo = new ApplicationInfo();
-        resolvedHomeInfo.applicationInfo.packageName = "com.android.server.wm.test.resolved.app";
-        resolvedHomeInfo.name = ".ResolvedHomeActivity";
-        resolvedHomeInfo.packageName = "com.android.server.wm.test.resolved.app";
-        doReturn(resolvedHomeInfo).when(mRootWindowContainer).resolveHomeActivity(anyInt(), any());
-
-        mRootWindowContainer.startHomeOnDisplaysIfNeeded("test");
-
-        // Capture the TaskDisplayArea arguments passed to startHomeOnTaskDisplayArea.
-        ArgumentCaptor<TaskDisplayArea> tdaCaptor = ArgumentCaptor.forClass(
-                TaskDisplayArea.class);
-        verify(mRootWindowContainer, atLeastOnce()).startHomeOnTaskDisplayArea(anyInt(),
-                anyString(), tdaCaptor.capture(), anyBoolean(), anyBoolean(), anyBoolean());
-
-        List<TaskDisplayArea> capturedTdas = tdaCaptor.getAllValues();
-
-        // Verify that home was started on the display with the different home package.
-        assertTrue(capturedTdas.stream().anyMatch(
-                tda -> tda == displayWithExistingHome.getDefaultTaskDisplayArea()));
     }
 
     @Test

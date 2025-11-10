@@ -1152,7 +1152,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         }
     }
 
-    private void scheduleStartHome(String reason) {
+    void scheduleStartHome(String reason) {
         if (!mHandler.hasMessages(START_HOME_MSG)) {
             mHandler.obtainMessage(START_HOME_MSG, reason).sendToTarget();
         }
@@ -2902,10 +2902,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     mHandler.removeMessages(START_HOME_MSG);
 
                     if (com.android.window.flags.Flags.homeActivityAlwaysPresent()) {
-                        // Start home activities on displays with no home or a different home
-                        // package.
-                        mRootWindowContainer.startHomeOnDisplaysIfNeeded(
-                                (String) msg.obj);
+                        // Start home activities on displays with no home.
+                        mRootWindowContainer.startHomeOnDisplaysWithNoHome((String) msg.obj);
                     } else {
                         // Start home activities on displays with no activities.
                         mRootWindowContainer.startHomeOnEmptyDisplays((String) msg.obj);
