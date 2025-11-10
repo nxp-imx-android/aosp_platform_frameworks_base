@@ -69,9 +69,7 @@ class DesktopRepositoryInitializerImpl(
         val desktopSupportedOnDefaultDisplay =
             desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         if (
-            !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue ||
-                (!desktopSupportedOnDefaultDisplay &&
-                    !DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX.isTrue)
+            !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue
         ) {
             _isInitialized.value = true
             return
@@ -157,12 +155,7 @@ class DesktopRepositoryInitializerImpl(
         // TODO: b/441767264 - Consider waiting for DisplayController to receive all
         //  displayAdded signals before initializing here. This way we don't
         //  rely on an IPC if the display is not yet available.
-        val displayIdIfNotFound =
-            if (DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX.isTrue) {
-                displayController.getDisplayIdByUniqueIdBlocking(uniqueDisplayId)
-            } else {
-                DEFAULT_DISPLAY
-            }
+        val displayIdIfNotFound = displayController.getDisplayIdByUniqueIdBlocking(uniqueDisplayId)
         var newDisplayId = uniqueIdToDisplayIdMap?.get(uniqueDisplayId) ?: displayIdIfNotFound
         val deskId = persistentDesktop.desktopId
         var transientDesk = false

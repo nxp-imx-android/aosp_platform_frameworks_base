@@ -155,8 +155,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         currentUserRepoBuilder.putDesktop(desk.deskId, updatedDesktop)
                         desk.uniqueDisplayId?.let {
                             if (
-                                DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX
-                                    .isTrue && desk.deskId == activeDeskId
+                                desk.deskId == activeDeskId
                             ) {
                                 currentUserRepoBuilder.putActiveDeskByUniqueDisplayId(
                                     it,
@@ -166,14 +165,12 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         }
                     }
                 }
-                if (DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX.isTrue) {
-                    if (activeDeskId == null) {
-                        desks.first().uniqueDisplayId.let {
-                            currentUserRepoBuilder.removeActiveDeskByUniqueDisplayId(it)
-                        }
+                if (activeDeskId == null) {
+                    desks.first().uniqueDisplayId.let {
+                        currentUserRepoBuilder.removeActiveDeskByUniqueDisplayId(it)
                     }
-                    addOrUpdatePreservedDisplays(currentUserRepoBuilder, preservedDisplays)
                 }
+                addOrUpdatePreservedDisplays(currentUserRepoBuilder, preservedDisplays)
 
                 if (Flags.enableRememberedBounds()) {
                     addOrUpdatePackageState(

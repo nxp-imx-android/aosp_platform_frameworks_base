@@ -26,7 +26,6 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
-import com.android.window.flags.Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.window.flags.Flags.FLAG_ENABLE_REMEMBERED_BOUNDS
 import com.android.wm.shell.ShellTestCase
@@ -363,7 +362,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @EnableFlags(
         FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
     )
     fun initDisplayNotFound_defaultDisplayNotSupportDesktop_preservesTransientDesk() =
         runTest(StandardTestDispatcher()) {
@@ -400,7 +398,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @EnableFlags(
         FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
     )
     fun initDisplayNotFound_defaultDisplaySupportsDesktop_preservesNonTransientDesk() =
         runTest(StandardTestDispatcher()) {
@@ -437,7 +434,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @EnableFlags(
         FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
     )
     fun initWithPersistence_preservedDisplayPresent_initializesAsDesk() =
         runTest(StandardTestDispatcher()) {
@@ -472,7 +468,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @EnableFlags(
         FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
     )
     fun initWithPersistence_preservedDisplayNotPresent_preservedAgain() =
         runTest(StandardTestDispatcher()) {
