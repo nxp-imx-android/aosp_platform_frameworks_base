@@ -26,6 +26,7 @@ import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.FakeOverlay
 import com.android.systemui.scene.ui.composable.ConstantSceneContainerTransitionsBuilder
+import com.android.systemui.scene.ui.composable.SceneContainerTransitions
 import com.android.systemui.scene.ui.composable.SceneNavigationDistances
 import com.android.systemui.scene.ui.viewmodel.SceneContainerHapticsViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
@@ -67,6 +68,7 @@ val Kosmos.fakeOverlays by Fixture { fakeOverlaysByKeys.values.toSet() }
 val Kosmos.overlays by Fixture { fakeOverlays }
 
 val Kosmos.sceneTransitionsBuilder by Fixture { ConstantSceneContainerTransitionsBuilder() }
+val Kosmos.sceneContainerTransitions by Fixture { SceneContainerTransitions() }
 
 var Kosmos.sceneContainerConfig by Fixture {
     SceneContainerConfig(

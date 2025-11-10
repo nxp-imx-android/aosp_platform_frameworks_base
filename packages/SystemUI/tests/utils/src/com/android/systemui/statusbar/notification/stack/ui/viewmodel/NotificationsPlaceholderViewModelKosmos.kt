@@ -28,24 +28,24 @@ import com.android.systemui.statusbar.notification.stack.domain.interactor.heads
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInteractor
 
-val Kosmos.notificationsPlaceholderViewModel by Fixture {
-    NotificationsPlaceholderViewModel(
-        interactor = notificationStackAppearanceInteractor,
-        sceneInteractor = sceneInteractor,
-        shadeInteractor = shadeInteractor,
-        shadeModeInteractor = shadeModeInteractor,
-        headsUpNotificationInteractor = headsUpNotificationInteractor,
-        remoteInputInteractor = remoteInputInteractor,
-        featureFlags = featureFlagsClassic,
-        dumpManager = dumpManager,
-        wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
-    )
-}
-
 val Kosmos.notificationsPlaceholderViewModelFactory by Fixture {
     object : NotificationsPlaceholderViewModel.Factory {
         override fun create(): NotificationsPlaceholderViewModel {
-            return notificationsPlaceholderViewModel
+            return NotificationsPlaceholderViewModel(
+                interactor = notificationStackAppearanceInteractor,
+                sceneInteractor = sceneInteractor,
+                shadeInteractor = shadeInteractor,
+                shadeModeInteractor = shadeModeInteractor,
+                headsUpNotificationInteractor = headsUpNotificationInteractor,
+                remoteInputInteractor = remoteInputInteractor,
+                featureFlags = featureFlagsClassic,
+                dumpManager = dumpManager,
+                wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
+            )
         }
     }
+}
+
+val Kosmos.notificationsPlaceholderViewModel by Fixture {
+    notificationsPlaceholderViewModelFactory.create()
 }
