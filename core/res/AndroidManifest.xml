@@ -2953,6 +2953,24 @@
                 android:protectionLevel="normal"
                 android:featureFlag="com.android.window.flags.screen_recording_callbacks" />
 
+    <!-- Allows an assistant application to read screen content in the AssistStructure.
+
+         <p class="note"><strong>Note:</strong> Beginning with Android 17.0
+         {@link Android C android.os.Build.VERSION_CODES.CINNAMON_BUN } This
+         permission is required by any VoiceInteractionService that wishes to
+         receive screen content in the AssistStructure when the assistant's
+         VoiceInteractionService is invoked either via hotword detection or from the system.
+         If this permission is not held, the AssistStructure will only obtain window data and will
+         omit any screen content from the provided AssistStructure.
+
+         <p>Protection level: normal
+         @FlaggedApi(android.permission.flags.Flags.FLAG_RESTRICT_ASSIST_STRUCTURE_SCREEN_CONTENT_ENABLED)
+     -->
+    <permission
+        android:name="android.permission.READ_ASSIST_STRUCTURE_SCREEN_CONTENT"
+        android:protectionLevel="normal"
+        android:featureFlag="android.permission.flags.restrict_assist_structure_screen_content_enabled" />
+
     <!-- ======================================== -->
     <!-- Permissions for factory reset protection -->
     <!-- ======================================== -->
