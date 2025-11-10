@@ -182,6 +182,7 @@ import static android.app.admin.DevicePolicyManager.STATUS_MANAGED_USERS_NOT_SUP
 import static android.app.admin.DevicePolicyManager.STATUS_NONSYSTEM_USER_EXISTS;
 import static android.app.admin.DevicePolicyManager.STATUS_NOT_SYSTEM_USER;
 import static android.app.admin.DevicePolicyManager.STATUS_OK;
+import static android.app.admin.DevicePolicyManager.STATUS_OTHER_PROVISIONING_ERROR;
 import static android.app.admin.DevicePolicyManager.STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS;
 import static android.app.admin.DevicePolicyManager.STATUS_SYSTEM_USER;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE_OWNER;
@@ -11628,6 +11629,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             case STATUS_HEADLESS_SINGLE_USER_MODE_ONLY_SUPPORTED_ON_FIRST_FULL_USER:
                 return "Cannot provision DPC on single user mode on headless device on user "
                     + userId + " because it's not the first \"human\" user";
+            case STATUS_OTHER_PROVISIONING_ERROR:
+                return "Cannot provision DPC";
             default:
                 return "Unexpected @ProvisioningPreCondition: " + code;
         }

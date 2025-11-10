@@ -1530,6 +1530,7 @@ package android.app.admin {
     field public static final int STATUS_NONSYSTEM_USER_EXISTS = 5; // 0x5
     field public static final int STATUS_NOT_SYSTEM_USER = 7; // 0x7
     field public static final int STATUS_OK = 0; // 0x0
+    field @FlaggedApi("android.app.admin.flags.introduce_generic_provisioning_error") public static final int STATUS_OTHER_PROVISIONING_ERROR = 20; // 0x14
     field public static final int STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS = 15; // 0xf
     field public static final int STATUS_SYSTEM_USER = 10; // 0xa
     field public static final int STATUS_UNKNOWN_ERROR = -1; // 0xffffffff
