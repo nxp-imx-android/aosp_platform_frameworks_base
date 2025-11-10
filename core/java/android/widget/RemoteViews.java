@@ -8526,6 +8526,7 @@ public class RemoteViews implements Parcelable, Filter {
         private AsyncApplyTask(
                 RemoteViews rv, ViewGroup parent, Context context, OnViewAppliedListener listener,
                 ActionApplyParams applyParams, View result, boolean topLevel) {
+            super(context.getMainLooper());
             mRV = rv;
             mParent = parent;
             mContext = context;
