@@ -76,6 +76,7 @@ import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.animation.PhysicsAnimatorTestUtils
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate
+import com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_BAR_EXPANDED_SCRIM_ALPHA
 import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.android.wm.shell.shared.bubbles.DragZone
 import com.android.wm.shell.shared.bubbles.DragZoneFactory
@@ -637,6 +638,28 @@ class BubbleBarLayerViewTest {
         assertThat(bubbleBarLayerView.isAnimatingBubbleTracked(bubble)).isFalse()
 
         assertThat(bubbleBarLayerView.children.count { it is BubbleBarExpandedView }).isEqualTo(1)
+    }
+
+    @Test
+    fun showAndCollapse_updatesScrimAlpha() {
+        val bubble = createBubble("first")
+        // Scrim is the first child added.
+        val scrimView = bubbleBarLayerView.getChildAt(0)
+        assertThat(scrimView.alpha).isEqualTo(0f)
+
+        // Show expanded view
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(bubble) }
+        waitForExpandedViewAnimation()
+
+        // Verify scrim is visible with the correct alpha
+        assertThat(scrimView.alpha).isEqualTo(BUBBLE_BAR_EXPANDED_SCRIM_ALPHA)
+
+        // Collapse the view
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.collapse() }
+        waitForCollapseViewAnimation()
+
+        // Verify scrim is hidden
+        assertThat(scrimView.alpha).isEqualTo(0f)
     }
 
     private fun createBubble(key: String): Bubble {
