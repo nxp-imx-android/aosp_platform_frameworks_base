@@ -16,10 +16,12 @@
 
 package com.android.systemui.volume;
 
+import static android.media.AudioManager.CSD_WARNING_DOSE_REACHED_1X;
+import static android.media.AudioManager.CSD_WARNING_DOSE_REPEATED_5X;
 import static com.google.common.truth.Truth.assertThat;
-
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +32,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.media.AudioManager;
 import android.platform.test.annotations.EnableFlags;
+import android.testing.TestableLooper;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -39,15 +42,13 @@ import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.plugins.VolumeDialog;
-import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
 import java.util.List;
@@ -55,18 +56,13 @@ import java.util.Optional;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-public class CsdWarningDialogDelegateTest extends SysuiTestCase {
+@TestableLooper.RunWithLooper
+public class CsdWarningDialogTest extends SysuiTestCase {
 
-    private final FakeExecutor mExecutor =  new FakeExecutor(new FakeSystemClock());
-    @Mock
     private NotificationManager mNotificationManager;
-    @Mock
     private AudioManager mAudioManager;
     private BroadcastDispatcher mFakeBroadcastDispatcher;
-    @Mock
-    private SystemUIDialog mSystemUIDialog;
-    @Mock
-    private SystemUIDialog.Factory mSystemUIDialogFactory;
+    private CsdWarningDialog mDialog;
     private static final String DISMISS_CSD_NOTIFICATION =
             "com.android.systemui.volume.DISMISS_CSD_NOTIFICATION";
     private final Optional<List<CsdWarningAction>> mEmptyActions =
@@ -74,22 +70,27 @@ public class CsdWarningDialogDelegateTest extends SysuiTestCase {
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
-        mFakeBroadcastDispatcher = getFakeBroadcastDispatcher();
+        mNotificationManager = mock(NotificationManager.class);
+        mContext.addMockSystemService(NotificationManager.class, mNotificationManager);
 
-        when(mSystemUIDialogFactory.create(any(SystemUIDialog.Delegate.class)))
-                .thenReturn(mSystemUIDialog);
+        mAudioManager = mock(AudioManager.class);
+        mContext.addMockSystemService(AudioManager.class, mAudioManager);
+        mFakeBroadcastDispatcher = getFakeBroadcastDispatcher();
     }
 
     @Test
     public void create1XCsdDialogAndWait_sendsNotification() {
-        CsdWarningDialogDelegate delegate = createDelegate(
-                AudioManager.CSD_WARNING_DOSE_REACHED_1X, mEmptyActions);
-        delegate.maybeShow(mSystemUIDialog);
-        delegate.onStart(mSystemUIDialog);
+        FakeExecutor executor = new FakeExecutor(new FakeSystemClock());
+        // instantiate directly instead of via factory; we don't want executor to be @Background
+        mDialog = new CsdWarningDialog(CSD_WARNING_DOSE_REACHED_1X, mContext,
+                mAudioManager, mNotificationManager, executor, null,
+                mEmptyActions,
+                mFakeBroadcastDispatcher);
 
-        mExecutor.advanceClockToLast();
-        mExecutor.runAllReady();
+        mDialog.show();
+        executor.advanceClockToLast();
+        executor.runAllReady();
+        mDialog.dismiss();
 
         verify(mNotificationManager).notify(
                 eq(SystemMessageProto.SystemMessage.NOTE_CSD_LOWER_AUDIO), any(Notification.class));
@@ -97,12 +98,13 @@ public class CsdWarningDialogDelegateTest extends SysuiTestCase {
 
     @Test
     public void create5XCsdDialogAndWait_willSendNotification() {
-        CsdWarningDialogDelegate delegate = createDelegate(
-                AudioManager.CSD_WARNING_DOSE_REPEATED_5X, mEmptyActions);
-        delegate.maybeShow(mSystemUIDialog);
+        FakeExecutor executor = new FakeExecutor(new FakeSystemClock());
+        mDialog = new CsdWarningDialog(CSD_WARNING_DOSE_REPEATED_5X, mContext,
+                mAudioManager, mNotificationManager, executor, null,
+                mEmptyActions,
+                mFakeBroadcastDispatcher);
 
-        mExecutor.advanceClockToLast();
-        mExecutor.runAllReady();
+        mDialog.show();
 
         verify(mNotificationManager).notify(
                 eq(SystemMessageProto.SystemMessage.NOTE_CSD_LOWER_AUDIO), any(Notification.class));
@@ -111,17 +113,20 @@ public class CsdWarningDialogDelegateTest extends SysuiTestCase {
     @Test
     @EnableFlags(Flags.FLAG_SOUNDDOSE_CUSTOMIZATION)
     public void create1XCsdDialogWithActionsAndUndoIntent_willRegisterReceiverAndUndoVolume() {
+        FakeExecutor executor = new FakeExecutor(new FakeSystemClock());
         Intent undoIntent = new Intent(VolumeDialog.ACTION_VOLUME_UNDO)
                 .setPackage(mContext.getPackageName());
-        CsdWarningDialogDelegate delegate = createDelegate(
-                AudioManager.CSD_WARNING_DOSE_REPEATED_5X,
-                Optional.of(List.of(new CsdWarningAction("Undo", undoIntent, false))));
+        mDialog = new CsdWarningDialog(CSD_WARNING_DOSE_REPEATED_5X, mContext,
+                mAudioManager, mNotificationManager, executor, null,
+                Optional.of(List.of(new CsdWarningAction("Undo", undoIntent, false))),
+                mFakeBroadcastDispatcher);
 
         when(mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)).thenReturn(25);
-        delegate.maybeShow(mSystemUIDialog);
-        mExecutor.advanceClockToLast();
-        mExecutor.runAllReady();
-        delegate.mReceiverUndo.onReceive(mContext, undoIntent);
+        mDialog.show();
+        executor.advanceClockToLast();
+        executor.runAllReady();
+        mDialog.dismiss();
+        mDialog.mReceiverUndo.onReceive(mContext, undoIntent);
 
         verify(mNotificationManager).notify(
                 eq(SystemMessageProto.SystemMessage.NOTE_CSD_LOWER_AUDIO),
@@ -135,17 +140,21 @@ public class CsdWarningDialogDelegateTest extends SysuiTestCase {
     @Test
     @EnableFlags(Flags.FLAG_SOUNDDOSE_CUSTOMIZATION)
     public void deleteNotificationIntent_willUnregisterAllReceivers() {
+        FakeExecutor executor = new FakeExecutor(new FakeSystemClock());
         Intent undoIntent = new Intent(VolumeDialog.ACTION_VOLUME_UNDO)
                 .setPackage(mContext.getPackageName());
-        CsdWarningDialogDelegate delegate = createDelegate(
-                AudioManager.CSD_WARNING_DOSE_REPEATED_5X,
-                Optional.of(List.of(new CsdWarningAction("Undo", undoIntent, false))));
-        delegate.maybeShow(mSystemUIDialog);
-
+        mDialog = new CsdWarningDialog(CSD_WARNING_DOSE_REPEATED_5X, mContext,
+                mAudioManager, mNotificationManager, executor, null,
+                Optional.of(List.of(new CsdWarningAction("Undo", undoIntent, false))),
+                mFakeBroadcastDispatcher);
         Intent dismissIntent = new Intent(DISMISS_CSD_NOTIFICATION)
                 .setPackage(mContext.getPackageName());
 
-        delegate.mReceiverDismissNotification.onReceive(mContext, dismissIntent);
+        mDialog.mReceiverDismissNotification.onReceive(mContext, dismissIntent);
+        mDialog.show();
+        executor.advanceClockToLast();
+        executor.runAllReady();
+        mDialog.dismiss();
 
         List<ResolveInfo> resolveInfoListDismiss = mContext.getPackageManager()
                 .queryBroadcastReceivers(dismissIntent, PackageManager.GET_RESOLVED_FILTER);
@@ -155,18 +164,8 @@ public class CsdWarningDialogDelegateTest extends SysuiTestCase {
         assertThat(resolveInfoListUndo).hasSize(0);
     }
 
-    private CsdWarningDialogDelegate createDelegate(
-            @AudioManager.CsdWarning int csdWarning,
-            Optional<List<CsdWarningAction>> actionIntents) {
-        return new CsdWarningDialogDelegate(
-                csdWarning,
-                mContext,
-                mAudioManager,
-                mNotificationManager,
-                mExecutor,
-                null,
-                actionIntents,
-                mFakeBroadcastDispatcher,
-                mSystemUIDialogFactory);
+    @After
+    public void tearDown() {
+        mDialog.destroy();
     }
 }

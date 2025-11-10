@@ -23,7 +23,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.plugins.VolumeDialog
 import com.android.systemui.volume.CsdWarningAction
-import com.android.systemui.volume.CsdWarningDialogDelegate
+import com.android.systemui.volume.CsdWarningDialog
 import com.android.systemui.volume.SafetyWarningDialogDelegate
 import com.android.systemui.volume.dialog.dagger.VolumeDialogPluginComponent
 import com.android.systemui.volume.dialog.dagger.factory.VolumeDialogPluginComponentFactory
@@ -44,7 +44,7 @@ constructor(
     private val context: Context,
     private val audioManager: AudioManager,
     private val volumeDialogPluginComponentFactory: VolumeDialogPluginComponentFactory,
-    private val csdWarningDialogDelegateFactory: CsdWarningDialogDelegate.Factory,
+    private val csdWarningDialogFactory: CsdWarningDialog.Factory,
     private val safetyWarningDialogDelegateFactory: SafetyWarningDialogDelegate.Factory,
 ) : VolumeDialog {
 
@@ -113,8 +113,8 @@ constructor(
         actions: List<CsdWarningAction>,
         onDismissed: () -> Unit,
     ) = suspendCancellableCoroutine { continuation ->
-        val dialogDelegate =
-            csdWarningDialogDelegateFactory.create(
+        val dialog =
+            csdWarningDialogFactory.create(
                 warning,
                 {
                     onDismissed()
@@ -125,7 +125,6 @@ constructor(
                 Optional.of(actions),
             )
 
-        val dialog = dialogDelegate.createDialog()
         dialog.show()
         continuation.invokeOnCancellation { dialog.dismiss() }
     }
