@@ -27,6 +27,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
@@ -255,16 +256,16 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     }
 
     private void addSdkSandboxConnectionIfNecessary(ConnectionRecord connection) {
-        final ProcessRecord attributedClient = connection.binding.attributedClient;
-        if (attributedClient != null && connection.binding.service.isSdkSandbox) {
-            attributedClient.mServices.addSdkSandboxConnection(connection);
+        final ProcessRecordInternal attributedClient = connection.getAttributedClient();
+        if (attributedClient != null && connection.getService().isSdkSandbox) {
+            attributedClient.getServices().addSdkSandboxConnection(connection);
         }
     }
 
     private void removeSdkSandboxConnectionIfNecessary(ConnectionRecord connection) {
-        final ProcessRecord attributedClient = connection.binding.attributedClient;
-        if (attributedClient != null && connection.binding.service.isSdkSandbox) {
-            attributedClient.mServices.removeSdkSandboxConnection(connection);
+        final ProcessRecordInternal attributedClient = connection.getAttributedClient();
+        if (attributedClient != null && connection.getService().isSdkSandbox) {
+            attributedClient.getServices().removeSdkSandboxConnection(connection);
         }
     }
 
