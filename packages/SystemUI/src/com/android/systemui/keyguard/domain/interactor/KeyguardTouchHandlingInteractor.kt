@@ -47,6 +47,7 @@ import com.android.systemui.shared.settings.data.repository.SecureSettingsReposi
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.util.time.SystemClock
+import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -85,6 +86,7 @@ constructor(
     private val powerManager: PowerManager,
     private val systemClock: SystemClock,
     private val pointerDeviceRepository: PointerDeviceRepository,
+    private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
     secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
 ) {
     private val _udfpsAccessibilityOverlayBounds: MutableStateFlow<Rect?> = MutableStateFlow(null)
@@ -246,6 +248,8 @@ constructor(
             faceAuthInteractor.onNotificationPanelClicked()
         } else if (_isAnyPointerDeviceConnected.value) {
             attemptDeviceEntry(loggingReason = "Lockscreen clicked")
+        } else if (wallpaperFocalAreaInteractor.hasFocalArea.value) {
+            wallpaperFocalAreaInteractor.sendTapPosition(x, y)
         }
     }
 
