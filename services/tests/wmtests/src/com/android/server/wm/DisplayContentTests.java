@@ -1456,6 +1456,28 @@ public class DisplayContentTests extends WindowTestsBase {
         assertTrue("SystemGestureExclusionListener was not invoked", invoked[0]);
     }
 
+    /**
+     * Verifies that unregistering a system gesture exclusion listener after the display has been
+     * removed does not cause a crash.
+     */
+    @Test
+    public void testUnregisterSystemGestureExclusionListenerAfterDisplayRemoval() {
+        final DisplayContent dc = createNewDisplay();
+        final var listener = new ISystemGestureExclusionListener.Stub() {
+            @Override
+            public void onSystemGestureExclusionChanged(int displayId, Region actual,
+                    Region unrestricted) {
+            }
+        };
+        dc.registerSystemGestureExclusionListener(listener);
+
+        // Remove the display, which should kill the listeners.
+        dc.removeImmediately();
+
+        // Unregistering after removal should not crash.
+        dc.unregisterSystemGestureExclusionListener(listener);
+    }
+
     @Test
     public void testCalculateSystemGestureExclusion() {
         final DisplayContent dc = createNewDisplay();
