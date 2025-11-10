@@ -1047,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Kilidi açmak için PIN kodunu yazın"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Yanlış PIN kodu."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Kilidi açmak için önce Menü\'ye, sonra 0\'a basın."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Acil durum numarası"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Servis yok"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Ekran kilitli."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Kilidi açmak veya acil çağrı yapmak için Menü\'ye basın."</string>
@@ -2611,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Sistem Kaynağı Uyarıları"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Aşırı Kaynak Kullanımı"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\"<xliff:g id="APP_NAME">%1$s</xliff:g>\" uygulaması çok fazla kaynak kullanıyor."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Ebeveyniniz güncelleme yaptı"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> şimdilik kaldırıldı"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> artık kullanılabilir"</string>
 </resources>

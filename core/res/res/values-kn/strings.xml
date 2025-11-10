@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"ಹಿಯರಿಂಗ್ ಸಾಧನ"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"ಪ್ರವೇಶಿಸುವಿಕೆಯ ಬಳಕೆ"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"ಡಿಸ್‌ಪ್ಲೇ"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"ಪೋಷಕ ನಿಯಂತ್ರಣಗಳು"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಆ್ಯಪ್, ಬ್ಯಾಟರಿಯನ್ನು ಬಳಸುತ್ತಿದೆ"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಬ್ಯಾಟರಿ ಬಳಸುತ್ತಿವೆ"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"ಬ್ಯಾಟರಿ,ಡೇಟಾ ಬಳಕೆಯ ವಿವರಗಳಿಗಾಗಿ ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು ಪಿನ್‌ ಟೈಪ್‌ ಮಾಡಿ"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ತಪ್ಪಾದ ಪಿನ್‌ ಕೋಡ್."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು, ಮೆನು ನಂತರ 0 ಒತ್ತಿರಿ."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"ತುರ್ತು ಸಂಖ್ಯೆ"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"ಯಾವುದೇ ಸೇವೆಯಿಲ್ಲ"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದೆ."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಮೆನು ಒತ್ತಿರಿ ಇಲ್ಲವೇ ತುರ್ತು ಕರೆಯನ್ನು ಮಾಡಿ."</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ಸಿಸ್ಟಮ್ ಸಂಪನ್ಮೂಲಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಎಚ್ಚರಿಕೆಗಳು"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ಸಂಪನ್ಮೂಲಗಳನ್ನು ಮಿತಿಮೀರಿ ಬಳಸಲಾಗುತ್ತಿದೆ"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"ಆ್ಯಪ್ \'<xliff:g id="APP_NAME">%1$s</xliff:g> ತೀರಾ ಹೆಚ್ಚಿನ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಬಳಸುತ್ತಿದೆ.\""</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"ನಿಮ್ಮ ಪೋಷಕರಿಂದ ಬಂದ ಅಪ್‌ಡೇಟ್"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಸದ್ಯಕ್ಕೆ ತೆಗೆದುಹಾಕಲಾಗಿದೆ"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಈಗ ಲಭ್ಯವಿದೆ"</string>
 </resources>

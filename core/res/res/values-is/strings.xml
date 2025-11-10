@@ -1047,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Sláðu inn PIN-númer til að opna"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Rangt PIN-númer."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Til að taka úr lás ýtirðu á valmyndartakkann og síðan 0."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Neyðarnúmer"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Ekkert símasamband"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Skjár læstur."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Ýttu á valmyndartakkann til að taka úr lás eða hringja neyðarsímtal."</string>
@@ -1786,7 +1787,7 @@
     <string name="kg_failed_attempts_now_wiping" product="tv" msgid="5045460916106267585">"Þú hefur gert <xliff:g id="NUMBER">%d</xliff:g> árangurslausar tilraunir til að opna Android TV tækið. Android TV tækið verður nú endurstillt á sjálfgefnar stillingar."</string>
     <string name="kg_failed_attempts_now_wiping" product="default" msgid="5043730590446071189">"Þú hefur gert <xliff:g id="NUMBER">%d</xliff:g> tilraunir til að opna símann án árangurs. Hann verður nú stilltur á sjálfgefnar stillingar."</string>
     <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="7086799295109717623">"Þú hefur teiknað rangt opnunarmynstur <xliff:g id="NUMBER_0">%1$d</xliff:g> sinnum. Eftir <xliff:g id="NUMBER_1">%2$d</xliff:g> árangurslausar tilraunir í viðbót verður þú beðin(n) um að opna spjaldtölvuna með tölvupóstreikningi.\n\n Reyndu aftur eftir <xliff:g id="NUMBER_2">%3$d</xliff:g> sekúndur."</string>
-    <string name="kg_failed_attempts_almost_at_login" product="tv" msgid="4670840383567106114">"Þú hefur teiknað rangt opnunarmynstur <xliff:g id="NUMBER_0">%1$d</xliff:g> sinnum. Eftir <xliff:g id="NUMBER_1">%2$d</xliff:g> árangurslausar tilraunir í viðbót verðurðu beðin(n) um að opna Android TV tækið með tölvupóstreikningi.\n\n Reyndu aftur eftir <xliff:g id="NUMBER_2">%3$d</xliff:g> sekúndur."</string>
+    <string name="kg_failed_attempts_almost_at_login" product="tv" msgid="4670840383567106114">"Þú hefur teiknað rangt opnunarmynstur <xliff:g id="NUMBER_0">%1$d</xliff:g> sinnum. Eftir <xliff:g id="NUMBER_1">%2$d</xliff:g> árangurslausar tilraunir í viðbót verðurðu beðin(n) um að opna Android TV-tækið með tölvupóstreikningi.\n\n Reyndu aftur eftir <xliff:g id="NUMBER_2">%3$d</xliff:g> sekúndur."</string>
     <string name="kg_failed_attempts_almost_at_login" product="default" msgid="5270861875006378092">"Þú hefur teiknað rangt opnunarmynstur <xliff:g id="NUMBER_0">%1$d</xliff:g> sinnum. Eftir <xliff:g id="NUMBER_1">%2$d</xliff:g> árangurslausar tilraunir í viðbót verður þú beðin(n) um að opna símann með tölvupóstreikningi.\n\n Reyndu aftur eftir <xliff:g id="NUMBER_2">%3$d</xliff:g> sekúndur."</string>
     <string name="kg_text_message_separator" product="default" msgid="4503708889934976866">" — "</string>
     <string name="kg_reordering_delete_drop_target_text" msgid="2034358143731750914">"Fjarlægja"</string>
@@ -2611,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Viðvaranir vegna kerfistilfanga"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Ofnotkun tilfanga"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Forritið <xliff:g id="APP_NAME">%1$s</xliff:g> er að nota of mörg tilföng."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Uppfærsla frá foreldri þínu"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> var fjarlægt í bili"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> er nú í boði"</string>
 </resources>

@@ -328,8 +328,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"Klausos įrenginys"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"Pritaikomumo funkcijų naudojimas"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"Ekranas"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"Tėvų kontrolė"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"„<xliff:g id="APP_NAME">%1$s</xliff:g>“ naudoja akumuliatoriaus energiją"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"Programų, naudojančių akumuliatoriaus energiją: <xliff:g id="NUMBER">%1$d</xliff:g>"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Palieskite ir sužinokite išsamios informacijos apie akumuliatoriaus bei duomenų naudojimą"</string>
@@ -1049,6 +1048,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Jei norite atrakinti, įveskite PIN kodą"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Neteisingas PIN kodas."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Jei norite atrakinti, paspauskite „Meniu“ ir 0."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Pagalbos numeris"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Nėra paslaugos"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Ekranas užrakintas."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Paspauskite „Meniu“, kad atrakintumėte ar skambintumėte pagalbos numeriu."</string>
@@ -2613,10 +2613,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Sistemos šaltinių įspėjimai"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Piktnaudžiavimas šaltiniais"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Programa „<xliff:g id="APP_NAME">%1$s</xliff:g>“ naudoja per daug šaltinių."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Vieno iš tėvų naujiena"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"„<xliff:g id="APP_NAME">%1$s</xliff:g>“ dabar pašalinta"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"„<xliff:g id="APP_NAME">%1$s</xliff:g>“ dabar pasiekiama"</string>
 </resources>

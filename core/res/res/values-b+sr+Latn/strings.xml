@@ -327,8 +327,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"Slušni aparat"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"Korišćenje Pristupačnosti"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"Ekran"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"Roditeljski nadzor"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> koristi bateriju"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"Aplikacije (<xliff:g id="NUMBER">%1$d</xliff:g>) koriste bateriju"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Dodirnite za detalje o bateriji i potrošnji podataka"</string>
@@ -1048,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Unesite PIN za otključavanje"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN kôd je netačan."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Da biste otključali, pritisnite „Meni“, a zatim 0."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Broj za hitne slučajeve"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Mobilna mreža nije dostupna"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Ekran je zaključan."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Pritisnite „Meni“ da biste otključali telefon ili uputite hitan poziv."</string>
@@ -1831,7 +1831,7 @@
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Inverzija boja"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Korekcija boja"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Režim jednom rukom"</string>
-    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Dodatno zatamni"</string>
+    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Dodatno zatamnjeno"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Slušni aparati"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"Automatski klik (vreme zadržavanja)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Tasteri miša"</string>
@@ -2612,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Upozorenja o resursima sistema"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Prekomerno korišćenje resursa"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> koristi previše resursa."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Novosti od roditelja"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je za sad uklonjena"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je sada dostupna"</string>
 </resources>
