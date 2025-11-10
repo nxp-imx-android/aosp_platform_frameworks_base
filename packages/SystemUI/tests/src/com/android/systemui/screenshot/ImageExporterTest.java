@@ -209,7 +209,8 @@ public class ImageExporterTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_SAVE_LOCATION)
-    public void testImageExport_customSaveUri() throws InterruptedException, ExecutionException {
+    public void testImageExport_validCustomSaveUri()
+            throws InterruptedException, ExecutionException {
         String uriStr = "content://com.android.externalstorage.documents/tree/primary%3ARecordings";
         Uri customUri = Uri.parse(uriStr);
         ContentResolver contentResolver = mContext.getContentResolver();
@@ -229,6 +230,33 @@ public class ImageExporterTest extends SysuiTestCase {
         String customUriString = customUri.toString();
         assertTrue("Result URI should be a child of the custom URI",
                 resultUriString.startsWith(customUriString));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENSHOT_SAVE_LOCATION)
+    public void testImageExport_invalidCustomSaveUri()
+            throws InterruptedException, ExecutionException {
+        String uriStr =
+                "content://com.android.externalstorage.documents/tree/primary%3ANonExistentFolder";
+        Uri customUri = Uri.parse(uriStr);
+        ContentResolver contentResolver = mContext.getContentResolver();
+        ImageExporter exporter = new ImageExporter(contentResolver);
+
+        UUID requestId = UUID.fromString("3c11da99-9284-4863-b1d5-6f3684976814");
+        Bitmap original = createCheckerBitmap(10, 10, 10);
+
+        ListenableFuture<ImageExporter.Result> direct =
+                exporter.export(DIRECT_EXECUTOR, requestId, original,
+                        Process.myUserHandle(), Display.DEFAULT_DISPLAY, customUri);
+        assertTrue("future should be done", direct.isDone());
+        assertFalse("future should not be canceled", direct.isCancelled());
+        ImageExporter.Result result = direct.get();
+
+        String resultUriString = result.uri.toString();
+        String customUriString = customUri.toString();
+        assertFalse("Result URI should not be a child of the custom URI",
+                resultUriString.startsWith(customUriString));
+        assertNotNull("Uri should not be null", result.uri);
     }
 
     @Test

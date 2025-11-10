@@ -86,8 +86,6 @@ public class ImageExporter {
             "ContentResolver#openOutputStream threw an exception.";
     private static final String EXIF_READ_EXCEPTION =
             "ExifInterface threw an exception reading from the file descriptor.";
-    private static final String CREATE_DOCUMENT_RETURNED_NULL =
-            "DocumentsContract#createDocument returned null.";
     private static final String EXIF_WRITE_EXCEPTION =
             "ExifInterface threw an exception writing to the file descriptor.";
     private static final String RESOLVER_UPDATE_ZERO_ROWS =
@@ -348,18 +346,32 @@ public class ImageExporter {
                 // For now, only limiting saving to custom save URI to large screen screenshots,
                 // where URI will a DocumentsContract URI coming from the SAF picker
                 if (mCustomSaveUri != null && Flags.largeScreenScreenshotSaveLocation()) {
-                    // If using custom URI from SAF, use DocumentsContract to prepare file path.
-                    String mimeType = getMimeType(mFormat);
-                    Uri customDocumentsContractUri = DocumentsContract.buildDocumentUriUsingTree(
-                            mCustomSaveUri,
-                            DocumentsContract.getTreeDocumentId(mCustomSaveUri));
-                    uri = DocumentsContract.createDocument(mResolver, customDocumentsContractUri,
-                            mimeType, mFileName);
-                    if (uri == null) {
-                        throw new ImageExportException(CREATE_DOCUMENT_RETURNED_NULL);
+                    try {
+                        // If using custom URI from SAF, use DocumentsContract to prepare file path.
+                        String mimeType = getMimeType(mFormat);
+                        Uri customDocumentsContractUri =
+                                DocumentsContract.buildDocumentUriUsingTree(
+                                        mCustomSaveUri,
+                                        DocumentsContract.getTreeDocumentId(mCustomSaveUri));
+                        uri = DocumentsContract.createDocument(mResolver,
+                                customDocumentsContractUri,
+                                mimeType, mFileName);
+                        if (uri == null) {
+                            Log.w(TAG, "DocumentsContract.createDocument returned null. "
+                                    + "Falling back to default save location.");
+                        }
+                    } catch (Exception e) {
+                        Log.w(TAG, "Custom save failed. Falling back to default save location.", e);
                     }
-                } else {
-                    // If not using a custom uri, we create using MediaStore
+                }
+
+                boolean customUriSaveFailed = false;
+
+                // If not saving to a valid custom uri, we create using MediaStore
+                if (uri == null) {
+                    if (mCustomSaveUri != null) {
+                        customUriSaveFailed = true;
+                    }
                     uri = createEntry(mResolver, mFormat, mCaptureTime, mFileName, mOwner,
                             mAllowOverwrite);
                 }
@@ -373,7 +385,7 @@ public class ImageExporter {
                 writeExif(mResolver, uri, mRequestId, width, height, mCaptureTime);
                 throwIfInterrupted();
 
-                if (mCustomSaveUri == null) {
+                if (mCustomSaveUri == null || customUriSaveFailed) {
                     publishEntry(mResolver, uri);
                 }
 

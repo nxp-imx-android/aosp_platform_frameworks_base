@@ -230,6 +230,10 @@
     <string name="screenshot_save_to">Save to</string>
     <!-- Menu item text to open a file picker to select a custom folder for saving screenshots. [CHAR LIMIT=30] -->
     <string name="screenshot_select_folder">Select folder</string>
+    <!-- Title notification text when custom location save failed, saved to default folder instead. [CHAR LIMIT=100] -->
+    <string name="screenshot_custom_uri_save_fail_title">Saved to %1$s folder</string>
+    <!-- Bottom notification text when we fail to save a screenshot in a custom location. [CHAR LIMIT=100] -->
+    <string name="screenshot_custom_uri_save_fail_message">Something went wrong. Can\'t save to \"%1$s\" folder.</string>
     <!-- Appended to the notification content when a screenshot failure happens on an external display. [CHAR LIMIT=50] -->
     <string name="screenshot_failed_external_display_indication">External Display</string>
     <!-- Notification text displayed when we fail to save a screenshot due to locked storage. [CHAR LIMIT=100] -->
