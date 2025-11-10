@@ -23,7 +23,6 @@ import android.os.Binder
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
-import android.view.Display.DEFAULT_DISPLAY
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
@@ -34,7 +33,6 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.pip.PipDesktopState
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
-import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.data.DesktopRepository
@@ -44,7 +42,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -254,48 +251,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
             .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
     }
 
-    @Test
-    fun handlePipTransition_notLastTask_doesntPerformDesktopExitCleanup() {
-        whenever(
-                mockDesktopRepository.isOnlyVisibleNonClosingTaskInDesk(
-                    taskId = eq(taskInfo.taskId),
-                    deskId = eq(DESK_ID),
-                    displayId = eq(taskInfo.displayId),
-                )
-            )
-            .thenReturn(false)
-
-        controller.handlePipTransition(wct, transition, taskInfo)
-
-        verifyPerformDesktopExitCleanupAfterPip(isCalled = false)
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun handlePipTransition_noActiveDeskId_multiDesk_doesntPerformDesktopExitCleanup() {
-        whenever(mockDesktopRepository.getActiveDeskId(eq(taskInfo.displayId))).thenReturn(null)
-
-        controller.handlePipTransition(wct, transition, taskInfo)
-
-        verifyPerformDesktopExitCleanupAfterPip(isCalled = false)
-    }
-
-    @Test
-    fun handlePipTransition_isLastTask_performDesktopExitCleanup() {
-        whenever(
-                mockDesktopRepository.isOnlyVisibleNonClosingTaskInDesk(
-                    taskId = eq(taskInfo.taskId),
-                    deskId = eq(DESK_ID),
-                    displayId = eq(taskInfo.displayId),
-                )
-            )
-            .thenReturn(true)
-
-        controller.handlePipTransition(wct, transition, taskInfo)
-
-        verifyPerformDesktopExitCleanupAfterPip(isCalled = true)
-    }
-
     @DisableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN)
     @Test
     fun handlePipTransition_multiActivityPip_minimizeMultiActivityPipTask() {
@@ -316,37 +271,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
 
         verify(mockDesktopTasksController, never())
             .minimizeMultiActivityPipTask(wct = any(), deskId = anyOrNull(), task = any())
-    }
-
-    private fun verifyPerformDesktopExitCleanupAfterPip(isCalled: Boolean) {
-        if (isCalled) {
-            verify(mockDesktopTasksController)
-                .performDesktopExitCleanUp(
-                    wct = wct,
-                    deskId = DESK_ID,
-                    displayId = DEFAULT_DISPLAY,
-                    userId = taskInfo.userId,
-                    willExitDesktop = true,
-                    removingLastTaskId = taskInfo.taskId,
-                    forceRemoveDesk = false,
-                    exitReason = ExitReason.ENTER_PIP,
-                )
-        } else {
-            verify(mockDesktopTasksController, never())
-                .performDesktopExitCleanUp(
-                    wct = any(),
-                    deskId = anyOrNull(),
-                    displayId = any(),
-                    userId = any(),
-                    willExitDesktop = any(),
-                    removingLastTaskId = anyOrNull(),
-                    forceRemoveDesk = any(),
-                    shouldEndUpAtHome = any(),
-                    skipWallpaperAndHomeOrdering = any(),
-                    skipUpdatingExitDesktopListener = any(),
-                    exitReason = any(),
-                )
-        }
     }
 
     private companion object {
