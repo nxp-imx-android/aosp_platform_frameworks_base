@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
  * 1. webUri: The web URI provided by the app using [AssistContent]
  * 2. capturedLink: The link used to open the app if app was opened by clicking on a link
  * 3. genericLink: The system provided link for the app
+ *
  * In order to create the [Intent] to transfer the user from app to the web, the [Uri]s listed above
  * are checked in the given order and the first non-null link is used. When transferring from the
  * web to an app, the [Uri] must be provided by the browser application through [AssistContent].
