@@ -38,6 +38,10 @@ class CompatUILifecyclePredicates(
     },
 )
 
+/** Type for the function responsible to get the position of the ComponentUI */
+typealias ComponentUiPositionFactory =
+    (View, CompatUIInfo, CompatUISharedState, CompatUIComponentState?) -> Point
+
 /** Layout configuration */
 data class CompatUILayout(
     val zOrder: Int = 0,
@@ -46,8 +50,7 @@ data class CompatUILayout(
     val viewBinder: (View, CompatUIInfo, CompatUISharedState, CompatUIComponentState?) -> Unit =
         { _, _, _, _ ->
         },
-    val positionFactory:
-        (View, CompatUIInfo, CompatUISharedState, CompatUIComponentState?) -> Point,
+    val positionFactory: ComponentUiPositionFactory,
     val viewReleaser: () -> Unit = {},
 )
 
