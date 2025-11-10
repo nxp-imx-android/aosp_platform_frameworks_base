@@ -978,8 +978,8 @@ public class ProcessStateController {
      * Cleanup a process's state.
      */
     @GuardedBy("mLock")
-    public void onCleanupApplicationRecord(@NonNull ProcessServiceRecord psr) {
-        psr.onCleanupApplicationRecordLocked();
+    public void onCleanupApplicationRecord(@NonNull ProcessServiceRecordInternal psr) {
+        psr.onCleanupApplicationRecord();
     }
 
     /**

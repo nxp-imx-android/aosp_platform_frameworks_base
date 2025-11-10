@@ -131,6 +131,13 @@ public class ProcessServiceRecordInternal {
         mHasAboveClient = hasAboveClient;
     }
 
+    /** Resets service-related flags when the application record is being cleaned up. */
+    public void onCleanupApplicationRecord() {
+        setTreatLikeActivity(false);
+        setHasAboveClient(false);
+        setHasClientActivities(false);
+    }
+
     /**
      * Sets whether this process has any client services with activities.
      * This method also notifies the registered observer of the change.

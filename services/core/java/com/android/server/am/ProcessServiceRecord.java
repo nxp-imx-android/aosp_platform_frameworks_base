@@ -277,13 +277,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
     }
 
     @GuardedBy("mService")
-    void onCleanupApplicationRecordLocked() {
-        setTreatLikeActivity(false);
-        setHasAboveClient(false);
-        setHasClientActivities(false);
-    }
-
-    @GuardedBy("mService")
     void noteScheduleServiceTimeoutPending(boolean pending) {
         mScheduleServiceTimeoutPending = pending;
     }
