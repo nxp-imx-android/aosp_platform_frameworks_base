@@ -196,6 +196,54 @@ public class FocusTransitionObserverTest extends ShellTestCase {
                 eq(false) /* isFocusedOnDisplay */, eq(false) /* isFocusedGlobally */);
     }
 
+    @Test
+    public void testUpdateFocus_movedToTop_notTransitOpen() {
+        // This test verifies that a task focus is updated for a transition with FLAG_MOVED_TO_TOP,
+        // even if the transition mode is not TRANSIT_OPEN. This specifically tests one part of the
+        // OR condition in the focus update logic.
+
+        // Setup a transition for a task moving to the top using TRANSIT_CHANGE.
+        TransitionInfo info = mock(TransitionInfo.class);
+        final List<TransitionInfo.Change> changes = new ArrayList<>();
+        TransitionInfo.Change change = setupTaskChange(changes, 1 /* taskId */, TRANSIT_CHANGE,
+                DEFAULT_DISPLAY, false /* focused */, true /* movedToTop */);
+        when(info.getChanges()).thenReturn(changes);
+
+        // Trigger the focus state update.
+        mFocusTransitionObserver.updateFocusState(info);
+        mShellExecutor.flushAll();
+
+        // Verify that the listener was notified about the new focused task.
+        // This confirms that the `change.hasFlags(FLAG_MOVED_TO_TOP)` condition was sufficient
+        // to trigger the focus update.
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
+    }
+
+    @Test
+    public void testUpdateFocus_transitOpen_noMovedToTopFlag() {
+        // This test verifies that a task focus is updated for a TRANSIT_OPEN transition,
+        // even if the FLAG_MOVED_TO_TOP is not set. This specifically tests the other part of the
+        // OR condition in the focus update logic.
+
+        // Setup a transition for a new task opening, but without the MOVED_TO_TOP flag.
+        TransitionInfo info = mock(TransitionInfo.class);
+        final List<TransitionInfo.Change> changes = new ArrayList<>();
+        TransitionInfo.Change change = setupTaskChange(changes, 1 /* taskId */, TRANSIT_OPEN,
+                DEFAULT_DISPLAY, false /* focused */, false /* movedToTop */);
+        when(info.getChanges()).thenReturn(changes);
+
+        // Trigger the focus state update.
+        mFocusTransitionObserver.updateFocusState(info);
+        mShellExecutor.flushAll();
+
+        // Verify that the listener was notified about the new focused task.
+        verify(mListener, times(1)).onFocusedTaskChanged(
+                argThat(new RunningTaskInfoMatcher(change.getTaskInfo())),
+                eq(true) /* isFocusedOnDisplay */, eq(true) /* isFocusedGlobally */);
+    }
+
 
     @Test
     public void testTaskMoveToAnotherDisplay() throws RemoteException {
