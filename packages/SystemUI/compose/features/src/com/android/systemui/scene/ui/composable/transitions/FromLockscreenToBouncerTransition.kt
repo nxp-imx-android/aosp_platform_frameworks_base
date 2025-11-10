@@ -3,7 +3,6 @@ package com.android.systemui.scene.ui.composable.transitions
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.TransitionBuilder
-import com.android.systemui.bouncer.ui.composable.Bouncer
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 
 fun TransitionBuilder.lockscreenToBouncerTransition(durationScale: Double = 1.0) {
@@ -22,7 +21,6 @@ fun TransitionBuilder.lockscreenToBouncerTransition(durationScale: Double = 1.0)
 }
 
 fun TransitionBuilder.bouncerToLockscreenPreview() {
-    fractionRange(easing = Easings.PredictiveBack) {
-        scaleDraw(Bouncer.Elements.Content, scaleY = 0.8f, scaleX = 0.8f)
-    }
+    fromBouncerBackGestureTransition()
+    fractionRange(easing = Easings.PredictiveBack) { fade(LockscreenElementKeys.Root) }
 }

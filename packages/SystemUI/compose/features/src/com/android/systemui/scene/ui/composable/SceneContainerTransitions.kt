@@ -14,6 +14,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
+import com.android.systemui.scene.ui.composable.transitions.bouncerToCommunalBackGestureTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenPreview
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenTransition
@@ -24,8 +25,9 @@ import com.android.systemui.scene.ui.composable.transitions.dreamToCommunalTrans
 import com.android.systemui.scene.ui.composable.transitions.dreamToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToNotificationsShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToQuickSettingsShadeTransition
-import com.android.systemui.scene.ui.composable.transitions.dreamToShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToQuickSettingsTransition
+import com.android.systemui.scene.ui.composable.transitions.dreamToShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.fromBouncerBackGestureTransition
 import com.android.systemui.scene.ui.composable.transitions.fromBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToShadeSceneTransition
@@ -334,7 +336,24 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 fromBouncerTransition()
             }
+            from(
+                from = Overlays.Bouncer,
+                to = Scenes.Occluded,
+                key = TransitionKey.PredictiveBack,
+            ) {
+                fromBouncerBackGestureTransition()
+            }
             from(Scenes.Communal, to = Overlays.Bouncer) { communalToBouncerTransition() }
+            from(
+                from = Overlays.Bouncer,
+                to = Scenes.Communal,
+                key = TransitionKey.PredictiveBack,
+            ) {
+                bouncerToCommunalBackGestureTransition()
+            }
+            from(from = Overlays.Bouncer, to = Scenes.Dream, key = TransitionKey.PredictiveBack) {
+                fromBouncerBackGestureTransition()
+            }
             to(
                 Overlays.NotificationsShade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
