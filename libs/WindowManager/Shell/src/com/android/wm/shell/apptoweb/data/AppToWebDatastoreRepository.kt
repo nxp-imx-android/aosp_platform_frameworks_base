@@ -33,8 +33,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 
 /** Updates data in App-to-Web datastore. */
-class AppToWebDatastoreRepository
-constructor(private val dataStore: DataStore<AppToWebProto>) {
+class AppToWebDatastoreRepository constructor(private val dataStore: DataStore<AppToWebProto>) {
     constructor(
         context: Context
     ) : this(
@@ -66,8 +65,8 @@ constructor(private val dataStore: DataStore<AppToWebProto>) {
         }
 
     /**
-     * Reads and returns the [AppToWebProto] Proto object from the DataStore. If the
-     * DataStore is empty or there's an error reading, it returns the default value of Proto.
+     * Reads and returns the [AppToWebProto] Proto object from the DataStore. If the DataStore is
+     * empty or there's an error reading, it returns the default value of Proto.
      */
     suspend fun getAppToWebProto(): AppToWebProto = dataStoreFlow.first()
 
@@ -78,10 +77,13 @@ constructor(private val dataStore: DataStore<AppToWebProto>) {
         dataStore.updateData { proto: AppToWebProto ->
             val builder = proto.toBuilder()
             firstRunPromptAckedPackagesByUserId.forEach { (userId, packages) ->
-                val currentUserDataBuilder = builder.getAppToWebRepoByUserOrDefault(
-                        userId,
-                        AppToWebUserRepository.newBuilder().build(),
-                    ).toBuilder()
+                val currentUserDataBuilder =
+                    builder
+                        .getAppToWebRepoByUserOrDefault(
+                            userId,
+                            AppToWebUserRepository.newBuilder().build(),
+                        )
+                        .toBuilder()
                 currentUserDataBuilder
                     .clearFirstRunPromptAckedPackages()
                     .addAllFirstRunPromptAckedPackages(packages.toList())
@@ -97,8 +99,7 @@ constructor(private val dataStore: DataStore<AppToWebProto>) {
 
         object AppToWebProtoSerializer : Serializer<AppToWebProto> {
 
-            override val defaultValue: AppToWebProto =
-                AppToWebProto.getDefaultInstance()
+            override val defaultValue: AppToWebProto = AppToWebProto.getDefaultInstance()
 
             override suspend fun readFrom(input: InputStream): AppToWebProto =
                 try {
@@ -107,10 +108,8 @@ constructor(private val dataStore: DataStore<AppToWebProto>) {
                     throw CorruptionException("Cannot read proto.", exception)
                 }
 
-            override suspend fun writeTo(
-                appToWebProto: AppToWebProto,
-                output: OutputStream,
-            ) = appToWebProto.writeTo(output)
+            override suspend fun writeTo(appToWebProto: AppToWebProto, output: OutputStream) =
+                appToWebProto.writeTo(output)
         }
     }
 }

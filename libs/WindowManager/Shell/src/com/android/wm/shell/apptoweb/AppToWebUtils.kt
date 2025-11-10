@@ -35,14 +35,13 @@ import com.android.wm.shell.shared.desktopmode.DesktopState
 
 private const val TAG = "AppToWebUtils"
 
-private val GenericBrowserIntent = Intent()
-    .setAction(ACTION_VIEW)
-    .addCategory(Intent.CATEGORY_BROWSABLE)
-    .setData(Uri.parse("http:"))
+private val GenericBrowserIntent =
+    Intent()
+        .setAction(ACTION_VIEW)
+        .addCategory(Intent.CATEGORY_BROWSABLE)
+        .setData(Uri.parse("http:"))
 
-/**
- * Check if app links can be shown
- */
+/** Check if app links can be shown */
 fun canShowAppLinks(display: Display, desktopState: DesktopState): Boolean {
     if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
         return desktopState.isDesktopModeSupportedOnDisplay(display)
@@ -50,14 +49,15 @@ fun canShowAppLinks(display: Display, desktopState: DesktopState): Boolean {
     return true
 }
 
-/**
- * Returns a boolean indicating whether a given package is a browser app.
- */
+/** Returns a boolean indicating whether a given package is a browser app. */
 fun isBrowserApp(context: Context, packageName: String, userId: Int): Boolean {
     GenericBrowserIntent.setPackage(packageName)
-    val list = context.packageManager.queryIntentActivitiesAsUser(
-        GenericBrowserIntent, PackageManager.MATCH_ALL, userId
-    )
+    val list =
+        context.packageManager.queryIntentActivitiesAsUser(
+            GenericBrowserIntent,
+            PackageManager.MATCH_ALL,
+            userId,
+        )
 
     list.forEach {
         if (it.activityInfo != null && it.handleAllWebDataURI) {
@@ -72,13 +72,14 @@ fun isBrowserApp(context: Context, packageName: String, userId: Int): Boolean {
  * null.
  */
 fun getBrowserIntent(uri: Uri, packageManager: PackageManager, userId: Int): Intent? {
-    val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_BROWSER)
-        .setData(uri)
-        .addFlags(FLAG_ACTIVITY_NEW_TASK)
+    val intent =
+        Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_BROWSER)
+            .setData(uri)
+            .addFlags(FLAG_ACTIVITY_NEW_TASK)
     // If there is a browser application available to handle the intent, return the intent.
     // Otherwise, return null.
-    val resolveInfo = packageManager.resolveActivityAsUser(intent, /* flags= */ 0, userId)
-        ?: return null
+    val resolveInfo =
+        packageManager.resolveActivityAsUser(intent, /* flags= */ 0, userId) ?: return null
     intent.setComponent(resolveInfo.componentInfo.componentName)
     return intent
 }
@@ -89,11 +90,11 @@ fun getBrowserIntent(uri: Uri, packageManager: PackageManager, userId: Int): Int
  */
 fun getAppIntent(uri: Uri, packageManager: PackageManager, userId: Int): Intent? {
     val intent = Intent(ACTION_VIEW, uri).addFlags(FLAG_ACTIVITY_NEW_TASK)
-    val resolveInfo = packageManager.resolveActivityAsUser(intent, /* flags= */ 0, userId)
-        ?: return null
+    val resolveInfo =
+        packageManager.resolveActivityAsUser(intent, /* flags= */ 0, userId) ?: return null
     // If there is a non-browser application available to handle the intent, return the intent.
     // Otherwise, return null.
-     if (resolveInfo.activityInfo != null && !resolveInfo.handleAllWebDataURI) {
+    if (resolveInfo.activityInfo != null && !resolveInfo.handleAllWebDataURI) {
         intent.setComponent(resolveInfo.componentInfo.componentName)
         return intent
     }
@@ -106,7 +107,7 @@ fun getAppIntent(uri: Uri, packageManager: PackageManager, userId: Int): Intent?
  */
 fun getDomainVerificationUserState(
     manager: DomainVerificationManager,
-    packageName: String
+    packageName: String,
 ): DomainVerificationUserState? {
     try {
         return manager.getDomainVerificationUserState(packageName)
@@ -115,15 +116,13 @@ fun getDomainVerificationUserState(
             ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE,
             "%s: Failed to get domain verification user state: %s",
             TAG,
-            e.message!!
+            e.message!!,
         )
         return null
     }
 }
 
-/**
- * Returns the web uri from the given [AssistContent].
- */
+/** Returns the web uri from the given [AssistContent]. */
 fun AssistContent.getSessionWebUri(): Uri? {
     return sessionTransferUri ?: webUri
 }

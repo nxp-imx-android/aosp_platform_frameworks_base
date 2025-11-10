@@ -36,9 +36,7 @@ import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import java.util.function.Supplier
 import kotlinx.coroutines.CoroutineScope
 
-/**
- * Window manager for the open by default settings dialog
- */
+/** Window manager for the open by default settings dialog */
 internal class OpenByDefaultDialog(
     context: Context,
     userContext: Context,
@@ -51,9 +49,19 @@ internal class OpenByDefaultDialog(
     @ShellMainThread mainScope: CoroutineScope,
     listener: DialogLifecycleListener,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
-) : BaseOpenByDefaultDialog<OpenByDefaultDialogView>(context, userContext, transitions, taskInfo,
-    taskSurface, displayController, taskResourceLoader, surfaceControlTransactionSupplier,
-    mainScope, listener) {
+) :
+    BaseOpenByDefaultDialog<OpenByDefaultDialogView>(
+        context,
+        userContext,
+        transitions,
+        taskInfo,
+        taskSurface,
+        displayController,
+        taskResourceLoader,
+        surfaceControlTransactionSupplier,
+        mainScope,
+        listener,
+    ) {
 
     private lateinit var appIconView: ImageView
     private lateinit var appNameView: TextView
@@ -67,11 +75,10 @@ internal class OpenByDefaultDialog(
 
     /** Creates an open by default settings dialog. */
     override fun createDialog() {
-        dialog = LayoutInflater.from(context)
-            .inflate(
-                R.layout.open_by_default_settings_dialog,
-                null /* root */
-            ) as OpenByDefaultDialogView
+        dialog =
+            LayoutInflater.from(context)
+                .inflate(R.layout.open_by_default_settings_dialog, null /* root */)
+                as OpenByDefaultDialogView
         appIconView = dialog.requireViewById(R.id.application_icon)
         appNameView = dialog.requireViewById(R.id.application_name)
 
@@ -89,7 +96,7 @@ internal class OpenByDefaultDialog(
             if (isConfirmingSettingsChange()) {
                 desktopModeUiEventLogger.log(
                     taskInfo,
-                    DESKTOP_WINDOWING_APP_TO_WEB_CHANGE_OPEN_BY_DEFAULT_SETTINGS
+                    DESKTOP_WINDOWING_APP_TO_WEB_CHANGE_OPEN_BY_DEFAULT_SETTINGS,
                 )
             }
             closeMenu()
@@ -120,11 +127,12 @@ internal class OpenByDefaultDialog(
         openInBrowserButton.isChecked = !linkHandlingAllowed
     }
 
-    private fun isConfirmingSettingsChange() = if (linkHandlingAllowed) {
-        openInBrowserButton.isChecked
-    } else {
-        openInAppButton.isChecked
-    }
+    private fun isConfirmingSettingsChange() =
+        if (linkHandlingAllowed) {
+            openInBrowserButton.isChecked
+        } else {
+            openInAppButton.isChecked
+        }
 
     private fun setDefaultLinkHandlingSetting() =
         setDefaultLinkHandlingSetting(openInAppButton.isChecked)
