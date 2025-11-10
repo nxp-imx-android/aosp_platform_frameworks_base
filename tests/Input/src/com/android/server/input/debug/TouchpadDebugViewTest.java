@@ -426,6 +426,7 @@ public class TouchpadDebugViewTest {
                         .x(40f)
                         .y(45f)
                 )
+                .pointerIndex(0)
                 .classification(MotionEvent.CLASSIFICATION_PINCH)
                 .build();
         mTouchpadDebugView.dispatchTouchEvent(pointerDown);
@@ -455,6 +456,7 @@ public class TouchpadDebugViewTest {
                         .x(40f)
                         .y(45f + offsetY)
                 )
+                .pointerIndex(0)
                 .classification(MotionEvent.CLASSIFICATION_PINCH)
                 .build();
         mTouchpadDebugView.dispatchTouchEvent(pointerUp);
