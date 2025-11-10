@@ -13197,7 +13197,10 @@ package android.security.advancedprotection {
 
   public final class AdvancedProtectionManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public java.util.List<android.security.advancedprotection.AdvancedProtectionFeature> getAdvancedProtectionFeatures();
+    method @FlaggedApi("android.security.aapm_api_v2") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public java.util.List<android.security.advancedprotection.AdvancedProtectionFeature> getAdvancedProtectionFeatures(@NonNull int[]);
+    method @FlaggedApi("android.security.aapm_api_v2") @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public void registerAdvancedProtectionFeatureCallback(@NonNull int[], @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.security.advancedprotection.AdvancedProtectionFeature>>);
     method @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public void setAdvancedProtectionEnabled(boolean);
+    method @FlaggedApi("android.security.aapm_api_v2") @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public void unregisterAdvancedProtectionFeatureCallback(@NonNull java.util.function.Consumer<java.util.List<android.security.advancedprotection.AdvancedProtectionFeature>>);
     method @FlaggedApi("android.security.aapm_api_v2") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public java.util.List<android.security.advancedprotection.AdvancedProtectionFeature> updateAdvancedProtectionFeaturesProvisioning(@Nullable int[], @Nullable int[]);
     field public static final int FEATURE_ID_DISALLOW_CELLULAR_2G = 0; // 0x0
     field @FlaggedApi("android.security.aapm_feature_disable_insecure_wifi_autojoin") public static final int FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN = 5; // 0x5
