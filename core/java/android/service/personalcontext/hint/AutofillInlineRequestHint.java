@@ -16,14 +16,13 @@
 
 package android.service.personalcontext.hint;
 
-import static java.util.Objects.requireNonNull;
-
 import android.annotation.FlaggedApi;
 import android.content.ComponentName;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.service.autofill.augmented.FillRequest;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillValue;
 import android.view.inputmethod.InlineSuggestionsRequest;
@@ -57,6 +56,7 @@ public class AutofillInlineRequestHint extends ContextHint {
 
     /** Internal constructor only for use by {@link Builder}. */
     private AutofillInlineRequestHint(
+            @NonNull ConstructorParams baseParams,
             int sessionId,
             int taskId,
             @NonNull Instant requestTimestamp,
@@ -64,6 +64,7 @@ public class AutofillInlineRequestHint extends ContextHint {
             @NonNull AutofillId focusedId,
             @NonNull AutofillValue autofillValue,
             @NonNull InlineSuggestionsRequest inlineSuggestionsRequest) {
+        super(baseParams);
         mSessionId = sessionId;
         mTaskId = taskId;
         mRequestTimestamp = Objects.requireNonNull(requestTimestamp);
@@ -78,26 +79,24 @@ public class AutofillInlineRequestHint extends ContextHint {
      *
      * @hide
      */
-    AutofillInlineRequestHint(Bundle bundle) {
-        super(bundle);
-        final Bundle hintData = bundle.getBundle(KEY_HINT_DATA);
-        requireNonNull(hintData, "Bundle must contain hint data");
-        mSessionId = hintData.getInt(KEY_SESSION_ID);
-        mTaskId = hintData.getInt(KEY_TASK_ID);
+    AutofillInlineRequestHint(@NonNull ConstructorParams baseParams, Bundle bundle) {
+        super(baseParams);
+        mSessionId = bundle.getInt(KEY_SESSION_ID);
+        mTaskId = bundle.getInt(KEY_TASK_ID);
         mRequestTimestamp =
                 Objects.requireNonNull(
-                        hintData.getSerializable(KEY_REQUEST_TIMESTAMP, Instant.class));
+                        bundle.getSerializable(KEY_REQUEST_TIMESTAMP, Instant.class));
         mActivityComponent =
                 Objects.requireNonNull(
-                        hintData.getParcelable(KEY_ACTIVITY_COMPONENT, ComponentName.class));
+                        bundle.getParcelable(KEY_ACTIVITY_COMPONENT, ComponentName.class));
         mFocusedId =
-                Objects.requireNonNull(hintData.getParcelable(KEY_FOCUSED_ID, AutofillId.class));
+                Objects.requireNonNull(bundle.getParcelable(KEY_FOCUSED_ID, AutofillId.class));
         mAutofillValue =
                 Objects.requireNonNull(
-                        hintData.getParcelable(KEY_AUTOFILL_VALUE, AutofillValue.class));
+                        bundle.getParcelable(KEY_AUTOFILL_VALUE, AutofillValue.class));
         mInlineSuggestionsRequest =
                 Objects.requireNonNull(
-                        hintData.getParcelable(
+                        bundle.getParcelable(
                                 KEY_INLINE_SUGGESTIONS_REQUEST, InlineSuggestionsRequest.class));
     }
 
@@ -234,6 +233,7 @@ public class AutofillInlineRequestHint extends ContextHint {
 
     /** Builder used to create a {@link AutofillInlineRequestHint}. */
     public static final class Builder {
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private int mSessionId;
         private int mTaskId;
         private Instant mRequestTimestamp;
@@ -326,10 +326,22 @@ public class AutofillInlineRequestHint extends ContextHint {
             return this;
         }
 
+        /**
+         * Adds a token to the resulting {@link AutofillInlineRequestHint}.
+         *
+         * @param token the token to add
+         */
+        @NonNull
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
+            return this;
+        }
+
         /** Returns the built {@link AutofillInlineRequestHint}. */
         @NonNull
         public AutofillInlineRequestHint build() {
             return new AutofillInlineRequestHint(
+                    mBaseBuilder.build(),
                     mSessionId,
                     mTaskId,
                     Objects.requireNonNull(mRequestTimestamp),

@@ -43497,6 +43497,12 @@ package android.service.personalcontext {
     method @NonNull public android.service.personalcontext.RenderToken.RenderTokenBuilder setRendererComponentId(@NonNull java.util.UUID);
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class Token implements android.os.Parcelable {
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.Token> CREATOR;
+  }
+
 }
 
 package android.service.personalcontext.hint {
@@ -43513,6 +43519,7 @@ package android.service.personalcontext.hint {
 
   public static final class AutofillInlineRequestHint.Builder {
     ctor public AutofillInlineRequestHint.Builder();
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint build();
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setActivityComponent(@NonNull android.content.ComponentName);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setAutofillValue(@NonNull android.view.autofill.AutofillValue);
@@ -43524,8 +43531,15 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleHint extends android.service.personalcontext.hint.ContextHint {
-    ctor public BundleHint();
+    ctor @Deprecated public BundleHint();
     method @NonNull public android.os.Bundle getDataBundle();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class BundleHint.Builder {
+    ctor public BundleHint.Builder();
+    method @NonNull public android.service.personalcontext.hint.BundleHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.BundleHint build();
+    method @NonNull public android.service.personalcontext.hint.BundleHint.Builder setDataBundle(@NonNull android.os.Bundle);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class CapturedText implements android.os.Parcelable {
@@ -43582,6 +43596,7 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
     method @NonNull public final java.util.UUID getHintId();
+    method @NonNull public final java.util.Set<android.service.personalcontext.Token> getTokens();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature implements android.os.Parcelable {
@@ -43654,6 +43669,7 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationHint.Builder {
     ctor public ConversationHint.Builder(@NonNull android.service.personalcontext.hint.ConversationEvent);
+    method @NonNull public android.service.personalcontext.hint.ConversationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.ConversationHint build();
   }
 
@@ -43686,6 +43702,7 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationHint.Builder {
     ctor public NotificationHint.Builder(@NonNull android.service.personalcontext.hint.NotificationEvent);
+    method @NonNull public android.service.personalcontext.hint.NotificationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.NotificationHint build();
   }
 
@@ -43697,6 +43714,7 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class RecentViewHint.Builder {
     ctor public RecentViewHint.Builder();
     method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder addCapturedText(@NonNull android.service.personalcontext.hint.CapturedText);
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.RecentViewHint build();
     method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder setLocusId(@Nullable String);
   }
@@ -43707,6 +43725,7 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class TextClassificationHint.Builder {
     ctor public TextClassificationHint.Builder(@NonNull android.view.textclassifier.TextClassification.Request);
+    method @NonNull public android.service.personalcontext.hint.TextClassificationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.TextClassificationHint build();
   }
 
@@ -43716,6 +43735,7 @@ package android.service.personalcontext.hint {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class UserInputHint.Builder {
     ctor public UserInputHint.Builder(@NonNull android.service.personalcontext.hint.UserInputText);
+    method @NonNull public android.service.personalcontext.hint.UserInputHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.UserInputHint build();
   }
 
@@ -43757,7 +43777,7 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ActionableInsight.Builder {
     ctor public ActionableInsight.Builder(@NonNull android.service.personalcontext.insight.InsightActionDetails, @NonNull android.service.personalcontext.insight.InsightDisplayDetails);
     method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
-    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addTag(@NonNull String);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.ActionableInsight build();
   }
 
@@ -43768,7 +43788,7 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class BundleInsight.Builder {
     ctor public BundleInsight.Builder();
     method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
-    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addTag(@NonNull String);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.BundleInsight build();
     method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setDataBundle(@NonNull android.os.Bundle);
   }
@@ -43776,7 +43796,7 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public final java.util.UUID getInsightId();
     method @NonNull public final java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
-    method @NonNull public final java.util.Set<java.lang.String> getTags();
+    method @NonNull public final java.util.Set<android.service.personalcontext.Token> getTokens();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class DisplayInsight extends android.service.personalcontext.insight.ContextInsight {
@@ -43786,7 +43806,7 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class DisplayInsight.Builder {
     ctor public DisplayInsight.Builder(@NonNull android.service.personalcontext.insight.InsightDisplayDetails);
     method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
-    method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addTag(@NonNull String);
+    method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.DisplayInsight build();
   }
 

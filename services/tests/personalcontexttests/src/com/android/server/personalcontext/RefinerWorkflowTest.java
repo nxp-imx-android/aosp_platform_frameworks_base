@@ -112,7 +112,7 @@ public class RefinerWorkflowTest {
 
         RefinerWorkflow.start(
                 provider,
-                Set.of(new BundleHint(), new BundleHint()),
+                Set.of(new BundleHint.Builder().build(), new BundleHint.Builder().build()),
                 /* renderToken= */ null,
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,
@@ -139,7 +139,7 @@ public class RefinerWorkflowTest {
 
         RefinerWorkflow.start(
                 provider,
-                Set.of(new BundleHint(), new BundleHint()),
+                Set.of(new BundleHint.Builder().build(), new BundleHint.Builder().build()),
                 /* renderToken= */ null,
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,
@@ -167,7 +167,7 @@ public class RefinerWorkflowTest {
 
         RefinerWorkflow.start(
                 provider,
-                Set.of(new BundleHint(), new BundleHint()),
+                Set.of(new BundleHint.Builder().build(), new BundleHint.Builder().build()),
                 /* renderToken= */ null,
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,
@@ -181,8 +181,8 @@ public class RefinerWorkflowTest {
 
     @Test
     public void testWorkflowWithSeriesRefiners() {
-        final BundleHint hint1 = new BundleHint();
-        final BundleHint hint2 = new BundleHint();
+        final BundleHint hint1 = new BundleHint.Builder().build();
+        final BundleHint hint2 = new BundleHint.Builder().build();
 
         final RefinerWorkflow.EventListener listener = mock(RefinerWorkflow.EventListener.class);
         final RefinerWorkflow.ComponentProvider provider =
@@ -255,7 +255,7 @@ public class RefinerWorkflowTest {
 
         final RefinerWorkflow workflow = RefinerWorkflow.start(
                 provider,
-                Set.of(new BundleHint(), new BundleHint()),
+                Set.of(new BundleHint.Builder().build(), new BundleHint.Builder().build()),
                 /* renderToken= */ null,
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,

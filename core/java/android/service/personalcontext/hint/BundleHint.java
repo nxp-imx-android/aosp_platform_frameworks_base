@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 
 /**
  * A hint that stores arbitrary data in a {@link Bundle}. Should only be used if there is no
@@ -33,20 +34,21 @@ public final class BundleHint extends ContextHint {
     private final Bundle mDataBundle;
 
     /**
-     * Creates a new {@link BundleHint}. Data can be added by writing to the bundle returned by
-     * {@link #getDataBundle()}.
+     * DO NOT USE - This constructor will be removed before API finalization.
+     *
+     * @deprecated Use {@link BundleHint.Builder} instead.
      */
+    @Deprecated
     public BundleHint() {
-        super();
-        mDataBundle = new Bundle();
+        this(new ConstructorParams.Builder().build(), new Bundle());
     }
 
     /**
      * Internal constructor only for use by {@link ContextHint#createHintFromBundle(Bundle)}.
      */
-    BundleHint(@NonNull Bundle bundle) {
-        super(bundle);
-        mDataBundle = bundle.getBundle(KEY_HINT_DATA);
+    BundleHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
+        super(baseParams);
+        mDataBundle = bundle;
     }
 
     /** @hide */
@@ -68,5 +70,44 @@ public final class BundleHint extends ContextHint {
     @Override
     Bundle toBundleImpl() {
         return mDataBundle;
+    }
+
+    /**
+     * Builder used to create a {@link BundleHint}.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    public static final class Builder {
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
+        private final Bundle mBundle = new Bundle();
+
+        /**
+         * Adds a token to the resulting {@link BundleHint}.
+         *
+         * @param token the token to add
+         */
+        @NonNull
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
+            return this;
+        }
+
+        /**
+         * Copies all bundle data to be included in the resulting {@link BundleHint}.
+         *
+         * @param bundle Bundle to copy data from
+         */
+        @NonNull
+        public Builder setDataBundle(@NonNull Bundle bundle) {
+            mBundle.putAll(bundle);
+            return this;
+        }
+
+        /**
+         * @return the built {@link BundleHint}.
+         */
+        @NonNull
+        public BundleHint build() {
+            return new BundleHint(mBaseBuilder.build(), mBundle);
+        }
     }
 }

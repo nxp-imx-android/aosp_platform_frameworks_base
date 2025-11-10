@@ -22,6 +22,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 
 import java.util.Objects;
 
@@ -38,8 +39,9 @@ public final class UserInputHint extends ContextHint {
     private final UserInputText mUserInputText;
 
     /** Creates a new {@link UserInputHint}. */
-    private UserInputHint(@NonNull UserInputText userInputText) {
-        super();
+    private UserInputHint(
+            @NonNull ConstructorParams baseParams, @NonNull UserInputText userInputText) {
+        super(baseParams);
         mUserInputText = requireNonNull(userInputText);
     }
 
@@ -48,11 +50,9 @@ public final class UserInputHint extends ContextHint {
      *
      * @hide
      */
-    UserInputHint(@NonNull Bundle bundle) {
-        super(bundle);
-        final Bundle hintData = bundle.getBundle(KEY_HINT_DATA);
-        requireNonNull(hintData, "Bundle must contain hint data");
-        mUserInputText = hintData.getParcelable(KEY_USER_INPUT_TEXT, UserInputText.class);
+    UserInputHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
+        super(baseParams);
+        mUserInputText = bundle.getParcelable(KEY_USER_INPUT_TEXT, UserInputText.class);
         requireNonNull(mUserInputText, "Bundle must contain user input text");
     }
 
@@ -106,6 +106,7 @@ public final class UserInputHint extends ContextHint {
     /** Builder used to create a {@link UserInputHint}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private UserInputText mUserInputText;
 
         /**
@@ -120,11 +121,22 @@ public final class UserInputHint extends ContextHint {
         }
 
         /**
+         * Adds a token to the resulting {@link UserInputHint}.
+         *
+         * @param token the token to add
+         */
+        @NonNull
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
+            return this;
+        }
+
+        /**
          * @return the built {@link UserInputHint}.
          */
         @NonNull
         public UserInputHint build() {
-            return new UserInputHint(mUserInputText);
+            return new UserInputHint(mBaseBuilder.build(), mUserInputText);
         }
     }
 }

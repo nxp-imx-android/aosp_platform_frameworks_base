@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 
@@ -123,13 +124,13 @@ public final class DisplayInsight extends ContextInsight {
         }
 
         /**
-         * Adds a tag to the resulting {@link ContextInsight}.
+         * Adds a token to the resulting {@link ContextInsight}.
          *
-         * @param tag the tag to add
+         * @param token the token to add
          */
         @NonNull
-        public Builder addTag(@NonNull String tag) {
-            mBaseBuilder.addTag(tag);
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
             return this;
         }
 
