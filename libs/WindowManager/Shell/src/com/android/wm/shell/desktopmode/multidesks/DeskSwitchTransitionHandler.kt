@@ -17,12 +17,15 @@ package com.android.wm.shell.desktopmode.multidesks
 
 import android.content.Context
 import android.graphics.Rect
+import android.os.Handler
 import android.os.IBinder
 import android.view.Choreographer
 import android.view.SurfaceControl
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_DESK_SWITCH
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
 import com.android.wm.shell.common.DisplayController
@@ -49,6 +52,8 @@ class DeskSwitchTransitionHandler(
     private val transitions: Transitions,
     private val displayController: DisplayController,
     private val transactionProvider: () -> SurfaceControl.Transaction,
+    private val shellMainHandler: Handler,
+    private val interactionJankMonitor: InteractionJankMonitor,
 ) : Transitions.TransitionHandler {
 
     constructor(
@@ -57,6 +62,8 @@ class DeskSwitchTransitionHandler(
         desktopState: DesktopState,
         transitions: Transitions,
         displayController: DisplayController,
+        shellMainHandler: Handler,
+        interactionJankMonitor: InteractionJankMonitor,
     ) : this(
         context = context,
         desktopUserRepositories = desktopUserRepositories,
@@ -64,6 +71,8 @@ class DeskSwitchTransitionHandler(
         transitions = transitions,
         displayController = displayController,
         transactionProvider = { SurfaceControl.Transaction() },
+        shellMainHandler = shellMainHandler,
+        interactionJankMonitor = interactionJankMonitor,
     )
 
     private val pendingTransitions = mutableMapOf<IBinder, PendingSwitch>()
@@ -162,6 +171,17 @@ class DeskSwitchTransitionHandler(
             }
         val toDeskEndBounds = Rect(displayBounds)
 
+        val instrumentationChange = changes.fromDesk ?: changes.toDesk
+        val instrumentationSurface = instrumentationChange?.leash
+        if (instrumentationSurface != null) {
+            interactionJankMonitor.begin(
+                instrumentationSurface,
+                context,
+                shellMainHandler,
+                CUJ_DESKTOP_MODE_DESK_SWITCH,
+            )
+        }
+
         startTransaction.apply {
             changes.fromDeskTasks.forEach { c -> setAlpha(c.leash, 1f) }
             changes.fromDesk?.leash?.let { leash ->
@@ -179,6 +199,7 @@ class DeskSwitchTransitionHandler(
                     toDeskStartBounds.top.toFloat(),
                 )
             }
+            setFrameTimeline(Choreographer.getInstance().vsyncId)
             apply()
         }
 
@@ -195,6 +216,7 @@ class DeskSwitchTransitionHandler(
                     changes.toDeskTasks.forEach { c -> setAlpha(c.leash, 1f) }
                 }
                 finishCallback.onTransitionFinished(/* wct */ null)
+                interactionJankMonitor.end(CUJ_DESKTOP_MODE_DESK_SWITCH)
             }
         }
 
@@ -363,6 +385,7 @@ class DeskSwitchTransitionHandler(
         aborted: Boolean,
         finishTransaction: SurfaceControl.Transaction?,
     ) {
+        interactionJankMonitor.end(CUJ_DESKTOP_MODE_DESK_SWITCH)
         // An aborted pending switch transition might mean we're moving from an empty desk to
         // another empty desk, so there won't be animation targets. The desktop wallpaper still
         // needs to be animated though.
