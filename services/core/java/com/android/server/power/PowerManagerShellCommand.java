@@ -22,7 +22,6 @@ import android.app.IAlarmListener;
 import android.app.IAlarmManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.os.Flags;
 import android.os.PowerManager;
@@ -33,11 +32,11 @@ import android.os.ServiceManager;
 import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.util.ArrayMap;
+import android.util.IntArray;
 import android.util.Pair;
 import android.view.Display;
 
 import com.android.server.LocalServices;
-import com.android.server.pm.pkg.AndroidPackage;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -311,12 +310,76 @@ class PowerManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    private IntArray getFollowingIds() {
+        String opt;
+        IntArray ids = new IntArray();
+        while ((opt = peekNextArg()) != null) {
+            try {
+                ids.add(Integer.parseInt(opt));
+                // Go to next arg, since we only peeked earlier.
+                getNextArg();
+            } catch (NumberFormatException e) {
+                return ids;
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * Usage:
+     * adb shell cmd power sleep
+     * adb shell cmd power sleep --group-id 0 1 2 --disable-wakelocks
+     * adb shell cmd power sleep --group-id 0 1 2
+     * adb shell cmd power sleep --disable-wakelocks
+     */
     private int runSleep() {
-        boolean disableWakelocks = "--disable-wakelocks".equals(getNextArg());
+        PowerManagerInternal pmInternal = LocalServices.getService(PowerManagerInternal.class);
+        boolean disableWakelocks = false;
+        IntArray groupIds = new IntArray();
+        IntArray displayIds = new IntArray();
+
+        while (peekNextArg() != null) {
+            String arg = getNextArg();
+            switch (arg) {
+                case "--disable-wakelocks" -> disableWakelocks = true;
+                case "--group-id" -> groupIds = getFollowingIds();
+                case "--display-id" -> displayIds = getFollowingIds();
+            }
+        }
+
         if (disableWakelocks) {
-            PowerManagerInternal pmInternal = LocalServices.getService(PowerManagerInternal.class);
             pmInternal.setForceDisableWakelocks(true);
         }
+
+        if (groupIds.size() > 0) {
+            pmInternal.goToSleepPerGroup(groupIds,
+                    SystemClock.uptimeMillis(),
+                    PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                    PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
+        }
+
+        if (displayIds.size() > 0) {
+            try {
+                for (int i = 0; i < displayIds.size(); i++) {
+                    mService.goToSleepWithDisplayId(
+                            displayIds.get(i),
+                            SystemClock.uptimeMillis(),
+                            PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                            PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
+                }
+            } catch (Exception e) {
+                final PrintWriter pw = getOutPrintWriter();
+                pw.println("Error: " + e);
+                return -1;
+            }
+        }
+
+        if (groupIds.size() > 0 || displayIds.size() > 0) {
+            return 0;
+        }
+
+        // If neither groups nor display ids have been specified, send only default & adjacent
+        // groups to sleep.
         try {
             mService.goToSleep(
                     SystemClock.uptimeMillis(),
@@ -327,6 +390,7 @@ class PowerManagerShellCommand extends ShellCommand {
             pw.println("Error: " + e);
             return -1;
         }
+
         return 0;
     }
 
@@ -432,9 +496,20 @@ class PowerManagerShellCommand extends ShellCommand {
         pw.println("    Available wakelocks are described in PowerManager.*_WAKE_LOCK.");
         pw.println("  set-face-down-detector [true|false]");
         pw.println("    sets whether we use face down detector timeouts or not");
-        pw.println("  sleep (--disable-wakelocks)");
+        pw.println("  sleep (--disable-wakelocks) (--group-id <group ids>) ");
         pw.println("    requests to sleep the device");
         pw.println("      --disable-wakelocks: Force disable wakelocks before going to sleep.");
+        pw.println(
+                "      --group-id <group ids>: Only sleep certain power groups, list with spaces.");
+        pw.println(
+                "      --display-id <display ids>: Only sleep power groups of listed displays, "
+                        + "list with spaces.");
+        pw.println(
+                "      If no group ids nor display ids are specified, then default & adjacent "
+                        + "groups will sleep.");
+        pw.println(
+                "      Usage: adb shell cmd power sleep --group-id 0 1 2 --display-id 3 "
+                        + "--disable-wakelocks");
         pw.println("  wakeup (<delay>) (--restore-wakelocks)");
         pw.println("    requests to wake up the device. If a delay of milliseconds is specified,");
         pw.println("    alarm manager will schedule a wake up after the delay.");
@@ -442,6 +517,6 @@ class PowerManagerShellCommand extends ShellCommand {
         pw.println("        It will not restore wakelocks that are generically disabled.");
 
         pw.println();
-        Intent.printIntentArgsHelp(pw , "");
+        Intent.printIntentArgsHelp(pw, "");
     }
 }

@@ -4721,7 +4721,7 @@ public final class PowerManagerService extends SystemService
                     }
                 }
             }
-            // Disable all PARTAIL_WAKE_LOCKS if mForceDisableWakelocks is true.
+            // Disable all PARTIAL_WAKE_LOCKS if mForceDisableWakelocks is true.
             if (mForceDisableWakelocks) {
                 disabled = true;
             }
@@ -7947,6 +7947,11 @@ public final class PowerManagerService extends SystemService
             Message msg = mHandler.obtainMessage(MSG_FORCE_DISABLE_WAKELOCKS,
                     force ? 1 : 0,  0 /*unused*/);
             mHandler.sendMessageAtTime(msg, mClock.uptimeMillis());
+        }
+
+        @Override
+        public void goToSleepPerGroup(IntArray groupIds, long eventTime, int reason, int flags) {
+            goToSleepInternal(groupIds, eventTime, reason, flags);
         }
     }
 
