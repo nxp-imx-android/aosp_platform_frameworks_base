@@ -21,12 +21,18 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.statusbar.featurepods.assistant.data.repository.assistantRepository
+import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
+import com.android.systemui.statusbar.policy.domain.interactor.userSetupInteractor
+import com.android.systemui.user.domain.interactor.userLogoutInteractor
 
 val Kosmos.assistantIconInteractor by
     Kosmos.Fixture {
         AssistantIconInteractorImpl(
             resources = mainResources,
             scope = applicationCoroutineScope,
+            userSetupInteractor = userSetupInteractor,
+            userLogoutInteractor = userLogoutInteractor,
+            deviceProvisioningInteractor = deviceProvisioningInteractor,
             deviceEntryInteractor = deviceEntryInteractor,
             assistantRepository = assistantRepository,
         )

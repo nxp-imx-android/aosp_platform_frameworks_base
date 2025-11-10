@@ -34,7 +34,13 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.featurepods.assistant.data.repository.fakeAssistantRepository
 import com.android.systemui.statusbar.featurepods.assistant.shared.model.AssistantIconSharedModel
 import com.android.systemui.statusbar.phone.BiometricUnlockController
+import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
+import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
+import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
+import com.android.systemui.statusbar.policy.domain.interactor.userSetupInteractor
 import com.android.systemui.testKosmosNew
+import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.domain.interactor.userLogoutInteractor
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -45,7 +51,9 @@ import org.junit.runner.RunWith
 class AssistantIconInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
-    private val deviceEntryInteractor = kosmos.deviceEntryInteractor
+    private val userRepository = kosmos.fakeUserRepository
+    private val userSetupRepository = kosmos.fakeUserSetupRepository
+    private val deviceProvisioningRepository = kosmos.fakeDeviceProvisioningRepository
     private val assistantRepository = kosmos.fakeAssistantRepository
 
     private val Kosmos.underTest by
@@ -53,6 +61,9 @@ class AssistantIconInteractorTest : SysuiTestCase() {
             AssistantIconInteractorImpl(
                 resources = kosmos.mainResources,
                 scope = kosmos.applicationCoroutineScope,
+                userSetupInteractor = userSetupInteractor,
+                userLogoutInteractor = userLogoutInteractor,
+                deviceProvisioningInteractor = deviceProvisioningInteractor,
                 deviceEntryInteractor = deviceEntryInteractor,
                 assistantRepository = assistantRepository,
             )
@@ -61,6 +72,9 @@ class AssistantIconInteractorTest : SysuiTestCase() {
     @Before
     fun setup() {
         overrideResource(R.string.config_statusBarAssistantPackage, ASSISTANT_PACKAGE)
+        setUserLoggedIn(true)
+        userSetupRepository.setUserSetUp(true)
+        deviceProvisioningRepository.setDeviceProvisioned(true)
     }
 
     @Test
@@ -76,6 +90,51 @@ class AssistantIconInteractorTest : SysuiTestCase() {
             assertThat(assistInfo!!.packageName).isEqualTo(ASSISTANT_PACKAGE)
 
             assertThat(deviceEntered).isFalse()
+
+            assertThat(assistantIconSharedModel).isEqualTo(DEFAULT_MODEL)
+        }
+
+    @Test
+    fun model_isDefault_whenUserNotSetup() =
+        kosmos.runTest {
+            assistantRepository.setAssistInfo(ComponentName(ASSISTANT_PACKAGE, ASSISTANT_CLASS))
+            setDeviceEntered()
+            userSetupRepository.setUserSetUp(false)
+
+            val assistantIconSharedModel by collectLastValue(underTest.assistantIconSharedModel)
+
+            assertThat(assistantIconSharedModel).isEqualTo(DEFAULT_MODEL)
+        }
+
+    @Test
+    fun model_isDefault_whenDeviceNotProvisioned() =
+        kosmos.runTest {
+            assistantRepository.setAssistInfo(ComponentName(ASSISTANT_PACKAGE, ASSISTANT_CLASS))
+            setDeviceEntered()
+            deviceProvisioningRepository.setDeviceProvisioned(false)
+
+            val assistantIconSharedModel by collectLastValue(underTest.assistantIconSharedModel)
+
+            assertThat(assistantIconSharedModel).isEqualTo(DEFAULT_MODEL)
+        }
+
+    @Test
+    fun model_isDefault_whenUserSignedOut() =
+        kosmos.runTest {
+            assistantRepository.setAssistInfo(ComponentName(ASSISTANT_PACKAGE, ASSISTANT_CLASS))
+            setDeviceEntered()
+            setUserLoggedIn(false)
+
+            val assistInfo by collectLastValue(assistantRepository.assistInfo)
+            val deviceEntered by collectLastValue(deviceEntryInteractor.isDeviceEntered)
+            val userLoggedIn by collectLastValue(userLogoutInteractor.isLogoutEnabled)
+            val assistantIconSharedModel by collectLastValue(underTest.assistantIconSharedModel)
+
+            assertThat(assistInfo).isNotNull()
+            assertThat(assistInfo!!.packageName).isEqualTo(ASSISTANT_PACKAGE)
+            assertThat(deviceEntered).isTrue()
+
+            assertThat(userLoggedIn).isFalse()
 
             assertThat(assistantIconSharedModel).isEqualTo(DEFAULT_MODEL)
         }
@@ -129,6 +188,11 @@ class AssistantIconInteractorTest : SysuiTestCase() {
         )
         kosmos.sceneInteractor.changeScene(Scenes.Gone, "test")
         assertThat(kosmos.deviceEntryInteractor.isDeviceEntered.value).isTrue()
+    }
+
+    private fun setUserLoggedIn(isLoggedIn: Boolean) {
+        // Note: logout enabled means the user is currently in logged in status.
+        userRepository.setUserManagerLogoutEnabled(isLoggedIn)
     }
 
     private companion object {
