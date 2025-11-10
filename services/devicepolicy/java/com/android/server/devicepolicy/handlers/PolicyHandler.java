@@ -108,14 +108,30 @@ public class PolicyHandler<T> {
                     @Override
                     protected void storePolicyValue(
                             CallerIdentity caller, int scope, Integer value) {
-                        if (value == null || value == PolicyIdentifier.SCREEN_CAPTURE_ALLOWED) {
+                        if (value == null) {
                             clearPolicy(caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED, scope);
                         } else {
+                            boolean isDisabled =
+                                    value == PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED;
                             storePolicy(
                                     caller,
                                     PolicyDefinition.SCREEN_CAPTURE_DISABLED,
                                     scope,
-                                    /* isScreenCaptureDisabled= */ new BooleanPolicyValue(true));
+                                    new BooleanPolicyValue(isDisabled));
+                        }
+                    }
+
+                    @Override
+                    protected Integer getPolicyValue(CallerIdentity caller, int scope) {
+                        Boolean isDisabled =
+                                getPolicySetByAdmin(
+                                        caller, PolicyDefinition.SCREEN_CAPTURE_DISABLED, scope);
+                        if (isDisabled == null) {
+                            return null;
+                        } else if (isDisabled) {
+                            return PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED;
+                        } else {
+                            return PolicyIdentifier.SCREEN_CAPTURE_ALLOWED;
                         }
                     }
                 });
