@@ -15,7 +15,7 @@ public class AdbRestoreFinishedRunnable implements Runnable {
     private final int mToken;
     private final UserBackupManagerService mBackupManagerService;
 
-    AdbRestoreFinishedRunnable(IBackupAgent agent, int token,
+    public AdbRestoreFinishedRunnable(IBackupAgent agent, int token,
             UserBackupManagerService backupManagerService) {
         mAgent = agent;
         mToken = token;
