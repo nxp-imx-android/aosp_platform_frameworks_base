@@ -55,6 +55,7 @@ import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.psc.Constants.PERCEPTIBLE_APP_ADJ;
 
 import android.annotation.IntDef;
+import android.annotation.NonNull;
 import android.annotation.RequiresNoPermission;
 import android.annotation.UptimeMillisLong;
 import android.app.ActivityManager;
@@ -96,6 +97,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BinderfsStatsReader;
+import com.android.internal.os.KernelAllocationStats;
 import com.android.internal.os.ProcLocksReader;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.ServiceThread;
@@ -339,6 +341,28 @@ public class CachedAppOptimizer {
         void performNativeCompaction(CompactProfile action, int pid) throws IOException;
     }
 
+    /**
+     * An interface to abstract away static KernelAllocationStats calls for testing.
+     */
+    @VisibleForTesting
+    interface KernelAllocationStatsProvider {
+        KernelAllocationStats.ProcessGpuMem[] getGpuAllocations();
+        long getDmabufSizeForProcessKb(int pid);
+    }
+
+    private static class DefaultKernelAllocationStatsProvider
+            implements KernelAllocationStatsProvider {
+        @Override
+        public KernelAllocationStats.ProcessGpuMem[] getGpuAllocations() {
+            return KernelAllocationStats.getGpuAllocations();
+        }
+
+        @Override
+        public long getDmabufSizeForProcessKb(int pid) {
+            return KernelAllocationStats.getDmabufSizeForProcessKb(pid);
+        }
+    }
+
     // This indicates the compaction we want to perform
     public enum CompactProfile {
         NONE, // No compaction
@@ -565,6 +589,9 @@ public class CachedAppOptimizer {
 
     private volatile IMmd mMmd;
     private volatile Boolean mHasZramWritebackSupport;
+
+    private KernelAllocationStatsProvider mKernelAllocationStats =
+            new DefaultKernelAllocationStatsProvider();
 
     public CachedAppOptimizer(ActivityManagerService am) {
         this(am, null, new DefaultProcessDependencies());
@@ -1616,6 +1643,11 @@ public class CachedAppOptimizer {
         mMmd = mmd;
     }
 
+    @VisibleForTesting
+    void setKernelAllocationStatsForTest(@NonNull KernelAllocationStatsProvider provider) {
+        mKernelAllocationStats = provider;
+    }
+
     private static int getCompactionFlags(CompactProfile profile) {
         if (profile == CompactProfile.FULL) {
             return COMPACT_ACTION_FILE_FLAG | COMPACT_ACTION_ANON_FLAG;
@@ -1652,6 +1684,20 @@ public class CachedAppOptimizer {
                 FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_OTHER_REASONS;
         String processNameForLogging =
                 (processName != null && processName.equals(packageName)) ? null : processName;
+        long graphicsMemKb = 0;
+        final KernelAllocationStats.ProcessGpuMem[] gpuAllocations =
+                mKernelAllocationStats.getGpuAllocations();
+        if (gpuAllocations != null) {
+            for (final KernelAllocationStats.ProcessGpuMem pgm : gpuAllocations) {
+                if (pgm.pid == pid) {
+                    graphicsMemKb = pgm.gpuMemoryKb;
+                    break;
+                }
+            }
+        }
+        final boolean hasGpuMemory = graphicsMemKb > 0;
+        final long dmaBufMemKb =
+                mKernelAllocationStats.getDmabufSizeForProcessKb(pid);
         try {
             if (zramUsedDeltaKb >= ZRAM_WRITEBACK_THRESHOLD_KB) {
                 eventTypeToLog =
@@ -1663,6 +1709,18 @@ public class CachedAppOptimizer {
                 eventTypeToLog =
                         FrameworkStatsLog
                                 .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_NO_ACTIVITY;
+                return;
+            }
+            if (hasGpuMemory) {
+                eventTypeToLog =
+                        FrameworkStatsLog
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_HAS_GPU_MEMORY;
+                return;
+            }
+            if (dmaBufMemKb > 0) {
+                eventTypeToLog =
+                        FrameworkStatsLog
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_HAS_DMA_BUF;
                 return;
             }
             final IMmd mmd = getMmd();
@@ -1702,7 +1760,8 @@ public class CachedAppOptimizer {
                                 FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT,
                                         getZramWritebackEventType(status), uid, processName,
                                         hasActivities, zramUsedDeltaKb, bytesWritten,
-                                        /* hasDmaBuf= */ false, /* hasGpuMemory= */ false);
+                                        // the following should both be true if we reach this point.
+                                        dmaBufMemKb > 0, hasGpuMemory);
                             }
                         };
                 try {
@@ -1731,7 +1790,7 @@ public class CachedAppOptimizer {
         } finally {
             FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT, eventTypeToLog, uid,
                     processName, hasActivities, zramUsedDeltaKb, /* zramBytesWritten= */ 0,
-                    /* hasDmaBuf= */ false, /* hasGpuMemory= */ false);
+                    dmaBufMemKb > 0, hasGpuMemory);
         }
     }
 

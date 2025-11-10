@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -52,6 +53,7 @@ import android.text.TextUtils;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.internal.os.KernelAllocationStats;
 import com.android.modules.utils.testing.TestableDeviceConfig;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
@@ -104,6 +106,9 @@ public final class CachedAppOptimizerTest {
     @Mock
     private IMmd mIMmd;
 
+    @Mock
+    private CachedAppOptimizer.KernelAllocationStatsProvider mKernelAllocProvider;
+
     // Control whether the freezer mock reports that freezing is enabled or not.
     private boolean mUseFreezer;
 
@@ -145,6 +150,8 @@ public final class CachedAppOptimizerTest {
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInt);
         mCachedAppOptimizerUnderTest.setMmd(mIMmd);
+        mCachedAppOptimizerUnderTest.setKernelAllocationStatsForTest(
+                mKernelAllocProvider);
 
         mCachedAppOptimizerUnderTest.init();
         mCachedAppOptimizerUnderTest.mCompactStatsManager.reinit();
@@ -771,6 +778,37 @@ public final class CachedAppOptimizerTest {
         long[] rssAfter =
                 new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/
                         204800};
+        verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ true,
+                /*shouldBeCalled*/ false);
+    }
+
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
+    @Test
+    public void zramWritebackNotInitiatedDueToGpuMemory() throws Exception {
+        final int pid = 1;
+        KernelAllocationStats.ProcessGpuMem[] gpuAllocations =
+                new KernelAllocationStats.ProcessGpuMem[1];
+        gpuAllocations[0] = new KernelAllocationStats.ProcessGpuMem(pid, 1024);
+        doReturn(gpuAllocations).when(mKernelAllocProvider).getGpuAllocations();
+
+        long[] rssAfter =
+                new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
+        verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ true,
+                /*shouldBeCalled*/ false);
+    }
+
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
+    @Test
+    public void zramWritebackNotInitiatedDueToDmaBuf() throws Exception {
+        final int pid = 1;
+        doReturn(1024L).when(mKernelAllocProvider).getDmabufSizeForProcessKb(pid);
+
+        long[] rssAfter =
+                new long[]{/*totalRSS*/ 9000, /*fileRSS*/ 9000, /*anonRSS*/ 11000, /*swap*/9000};
         verifyZramWriteback(rssAfter, /*hasActivities*/ true, /*supportsZramOps*/ true,
                 /*shouldBeCalled*/ false);
     }
