@@ -13000,6 +13000,7 @@ package android.provider {
     field public static final String ACTION_TETHER_SETTINGS = "android.settings.TETHER_SETTINGS";
     field public static final String ACTION_TETHER_UNSUPPORTED_CARRIER_UI = "android.settings.TETHER_UNSUPPORTED_CARRIER_UI";
     field public static final String ACTION_USER_SETTINGS = "android.settings.USER_SETTINGS";
+    field @FlaggedApi("android.app.supervision.flags.enable_supervision_settings_ui_updates") public static final String MANAGE_SUPERVISION_APP_SETTINGS = "android.settings.MANAGE_SUPERVISION_APP_SETTINGS";
   }
 
   public static final class Settings.Global extends android.provider.Settings.NameValueTable {
