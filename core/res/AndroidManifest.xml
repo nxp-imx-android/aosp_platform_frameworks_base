@@ -2955,7 +2955,7 @@
 
     <!-- Allows an assistant application to read screen content in the AssistStructure.
 
-         <p class="note"><strong>Note:</strong> Beginning with Android 17.0
+         <p class="note"><strong>Note:</strong> Beginning with
          {@link Android C android.os.Build.VERSION_CODES.CINNAMON_BUN } This
          permission is required by any VoiceInteractionService that wishes to
          receive screen content in the AssistStructure when the assistant's
