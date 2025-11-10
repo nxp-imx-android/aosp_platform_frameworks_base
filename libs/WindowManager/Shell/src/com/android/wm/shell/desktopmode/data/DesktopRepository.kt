@@ -134,10 +134,7 @@ class DesktopRepository(
     /** Stores the last state of the given display, along with the bounds of the tasks on it. */
     fun preserveDisplay(displayId: Int, uniqueDisplayId: String) {
         logD("preserveDisplay for displayId=%d, uniqueId=%s", displayId, uniqueDisplayId)
-        if (
-            preservedDisplaysByUniqueId.containsKey(uniqueDisplayId) &&
-                DesktopExperienceFlags.ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX.isTrue
-        ) {
+        if (preservedDisplaysByUniqueId.containsKey(uniqueDisplayId)) {
             // Prevents multiple preserve requests from overwriting the previously
             // preserved display. Occurs during boot where we see display disabled
             // + display becoming desktop ineligible both requesting preserve.
