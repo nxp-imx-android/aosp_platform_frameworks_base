@@ -29,6 +29,7 @@ import com.android.systemui.shade.ShadeExpansionStateManager
 import com.android.systemui.shade.TouchLogger.Companion.logTouchesTo
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.transition.ScrimShadeTransitionController
 import com.android.systemui.statusbar.NotificationShadeDepthController
 import com.android.systemui.statusbar.PulseExpansionHandler
@@ -68,12 +69,30 @@ constructor(
             val shadeInteractor = shadeInteractorProvider.get()
 
             combine(
-                    shadeInteractor.shadeExpansion,
+                    shadeInteractor.anyExpansion,
+                    shadeModeInteractorProvider.get().shadeMode,
                     sceneInteractorProvider.get().isTransitionUserInputOngoing,
                     sceneInteractorProvider.get().transitionState,
-                ) { panelExpansion, tracking, transitionState ->
+                ) { panelExpansion, shadeMode, tracking, transitionState ->
                     val fraction =
-                        if (transitionState.isIdle(Scenes.Lockscreen)) 1f else panelExpansion
+                        if (transitionState.isIdle(Scenes.Lockscreen)) {
+                            1f
+                        } else if (
+                            shadeMode == ShadeMode.Single &&
+                                (transitionState.isTransitioning(
+                                    Scenes.Shade,
+                                    Scenes.QuickSettings,
+                                ) ||
+                                    transitionState.isTransitioning(
+                                        Scenes.QuickSettings,
+                                        Scenes.Shade,
+                                    ))
+                        ) {
+                            // Legacy behavior was that shade to QS and vice versa was 1f
+                            1f
+                        } else {
+                            panelExpansion
+                        }
                     shadeExpansionStateManager.onPanelExpansionChanged(
                         fraction = fraction,
                         expanded = fraction > 0f,
