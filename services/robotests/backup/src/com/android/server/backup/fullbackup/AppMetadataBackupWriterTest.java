@@ -5,9 +5,12 @@ import static com.android.server.backup.UserBackupManagerService.BACKUP_MANIFEST
 import static com.android.server.backup.UserBackupManagerService.BACKUP_METADATA_FILENAME;
 import static com.android.server.backup.UserBackupManagerService.BACKUP_METADATA_VERSION;
 import static com.android.server.backup.UserBackupManagerService.BACKUP_WIDGET_METADATA_TOKEN;
+import static com.android.server.backup.UserBackupManagerService.CROSS_PLATFORM_MANIFEST_FILENAME;
+import static com.android.server.backup.crossplatform.PlatformConfigParser.PLATFORM_IOS;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 import static org.testng.Assert.expectThrows;
 
@@ -27,12 +30,16 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
 
+import com.android.server.backup.crossplatform.CrossPlatformManifest;
+import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.testing.shadows.ShadowBackupDataInput;
 import com.android.server.testing.shadows.ShadowBackupDataOutput;
 import com.android.server.testing.shadows.ShadowFullBackup;
 
 import org.junit.After;
 import org.junit.Before;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -50,6 +57,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
+import java.util.Collections;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(
@@ -72,9 +80,11 @@ public class AppMetadataBackupWriterTest {
     private File mBackupDataOutputFile;
     private FullBackupDataOutput mOutput;
     private AppMetadataBackupWriter mBackupWriter;
+    @Mock private BackupEligibilityRules mBackupEligibilityRules;
 
     @Before
     public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
         Application application = RuntimeEnvironment.application;
 
         mUserId = UserHandle.USER_SYSTEM;
@@ -275,6 +285,30 @@ public class AppMetadataBackupWriterTest {
         assertThat(firstRunBytes).isEqualTo(secondRunBytes);
     }
 
+    @Test
+    public void backupCrossPlatformManifest_writesCorrectData() throws Exception {
+        PackageInfo packageInfo =
+                createPackageInfo(TEST_PACKAGE, TEST_PACKAGE_VERSION_CODE);
+        packageInfo.signingInfo =
+                new SigningInfo(
+                        new SigningDetails(
+                                new Signature[] {new Signature("1234")},
+                                SigningDetails.SignatureSchemeVersion.SIGNING_BLOCK_V3,
+                                null,
+                                null));
+        mBackupWriter = new AppMetadataBackupWriter(
+                mOutput, mPackageManager, packageInfo, mFilesDir);
+        when(mBackupEligibilityRules.getPlatformSpecificParams(
+                        packageInfo.applicationInfo, PLATFORM_IOS))
+                .thenReturn(Collections.emptyList());
+
+        mBackupWriter.backupCrossPlatformManifest(mBackupEligibilityRules);
+
+        byte[] writtenBytes = getWrittenBytes(mBackupDataOutputFile, /* includeTarHeader */ false);
+        CrossPlatformManifest manifest = CrossPlatformManifest.parseFrom(writtenBytes);
+        assertThat(manifest.getPackageName()).isEqualTo(TEST_PACKAGE);
+    }
+
     /**
      * Creates a test package and registers it with the package manager.
      */
@@ -321,4 +355,3 @@ public class AppMetadataBackupWriterTest {
         return apkFile;
     }
 }
-

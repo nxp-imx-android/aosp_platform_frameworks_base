@@ -18,8 +18,6 @@ package com.android.server.backup.fullbackup;
 
 import static com.android.server.backup.BackupManagerService.DEBUG;
 import static com.android.server.backup.BackupManagerService.TAG;
-import static com.android.server.backup.UserBackupManagerService.CROSS_PLATFORM_MANIFEST_FILENAME;
-import static com.android.server.backup.crossplatform.PlatformConfigParser.PLATFORM_IOS;
 
 import android.annotation.UserIdInt;
 import android.app.ApplicationThreadConstants;
@@ -42,7 +40,6 @@ import com.android.server.backup.BackupRestoreTask;
 import com.android.server.backup.Flags;
 import com.android.server.backup.OperationStorage.OpType;
 import com.android.server.backup.UserBackupManagerService;
-import com.android.server.backup.crossplatform.CrossPlatformManifest;
 import com.android.server.backup.remote.RemoteCall;
 import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.backup.utils.BackupManagerMonitorEventSender;
@@ -122,7 +119,7 @@ public class FullBackupEngine {
                 if (Flags.enableCrossPlatformTransfer()
                         && (mTransportFlags & BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS)
                                 != 0) {
-                    backupCrossPlatformManifest(output, mPackage.applicationInfo);
+                    appMetadataBackupWriter.backupCrossPlatformManifest(mBackupEligibilityRules);
                 }
 
                 Slog.d(TAG, "Calling doFullBackup() on " + packageName);
@@ -151,35 +148,6 @@ public class FullBackupEngine {
                 } catch (IOException e) {
                 }
             }
-        }
-
-        /** Back up the app's cross platform manifest. */
-        private void backupCrossPlatformManifest(
-                FullBackupDataOutput output, ApplicationInfo applicationInfo) throws IOException {
-            CrossPlatformManifest manifest =
-                    CrossPlatformManifest.create(
-                            mPackage,
-                            PLATFORM_IOS,
-                            mBackupEligibilityRules.getPlatformSpecificParams(
-                                    applicationInfo, PLATFORM_IOS));
-            File manifestFile = new File(mFilesDir, CROSS_PLATFORM_MANIFEST_FILENAME);
-            try (FileOutputStream out = new FileOutputStream(manifestFile)) {
-                out.write(manifest.toByteArray());
-            }
-
-            // We want the manifest block in the archive stream to be constant each time we generate
-            // a backup stream for the app. However, the underlying TAR mechanism sees it as a file
-            // and will propagate its last modified time. We pin the last modified time to zero to
-            // prevent the TAR header from varying.
-            manifestFile.setLastModified(0);
-
-            FullBackup.backupToTar(
-                    mPackage.packageName,
-                    /* domain= */ null,
-                    /* linkdomain= */ null,
-                    mFilesDir.getAbsolutePath(),
-                    manifestFile.getAbsolutePath(),
-                    output);
         }
     }
 

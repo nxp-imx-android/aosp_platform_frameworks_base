@@ -7,6 +7,8 @@ import static com.android.server.backup.UserBackupManagerService.BACKUP_METADATA
 import static com.android.server.backup.UserBackupManagerService.BACKUP_MANIFEST_VERSION;
 import static com.android.server.backup.UserBackupManagerService.BACKUP_METADATA_VERSION;
 import static com.android.server.backup.UserBackupManagerService.BACKUP_WIDGET_METADATA_TOKEN;
+import static com.android.server.backup.UserBackupManagerService.CROSS_PLATFORM_MANIFEST_FILENAME;
+import static com.android.server.backup.crossplatform.PlatformConfigParser.PLATFORM_IOS;
 
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -22,6 +24,7 @@ import android.util.Log;
 import android.util.StringBuilderPrinter;
 
 import com.android.internal.util.Preconditions;
+import com.android.server.backup.crossplatform.CrossPlatformManifest;
 import com.android.server.backup.utils.BackupEligibilityRules;
 
 import java.io.BufferedOutputStream;
@@ -33,7 +36,7 @@ import java.io.IOException;
 /**
  * Writes the backup of app-specific metadata to {@link FullBackupDataOutput}. This data is not
  * backed up by the app's backup agent and is written before the agent writes its own data. This
- * includes the app's manifest, widget data and cross-platform data.
+ * includes the app's manifest, widget data and {@link CrossPlatformManifest}.
  */
 public class AppMetadataBackupWriter {
     private final FullBackupDataOutput mOutput;
@@ -185,6 +188,49 @@ public class AppMetadataBackupWriter {
                 mOutput);
 
         metadataFile.delete();
+    }
+
+    /**
+     * Back up the app's cross platform manifest.
+     *
+     * <ol>
+     *   <li>Create a temporary file {@code manifestFile} in the specified directory {@code
+     *       filesDir}.
+     *   <li>Write the app's cross platform manifest data to the specified temporary file {@code
+     *       manifestFile}.
+     *   <li>Backup the file in TAR format to the backup destination {@link #mOutput}.
+     *   <li>Delete the temporary file.
+     * </ol>
+     *
+     */
+    public void backupCrossPlatformManifest(BackupEligibilityRules backupEligibilityRules)
+            throws IOException {
+        CrossPlatformManifest manifest =
+                CrossPlatformManifest.create(
+                        mPackageInfo,
+                        PLATFORM_IOS,
+                        backupEligibilityRules.getPlatformSpecificParams(
+                                mPackageInfo.applicationInfo, PLATFORM_IOS));
+        File manifestFile = new File(mFilesDir, CROSS_PLATFORM_MANIFEST_FILENAME);
+        try (FileOutputStream out = new FileOutputStream(manifestFile)) {
+            out.write(manifest.toByteArray());
+        }
+
+        // We want the manifest block in the archive stream to be constant each time we generate
+        // a backup stream for the app. However, the underlying TAR mechanism sees it as a file
+        // and will propagate its last modified time. We pin the last modified time to zero to
+        // prevent the TAR header from varying.
+        manifestFile.setLastModified(0);
+
+        FullBackup.backupToTar(
+                mPackageInfo.packageName,
+                /* domain= */ null,
+                /* linkDomain= */ null,
+                mFilesDir.getAbsolutePath(),
+                manifestFile.getAbsolutePath(),
+                mOutput);
+
+        manifestFile.delete();
     }
 
     /**
