@@ -538,7 +538,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         // Determine if the notification has no content *below* the header/top line
         val hasTextBelowHeader = !content.text.isNullOrEmpty()
         val hasTitleBelowHeader = !content.title.isNullOrEmpty() && headerTitleView == null
-
         val isSingleLine = !hasTitleBelowHeader && !hasTextBelowHeader
 
         // the collapsed form doesn't show the app name unless there is no other text in the header
@@ -546,13 +545,13 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         val hideAppName = (!appNameRequired && collapsed)
 
         // We're only showing the top line (e.g. for redacted notifs), so center it
-        header?.centerTopLine(isSingleLine)
+        val isMetricStyle = !content.metrics.isNullOrEmpty()
+        header?.centerTopLine(!isMetricStyle && isSingleLine)
         // We normally use the (empty) actions container for the bottom padding of the notification,
         // but that's not necessary when single line
         // NOTE: Metric Style notifications show title in topline and
         // they have only 1 line below topline for single metric
-        val isMetricStyleWithSingleMetric = content.metrics?.size == 1
-        actionsContainer?.isVisible = !(isSingleLine || isMetricStyleWithSingleMetric)
+        actionsContainer?.isVisible = !isSingleLine
 
         updateAppName(content, forceHide = hideAppName)
         updateTextView(headerTextSecondary, content.subText)
@@ -562,6 +561,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         updateHeaderDividers(content, hideTitle = !hasTitleInHeader, hideAppName = hideAppName)
     }
+
+    private val PromotedNotificationContentModel.isMetricStyleWithSingleMetric
+        get(): Boolean {
+            return metrics?.size == 1
+        }
 
     private fun updateHeaderDividers(
         content: PromotedNotificationContentModel,
