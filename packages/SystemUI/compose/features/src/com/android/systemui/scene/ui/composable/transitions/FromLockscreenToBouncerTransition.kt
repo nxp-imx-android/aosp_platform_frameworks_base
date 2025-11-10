@@ -7,7 +7,7 @@ import com.android.systemui.bouncer.ui.composable.Bouncer
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 
 fun TransitionBuilder.lockscreenToBouncerTransition(durationScale: Double = 1.0) {
-    lockscreenToOverlayTransition(durationScale = durationScale)
+    lockscreenFadeOutTransition(durationScale = durationScale)
     toBouncerTransition()
 
     fractionRange(end = 0.3f, easing = Easings.PredictiveBack) {
