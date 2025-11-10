@@ -38,8 +38,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class BubbleBarMenuViewControllerTest {
 
-    @get:Rule
-    val animatorTestRule: AnimatorTestRule = AnimatorTestRule(this)
+    @get:Rule val animatorTestRule: AnimatorTestRule = AnimatorTestRule(this)
     private lateinit var activityScenario: ActivityScenario<TestActivity>
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
@@ -58,44 +57,32 @@ class BubbleBarMenuViewControllerTest {
 
     @Test
     fun showMenu_immediatelyUpdatesVisibility() {
-        activityScenario.onActivity {
-            menuViewController.showMenu(/* animated= */ true)
-        }
+        activityScenario.onActivity { menuViewController.showMenu(/* animated= */ true) }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         assertThat(listener.visible).isTrue()
 
         // advance the animator timer since the actual visibility of the menu is updated in the
         // middle of the animation
-        activityScenario.onActivity {
-            animatorTestRule.advanceTimeBy(600)
-        }
+        activityScenario.onActivity { animatorTestRule.advanceTimeBy(600) }
         assertThat(menuViewController.isMenuVisible).isTrue()
     }
 
     @Test
     fun hideMenu_updatesVisibilityAfterAnimationEnds() {
-        activityScenario.onActivity {
-            menuViewController.showMenu(/* animated= */ true)
-        }
+        activityScenario.onActivity { menuViewController.showMenu(/* animated= */ true) }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         assertThat(listener.visible).isTrue()
 
-        activityScenario.onActivity {
-            animatorTestRule.advanceTimeBy(600)
-        }
+        activityScenario.onActivity { animatorTestRule.advanceTimeBy(600) }
         assertThat(menuViewController.isMenuVisible).isTrue()
 
-        activityScenario.onActivity {
-            menuViewController.hideMenu(/* animated= */ true)
-        }
+        activityScenario.onActivity { menuViewController.hideMenu(/* animated= */ true) }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
         // check that the listener hasn't been notified yet
         assertThat(listener.visible).isTrue()
 
-        activityScenario.onActivity {
-            animatorTestRule.advanceTimeBy(600)
-        }
+        activityScenario.onActivity { animatorTestRule.advanceTimeBy(600) }
         assertThat(listener.visible).isFalse()
         assertThat(menuViewController.isMenuVisible).isFalse()
     }
@@ -119,6 +106,7 @@ class BubbleBarMenuViewControllerTest {
 
     class TestActivity : Activity() {
         lateinit var container: FrameLayout
+
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             container = FrameLayout(applicationContext)

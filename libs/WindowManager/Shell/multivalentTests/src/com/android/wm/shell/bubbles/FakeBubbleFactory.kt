@@ -64,10 +64,7 @@ class FakeBubbleFactory {
             return BubbleViewInfo().apply { bubbleBarExpandedView = bubbleExpandedView }
         }
 
-        fun createChatBubble(
-            context: Context,
-            key: String = "key",
-        ): Bubble {
+        fun createChatBubble(context: Context, key: String = "key"): Bubble {
             val bubble =
                 Bubble(
                     key,

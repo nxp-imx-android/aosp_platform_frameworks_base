@@ -45,7 +45,7 @@ class UserManagerBubbleUserResolverTest {
     @Test
     fun clonedProfile() {
         val userInfo = mock<UserInfo> { on { isCloneProfile } doReturn true }
-        userManager.stub { on { getUserInfo(1) } doReturn userInfo}
+        userManager.stub { on { getUserInfo(1) } doReturn userInfo }
         val bubbleUserInfo = userManagerUserResolver.resolve(userId = 1)
         assertThat(bubbleUserInfo.userType).isEqualTo(UserType.CLONED)
     }
@@ -53,7 +53,7 @@ class UserManagerBubbleUserResolverTest {
     @Test
     fun workProfile() {
         val userInfo = mock<UserInfo> { on { isManagedProfile } doReturn true }
-        userManager.stub { on { getUserInfo(1) } doReturn userInfo}
+        userManager.stub { on { getUserInfo(1) } doReturn userInfo }
         val bubbleUserInfo = userManagerUserResolver.resolve(userId = 1)
         assertThat(bubbleUserInfo.userType).isEqualTo(UserType.WORK)
     }
@@ -61,7 +61,7 @@ class UserManagerBubbleUserResolverTest {
     @Test
     fun privateProfile() {
         val userInfo = mock<UserInfo> { on { isPrivateProfile } doReturn true }
-        userManager.stub { on { getUserInfo(1) } doReturn userInfo}
+        userManager.stub { on { getUserInfo(1) } doReturn userInfo }
         val bubbleUserInfo = userManagerUserResolver.resolve(userId = 1)
         assertThat(bubbleUserInfo.userType).isEqualTo(UserType.PRIVATE)
     }
@@ -69,7 +69,7 @@ class UserManagerBubbleUserResolverTest {
     @Test
     fun mainProfile() {
         val userInfo = mock<UserInfo>()
-        userManager.stub { on { getUserInfo(1) } doReturn userInfo}
+        userManager.stub { on { getUserInfo(1) } doReturn userInfo }
         val bubbleUserInfo = userManagerUserResolver.resolve(userId = 1)
         assertThat(bubbleUserInfo.userType).isEqualTo(UserType.MAIN)
     }
