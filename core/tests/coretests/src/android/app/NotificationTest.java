@@ -1630,6 +1630,22 @@ public class NotificationTest {
     }
 
     @Test
+    public void testProjectedExtender_invalidExtra_noCrash() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setSmallIcon(0)
+                .build();
+        Bundle projectedBundle = new Bundle();
+        projectedBundle.putParcelable(Notification.ProjectedExtender.KEY_CONTENT_INTENT,
+                new Bundle());
+        n.extras.putBundle(Notification.ProjectedExtender.EXTRA_PROJECTED_EXTENDER,
+                projectedBundle);
+
+        new Notification.ProjectedExtender(n);
+
+        // no crash, good
+    }
+
+    @Test
     public void testGetUnreadConversationFromBundle_invalidExtra_noCrash() {
         Bundle fakeTypes = new Bundle();
         fakeTypes.putParcelable(KEY_ON_READ, new Bundle());
@@ -1682,9 +1698,13 @@ public class NotificationTest {
     @Test
     public void testDoesNotStripsExtenders() {
         Notification.Builder nb = new Notification.Builder(mContext, "channel");
+        PendingIntent projectedContentIntent = PendingIntent.getActivity(
+                mContext, 0, new Intent(), PendingIntent.FLAG_IMMUTABLE);
         nb.extend(new Notification.CarExtender().setColor(Color.RED));
         nb.extend(new Notification.TvExtender().setChannelId("different channel"));
         nb.extend(new Notification.WearableExtender().setDismissalId("dismiss"));
+        nb.extend(new Notification.ProjectedExtender()
+                .setContentIntent(projectedContentIntent));
         Notification before = nb.build();
         Notification after = Notification.Builder.maybeCloneStrippedForDelivery(before);
 
@@ -1694,6 +1714,8 @@ public class NotificationTest {
                 new Notification.TvExtender(before).getChannelId());
         Assert.assertEquals(Color.RED, new Notification.CarExtender(before).getColor());
         Assert.assertEquals("dismiss", new Notification.WearableExtender(before).getDismissalId());
+        Assert.assertEquals("different content Intent", projectedContentIntent,
+                new Notification.ProjectedExtender(before).getContentIntent());
     }
 
     @Test

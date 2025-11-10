@@ -7012,7 +7012,7 @@ package android.app {
   }
 
   public static interface Notification.Extender {
-    method public android.app.Notification.Builder extend(android.app.Notification.Builder);
+    method @NonNull public android.app.Notification.Builder extend(@NonNull android.app.Notification.Builder);
   }
 
   public static class Notification.InboxStyle extends android.app.Notification.Style {
@@ -7180,6 +7180,14 @@ package android.app {
     method @NonNull public android.app.Notification.ProgressStyle.Segment setColor(@ColorInt int);
     method @NonNull public android.app.Notification.ProgressStyle.Segment setId(int);
     method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public android.app.Notification.ProgressStyle.Segment setSemanticStyle(int);
+  }
+
+  @FlaggedApi("android.app.api_projected_extender") public static final class Notification.ProjectedExtender implements android.app.Notification.Extender {
+    ctor public Notification.ProjectedExtender();
+    ctor public Notification.ProjectedExtender(@NonNull android.app.Notification);
+    method @NonNull public android.app.Notification.Builder extend(@NonNull android.app.Notification.Builder);
+    method @Nullable public android.app.PendingIntent getContentIntent();
+    method @NonNull public android.app.Notification.ProjectedExtender setContentIntent(@Nullable android.app.PendingIntent);
   }
 
   public abstract static class Notification.Style {
