@@ -104,7 +104,6 @@ import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
@@ -115,6 +114,9 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.testutils.StubTransaction;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 import org.junit.After;
 import org.junit.Before;
@@ -132,7 +134,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Presubmit
-@RunWith(AndroidJUnit4.class)
+@RunWith(JUnitParamsRunner.class)
 public class ComputerControlSessionImplTest {
     private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
     private static final int USER_ID = UserHandle.USER_SYSTEM;
@@ -282,6 +284,7 @@ public class ComputerControlSessionImplTest {
         displayInfo.logicalWidth = DISPLAY_WIDTH;
         displayInfo.logicalHeight = DISPLAY_HEIGHT;
         displayInfo.logicalDensityDpi = DISPLAY_DPI;
+        displayInfo.rotation = Surface.ROTATION_0;
         when(mDisplayManager.getDisplayInfo(MAIN_DISPLAY_ID)).thenReturn(displayInfo);
         when(mDisplayManager.getDisplayInfo(VIRTUAL_DISPLAY_ID)).thenReturn(displayInfo);
 
@@ -366,6 +369,42 @@ public class ComputerControlSessionImplTest {
         assertThat(virtualTouchscreenConfig.getInputDeviceName()).contains(
                 mDefaultParams.getName());
         assertThat(virtualTouchscreenConfig.getProductId()).isEqualTo(PRODUCT_ID_TOUCHSCREEN);
+    }
+
+    @SuppressWarnings("unused") // Parameter for parametrized tests
+    private static Integer[] getAllDisplayRotations() {
+        return new Integer[]{
+                Surface.ROTATION_0,
+                Surface.ROTATION_90,
+                Surface.ROTATION_180,
+                Surface.ROTATION_270,
+        };
+    }
+
+    @Parameters(method = "getAllDisplayRotations")
+    @Test
+    public void createSession_inRotatedDisplay_createsVirtualDisplayInNaturalOrientation(
+            @Surface.Rotation int rotation)
+            throws Exception {
+        mDisplayManager.getDisplayInfo(MAIN_DISPLAY_ID).rotation = rotation;
+
+        createComputerControlSession(mDefaultParams);
+
+        verify(mVirtualDevice).createVirtualDisplay(
+                mVirtualDisplayConfigArgumentCaptor.capture(), any(), any());
+        VirtualDisplayConfig virtualDisplayConfig = mVirtualDisplayConfigArgumentCaptor.getValue();
+        assertThat(virtualDisplayConfig.getDensityDpi()).isEqualTo(DISPLAY_DPI);
+        switch (rotation) {
+            case Surface.ROTATION_0, Surface.ROTATION_180 -> {
+                assertThat(virtualDisplayConfig.getHeight()).isEqualTo(DISPLAY_HEIGHT);
+                assertThat(virtualDisplayConfig.getWidth()).isEqualTo(DISPLAY_WIDTH);
+
+            }
+            case Surface.ROTATION_90, Surface.ROTATION_270 -> {
+                assertThat(virtualDisplayConfig.getHeight()).isEqualTo(DISPLAY_WIDTH);
+                assertThat(virtualDisplayConfig.getWidth()).isEqualTo(DISPLAY_HEIGHT);
+            }
+        }
     }
 
     @Test

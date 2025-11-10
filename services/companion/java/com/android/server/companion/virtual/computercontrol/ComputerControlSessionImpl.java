@@ -295,18 +295,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     .setDevicePolicy(POLICY_TYPE_AUDIO, DEVICE_POLICY_CUSTOM);
         final VirtualDeviceParams virtualDeviceParams = virtualDeviceParamsBuilder.build();
 
-        final int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
-                | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED
-                | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
-
-        final DisplayInfo mainDisplayInfo = mDisplayManagerGlobal.getDisplayInfo(mMainDisplayId);
-        final int displayWidth = mainDisplayInfo.logicalWidth;
-        final int displayHeight = mainDisplayInfo.logicalHeight;
-        final VirtualDisplayConfig virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                mParams.getName() + "-display", displayWidth, displayHeight,
-                mainDisplayInfo.logicalDensityDpi)
-                .setFlags(displayFlags)
-                .build();
+        final VirtualDisplayConfig virtualDisplayConfig = createSessionDisplayConfig(
+                mParams.getName() + "-display",
+                mDisplayManagerGlobal.getDisplayInfo(mMainDisplayId));
+        final int displayWidth = virtualDisplayConfig.getWidth();
+        final int displayHeight = virtualDisplayConfig.getHeight();
 
         mBlockedStateImageReader = ImageReader.newInstance(displayWidth, displayHeight,
                 PixelFormat.RGBA_8888, /* maxImages= */ 1);
@@ -371,6 +364,34 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    /**
+     * Create the session's display to have the same size and density as that of the main display
+     * when it is in its natural orientation.
+     */
+    private static VirtualDisplayConfig createSessionDisplayConfig(String name,
+            DisplayInfo mainDisplayInfo) {
+        final int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
+
+        final int displayWidth;
+        final int displayHeight;
+        if (mainDisplayInfo.rotation == Surface.ROTATION_90
+                || mainDisplayInfo.rotation == Surface.ROTATION_270) {
+            displayWidth = mainDisplayInfo.logicalHeight;
+            displayHeight = mainDisplayInfo.logicalWidth;
+        } else {
+            displayWidth = mainDisplayInfo.logicalWidth;
+            displayHeight = mainDisplayInfo.logicalHeight;
+        }
+
+        return new VirtualDisplayConfig.Builder(
+                name, displayWidth, displayHeight,
+                mainDisplayInfo.logicalDensityDpi)
+                .setFlags(displayFlags)
+                .build();
     }
 
     int getVirtualDisplayId() {
