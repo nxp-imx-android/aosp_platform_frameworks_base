@@ -1459,8 +1459,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
         @Override
         public void onPress() {
-            mLockPatternUtils.requireStrongAuth(STRONG_AUTH_NOT_REQUIRED, UserHandle.USER_ALL);
-
             mUiEventLogger.log(GlobalActionsEvent.GA_LOCK_PRESS);
             try {
                 mIWindowManager.lockNow(null);
