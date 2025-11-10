@@ -950,7 +950,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             BiConsumer<Connection, ProcessRecordInternal> connectionConsumer) {
         final ProcessServiceRecordInternal psr =  app.getServices();
         for (int i = psr.numberOfConnections() - 1; i >= 0; i--) {
-            ConnectionRecordInternal cr = psr.getConnectionAt(i);
+            final ConnectionRecordInternal cr = psr.getConnectionInternalAt(i);
             ProcessRecordInternal service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
                     ? cr.getService().getIsolationHostProcess()
                     : cr.getService().getHostProcess();

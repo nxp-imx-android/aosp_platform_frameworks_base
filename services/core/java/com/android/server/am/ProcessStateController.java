@@ -878,7 +878,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void addConnection(@NonNull ProcessServiceRecord psr, ConnectionRecord cr) {
+    public void addConnection(@NonNull ProcessServiceRecordInternal psr,
+            ConnectionRecordInternal cr) {
         psr.addConnection(cr);
     }
 
@@ -887,7 +888,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void removeConnection(@NonNull ProcessServiceRecord psr, ConnectionRecord cr) {
+    public void removeConnection(@NonNull ProcessServiceRecordInternal psr,
+            ConnectionRecordInternal cr) {
         psr.removeConnection(cr);
     }
 
@@ -896,7 +898,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void removeAllConnections(@NonNull ProcessServiceRecord psr) {
+    public void removeAllConnections(@NonNull ProcessServiceRecordInternal psr) {
         psr.removeAllConnections();
         psr.removeAllSdkSandboxConnections();
     }

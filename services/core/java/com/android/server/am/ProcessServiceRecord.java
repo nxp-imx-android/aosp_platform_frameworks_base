@@ -27,7 +27,6 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
@@ -57,11 +56,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
      * Services that are currently executing code (need to remain foreground).
      */
     private final ArraySet<ServiceRecord> mExecutingServices = new ArraySet<>();
-
-    /**
-     * All outgoing connections from this process.
-     */
-    private final ArraySet<ConnectionRecord> mConnections = new ArraySet<>();
 
     /**
      * A set of UIDs of all bound clients.
@@ -118,9 +112,8 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
 
     void updateHasAboveClientLocked() {
         setHasAboveClient(false);
-        for (int i = mConnections.size() - 1; i >= 0; i--) {
-            ConnectionRecord cr = mConnections.valueAt(i);
-
+        for (int i = numberOfConnections() - 1; i >= 0; i--) {
+            final ConnectionRecord cr = getConnectionAt(i);
             final boolean isSameProcess = cr.binding.service.app != null
                     && cr.binding.service.app.mServices == this;
             if (!isSameProcess && cr.hasFlag(Context.BIND_ABOVE_CLIENT)) {
@@ -228,45 +221,8 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         return !mExecutingServices.isEmpty();
     }
 
-    void addConnection(ConnectionRecord connection) {
-        mConnections.add(connection);
-        addSdkSandboxConnectionIfNecessary(connection);
-    }
-
-    void removeConnection(ConnectionRecord connection) {
-        mConnections.remove(connection);
-        removeSdkSandboxConnectionIfNecessary(connection);
-    }
-
-    void removeAllConnections() {
-        for (int i = 0, size = mConnections.size(); i < size; i++) {
-            removeSdkSandboxConnectionIfNecessary(mConnections.valueAt(i));
-        }
-        mConnections.clear();
-    }
-
-    @Override
-    public ConnectionRecord getConnectionAt(int index) {
-        return mConnections.valueAt(index);
-    }
-
-    @Override
-    public int numberOfConnections() {
-        return mConnections.size();
-    }
-
-    private void addSdkSandboxConnectionIfNecessary(ConnectionRecord connection) {
-        final ProcessRecordInternal attributedClient = connection.getAttributedClient();
-        if (attributedClient != null && connection.getService().isSdkSandbox) {
-            attributedClient.getServices().addSdkSandboxConnection(connection);
-        }
-    }
-
-    private void removeSdkSandboxConnectionIfNecessary(ConnectionRecord connection) {
-        final ProcessRecordInternal attributedClient = connection.getAttributedClient();
-        if (attributedClient != null && connection.getService().isSdkSandbox) {
-            attributedClient.getServices().removeSdkSandboxConnection(connection);
-        }
+    ConnectionRecord getConnectionAt(int index) {
+        return (ConnectionRecord) getConnectionInternalAt(index);
     }
 
     ConnectionRecord getSdkSandboxConnectionAt(int index) {
@@ -448,10 +404,10 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
                 pw.print(prefix); pw.print("  - "); pw.println(mExecutingServices.valueAt(i));
             }
         }
-        if (mConnections.size() > 0) {
+        if (numberOfConnections() > 0) {
             pw.print(prefix); pw.println("mConnections:");
-            for (int i = 0, size = mConnections.size(); i < size; i++) {
-                pw.print(prefix); pw.print("  - "); pw.println(mConnections.valueAt(i));
+            for (int i = 0, size = numberOfConnections(); i < size; i++) {
+                pw.print(prefix); pw.print("  - "); pw.println(getConnectionAt(i));
             }
         }
         pw.print(prefix);
