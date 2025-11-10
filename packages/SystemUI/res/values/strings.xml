@@ -3655,6 +3655,14 @@
     <string name="media_output_dialog_accessibility_seekbar">Volume</string>
     <!-- Summary for media output volume of a device in percentage [CHAR LIMIT=NONE] -->
     <string name="media_output_dialog_volume_percentage"><xliff:g id="percentage" example="10">%1$d</xliff:g>%%</string>
+    <!-- Warning text shown below the list of devices in a dialog letting users choose devices to
+         use as media outputs, when some devices cannot be shown because permissions are missing.
+         [CHAR LIMIT=NONE] -->
+    <string name="media_output_dialog_missing_permissions_warning">Some devices are not visible. Update your app permissions</string>
+    <!-- Text of a button displayed below a warning text indicating that some media output devices
+         are not shown because permissions are missing. Tapping the button triggers a flow for the
+         user to grant the missing permissions to the app. [CHAR LIMIT=NONE] -->
+    <string name="media_output_dialog_warning_button_fix">Fix</string>
     <!-- Title for Connected speakers expandable group. [CHAR LIMIT=NONE] -->
     <string name="media_output_group_title_connected_speakers">Connected speakers</string>
     <!-- Title for Speakers and Displays group. [CHAR LIMIT=NONE] -->

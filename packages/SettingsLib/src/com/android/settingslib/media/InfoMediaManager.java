@@ -62,6 +62,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
@@ -117,6 +118,14 @@ public abstract class InfoMediaManager {
         default void onDeviceSuggestionsUpdated(
                 @NonNull List<SuggestedDeviceInfo> deviceSuggestions) {
         }
+
+        /**
+         * Callback for changes to the missing permissions info.
+         *
+         * @param info the new info.
+         */
+        default void onMissingPermissionsUpdated(@Nullable MissingPermissionsInfo info) {
+        }
     }
 
     /** Checked exception that signals the specified package is not present in the system. */
@@ -147,6 +156,9 @@ public abstract class InfoMediaManager {
 
     @GuardedBy("mLock")
     @Nullable private HandlerThread mCallbackHandlerThread;
+
+    @GuardedBy("mLock")
+    @Nullable private MissingPermissionsInfo mLastNotifiedMissingPermissionsInfo;
 
     /* package */ InfoMediaManager(
             @NonNull Context context,
@@ -285,6 +297,36 @@ public abstract class InfoMediaManager {
     protected abstract List<MediaRoute2Info> getAvailableRoutesFromRouter();
 
     @NonNull
+    protected abstract Set<String> getMissingPermissions();
+
+    @Nullable
+    protected MissingPermissionsInfo getMissingPermissionsInfo() {
+        synchronized (mLock) {
+            return mLastNotifiedMissingPermissionsInfo;
+        }
+    }
+
+    private void refreshMissingPermissionsInfo() {
+        MissingPermissionsInfo newInfo;
+        RouteListingPreference preference = getRouteListingPreference();
+        if (preference == null || preference.getMissingPermissionsComponentName() == null) {
+            newInfo = null;
+        } else {
+            Set<String> permissions = getMissingPermissions();
+            newInfo = new MissingPermissionsInfo(
+                    preference.getMissingPermissionsComponentName(), permissions);
+        }
+
+        synchronized (mLock) {
+            if (Objects.equals(newInfo, mLastNotifiedMissingPermissionsInfo)) {
+                return;
+            }
+            mLastNotifiedMissingPermissionsInfo = newInfo;
+        }
+        dispatchMissingPermissionsUpdated(newInfo);
+    }
+
+    @NonNull
     protected abstract List<MediaRoute2Info> getTransferableRoutes(@NonNull String packageName);
 
     protected final void rebuildDeviceList() {
@@ -313,6 +355,11 @@ public abstract class InfoMediaManager {
             }
         }
         refreshDevices();
+        refreshMissingPermissionsInfo();
+    }
+
+    protected final void notifyMissingPermissionsUpdated(@NonNull Set<String> missingPermissions) {
+        refreshMissingPermissionsInfo();
     }
 
     @VisibleForTesting
@@ -361,6 +408,7 @@ public abstract class InfoMediaManager {
                 mMediaController.registerCallback(mMediaControllerCallback, callbackHandler);
             }
             refreshDevices();
+            refreshMissingPermissionsInfo();
         }
     }
 
@@ -416,6 +464,13 @@ public abstract class InfoMediaManager {
         Log.i(TAG, "dispatchOnRequestFailed(), reason = " + reason);
         for (MediaDeviceCallback callback : mCallbacks) {
             callback.onRequestFailed(reason);
+        }
+    }
+
+    private void dispatchMissingPermissionsUpdated(@Nullable MissingPermissionsInfo info) {
+        Log.i(TAG, "dispatchMissingPermissionsUpdated()");
+        for (MediaDeviceCallback callback : mCallbacks) {
+            callback.onMissingPermissionsUpdated(info);
         }
     }
 
