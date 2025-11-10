@@ -1144,8 +1144,7 @@ public final class MediaRouter2 {
      * Transfers the current media to the given route. If it's necessary a new
      * {@link RoutingController} is created or it is handled within the current routing controller.
      *
-     * @param route the route you want to transfer the current media to. Pass {@code null} to
-     *              stop routing of the current media.
+     * @param route the route you want to transfer the current media to.
      * @see TransferCallback#onTransfer
      * @see TransferCallback#onTransferFailure
      */
@@ -1157,8 +1156,7 @@ public final class MediaRouter2 {
      * Transfers the current media to the given route. If it's necessary a new {@link
      * RoutingController} is created or it is handled within the current routing controller.
      *
-     * @param route the route you want to transfer the current media to. Pass {@code null} to stop
-     *     routing of the current media.
+     * @param route the route you want to transfer the current media to.
      * @param routingChangeInfo information about the start of the media routing session. See {@link
      *     RoutingChangeInfo}
      * @see TransferCallback#onTransfer
