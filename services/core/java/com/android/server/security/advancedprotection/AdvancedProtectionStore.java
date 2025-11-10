@@ -16,8 +16,8 @@
 
 package com.android.server.security.advancedprotection;
 
-import static android.provider.Settings.Secure.ADVANCED_PROTECTION_MODE;
 import static android.provider.Settings.Secure.AAPM_USB_DATA_PROTECTION;
+import static android.provider.Settings.Secure.ADVANCED_PROTECTION_MODE;
 
 import android.annotation.NonNull;
 import android.content.Context;
@@ -27,6 +27,7 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.security.advancedprotection.AdvancedProtectionManager.FeatureId;
 import android.security.advancedprotection.AdvancedProtectionManager.SupportDialogType;
+import android.util.ArrayMap;
 import java.io.File;
 
 class AdvancedProtectionStore {
@@ -36,6 +37,10 @@ class AdvancedProtectionStore {
 
     // Shared preferences keys
     private static final String PREFERENCE = "advanced_protection_preference";
+    private static final String FEATURE_ADMIN_PROVISIONING_MODE_PREFIX =
+            "feature_admin_provisioned_";
+    private static final String FEATURE_ADB_PROVISIONING_MODE_PREFIX =
+            "feature_adb_provisioned_";
     private static final String ENABLED_CHANGE_TIME = "enabled_change_time";
     private static final String LAST_DIALOG_FEATURE_ID = "last_dialog_feature_id";
     private static final String LAST_DIALOG_TYPE = "last_dialog_type";
@@ -44,6 +49,8 @@ class AdvancedProtectionStore {
 
     private final Context mContext;
     private SharedPreferences mSharedPreferences;
+    private final ArrayMap<Integer, Boolean> mFeatureIdToAdminProvisioned = new ArrayMap<>();
+    private final ArrayMap<Integer, Boolean> mFeatureIdToAdbProvisioned = new ArrayMap<>();
 
     AdvancedProtectionStore(@NonNull Context context) {
         mContext = context;
@@ -65,6 +72,70 @@ class AdvancedProtectionStore {
     // Usb data protection is enabled by default
     boolean retrieveUsbDataProtectionEnabled() {
         return retrieveInt(AAPM_USB_DATA_PROTECTION, ON) == ON;
+    }
+
+    void saveFeatureAdminProvisioned(@FeatureId int featureId, boolean isProvisioned) {
+        mFeatureIdToAdminProvisioned.put(featureId, isProvisioned);
+        getSharedPreferences()
+                .edit()
+                .putBoolean(FEATURE_ADMIN_PROVISIONING_MODE_PREFIX + featureId, isProvisioned)
+                .apply();
+    }
+
+    /**
+     * @return if the feature admin has provisioned the feature, or null if it is not saved
+     */
+    Boolean retrieveFeatureAdminProvisioned(@FeatureId int featureId) {
+        if (mFeatureIdToAdminProvisioned.containsKey(featureId)) {
+            return mFeatureIdToAdminProvisioned.get(featureId);
+        }
+
+        if (getSharedPreferences().contains(FEATURE_ADMIN_PROVISIONING_MODE_PREFIX + featureId)) {
+            boolean isProvisioned =
+                    getSharedPreferences()
+                            .getBoolean(FEATURE_ADMIN_PROVISIONING_MODE_PREFIX + featureId, false);
+            mFeatureIdToAdminProvisioned.put(featureId, isProvisioned);
+            return isProvisioned;
+        } else {
+            mFeatureIdToAdminProvisioned.put(featureId, null);
+            return null;
+        }
+    }
+
+    void saveFeatureAdbProvisioned(@FeatureId int featureId, boolean isProvisioned) {
+        mFeatureIdToAdbProvisioned.put(featureId, isProvisioned);
+        getSharedPreferences()
+                .edit()
+                .putBoolean(FEATURE_ADB_PROVISIONING_MODE_PREFIX + featureId, isProvisioned)
+                .apply();
+    }
+
+    void removeFeatureAdbProvisioning(@FeatureId int featureId) {
+        mFeatureIdToAdbProvisioned.put(featureId, null);
+        getSharedPreferences()
+                .edit()
+                .remove(FEATURE_ADB_PROVISIONING_MODE_PREFIX + featureId)
+                .apply();
+    }
+
+    /**
+     * @return if adb has provisioned the feature, or null if it is not saved
+     */
+    Boolean retrieveFeatureAdbProvisioned(@FeatureId int featureId) {
+        if (mFeatureIdToAdbProvisioned.containsKey(featureId)) {
+            return mFeatureIdToAdbProvisioned.get(featureId);
+        }
+
+        if (getSharedPreferences().contains(FEATURE_ADB_PROVISIONING_MODE_PREFIX + featureId)) {
+            boolean isProvisioned =
+                    getSharedPreferences()
+                            .getBoolean(FEATURE_ADB_PROVISIONING_MODE_PREFIX + featureId, false);
+            mFeatureIdToAdbProvisioned.put(featureId, isProvisioned);
+            return isProvisioned;
+        } else {
+            mFeatureIdToAdbProvisioned.put(featureId, null);
+            return null;
+        }
     }
 
     void saveEnabledChangeTime(long value) {

@@ -36,5 +36,9 @@ interface IAdvancedProtectionService {
     @EnforcePermission("MANAGE_ADVANCED_PROTECTION_MODE")
     List<AdvancedProtectionFeature> getAdvancedProtectionFeatures();
     @EnforcePermission("MANAGE_ADVANCED_PROTECTION_MODE")
+    List<AdvancedProtectionFeature> updateAdvancedProtectionFeaturesProvisioning(
+        in @nullable int[] featuresToProvision,
+        in @nullable int[] featuresToDeprovision);
+    @EnforcePermission("MANAGE_ADVANCED_PROTECTION_MODE")
     void logDialogShown(int featureId, int type, boolean learnMoreClicked);
 }

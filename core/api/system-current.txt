@@ -13179,16 +13179,26 @@ package android.security {
 package android.security.advancedprotection {
 
   public final class AdvancedProtectionFeature implements android.os.Parcelable {
-    ctor public AdvancedProtectionFeature(int);
+    ctor @Deprecated @FlaggedApi("android.security.aapm_api_v2") public AdvancedProtectionFeature(int);
+    ctor @FlaggedApi("android.security.aapm_api_v2") public AdvancedProtectionFeature(int, int);
     method public int describeContents();
     method public int getId();
+    method @FlaggedApi("android.security.aapm_api_v2") public int getProvisioningMode();
+    method @FlaggedApi("android.security.aapm_api_v2") public boolean isProvisioned();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.security.advancedprotection.AdvancedProtectionFeature> CREATOR;
+    field @FlaggedApi("android.security.aapm_api_v2") public static final int PROVISIONING_MODE_DEPROVISIONED_BY_ADB = 102; // 0x66
+    field @FlaggedApi("android.security.aapm_api_v2") public static final int PROVISIONING_MODE_DEPROVISIONED_BY_DEFAULT = 100; // 0x64
+    field @FlaggedApi("android.security.aapm_api_v2") public static final int PROVISIONING_MODE_DEPROVISIONED_BY_FEATURE_ADMIN = 101; // 0x65
+    field @FlaggedApi("android.security.aapm_api_v2") public static final int PROVISIONING_MODE_PROVISIONED_BY_ADB = 2; // 0x2
+    field @FlaggedApi("android.security.aapm_api_v2") public static final int PROVISIONING_MODE_PROVISIONED_BY_DEFAULT = 0; // 0x0
+    field @FlaggedApi("android.security.aapm_api_v2") public static final int PROVISIONING_MODE_PROVISIONED_BY_FEATURE_ADMIN = 1; // 0x1
   }
 
   public final class AdvancedProtectionManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public java.util.List<android.security.advancedprotection.AdvancedProtectionFeature> getAdvancedProtectionFeatures();
     method @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public void setAdvancedProtectionEnabled(boolean);
+    method @FlaggedApi("android.security.aapm_api_v2") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE) public java.util.List<android.security.advancedprotection.AdvancedProtectionFeature> updateAdvancedProtectionFeaturesProvisioning(@Nullable int[], @Nullable int[]);
     field public static final int FEATURE_ID_DISALLOW_CELLULAR_2G = 0; // 0x0
     field @FlaggedApi("android.security.aapm_feature_disable_insecure_wifi_autojoin") public static final int FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN = 5; // 0x5
     field public static final int FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES = 1; // 0x1

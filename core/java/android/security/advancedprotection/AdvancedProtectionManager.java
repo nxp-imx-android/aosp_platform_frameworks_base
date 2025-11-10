@@ -25,6 +25,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -147,7 +148,8 @@ public final class AdvancedProtectionManager {
     public @interface FeatureId {}
 
     private static final ArrayMap<Integer, String> FEATURE_ID_TO_NAME = buildFeatureIdToNameMap();
-    private static final Set<Integer> ALL_FEATURE_IDS = Set.copyOf(FEATURE_ID_TO_NAME.keySet());
+    /** @hide */
+    public static final Set<Integer> ALL_FEATURE_IDS = Set.copyOf(FEATURE_ID_TO_NAME.keySet());
 
     private static ArrayMap<Integer, String> buildFeatureIdToNameMap() {
         final ArrayMap<Integer, String> map = new ArrayMap<>();
@@ -394,6 +396,29 @@ public final class AdvancedProtectionManager {
     public List<AdvancedProtectionFeature> getAdvancedProtectionFeatures() {
         try {
             return mService.getAdvancedProtectionFeatures();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Updates the provisioning state of advanced protection features.
+     *
+     * @param featuresToProvision The list of features to provision.
+     * @param featuresToDeprovision The list of features to deprovision.
+     * @return The list of advanced protection features passed in, with updated provisioning state.
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    @FlaggedApi(android.security.Flags.FLAG_AAPM_API_V2)
+    @NonNull
+    public List<AdvancedProtectionFeature> updateAdvancedProtectionFeaturesProvisioning(
+            @Nullable @FeatureId int[] featuresToProvision,
+            @Nullable @FeatureId int[] featuresToDeprovision) {
+        try {
+            return mService.updateAdvancedProtectionFeaturesProvisioning(
+                    featuresToProvision, featuresToDeprovision);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
