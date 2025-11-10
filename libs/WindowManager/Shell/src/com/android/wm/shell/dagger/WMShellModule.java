@@ -1271,10 +1271,12 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             DesktopState desktopState,
             Transitions transitions,
-            DisplayController displayController
+            DisplayController displayController,
+            @ShellMainThread Handler shellMainHandler,
+            InteractionJankMonitor interactionJankMonitor
     ) {
         return new DeskSwitchTransitionHandler(context, desktopUserRepositories, desktopState,
-                transitions, displayController);
+                transitions, displayController, shellMainHandler, interactionJankMonitor);
 
     }
 
