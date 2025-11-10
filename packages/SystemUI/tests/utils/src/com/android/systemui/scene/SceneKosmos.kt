@@ -29,6 +29,7 @@ import com.android.systemui.scene.ui.composable.ConstantSceneContainerTransition
 import com.android.systemui.scene.ui.composable.SceneContainerTransitions
 import com.android.systemui.scene.ui.composable.SceneNavigationDistances
 import com.android.systemui.scene.ui.viewmodel.SceneContainerHapticsViewModel
+import com.android.systemui.scene.ui.viewmodel.SceneContainerToastDisplayer
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneTransitionBlurViewModel
 import com.android.systemui.scene.ui.viewmodel.dualShadeEducationalTooltipsViewModelFactory
@@ -42,6 +43,7 @@ import com.android.systemui.wallpapers.ui.viewmodel.wallpaperViewModel
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.android.systemui.window.ui.FakeBlurChoreographer
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.mockito.kotlin.mock
 
 var Kosmos.sceneKeys by Fixture {
     listOf(
@@ -141,6 +143,7 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
                     dualShadeEducationalTooltipsViewModelFactory,
                 animateQsTilesViewModelFactory = animateQsTilesViewModelFactory,
                 sceneTransitionBlurViewModelFactory = sceneTransitionBlurViewModelFactory,
+                toastDisplayer = { sceneContainerToastDisplayer },
             )
     }
 }
@@ -156,3 +159,5 @@ val Kosmos.sceneContainerHapticsViewModelFactory by Fixture {
         }
     }
 }
+
+private val Kosmos.sceneContainerToastDisplayer by Fixture { mock<SceneContainerToastDisplayer>() }
