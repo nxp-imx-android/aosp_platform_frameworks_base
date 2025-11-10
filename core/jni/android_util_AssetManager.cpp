@@ -86,6 +86,10 @@ static struct configuration_offsets_t {
   jfieldID mScreenHeightDpOffset;
   jfieldID mScreenLayoutOffset;
   jfieldID mUiMode;
+  jfieldID mKeyboard;
+  jfieldID mNavigation;
+  jfieldID mTouchscreen;
+  jfieldID mColorMode;
 } gConfigurationOffsets;
 
 static struct arraymap_offsets_t {
@@ -1110,10 +1114,14 @@ static jobject ConstructConfigurationObject(JNIEnv* env, const ResTable_config& 
   env->SetIntField(result, gConfigurationOffsets.mScreenHeightDpOffset, config.screenHeightDp);
   env->SetIntField(result, gConfigurationOffsets.mScreenLayoutOffset, config.screenLayout);
   env->SetIntField(result, gConfigurationOffsets.mUiMode, config.uiMode);
+  env->SetIntField(result, gConfigurationOffsets.mKeyboard, config.keyboard);
+  env->SetIntField(result, gConfigurationOffsets.mNavigation, config.navigation);
+  env->SetIntField(result, gConfigurationOffsets.mTouchscreen, config.touchscreen);
+  env->SetIntField(result, gConfigurationOffsets.mColorMode, config.colorMode);
   return result;
 }
 
-static jobjectArray GetSizeAndUiModeConfigurations(JNIEnv* env, jlong ptr) {
+static jobjectArray NativeGetResourceConfigurations(JNIEnv* env, jlong ptr) {
   auto assetmanager = LockAndStartAssetManager(ptr);
   auto configurations = assetmanager->GetResourceConfigurations(true /*exclude_system*/,
                                                                 false /*exclude_mipmap*/);
@@ -1141,11 +1149,11 @@ static jobjectArray GetSizeAndUiModeConfigurations(JNIEnv* env, jlong ptr) {
 }
 
 static jobjectArray NativeGetSizeConfigurations(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
-  return GetSizeAndUiModeConfigurations(env, ptr);
+  return NativeGetResourceConfigurations(env, ptr);
 }
 
 static jobjectArray NativeGetSizeAndUiModeConfigurations(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
-  return GetSizeAndUiModeConfigurations(env, ptr);
+  return NativeGetResourceConfigurations(env, ptr);
 }
 
 static jintArray NativeAttributeResolutionStack(JNIEnv* env, jclass /*clazz*/, jlong ptr,
@@ -1612,6 +1620,8 @@ static const JNINativeMethod gAssetManagerMethods[] = {
          (void*)NativeGetSizeConfigurations},
         {"nativeGetSizeAndUiModeConfigurations", "(J)[Landroid/content/res/Configuration;",
          (void*)NativeGetSizeAndUiModeConfigurations},
+        {"nativeGetResourceConfigurations", "(J)[Landroid/content/res/Configuration;",
+         (void*)NativeGetResourceConfigurations},
 
         // Style attribute related methods.
         {"nativeAttributeResolutionStack", "(JJIII)[I", (void*)NativeAttributeResolutionStack},
@@ -1687,6 +1697,10 @@ int register_android_content_AssetManager(JNIEnv* env) {
   gConfigurationOffsets.mScreenLayoutOffset =
           GetFieldIDOrDie(env, configurationClass, "screenLayout", "I");
   gConfigurationOffsets.mUiMode = GetFieldIDOrDie(env, configurationClass, "uiMode", "I");
+  gConfigurationOffsets.mKeyboard = GetFieldIDOrDie(env, configurationClass, "keyboard", "I");
+  gConfigurationOffsets.mNavigation = GetFieldIDOrDie(env, configurationClass, "navigation", "I");
+  gConfigurationOffsets.mTouchscreen = GetFieldIDOrDie(env, configurationClass, "touchscreen", "I");
+  gConfigurationOffsets.mColorMode = GetFieldIDOrDie(env, configurationClass, "colorMode", "I");
 
   jclass arrayMapClass = FindClassOrDie(env, "android/util/ArrayMap");
   gArrayMapOffsets.classObject = MakeGlobalRefOrDie(env, arrayMapClass);

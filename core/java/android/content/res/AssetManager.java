@@ -1583,6 +1583,21 @@ public final class AssetManager implements AutoCloseable {
     }
 
     /**
+     * Return a subset of the fields of the resource configurations, including
+     * smallestScreenWidthDp, screenWidthDp, screenHeightDp, screenLayout, uiMode, keyboard,
+     * navigation, touchscreen and colorMode.
+     * Please note that this does not return all resource configurations.
+     *
+     * @hide
+     */
+    Configuration[] getResourceConfigurations() {
+        synchronized (this) {
+            ensureValidLocked();
+            return nativeGetResourceConfigurations(mObject);
+        }
+    }
+
+    /**
      * Change the configuration used when retrieving resources.  Not for use by
      * applications.
      * @hide
@@ -1779,6 +1794,7 @@ public final class AssetManager implements AutoCloseable {
     private static native @Nullable String[] nativeGetLocales(long ptr, boolean excludeSystem);
     private static native @Nullable Configuration[] nativeGetSizeConfigurations(long ptr);
     private static native @Nullable Configuration[] nativeGetSizeAndUiModeConfigurations(long ptr);
+    private static native @Nullable Configuration[] nativeGetResourceConfigurations(long ptr);
     private static native void nativeSetResourceResolutionLoggingEnabled(long ptr, boolean enabled);
     private static native @Nullable String nativeGetLastResourceResolution(long ptr);
 

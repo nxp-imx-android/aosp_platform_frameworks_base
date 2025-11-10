@@ -280,6 +280,10 @@ public class ResourcesImpl {
         return mAssets.getSizeAndUiModeConfigurations();
     }
 
+    Configuration[] getResourceConfigurations() {
+        return mAssets.getResourceConfigurations();
+    }
+
     CompatibilityInfo getCompatibilityInfo() {
         return mDisplayAdjustments.getCompatibilityInfo();
     }
