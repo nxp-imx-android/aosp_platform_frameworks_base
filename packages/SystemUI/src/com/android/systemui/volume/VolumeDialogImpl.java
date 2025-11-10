@@ -284,7 +284,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private final Accessibility mAccessibility = new Accessibility();
     private final ConfigurationController mConfigurationController;
     private final MediaOutputDialogManager mMediaOutputDialogManager;
-    private final CsdWarningDialog.Factory mCsdWarningDialogFactory;
+    private final CsdWarningDialogDelegate.Factory mCsdWarningDialogFactory;
     private final VolumePanelNavigationInteractor mVolumePanelNavigationInteractor;
     private final VolumeNavigator mVolumeNavigator;
     private boolean mShowing;
@@ -298,7 +298,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     @GuardedBy("mSafetyWarningLock")
     private SystemUIDialog mSafetyWarning;
     @GuardedBy("mSafetyWarningLock")
-    private CsdWarningDialog mCsdDialog;
+    private SystemUIDialog mCsdDialog;
     private boolean mHovering = false;
     private final boolean mIsTv;
     private boolean mConfigChanged = false;
@@ -347,7 +347,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             VolumePanelNavigationInteractor volumePanelNavigationInteractor,
             VolumeNavigator volumeNavigator,
             @Named(VOLUME_DIALOG_JANK) boolean shouldListenForJank,
-            CsdWarningDialog.Factory csdWarningDialogFactory,
+            CsdWarningDialogDelegate.Factory csdWarningDialogFactory,
             DevicePostureController devicePostureController,
             SafetyWarningDialogDelegate.Factory safetyWarningDialogDelegateFactory,
             @Main Looper looper,
@@ -2263,9 +2263,10 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                 recheckH(null);
             };
 
-            mCsdDialog = mCsdWarningDialogFactory.create(
-                    csdWarning, cleanUp, mCsdWarningNotificationActions);
-            mCsdDialog.show();
+            CsdWarningDialogDelegate delegate = mCsdWarningDialogFactory
+                    .create(csdWarning, cleanUp, mCsdWarningNotificationActions);
+            mCsdDialog = delegate.createDialog();
+            delegate.maybeShow(mCsdDialog);
         }
         recheckH(null);
         if (durationMs > 0) {
