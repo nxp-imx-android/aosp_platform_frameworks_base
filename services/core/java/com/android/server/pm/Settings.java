@@ -17,6 +17,7 @@
 package com.android.server.pm;
 
 import static android.app.admin.flags.Flags.crossUserSuspensionEnabledRo;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
@@ -4906,10 +4907,11 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                     // installer after the mPackages lock has been released.
                     final String seInfo = ps.getSeInfo();
                     final boolean usesSdk = !ps.getPkg().getUsesSdkLibraries().isEmpty();
+                    final int pccId = enablePccFrameworkSupport() ? ps.getPccId() : INVALID_UID;
                     final CreateAppDataArgs args = Installer.buildCreateAppDataArgs(
                             ps.getVolumeUuid(), ps.getPackageName(), userHandle,
                             StorageManager.FLAG_STORAGE_DE, ps.getAppId(), seInfo,
-                            ps.getPkg().getTargetSdkVersion(), usesSdk);
+                            ps.getPkg().getTargetSdkVersion(), usesSdk, pccId);
                     batch.createAppData(args);
                 } else {
                     // Make sure the app is excluded from storage mapping for this user
