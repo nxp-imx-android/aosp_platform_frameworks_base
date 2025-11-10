@@ -457,12 +457,13 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             }
         }
 
+        val isDozing = dozeFraction > 0.5f
         logger.animateFidget(pt, isSuppressed = false)
         clockCtx.vibrator?.vibrate(FIDGET_HAPTICS)
 
         onAnimateTransient(
             TextAnimator.Style(fVar = fontVariations.fidget),
-            TextAnimator.Style(fVar = fontVariations.lockscreen),
+            TextAnimator.Style(fVar = fontVariations.getStandard(isDozing)),
             TextAnimator.Animation(
                 animate = isAnimationEnabled,
                 duration = FIDGET_ANIMATION_DURATION,
