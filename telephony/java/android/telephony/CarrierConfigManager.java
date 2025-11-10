@@ -11333,6 +11333,30 @@ public class CarrierConfigManager {
     public static final String KEY_LOW_BATTERY_ALERT_INTERVAL_INT =
             "low_battery_alert_interval_int";
 
+    /**
+     * Specifies whether a successful APN database match is mandatory to proceed with a data call
+     * setup.
+     *
+     * <p>When set to {@code true}, Telephony must find a matching APN in its database for the given
+     * network request. If a match is not found, the setup data call request will NOT happen. This
+     * setting is typically used when the modem cannot be relied upon to establish the connection
+     * without an Android-vetted APN, for example, if URSP rules from the carriers are not available
+     * or not applicable.
+     *
+     * <p>When set to {@code false}, Telephony will still attempt to find a matching APN in its
+     * database. However, even if no match is found, the setup data call request WILL be sent to the
+     * modem. This allows the modem to use its internal logic, such as URSP
+     * (UE Route Selection Policy) rules, to select the appropriate APN/slice and establish the
+     * connection. This mode is suitable when the carrier has deployed URSP rules for handling data
+     * network requests.
+     *
+     * <p>The default value is {@code true}. Set this to {@code false} only after carriers deploy
+     * URSP rules for connection capabilities.
+     *
+     * @hide
+     */
+    public static final String KEY_APN_MATCHED_REQUIRED = "apn_matched_required";
+
     /** The default value for every variable. */
     private static final PersistableBundle sDefaults;
 
@@ -12238,6 +12262,7 @@ public class CarrierConfigManager {
         sDefaults.putInt(KEY_LOW_BATTERY_ALERT_INTERVAL_INT,
                 PhoneAccount.LOW_BATTERY_ALERT_DISABLED);
         sDefaults.putBoolean(KEY_SUPPORT_PHONE_NUMBER_SOURCE_TS43_BOOL, false);
+        sDefaults.putBoolean(KEY_APN_MATCHED_REQUIRED, true);
     }
 
     /**
