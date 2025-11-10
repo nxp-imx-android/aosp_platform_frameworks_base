@@ -28,7 +28,7 @@ import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtStart
-import com.android.wm.shell.scenarios.SwitchBetweenDesktopAndFullScreen
+import com.android.wm.shell.scenarios.SwitchBetweenDesktopAndFullScreenViaQuickSwitch
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,7 +37,7 @@ import org.junit.runners.Parameterized
 /**
  * Test quick switching out of desktop to a fullscreen app.
  *
- * To run this test: atest QuickSwitchBetweenDesktopAndFullscreenTest
+ * To run this test: atest QuickSwitchBetweenDesktopAndFullscreenFlickerTest
  */
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
@@ -46,7 +46,7 @@ import org.junit.runners.Parameterized
 class QuickSwitchBetweenDesktopAndFullscreenFlickerTest(flicker: FlickerTest) :
     DesktopModeBaseTest(flicker) {
     inner class QuickSwitchBetweenDesktopAndFullscreenScenario :
-        SwitchBetweenDesktopAndFullScreen(rotation = flicker.scenario.startRotation)
+        SwitchBetweenDesktopAndFullScreenViaQuickSwitch(rotation = flicker.scenario.startRotation)
 
     @Rule
     @JvmField

@@ -34,11 +34,10 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Base scenario test for switch between desktop app and full screen app, trigger via quick switch
- * and overview.
+ * Base scenario test for switch between desktop app and full screen app, triggered via quick switch.
  */
 @Ignore("Base Test Class")
-abstract class SwitchBetweenDesktopAndFullScreen(
+abstract class SwitchBetweenDesktopAndFullScreenViaQuickSwitch(
     val navigationMode: NavBar = NavBar.MODE_GESTURAL,
     val rotation: Rotation = Rotation.ROTATION_0,
 ) : TestScenarioBase(rotation) {
@@ -62,12 +61,6 @@ abstract class SwitchBetweenDesktopAndFullScreen(
     @Test
     open fun triggerViaQuickSwitch() {
         tapl.getLaunchedAppState().quickSwitchToPreviousApp()
-        wmHelper.StateSyncBuilder().withFullScreenApp(mailApp).waitForAndVerify()
-    }
-
-    @Test
-    open fun triggerViaOverview() {
-        tapl.launchedAppState.switchToOverview().apply { flingForward() }.currentTask.open()
         wmHelper.StateSyncBuilder().withFullScreenApp(mailApp).waitForAndVerify()
     }
 

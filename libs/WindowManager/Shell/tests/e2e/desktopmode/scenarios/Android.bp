@@ -114,7 +114,8 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.OpenAppInBrowserTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppsInDesktopModeTest",
         "com.android.wm.shell.functional.fundamentals.OpenUnlimitedAppsTest",
-        "com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenTest",
+        "com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenViaOverviewTest",
+        "com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenViaQuickSwitchTest",
         "com.android.wm.shell.functional.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.functional.fundamentals.SwitchToDesktopFromOverviewTest",
         "com.android.wm.shell.functional.fundamentals.SwitchToHomeFromDesktopTest",
@@ -478,10 +479,17 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-SwitchBetweenDesktopAndFullScreenTest",
+    name: "FunctionalTestsDesktopMode-fundamentals-SwitchBetweenDesktopAndFullScreenViaOverviewTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenTest"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenViaOverviewTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-SwitchBetweenDesktopAndFullScreenViewViaQuickSwitchTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.SwitchBetweenDesktopAndFullScreenViewViaQuickSwitchTest"],
 }
 
 test_module_config {
