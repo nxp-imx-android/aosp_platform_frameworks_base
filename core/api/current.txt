@@ -25496,6 +25496,7 @@ package android.media {
     method public void setVideoEncoder(int) throws java.lang.IllegalStateException;
     method public void setVideoEncodingBitRate(int);
     method public void setVideoEncodingProfileLevel(int, int);
+    method @FlaggedApi("android.media.mediarecorder.quality_setting_support") public void setVideoEncodingQuality(@IntRange(from=0) int);
     method public void setVideoFrameRate(int) throws java.lang.IllegalStateException;
     method public void setVideoProfile(@NonNull android.media.EncoderProfiles.VideoProfile);
     method public void setVideoSize(int, int) throws java.lang.IllegalStateException;
