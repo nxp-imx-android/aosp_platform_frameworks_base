@@ -1278,6 +1278,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
                 201,
                 0
         );
+        // When a MOVE event is received without a prior DOWN, NSSL synthesizes a DOWN event
+        // to send to the Scene Framework, so that it receives a valid gesture start.
         MotionEvent syntheticDownEvent = moveEvent1.copy();
         syntheticDownEvent.setAction(MotionEvent.ACTION_DOWN);
         mStackScroller.dispatchTouchEvent(moveEvent1);
@@ -1333,6 +1335,63 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.dispatchTouchEvent(upEvent);
         verify(mStackScrollLayoutController, never()).sendTouchToSceneFramework(any());
         assertFalse(mStackScroller.getIsBeingDragged());
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void testDispatchTouchEvent_sceneContainerEnabled_sendLastActionUp() {
+        mStackScroller.setIsBeingDragged(false);
+        mStackScroller.setIsExpandingNotification(true);
+
+        long downTime = SystemClock.uptimeMillis() - 100;
+        MotionEvent moveEvent1 = MotionEvent.obtain(
+                /* downTime= */ downTime,
+                /* eventTime= */ SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_MOVE,
+                101,
+                201,
+                0
+        );
+        // When a MOVE event is received without a prior DOWN, NSSL synthesizes a DOWN event
+        // to send to the Scene Framework, so that it receives a valid gesture start.
+        MotionEvent syntheticDownEvent = MotionEvent.obtain(moveEvent1);
+        syntheticDownEvent.setAction(MotionEvent.ACTION_DOWN);
+        mStackScroller.dispatchTouchEvent(moveEvent1);
+
+        assertThatMotionEvent(captureTouchSentToSceneFramework()).matches(syntheticDownEvent);
+        assertTrue(mStackScroller.isExpandingNotification());
+        clearInvocations(mStackScrollLayoutController);
+
+        MotionEvent moveEvent2 = MotionEvent.obtain(
+                /* downTime= */ downTime,
+                /* eventTime= */ SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_MOVE,
+                102,
+                202,
+                0
+        );
+
+        mStackScroller.dispatchTouchEvent(moveEvent2);
+
+        assertThatMotionEvent(captureTouchSentToSceneFramework()).matches(moveEvent2);
+        assertTrue(mStackScroller.isExpandingNotification());
+        clearInvocations(mStackScrollLayoutController);
+
+        mStackScroller.setIsExpandingNotification(false);
+
+        MotionEvent upEvent = MotionEvent.obtain(
+                /* downTime= */ downTime,
+                /* eventTime= */ SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_UP,
+                103,
+                203,
+                0
+        );
+
+        mStackScroller.dispatchTouchEvent(upEvent);
+
+        assertThatMotionEvent(captureTouchSentToSceneFramework()).matches(upEvent);
+        assertFalse(mStackScroller.isExpandingNotification());
     }
 
 
