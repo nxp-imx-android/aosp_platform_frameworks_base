@@ -16,16 +16,23 @@
 
 package com.android.wm.shell.compatui.api
 
-import android.app.ActivityManager
+import android.graphics.Rect
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.compatui.impl.CompatUIHandlerRule
+import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.util.testCompatUIHandler
+import java.util.function.Consumer
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 /**
  * Tests for [CompatUISharedStateHandler].
@@ -36,27 +43,116 @@ import org.junit.runner.RunWith
 @SmallTest
 class CompatUISharedStateHandlerTest : ShellTestCase() {
 
-    @JvmField @Rule val compatUIHandlerRule: CompatUIHandlerRule = CompatUIHandlerRule()
-
-    lateinit var sharedStateRepository: CompatUISharedStateRepository
-    lateinit var sharedStateHandler: CompatUISharedStateHandler
-
-    @Before
-    fun setUp() {
-        sharedStateRepository = CompatUISharedStateRepository()
-        sharedStateHandler = CompatUISharedStateHandler(sharedStateRepository)
+    @Test
+    fun `when onCompatInfoChanged is invoked CompatUISharedStateRepository is updated`() {
+        runTestScenario { r ->
+            testCompatUIHandler(r.getSharedStateHandlerFactory()) {
+                compatUIInfo { runningTaskInfo { ti -> ti.taskId = 10 } }
+                validateOnCompatInfoChanged {
+                    r.useRepository { repo -> assertNotNull(repo.find(key = 10)) }
+                }
+            }
+        }
     }
 
     @Test
-    fun `when onCompatInfoChanged is invoked CompatUISharedStateRepository is updated`() {
-        val compatUIInfo = testCompatUIInfo(taskId = 10)
-        sharedStateHandler.onCompatInfoChanged(compatUIInfo)
-        assertNotNull(sharedStateRepository.find(key = 10))
+    fun `when onCompatInfoChanged is invoked stableBounds are calculated for the task`() {
+        runTestScenario { r ->
+            testCompatUIHandler(r.getSharedStateHandlerFactory()) {
+                compatUIInfo {
+                    runningTaskInfo { ti ->
+                        ti.taskId = 10
+                        ti.displayId = 3
+                    }
+                }
+                r.setUpStableBoundsForDisplay(displayId = 3, stableBounds = Rect(1, 2, 3, 4))
+                validateOnCompatInfoChanged {
+                    r.useRepository { repo ->
+                        assertNotNull(repo.find(key = 10))
+                        assertEquals(true, repo.find(key = 10)?.areParentBoundsChanged)
+                        assertEquals(Rect(1, 2, 3, 4), repo.find(key = 10)?.stableBounds)
+                    }
+                }
+            }
+        }
     }
 
-    private fun testCompatUIInfo(taskId: Int = 1): CompatUIInfo {
-        val taskInfo = ActivityManager.RunningTaskInfo()
-        taskInfo.taskId = taskId
-        return CompatUIInfo(taskInfo, null)
+    @Test
+    fun `when onCompatInfoChanged areParentBoundsChanged is true when stableBounds change`() {
+        runTestScenario { r ->
+            testCompatUIHandler(r.getSharedStateHandlerFactory()) {
+                compatUIInfo {
+                    runningTaskInfo { ti ->
+                        ti.taskId = 10
+                        ti.displayId = 3
+                    }
+                }
+                r.setUpStableBoundsForDisplay(displayId = 3, stableBounds = Rect(1, 2, 3, 4))
+                validateOnCompatInfoChanged {
+                    r.useRepository { repo ->
+                        assertNotNull(repo.find(key = 10))
+                        assertEquals(true, repo.find(key = 10)?.areParentBoundsChanged)
+                        assertEquals(Rect(1, 2, 3, 4), repo.find(key = 10)?.stableBounds)
+                    }
+                }
+                r.setUpStableBoundsForDisplay(displayId = 3, stableBounds = Rect(1, 2, 3, 4))
+                validateOnCompatInfoChanged {
+                    r.useRepository { repo ->
+                        assertNotNull(repo.find(key = 10))
+                        assertEquals(false, repo.find(key = 10)?.areParentBoundsChanged)
+                        assertEquals(Rect(1, 2, 3, 4), repo.find(key = 10)?.stableBounds)
+                    }
+                }
+                r.setUpStableBoundsForDisplay(displayId = 3, stableBounds = Rect(5, 6, 7, 8))
+                validateOnCompatInfoChanged {
+                    r.useRepository { repo ->
+                        assertNotNull(repo.find(key = 10))
+                        assertEquals(true, repo.find(key = 10)?.areParentBoundsChanged)
+                        assertEquals(Rect(5, 6, 7, 8), repo.find(key = 10)?.stableBounds)
+                    }
+                }
+            }
+        }
+    }
+
+    /** Runs a test scenario providing a Robot. */
+    fun runTestScenario(consumer: Consumer<CompatUISharedStateHandlerRobotTest>) {
+        val robot = CompatUISharedStateHandlerRobotTest()
+        consumer.accept(robot)
+    }
+
+    class CompatUISharedStateHandlerRobotTest {
+
+        private val sharedStateHandler: CompatUISharedStateHandler
+        private val sharedStateRepository: CompatUISharedStateRepository
+        private val displayController: DisplayController
+        private val displayLayout: DisplayLayout
+
+        init {
+            displayController = mock<DisplayController>()
+            displayLayout = mock<DisplayLayout>()
+            sharedStateRepository = CompatUISharedStateRepository()
+            sharedStateHandler =
+                CompatUISharedStateHandler(sharedStateRepository, displayController)
+        }
+
+        fun getSharedStateHandlerFactory(): () -> CompatUISharedStateHandler = {
+            sharedStateHandler
+        }
+
+        fun useRepository(consumer: (CompatUISharedStateRepository) -> Unit) {
+            consumer(sharedStateRepository)
+        }
+
+        fun setUpStableBoundsForDisplay(displayId: Int = 1, stableBounds: Rect) {
+            doReturn(displayLayout).`when`(displayController).getDisplayLayout(any())
+            doAnswer { invocation ->
+                    val rectArg = invocation.getArgument<Rect>(0)
+                    rectArg.set(stableBounds)
+                    null
+                }
+                .whenever(displayLayout)
+                .getStableBounds(any())
+        }
     }
 }

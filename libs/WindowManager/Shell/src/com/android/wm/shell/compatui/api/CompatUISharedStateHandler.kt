@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.compatui.api
 
+import android.app.TaskInfo
+import android.graphics.Rect
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.dagger.WMSingleton
 import java.util.function.Consumer
 import javax.inject.Inject
@@ -24,16 +27,39 @@ import javax.inject.Inject
 @WMSingleton
 class CompatUISharedStateHandler
 @Inject
-constructor(private val sharedStateRepository: CompatUISharedStateRepository) : CompatUIHandler {
+constructor(
+    private val sharedStateRepository: CompatUISharedStateRepository,
+    private val displayController: DisplayController,
+) : CompatUIHandler {
     override fun onCompatInfoChanged(compatUIInfo: CompatUIInfo) {
         sharedStateRepository.insert(
             compatUIInfo.taskInfo.taskId,
             CompatUISharedState(taskId = compatUIInfo.taskInfo.taskId),
             overrideIfPresent = false,
         )
+        updateDisplayLayout(compatUIInfo.taskInfo)
     }
 
     override fun sendCompatUIRequest(compatUIRequest: CompatUIRequest) {}
 
     override fun setCallback(compatUIEventSender: Consumer<CompatUIEvent>?) {}
+
+    private fun updateDisplayLayout(taskInfo: TaskInfo) {
+        val previousStableBounds = sharedStateRepository.find(taskInfo.taskId)?.stableBounds
+        val displayLayout = displayController.getDisplayLayout(taskInfo.displayId)
+        val newStableBounds = Rect()
+        displayLayout?.getStableBounds(newStableBounds)
+        sharedStateRepository.insert(
+            taskInfo.taskId,
+            {
+                // This is only invoked if not present
+                CompatUISharedState(
+                    taskId = taskInfo.taskId,
+                    stableBounds = newStableBounds,
+                    areParentBoundsChanged = newStableBounds != previousStableBounds,
+                )
+            },
+            overrideIfPresent = true,
+        )
+    }
 }
