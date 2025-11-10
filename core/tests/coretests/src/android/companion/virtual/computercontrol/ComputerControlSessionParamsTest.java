@@ -16,12 +16,16 @@
 
 package android.companion.virtual.computercontrol;
 
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Parcel;
 
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Test;
@@ -40,6 +44,26 @@ public class ComputerControlSessionParamsTest {
 
     @Test
     public void parcelable_shouldRecreateSuccessfully() {
+        PendingIntent previewIntent = PendingIntent.getActivity(
+                getApplicationContext(), 0, new Intent("PREVIEW"), PendingIntent.FLAG_IMMUTABLE);
+        ComputerControlSessionParams originalParams = new ComputerControlSessionParams.Builder()
+                .setName(SESSION_NAME)
+                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                .setPreviewIntent(previewIntent)
+                .build();
+        Parcel parcel = Parcel.obtain();
+        originalParams.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        ComputerControlSessionParams params =
+                ComputerControlSessionParams.CREATOR.createFromParcel(parcel);
+        assertThat(params.getName()).isEqualTo(SESSION_NAME);
+        assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
+        assertThat(params.getPreviewIntent()).isEqualTo(previewIntent);
+    }
+
+    @Test
+    public void parcelable_unsetPreviewIntent_shouldRecreateSuccessfully() {
         ComputerControlSessionParams originalParams = new ComputerControlSessionParams.Builder()
                 .setName(SESSION_NAME)
                 .setTargetPackageNames(TARGET_PACKAGE_NAMES)
@@ -52,6 +76,7 @@ public class ComputerControlSessionParamsTest {
                 ComputerControlSessionParams.CREATOR.createFromParcel(parcel);
         assertThat(params.getName()).isEqualTo(SESSION_NAME);
         assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
+        assertThat(params.getPreviewIntent()).isNull();
     }
 
     @Test

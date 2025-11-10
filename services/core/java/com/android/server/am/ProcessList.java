@@ -2268,7 +2268,8 @@ public final class ProcessList extends ProcessListInternal
                 // not the calling one.
                 appInfo.packageName = app.getHostingRecord().getDefiningPackageName();
                 appInfo.uid = uid;
-                appZygote = new AppZygote(appInfo, app.processInfo, uid, firstUid, lastUid);
+                appZygote = new AppZygote(appInfo, app.processInfo, uid, firstUid, lastUid,
+                                          app.getHostingRecord().usesNativeAppZygote());
                 mAppZygotes.put(app.info.processName, uid, appZygote);
                 zygoteProcessList = new ArrayList<ProcessRecord>();
                 mAppZygoteProcesses.put(appZygote, zygoteProcessList);

@@ -254,12 +254,21 @@ abstract class CaptionController<T>(
                 view.parent.identityHashCode.toHexString(),
                 viewHost,
             )
+            // TODO (b/458497344): See if we can get around not using this to unblock
+            // touch inputs getting consumed by the ViewHost's RootView
+            val flags =
+                if (isCaptionVisible) {
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                } else {
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                }
             val lp =
                 WindowManager.LayoutParams(
                         captionWidth,
                         captionHeight,
                         WindowManager.LayoutParams.TYPE_APPLICATION,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        flags,
                         PixelFormat.TRANSPARENT,
                     )
                     .apply {

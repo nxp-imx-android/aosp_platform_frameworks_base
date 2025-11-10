@@ -18,25 +18,20 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.AppTask.WINDOWING_LAYER_NORMAL_APP
 import android.app.TaskInfo
-import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
-import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
-import android.os.Bundle
 import android.os.IBinder
-import android.os.IRemoteCallback
-import android.os.RemoteException
-import android.util.Slog
 import android.view.SurfaceControl
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.TransitionRequestInfo.WindowingLayerChange
 import android.window.WindowContainerTransaction
-import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.LAYER_SWITCH
+import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOWING_LAYER
 import com.android.wm.shell.transition.Transitions
 
 /** A class responsible for handling [WINDOWING_LAYER_NORMAL_APP] requests. */
 class NormalAppLayerHandler(
+    private val normalAppLayerController: NormalAppLayerController,
     private val userRepositories: DesktopUserRepositories,
-    private val desktopTasksController: DesktopTasksController,
 ) : Transitions.TransitionHandler {
 
     override fun handleRequest(
@@ -46,43 +41,15 @@ class NormalAppLayerHandler(
         val triggerTask = request.triggerTask ?: return null
         val windowingLayerChange = request.windowingLayerChange ?: return null
 
-        val wct = WindowContainerTransaction()
-        val desktopRepository = userRepositories.getProfile(triggerTask.userId)
-
-        // TODO(b/449681882): It can be TO_FRONT or OPEN.
-        // TODO(b/449681882): Add isPinned and a log for pinned + DW as unsupported state.
         if (!windowingLayerChange.isNormalLayerRequest(triggerTask)) {
             return null
         }
 
-        // This handler is only valid for desktop windowing mode, therefore, it's safe to assume
-        // it can be placed in a desk.
-        val displayId = triggerTask.displayId
-        val deskId = desktopRepository.getActiveDeskId(displayId)
-        if (deskId != null) {
-            desktopTasksController.moveTaskToDesk(
-                deskId = deskId,
-                taskId = triggerTask.taskId,
-                userId = triggerTask.userId,
-                wct = wct,
-                transitionSource = LAYER_SWITCH,
-                targetTransition = transition,
-            )
-        } else {
-            desktopTasksController.moveTaskToDefaultDeskAndActivate(
-                taskId = triggerTask.taskId,
-                wct = wct,
-                transitionSource = LAYER_SWITCH,
-                targetTransition = transition,
-            )
-        }
-
-        // TODO(b/449681882): Check display supports desktop windowing and reject if it's not.
-        // TODO(b/449681882): DTC can be null, reject the request.
-        // TODO(b/449681882): Save windowing layer request callback to notify about the result.
-        sendWindowingLayerResult(RESULT_APPROVED, windowingLayerChange.remoteCallback)
-
-        return wct
+        return normalAppLayerController.moveTaskToNormalLayer(
+            transition,
+            triggerTask,
+            windowingLayerChange.remoteCallback,
+        )
     }
 
     private fun WindowingLayerChange?.isNormalLayerRequest(task: TaskInfo): Boolean {
@@ -90,16 +57,6 @@ class NormalAppLayerHandler(
         return this != null &&
             !desktopRepository.isActiveTask(task.taskId) &&
             windowingLayer == WINDOWING_LAYER_NORMAL_APP
-    }
-
-    private fun sendWindowingLayerResult(result: Int, callback: IRemoteCallback) {
-        val bundle = Bundle()
-        bundle.putInt(REMOTE_CALLBACK_RESULT_KEY, result)
-        try {
-            callback.sendResult(bundle)
-        } catch (e: RemoteException) {
-            Slog.w(TAG, "Failed to invoke callback", e)
-        }
     }
 
     override fun startAnimation(
@@ -110,7 +67,22 @@ class NormalAppLayerHandler(
         finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean = false
 
-    private companion object {
-        private const val TAG = "NormalAppLayerHandler"
+    internal companion object {
+        private const val TAG = "NormalAppLayer"
+
+        @JvmStatic
+        internal fun logV(message: String, vararg args: Any?) {
+            ProtoLog.v(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
+        }
+
+        @JvmStatic
+        internal fun logW(message: String, vararg args: Any?) {
+            ProtoLog.w(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
+        }
+
+        @JvmStatic
+        internal fun logE(message: String, vararg args: Any?) {
+            ProtoLog.e(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
+        }
     }
 }

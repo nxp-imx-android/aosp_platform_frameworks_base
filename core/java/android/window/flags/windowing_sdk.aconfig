@@ -89,12 +89,12 @@ flag {
     bug: "407149510"
 }
 
-flag {
-    namespace: "windowing_sdk"
-    name: "root_task_for_bubble"
-    description: "Using a root task to manage Bubble tasks"
-    bug: "407669465"
-}
+ flag {
+     namespace: "windowing_sdk"
+     name: "enable_bubble_root_task"
+     description: "Using a root task to manage Bubble tasks"
+     bug: "407669465"
+ }
 
 flag {
     namespace: "windowing_sdk"
@@ -153,16 +153,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "refactor_match_parent_bounds"
-    description: "Consolidate fillsParentBounds with matchParentBounds."
-    bug: "409417223"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "aaos_core_contrib"
     name: "home_activity_always_present"
     description: "Ensure home activity is always present in the system."
@@ -184,6 +174,13 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "virtual_gamepad_override"
+    description: "Enables the virtual gamepad override on allowlisted games on foldables."
+    bug: "447093535"
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "device_engagement_mode"
     description: "Track and report device engagement modes, indicating the device's current interaction capabilities (e.g. audio-only)."
     bug: "423990404"
@@ -194,6 +191,16 @@ flag {
     namespace: "windowing_sdk"
     description: "Moves non-system user display settings from CE to DE storage to resolve early user setup access issues."
     bug: "442757820"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "pause_invisible_activity"
+    namespace: "windowing_sdk"
+    description: "Pause the invisible activity vs. stopping it after idle."
+    bug: "457585218"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

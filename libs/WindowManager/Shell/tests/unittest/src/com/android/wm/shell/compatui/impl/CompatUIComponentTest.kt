@@ -28,7 +28,8 @@ import com.android.wm.shell.compatui.api.CompatUIComponent
 import com.android.wm.shell.compatui.api.CompatUIComponentRepository
 import com.android.wm.shell.compatui.api.CompatUIComponentState
 import com.android.wm.shell.compatui.api.CompatUIInfo
-import com.android.wm.shell.compatui.api.CompatUIState
+import com.android.wm.shell.compatui.api.CompatUISharedState
+import com.android.wm.shell.compatui.api.CompatUISharedStateRepository
 import kotlin.test.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -48,8 +49,8 @@ class CompatUIComponentTest : ShellTestCase() {
     private lateinit var component: CompatUIComponent
     private lateinit var layout: FakeCompatUILayout
     private lateinit var spec: FakeCompatUISpec
-    private lateinit var state: CompatUIState
     private lateinit var componentUIComponentRepository: CompatUIComponentRepository
+    private lateinit var sharedStateRepository: CompatUISharedStateRepository
     private lateinit var info: CompatUIInfo
     private lateinit var syncQueue: SyncTransactionQueue
     private lateinit var displayLayout: DisplayLayout
@@ -61,8 +62,8 @@ class CompatUIComponentTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        state = CompatUIState()
         componentUIComponentRepository = CompatUIComponentRepository()
+        sharedStateRepository = CompatUISharedStateRepository()
         view = View(mContext)
         position = Point(123, 456)
         layout = FakeCompatUILayout(viewBuilderReturn = view, positionBuilderReturn = position)
@@ -75,7 +76,7 @@ class CompatUIComponentTest : ShellTestCase() {
                 spec.getSpec(),
                 "compId",
                 mContext,
-                state,
+                sharedStateRepository,
                 componentUIComponentRepository,
                 info,
                 syncQueue,
@@ -87,6 +88,7 @@ class CompatUIComponentTest : ShellTestCase() {
 
     @Test
     fun `when initLayout is invoked spec fields are used`() {
+        initShareRepositoryForTask()
         compatUIHandlerRule.postBlocking { component.initLayout(info) }
         with(layout) {
             assertViewBuilderInvocation(1)
@@ -97,12 +99,12 @@ class CompatUIComponentTest : ShellTestCase() {
             assertEquals(info, lastPositionFactoryCompatUIInfo)
             assertEquals(view, lastPositionFactoryView)
             assertEquals(componentState, lastPositionFactoryCompState)
-            assertEquals(state.sharedState, lastPositionFactorySharedState)
         }
     }
 
     @Test
     fun `when update is invoked only position and binder spec fields are used`() {
+        initShareRepositoryForTask()
         compatUIHandlerRule.postBlocking {
             component.initLayout(info)
             layout.resetState()
@@ -119,5 +121,9 @@ class CompatUIComponentTest : ShellTestCase() {
         val taskInfo = ActivityManager.RunningTaskInfo()
         taskInfo.taskId = 1
         return CompatUIInfo(taskInfo, null)
+    }
+
+    private fun initShareRepositoryForTask(taskId: Int = 1) {
+        sharedStateRepository.insert(taskId, CompatUISharedState(), overrideIfPresent = true)
     }
 }

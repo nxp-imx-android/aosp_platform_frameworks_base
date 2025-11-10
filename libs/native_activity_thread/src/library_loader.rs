@@ -21,6 +21,7 @@ use dlext_bindgen::{
 use std::{
     ffi::{c_void, CString},
     ptr::NonNull,
+    sync::{Mutex, OnceLock},
 };
 
 macro_rules! bail_with_dlerror {
@@ -46,6 +47,7 @@ macro_rules! bail_with_dlerror {
 }
 
 /// Safe wrapper of a raw pointer to android_namespace_t.
+#[derive(Clone)]
 pub struct LinkerNamespace {
     namespace: NonNull<android_namespace_t>,
 }
@@ -56,25 +58,32 @@ impl LinkerNamespace {
     }
 }
 
+// SAFETY: dlopen(3) is thread-safe (https://man7.org/linux/man-pages/man3/dlopen.3.html)
+unsafe impl Send for LinkerNamespace {}
+// SAFETY: dlopen(3) is thread-safe (https://man7.org/linux/man-pages/man3/dlopen.3.html)
+unsafe impl Sync for LinkerNamespace {}
+
 /// NamespaceFactory creates linker namespaces.
 pub struct NamespaceFactory {
-    base_name: String,
     // Used to assign a serial number to each namespace name to make it unique.
     serial: u32,
 }
 
+static NAMESPACE_FACTORY: OnceLock<Mutex<NamespaceFactory>> = OnceLock::new();
+
 impl NamespaceFactory {
-    pub fn new(base_name: String) -> Self {
-        Self { base_name, serial: 0 }
+    fn new() -> Mutex<Self> {
+        Mutex::new(Self { serial: 0 })
     }
 
     /// Create a linker namespace.
     pub fn create_linker_namespace(
-        &mut self,
+        base_name: &str,
         library_paths: &str,
         permitted_libs_dir: &str,
     ) -> Result<LinkerNamespace> {
-        let name = CString::new(format!("{}-{}", self.base_name, self.serial))
+        let mut factory = NAMESPACE_FACTORY.get_or_init(Self::new).lock().unwrap();
+        let name = CString::new(format!("{}-{}", base_name, factory.serial))
             .context("invalid namespace name")?;
         let ld_path = CString::new(library_paths).context("invalid library paths")?;
         let permitted_libs_dir =
@@ -93,8 +102,8 @@ impl NamespaceFactory {
         };
         match NonNull::new(namespace) {
             Some(namespace) => {
-                if let Some(new_serial) = self.serial.checked_add(1) {
-                    self.serial = new_serial;
+                if let Some(new_serial) = factory.serial.checked_add(1) {
+                    factory.serial = new_serial;
                 } else {
                     bail!("too many namespaces were created");
                 }
@@ -109,6 +118,11 @@ impl NamespaceFactory {
 pub struct LoadedLibrary {
     library_handle: *mut c_void,
 }
+
+// SAFETY: dlopen(3) is thread-safe (https://man7.org/linux/man-pages/man3/dlopen.3.html)
+unsafe impl Send for LoadedLibrary {}
+// SAFETY: dlopen(3) is thread-safe (https://man7.org/linux/man-pages/man3/dlopen.3.html)
+unsafe impl Sync for LoadedLibrary {}
 
 impl LoadedLibrary {
     /// Load a library to the process memory space.

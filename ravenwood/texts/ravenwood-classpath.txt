@@ -12,8 +12,6 @@ kxml2-android.jar
 json-prebuilt.jar
 ext-ravenwood.jar
 
-android.test.mock.ravenwood.jar
-
 # Note, when we include other services.* jars, we'll need to add
 # platform_compat_config for that module too.
 # See ravenwood-services.core-platform-compat-config.

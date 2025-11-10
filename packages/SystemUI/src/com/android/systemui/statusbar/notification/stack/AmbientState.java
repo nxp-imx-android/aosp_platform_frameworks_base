@@ -21,7 +21,6 @@ import static com.android.systemui.statusbar.notification.NotificationUtils.logK
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
-import android.graphics.RectF;
 import android.util.MathUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -43,6 +42,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.BypassController;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider;
+import com.android.systemui.statusbar.notification.stack.ui.YSpace;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 
 import java.io.PrintWriter;
@@ -69,8 +69,8 @@ public class AmbientState implements Dumpable {
      *  Used to read bouncer states.
      */
     private StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
-    private float mStackTop;
-    private RectF mDrawBounds = new RectF();
+    private float mStackScrollTop;
+    private YSpace mStackBounds = new YSpace(0, 0);
     private float mHeadsUpTop;
     private int mScrollY;
     private float mOverScrollTopAmount;
@@ -397,29 +397,33 @@ public class AmbientState implements Dumpable {
         return mZDistanceBetweenElements;
     }
 
-    /** Y coordinate in view pixels of the top of the notification stack */
-    public float getStackTop() {
+    /**
+     * The Y coordinate for the top of the notification stack, in pixels. This value accounts for
+     * scrolling, so it can be negative if the stack is scrolled off-screen. It defines the top
+     * position where the first notification is placed.
+     */
+    public float getStackScrollTop() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
-        return mStackTop;
+        return mStackScrollTop;
     }
 
-    /** @see #getStackTop() */
-    public void setStackTop(float mStackTop) {
+    /** @see #getStackScrollTop() */
+    public void setStackScrollTop(float mStackScrollTop) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        this.mStackTop = mStackTop;
+        this.mStackScrollTop = mStackScrollTop;
     }
 
     /** @return bounds of the area in view pixels where the NSSL's content can be placed. */
     @NonNull
-    public RectF getDrawBounds() {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return new RectF();
-        return mDrawBounds;
+    public YSpace getStackBounds() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return new YSpace(0, 0);
+        return mStackBounds;
     }
 
-    /** @see #getDrawBounds()  */
-    public void setDrawBounds(@NonNull RectF drawBounds) {
+    /** @see #getStackBounds()  */
+    public void setStackBounds(@NonNull YSpace drawBounds) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mDrawBounds = drawBounds;
+        mStackBounds = drawBounds;
     }
 
     /**
@@ -428,7 +432,7 @@ public class AmbientState implements Dumpable {
      */
     public float getStackCutoff() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
-        return mDrawBounds.bottom;
+        return mStackBounds.bottom;
     }
 
     /** y coordinate of the top position of a pinned HUN */
@@ -884,8 +888,8 @@ public class AmbientState implements Dumpable {
     @Override
     public void dump(PrintWriter pw, String[] args) {
         if (SceneContainerFlag.isEnabled()) {
-            pw.println("mStackTop=" + mStackTop);
-            pw.println("mDrawBounds=" + mDrawBounds);
+            pw.println("mStackScrollTop=" + mStackScrollTop);
+            pw.println("mStackBounds=" + mStackBounds);
             pw.println("mHeadsUpTop=" + mHeadsUpTop);
         } else {
             // fields which will be removed with SceneContainer

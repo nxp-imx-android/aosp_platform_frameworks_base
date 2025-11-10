@@ -38,6 +38,7 @@ import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_IF_ALLOWLIST
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_NEVER;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT;
+import static android.content.pm.ActivityInfo.PERSIST_ACROSS_REBOOTS;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
@@ -101,6 +102,7 @@ import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_INVISI
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
+import static com.android.window.flags.Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -143,7 +145,6 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.provider.DeviceConfig;
 import android.util.MutableBoolean;
 import android.view.DisplayInfo;
@@ -154,6 +155,7 @@ import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationTarget;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.window.SplashScreenView;
 import android.window.TaskSnapshot;
 
 import androidx.test.filters.MediumTest;
@@ -1045,6 +1047,28 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertEquals(handoffActivityData, activity.getHandoffActivityData());
     }
 
+    /**
+     * Verify that when the root activity of a task is stopped, persistent state provided is saved
+     * to its' task.
+     */
+    @Test
+    @EnableFlags(FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void onRootActivityStopped_stateSavedToPackageUpdateManager() {
+        final ActivityRecord activity = createActivityWithTask();
+        activity.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        final Bundle savedState = new Bundle();
+        savedState.putString("test", "string");
+        final PersistableBundle persistentSavedState = new PersistableBundle();
+        persistentSavedState.putString("persist", "string");
+
+        // Set state to STOPPING, or ActivityRecord#activityStoppedLocked() call will be ignored.
+        activity.setState(STOPPING, "test");
+        activity.activityStopped(savedState, persistentSavedState, null, "desc");
+        assertTrue(activity.hasSavedState());
+        assertEquals(persistentSavedState,
+                mAtm.mPackageUpdateManager.getPersistentStateForTask(activity.getTask()));
+    }
+
     @Test
     public void testReadWindowStyle() {
         final ActivityRecord activity = new ActivityBuilder(mAtm).setActivityTheme(
@@ -1144,95 +1168,6 @@ public class ActivityRecordTests extends WindowTestsBase {
      * Verify that when finishing the top focused activity on top display, the root task order
      * will be changed by adjusting focus.
      */
-    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
-    @Test
-    public void testFinishActivityIfPossible_adjustStackOrder() {
-        final ActivityRecord activity = createActivityWithTask();
-        final Task task = activity.getTask();
-        // Prepare the tasks with order (top to bottom): task, task1, task2.
-        final Task task1 = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
-        task.moveToFront("test");
-        // The task2 is needed here for moving back to simulate the
-        // {@link DisplayContent#mPreferredTopFocusableStack} is cleared, so
-        // {@link DisplayContent#getFocusedStack} will rely on the order of focusable-and-visible
-        // tasks. Then when mActivity is finishing, its task will be invisible (no running
-        // activities in the task) that is the key condition to verify.
-        final Task task2 = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
-        task2.moveToBack("test", task2.getBottomMostTask());
-
-        assertTrue(task.isTopRootTaskInDisplayArea());
-
-        activity.setState(RESUMED, "test");
-        activity.finishIfPossible(0 /* resultCode */, null /* resultData */,
-                null /* resultGrants */, "test", false /* oomAdj */);
-
-        assertTrue(task1.isTopRootTaskInDisplayArea());
-    }
-
-    /**
-     * Verify that when finishing the top focused activity while root task was created by organizer,
-     * the stack order will be changed by adjusting focus.
-     */
-    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
-    @Test
-    public void testFinishActivityIfPossible_adjustStackOrderOrganizedRoot() {
-        // Make mStack be a the root task that created by task organizer
-        final Task rootableTask = new TaskBuilder(mSupervisor)
-                .setCreateParentTask(true).setCreateActivity(true).build();
-        final Task rootTask = rootableTask.getRootTask();
-        rootTask.mCreatedByOrganizer = true;
-
-        // Have two tasks (topRootableTask and rootableTask) as the children of rootTask.
-        ActivityRecord topActivity = new ActivityBuilder(mAtm)
-                .setCreateTask(true)
-                .setParentTask(rootTask)
-                .build();
-        Task topRootableTask = topActivity.getTask();
-        topRootableTask.moveToFront("test");
-        assertTrue(rootTask.isTopRootTaskInDisplayArea());
-
-        // Finish top activity and verify the next focusable rootable task has adjusted to top.
-        topActivity.setState(RESUMED, "test");
-        topActivity.finishIfPossible(0 /* resultCode */, null /* resultData */,
-                null /* resultGrants */, "test", false /* oomAdj */);
-        assertEquals(rootableTask, rootTask.getTopMostTask());
-    }
-
-    /**
-     * Verify that when top focused activity is on secondary display, when finishing the top focused
-     * activity on default display, the preferred top stack on default display should be changed by
-     * adjusting focus.
-     */
-    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
-    @Test
-    public void testFinishActivityIfPossible_PreferredTopStackChanged() {
-        final ActivityRecord activity = createActivityWithTask();
-        final Task task = activity.getTask();
-        final ActivityRecord topActivityOnNonTopDisplay =
-                createActivityOnDisplay(true /* defaultDisplay */, null /* process */);
-        Task topRootableTask = topActivityOnNonTopDisplay.getRootTask();
-        topRootableTask.moveToFront("test");
-        assertTrue(topRootableTask.isTopRootTaskInDisplayArea());
-        assertEquals(topRootableTask, topActivityOnNonTopDisplay.getDisplayArea()
-                .mPreferredTopFocusableRootTask);
-
-        final ActivityRecord secondaryDisplayActivity =
-                createActivityOnDisplay(false /* defaultDisplay */, null /* process */);
-        topRootableTask = secondaryDisplayActivity.getRootTask();
-        topRootableTask.moveToFront("test");
-        assertTrue(topRootableTask.isTopRootTaskInDisplayArea());
-        assertEquals(topRootableTask,
-                secondaryDisplayActivity.getDisplayArea().mPreferredTopFocusableRootTask);
-
-        // The global top focus activity is on secondary display now.
-        // Finish top activity on default display and verify the next preferred top focusable stack
-        // on default display has changed.
-        topActivityOnNonTopDisplay.setState(RESUMED, "test");
-        topActivityOnNonTopDisplay.finishIfPossible(0 /* resultCode */, null /* resultData */,
-                null /* resultGrants */, "test", false /* oomAdj */);
-        assertEquals(task, task.getTopMostTask());
-        assertEquals(task, activity.getDisplayArea().mPreferredTopFocusableRootTask);
-    }
 
     /**
      * Verify that resumed activity is paused due to finish request.
@@ -3124,6 +3059,20 @@ public class ActivityRecordTests extends WindowTestsBase {
         // Assert that the bottom window now has the starting window.
         assertNoStartingWindow(activityTop);
         assertHasStartingWindow(activityBottom);
+    }
+
+    @Test
+    public void testCleanUpSplashScreenWhenTransferFail() {
+        registerTestStartingWindowOrganizer();
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        activity.addStartingWindow(mPackageName, android.R.style.Theme, null, true, true, false,
+                true, false, false, false);
+        waitUntilHandlersIdle();
+        assertHasStartingWindow(activity);
+        activity.setCustomizeSplashScreenExitAnimation(true /* enable */);
+        activity.finishing = true;
+        activity.onCopySplashScreenFinish(mock(SplashScreenView.SplashScreenViewParcelable.class));
+        verify(activity).cleanUpSplashScreen();
     }
 
     @Test

@@ -1,0 +1,265 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package android.app.appfunctions;
+
+import static android.app.appfunctions.AppFunctionStaticMetadataHelper.getDocumentIdForAppFunction;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
+
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.text.TextUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Specifies the query parameters for finding app functions. A search will be performed using a
+ * logical AND operation across all provided criteria.
+ *
+ * @hide
+ */
+@FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+public final class AppFunctionSearchSpec implements Parcelable {
+    @NonNull
+    public static final Creator<AppFunctionSearchSpec> CREATOR =
+            new Creator<AppFunctionSearchSpec>() {
+                @Override
+                public AppFunctionSearchSpec createFromParcel(Parcel in) {
+                    return new AppFunctionSearchSpec(in);
+                }
+
+                @Override
+                public AppFunctionSearchSpec[] newArray(int size) {
+                    return new AppFunctionSearchSpec[size];
+                }
+            };
+
+    @Nullable private final List<String> mPackageNames;
+    @Nullable private final List<AppFunctionName> mFunctionNames;
+    @Nullable private final String mSchemaCategory;
+    @Nullable private final String mSchemaName;
+    private final long mMinSchemaVersion;
+
+    /** Creates an instance of {@link AppFunctionSearchSpec}. */
+    private AppFunctionSearchSpec(
+            @Nullable List<String> packageNames,
+            @Nullable List<AppFunctionName> functionNames,
+            @Nullable String schemaCategory,
+            @Nullable String schemaName,
+            long minSchemaVersion) {
+        mPackageNames = packageNames;
+        mFunctionNames = functionNames;
+        mSchemaCategory = schemaCategory;
+        mSchemaName = schemaName;
+        mMinSchemaVersion = minSchemaVersion;
+    }
+
+    private AppFunctionSearchSpec(Parcel in) {
+        String[] packageArray = in.createString8Array();
+        mPackageNames = (packageArray == null) ? null : List.of(packageArray);
+        mFunctionNames = in.createTypedArrayList(AppFunctionName.CREATOR);
+        mSchemaCategory = in.readString8();
+        mSchemaName = in.readString8();
+        mMinSchemaVersion = in.readLong();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AppFunctionSearchSpec that = (AppFunctionSearchSpec) o;
+
+        return Objects.equals(mPackageNames, that.mPackageNames)
+                && Objects.equals(mFunctionNames, that.mFunctionNames)
+                && Objects.equals(mSchemaCategory, that.mSchemaCategory)
+                && Objects.equals(mSchemaName, that.mSchemaName)
+                && mMinSchemaVersion == that.mMinSchemaVersion;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                mPackageNames, mFunctionNames, mSchemaCategory, mSchemaName, mMinSchemaVersion);
+    }
+
+    /**
+     * Returns a query expression to use when searching for app functions based on this {@link
+     * AppFunctionSearchSpec}.
+     *
+     * @hide
+     */
+    @NonNull
+    public String getStaticMetadataAppSearchQuery() {
+        ArrayList<String> query = new ArrayList<>();
+        if (mPackageNames != null) {
+            query.add(
+                    TextUtils.formatSimple(
+                            "packageName:(%s)", getOrQueryExpression(mPackageNames)));
+        }
+        if (mSchemaCategory != null) {
+            query.add(TextUtils.formatSimple("schemaCategory:\"%s\"", mSchemaCategory));
+        }
+        if (mSchemaName != null) {
+            query.add(TextUtils.formatSimple("schemaName:\"%s\"", mSchemaName));
+        }
+        if (mMinSchemaVersion >= 1) {
+            query.add(TextUtils.formatSimple("schemaVersion>=%d", mMinSchemaVersion));
+        }
+        return String.join(" ", query);
+    }
+
+    /**
+     * Returns the list of qualified app function ids to filter for based on this {@link
+     * AppFunctionSearchSpec}. Returns an empty list if the AppFunctionNames filter was not set.
+     *
+     * @hide
+     */
+    @NonNull
+    public List<String> getQualifiedIdsFilter() {
+        List<String> qualifiedIds = new ArrayList<>();
+        if (mFunctionNames == null) {
+            return qualifiedIds;
+        }
+
+        for (var functionName : mFunctionNames) {
+            String qualifiedId =
+                    getDocumentIdForAppFunction(
+                            functionName.getPackageName(), functionName.getFunctionId());
+            qualifiedIds.add(qualifiedId);
+        }
+
+        return qualifiedIds;
+    }
+
+    private String getOrQueryExpression(@NonNull List<String> elements) {
+        String[] quotedElements = new String[elements.size()];
+        for (int i = 0; i < elements.size(); i++) {
+            quotedElements[i] = TextUtils.formatSimple("\"%s\"", elements.get(i));
+        }
+        return String.join(" OR ", quotedElements);
+    }
+
+    /** Builder for creating {@link AppFunctionSearchSpec} instances. */
+    public static final class Builder {
+        @Nullable private List<String> mPackageNames = null;
+        @Nullable private List<AppFunctionName> mFunctionNames = null;
+        @Nullable private String mSchemaCategory = null;
+        @Nullable private String mSchemaName = null;
+        private long mMinSchemaVersion = 0;
+
+        /**
+         * Creates a new instance of {@link AppFunctionSearchSpec.Builder} with empty properties.
+         */
+        public Builder() {}
+
+        /**
+         * Constructs the final, immutable {@link AppFunctionSearchSpec} object.
+         *
+         * @return A new AppFunctionSearchSpec instance.
+         */
+        @NonNull
+        public AppFunctionSearchSpec build() {
+            return new AppFunctionSearchSpec(
+                    mPackageNames, mFunctionNames, mSchemaCategory, mSchemaName, mMinSchemaVersion);
+        }
+
+        /**
+         * Sets the list of package names to filter by.
+         *
+         * @param packageNames the list of package names to filter by. A null value will skip this
+         *     filter.
+         * @throws IllegalArgumentException if {@code packageNames} is an empty list.
+         */
+        @NonNull
+        public Builder setPackageNames(@Nullable List<String> packageNames) {
+            if (packageNames != null && packageNames.isEmpty()) {
+                throw new IllegalArgumentException("Package names can not be an empty list.");
+            }
+            this.mPackageNames = packageNames;
+            return this;
+        }
+
+        /**
+         * Sets the list of {@link AppFunctionName} to filter by.
+         *
+         * @param functionNames the list of {@link AppFunctionName} to filter by. A null value will
+         *     skip this filter.
+         * @throws IllegalArgumentException if {@code functionNames} is an empty list.
+         */
+        @NonNull
+        public Builder setFunctionNames(@Nullable List<AppFunctionName> functionNames) {
+            if (functionNames != null && functionNames.isEmpty()) {
+                throw new IllegalArgumentException("AppFunction names can not be an empty list.");
+            }
+            this.mFunctionNames = functionNames;
+            return this;
+        }
+
+        /**
+         * Sets the schema category to filter by.
+         *
+         * @param schemaCategory the schema category to filter by. A null value will skip this
+         *     filter.
+         */
+        @NonNull
+        public Builder setSchemaCategory(@Nullable String schemaCategory) {
+            this.mSchemaCategory = schemaCategory;
+            return this;
+        }
+
+        /**
+         * Sets the schema name to filter by.
+         *
+         * @param schemaName the schema name to filter by. A null value will skip this filter.
+         */
+        @NonNull
+        public Builder setSchemaName(@Nullable String schemaName) {
+            this.mSchemaName = schemaName;
+            return this;
+        }
+
+        /**
+         * Sets the schema version to filter by.
+         *
+         * @param minSchemaVersion the minimum schema version to filter by. A value of 0 will skip
+         *     this filter.
+         */
+        @NonNull
+        public Builder setMinSchemaVersion(long minSchemaVersion) {
+            this.mMinSchemaVersion = minSchemaVersion;
+            return this;
+        }
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString8Array(
+                (mPackageNames == null) ? null : mPackageNames.toArray(new String[0]));
+        dest.writeTypedList(mFunctionNames);
+        dest.writeString8(mSchemaCategory);
+        dest.writeString8(mSchemaName);
+        dest.writeLong(mMinSchemaVersion);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+}

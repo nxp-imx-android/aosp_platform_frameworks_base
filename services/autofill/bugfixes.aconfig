@@ -153,3 +153,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "get_autofill_view_id_from_autofill_manager"
+  namespace: "autofill"
+  description: "Use autofill manager to get autofill view id if view has non-activity context"
+  bug: "390180715"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+  }
+}

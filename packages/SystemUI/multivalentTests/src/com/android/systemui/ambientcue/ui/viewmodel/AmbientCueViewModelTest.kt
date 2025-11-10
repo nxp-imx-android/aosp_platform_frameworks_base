@@ -19,9 +19,12 @@ package com.android.systemui.ambientcue.ui.viewmodel
 import android.content.Context
 import android.content.applicationContext
 import android.graphics.Rect
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
@@ -108,20 +111,38 @@ class AmbientCueViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun isVisible_actionsIsEmpty_false() =
+        kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            assertThat(viewModel.isVisible).isTrue()
+
+            ambientCueRepository.fake.setActions(emptyList())
+            runCurrent()
+
+            advanceTimeBy(AmbientCueViewModel.ACTIONS_DEBOUNCE_MS.milliseconds)
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isFalse()
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_AMBIENT_CUE_WITH_IME_VISIBLE)
     fun isVisible_imeNotVisible_true() =
         kosmos.runTest {
             viewModel.activateIn(kosmos.testScope)
             ambientCueRepository.fake.setActions(testActions(applicationContext))
+            ambientCueRepository.fake.updateRootViewAttached()
             ambientCueInteractor.setDeactivated(false)
 
             ambientCueInteractor.setImeVisible(false)
-            ambientCueRepository.fake.updateRootViewAttached()
             runCurrent()
 
             assertThat(viewModel.isVisible).isTrue()
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_AMBIENT_CUE_WITH_IME_VISIBLE)
     fun isVisible_imeVisible_false() =
         kosmos.runTest {
             viewModel.activateIn(kosmos.testScope)
@@ -129,10 +150,23 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             assertThat(viewModel.isVisible).isTrue()
 
             ambientCueInteractor.setImeVisible(true)
-            ambientCueRepository.fake.updateRootViewAttached()
             runCurrent()
 
             assertThat(viewModel.isVisible).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_AMBIENT_CUE_WITH_IME_VISIBLE)
+    fun isVisible_imeVisible_ambientCueWithImeVisibleFlagEnabled_true() =
+        kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            assertThat(viewModel.isVisible).isTrue()
+
+            ambientCueInteractor.setImeVisible(true)
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isTrue()
         }
 
     @Test

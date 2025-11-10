@@ -89,6 +89,8 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ServiceManager;
 import android.os.UserHandle;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.service.voice.VisualQueryDetectedResult;
 import android.speech.tts.TextToSpeech;
 import android.telephony.TelephonyManager;
@@ -130,6 +132,11 @@ import java.util.function.Consumer;
 /**
  * The Settings provider contains global system-level device preferences.
  */
+@RavenwoodKeepWholeClass(comment = """
+With the default ContentResolver instance, all the get methods will just return the default values.
+All the put methods will throw an exception. If you want to simulate writing to the settings
+provider, consider using TestableSettingsProvider, which is configured by TestableContext.
+        """, conditional = true, bug = 457840588)
 public final class Settings {
     /** @hide */
     public static final boolean DEFAULT_OVERRIDEABLE_BY_RESTORE = false;
@@ -3476,6 +3483,7 @@ public final class Settings {
         }
     }
 
+    @RavenwoodKeepPartialClass(comment = "GenerationTracker not used on Ravenwood")
     private static final class GenerationTracker {
         @NonNull private final Key mKey;
         @NonNull private final MemoryIntArray mArray;
@@ -3531,6 +3539,7 @@ public final class Settings {
             }
         }
 
+        @RavenwoodKeepWholeClass(comment = "GenerationTracker not used, but we still generate keys")
         private static final class Key {
             private final String mName;
             private final int mDeviceId;
@@ -8035,6 +8044,12 @@ public final class Settings {
          */
         public static final String BLUETOOTH_LE_BROADCAST_FALLBACK_ACTIVE_DEVICE_ADDRESS =
                 "bluetooth_le_broadcast_fallback_active_device_address";
+
+        /**
+         * User preference for enabling contextual mode sync.
+         * @hide
+         */
+        public static final String CONTEXTUAL_MODE_SYNC_ENABLED = "contextual_mode_sync_enabled";
 
         /**
          * Ringtone routing value for hearing aid. It routes ringtone to hearing aid or device
@@ -13948,6 +13963,22 @@ public final class Settings {
          */
         public static final String IDENTITY_CHECK_WATCH_NOTIFICATION_VIEW_DETAILS_CLICKED =
                 "identity_check_watch_notification_view_details_clicked";
+
+        /**
+         * Setting to showing password characters from touch inputs in text editors.
+         * 1 = On, 0 = Off
+         * @hide
+         */
+        @FlaggedApi("com.android.systemui.split_show_passwords_to_touch_and_physical")
+        public static final String TEXT_SHOW_PASSWORD_TOUCH = "show_passwords_touch";
+
+        /**
+         * Setting to showing password characters from physical inputs in text editors.
+         * 1 = On, 0 = Off
+         * @hide
+         */
+        @FlaggedApi("com.android.systemui.split_show_passwords_to_touch_and_physical")
+        public static final String TEXT_SHOW_PASSWORD_PHYSICAL = "show_passwords_physical";
     }
 
     /**

@@ -743,7 +743,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun stayOnCurrentSceneWhenDeviceIsUnlockedAndUserIsNotOnLockscreen() =
+    fun enterDeviceWhileInShadeWhenDeviceIsUnlockedViaFingerPrint() =
         kosmos.runTest {
             enableSingleShade()
             val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
@@ -763,7 +763,9 @@ class SceneContainerStartableTest : SysuiTestCase() {
             updateFingerprintAuthStatus(isSuccess = true)
             runCurrent()
 
-            assertThat(currentSceneKey).isEqualTo(Scenes.Shade)
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+            assertThat(fakeMSDLPlayer.latestTokenPlayed).isEqualTo(MSDLToken.UNLOCK)
+            assertThat(fakeMSDLPlayer.latestPropertiesPlayed).isEqualTo(authInteractionProperties)
         }
 
     @Test
@@ -2416,6 +2418,36 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun handleOcclusion_occludedWhileDreaming_doesNotSwitchToOccludedScene() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            prepareState()
+            underTest.start()
+            runCurrent()
+
+            // Device is dreaming
+            keyguardInteractor.setDreaming(true)
+            testScope.advanceTimeBy(DREAMING_DELAY_MS)
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+
+            // Device got occluded
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true, mock())
+            runCurrent()
+
+            // We should stay on dream and not switch to occluded
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+
+            // Device no longer dreaming
+            keyguardInteractor.setDreaming(false)
+            testScope.advanceTimeBy(DREAMING_DELAY_MS)
+            runCurrent()
+
+            // We should switch to occluded if there is still a locked activity on top
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+        }
+
+    @Test
     fun switchToLockscreen_whenShadeBecomesNotTouchable() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -2680,8 +2712,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             powerInteractor.setAwakeForTest()
             keyguardInteractor.setDreaming(true)
-            // Move past initial delay with [KeyguardInteractor#isAbleToDream]
-            testScope.advanceTimeBy(600L)
+            testScope.advanceTimeBy(DREAMING_DELAY_MS)
             runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Dream)
         }
@@ -3443,5 +3474,8 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
     private companion object {
         const val SECONDARY_DISPLAY = Display.DEFAULT_DISPLAY + 1
+
+        // Move past initial delay with [KeyguardInteractor#isAbleToDream]
+        const val DREAMING_DELAY_MS = KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS + 100L
     }
 }

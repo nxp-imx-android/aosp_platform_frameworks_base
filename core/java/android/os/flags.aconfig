@@ -235,16 +235,6 @@ flag {
 }
 
 flag {
-    name: "enforce_strict_file_mode_check"
-    namespace: "backstage_power"
-    description: "Throw an IllegalArgumentException if the file mode passed to ParcelFileDescriptor#parseMode is unknown."
-    bug: "414387646"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "get_private_space_settings"
     namespace: "profile_experiences"
     description: "Guards a new Private Profile API in LauncherApps"
@@ -417,6 +407,14 @@ flag {
 }
 
 flag {
+    name: "strongbox_properties_api"
+    namespace: "hardware_backed_security"
+    description: "Public API app developers use to check a device's Strongbox manufacturer and model."
+    is_exported: true
+    bug: "432311620"
+}
+
+flag {
     name: "supplemental_security_patches"
     is_exported: false
     namespace: "dynamic_spl"
@@ -471,13 +469,6 @@ flag {
     name: "native_looper_skip_epoll_wait_for_zero_timeout"
     description: "Skips epoll_wait if pollOnce is called with a timeout of 0."
     bug: "410218466"
-}
-
-flag {
-    namespace: "system_performance"
-    name: "native_looper_skip_epoll_wait_for_zero_timeout_holdback"
-    description: "Holdback for skipping epoll_wait if pollOnce is called with a timeout of 0."
-    bug: "448455908"
 }
 
 flag {

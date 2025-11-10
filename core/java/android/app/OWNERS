@@ -59,6 +59,9 @@ per-file *Alarm* = file:/apex/jobscheduler/ALARM_OWNERS
 per-file AndroidForwardingOs.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file AndroidForwardingOS.java = file:RESOURCES_OWNERS
 
+# AppInteraction
+per-file *AppInteraction* = file:/core/java/android/app/appfunctions/OWNERS
+
 # AppOps
 per-file *AppOp* = file:/core/java/android/permission/OWNERS
 

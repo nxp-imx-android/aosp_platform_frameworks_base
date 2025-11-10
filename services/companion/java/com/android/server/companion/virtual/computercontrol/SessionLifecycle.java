@@ -44,8 +44,6 @@ final class SessionLifecycle {
     private boolean mIsRemoteCallbackAdded = false;
     @GuardedBy("mLifecycle")
     private final LifecycleConfig mLifecycleConfig = new LifecycleConfig();
-    @GuardedBy("mLifecycle")
-    private LifecycleState mCurrentState = null;
 
     /** Configuration args that fully determine the lifecycle state of the session. */
     static final class LifecycleConfig {
@@ -93,22 +91,25 @@ final class SessionLifecycle {
     @NonNull
     LifecycleState updateLifecycleState(@NonNull Consumer<LifecycleConfig> update) {
         synchronized (mLifecycle) {
-            final var previousState = mCurrentState;
+            final var previousState = mLifecycle.getCurrentState();
             update.accept(mLifecycleConfig);
-            mCurrentState = mLifecycleConfig.computeState();
-            if (Objects.equals(mCurrentState, previousState)) {
-                return mCurrentState;
+            final var requestedState = mLifecycleConfig.computeState();
+            if (Objects.equals(requestedState, previousState)) {
+                return requestedState;
             }
-            switch (mCurrentState) {
+            switch (requestedState) {
                 case LifecycleState.Active ignored ->
                         mLifecycle.onActive();
                 case Blocked blocked ->
                         mLifecycle.onBlocked(blocked.reason, blocked.blockingPackage);
-                case LifecycleState.Closed closed ->
-                        mLifecycle.onClosed(closed.reason);
+                case LifecycleState.Closed closed -> mLifecycle.onClosed(closed.reason);
             }
-            Slog.i(TAG, "Updated lifecycle state from " + previousState + " to " + mCurrentState);
-            return mCurrentState;
+            final var newState = mLifecycle.getCurrentState();
+            if (!Objects.equals(previousState, newState)) {
+                Slog.i(TAG,
+                        "Updated lifecycle state from " + previousState + " to " + requestedState);
+            }
+            return newState;
         }
     }
 
@@ -120,7 +121,7 @@ final class SessionLifecycle {
      */
     LifecycleState getCurrentState() {
         synchronized (mLifecycle) {
-            return mCurrentState;
+            return mLifecycle.getCurrentState();
         }
     }
 

@@ -79,7 +79,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_LOCKTASK;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
@@ -165,7 +164,6 @@ import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.ITaskOrganizer;
-import android.window.PictureInPictureSurfaceTransaction;
 import android.window.StartingWindowInfo;
 import android.window.TaskFragmentParentInfo;
 import android.window.TaskSnapshot;
@@ -398,18 +396,6 @@ class Task extends TaskFragment {
     // The information is persisted and used to determine the appropriate root task to launch the
     // task into on restore.
     Rect mLastNonFullscreenBounds = null;
-
-    // The surface transition of the target when recents animation is finished.
-    // This is originally introduced to carry out the current surface control position and window
-    // crop when a multi-activity task enters pip with autoEnterPip enabled. In such case,
-    // the surface control of the task will be animated in Launcher and then the top activity is
-    // reparented to pinned root task.
-    // Do not forget to reset this after reparenting.
-    // TODO: remove this once the recents animation is moved to the Shell
-    PictureInPictureSurfaceTransaction mLastRecentsAnimationTransaction;
-    // The content overlay to be applied with mLastRecentsAnimationTransaction
-    // TODO: remove this once the recents animation is moved to the Shell
-    SurfaceControl mLastRecentsAnimationOverlay;
 
     // A surface that is used by TaskFragmentOrganizer to place content on top of own activities and
     // trusted TaskFragments.
@@ -3154,16 +3140,8 @@ class Task extends TaskFragment {
         return activity != null ? activity.findMainWindow() : null;
     }
 
-    ActivityRecord topRunningNonDelayedActivityLocked(ActivityRecord notTop) {
-        final PooledPredicate p = PooledLambda.obtainPredicate(Task::isTopRunningNonDelayed
-                , PooledLambda.__(ActivityRecord.class), notTop);
-        final ActivityRecord r = getActivity(p);
-        p.recycle();
-        return r;
-    }
-
-    private static boolean isTopRunningNonDelayed(ActivityRecord r, ActivityRecord notTop) {
-        return !r.delayedResume && r != notTop && r.canBeTopRunning();
+    ActivityRecord topRunningActivity(ActivityRecord notTop) {
+        return getActivity(r -> r != notTop && r.canBeTopRunning());
     }
 
     /**
@@ -5463,7 +5441,7 @@ class Task extends TaskFragment {
             // reset, then do so.
             if ((r.intent.getFlags() & Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED) != 0) {
                 resetTaskIfNeeded(r, r);
-                doShow = topRunningNonDelayedActivityLocked(null) == r;
+                doShow = topRunningActivity(null) == r;
             }
         } else if (options != null && options.getAnimationType()
                 == ActivityOptions.ANIM_SCENE_TRANSITION) {
@@ -6363,45 +6341,11 @@ class Task extends TaskFragment {
         }
     }
 
-    void setLastRecentsAnimationTransaction(@NonNull PictureInPictureSurfaceTransaction transaction,
-            @Nullable SurfaceControl overlay) {
-        mLastRecentsAnimationTransaction = new PictureInPictureSurfaceTransaction(transaction);
-        mLastRecentsAnimationOverlay = overlay;
-    }
-
-    void clearLastRecentsAnimationTransaction(boolean forceRemoveOverlay) {
-        if (forceRemoveOverlay && mLastRecentsAnimationOverlay != null) {
-            getPendingTransaction().remove(mLastRecentsAnimationOverlay);
-        }
-        mLastRecentsAnimationTransaction = null;
-        mLastRecentsAnimationOverlay = null;
-        // reset also the crop and transform introduced by mLastRecentsAnimationTransaction
-        resetSurfaceControlTransforms();
-    }
-
     void resetSurfaceControlTransforms() {
         getSyncTransaction().setMatrix(mSurfaceControl, Matrix.IDENTITY_MATRIX, new float[9])
                 .setWindowCrop(mSurfaceControl, null)
                 .setShadowRadius(mSurfaceControl, 0)
                 .setCornerRadius(mSurfaceControl, 0);
-    }
-
-    void maybeApplyLastRecentsAnimationTransaction() {
-        if (mLastRecentsAnimationTransaction != null) {
-            ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
-                    "Applying last recents animation transaction.");
-            final SurfaceControl.Transaction tx = getPendingTransaction();
-            if (mLastRecentsAnimationOverlay != null) {
-                tx.reparent(mLastRecentsAnimationOverlay, mSurfaceControl);
-            }
-            PictureInPictureSurfaceTransaction.apply(mLastRecentsAnimationTransaction,
-                    mSurfaceControl, tx);
-            // If we are transferring the transform from the root task entering PIP, then also show
-            // the new task immediately
-            tx.show(mSurfaceControl);
-            mLastRecentsAnimationTransaction = null;
-            mLastRecentsAnimationOverlay = null;
-        }
     }
 
     private void updateSurfaceBounds() {

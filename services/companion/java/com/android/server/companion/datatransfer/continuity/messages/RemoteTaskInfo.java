@@ -16,100 +16,97 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-import android.companion.datatransfer.continuity.RemoteTask;
-import android.graphics.drawable.Icon;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
-import java.util.Arrays;
-import java.util.Objects;
 import java.io.IOException;
+import java.util.Objects;
 
 public record RemoteTaskInfo(
-        int id, String label, long lastUsedTimeMillis, byte[] taskIcon, boolean isHandoffEnabled) {
+        int id,
+        @NonNull String packageName,
+        boolean isInForeground,
+        long lastUsedTimeMillis,
+        @NonNull HandoffOptions handoffOptions) {
 
-    public static RemoteTaskInfo fromProto(ProtoInputStream protoInputStream) throws IOException {
+    private static final String TAG = RemoteTaskInfo.class.getSimpleName();
 
-        int id = 0;
-        String label = "";
-        long lastUsedTimeMillis = 0;
-        byte[] taskIcon = new byte[0];
-        boolean isHandoffEnabled = false;
-        while (protoInputStream.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-            switch (protoInputStream.getFieldNumber()) {
-                case (int) android.companion.RemoteTaskInfo.ID:
-                    id = protoInputStream.readInt(android.companion.RemoteTaskInfo.ID);
-
-                    break;
-                case (int) android.companion.RemoteTaskInfo.LABEL:
-                    label = protoInputStream.readString(android.companion.RemoteTaskInfo.LABEL);
-
-                    break;
-                case (int) android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS:
-                    lastUsedTimeMillis =
-                            protoInputStream.readLong(
-                                    android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS);
-                    break;
-                case (int) android.companion.RemoteTaskInfo.TASK_ICON:
-                    taskIcon =
-                            protoInputStream.readBytes(android.companion.RemoteTaskInfo.TASK_ICON);
-                    break;
-                case (int) android.companion.RemoteTaskInfo.IS_HANDOFF_ENABLED:
-                    isHandoffEnabled =
-                            protoInputStream.readBoolean(
-                                    android.companion.RemoteTaskInfo.IS_HANDOFF_ENABLED);
-                    break;
-            }
-        }
-
-        return new RemoteTaskInfo(id, label, lastUsedTimeMillis, taskIcon, isHandoffEnabled);
+    public RemoteTaskInfo {
+        Objects.requireNonNull(packageName);
+        Objects.requireNonNull(handoffOptions);
     }
 
-    public void writeToProto(ProtoOutputStream protoOutputStream) {
-        protoOutputStream.writeInt32(android.companion.RemoteTaskInfo.ID, id());
-        protoOutputStream.writeString(android.companion.RemoteTaskInfo.LABEL, label());
-        protoOutputStream.writeInt64(
-                android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS, lastUsedTimeMillis());
-        protoOutputStream.writeBytes(android.companion.RemoteTaskInfo.TASK_ICON, taskIcon());
-        protoOutputStream.writeBool(
-                android.companion.RemoteTaskInfo.IS_HANDOFF_ENABLED, isHandoffEnabled());
-    }
+    @NonNull
+    public static final ProtoCreator<RemoteTaskInfo> CREATOR =
+            new ProtoCreator<RemoteTaskInfo>() {
+                @Override
+                @Nullable
+                public RemoteTaskInfo read(@NonNull ProtoInputStream pis) throws IOException {
+                    Objects.requireNonNull(pis);
 
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof RemoteTaskInfo) {
-            RemoteTaskInfo other = (RemoteTaskInfo) o;
-            return id() == other.id()
-                    && label().equals(other.label())
-                    && lastUsedTimeMillis() == other.lastUsedTimeMillis()
-                    && Arrays.equals(taskIcon(), other.taskIcon());
-        }
-        return false;
-    }
+                    int id = 0;
+                    String packageName = "";
+                    long lastUsedTimeMillis = 0;
+                    boolean isInForeground = false;
+                    HandoffOptions handoffOptions = new HandoffOptions(false, false);
+                    while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
+                        switch (pis.getFieldNumber()) {
+                            case (int) android.companion.RemoteTaskInfo.ID:
+                                id = pis.readInt(android.companion.RemoteTaskInfo.ID);
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(
-                id(),
-                label(),
-                lastUsedTimeMillis(),
-                Arrays.hashCode(taskIcon()),
-                isHandoffEnabled());
-    }
+                                break;
+                            case (int) android.companion.RemoteTaskInfo.PACKAGE_NAME:
+                                packageName =
+                                        pis.readString(
+                                                android.companion.RemoteTaskInfo.PACKAGE_NAME);
 
-    public RemoteTask toRemoteTask(int deviceId, String deviceName) {
-        Icon taskIcon = null;
-        if (taskIcon() != null && taskIcon().length > 0) {
-            taskIcon = Icon.createWithData(taskIcon(), 0, taskIcon().length);
-        }
+                                break;
+                            case (int) android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS:
+                                lastUsedTimeMillis =
+                                        pis.readLong(
+                                                android.companion.RemoteTaskInfo
+                                                        .LAST_USED_TIME_MILLIS);
+                                break;
+                            case (int) android.companion.RemoteTaskInfo.HANDOFF_OPTIONS:
+                                handoffOptions =
+                                        HandoffOptions.CREATOR.read(
+                                                pis,
+                                                android.companion.RemoteTaskInfo.HANDOFF_OPTIONS);
+                                break;
+                            case (int) android.companion.RemoteTaskInfo.IS_IN_FOREGROUND:
+                                isInForeground =
+                                        pis.readBoolean(
+                                                android.companion.RemoteTaskInfo.IS_IN_FOREGROUND);
+                                break;
+                        }
+                    }
 
-        return new RemoteTask.Builder(id())
-                .setLabel(label())
-                .setDeviceId(deviceId)
-                .setLastUsedTimestampMillis(lastUsedTimeMillis())
-                .setSourceDeviceName(deviceName)
-                .setIcon(taskIcon)
-                .setHandoffEnabled(isHandoffEnabled())
-                .build();
-    }
+                    return new RemoteTaskInfo(
+                            id, packageName, isInForeground, lastUsedTimeMillis, handoffOptions);
+                }
+
+                @Override
+                public void write(@NonNull ProtoOutputStream pos, @Nullable RemoteTaskInfo value)
+                        throws IOException {
+                    Objects.requireNonNull(pos);
+                    if (value == null) {
+                        return;
+                    }
+
+                    pos.writeInt32(android.companion.RemoteTaskInfo.ID, value.id());
+                    pos.writeString(
+                            android.companion.RemoteTaskInfo.PACKAGE_NAME, value.packageName());
+                    pos.writeBool(
+                            android.companion.RemoteTaskInfo.IS_IN_FOREGROUND,
+                            value.isInForeground());
+                    pos.writeInt64(
+                            android.companion.RemoteTaskInfo.LAST_USED_TIME_MILLIS,
+                            value.lastUsedTimeMillis());
+                    HandoffOptions.CREATOR.write(
+                            pos,
+                            android.companion.RemoteTaskInfo.HANDOFF_OPTIONS,
+                            value.handoffOptions());
+                }
+            };
 }

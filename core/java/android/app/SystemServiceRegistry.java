@@ -18,10 +18,10 @@ package android.app;
 
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 import static android.permission.flags.Flags.assistSettingsPrivacyImprovementsEnabled;
 import static android.provider.flags.Flags.newStoragePublicApi;
-import static android.server.Flags.removeGameManagerServiceFromWear;
 import static android.service.chooser.Flags.interactiveChooser;
 
 import android.accounts.AccountManager;
@@ -53,6 +53,8 @@ import android.app.lskfreset.LskfResetManager;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceFrameworkInitializer;
 import android.app.people.PeopleManager;
 import android.app.prediction.AppPredictionManager;
+import android.app.privatecompute.IPccSandboxManager;
+import android.app.privatecompute.PccSandboxManager;
 import android.app.role.RoleFrameworkInitializer;
 import android.app.sdksandbox.SdkSandboxManagerFrameworkInitializer;
 import android.app.search.SearchUiManager;
@@ -269,6 +271,7 @@ import android.service.persistentdata.IPersistentDataBlockService;
 import android.service.persistentdata.PersistentDataBlockManager;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
+import android.service.uprobestats.UprobestatsFrameworkInitializer;
 import android.service.vr.IVrManager;
 import android.system.virtualmachine.VirtualizationFrameworkInitializer;
 import android.telecom.TelecomManager;
@@ -537,9 +540,8 @@ public final class SystemServiceRegistry {
             public VpnManager createService(ContextImpl ctx) throws ServiceNotFoundException {
                 IBinder b = ServiceManager.getService(Context.VPN_MANAGEMENT_SERVICE);
                 IVpnManager service = IVpnManager.Stub.asInterface(b);
-                if (service == null
-                        && ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)
-                        && android.server.Flags.allowRemovingVpnService()) {
+                if (service == null &&
+                        ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)) {
                     return null;
                 }
                 return new VpnManager(ctx, service);
@@ -1367,12 +1369,12 @@ public final class SystemServiceRegistry {
                                 IDumpstate.Stub.asInterface(b));
                     }});
 
-        registerService(Context.AUTOFILL_MANAGER_SERVICE, AutofillManager.class,
+        registerService(Context.AUTOFILL_SERVICE, AutofillManager.class,
                 new CachedServiceFetcher<AutofillManager>() {
             @Override
             public AutofillManager createService(ContextImpl ctx) throws ServiceNotFoundException {
                 // Get the services without throwing as this is an optional feature
-                IBinder b = ServiceManager.getService(Context.AUTOFILL_MANAGER_SERVICE);
+                IBinder b = ServiceManager.getService(Context.AUTOFILL_SERVICE);
                 IAutoFillManager service = IAutoFillManager.Stub.asInterface(b);
                 return new AutofillManager(ctx.getOuterContext(), service);
             }});
@@ -1729,6 +1731,21 @@ public final class SystemServiceRegistry {
                         IBinder b = ServiceManager.getService(Context.APP_HIBERNATION_SERVICE);
                         return b == null ? null : new AppHibernationManager(ctx);
                     }});
+
+        if (enablePccFrameworkSupport()) {
+            registerService(Context.PCC_SANDBOX_SERVICE, PccSandboxManager.class,
+                    new CachedServiceFetcher<PccSandboxManager>() {
+                        @Override
+                        public PccSandboxManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IPccSandboxManager service;
+                            service = IPccSandboxManager.Stub.asInterface(
+                                    ServiceManager.getServiceOrThrow(Context.PCC_SANDBOX_SERVICE));
+                            return new PccSandboxManager(service, ctx.getOuterContext());
+                        }
+                    });
+        }
+
         registerService(Context.DREAM_SERVICE, DreamManager.class,
                 new CachedServiceFetcher<DreamManager>() {
                     @Override
@@ -1778,13 +1795,12 @@ public final class SystemServiceRegistry {
                             throws ServiceNotFoundException {
                         final PackageManager pm = ctx.getPackageManager();
                         final boolean isWatch = pm.hasSystemFeature(PackageManager.FEATURE_WATCH);
-                        final IBinder binder =
-                                // Allow a potentially absent GameManagerService only for
-                                // Wear devices. For non-Wear devices, throw a
-                                // ServiceNotFoundException when the service is missing.
-                                (removeGameManagerServiceFromWear() && isWatch)
-                                        ? ServiceManager.getService(Context.GAME_SERVICE)
-                                        : ServiceManager.getServiceOrThrow(Context.GAME_SERVICE);
+                        // Allow a potentially absent GameManagerService only for
+                        // Wear devices. For non-Wear devices, throw a
+                        // ServiceNotFoundException when the service is missing.
+                        final IBinder binder = isWatch
+                                ? ServiceManager.getService(Context.GAME_SERVICE)
+                                : ServiceManager.getServiceOrThrow(Context.GAME_SERVICE);
 
                         if (binder == null
                                 && Compatibility.isChangeEnabled(NULL_GAME_MANAGER_IN_WEAR)) {
@@ -1844,8 +1860,8 @@ public final class SystemServiceRegistry {
                         }
                         // Wear intentionally removes the service, so do not throw a
                         // ServiceNotFoundException when the service is not absent.
-                        if (ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)
-                                && android.server.Flags.removeWearableSensingServiceFromWear()) {
+                        if (ctx.getPackageManager().hasSystemFeature(
+                                PackageManager.FEATURE_WATCH)) {
                             return null;
                         }
                         throw new ServiceNotFoundException(Context.WEARABLE_SENSING_SERVICE);
@@ -2058,6 +2074,9 @@ public final class SystemServiceRegistry {
 
             // When RELEASE_ANOMALY_DETECTOR is "false", this call is a no-op.
             AnomalyDetectorFrameworkInitializer.registerServiceWrappers();
+            if (android.security.Flags.uprobestatsBridgeService()) {
+                UprobestatsFrameworkInitializer.registerServiceWrappers();
+            }
         } finally {
             // If any of the above code throws, we're in a pretty bad shape and the process
             // will likely crash, but we'll reset it just in case there's an exception handler...

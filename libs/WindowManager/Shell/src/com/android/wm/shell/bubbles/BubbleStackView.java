@@ -30,7 +30,7 @@ import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
-import static com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_EXPANDED_SCRIM_ALPHA;
+import static com.android.wm.shell.shared.bubbles.BubbleConstants.FLOATING_BUBBLE_EXPANDED_SCRIM_ALPHA;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -102,7 +102,6 @@ import com.android.wm.shell.shared.TypefaceUtils.FontFamily;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
-import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
 import com.android.wm.shell.shared.bubbles.RelativeTouchListener;
@@ -925,15 +924,15 @@ public class BubbleStackView extends FrameLayout
             // dragAmount should be negative as we allow scroll up only
             BubbleExpandedView expandedView = getExpandedView();
             if (expandedView != null) {
-                float alphaRange = BUBBLE_EXPANDED_SCRIM_ALPHA - MIN_SCRIM_ALPHA_FOR_DRAG;
+                float alphaRange = FLOATING_BUBBLE_EXPANDED_SCRIM_ALPHA - MIN_SCRIM_ALPHA_FOR_DRAG;
 
                 int dragMax = expandedView.getContentHeight();
                 float dragFraction = dragAmount / dragMax;
 
-                return Math.max(BUBBLE_EXPANDED_SCRIM_ALPHA - alphaRange * dragFraction,
+                return Math.max(FLOATING_BUBBLE_EXPANDED_SCRIM_ALPHA - alphaRange * dragFraction,
                         MIN_SCRIM_ALPHA_FOR_DRAG);
             }
-            return BUBBLE_EXPANDED_SCRIM_ALPHA;
+            return FLOATING_BUBBLE_EXPANDED_SCRIM_ALPHA;
         }
     };
 
@@ -2750,8 +2749,7 @@ public class BubbleStackView extends FrameLayout
      */
     void startMonitoringSwipeUpGesture() {
         stopMonitoringSwipeUpGestureInternal();
-
-        if (ContextUtils.isGestureNavigationMode(mContext)) {
+        if (mManager.isGestureNavigationMode()) {
             mBubblesNavBarGestureTracker = new BubblesNavBarGestureTracker(mContext, mPositioner);
             mBubblesNavBarGestureTracker.start(mSwipeUpListener);
             setOnTouchListener(mContainerSwipeListener);
@@ -2948,7 +2946,7 @@ public class BubbleStackView extends FrameLayout
             mScrimAnimation = mScrim.animate();
             mScrimAnimation
                     .setInterpolator(ALPHA_IN)
-                    .alpha(BUBBLE_EXPANDED_SCRIM_ALPHA)
+                    .alpha(FLOATING_BUBBLE_EXPANDED_SCRIM_ALPHA)
                     .setListener(listener)
                     .start();
         } else {
@@ -3834,7 +3832,7 @@ public class BubbleStackView extends FrameLayout
         mSysuiProxyProvider.getSysuiProxy().onManageMenuExpandChanged(show);
         mManageMenuScrim.animate()
                 .setInterpolator(show ? ALPHA_IN : ALPHA_OUT)
-                .alpha(show ? BUBBLE_EXPANDED_SCRIM_ALPHA : 0f)
+                .alpha(show ? FLOATING_BUBBLE_EXPANDED_SCRIM_ALPHA : 0f)
                 .withEndAction(endAction)
                 .start();
 

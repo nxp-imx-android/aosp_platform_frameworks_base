@@ -53,16 +53,10 @@ java_sdk_library {
     build_from_text_stub: false,
 }
 
-java_library {
-    name: "android.test.mock.ravenwood",
-    defaults: ["ravenwood-internal-only-visibility-java"],
-    srcs: [":android-test-mock-sources"],
-}
-
 android_ravenwood_test {
     name: "android.test.mock.ravenwood.tests",
     libs: [
-        "android.test.mock.ravenwood",
+        "android.test.mock.stubs",
     ],
     static_libs: [
         "androidx.annotation_annotation",

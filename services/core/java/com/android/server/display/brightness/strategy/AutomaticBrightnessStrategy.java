@@ -233,7 +233,7 @@ public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
      * Updates the associated AutomaticBrightnessController
      */
     public void setAutomaticBrightnessController(
-            AutomaticBrightnessController automaticBrightnessController) {
+            @Nullable AutomaticBrightnessController automaticBrightnessController) {
         if (automaticBrightnessController == mAutomaticBrightnessController) {
             return;
         }

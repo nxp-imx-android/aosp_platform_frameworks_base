@@ -16,7 +16,9 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
+import android.graphics.Point
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +28,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -139,7 +143,34 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 }
             }
 
-            ScreenCaptureRegion.APP_WINDOW -> {}
+            ScreenCaptureRegion.APP_WINDOW -> {
+                Box(
+                    modifier =
+                        Modifier.fillMaxSize()
+                            .pointerInput(viewModel.captureRegion) {
+                                awaitPointerEventScope {
+                                    while (true) {
+                                        val event = awaitPointerEvent()
+                                        if (event.type == PointerEventType.Move) {
+                                            val position = event.changes.first().position
+                                            viewModel.updateTaskSelectionFromHover(
+                                                Point(position.x.toInt(), position.y.toInt())
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            .pointerInput(viewModel.captureRegion) {
+                                detectTapGestures { offset ->
+                                    viewModel.captureTaskAtPosition(
+                                        Point(offset.x.toInt(), offset.y.toInt())
+                                    )
+                                }
+                            }
+                ) {
+                    AppWindowBox(taskInfo = viewModel.topTask)
+                }
+            }
         }
     }
 }

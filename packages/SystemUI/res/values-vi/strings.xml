@@ -170,9 +170,13 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Chọn ứng dụng để chia sẻ"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Chia sẻ âm thanh"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Cửa sổ chia sẻ ứng dụng"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Chia sẻ thẻ"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
     <skip />
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Khi chia sẻ, người khác sẽ thấy được nội dung trên màn hình của bạn"</string>
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Chụp ảnh màn hình cửa sổ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Ghi hình nội dung của cửa sổ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Chụp ảnh màn hình vùng đã chọn"</string>
@@ -946,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Không thể sửa đổi các thông báo cuộc gọi."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Không thể định cấu hình nhóm thông báo này tại đây"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Thông báo đã xử lý qua máy chủ proxy"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Tất cả thông báo của <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Xem thêm"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Hệ thống đã tự động &lt;b&gt;thay đổi thành Mặc định&lt;/b&gt; theo tầm quan trọng của thông báo này."</string>
@@ -1151,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Trình đơn nguồn"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Trang <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Bật <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> là phím tắt để dùng <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Nhấn tổ hợp phím <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> một lần nữa để bật <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Bật phím tắt <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Không bật"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Bật phím tắt"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Đã bật phím tắt <xliff:g id="ID_1">%1$s</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> là phím tắt để dùng tính năng hỗ trợ tiếp cận <xliff:g id="ID_4">^4</xliff:g>. Tính năng này giúp bạn nhanh chóng phóng to nội dung trên màn hình. Sau khi bật tính năng phóng to, hãy nhấn tổ hợp phím <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> và \"+\" hoặc \"-\" để điều chỉnh mức thu phóng."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Tắt phím tắt"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Tiếp tục bật"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> là phím tắt để dùng <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> là một trình đọc màn hình cho phép bạn nghe các mục được đọc to. Ứng dụng này có thể giúp ích cho những người khó thấy nội dung màn hình. Việc này có thể thay đổi cách thiết bị của bạn hoạt động."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Khi bật phím tắt, bạn sẽ cho phép TalkBack có toàn quyền kiểm soát thiết bị của mình."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Bạn chỉ nên cấp toàn quyền kiểm soát cho những ứng dụng hỗ trợ tiếp cận, chứ không nên cấp cho hầu hết các ứng dụng."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Xem và điều khiển màn hình"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Ứng dụng này có thể đọc toàn bộ nội dung trên màn hình và hiển thị nội dung trên các ứng dụng khác."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Xem và thực hiện hành động"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Ứng dụng này có thể theo dõi các hoạt động tương tác của bạn với một ứng dụng hoặc bộ cảm biến phần cứng, cũng như có thể thay mặt bạn tương tác với các ứng dụng."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Khi bạn nhấn tổ hợp phím <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"biểu tượng"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, tính năng hỗ trợ tiếp cận <xliff:g id="ID_4">^4</xliff:g> sẽ bật. Tính năng này giúp bạn điều khiển thiết bị mà không dùng tay."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Hỗ trợ tiếp cận"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Xong"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Màn hình khóa"</string>
@@ -1600,11 +1601,11 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Quản lý quyền truy cập"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Đang được dùng trong cuộc gọi điện thoại"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Đã dùng gần đây trong cuộc gọi điện thoại"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"<xliff:g id="APP_NAME">%1$s</xliff:g> đang dùng"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Ứng dụng <xliff:g id="APP_NAME">%1$s</xliff:g> đang dùng"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"<xliff:g id="APP_NAME">%1$s</xliff:g> đã dùng gần đây"</string>
-    <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"<xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>) đang dùng"</string>
+    <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Ứng dụng <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>) đang dùng"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"<xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>) đã dùng gần đây"</string>
-    <string name="privacy_dialog_active_app_usage_2" msgid="2770926061339921767">"<xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>) đang dùng"</string>
+    <string name="privacy_dialog_active_app_usage_2" msgid="2770926061339921767">"Ứng dụng <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>) đang dùng"</string>
     <string name="privacy_dialog_recent_app_usage_2" msgid="2874689735085367167">"<xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>) đã dùng gần đây"</string>
     <string name="shortcut_helper_category_system" msgid="462110876978937359">"Hệ thống"</string>
     <string name="shortcut_helper_category_system_controls" msgid="3153344561395751020">"Điều khiển hệ thống"</string>
@@ -1735,12 +1736,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Vuốt từ trên cùng bên trái để mở thông báo"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Vuốt từ trên cùng bên phải để mở trình đơn Cài đặt nhanh"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Quay lại"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Hỗ trợ tiếp cận"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Trước"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Tiếp theo"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"chuyển đến trang tiếp theo"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"tự động điền"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"mở rộng"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

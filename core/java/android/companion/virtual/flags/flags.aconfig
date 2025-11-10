@@ -82,6 +82,13 @@ flag {
 
 flag {
     namespace: "virtual_devices"
+    name: "virtual_camera_direct_blob_transfer"
+    description: "Pass supported blob types directly from producer to consumer (Camera2 client) without intermediate processing, e.g. transcoding"
+    bug: "456537353"
+}
+
+flag {
+    namespace: "virtual_devices"
     name: "enable_limited_vdm_role"
     description: "New VDM role without trusted displays or input"
     bug: "370657575"
@@ -232,46 +239,6 @@ flag {
     namespace: "virtual_devices"
     description: "Allow virtual external cameras to be aded to a virtual device with a default camera policy"
     bug: "371167033"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_animations_per_display"
-    namespace: "virtual_devices"
-    description: "Enable/disable window and transition animations per display"
-    bug: "427437362"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "automated_app_launch_interception"
-    namespace: "virtual_devices"
-    description: "Show a warning dialog when launching an automated app"
-    bug: "442627126"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "computer_control_typing"
-    namespace: "virtual_devices"
-    description: "Support input connection based CC text manipulation APIs"
-    bug: "422134565"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "computer_control_config_change_override"
-    namespace: "virtual_devices"
-    description: "Overrides configuration changes for display moves from/to ComputerControl VirtualDisplays"
-    bug: "437848392"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

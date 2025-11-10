@@ -77,6 +77,16 @@ flag {
 }
 
 flag {
+    name: "tap_to_wake_cd"
+    namespace: "lse_desktop_experience"
+    description: "Feature flag to enable tap to wake on connected displays"
+    bug: "425279223"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_app_wakelock_data_source"
     namespace: "power"
     description: "Feature flag to enable a new Perfetto data source for tracing app wakelocks."
@@ -106,16 +116,6 @@ flag {
     description: "Enable new wakelock to keep device asleep - for the user, but ensure that the CPU remains awake."
     bug: "401624085"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "wake_adjacent_displays_on_wakeup_call"
-    namespace: "lse_desktop_experience"
-    description: "Wakes up the displays from default and default adjacent group"
-    bug: "428848574"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

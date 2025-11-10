@@ -31,7 +31,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.BooleanFlowOperators.any
-import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -130,20 +129,17 @@ constructor(
     /**
      * Whether the bouncer currently require IME for device entry.
      *
-     * This emits true when the authentication method is set to password and the bouncer is
-     * currently showing. Throws an error when this is used without [SceneContainerFlag].
+     * This emits true when the authentication method is set to password. Throws an error when this
+     * is used without [SceneContainerFlag].
      */
     val doesBouncerRequireIme: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
                 // This is required to make the window, where the bouncer resides,
                 // focusable. InputMethodManager allows IME to be shown only for views
                 // in windows that do not have the FLAG_NOT_FOCUSABLE flag.
-
-                isBouncerShowing
-                    .sample(authenticationInteractor.get().authenticationMethod, ::Pair)
-                    .map { (showing, authMethod) ->
-                        showing && authMethod == AuthenticationMethodModel.Password
-                    }
+                authenticationInteractor.get().authenticationMethod.map { authMethod ->
+                    authMethod == AuthenticationMethodModel.Password
+                }
             } else {
                 flow { error("Consume this flow only when SceneContainerFlag is enabled") }
             }

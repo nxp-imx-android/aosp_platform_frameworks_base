@@ -23,7 +23,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.display.data.repository.DeviceStateRepository
 import com.android.systemui.display.data.repository.fakeDeviceStateRepository
@@ -73,7 +72,7 @@ class LogContextInteractorImplTest : SysuiTestCase() {
                 deviceStateRepository = deviceStateRepository,
                 keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor,
                 udfpsOverlayInteractor = udfpsOverlayInteractor,
-                deviceEntryInteractor = { kosmos.deviceEntryInteractor },
+                sceneInteractor = { kosmos.sceneInteractor },
             )
     }
 
@@ -149,14 +148,9 @@ class LogContextInteractorImplTest : SysuiTestCase() {
         testScope.runTest {
             val displayState = collectLastValue(interactor.displayState)
 
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "test")
             keyguardTransitionRepository.startTransitionTo(KeyguardState.OFF)
             assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_NO_UI)
-
-            keyguardTransitionRepository.startTransitionTo(KeyguardState.DOZING)
-            assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_NO_UI)
-
-            keyguardTransitionRepository.startTransitionTo(KeyguardState.DREAMING)
-            assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_SCREENSAVER)
 
             keyguardTransitionRepository.startTransitionTo(KeyguardState.AOD)
             assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_AOD)
@@ -164,16 +158,19 @@ class LogContextInteractorImplTest : SysuiTestCase() {
             keyguardTransitionRepository.startTransitionTo(KeyguardState.ALTERNATE_BOUNCER)
             assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
 
-            keyguardTransitionRepository.startTransitionTo(KeyguardState.PRIMARY_BOUNCER)
-            assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
-
-            keyguardTransitionRepository.startTransitionTo(KeyguardState.GLANCEABLE_HUB)
-            assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
-
             keyguardTransitionRepository.startTransitionTo(KeyguardState.LOCKSCREEN)
             assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
 
-            keyguardTransitionRepository.startTransitionTo(KeyguardState.OCCLUDED)
+            keyguardTransitionRepository.startTransitionTo(KeyguardState.DOZING)
+            assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_NO_UI)
+
+            kosmos.sceneInteractor.snapToScene(Scenes.Dream, "test")
+            assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_SCREENSAVER)
+
+            kosmos.sceneInteractor.snapToScene(Scenes.Communal, "test")
+            assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
+
+            kosmos.sceneInteractor.snapToScene(Scenes.Occluded, "test")
             assertThat(displayState()).isEqualTo(AuthenticateOptions.DISPLAY_STATE_LOCKSCREEN)
 
             // Unlock the device.

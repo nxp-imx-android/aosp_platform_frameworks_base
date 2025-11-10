@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
@@ -94,11 +95,11 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.shade.ui.composable.CollapsedShadeHeader
 import com.android.systemui.shade.ui.composable.ExpandedShadeHeader
-import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.shade.ui.composable.ShadePanelScrim
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
+import com.android.systemui.util.kotlin.toDp
 import dagger.Lazy
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -206,9 +207,7 @@ private fun ContentScope.QuickSettingsScene(
         }
     val animatedBlurRadiusPx: Float by
         animateFloatAsState(targetValue = targetBlur, label = "QS-blurRadius")
-    Box(modifier
-        .blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() })
-        .fillMaxSize()) {
+    Box(modifier.blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() }).fillMaxSize()) {
         // This is the background for the whole scene, as the elements don't necessarily provide
         // a background that extends to the edges.
         ShadePanelScrim(viewModel.isTransparencyEnabled)
@@ -263,10 +262,11 @@ private fun ContentScope.QuickSettingsScene(
                     EditMode(
                         viewModel.qsContainerViewModel.editModeViewModel,
                         Modifier.testTag("edit_mode_scene")
+                            .padding(horizontal = QuickSettingsShade.Dimensions.HorizontalPadding)
                             .padding(
-                                horizontal = QuickSettingsShade.Dimensions.HorizontalPadding
-                            )
-                            .padding(top = ShadeHeader.Dimensions.StatusBarHeight),
+                                top =
+                                    headerViewModel.statusBarHeightPx.toDp(LocalContext.current).dp
+                            ),
                     )
                 }
             }
@@ -342,18 +342,14 @@ private fun ContentScope.QuickSettingsContent(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier =
-                Modifier
-                    .fillMaxSize()
+                Modifier.fillMaxSize()
                     .overscroll(verticalOverscrollEffect)
                     .padding(bottom = navBarBottomHeight.coerceAtLeast(0.dp)),
         ) {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)) {
+            Box(modifier = Modifier.fillMaxSize().weight(1f)) {
                 Column(
                     modifier =
-                        Modifier
-                            .verticalScroll(scrollState, enabled = isScrollable)
+                        Modifier.verticalScroll(scrollState, enabled = isScrollable)
                             .clipScrollableContainer(Orientation.Horizontal)
                             .fillMaxWidth()
                             .wrapContentHeight(unbounded = true)
@@ -388,8 +384,7 @@ private fun ContentScope.QuickSettingsContent(
                 isCustomizing = false,
                 customizingAnimationDuration = 0,
                 modifier =
-                    Modifier
-                        .align(Alignment.CenterHorizontally)
+                    Modifier.align(Alignment.CenterHorizontally)
                         .sysuiResTag("qs_footer_actions")
                         .padding(horizontal = shadeHorizontalPadding),
             )
@@ -400,8 +395,7 @@ private fun ContentScope.QuickSettingsContent(
             viewModel = notificationsPlaceholderViewModel,
             useHunBounds = { shouldUseQuickSettingsHunBounds(layoutState) },
             modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
+                Modifier.align(Alignment.BottomCenter)
                     .navigationBarsPadding()
                     .padding(horizontal = shadeHorizontalPadding),
         )
@@ -428,8 +422,7 @@ private fun ContentScope.QuickSettingsContent(
             stackBottomPadding = navBarBottomHeight,
             shouldIncludeHeadsUpSpace = false,
             modifier =
-                Modifier
-                    .fillMaxWidth()
+                Modifier.fillMaxWidth()
                     // Match the screen height with the scrim, so it covers the whole screen,
                     // when the stack "passes by" during the QS -> Gone transition.
                     .height(LocalWindowInfo.current.containerSize.height.dp)

@@ -34,7 +34,6 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.StatusBarRegionSampling
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.model.StatusBarMode
 import com.android.systemui.statusbar.layout.BoundsPair
 import com.android.systemui.statusbar.layout.LetterboxAppearance
@@ -54,7 +53,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 
 @SmallTest
@@ -107,19 +105,10 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME)
-    fun stop_flagOn_boundsProviderStopped() {
+    fun stop_boundsProviderStopped() {
         underTest.stop()
 
         verify(statusBarBoundsProvider).stop()
-    }
-
-    @Test
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME)
-    fun stop_flagOff_boundsProviderNotStopped() {
-        underTest.stop()
-
-        verify(statusBarBoundsProvider, never()).stop()
     }
 
     @Test

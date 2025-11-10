@@ -138,6 +138,8 @@ package com.android.server.pm.pkg {
     method public int getUiOptions();
     method @Nullable public String getVersionName();
     method @Nullable public String getZygotePreloadName();
+    method @FlaggedApi("android.os.native_app_zygote") @Nullable public String getZygotePreloadNativeFunc();
+    method @FlaggedApi("android.os.native_app_zygote") @Nullable public String getZygotePreloadNativeLib();
     method public boolean is32BitAbiPreferred();
     method public boolean isAllowAudioPlaybackCapture();
     method public boolean isAllowNativeHeapPointerTagging();
@@ -147,7 +149,7 @@ package com.android.server.pm.pkg {
     method public boolean isBackupInForeground();
     method public boolean isClearUserDataAllowed();
     method public boolean isClearUserDataOnFailedRestoreAllowed();
-    method @Deprecated @FlaggedApi("android.security.deprecate_uses_cleartext_traffic") public boolean isCleartextTrafficAllowed();
+    method @Deprecated @FlaggedApi("android.security.deprecate_uses_cleartext_traffic2") public boolean isCleartextTrafficAllowed();
     method public boolean isCoreApp();
     method public boolean isCrossProfile();
     method public boolean isDebuggable();

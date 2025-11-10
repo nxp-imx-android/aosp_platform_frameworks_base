@@ -16,7 +16,7 @@
 
 package android.app.appfunctions;
 
-import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 
 import android.annotation.FlaggedApi;
 
@@ -31,7 +31,7 @@ import android.annotation.FlaggedApi;
  * <p>Failing to unregister the app function can lead to memory leaks and unexpected behavior, as
  * the system will continue to hold a reference to the {@link AppFunction} object.
  */
-@FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+@FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public interface AppFunctionRegistration {
     /**
      * Removes the associated {@link AppFunction} from the system. If the app function was already

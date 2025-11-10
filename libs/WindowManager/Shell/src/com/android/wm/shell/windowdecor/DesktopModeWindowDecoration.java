@@ -517,9 +517,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mIsStatusBarVisible, mIsKeyguardVisibleAndOccluded, inFullImmersive,
                 mIsDragging, mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
                 displayExclusionRegion,
-                /* shouldIgnoreCornerRadius= */ mIsRecentsTransitionRunning
-                        && DesktopModeFlags
-                        .ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue(),
+                /* shouldIgnoreCornerRadius= */ mIsRecentsTransitionRunning,
                 mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
                 mDesktopConfig, inSyncWithTransition,
                 mLockTaskChangeListener.isTaskLocked(),

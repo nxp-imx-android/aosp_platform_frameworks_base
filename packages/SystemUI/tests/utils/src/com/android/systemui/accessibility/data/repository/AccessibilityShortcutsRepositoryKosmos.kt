@@ -24,4 +24,7 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 val Kosmos.fakeAccessibilityShortcutsRepository by Fixture {
     FakeAccessibilityShortcutsRepository(applicationContext, fakeExecutorHandler)
 }
-val Kosmos.accessibilityShortcutsRepository by Fixture { fakeAccessibilityShortcutsRepository }
+
+var Kosmos.accessibilityShortcutsRepository: AccessibilityShortcutsRepository by Fixture {
+    fakeAccessibilityShortcutsRepository
+}

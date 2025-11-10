@@ -246,10 +246,11 @@ public abstract class Pip2Module {
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
             PipTransitionState pipTransitionState,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipDesktopState pipDesktopState,
             PipUiEventLogger pipUiEventLogger, PipDisplayLayoutState pipDisplayLayoutState) {
         return new PipMotionHelper(context, pipBoundsState, menuController, pipSnapAlgorithm,
                 floatingContentCoordinator, pipScheduler, pipPerfHintControllerOptional,
-                pipTransitionState, pipSurfaceTransactionHelper, pipUiEventLogger,
+                pipTransitionState, pipSurfaceTransactionHelper, pipDesktopState, pipUiEventLogger,
                 pipDisplayLayoutState);
     }
 
@@ -263,8 +264,8 @@ public abstract class Pip2Module {
     @WMSingleton
     @Provides
     static PipUiStateChangeController providePipUiStateChangeController(
-            PipTransitionState pipTransitionState) {
-        return new PipUiStateChangeController(pipTransitionState);
+            PipTransitionState pipTransitionState, PipDisplayLayoutState pipDisplayLayoutState) {
+        return new PipUiStateChangeController(pipTransitionState, pipDisplayLayoutState);
     }
 
     @WMSingleton

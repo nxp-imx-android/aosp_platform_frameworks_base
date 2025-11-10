@@ -30,21 +30,16 @@ import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Xml;
-
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
-
-import java.util.Collection;
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Provides storage and retrieval of device supervision recovery information and user data.
@@ -58,6 +53,7 @@ public class SupervisionSettings {
     private static final Object sLock = new Object();
 
     private final SparseArray<SupervisionUserData> mUserData = new SparseArray<>();
+    private SupervisionRecoveryInfo mRecoveryInfo = null;
 
     private static final String PREF_RECOVERY = "supervision_recovery_info";
     private static final String KEY_ACCOUNT_TYPE = "account_type";
@@ -96,6 +92,10 @@ public class SupervisionSettings {
 
     private SupervisionSettings() {
         loadUserData();
+
+        if (Flags.supervisionRecoveryImprovements()) {
+            loadRecoveryInfo();
+        }
     }
 
     public static SupervisionSettings getInstance() {
@@ -223,7 +223,7 @@ public class SupervisionSettings {
 
                 // Add policies to the XML.
                 if (Flags.enableSupervisionManagerPolicyApis()) {
-                    addPoliciesToXml(xml, new ArrayList<>(data.policies.values()));
+                    addPoliciesToXml(xml, data.policies.getPolicies());
                 }
 
                 if (data.supervisionLockScreenOptions != null) {
@@ -243,15 +243,28 @@ public class SupervisionSettings {
     }
 
     /**
-     * Gets the device supervision recovery information from persistent storage.
+     * Loads the device supervision recovery information from persistent storage.
      *
      * @return The {@link SupervisionRecoveryInfo} if found, otherwise {@code null}.
      */
     public SupervisionRecoveryInfo getRecoveryInfo() {
+        if (!Flags.supervisionRecoveryImprovements()) {
+            loadRecoveryInfo();
+        }
+        return mRecoveryInfo;
+    }
+
+    /**
+     * Loads the device supervision recovery information from persistent storage.
+     *
+     * @return The {@link SupervisionRecoveryInfo} if found, otherwise {@code null}.
+     */
+    public void loadRecoveryInfo() {
         Slog.d(SupervisionLog.TAG, "Retrieving recovery info");
         if (!recoveryInfoFile.getBaseFile().exists()) {
             Slog.d(SupervisionLog.TAG, "Recovery info file does not exist");
-            return null;
+            mRecoveryInfo = null;
+            return;
         }
         try (FileInputStream stream = recoveryInfoFile.openRead()) {
             final TypedXmlPullParser parser = Xml.resolvePullParser(stream);
@@ -268,13 +281,15 @@ public class SupervisionSettings {
                 }
             }
             if (!accountType.isEmpty() && !accountName.isEmpty()) {
-                return new SupervisionRecoveryInfo(accountName, accountType, state, accountData);
+                mRecoveryInfo =
+                        new SupervisionRecoveryInfo(accountName, accountType, state, accountData);
+                return;
             }
         } catch (IOException | XmlPullParserException e) {
             Slog.e(SupervisionLog.TAG, "Failed to get recovery info from xml file", e);
         }
 
-        return null;
+        mRecoveryInfo = null;
     }
 
     /**
@@ -287,6 +302,7 @@ public class SupervisionSettings {
         Slog.d(SupervisionLog.TAG, "Saving recovery info");
         if (recoveryInfo == null) {
             recoveryInfoFile.delete();
+            mRecoveryInfo = null;
             return;
         }
 
@@ -306,6 +322,7 @@ public class SupervisionSettings {
             xml.endTag(null, PREF_RECOVERY);
             xml.endDocument();
             recoveryInfoFile.finishWrite(stream);
+            mRecoveryInfo = recoveryInfo;
         } catch (IOException | XmlPullParserException e) {
             userDataFile.failWrite(stream);
             Slog.e(SupervisionLog.TAG, "Failed to save recovery info", e);

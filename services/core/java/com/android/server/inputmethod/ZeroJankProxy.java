@@ -39,6 +39,8 @@ import android.annotation.BinderThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.os.Binder;
 import android.os.IBinder;
@@ -159,6 +161,45 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     @Override
     public InputMethodSubtype getLastInputMethodSubtype(int userId) {
         return mInner.getLastInputMethodSubtype(userId);
+    }
+
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    public boolean enableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        return mInner.enableInputMethodForTesting(imeId, userId);
+    }
+
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    public boolean disableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        return mInner.disableInputMethodForTesting(imeId, userId);
+    }
+
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    public boolean setInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        return mInner.setInputMethodForTesting(imeId, userId);
+    }
+
+    @Override
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    public void resetInputMethodsForTesting(@CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        mInner.resetInputMethodsForTesting(userId);
     }
 
     @Override

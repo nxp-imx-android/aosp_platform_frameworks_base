@@ -276,6 +276,26 @@ public class PipSchedulerTest {
     }
 
     @Test
+    public void scheduleExitPipViaExpand_desktopAugmentsWct() {
+        setMockPipTaskToken();
+        ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
+        when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
+
+        mPipScheduler.scheduleExitPipViaExpand(true);
+
+        verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
+        assertNotNull(mRunnableArgumentCaptor.getValue());
+        mRunnableArgumentCaptor.getValue().run();
+
+        verify(mMockDesktopPipTransitionController, times(1))
+                .updateExpandWctForDesktop(any(), eq(pipTaskInfo));
+        verify(mMockPipTransitionController, times(1))
+                .startExpandTransition(mWctArgumentCaptor.capture(), anyBoolean(), eq(true));
+        assertNotNull(mWctArgumentCaptor.getValue());
+        assertNotNull(mWctArgumentCaptor.getValue().getChanges());
+    }
+
+    @Test
     public void scheduleExitPipViaExpand_onAnotherDisplay_expandTransitionCalled() {
         setMockPipTaskToken();
         ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
@@ -291,6 +311,27 @@ public class PipSchedulerTest {
         assertNotNull(mRunnableArgumentCaptor.getValue());
         mRunnableArgumentCaptor.getValue().run();
 
+        verify(mMockPipTransitionController, times(1))
+                .startExpandTransition(mWctArgumentCaptor.capture(), anyBoolean(), eq(true));
+        assertNotNull(mWctArgumentCaptor.getValue());
+        assertNotNull(mWctArgumentCaptor.getValue().getChanges());
+    }
+
+    @Test
+    public void scheduleExitPipViaExpand_onAnotherDisplay_desktopAugmentsWct() {
+        setMockPipTaskToken();
+        ActivityManager.RunningTaskInfo pipTaskInfo = getTaskInfoWithLastParentBeforePip(1);
+        when(mMockPipTransitionState.getPipTaskInfo()).thenReturn(pipTaskInfo);
+
+        mPipScheduler.scheduleExitPipViaExpand(true, SECONDARY_DISPLAY_ID, TEST_BOUNDS,
+                WINDOWING_MODE_FREEFORM);
+
+        verify(mMockMainExecutor, times(1)).execute(mRunnableArgumentCaptor.capture());
+        assertNotNull(mRunnableArgumentCaptor.getValue());
+        mRunnableArgumentCaptor.getValue().run();
+
+        verify(mMockDesktopPipTransitionController, times(1))
+                .updateExpandWctForDesktop(any(), eq(pipTaskInfo));
         verify(mMockPipTransitionController, times(1))
                 .startExpandTransition(mWctArgumentCaptor.capture(), anyBoolean(), eq(true));
         assertNotNull(mWctArgumentCaptor.getValue());

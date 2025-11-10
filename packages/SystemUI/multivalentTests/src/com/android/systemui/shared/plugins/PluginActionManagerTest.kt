@@ -31,7 +31,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.PluginListener
-import com.android.systemui.plugins.PluginManager
 import com.android.systemui.plugins.annotations.Requires
 import com.android.systemui.shared.plugins.PluginEnabler.DisableReason
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -74,10 +73,10 @@ class PluginActionManagerTest : SysuiTestCase() {
     private val mPluginInstanceFactory: PluginInstance.Factory =
         object :
             PluginInstance.Factory(
-                VersionCheckerImpl(),
+                VersionChecker.Impl(),
                 this::class.java.classLoader!!,
-                PluginManager.Config(),
-                BuildInfo(BuildVariant.User, isDebuggable = false),
+                PackageConfig(),
+                PluginEnvironment(BuildVariant.User, isDebuggable = false),
             ) {
             @Suppress("UNCHECKED_CAST")
             override fun <T : Plugin> create(
@@ -107,9 +106,10 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                PluginManager.Config(),
+                PackageConfig(),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
+                PluginEnvironment(),
             )
 
         mPluginActionManager =
@@ -202,9 +202,10 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
+                PackageConfig(PRIVILEGED_PACKAGE),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
+                PluginEnvironment(),
             )
         mPluginActionManager =
             factory.create("myAction", mMockListener, TestPlugin::class.java, allowMultiple = true)
@@ -257,9 +258,10 @@ class PluginActionManagerTest : SysuiTestCase() {
                 mFakeExecutor,
                 mNotificationManager,
                 mMockEnabler,
-                PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
+                PackageConfig(PRIVILEGED_PACKAGE),
                 mPluginInstanceFactory,
                 mMockPluginPrefs,
+                PluginEnvironment(),
             )
         mPluginActionManager =
             factory.create("myAction", mMockListener, TestPlugin::class.java, allowMultiple = true)

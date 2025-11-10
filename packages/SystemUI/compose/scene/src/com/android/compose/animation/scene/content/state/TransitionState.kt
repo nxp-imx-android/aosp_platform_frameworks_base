@@ -302,6 +302,10 @@ sealed interface TransitionState {
         val cuj: Int?
             get() = _cuj
 
+        /** The tag appended to the CUJ covered by this transition. */
+        val cujTag: String?
+            get() = _cujTag
+
         /**
          * The progress of the preview transition. This is usually in the `[0; 1]` range, but it can
          * also be less than `0` or greater than `1` when using transitions with a spring
@@ -325,6 +329,7 @@ sealed interface TransitionState {
         internal var transformationSpec: TransformationSpecImpl = TransformationSpec.Empty
         internal var previewTransformationSpec: TransformationSpecImpl? = null
         internal var _cuj: Int? = null
+        internal var _cujTag: String? = null
 
         /**
          * An animatable that animates from 1f to 0f. This will be used to nicely animate the sudden

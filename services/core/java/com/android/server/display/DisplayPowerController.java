@@ -927,6 +927,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 mIsInTransition = isInTransition;
             }
 
+            mIsDisplayInternal = isDisplayInternal;
+
             if (mDisplayDevice != device) {
                 changed = true;
                 mDisplayDevice = device;
@@ -943,8 +945,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 // that we trigger a change immediately.
                 mPowerState.resetScreenState();
             }
-
-            mIsDisplayInternal = isDisplayInternal;
 
             mBrightnessClamperController.onDisplayChanged(
                     new BrightnessClamperController.DisplayDeviceData(uniqueId,
@@ -1060,7 +1060,10 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     private void setUpAutoBrightness(Context context, Handler handler) {
         mUseSoftwareAutoBrightnessConfig = mDisplayDeviceConfig.isAutoBrightnessAvailable();
 
-        if (!mUseSoftwareAutoBrightnessConfig) {
+        if (!mUseSoftwareAutoBrightnessConfig || (Flags.changeDefaultDisplayLidClosed()
+                && !mIsDisplayInternal)) {
+            mAutomaticBrightnessController = null;
+            mDisplayBrightnessController.resetAutoBrightness();
             return;
         }
 
@@ -1157,9 +1160,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 mBrightnessTracker.setLightSensor(mLightSensor);
             }
 
-            if (mAutomaticBrightnessController != null) {
-                mAutomaticBrightnessController.stop();
-            }
             mAutomaticBrightnessController = mInjector.getAutomaticBrightnessController(
                     this, handler.getLooper(), mSensorManager, mLightSensor,
                     brightnessMappers, lightSensorWarmUpTimeConfig, PowerManager.BRIGHTNESS_MIN,

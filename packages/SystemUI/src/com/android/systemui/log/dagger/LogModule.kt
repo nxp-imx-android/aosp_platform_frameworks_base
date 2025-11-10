@@ -518,6 +518,14 @@ abstract class LogModule {
             return factory.create("CommunalTableLog", 250)
         }
 
+        /** Provides a [LogBuffer] for posture detection related logs. */
+        @Provides
+        @SysUISingleton
+        @PostureDetectionLog
+        fun providePostureDetectionLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("PostureDetectionLog", 500)
+        }
+
         /** Provides a [LogBuffer] for display metrics related logs. */
         @Provides
         @SysUISingleton
@@ -577,6 +585,14 @@ abstract class LogModule {
         @PackageChangeRepoLog
         fun providePackageChangeRepoLogBuffer(factory: LogBufferFactory): LogBuffer {
             return factory.create("PackageChangeRepo", 50)
+        }
+
+        /** Provides a [LogBuffer] for [PowerMenuViewModel]. */
+        @Provides
+        @SysUISingleton
+        @PowerMenuLog
+        fun providePowerMenuLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("PowerMenuLog", 100)
         }
 
         /** Provides a [LogBuffer] for NavBarButtonClicks. */

@@ -101,6 +101,7 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape;
+import com.android.systemui.statusbar.notification.stack.ui.YSpace;
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel.HeightSuppressionState;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController;
@@ -207,11 +208,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mDependency.injectTestDependency(NotificationShelf.class, mNotificationShelf);
         mDependency.injectTestDependency(
                 ScreenOffAnimationController.class, mScreenOffAnimationController);
-
-        when(mNotificationSectionsManager.createSectionsForBuckets()).thenReturn(
-                new NotificationSection[]{
-                        mNotificationSection
-                });
 
         // The actual class under test.  You may need to work with this class directly when
         // testing anonymous class members of mStackScroller, like mMenuEventListener,
@@ -320,7 +316,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // Then: updatedEndHeight should be determined by the stack cutoffs
         float updatedEndHeight = Math.max(
-                0f, mAmbientState.getStackCutoff() - mAmbientState.getStackTop());
+                0f, mAmbientState.getStackCutoff() - mAmbientState.getStackScrollTop());
         float expected = mStackScroller.calculateInterpolatedStackHeight(
                 updatedEndHeight, expansionFraction);
         assertThat(mAmbientState.getInterpolatedStackHeight()).isEqualTo(expected);
@@ -429,10 +425,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     public void updateStackEndHeightAndStackHeight_shadeFullyExpanded_withSceneContainer() {
         final float stackTop = 200f;
         final float stackBottom = 1000f;
-        final float stackWidth = 400f;
         final float stackEndHeight = stackBottom - stackTop;
-        mAmbientState.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackScrollTop(stackTop);
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
 
@@ -449,10 +444,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     public void updateStackEndHeightAndStackHeight_shadeExpanding_withSceneContainer() {
         final float stackTop = 200f;
         final float stackBottom = 1000f;
-        final float stackWidth = 400f;
         final float stackEndHeight = stackBottom - stackTop;
-        mAmbientState.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackScrollTop(stackTop);
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
 
@@ -471,10 +465,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         // GIVEN stack scrolled over the top, stack top is negative
         final float stackTop = -2000f;
         final float stackBottom = 1000f;
-        final float stackWidth = 400f;
         final float stackEndHeight = stackBottom - stackTop;
-        mAmbientState.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackScrollTop(stackTop);
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.KEYGUARD);
         clearInvocations(mAmbientState);
 
@@ -494,8 +487,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         final float stackBottom = 1000f;
         final float stackWidth = 400f;
         final float stackHeight = stackBottom - stackTop;
-        mAmbientState.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackScrollTop(stackTop);
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
         mAmbientState.setStatusBarState(StatusBarState.SHADE);
         mStackScroller.setMaxDisplayedNotifications(-1); // no limit on the shade
         mStackScroller.setExpandFraction(1f); // shade is fully expanded
@@ -504,7 +497,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // WHEN stackBottom changes
         final float newStackBottom = 800;
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, 400, newStackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, newStackBottom));
 
         // THEN stackEndHeight is updated
         final float newStackHeight = newStackBottom - stackTop;
@@ -576,7 +569,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mAmbientState.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mAmbientState.setStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is fully collapsed
         mStackScroller.setExpandFraction(expandFraction);
@@ -603,7 +596,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is expanding
         mStackScroller.setExpandFraction(expandFraction);
@@ -630,9 +623,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackTop = 100;
         float stackBottom = 1100;
         float stackHeight = stackBottom - stackTop;
-        float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // When: panel is fully expanded
         mStackScroller.setExpandFraction(expandFraction);
@@ -987,6 +979,23 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableSceneContainer
+    public void testOutsideScrimBounds() {
+        mStackScroller.setLeftTopRightBottom(1000, 0, 2000, 2000);
+        mStackScroller.setClippingShape(createScrimShape(100, 500, 900, 2000));
+
+        MotionEvent event1 = createMotionEvent(1500f, 400f);
+        assertTrue(mStackScroller.outsideScrimBounds(event1.getX(), event1.getY()));
+
+        MotionEvent event2 = createMotionEvent(400f, 1000f);
+        assertFalse(mStackScroller.outsideScrimBounds(event2.getX(), event2.getY()));
+
+        mStackScroller.setClippingShape(null);
+        assertFalse(mStackScroller.outsideScrimBounds(event1.getX(), event1.getY()));
+        assertFalse(mStackScroller.outsideScrimBounds(event2.getX(), event2.getY()));
+    }
+
+    @Test
     @DisableSceneContainer // TODO(b/312473478): address disabled test
     public void setFractionToShade_recomputesStackHeight() {
         mStackScroller.setFractionToShade(1f);
@@ -1151,10 +1160,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         int maxNotifs = 2; // any non-zero limit
         float stackTop = 100;
         float stackBottom = 1100;
-        float stackWidth = 400;
         float stackViewPortHeight = stackBottom - stackTop;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
         when(mStackSizeCalculator.computeHeight(
                 eq(mStackScroller),
                 eq(-1),
@@ -1192,7 +1200,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackBottom = 1100;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateStackBounds(new YSpace(stackTop, stackBottom));
 
         // Given we have a limit on max displayed notifications
         int stackHeightBeforeUpdate = 100;
@@ -1550,7 +1558,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(parent);
         viewState.setYTranslation(0f);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 0;
         viewState.applyToView(parent);
 
@@ -1559,7 +1567,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(child);
         viewState.setYTranslation(400f);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
         viewState.applyToView(child);
 
@@ -1567,7 +1575,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(secondRow);
         viewState.setYTranslation(430f);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 5;
         viewState.applyToView(secondRow);
         mKosmos.getGroupExpansionManager().setGroupExpanded(parent.getEntryAdapter(), true);
@@ -1593,7 +1601,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.setYTranslation(0f);
         viewState.height = 200;
         viewState.notGoneIndex = 0;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.applyToView(parent);
 
         // Inset more to reflect header inset
@@ -1602,7 +1610,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(child);
         viewState.setYTranslation(400f);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
         viewState.applyToView(child);
         parent.removeChildNotification(child);
@@ -1613,7 +1621,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(secondRow);
         viewState.setYTranslation(430f);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 5;
         viewState.applyToView(secondRow);
         mKosmos.getGroupExpansionManager().setGroupExpanded(parent.getEntryAdapter(), true);
@@ -1690,7 +1698,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.setYTranslation(0f);
         viewState.height = 100;
         viewState.notGoneIndex = 0;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.hidden = false;
         viewState.applyToView(firstRow);
 
@@ -1700,7 +1708,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.height = 100;
         viewState.notGoneIndex = 1;
         viewState.hidden = false;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.applyToView(secondRow);
         ArrayList<ExpandableView> overlapList = new ArrayList<>();
         ArrayList<ExpandableView> nonOverlapList = new ArrayList<>();
@@ -1730,7 +1738,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(firstRow);
         viewState.height = 100;
         viewState.notGoneIndex = 2;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.hidden = false;
         viewState.applyToView(firstRow);
 
@@ -1739,7 +1747,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.height = 100;
         viewState.notGoneIndex = 1;
         viewState.hidden = false;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.applyToView(secondRow);
 
         viewState = thirdRow.getViewState();
@@ -1747,7 +1755,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.hidden = false;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.applyToView(thirdRow);
 
 
@@ -1783,7 +1791,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.setYTranslation(0f);
         viewState.height = 100;
         viewState.notGoneIndex = 0;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.hidden = false;
         viewState.applyToView(firstRow);
 
@@ -1793,7 +1801,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.height = 100;
         viewState.notGoneIndex = 0;
         viewState.hidden = false;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.applyToView(secondRow);
 
         ArrayList<ExpandableView> overlapList = new ArrayList<>();
@@ -1821,7 +1829,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.setYTranslation(0f);
         viewState.height = 100;
         viewState.notGoneIndex = 0;
-        viewState.setAlpha(0);
+        viewState.setAlpha(0f, "test");
         viewState.hidden = false;
         viewState.applyToView(firstRow);
 
@@ -1845,7 +1853,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.setYTranslation(0f);
         viewState.height = 100;
         viewState.notGoneIndex = 0;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.hidden = false;
         viewState.applyToView(firstRow);
         firstRow.setVisibility(View.GONE);
@@ -1870,7 +1878,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.setYTranslation(0f);
         viewState.height = 100;
         viewState.notGoneIndex = 0;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.hidden = false;
         viewState.applyToView(firstRow);
         // make it opaque
@@ -1896,7 +1904,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.setYTranslation(0f);
         viewState.height = 100;
         viewState.notGoneIndex = 0;
-        viewState.setAlpha(1);
+        viewState.setAlpha(1f, "test");
         viewState.applyToView(firstRow);
         firstRow.setVisibility(View.INVISIBLE);
 
@@ -1918,7 +1926,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableViewState viewState = parent.getViewState();
         viewState.initFrom(parent);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 0;
         viewState.applyToView(parent);
 
@@ -1927,7 +1935,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(child);
         viewState.setYTranslation(200f);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
         viewState.applyToView(child);
 
@@ -1952,7 +1960,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableViewState viewState = parent.getViewState();
         viewState.initFrom(parent);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 0;
         viewState.applyToView(parent);
 
@@ -1961,7 +1969,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(child);
         viewState.setYTranslation(200f);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
         viewState.applyToView(child);
 
@@ -1988,7 +1996,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableViewState viewState = parent.getViewState();
         viewState.initFrom(parent);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 0;
         viewState.applyToView(parent);
 
@@ -1997,7 +2005,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(child);
         viewState.setYTranslation(200f);
         viewState.height = 100;
-        viewState.setAlpha(0.0f);
+        viewState.setAlpha(0.0f, "test");
         viewState.notGoneIndex = 4;
         viewState.applyToView(child);
 
@@ -2025,7 +2033,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableViewState viewState = parent.getViewState();
         viewState.initFrom(parent);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 0;
         viewState.applyToView(parent);
 
@@ -2034,7 +2042,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         viewState.initFrom(child);
         viewState.setYTranslation(200f);
         viewState.height = 100;
-        viewState.setAlpha(1.0f);
+        viewState.setAlpha(1.0f, "test");
         viewState.notGoneIndex = 4;
         viewState.applyToView(child);
         parent.removeChildNotification(child);

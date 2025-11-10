@@ -55,6 +55,7 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
         to: ContentKey,
         key: TransitionKey?,
         @CujType cuj: Int?,
+        cujTag: String?,
         preview: (TransitionBuilder.() -> Unit)?,
         reversePreview: (TransitionBuilder.() -> Unit)?,
         builder: TransitionBuilder.() -> Unit,
@@ -64,6 +65,7 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
             to = to,
             key = key,
             cuj = cuj,
+            cujTag = cujTag,
             preview = preview,
             reversePreview = reversePreview,
             builder = builder,
@@ -75,6 +77,7 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
         to: ContentKey?,
         key: TransitionKey?,
         @CujType cuj: Int?,
+        cujTag: String?,
         preview: (TransitionBuilder.() -> Unit)?,
         reversePreview: (TransitionBuilder.() -> Unit)?,
         builder: TransitionBuilder.() -> Unit,
@@ -84,6 +87,7 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
             to = to,
             key = key,
             cuj = cuj,
+            cujTag = cujTag,
             preview = preview,
             reversePreview = reversePreview,
             builder = builder,
@@ -110,6 +114,7 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
         to: ContentKey?,
         key: TransitionKey?,
         @CujType cuj: Int?,
+        cujTag: String?,
         preview: (TransitionBuilder.() -> Unit)?,
         reversePreview: (TransitionBuilder.() -> Unit)?,
         builder: TransitionBuilder.() -> Unit,
@@ -120,6 +125,7 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
                 from = from,
                 to = to,
                 cuj = cuj,
+                cujTag = cujTag,
                 previewTransformationSpec = preview?.let { { t -> transformationSpec(t, it) } },
                 reversePreviewTransformationSpec =
                     reversePreview?.let { { t -> transformationSpec(t, it) } },
@@ -228,6 +234,7 @@ internal class TransitionBuilderImpl(override val transition: TransitionState.Tr
     override var spec: AnimationSpec<Float>? = null
     override var distance: UserActionDistance? = null
     override var cuj: Int? = null
+    override var cujTag: String? = null
     private val durationMillis: Int by lazy {
         val spec = spec
         if (spec !is DurationBasedAnimationSpec) {

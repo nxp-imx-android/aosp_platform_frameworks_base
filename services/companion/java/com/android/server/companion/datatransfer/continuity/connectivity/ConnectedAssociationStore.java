@@ -33,7 +33,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.GuardedBy;
 
-class ConnectedAssociationStore {
+public class ConnectedAssociationStore {
 
     private static final String TAG = "ConnectedAssociationStore";
 

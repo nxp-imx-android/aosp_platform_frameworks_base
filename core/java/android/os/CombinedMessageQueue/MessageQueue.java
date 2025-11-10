@@ -219,7 +219,7 @@ public final class MessageQueue {
         if (sSkipEpollWaitForZeroTimeoutInitialized) {
             return;
         }
-        if (!Flags.nativeLooperSkipEpollWaitForZeroTimeoutHoldback()) {
+        if (Flags.nativeLooperSkipEpollWaitForZeroTimeout()) {
             nativeSetSkipEpollWaitForZeroTimeout(ptr);
         }
         sSkipEpollWaitForZeroTimeoutInitialized = true;
@@ -1120,7 +1120,7 @@ public final class MessageQueue {
         @Override
         public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            if (m.target != null && (lastMsg == null || lastMsg.when <= m.when)) {
+            if (m.target != null && (lastMsg == null || Message.compareMessages(lastMsg, m) < 0)) {
                 lastMsg = m;
             }
             return false;
@@ -2690,7 +2690,7 @@ public final class MessageQueue {
                 // If we're quitting then we're not allowed to increment the ref count.
                 return false;
             }
-            if (sMptrRefCount.compareAndSet(this, oldVal, oldVal + 1)) {
+            if (sMptrRefCount.compareAndSet(this, oldVal, oldVal + 1L)) {
                 // Successfully incremented the ref count without quitting.
                 return true;
             }
@@ -2703,7 +2703,7 @@ public final class MessageQueue {
      * Call after {@link #incrementMptrRefs()} to release the ref on mPtr.
      */
     private void decrementMptrRefs() {
-        long oldVal = (long) sMptrRefCount.getAndAdd(this, -1);
+        long oldVal = (long) sMptrRefCount.getAndAdd(this, -1L);
         // If quitting and we were the last ref, wake up looper thread
         if (oldVal - 1 == MPTR_TEARDOWN_MASK) {
             LockSupport.unpark(mLooperThread);

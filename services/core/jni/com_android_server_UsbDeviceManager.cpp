@@ -22,12 +22,12 @@
 #include <core_jni_helpers.h>
 #include <fcntl.h>
 #include <linux/aio_abi.h>
-
 #include <linux/uhid.h>
 #include <linux/usb/f_accessory.h>
 #include <nativehelper/JNIPlatformHelp.h>
 #include <nativehelper/ScopedUtfChars.h>
 #include <selinux/android.h>
+#include <statslog.h>
 #include <stdio.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -1482,26 +1482,30 @@ static jboolean android_server_UsbDeviceManager_startVendorControlRequestMonitor
     return JNI_TRUE;
 }
 
-static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /* env */,
-                                                                     jobject /* thiz */) {
+static jint android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /* env */,
+                                                                 jobject /* thiz */) {
     ALOGI("Writing descriptors to USB Accessory...");
 
     int fd = TEMP_FAILURE_RETRY(open(FFS_ACCESSORY_EP0, O_RDWR));
     if (fd < 0) {
         ALOGE("Opening accessory ep0 failed: %d - %s", fd, strerror(errno));
-        return JNI_FALSE;
+        return static_cast<jint>(
+                android::util::
+                        USB_USERSPACE_AOA_ENABLED__OPEN_CONTROL_RESULT__OPEN_ACCESSORY_FAILED);
     }
     ssize_t ret = TEMP_FAILURE_RETRY(write(fd, &acc_desc, sizeof(acc_desc)));
     if (ret < 0) {
         ALOGE("Writing accessory desc failed: %d - %s", fd, strerror(errno));
         close(fd);
-        return JNI_FALSE;
+        return static_cast<jint>(
+                android::util::USB_USERSPACE_AOA_ENABLED__OPEN_CONTROL_RESULT__WRITE_DESC_FAILED);
     }
     ret = TEMP_FAILURE_RETRY(write(fd, &acc_strings, sizeof(acc_strings)));
     if (ret < 0) {
         ALOGE("Writing accessory strings failed: %d - %s", fd, strerror(errno));
         close(fd);
-        return JNI_FALSE;
+        return static_cast<jint>(
+                android::util::USB_USERSPACE_AOA_ENABLED__OPEN_CONTROL_RESULT__WRITE_STRING_FAILED);
     }
 
     // To enable testing of the userspace AOA prior to the necessary kernel change
@@ -1519,7 +1523,9 @@ static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /*
         if (selinux_en) {
             ALOGE("Selinux is enforcing, failed to apply label to accessory ep1, closing");
             close(fd);
-            return JNI_FALSE;
+            return static_cast<jint>(
+                    android::util::
+                            USB_USERSPACE_AOA_ENABLED__OPEN_CONTROL_RESULT__SELINUX_PERMISSION_FAILED);
         } else {
             ALOGW("SELinux is permissive, continuing for testing purposes");
         }
@@ -1530,14 +1536,17 @@ static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /*
         if (selinux_en) {
             ALOGE("Selinux is enforcing, failed to apply label to accessory ep2, closing");
             close(fd);
-            return JNI_FALSE;
+            return static_cast<jint>(
+                    android::util::
+                            USB_USERSPACE_AOA_ENABLED__OPEN_CONTROL_RESULT__SELINUX_PERMISSION_FAILED);
         } else {
             ALOGW("SELinux is permissive, continuing for testing purposes");
         }
     }
 
     ALOGI("USB Accessory Descriptors written successfully");
-    return JNI_TRUE;
+    return static_cast<jint>(
+            android::util::USB_USERSPACE_AOA_ENABLED__OPEN_CONTROL_RESULT__SUCCESS);
 }
 
 // Function to check if a given path is a functionfs mount point
@@ -1631,7 +1640,7 @@ static const JNINativeMethod method_table[] = {
          (void *)android_server_UsbDeviceManager_stopGadgetMonitor},
         {"nativeStartVendorControlRequestMonitor", "()Z",
          (void *)android_server_UsbDeviceManager_startVendorControlRequestMonitor},
-        {"nativeOpenAccessoryControl", "()Z",
+        {"nativeOpenAccessoryControl", "()I",
          (void *)android_server_UsbDeviceManager_openAccessoryControl},
         {"nativeWaitAndGetProperty", "(Ljava/lang/String;)Ljava/lang/String;",
          (void *)android_server_UsbDeviceManager_waitAndGetProperty},

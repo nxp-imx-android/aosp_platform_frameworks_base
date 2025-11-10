@@ -140,13 +140,20 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
      */
     public static final int CLOSE_REASON_SESSION_TIMED_OUT = 3;
 
+    /**
+     * Close reason indicating that the session became empty.
+     */
+    public static final int CLOSE_REASON_SESSION_EMPTY = 4;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "CLOSE_REASON_", value = {
             CLOSE_REASON_UNKNOWN,
             CLOSE_REASON_CALLER_INITIATED,
             CLOSE_REASON_USER_INITIATED,
-            CLOSE_REASON_SESSION_TIMED_OUT})
+            CLOSE_REASON_SESSION_TIMED_OUT,
+            CLOSE_REASON_SESSION_EMPTY,
+    })
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionCloseReason {
     }
@@ -575,6 +582,20 @@ public final class ComputerControlSession extends IComputerControlLifecycleCallb
     public void attachNotificationInfo(int notificationId, @Nullable String notificationTag) {
         try {
             mSession.attachNotificationInfo(notificationId, notificationTag);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Sets the intent launched when the user wants to preview the automation, or null if none.
+     *
+     * <p>This overrides the intent set in {@link
+     * ComputerControlSessionParams.Builder#setPreviewIntent}.
+     */
+    public void setPreviewIntent(@Nullable PendingIntent previewIntent) {
+        try {
+            mSession.setPreviewIntent(previewIntent);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -557,6 +557,11 @@
   <java-symbol type="color" name="shade_panel_fg" />
   <java-symbol type="color" name="shade_panel_bg" />
   <java-symbol type="color" name="shade_panel_scrim" />
+  <java-symbol type="color" name="surface_effect_0" />
+  <java-symbol type="color" name="surface_effect_1" />
+  <java-symbol type="color" name="surface_effect_2" />
+  <java-symbol type="color" name="surface_effect_3" />
+  <java-symbol type="color" name="surface_effect_0_fallback" />
   <java-symbol type="color" name="tab_indicator_text_v4" />
 
   <java-symbol type="dimen" name="accessibility_touch_slop" />
@@ -759,6 +764,7 @@
   <java-symbol type="string" name="emailTypeMobile" />
   <java-symbol type="string" name="emailTypeOther" />
   <java-symbol type="string" name="emailTypeWork" />
+  <java-symbol type="string" name="emergency_call_dialog_number_for_display" />
   <java-symbol type="string" name="widget_default_package_name" />
   <java-symbol type="string" name="widget_default_class_name" />
   <java-symbol type="string" name="emergency_calls_only" />
@@ -1464,6 +1470,7 @@
   <java-symbol type="drawable" name="jog_tab_left_generic" />
   <java-symbol type="drawable" name="jog_tab_right_generic" />
   <java-symbol type="drawable" name="jog_tab_target_gray" />
+  <java-symbol type="drawable" name="picture_emergency" />
   <java-symbol type="drawable" name="platlogo" />
   <java-symbol type="drawable" name="stat_notify_sync_error" />
   <java-symbol type="drawable" name="stat_notify_wifi_in_range" />
@@ -4164,6 +4171,7 @@
   <java-symbol type="string" name="notification_channel_vpn" />
   <java-symbol type="string" name="notification_channel_system_time" />
   <java-symbol type="string" name="notification_channel_device_admin" />
+  <java-symbol type="string" name="notification_channel_parental_controls" />
   <java-symbol type="string" name="notification_channel_alerts" />
   <java-symbol type="string" name="notification_channel_retail_mode" />
   <java-symbol type="string" name="notification_channel_usb" />
@@ -5833,11 +5841,6 @@
   <java-symbol name="customColorUnderSurface" type="color"/>
   <java-symbol name="customColorWeatherTemp" type="color"/>
   <java-symbol name="customColorWidgetBackground" type="color"/>
-  <java-symbol name="customColorSurfaceEffect0" type="color"/>
-  <java-symbol name="customColorSurfaceEffect1" type="color"/>
-  <java-symbol name="customColorSurfaceEffect2" type="color"/>
-  <java-symbol name="customColorSurfaceEffect3" type="color"/>
-  <java-symbol name="customColorSurfaceEffect0Fallback" type="color"/>
 
   <java-symbol name="system_brand_a_light" type="color"/>
   <java-symbol name="system_brand_b_light" type="color"/>
@@ -5855,11 +5858,6 @@
   <java-symbol name="system_shade_active_light" type="color"/>
   <java-symbol name="system_shade_disabled_light" type="color"/>
   <java-symbol name="system_shade_inactive_light" type="color"/>
-  <java-symbol name="system_surface_effect_0_light" type="color"/>
-  <java-symbol name="system_surface_effect_0_fallback_light" type="color"/>
-  <java-symbol name="system_surface_effect_1_light" type="color"/>
-  <java-symbol name="system_surface_effect_2_light" type="color"/>
-  <java-symbol name="system_surface_effect_3_light" type="color"/>
   <java-symbol name="system_theme_app_light" type="color"/>
   <java-symbol name="system_theme_app_ring_light" type="color"/>
   <java-symbol name="system_theme_notif_light" type="color"/>
@@ -5883,11 +5881,6 @@
   <java-symbol name="system_shade_active_dark" type="color"/>
   <java-symbol name="system_shade_disabled_dark" type="color"/>
   <java-symbol name="system_shade_inactive_dark" type="color"/>
-  <java-symbol name="system_surface_effect_0_dark" type="color"/>
-  <java-symbol name="system_surface_effect_0_fallback_dark" type="color"/>
-  <java-symbol name="system_surface_effect_1_dark" type="color"/>
-  <java-symbol name="system_surface_effect_2_dark" type="color"/>
-  <java-symbol name="system_surface_effect_3_dark" type="color"/>
   <java-symbol name="system_theme_app_dark" type="color"/>
   <java-symbol name="system_theme_app_ring_dark" type="color"/>
   <java-symbol name="system_theme_notif_dark" type="color"/>
@@ -5895,8 +5888,44 @@
   <java-symbol name="system_weather_temp_dark" type="color"/>
   <java-symbol name="system_widget_background_dark" type="color"/>
 
-  <!--Manually added materialColor* tokens-->
-  <java-symbol name="materialColorSemanticRedContainerHigh" type="color"/>
+  <java-symbol name="semanticGreenContainerLow" type="color"/>
+  <java-symbol name="semanticGreenOnContainerLow" type="color"/>
+  <java-symbol name="semanticGreenContainer" type="color"/>
+  <java-symbol name="semanticGreenOnContainer" type="color"/>
+  <java-symbol name="semanticGreenOnContainerVariant" type="color"/>
+  <java-symbol name="semanticGreenContainerHigh" type="color"/>
+  <java-symbol name="semanticGreenOnContainerHigh" type="color"/>
+  <java-symbol name="semanticGreenOnSurface" type="color"/>
+  <java-symbol name="semanticGreenOnSurfaceVariant" type="color"/>
+  <java-symbol name="semanticGreenSurfaceContainerLow" type="color"/>
+  <java-symbol name="semanticGreenSurfaceContainer" type="color"/>
+  <java-symbol name="semanticGreenSurfaceContainerHigh" type="color"/>
+  <java-symbol name="semanticGreenSurfaceContainerHighest" type="color"/>
+  <java-symbol name="semanticYellowContainerLow" type="color"/>
+  <java-symbol name="semanticYellowOnContainerLow" type="color"/>
+  <java-symbol name="semanticYellowContainer" type="color"/>
+  <java-symbol name="semanticYellowOnContainer" type="color"/>
+  <java-symbol name="semanticYellowContainerHigh" type="color"/>
+  <java-symbol name="semanticYellowOnContainerHigh" type="color"/>
+  <java-symbol name="semanticYellowOnSurface" type="color"/>
+  <java-symbol name="semanticYellowOnSurfaceVariant" type="color"/>
+  <java-symbol name="semanticYellowSurfaceContainerLow" type="color"/>
+  <java-symbol name="semanticYellowSurfaceContainer" type="color"/>
+  <java-symbol name="semanticYellowSurfaceContainerHigh" type="color"/>
+  <java-symbol name="semanticYellowSurfaceContainerHighest" type="color"/>
+  <java-symbol name="semanticRedContainerLow" type="color"/>
+  <java-symbol name="semanticRedOnContainerLow" type="color"/>
+  <java-symbol name="semanticRedContainer" type="color"/>
+  <java-symbol name="semanticRedOnContainer" type="color"/>
+  <java-symbol name="semanticRedOnContainerVariant" type="color"/>
+  <java-symbol name="semanticRedContainerHigh" type="color"/>
+  <java-symbol name="semanticRedOnContainerHigh" type="color"/>
+  <java-symbol name="semanticRedOnSurface" type="color"/>
+  <java-symbol name="semanticRedOnSurfaceVariant" type="color"/>
+  <java-symbol name="semanticRedSurfaceContainerLow" type="color"/>
+  <java-symbol name="semanticRedSurfaceContainer" type="color"/>
+  <java-symbol name="semanticRedSurfaceContainerHigh" type="color"/>
+  <java-symbol name="semanticRedSurfaceContainerHighest" type="color"/>
 
   <java-symbol type="attr" name="actionModeUndoDrawable" />
   <java-symbol type="attr" name="actionModeRedoDrawable" />
@@ -6406,4 +6435,7 @@
 
   <!-- The location button render service component name -->
   <java-symbol type="string" name="config_locationButtonRenderService" />
+
+  <!-- Whether user information setup is enabled in SuW. -->
+  <java-symbol type="bool" name="config_enableUserInfoSetupInSuw" />
 </resources>

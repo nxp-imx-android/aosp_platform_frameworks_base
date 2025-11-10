@@ -31,6 +31,7 @@ import android.graphics.PointF;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.IVirtualGamepad;
 import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualKeyboard;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputManager.InputDeviceListener;
 import android.hardware.input.InputManagerGlobal;
@@ -146,7 +147,8 @@ class VirtualInputDeviceController {
         }
     }
 
-    IVirtualInputDevice createKeyboard(@NonNull String deviceName, int vendorId, int productId,
+    IVirtualInputDevice createVirtualInputKeyboardDevice(
+            @NonNull String deviceName, int vendorId, int productId,
             @NonNull IBinder deviceToken, int displayId, @NonNull String languageTag,
             @NonNull String layoutType) {
         final String phys = createPhys(PHYS_TYPE_KEYBOARD);
@@ -155,6 +157,23 @@ class VirtualInputDeviceController {
             return createDeviceInternal(InputDeviceDescriptor.TYPE_KEYBOARD, deviceName, vendorId,
                     productId, deviceToken, displayId, phys,
                     () -> mNativeWrapper.openUinputKeyboard(deviceName, vendorId, productId, phys));
+        } catch (DeviceCreationException e) {
+            mService.removeKeyboardLayoutAssociation(phys);
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    IVirtualKeyboard createKeyboard(@NonNull String deviceName, int vendorId, int productId,
+            @NonNull IBinder deviceToken, int displayId, @NonNull String languageTag,
+            @NonNull String layoutType) {
+        final String phys = createPhys(PHYS_TYPE_KEYBOARD);
+        mService.addKeyboardLayoutAssociation(phys, languageTag, layoutType);
+        try {
+            final InputDeviceDescriptor device = createDeviceInternal(
+                    InputDeviceDescriptor.TYPE_KEYBOARD, deviceName, vendorId,
+                    productId, deviceToken, displayId, phys,
+                    () -> mNativeWrapper.openUinputKeyboard(deviceName, vendorId, productId, phys));
+            return new VirtualKeyboardDevice(device);
         } catch (DeviceCreationException e) {
             mService.removeKeyboardLayoutAssociation(phys);
             throw new IllegalArgumentException(e);
@@ -1105,6 +1124,40 @@ class VirtualInputDeviceController {
                         + " for axis " + MotionEvent.axisToString(axis)
                         + " sent to virtual gamepad " + mDevice.mName);
             }
+        }
+    }
+
+    /** A wrapper for an IVirtualInputDevice that exposes it as an IVirtualKeyboard. */
+    private final class VirtualKeyboardDevice extends IVirtualKeyboard.Stub {
+        private final InputDeviceDescriptor mDevice;
+
+        VirtualKeyboardDevice(@NonNull InputDeviceDescriptor device) {
+            mDevice = device;
+        }
+
+        @Override
+        @EnforcePermission(anyOf = {
+                Manifest.permission.INJECT_EVENTS, Manifest.permission.INJECT_KEY_EVENTS})
+        public void close() {
+            close_enforcePermission();
+            mDevice.close();
+        }
+
+        @Override
+        @EnforcePermission(anyOf = {
+                Manifest.permission.INJECT_EVENTS, Manifest.permission.INJECT_KEY_EVENTS})
+        public boolean sendKeyEvent(VirtualKeyEvent event) {
+            sendKeyEvent_enforcePermission();
+            return mNativeWrapper.writeKeyEvent(mDevice.getNativePointer(),
+                    event.getKeyCode(), event.getAction(), event.getEventTimeNanos());
+        }
+
+        @Override
+        @EnforcePermission(anyOf = {
+                Manifest.permission.INJECT_EVENTS, Manifest.permission.INJECT_KEY_EVENTS})
+        public int getInputDeviceId() {
+            getInputDeviceId_enforcePermission();
+            return mDevice.getInputDeviceId();
         }
     }
 

@@ -50,6 +50,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -2019,6 +2021,93 @@ public final class InputMethodManager {
     }
 
     /**
+     * A test API for CTS to enable the given IME for the given user.
+     *
+     * <p>This is the same as "adb shell ime enable --user <userId> <imeId>" command.</p>
+     *
+     * @param imeId the IME that should be enabled.
+     * @param userId the user that imeId should be enabled for.
+     *
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL},
+            conditional = true)
+    @SuppressWarnings("UnflaggedApi")
+    public boolean enableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        return IInputMethodManagerGlobalInvoker.enableInputMethodForTesting(imeId, userId);
+    }
+
+    /**
+     * A test API for CTS to disable the given IME for the given user.
+     *
+     * <p>This is the same as "adb shell ime disable --user <userId> <imeId>" command.</p>
+     *
+     * @param imeId the IME that should be disabled.
+     * @param userId the user that imeId should be disabled for.
+     *
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL},
+            conditional = true)
+    @SuppressWarnings("UnflaggedApi")
+    public boolean disableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        return IInputMethodManagerGlobalInvoker.disableInputMethodForTesting(imeId, userId);
+    }
+
+    /**
+     * A test API for CTS to set the currently selected and enabled IMEs to the default ones for
+     * a given user.
+     *
+     * <p>This is the same as "adb shell ime set --user <userId> <imeId>" command.</p>
+     *
+     * @param imeId the IME that should be disabled.
+     * @param userId the user that imeId should be disabled for.
+     *
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL},
+            conditional = true)
+    @SuppressWarnings("UnflaggedApi")
+    public boolean setInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        return IInputMethodManagerGlobalInvoker.setInputMethodForTesting(imeId, userId);
+    }
+
+    /**
+     * A test API for CTS to reset the currently selected and enabled IMEs to the default ones for
+     * a given user.
+     *
+     * <p>This is the same as "adb shell ime reset --user <userId>" command.</p>
+     *
+     * This behavior can be triggered for all users using the UserHandle.USER_ALL constant.
+     *
+     * @param userId the user that IMEs should be reset for
+     *
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL},
+            conditional = true)
+    @SuppressWarnings("UnflaggedApi")
+    public void resetInputMethodsForTesting(@CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        IInputMethodManagerGlobalInvoker.resetInputMethodsForTesting(userId);
+    }
+
+
+    /**
      * @deprecated Use {@link InputMethodService#showStatusIcon(int)} instead. This method was
      * intended for IME developers who should be accessing APIs through the service. APIs in this
      * class are intended for app developers interacting with the IME.
@@ -3671,8 +3760,7 @@ public final class InputMethodManager {
                     servedInputConnection == null ? null
                             : servedInputConnection.asIRemoteAccessibilityInputConnection();
             final IRemoteComputerControlInputConnection computerControlInputConnection =
-                    (!android.companion.virtualdevice.flags.Flags.computerControlTyping()
-                            || servedInputConnection == null) ? null
+                    servedInputConnection == null ? null
                             : servedInputConnection.asIRemoteComputerControlInputConnection();
             // async result delivered via MSG_START_INPUT_RESULT.
             final int startInputSeq =

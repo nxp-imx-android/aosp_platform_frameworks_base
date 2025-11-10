@@ -35,6 +35,7 @@ import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_AMBIENT_CUE_PLUGIN
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.SysuiTestCase
@@ -49,7 +50,6 @@ import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.
 import com.android.systemui.ambientcue.shared.logger.ambientCueLogger
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.Flags.FLAG_AMBIENT_CUE_PLUGIN
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.backgroundScope
@@ -187,7 +187,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             assertThat(isRootViewAttached).isTrue()
         }
 
-   @Test
+    @Test
     fun isRootViewAttached_whenNoValidSmartSpaceTargets_true() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
@@ -349,6 +349,54 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                 assertThat(lastAction.label).isEqualTo(TITLE_2)
                 assertThat(lastAction.attribution).isEqualTo(SUBTITLE_2)
             }
+        }
+
+    @Test
+    fun actions_imeVisible_filtersActionsWithoutImeVisibleEnabled() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+
+            // Provide targets with mixed isEnabledWithImeVisible
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(
+                listOf(imeFilteredTarget)
+            )
+            runCurrent()
+
+            // Initially, IME is not visible, so all actions should be present
+            assertThat(actions).hasSize(2)
+            assertThat(actions?.first()?.label).isEqualTo(TITLE_1) // enabledWithImeVisible = true
+            assertThat(actions?.last()?.label).isEqualTo(TITLE_2) // enabledWithImeVisible = false
+
+            // Make IME visible
+            underTest.isImeVisible.update { true }
+            runCurrent()
+
+            // Only the action with isEnabledWithImeVisible = true should remain
+            assertThat(actions).hasSize(1)
+            assertThat(actions?.first()?.label).isEqualTo(TITLE_1)
+        }
+
+    @Test
+    fun actions_imeNotVisible_doesNotFilterActions() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+
+            // Provide targets with mixed isEnabledWithImeVisible
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(
+                listOf(imeFilteredTarget)
+            )
+            runCurrent()
+
+            // IME is not visible (default), so no filtering should occur
+            assertThat(actions).hasSize(2)
+            assertThat(actions?.first()?.label).isEqualTo(TITLE_1)
+            assertThat(actions?.last()?.label).isEqualTo(TITLE_2)
         }
 
     @Test
@@ -711,6 +759,24 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                     )
             }
 
+        private val imeFilteredTarget =
+            mock<SmartspaceTarget> {
+                on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
+                on { actionChips } doReturn
+                    listOf(
+                        SmartspaceAction.Builder("action1-id", "title 1")
+                            .setSubtitle("subtitle 1")
+                            .setExtras(Bundle().apply { putBoolean("enabledWithImeVisible", true) })
+                            .build(),
+                        SmartspaceAction.Builder("action2-id", "title 2")
+                            .setSubtitle("subtitle 2")
+                            .setExtras(
+                                Bundle().apply { putBoolean("enabledWithImeVisible", false) }
+                            )
+                            .build(),
+                    )
+            }
+
         private val invalidTarget1 =
             mock<SmartspaceTarget> {
                 on { smartspaceTargetId } doReturn "home"
@@ -720,11 +786,22 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
 
         private val allTargets = listOf(validTarget, invalidTarget1)
 
-        private val validActions = listOf(
-            ActionModel(icon = mock(), label = TITLE_1,
-                attribution = SUBTITLE_1, onPerformAction = {}, onPerformLongClick = {}),
-            ActionModel(icon = mock(), label = TITLE_2,
-                attribution = SUBTITLE_2, onPerformAction = {}, onPerformLongClick = {})
-        )
+        private val validActions =
+            listOf(
+                ActionModel(
+                    icon = mock(),
+                    label = TITLE_1,
+                    attribution = SUBTITLE_1,
+                    onPerformAction = {},
+                    onPerformLongClick = {},
+                ),
+                ActionModel(
+                    icon = mock(),
+                    label = TITLE_2,
+                    attribution = SUBTITLE_2,
+                    onPerformAction = {},
+                    onPerformLongClick = {},
+                ),
+            )
     }
 }

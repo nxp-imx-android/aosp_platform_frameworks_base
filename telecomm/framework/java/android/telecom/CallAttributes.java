@@ -107,7 +107,7 @@ public final class CallAttributes implements Parcelable {
     public static final int DIRECTION_OUTGOING = 2;
 
     /** @hide */
-    @IntDef(value = {AUDIO_CALL, VIDEO_CALL})
+    @IntDef(value = {AUDIO_CALL, VIDEO_CALL, MESSAGING})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CallType {
     }
@@ -120,6 +120,12 @@ public final class CallAttributes implements Parcelable {
      * Indicates video transmission is supported
      */
     public static final int VIDEO_CALL = 2;
+    /**
+     * Intended for handling callback support for VoIP calls to indicate that the app's messaging
+     * interface should be brought up.
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    public static final int MESSAGING = 3;
 
     /** @hide */
     @IntDef(value = {SUPPORTS_SET_INACTIVE, SUPPORTS_STREAM, SUPPORTS_TRANSFER,

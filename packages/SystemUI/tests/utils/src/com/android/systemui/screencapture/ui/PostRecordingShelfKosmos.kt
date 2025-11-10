@@ -16,9 +16,11 @@
 
 package com.android.systemui.screencapture.ui
 
+import android.content.applicationContext
 import android.graphics.drawable.Icon
 import android.net.Uri
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.screencapture.record.smallscreen.ui.postRecordSnackbarDialogs
 import com.android.systemui.screenrecord.ui.postRecordingViewModelFactory
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 
@@ -29,8 +31,10 @@ val Kosmos.postRecordingShelfFactory by
                 PostRecordingShelf(
                     uri = uri,
                     thumbnail = thumbnail,
+                    context = applicationContext,
                     dialogFactory = systemUIDialogFactory,
                     viewModelFactory = postRecordingViewModelFactory,
+                    postRecordSnackbarDialogs = postRecordSnackbarDialogs,
                 )
         }
     }

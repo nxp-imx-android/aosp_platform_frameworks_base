@@ -340,5 +340,6 @@ flag {
     name: "sdk_dependency_installer_deprecation"
     namespace: "package_manager_service"
     description: "Flag guard dependency installer service feature deprecation"
+    is_exported: true
     bug: "452585730"
 }

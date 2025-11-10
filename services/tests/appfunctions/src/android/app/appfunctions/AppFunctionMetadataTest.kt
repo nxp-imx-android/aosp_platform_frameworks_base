@@ -19,15 +19,23 @@ import android.app.appfunctions.AppFunctionMetadata.PROPERTY_SCHEMA_CATEGORY
 import android.app.appfunctions.AppFunctionMetadata.PROPERTY_SCHEMA_NAME
 import android.app.appfunctions.AppFunctionMetadata.PROPERTY_SCHEMA_VERSION
 import android.app.appfunctions.AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME
+import android.app.appfunctions.flags.Flags
 import android.app.appsearch.GenericDocument
 import android.os.Parcel
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.CheckFlagsRule
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import com.google.common.truth.Truth.assertThat
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+@RequiresFlagsEnabled(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 @RunWith(JUnit4::class)
 class AppFunctionMetadataTest {
+    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+
 
     @Test
     fun testEqualsAndHashcode() {

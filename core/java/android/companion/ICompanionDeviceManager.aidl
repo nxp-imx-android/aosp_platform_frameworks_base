@@ -180,7 +180,6 @@ interface ICompanionDeviceManager {
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
     void requestAction(in ActionRequest request, in String serviceName, in int[] associationIds);
 
-    @EnforcePermission("REQUEST_COMPANION_SELF_MANAGED")
     void notifyActionResult(in int associationId, in ActionResult result);
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
@@ -189,4 +188,6 @@ interface ICompanionDeviceManager {
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
     void removeOnActionResultListener(in String serviceName, in int userId);
+
+    boolean isSystemDataTransportAttached(in int associationId);
 }

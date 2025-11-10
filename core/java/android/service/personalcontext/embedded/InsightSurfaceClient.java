@@ -22,9 +22,16 @@ import android.annotation.FlaggedApi;
 import android.annotation.SystemApi;
 import android.content.Context;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.util.Log;
+import android.view.AttachedSurfaceControl;
+import android.view.Display;
+import android.view.SurfaceControlViewHost;
 import android.view.SurfaceView;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -57,6 +64,8 @@ import java.util.List;
 public class InsightSurfaceClient {
     private static final String TAG = "InsightSurfaceClient";
 
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+
     /** A receiver that can receive {@link ContextInsight}s from an embedded surface. */
     public interface InsightReceiver {
         /**
@@ -68,6 +77,8 @@ public class InsightSurfaceClient {
         boolean onReceive(@NonNull ContextInsight insight);
     }
 
+    private InsightSurfaceClientInfo mClientInfo;
+
     private final Context mContext;
 
     private final SurfaceView mSurfaceView;
@@ -78,15 +89,55 @@ public class InsightSurfaceClient {
     @NonNull
     private final List<ContextHint> mHints;
 
+    private final IEmbeddedInsightSurfaceCallback mCallback =
+            new IEmbeddedInsightSurfaceCallback.Stub() {
+                @Override
+                public void onSurfaceCreated(SurfaceControlViewHost.SurfacePackage surfacePackage) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onSurfaceCreated [" + surfacePackage + "]");
+                    }
+                    mSurfaceView.post(() -> {
+                        mSurfaceView.setChildSurfacePackage(surfacePackage);
+                        mSurfaceView.setZOrderOnTop(true);
+                        mSurfaceView.postInvalidate();
+                    });
+                }
+
+                @Override
+                public void onReceiveInsight(ContextInsightWrapper insightWrapper) {
+                    final ContextInsight insight = insightWrapper.getContextInsight();
+                    if (DEBUG) {
+                        Log.d(TAG, "onInsightReceived [" + insight + "]");
+                    }
+                    mSurfaceView.post(() -> {
+                        mReceivers.forEach((receiver) -> {
+                            receiver.onReceive(insight);
+                        });
+                    });
+                }
+            };
+
     private InsightSurfaceClient(
             Context context,
-            SurfaceView surfaceView,
+            @NonNull SurfaceView surfaceView,
             @NonNull List<ContextHint> hints,
             @NonNull List<InsightReceiver> receivers) {
         mContext = context;
         mSurfaceView = surfaceView;
         mHints = List.copyOf(hints);
         mReceivers = List.copyOf(receivers);
+
+        mSurfaceView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(@NonNull View v) {
+                InsightSurfaceClient.this.onViewAttachedToWindow();
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(@NonNull View v) {
+                InsightSurfaceClient.this.onViewDetachedFromWindow();
+            }
+        });
     }
 
     /**
@@ -107,6 +158,69 @@ public class InsightSurfaceClient {
     @NonNull
     public List<InsightReceiver> getReceivers() {
         return mReceivers;
+    }
+
+    private void onViewAttachedToWindow() {
+        mSurfaceView.post(this::registerClient);
+    }
+
+    private void onViewDetachedFromWindow() {
+        unregisterClient();
+    }
+
+    private void registerClient() {
+        if (DEBUG) {
+            Log.d(TAG, "registering client...");
+        }
+
+        if (mClientInfo != null) {
+            // Already registered.
+            Log.w(TAG, "client is already registered");
+            return;
+        }
+
+        final AttachedSurfaceControl rootSurfaceControl =
+                mSurfaceView.getRootView().getRootSurfaceControl();
+        if (rootSurfaceControl == null) {
+            Log.w(TAG, "rootSurfaceControl is null");
+            return;
+        }
+
+        final Display display = mSurfaceView.getDisplay();
+        if (display == null) {
+            Log.w(TAG, "display is null");
+            return;
+        }
+
+        mClientInfo = new InsightSurfaceClientInfo.Builder(
+                display.getDisplayId(),
+                View.MeasureSpec.makeMeasureSpec(mSurfaceView.getWidth(), View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(
+                        mSurfaceView.getHeight(), View.MeasureSpec.EXACTLY),
+                mSurfaceView.getResources().getConfiguration(),
+                mCallback)
+                .setInputTransferToken(rootSurfaceControl.getInputTransferToken())
+                .build();
+        final PersonalContextManager personalContextManager =
+                mContext.getSystemService(PersonalContextManager.class);
+        personalContextManager.registerInsightSurfaceClient(mClientInfo, mHints);
+    };
+
+    private void unregisterClient() {
+        if (DEBUG) {
+            Log.d(TAG, "unregistering client...");
+        }
+
+        if (mClientInfo == null) {
+            Log.w(TAG, "client not registered");
+            return;
+        }
+
+        final PersonalContextManager personalContextManager =
+                mContext.getSystemService(PersonalContextManager.class);
+        personalContextManager.unregisterInsightSurfaceClient(mClientInfo);
+
+        mClientInfo = null;
     }
 
     /** Builder used to build a new {@link InsightSurfaceClient}. */

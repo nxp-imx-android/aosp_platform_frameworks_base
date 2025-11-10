@@ -252,10 +252,6 @@ public class MagnificationTest extends SysuiTestCase {
         waitForIdleSync();
 
         verify(mWindowMagnificationController).changeMagnificationSize(eq(index));
-        verify(mA11yLogger).logWithPosition(
-                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_WINDOW_SIZE_SELECTED),
-                eq(index)
-        );
     }
 
     @Test

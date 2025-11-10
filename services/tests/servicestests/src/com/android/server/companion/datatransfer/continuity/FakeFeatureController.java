@@ -16,15 +16,10 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import com.android.server.companion.datatransfer.continuity.FeatureController;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
-
+import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,10 +27,7 @@ class FakeFeatureController extends FeatureController {
 
     public int mOnEnabledCallCount = 0;
     public int mOnDisabledCallCount = 0;
-    public List<ContinuityDeviceConnected> mContinuityDeviceConnectedMessages = new ArrayList<>();
-    public List<RemoteTaskAddedMessage> mRemoteTaskAddedMessages = new ArrayList<>();
-    public List<RemoteTaskRemovedMessage> mRemoteTaskRemovedMessages = new ArrayList<>();
-    public List<RemoteTaskUpdatedMessage> mRemoteTaskUpdatedMessages = new ArrayList<>();
+    public List<TaskStackBroadcastMessage> mTaskStackBroadcastMessages = new ArrayList<>();
     public List<HandoffRequestMessage> mHandoffRequestMessages = new ArrayList<>();
     public List<HandoffRequestResultMessage> mHandoffRequestResultMessages = new ArrayList<>();
 
@@ -59,27 +51,9 @@ class FakeFeatureController extends FeatureController {
     }
 
     @Override
-    public void onContinuityDeviceConnectedMessageReceived(
-            int associationId, ContinuityDeviceConnected continuityDeviceConnected) {
-        mContinuityDeviceConnectedMessages.add(continuityDeviceConnected);
-    }
-
-    @Override
-    public void onRemoteTaskAddedMessageReceived(
-            int associationId, RemoteTaskAddedMessage remoteTaskAddedMessage) {
-        mRemoteTaskAddedMessages.add(remoteTaskAddedMessage);
-    }
-
-    @Override
-    public void onRemoteTaskRemovedMessageReceived(
-            int associationId, RemoteTaskRemovedMessage remoteTaskRemovedMessage) {
-        mRemoteTaskRemovedMessages.add(remoteTaskRemovedMessage);
-    }
-
-    @Override
-    public void onRemoteTaskUpdatedMessageReceived(
-            int associationId, RemoteTaskUpdatedMessage remoteTaskUpdatedMessage) {
-        mRemoteTaskUpdatedMessages.add(remoteTaskUpdatedMessage);
+    public void onTaskStackBroadcastMessageReceived(
+            int associationId, TaskStackBroadcastMessage taskStackBroadcastMessage) {
+        mTaskStackBroadcastMessages.add(taskStackBroadcastMessage);
     }
 
     @Override

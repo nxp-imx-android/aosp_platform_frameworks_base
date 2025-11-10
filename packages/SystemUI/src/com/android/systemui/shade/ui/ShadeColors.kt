@@ -62,14 +62,19 @@ object ShadeColors {
         )
     }
 
+    /**
+     * Background color of the rounded cornered rect behind Notifications in Single- or SplitShade.
+     */
     @JvmStatic
-    fun singleShadeNotificationScrimBg(context: Context, blurSupported: Boolean): Int {
+    fun classicShadeNotificationScrimBg(
+        context: Context,
+        blurSupported: Boolean,
+        withScrim: Boolean,
+    ): Int {
         val surfaceEffect0Color =
-            context.resources.getColor(
-                com.android.internal.R.color.customColorSurfaceEffect0,
-                context.theme,
-            )
-        val shadePanelWithScrim = shadePanel(context, blurSupported, withScrim = true)
+            context.resources.getColor(com.android.internal.R.color.surface_effect_0, context.theme)
+        val shadePanelWithScrim =
+            shadePanel(context, blurSupported = blurSupported, withScrim = withScrim)
         return ColorUtils.compositeColors(surfaceEffect0Color, shadePanelWithScrim)
     }
 

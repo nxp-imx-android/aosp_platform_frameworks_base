@@ -32,6 +32,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.PostRecordSnackbar
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.SnackbarVisualsWithIcon
 import com.android.systemui.statusbar.phone.DialogDelegate
@@ -68,10 +69,12 @@ constructor(
                     actionLabel = context.getString(R.string.screen_record_undo),
                 ),
             onActionPerformed = {
-                activityStarter.startActivity(
-                    SmallScreenPostRecordingActivity.showRecording(context, uri),
-                    true,
-                )
+                if (!ScreenCaptureRecordFeaturesInteractor.isLargeScreenRecordingEnabled) {
+                    activityStarter.startActivity(
+                        SmallScreenPostRecordingActivity.showRecording(context, uri),
+                        true,
+                    )
+                }
             },
             onDismissed = { context.contentResolver.delete(uri, null) },
         )
@@ -134,7 +137,13 @@ private class SnackbarDialogDelegate(private val onDismissed: () -> Unit) :
         super.onCreate(dialog, savedInstanceState)
         dialog.setOnDismissListener { onDismissed() }
         with(dialog.window!!) {
-            setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL)
+            val windowGravity =
+                if (ScreenCaptureRecordFeaturesInteractor.isLargeScreenRecordingEnabled) {
+                    Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+                } else {
+                    Gravity.TOP or Gravity.CENTER_HORIZONTAL
+                }
+            setGravity(windowGravity)
             addFlags(
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or

@@ -56,6 +56,7 @@ class DesktopTasksTransitionObserver(
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     private val displayController: DisplayController,
+    private val desktopImmersiveController: DesktopImmersiveController,
     desktopState: DesktopState,
     shellInit: ShellInit,
 ) : Transitions.TransitionObserver {
@@ -103,7 +104,7 @@ class DesktopTasksTransitionObserver(
             closingTransitionToTransitionInfo.put(transition, info)
         }
         removeWallpaperOnLastTaskClosingIfNeeded(transition, info)
-        updateLastPackageStateChange(info)
+        updateLastPackageStateChange(info, transition)
     }
 
     private fun containsClosingTaskInDesktop(info: TransitionInfo): Boolean {
@@ -275,7 +276,7 @@ class DesktopTasksTransitionObserver(
         }
     }
 
-    private fun updateLastPackageStateChange(info: TransitionInfo) {
+    private fun updateLastPackageStateChange(info: TransitionInfo, transition: IBinder) {
         if (!Flags.enableRememberedBounds()) {
             return
         }
@@ -288,12 +289,21 @@ class DesktopTasksTransitionObserver(
                     // Is a freeform task.
                     if (!taskInfo.isFreeform) return@forEachLoop
 
-                    // TODO: b/452164082 - Consider excluding full-immersive case.
+                    val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
+                    if (desktopRepository.isTaskInFullImmersiveState(taskInfo.taskId)) {
+                        // We don't update the remembered bounds while the task is in full immersive
+                        // state.
+                        return@forEachLoop
+                    }
+                    if (desktopImmersiveController.isImmersiveChange(transition, change)) {
+                        // We don't update the remembered bounds on enter/exit immersive
+                        // transitions.
+                        return@forEachLoop
+                    }
 
                     val displayLayout =
                         displayController.getDisplayLayout(taskInfo.displayId) ?: return@forEachLoop
                     val packageName = taskInfo.baseActivity?.packageName ?: return@forEachLoop
-                    val desktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
                     val stableBounds =
                         Rect().apply { displayLayout.getStableBoundsForDesktopMode(this) }
                     val bounds = taskInfo.configuration.windowConfiguration.bounds

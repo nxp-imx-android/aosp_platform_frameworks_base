@@ -16,7 +16,6 @@
 package com.android.app.concurrent.benchmark
 
 import androidx.benchmark.BlackHole
-import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.ConcurrentBenchmarkRule
 import com.android.app.concurrent.benchmark.event.BaseFlowEventBenchmark
 import com.android.app.concurrent.benchmark.event.BaseSimpleEventBenchmark
@@ -95,7 +94,6 @@ private sealed interface UnconfinedEventBenchmark<T, E : Any>
                         return@result "ok"
                     },
             )
-            @OptIn(ExperimentalBlackHoleApi::class)
             afterLastIteration { BlackHole.consume(receivedVal) }
         }
     }

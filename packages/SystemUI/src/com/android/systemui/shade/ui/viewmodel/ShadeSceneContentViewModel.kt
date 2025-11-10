@@ -42,7 +42,6 @@ import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -55,7 +54,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -165,23 +163,32 @@ constructor(
         coroutineScope {
             launch { hydrator.activate() }
             launch { qqsMediaInRowViewModel.activate() }
-
-            launch {
-                shadeModeInteractor.shadeMode
-                    .filter { it is ShadeMode.Dual }
-                    .collect {
-                        withContext(mainDispatcher) {
-                            val loggingReason = "Unfold while on notifications shade"
-                            sceneInteractor.snapToScene(SceneFamilies.Home, loggingReason)
-                            sceneInteractor.instantlyShowOverlay(
-                                Overlays.NotificationsShade,
-                                loggingReason,
-                            )
-                        }
-                    }
-            }
-
             awaitCancellation()
+        }
+    }
+
+    /**
+     * Monitors changes to the shade mode that would make this scene stale, and snaps to the
+     * appropriate scene/overlay instead.
+     *
+     * This function must only run while the scene is shown. Therefore, it shouldn't be part of
+     * [onActivated()] while this scene uses `alwaysCompose`.
+     */
+    suspend fun detectShadeModeChanges(): Nothing {
+        shadeModeInteractor.shadeMode.collect { shadeMode ->
+            withContext(mainDispatcher) {
+                val loggingReason = "Unfold while on notifications shade"
+                when (shadeMode) {
+                    is ShadeMode.Dual -> {
+                        sceneInteractor.snapToScene(SceneFamilies.Home, loggingReason)
+                        sceneInteractor.instantlyShowOverlay(
+                            Overlays.NotificationsShade,
+                            loggingReason,
+                        )
+                    }
+                    else -> Unit
+                }
+            }
         }
     }
 
@@ -198,7 +205,7 @@ constructor(
             return
         }
 
-        sceneInteractor.changeScene(Scenes.Lockscreen, "Shade empty space clicked.")
+        sceneInteractor.changeScene(SceneFamilies.Home, "Shade empty space clicked.")
     }
 
     /**

@@ -162,6 +162,24 @@ public class Build {
     @NonNull
     public static final String SOC_MODEL = SocProperties.soc_model().orElse(UNKNOWN);
 
+    /**
+     * The manufacturer of the device's StrongBox chip. If the device does not use StrongBox, this
+     * should be set to "unsupported".
+     */
+    @NonNull
+    @FlaggedApi(android.os.Flags.FLAG_STRONGBOX_PROPERTIES_API)
+    public static final String STRONGBOX_MANUFACTURER =
+            SystemProperties.get("ro.strongbox.manufacturer", "unsupported");
+
+    /**
+     * The model of the device's StrongBox chip. If the device does not use StrongBox, this
+     * should be set to "unsupported".
+     */
+    @NonNull
+    @FlaggedApi(android.os.Flags.FLAG_STRONGBOX_PROPERTIES_API)
+    public static final String STRONGBOX_MODEL =
+            SystemProperties.get("ro.strongbox.model", "unsupported");
+
     /** The system bootloader version number. */
     public static final String BOOTLOADER = getString("ro.bootloader");
 

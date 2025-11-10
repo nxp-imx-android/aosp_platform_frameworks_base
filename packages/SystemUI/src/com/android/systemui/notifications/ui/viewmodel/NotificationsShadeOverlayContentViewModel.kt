@@ -181,6 +181,9 @@ constructor(
                     }
             }
 
+            // TODO(b/458409871): Does this need to be moved to a detectShadeModeChanges function,
+            //  just like the QuickSettingsShadeOverlayContentViewModel, now that the ShadeScene is
+            //  always composed?
             launch {
                 shadeModeInteractor.shadeMode
                     .filter { it !is ShadeMode.Dual }

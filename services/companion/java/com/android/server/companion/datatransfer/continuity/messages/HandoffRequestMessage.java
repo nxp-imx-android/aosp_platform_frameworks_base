@@ -16,15 +16,20 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
+import android.annotation.NonNull;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.IOException;
+import java.util.Objects;
 
 /** Deserialized version of the HandoffRequestMessage proto. */
 public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage {
 
-    public static HandoffRequestMessage readFromProto(ProtoInputStream pis) throws IOException {
+    @NonNull
+    public static HandoffRequestMessage readFromProto(@NonNull ProtoInputStream pis)
+            throws IOException {
+        Objects.requireNonNull(pis);
+
         int taskId = 0;
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
@@ -43,7 +48,8 @@ public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage
     }
 
     @Override
-    public void writeToProto(ProtoOutputStream pos) {
-        pos.write(android.companion.HandoffRequestMessage.TASK_ID, taskId());
+    public void writeToProto(@NonNull ProtoOutputStream pos) {
+        Objects.requireNonNull(pos)
+                .write(android.companion.HandoffRequestMessage.TASK_ID, taskId());
     }
 }

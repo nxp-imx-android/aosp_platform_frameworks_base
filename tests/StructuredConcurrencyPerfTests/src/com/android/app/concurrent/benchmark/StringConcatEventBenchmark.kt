@@ -16,7 +16,6 @@
 package com.android.app.concurrent.benchmark
 
 import androidx.benchmark.BlackHole
-import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.ConcurrentBenchmarkRule
 import com.android.app.concurrent.benchmark.event.BaseFlowEventBenchmark
 import com.android.app.concurrent.benchmark.event.BaseSimpleEventBenchmark
@@ -48,7 +47,6 @@ import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 
-@OptIn(ExperimentalBlackHoleApi::class)
 private sealed interface StringConcatEventBenchmark<T, E : Any>
     where
         T : WritableEventFactory<E>,

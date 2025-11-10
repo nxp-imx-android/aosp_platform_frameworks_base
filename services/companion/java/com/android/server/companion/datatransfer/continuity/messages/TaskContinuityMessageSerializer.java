@@ -17,11 +17,8 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.annotation.NonNull;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
 import java.io.IOException;
 import java.util.Objects;
 
@@ -42,17 +39,8 @@ public final class TaskContinuityMessageSerializer {
         int fieldNumber = pis.getFieldNumber();
         final long dataToken = pis.start(fieldNumber);
         switch (fieldNumber) {
-            case (int) android.companion.TaskContinuityMessage.DEVICE_CONNECTED:
-                message = ContinuityDeviceConnected.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED:
-                message = RemoteTaskAddedMessage.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED:
-                message = RemoteTaskRemovedMessage.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_UPDATED:
-                message = RemoteTaskUpdatedMessage.readFromProto(pis);
+            case (int) android.companion.TaskContinuityMessage.TASK_STACK_BROADCAST:
+                message = TaskStackBroadcastMessage.readFromProto(pis);
                 break;
             case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
                 message = HandoffRequestMessage.readFromProto(pis);
@@ -70,7 +58,10 @@ public final class TaskContinuityMessageSerializer {
         return message;
     }
 
-    public static byte[] serialize(TaskContinuityMessage message) throws IOException {
+    @NonNull
+    public static byte[] serialize(@NonNull TaskContinuityMessage message) throws IOException {
+        Objects.requireNonNull(message);
+
         ProtoOutputStream pos = new ProtoOutputStream();
         long dataToken = pos.start(message.getFieldNumber());
         message.writeToProto(pos);

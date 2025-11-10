@@ -82,7 +82,11 @@ class LockscreenContent(
             rememberViewModel("LockscreenContent-viewModel") {
                 viewModelFactory.create(
                     keyguardTransitionAnimationCallback =
-                        KeyguardTransitionAnimationCallbackImpl(view, interactionJankMonitor),
+                        KeyguardTransitionAnimationCallbackImpl(
+                            view,
+                            interactionJankMonitor,
+                            clockInteractor,
+                        ),
                     viewState = ViewStateAccessor(alpha = { lockscreenAlpha }),
                 )
             }
@@ -217,10 +221,16 @@ class LockscreenContent(
 private class KeyguardTransitionAnimationCallbackImpl(
     private val view: View,
     private val interactionJankMonitor: InteractionJankMonitor,
+    private val clockInteractor: KeyguardClockInteractor,
 ) : KeyguardTransitionAnimationCallback {
 
     override fun onAnimationStarted(from: KeyguardState, to: KeyguardState) {
-        cujOrNull(from, to)?.let { cuj -> interactionJankMonitor.begin(view, cuj) }
+        cujOrNull(from, to)?.let { cuj ->
+            val builder =
+                InteractionJankMonitor.Configuration.Builder.withView(cuj, view)
+                    .setTag(clockInteractor.renderedClockId)
+            interactionJankMonitor.begin(builder)
+        }
     }
 
     override fun onAnimationEnded(from: KeyguardState, to: KeyguardState) {

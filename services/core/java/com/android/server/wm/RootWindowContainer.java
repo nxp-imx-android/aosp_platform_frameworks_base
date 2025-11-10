@@ -1280,10 +1280,42 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         });
     }
 
-    void startHomeOnDisplaysWithNoHome(String reason) {
+    /**
+     * Checks if the home is required in the given {@link TaskDisplayArea} for the specified user.
+     *
+     * @param userId          The ID of the user.
+     * @param taskDisplayArea The {@link TaskDisplayArea} to check.
+     * @return {@code true} if there is no home present in the given {@link TaskDisplayArea} or if
+     * the home component names are different; {@code false} otherwise.
+     */
+    private boolean needsHomeLaunchOnDisplay(int userId, TaskDisplayArea taskDisplayArea) {
+        if (!taskDisplayArea.canHostHomeTask()) {
+            return false;
+        }
+        final ActivityRecord existingHomeForUserOnDisplay =
+                taskDisplayArea.getHomeActivityForUser(userId);
+        if (existingHomeForUserOnDisplay == null) {
+            // Even when no home activity for the given userId is on this display, a home activity
+            // for a different user might still be present. This code does not explicitly finish
+            // the old home activity; instead, relies on other system mechanisms for cleanup.
+            return true;
+        }
+
+        // Even if a home activity for the given userId is present, it could be a different
+        // component and thereby requiring launch of the correctly resolved home activity.
+        final ActivityInfo resolvedHomeComponent = resolveHomeActivity(userId,
+                mService.getHomeIntent());
+        if (resolvedHomeComponent == null) {
+            return false;
+        }
+        return !Objects.equals(resolvedHomeComponent.getComponentName(),
+                existingHomeForUserOnDisplay.mActivityComponent);
+    }
+
+    void startHomeOnDisplaysIfNeeded(String reason) {
         forAllTaskDisplayAreas(taskDisplayArea -> {
-            if (taskDisplayArea.getHomeActivity() == null) {
-                int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
+            final int userId = mWmService.getUserAssignedToDisplay(taskDisplayArea.getDisplayId());
+            if (needsHomeLaunchOnDisplay(userId, taskDisplayArea)) {
                 startHomeOnTaskDisplayArea(userId, reason, taskDisplayArea,
                         false /* allowInstrumenting */, false /* fromHomeKey */, false /* onTop */);
             }
@@ -2114,9 +2146,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             if (singleActivity) {
                 rootTask = task;
 
-                // Apply the last recents animation leash transform to the task entering PIP
-                rootTask.maybeApplyLastRecentsAnimationTransaction();
-
                 if (rootTask.getParent() != taskDisplayArea) {
                     // root task is nested, but pinned tasks need to be direct children of their
                     // display area, so reparent.
@@ -2181,21 +2210,13 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 // automatically removed from the recents list.
                 rootTask.autoRemoveRecents = true;
 
-                // Move the last recents animation transaction from original task to the new one.
-                if (task.mLastRecentsAnimationTransaction != null) {
-                    rootTask.setLastRecentsAnimationTransaction(
-                            task.mLastRecentsAnimationTransaction,
-                            task.mLastRecentsAnimationOverlay);
-                    task.clearLastRecentsAnimationTransaction(false /* forceRemoveOverlay */);
-                } else {
-                    // Reset the original task surface
-                    // TODO (b/448208017): Investigate why this line isn't WAI in fullscreen case,
-                    // and find a different workaround for freeform case when this is fixed.
-                    if (!DesktopExperienceFlags
-                            .ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN
-                            .isTrue()) {
-                        task.resetSurfaceControlTransforms();
-                    }
+                // Reset the original task surface
+                // TODO (b/448208017): Investigate why this line isn't WAI in fullscreen case,
+                // and find a different workaround for freeform case when this is fixed.
+                if (!DesktopExperienceFlags
+                        .ENABLE_DESKTOP_WINDOWING_MULTI_ACTIVITY_PIP_KEEP_PARENT_OPEN
+                        .isTrue()) {
+                    task.resetSurfaceControlTransforms();
                 }
 
                 // The organized TaskFragment is becoming empty because this activity is reparented
@@ -2229,9 +2250,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 // up-to-dated root pinned task information on this newly created root task.
                 r.reparent(rootTask, MAX_VALUE, reason);
                 rootTask.setFocusable(true);
-
-                // Ensure the leash of new task is in sync with its current bounds after reparent.
-                rootTask.maybeApplyLastRecentsAnimationTransaction();
 
                 boolean isLastParentTransientHide = mTransitionController
                         .getTransientHideTransitionForContainer(task) != null;
@@ -2771,15 +2789,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 final Transition transition = new Transition(TRANSIT_CLOSE,
                         TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION, mTransitionController,
                         mWmService.mSyncEngine);
+                final int disconnectReparentDisplay =
+                        mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser);
+                transition.addDisconnectReparentDisplay(disconnectReparentDisplay);
                 mTransitionController.startCollectOrQueue(transition, (deferred) -> {
                     transition.collectExistenceChange(displayContent);
                     transition.setAllReady();
                     TransitionRequestInfo.DisplayChange displayChange =
                             new TransitionRequestInfo.DisplayChange(displayId);
-                    final int disconnectReparentDisplay =
-                            mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser);
                     displayChange.setDisconnectReparentDisplay(disconnectReparentDisplay);
-                    transition.addDisconnectReparentDisplay(disconnectReparentDisplay);
 
                     mTransitionController.requestStartTransition(transition, null /* startTask */,
                             null /* remoteTransition */, displayChange);

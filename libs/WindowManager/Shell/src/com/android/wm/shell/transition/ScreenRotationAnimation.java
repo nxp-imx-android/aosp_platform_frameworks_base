@@ -142,6 +142,7 @@ class ScreenRotationAnimation {
                 .setCallsite("ShellRotationAnimation")
                 .setName("Animation leash of screenshot rotation")
                 .build();
+        final boolean isRotationChange = mStartRotation != mEndRotation;
 
         try {
             if (change.getSnapshot() != null) {
@@ -183,7 +184,7 @@ class ScreenRotationAnimation {
                 }
                 hardwareBuffer.close();
             }
-            if ((flags & FLAG_HAS_WALLPAPER) != 0) {
+            if (isRotationChange && (flags & FLAG_HAS_WALLPAPER) != 0) {
                 mBackEffectSurface = new SurfaceControl.Builder()
                         .setCallsite("ShellRotationAnimation").setParent(rootLeash)
                         .setEffectLayer().setOpaque(true).setName("BackEffect").build();
@@ -198,7 +199,7 @@ class ScreenRotationAnimation {
             // Crop the real content in case it contains a larger child layer, e.g. wallpaper.
             t.setCrop(getEnterSurface(), new Rect(0, 0, mEndWidth, mEndHeight));
 
-            if (!isCustomRotate()) {
+            if (isRotationChange && !isCustomRotate()) {
                 mBackColorSurface = new SurfaceControl.Builder()
                         .setParent(rootLeash)
                         .setColorLayer()

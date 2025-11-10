@@ -111,7 +111,7 @@ public class DeveloperVerifierController {
      * after all the pending verification requests are resolved, automatically disconnect from the
      * verifier after this amount of time.
      */
-    private static final long DISCONNECT_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(10);
+    private static final long DISCONNECT_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(30);
 
     private static DeveloperVerifierController sInstance;
 
@@ -266,7 +266,12 @@ public class DeveloperVerifierController {
                                 + " on user " + userId);
                         // Logging the success of connecting to the verifier.
                         onConnectionEstablished.run();
-                        // Aggressively auto-disconnect until verification requests are sent out
+                        // Aggressively auto-disconnect until verification requests are sent out.
+                        // Once a verification request is sent out, the auto-disconnect timeout will
+                        // be canceled. If a verification request is not sent out before the auto-
+                        // disconnect timeout is triggered, the auto-disconnection will take place
+                        // and the connection will establish again when the verification request is
+                        // actually sent out during startVerificationSession.
                         startAutoDisconnectCountdown(
                                 remoteServiceWrapper.getAutoDisconnectCallback());
                     }
@@ -319,9 +324,18 @@ public class DeveloperVerifierController {
         // If there is already a task to disconnect, remove it and restart the countdown
         stopAutoDisconnectCountdown(autoDisconnectCallback);
         mHandler.postDelayed(autoDisconnectCallback, DISCONNECT_TIMEOUT_MILLIS);
+        if (DEBUG) {
+            Slog.i(TAG, "Auto-disconnect will take place in " + DISCONNECT_TIMEOUT_MILLIS
+                    + "ms if no more verification request is sent out before then.");
+        }
     }
 
     private void stopAutoDisconnectCountdown(Runnable autoDisconnectCallback) {
+        if (DEBUG) {
+            if (mInjector.hasCallbacks(mHandler, autoDisconnectCallback)) {
+                Slog.i(TAG, "Auto-disconnect is disabled for now.");
+            }
+        }
         mInjector.removeCallbacks(mHandler, autoDisconnectCallback);
     }
 
@@ -436,6 +450,8 @@ public class DeveloperVerifierController {
                             // Notify the installation session so it can finish with verification
                             // failure.
                             callback.onConnectionFailed();
+                            // Remove status tracking and stop the timeout countdown
+                            removeStatusTracker(verificationId);
                         }
                     });
             // We've sent out a new verification request, so stop the auto-disconnection countdown.
@@ -732,7 +748,13 @@ public class DeveloperVerifierController {
             mRemoteService = service;
             mUid = uid;
             mVerifierPackageName = verifierPackageName;
-            mAutoDisconnectCallback = mRemoteService::unbind;
+            mAutoDisconnectCallback = () -> {
+                mRemoteService.unbind();
+                if (DEBUG) {
+                    Slog.i(TAG, "Auto-disconnect has taken place and the remote service "
+                            + "has been disconnected");
+                }
+            };
         }
         ServiceConnector<IDeveloperVerifierService> getService() {
             return mRemoteService;
@@ -802,6 +824,12 @@ public class DeveloperVerifierController {
             handler.removeCallbacks(callback);
         }
 
+        /**
+         * This is added so that we don't need to mock Handler.hasCallbacks which is final.
+         */
+        public boolean hasCallbacks(Handler handler, Runnable callback) {
+            return handler.hasCallbacks(callback);
+        }
 
         /**
          * This is added so that we can mock the verification request timeout duration without

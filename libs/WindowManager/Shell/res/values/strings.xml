@@ -402,4 +402,6 @@
     <string name="open_by_default_splash_dialog_browser_text">Open in browser</string>
      <!-- Text for open by default splash dialog option. -->
     <string name="open_by_default_splash_dialog_app_text">Stay in app</string>
+    <!-- Text for open by default splash dialog option. -->
+    <string name="open_by_default_splash_dialog_ask_me_later_text">Ask me later</string>
 </resources>

@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.window
 import android.view.View
 import android.view.ViewGroup
 import com.android.systemui.animation.ActivityTransitionAnimator
-import com.android.systemui.fragments.FragmentHostManager
 import java.util.Optional
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -51,9 +50,6 @@ class FakeStatusBarWindowController : StatusBarWindowController {
     override fun addViewToWindow(view: View, layoutParams: ViewGroup.LayoutParams) {}
 
     override val backgroundView: View
-        get() = throw NotImplementedError()
-
-    override val fragmentHostManager: FragmentHostManager
         get() = throw NotImplementedError()
 
     override fun wrapAnimationControllerIfInStatusBar(

@@ -20,12 +20,14 @@ import android.annotation.PermissionManuallyEnforced;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.os.Binder;
+import android.os.ParcelUuid;
 import android.os.UserHandle;
 import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.RenderToken.RenderTokenBuilder;
+import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
@@ -44,7 +46,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
 import com.android.server.notification.NotificationManagerInternal;
-import com.android.server.personalcontext.component.Renderer;
+import com.android.server.personalcontext.embedded.EmbeddedInsightRenderer;
 import com.android.server.personalcontext.notifications.NotificationActionRenderer;
 
 import java.io.FileDescriptor;
@@ -54,6 +56,7 @@ import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -85,7 +88,8 @@ public class PersonalContextManagerService extends SystemService {
     private record UserState(
             @NonNull ContextComponentManager componentManager,
             @NonNull ContextComponentMonitor monitor,
-            @NonNull NotificationActionRenderer notificationActionRenderer) {
+            @NonNull NotificationActionRenderer notificationActionRenderer,
+            @NonNull EmbeddedInsightRenderer embeddedInsightRenderer) {
         /** Unregisters the monitor, cleaning up the user state. */
         void cleanup() {
             monitor.unregister();
@@ -95,6 +99,7 @@ public class PersonalContextManagerService extends SystemService {
     // TODO(b/454430085): Inject these fields.
     private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
     private final SparseArray<UserState> mUserStates = new SparseArray<>();
+    private final ContextLogger mLogger = new ContextLogger();
 
     private final PersonalContextManagerInternal mInternalService =
             new PersonalContextManagerInternal() {
@@ -110,11 +115,7 @@ public class PersonalContextManagerService extends SystemService {
                     }
 
                     final UserHandle user = sbn.getUser();
-                    final UserState userState;
-                    synchronized (mUserStates) {
-                        userState = mUserStates.get(user.getIdentifier());
-                    }
-
+                    final UserState userState = getUserStateSynchronized(user.getIdentifier());
                     if (userState == null) {
                         Slog.e(TAG, "No user state for user " + user.getIdentifier());
                         return;
@@ -157,12 +158,18 @@ public class PersonalContextManagerService extends SystemService {
             final ContextComponentManager componentManager =
                     new ContextComponentManager(userContext);
             final ContextComponentMonitor monitor = new ContextComponentMonitor(componentManager);
-            final NotificationActionRenderer renderer =
+            final NotificationActionRenderer notificationActionRenderer =
                     new NotificationActionRenderer(
                             userContext,
                             getLocalService(NotificationManagerInternal.class),
                             userContext.getPackageManager());
-            mUserStates.put(userId, new UserState(componentManager, monitor, renderer));
+            final EmbeddedInsightRenderer embeddedInsightRenderer = new EmbeddedInsightRenderer();
+            mUserStates.put(userId,
+                    new UserState(
+                            componentManager,
+                            monitor,
+                            notificationActionRenderer,
+                            embeddedInsightRenderer));
         }
     }
 
@@ -171,16 +178,10 @@ public class PersonalContextManagerService extends SystemService {
         final int userId = user.getUserIdentifier();
         Slog.i(TAG, "Unlocking user " + userId);
 
-        UserState userState;
-        synchronized (mUserStates) {
-            userState = mUserStates.get(userId);
-        }
-
+        UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
             onUserStarting(user);
-            synchronized (mUserStates) {
-                userState = mUserStates.get(userId);
-            }
+            userState = getUserStateSynchronized(userId);
             if (userState == null) {
                 Slog.e(TAG, "Failed to create UserState for unlocking user " + userId);
                 return;
@@ -193,6 +194,7 @@ public class PersonalContextManagerService extends SystemService {
             Slog.d(TAG, "Registering internal components for user " + userId);
         }
         componentManager.register(userState.notificationActionRenderer());
+        componentManager.register(userState.embeddedInsightRenderer());
 
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Registering external components for user " + userId);
@@ -247,49 +249,59 @@ public class PersonalContextManagerService extends SystemService {
                 hints,
                 renderToken,
                 HINT_SIGNING_KEY,
-                /* eventListener= */ null,
+                mLogger,
                 mExecutor);
     }
 
     private void startInsightWorkflow(@UserIdInt int userId, Set<ContextInsight> insights) {
-        // TODO(b/452425186): Make this into a workflow like refiners.
         final ContextComponentManager componentManager = getComponentManagerForUser(userId);
         if (componentManager == null) {
-            Slog.w(TAG, "Cannot start insight workflow, no component manager for user " + userId);
+            Slog.w(TAG, "Cannot start renderer workflow, no component manager for user " + userId);
             return;
         }
-        try {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Slog.d(TAG, "Insight workflow started for user " + userId);
-            }
 
-            for (ContextInsight insight : insights) {
-                if (Log.isLoggable(TAG, Log.DEBUG)) {
-                    Slog.d(TAG, "Handling insight: " + insight);
-                }
-                for (Renderer renderer : componentManager.getRenderers()) {
-                    if (Log.isLoggable(TAG, Log.DEBUG)) {
-                        Slog.d(TAG, "Sending to renderer: " + renderer);
-                    }
-                    renderer.render(insight, false);
-                }
-            }
-
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Slog.d(TAG, "Insight workflow complete for user " + userId);
-            }
-        } catch (Exception e) {
-            Slog.e(TAG, "Insight workflow failed for user " + userId, e);
-        }
+        RendererWorkflow.start(
+                componentManager,
+                insights,
+                HINT_SIGNING_KEY,
+                mLogger,
+                mExecutor);
     }
 
     /** Returns the component manager for the given user, for testing purposes. */
     @VisibleForTesting
     @Nullable
     ContextComponentManager getComponentManagerForUser(@UserIdInt int userId) {
+        final UserState userState = getUserStateSynchronized(userId);
+        return userState != null ? userState.componentManager() : null;
+    }
+
+    private void registerInsightSurfaceClient(
+            int userId, Set<ContextHint> clientHints, InsightSurfaceClientInfo clientInfo) {
+        final UserState userState = getUserStateSynchronized(userId);
+        if (userState == null) {
+            return;
+        }
+
+        final RenderToken renderToken =
+                userState.embeddedInsightRenderer.registerInsightSurfaceClient(clientInfo);
+        if (renderToken == null) {
+            Slog.e(TAG, "No render token for client " + clientInfo.getId());
+            return;
+        }
+        startRefinerWorkflow(userId, clientHints, renderToken);
+    }
+
+    private void unregisterInsightSurfaceClient(int userId, UUID id) {
+        final UserState userState = getUserStateSynchronized(userId);
+        if (userState != null) {
+            userState.embeddedInsightRenderer().unregisterInsightSurfaceClient(id);
+        }
+    }
+
+    private UserState getUserStateSynchronized(int userId) {
         synchronized (mUserStates) {
-            final UserState userState = mUserStates.get(userId);
-            return userState != null ? userState.componentManager() : null;
+            return mUserStates.get(userId);
         }
     }
 
@@ -347,13 +359,37 @@ public class PersonalContextManagerService extends SystemService {
 
             // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
-                    () -> {
-                        getService()
-                                .startInsightWorkflow(
-                                        userId,
-                                        ContextInsightWrapper.unwrapInto(
-                                                insights, new HashSet<>()));
-                    });
+                    () -> getService()
+                            .startInsightWorkflow(
+                                    userId,
+                                    ContextInsightWrapper.unwrapInto(
+                                            insights, new HashSet<>())));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void registerInsightSurfaceClient(
+                List<ContextHintWrapper> clientHints,
+                InsightSurfaceClientInfo clientInfo,
+                int userId) {
+            verifyUser(userId);
+
+            // TODO(b/450547433): Add security checks.
+            Binder.withCleanCallingIdentity(
+                    () -> getService().registerInsightSurfaceClient(
+                            userId,
+                            ContextHintWrapper.unwrapInto(clientHints, new HashSet<>()),
+                            clientInfo));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public void unregisterInsightSurfaceClient(ParcelUuid id, int userId) {
+            verifyUser(userId);
+
+            // TODO(b/450547433): Add security checks.
+            Binder.withCleanCallingIdentity(
+                    () -> getService().unregisterInsightSurfaceClient(userId, id.getUuid()));
         }
 
         @PermissionManuallyEnforced
@@ -373,6 +409,8 @@ public class PersonalContextManagerService extends SystemService {
                     userState.componentManager().dump(fout);
                 }
             }
+
+            service.mLogger.dump(fout);
         }
     }
 }

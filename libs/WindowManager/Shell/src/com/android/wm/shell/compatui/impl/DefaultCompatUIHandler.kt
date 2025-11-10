@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.impl
 
+import android.app.TaskInfo
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.compatui.api.CompatUIComponentFactory
 import com.android.wm.shell.compatui.api.CompatUIComponentIdGenerator
@@ -25,7 +26,8 @@ import com.android.wm.shell.compatui.api.CompatUIHandler
 import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUIRepository
 import com.android.wm.shell.compatui.api.CompatUIRequest
-import com.android.wm.shell.compatui.api.CompatUIState
+import com.android.wm.shell.compatui.api.CompatUISharedState
+import com.android.wm.shell.compatui.api.CompatUISharedStateRepository
 import com.android.wm.shell.repository.iterate
 import java.util.function.Consumer
 
@@ -33,7 +35,7 @@ import java.util.function.Consumer
 class DefaultCompatUIHandler(
     private val compatUIRepository: CompatUIRepository,
     private val compatUIComponentRepository: CompatUIComponentRepository,
-    private val compatUIState: CompatUIState,
+    private val sharedStateRepository: CompatUISharedStateRepository,
     private val componentIdGenerator: CompatUIComponentIdGenerator,
     private val componentFactory: CompatUIComponentFactory,
     private val executor: ShellExecutor,
@@ -42,62 +44,63 @@ class DefaultCompatUIHandler(
     private var compatUIEventSender: Consumer<CompatUIEvent>? = null
 
     override fun onCompatInfoChanged(compatUIInfo: CompatUIInfo) {
+        warmUpSharedStateForTask(compatUIInfo.taskInfo)
         compatUIRepository.iterate { spec ->
             // We get the identifier for the component depending on the task and spec
             val componentId = componentIdGenerator.generateId(compatUIInfo, spec)
             spec.log("Evaluating component $componentId")
             // We check in the state if the component does not yet exist
             var component = compatUIComponentRepository.find(componentId)?.component
-            if (component == null) {
-                spec.log("Component $componentId not present")
-                // We evaluate the predicate
-                if (spec.lifecycle.creationPredicate(compatUIInfo, compatUIState.sharedState)) {
-                    spec.log("Component $componentId should be created")
-                    // We create the component and store in the
-                    // global state
-                    component =
-                        componentFactory.create(spec, componentId, compatUIState, compatUIInfo)
-                    spec.log("Component $componentId created $component")
-                    // We initialize the state for the component
-                    val compState =
-                        spec.lifecycle.stateBuilder(compatUIInfo, compatUIState.sharedState)
-                    spec.log("Component $componentId initial state $compState")
-                    compatUIComponentRepository.registerUIComponent(
-                        componentId,
-                        component,
-                        compState,
-                    )
-                    spec.log("Component $componentId registered")
-                    // We initialize the layout for the component
-                    component.initLayout(compatUIInfo)
-                    spec.log("Component $componentId layout created")
-                    // Now we can invoke the update passing the shared state and
-                    // the state specific to the component
-                    executor.execute {
-                        component.update(compatUIInfo)
-                        spec.log("Component $componentId updated with $compatUIInfo")
+            sharedStateRepository.find(compatUIInfo.taskId)?.let { sharedState ->
+                if (component == null) {
+                    spec.log("Component $componentId not present")
+                    // We evaluate the predicate
+                    if (spec.lifecycle.creationPredicate(compatUIInfo, sharedState)) {
+                        spec.log("Component $componentId should be created")
+                        // We create the component and store in the
+                        // global state
+                        component = componentFactory.create(spec, componentId, compatUIInfo)
+                        spec.log("Component $componentId created $component")
+                        // We initialize the state for the component
+                        val compState = spec.lifecycle.stateBuilder(compatUIInfo, sharedState)
+                        spec.log("Component $componentId initial state $compState")
+                        compatUIComponentRepository.registerUIComponent(
+                            componentId,
+                            component,
+                            compState,
+                        )
+                        spec.log("Component $componentId registered")
+                        // We initialize the layout for the component
+                        component.initLayout(compatUIInfo)
+                        spec.log("Component $componentId layout created")
+                        // Now we can invoke the update passing the shared state and
+                        // the state specific to the component
+                        executor.execute {
+                            component.update(compatUIInfo)
+                            spec.log("Component $componentId updated with $compatUIInfo")
+                        }
                     }
-                }
-            } else {
-                // The component is present. We check if we need to remove it
-                if (
-                    spec.lifecycle.removalPredicate(
-                        compatUIInfo,
-                        compatUIState.sharedState,
-                        compatUIComponentRepository.stateForComponent(componentId),
-                    )
-                ) {
-                    spec.log("Component $componentId should be removed")
-                    // We clean the component
-                    component.release()
-                    spec.log("Component $componentId released")
-                    compatUIComponentRepository.unregisterUIComponent(componentId)
-                    spec.log("Component $componentId removed from registry")
                 } else {
-                    executor.execute {
-                        // The component exists so we need to invoke the update methods
-                        component.update(compatUIInfo)
-                        spec.log("Component $componentId updated with $compatUIInfo")
+                    // The component is present. We check if we need to remove it
+                    if (
+                        spec.lifecycle.removalPredicate(
+                            compatUIInfo,
+                            sharedState,
+                            compatUIComponentRepository.stateForComponent(componentId),
+                        )
+                    ) {
+                        spec.log("Component $componentId should be removed")
+                        // We clean the component
+                        component.release()
+                        spec.log("Component $componentId released")
+                        compatUIComponentRepository.unregisterUIComponent(componentId)
+                        spec.log("Component $componentId removed from registry")
+                    } else {
+                        executor.execute {
+                            // The component exists so we need to invoke the update methods
+                            component.update(compatUIInfo)
+                            spec.log("Component $componentId updated with $compatUIInfo")
+                        }
                     }
                 }
             }
@@ -109,4 +112,12 @@ class DefaultCompatUIHandler(
     }
 
     override fun sendCompatUIRequest(compatUIRequest: CompatUIRequest) {}
+
+    private fun warmUpSharedStateForTask(taskInfo: TaskInfo) {
+        sharedStateRepository.insert(
+            taskInfo.taskId,
+            CompatUISharedState(taskId = taskInfo.taskId),
+            overrideIfPresent = false,
+        )
+    }
 }

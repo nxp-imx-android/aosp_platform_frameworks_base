@@ -561,8 +561,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_FULL_SCREEN_WINDOW_ON_REMOVING_SPLIT_SCREEN_STAGE_BUGFIX,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND})
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void startTasksOnSingleFreeformWindow_ensureWindowingModeClearedAndLaunchFullScreen() {
         mDisplayAreaInfo.configuration.windowConfiguration.setWindowingMode(
                 WINDOWING_MODE_FREEFORM);
@@ -580,21 +579,6 @@ public class StageCoordinatorTests extends ShellTestCase {
         assertThat(mWctCaptor.getValue().getHierarchyOps().stream().filter(
                         HierarchyOp::isReparent).findFirst().get()
                 .getNewParent()).isNull();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FULL_SCREEN_WINDOW_ON_REMOVING_SPLIT_SCREEN_STAGE_BUGFIX)
-    public void startTasksOnSingleFreeformWindow_flagDisabled_noChangeToWindowingModeInWct() {
-        mDisplayAreaInfo.configuration.windowConfiguration.setWindowingMode(
-                WINDOWING_MODE_FREEFORM);
-        when(mRunningTaskInfo.getWindowingMode()).thenReturn(WINDOWING_MODE_FREEFORM);
-
-        mStageCoordinator.startTasks(mTaskId, null, INVALID_TASK_ID, null,
-                SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50, mRemoteTransition,
-                InstanceId.fakeInstanceId(0));
-
-        verify(mSplitScreenTransitions).startFullscreenTransition(mWctCaptor.capture(), any());
-        assertThat(mWctCaptor.getValue().getChanges()).isEmpty();
     }
 
     @Test
@@ -1029,10 +1013,11 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    public void closeTask_multipleChildren_returnsClosedTaskSplitRemained() {
+    public void closeTask_notAllTasksToBeVanished_returnsClosedTaskSplitRemained() {
         when(mStageCoordinator.isSplitActive()).thenReturn(true);
         mRunningTaskInfo.parentTaskId = mMainStage.mRootTaskInfo.taskId;
-        when(mMainStage.getChildCount()).thenReturn(2);
+        when(mMainStage.containsTask(mTaskId)).thenReturn(true);
+        when(mMainStage.areAllTasksToBeVanished()).thenReturn(false);
 
         assertThat(mStageCoordinator.closeTask(mTaskId)).isEqualTo(
                 CloseTaskResult.CLOSED_TASK_SPLIT_REMAINED);
@@ -1062,11 +1047,22 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    public void closeTask_singleChild_dismissesSplit() {
+    public void closeTask_markClosingTaskToBeVanished() {
         when(mStageCoordinator.isSplitActive()).thenReturn(true);
         mRunningTaskInfo.parentTaskId = mMainStage.mRootTaskInfo.taskId;
-        when(mMainStage.getChildCount()).thenReturn(1);
         when(mMainStage.containsTask(mTaskId)).thenReturn(true);
+
+        mStageCoordinator.closeTask(mTaskId);
+
+        verify(mMainStage).markToBeVanished(mTaskId);
+    }
+
+    @Test
+    public void closeTask_allTasksToBeVanished_dismissesSplit() {
+        when(mStageCoordinator.isSplitActive()).thenReturn(true);
+        mRunningTaskInfo.parentTaskId = mMainStage.mRootTaskInfo.taskId;
+        when(mMainStage.containsTask(mTaskId)).thenReturn(true);
+        when(mMainStage.areAllTasksToBeVanished()).thenReturn(true);
         mStageCoordinator.setSideStagePosition(SPLIT_POSITION_BOTTOM_OR_RIGHT, null);
 
         assertThat(mStageCoordinator.closeTask(mTaskId)).isEqualTo(

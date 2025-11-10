@@ -20,6 +20,7 @@ import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_C
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC;
 import static android.util.DisplayMetrics.DENSITY_HIGH;
 import static android.util.DisplayMetrics.DENSITY_MEDIUM;
+import static android.view.Display.INVALID_DISPLAY;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -31,14 +32,22 @@ import android.hardware.display.VirtualDisplay;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.Log;
 import android.util.SparseArray;
 
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.android.server.display.feature.flags.Flags;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -63,6 +72,7 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
     private static final int DISPLAY_ADDED = 1;
     private static final int DISPLAY_CHANGED = 2;
     private static final int DISPLAY_REMOVED = 3;
+    private static final int DISPLAY_SNAPSHOT = 4;
 
     private static final String TEST_PACKAGE =
             "com.android.servicestests.apps.displaymanagertestapp";
@@ -82,21 +92,25 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      */
     @GuardedBy("mLock")
     private SparseArray<DisplayBundle> mDisplayBundles;
+    private DisplayBundle mSnapshotBundle;
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     /**
      * Helper class to store VirtualDisplay and its corresponding display events expected to be
      * sent to DisplayEventActivity.
      */
     private static final class DisplayBundle {
-        private VirtualDisplay mVirtualDisplay;
+        private @Nullable VirtualDisplay mVirtualDisplay;
         private final int mDisplayId;
 
         // Display events we expect to receive before timeout
         private final LinkedBlockingQueue<Integer> mExpectations;
 
-        DisplayBundle(VirtualDisplay display) {
+        DisplayBundle(@Nullable VirtualDisplay display) {
             mVirtualDisplay = display;
-            mDisplayId = display.getDisplay().getDisplayId();
+            mDisplayId = display != null ? display.getDisplay().getDisplayId() : INVALID_DISPLAY;
             mExpectations = new LinkedBlockingQueue<>();
         }
 
@@ -178,6 +192,11 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
                 case MESSAGE_CALLBACK:
                     Log.i(TAG, "Callback " + msg.arg1 + " " + msg.arg2);
                     synchronized (mLock) {
+                        // arg2: display event type
+                        if (msg.arg2 == DISPLAY_SNAPSHOT) {
+                            mSnapshotBundle.addDisplayEvent(msg.arg2);
+                            break;
+                        }
                         // arg1: displayId
                         DisplayBundle bundle = mDisplayBundles.get(msg.arg1);
                         if (bundle != null) {
@@ -199,6 +218,7 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
         // The lock is not functionally necessary but eliminates lint error messages.
         synchronized (mLock) {
             mDisplayBundles = new SparseArray<>();
+            mSnapshotBundle = new DisplayBundle(null);
         }
     }
 
@@ -253,10 +273,17 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * Create virtual displays, change their configurations and release them. The number of
      * displays is set by the {@link #data()} parameter.
      */
-    private void testDisplayEventsInternal(boolean cached, boolean frozen) {
+    private void testDisplayEventsInternal(boolean cached, boolean frozen,
+            boolean isSnapshotEnabled) {
         Log.i(TAG, "Start test testDisplayEvents " + mDisplayCount + " " + cached + " " + frozen);
         // Launch DisplayEventActivity and start listening to display events
         int pid = launchTestActivity();
+
+        if (isSnapshotEnabled) {
+            mSnapshotBundle.waitDisplayEvent(DISPLAY_SNAPSHOT);
+        } else {
+            mSnapshotBundle.assertNoDisplayEvents();
+        }
 
         // The test activity in cached or frozen mode won't receive the pending display events.
         if (cached) {
@@ -335,8 +362,17 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * Create virtual displays, change their configurations and release them.
      */
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEvents() {
-        testDisplayEventsInternal(false, false);
+        testDisplayEventsInternal(
+                /* cached = */ false, /* frozen */ false, /* isSnapshotEnabled= */ false);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+    public void testDisplayEventsWithSnapshot() {
+        testDisplayEventsInternal(
+                /* cached = */ false, /* frozen */ false, /* isSnapshotEnabled= */ true);
     }
 
     /**
@@ -344,8 +380,17 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * moved to cached and the test verifies that no events are delivered to the cached app.
      */
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEventsCached() {
-        testDisplayEventsInternal(true, false);
+        testDisplayEventsInternal(
+                /* cached = */ true, /* frozen */ false, /* isSnapshotEnabled= */ false);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+    public void testDisplayEventsCachedWithSnapshot() {
+        testDisplayEventsInternal(
+                /* cached = */ true, /* frozen */ false, /* isSnapshotEnabled= */ true);
     }
 
     /**
@@ -353,9 +398,19 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * frozen and the test verifies that no events are delivered to the frozen app.
      */
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEventsFrozen() {
         assumeTrue(isAppFreezerEnabled());
-        testDisplayEventsInternal(false, true);
+        testDisplayEventsInternal(
+                /* cached = */ false, /* frozen */ true, /* isSnapshotEnabled= */ false);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+    public void testDisplayEventsFrozenWithSnapshot() {
+        assumeTrue(isAppFreezerEnabled());
+        testDisplayEventsInternal(
+                /* cached = */ false, /* frozen */ true, /* isSnapshotEnabled= */ true);
     }
 
     /**
@@ -363,9 +418,19 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * cached and frozen and the test verifies that no events are delivered to the app.
      */
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEventsCachedFrozen() {
         assumeTrue(isAppFreezerEnabled());
-        testDisplayEventsInternal(true, true);
+        testDisplayEventsInternal(
+                /* cached = */ true, /* frozen */ true, /* isSnapshotEnabled= */ false);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+    public void testDisplayEventsCachedFrozenWithSnapshot() {
+        assumeTrue(isAppFreezerEnabled());
+        testDisplayEventsInternal(
+                /* cached = */ true, /* frozen */ true, /* isSnapshotEnabled= */ true);
     }
 
     /**

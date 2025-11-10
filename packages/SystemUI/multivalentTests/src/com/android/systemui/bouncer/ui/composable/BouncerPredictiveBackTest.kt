@@ -19,7 +19,6 @@ package com.android.systemui.bouncer.ui.composable
 import android.app.AlertDialog
 import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
-import android.view.View
 import androidx.activity.BackEventCompat
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -76,7 +75,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.mock
 import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
@@ -114,8 +112,6 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
             sceneTransitionsBuilder,
         )
     }
-    private val view = mock<View>()
-
     private val transitionState by lazy {
         MutableStateFlow<ObservableTransitionState>(
             ObservableTransitionState.Idle(kosmos.sceneContainerConfig.initialSceneKey)
@@ -124,7 +120,7 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
 
     private val sceneContainerViewModel by lazy {
         kosmos.sceneContainerViewModelFactory
-            .create(view) {}
+            .create {}
             .apply { setTransitionState(transitionState) }
     }
 

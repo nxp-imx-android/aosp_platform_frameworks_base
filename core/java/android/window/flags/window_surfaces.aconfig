@@ -88,6 +88,7 @@ flag {
     name: "scvh_set_focusable_api"
     namespace: "window_surfaces"
     description: "Adds a focusable flag to SurfaceControlViewHost"
+    is_exported: true
     bug: "425415517"
 }
 

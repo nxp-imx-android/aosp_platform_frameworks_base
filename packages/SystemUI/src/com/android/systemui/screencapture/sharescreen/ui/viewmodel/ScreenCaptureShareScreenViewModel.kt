@@ -23,6 +23,7 @@ import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
@@ -31,7 +32,6 @@ import com.android.systemui.statusbar.featurepods.sharescreen.domain.interactor.
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import javax.inject.Provider
 import kotlinx.coroutines.coroutineScope
 
 class ScreenCaptureShareScreenViewModel
@@ -42,10 +42,10 @@ constructor(
     private val shareScreenPrivacyIndicatorInteractor: ShareScreenPrivacyIndicatorInteractor,
     @Assisted("thumbnailWidthPx") private val thumbnailWidthPx: Int,
     @Assisted("thumbnailHeightPx") private val thumbnailHeightPx: Int,
-    recentTasksViewModelProvider: Provider<RecentTasksViewModel>,
     appContentsViewModelFactory: AppContentsViewModel.Factory,
+    private val recentTasksViewModel: RecentTasksViewModel,
+    private val displaysViewModel: DisplaysViewModel,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
-    private val recentTasksViewModel = recentTasksViewModelProvider.get()
     private val appContentsViewModel =
         appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
 
@@ -60,6 +60,7 @@ constructor(
             when (type) {
                 is ScreenCaptureTarget.App -> recentTasksViewModel
                 is ScreenCaptureTarget.AppContent -> appContentsViewModel
+                is ScreenCaptureTarget.Fullscreen -> displaysViewModel
                 else ->
                     throw IllegalArgumentException("Unsupported ScreenCaptureTarget type: $type")
             }
@@ -72,10 +73,19 @@ constructor(
         when (val currentModel = currentTargetsModel) {
             is RecentTasksViewModel -> {
                 currentModel.selectedTarget.value?.let {
-                    shareScreenUiInteractor.onScreenSharingApproved(it.model.taskId)
+                    shareScreenUiInteractor.onAppSharingApproved(it.model.taskId)
                 }
             }
-            // TODO(b/423708479) Add the logic to support app content and fullscreen sharing.
+            is AppContentsViewModel -> {
+                currentModel.selectedTarget.value?.let {
+                    shareScreenUiInteractor.onAppContentSharingApproved(it.model.contentId)
+                }
+            }
+            is DisplaysViewModel -> {
+                currentModel.selectedTarget.value?.let {
+                    shareScreenUiInteractor.onDisplaySharingApproved(it.model.displayId)
+                }
+            }
             else -> throw IllegalStateException("Unsupported TargetsViewModel type: $currentModel")
         }
         shareScreenPrivacyIndicatorInteractor.showChip()
@@ -87,8 +97,9 @@ constructor(
 
     override suspend fun onActivated() {
         coroutineScope {
-            launchTraced("RecentTasksViewModel") { recentTasksViewModel.activate() }
             launchTraced("AppContentsViewModel") { appContentsViewModel.activate() }
+            launchTraced("RecentTasksViewModel") { recentTasksViewModel.activate() }
+            launchTraced("DisplaysViewModel") { displaysViewModel.activate() }
         }
     }
 

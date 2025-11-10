@@ -18,7 +18,6 @@ package com.android.wm.shell.windowdecor.viewholder.util
 import android.annotation.DimenRes
 import android.content.res.Resources
 import android.graphics.Rect
-import android.window.DesktopModeFlags
 import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId
 import com.android.wm.shell.R
 import com.android.wm.shell.windowdecor.common.DrawableInsets
@@ -99,7 +98,7 @@ class DefaultAppHeaderDimensions(private val resources: Resources) : AppHeaderDi
 
     override val customizableRegionMarginEnd: Int
         get() {
-            val numOfButtons = if (DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue) 3 else 2
+            val numOfButtons = 3
             return (windowControlButtonWidth + windowControlButtonMarginEnd) * numOfButtons +
                 customizableRegionEmptyDragSpace
         }

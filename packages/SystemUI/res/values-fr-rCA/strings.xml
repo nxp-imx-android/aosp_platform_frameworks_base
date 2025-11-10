@@ -170,9 +170,13 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Sélectionner une appli à partager"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Partager l\'audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Partager la fenêtre de l\'appli"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Partager un onglet"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
     <skip />
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Le contenu de votre écran est visible lors du partage"</string>
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Prendre une capture d\'écran de la fenêtre"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Enregistrer la fenêtre"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Prendre une capture d\'écran de la zone sélectionnée"</string>
@@ -254,8 +258,8 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Authentifié"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Annuler l\'authentification"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Plus d\'options"</string>
-    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Valider d\'une autre façon"</string>
-    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Valider d\'une autre façon"</string>
+    <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Confirmer d\'une autre façon"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Confirmer d\'une autre façon"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Gérer la Vérification d\'identité"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"En savoir plus sur la Vérification d\'identité"</string>
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"La Vérification d\'identité est activée et ne peut vérifier votre identité qu\'à l\'aide de votre empreinte digitale ou de votre visage. %1$s"</string>
@@ -946,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Les notifications d\'appel ne peuvent pas être modifiées."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Ce groupe de notifications ne peut pas être configuré ici"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Notification par mandataire"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Toutes les notifications de l\'appli <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"En voir plus"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"La notification a été automatiquement &lt;b&gt;élevée à la catégorie Par défaut&lt;/b&gt; par le système."</string>
@@ -1151,28 +1157,25 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu de l\'interrupteur"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> sur <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Activer <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <!-- syntax error in translation for accessibility_key_gesture_dialog_content (2409946187069273612) org.xmlpull.v1.XmlPullParserException: expected: /string read: annotation (position:END_TAG </annotation>@1:169 in     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Raccourci-clavier pour utiliser <xliff:g id="ID_4">^4</xliff:g> : "</annotation>"icône"<annotation id="action_key_icon">" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+)  -->
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Appuyez à nouveau sur <xliff:g id="ID_1">%1$s</xliff:g>+<xliff:g id="ID_2">%2$s</xliff:g>+<xliff:g id="ID_3">%3$s</xliff:g> pour activer <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Activer le raccourci-clavier <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ne pas activer"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Activer le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Raccourci-clavier activé : <xliff:g id="ID_1">%1$s</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"Raccourci-clavier pour utiliser <xliff:g id="ID_4">^4</xliff:g> (fonctionnalité d\'accessibilité) : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. Cette action vous permet de zoomer rapidement sur l\'écran pour agrandir le contenu. Raccourci-clavier pour régler le zoom une fois l\'agrandissement activé : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_5">^1</xliff:g>+<xliff:g id="ID_6">^2</xliff:g> et « + » ou « - »."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Désactiver le raccourci"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ne pas désactiver"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <!-- syntax error in translation for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) org.xmlpull.v1.XmlPullParserException: expected: /string read: annotation (position:END_TAG </annotation>@1:183 in     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"Raccourci-clavier pour utiliser <xliff:g id="ID_4">^4</xliff:g> : "</annotation>"icône"<annotation id="action_key_icon">" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> est un lecteur d\'écran qui vous permet d\'entendre les éléments lus à voix haute. Cela peut être utile aux personnes qui ont du mal à voir l\'écran. Cette fonctionnalité peut modifier le fonctionnement de votre appareil."</string>
+)  -->
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"En activant le raccourci-clavier, vous autoriserez TalkBack à contrôler complètement votre appareil."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Le contrôle total convient aux applis qui répondent à vos besoins d\'accessibilité. Il ne convient pas à la plupart des applis."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Afficher et contrôler l\'écran"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Cette fonctionnalité peut lire tout le contenu à l\'écran et afficher du contenu par-dessus d\'autres applis."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Afficher et effectuer des actions"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Cette fonctionnalité peut faire le suivi de vos interactions avec une appli ou un capteur matériel et interagir avec des applis en votre nom."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Raccourci-clavier pour activer <xliff:g id="ID_4">^4</xliff:g> (fonctionnalité d\'accessibilité) : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. Cette fonctionnalité vous permet de contrôler votre appareil en mode Mains libres."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accessibilité"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Terminé"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Écran de verrouillage"</string>
@@ -1600,7 +1603,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Gérer l\'accès"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Utilisé par un appel téléphonique"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Récemment utilisé par un appel téléphonique"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Utilisé par <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"En cours d\'utilisation par <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Récemment utilisé par <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Utilisé par <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Récemment utilisé par <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
@@ -1735,12 +1738,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Balayer l\'écran du haut vers la gauche pour ouvrir les notifications"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Balayez l\'écran du haut vers la droite pour ouvrir Paramètres rapides"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Retour"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Accessibilité"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Précédent"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Suivant"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"accéder à la page suivante"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"Remplir automatiquement"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"Développer"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

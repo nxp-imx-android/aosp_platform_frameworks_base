@@ -21,7 +21,6 @@ import android.content.pm.UserInfo
 import android.os.UserManager
 import android.util.SparseArray
 import android.window.DesktopExperienceFlags
-import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_HSUM
 import androidx.core.util.forEach
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopmode.data.DesktopRepository
@@ -74,9 +73,7 @@ class DesktopUserRepositories(
 
     init {
         userId = shellController.currentUserId
-        if (ENABLE_DESKTOP_WINDOWING_HSUM.isTrue) {
-            userIdToProfileIdsMap[userId] = userManager.getProfiles(userId).map { it.id }
-        }
+        userIdToProfileIdsMap[userId] = userManager.getProfiles(userId).map { it.id }
         if (desktopState.canEnterDesktopMode) {
             shellInit.addInitCallback(::onInit, this)
         }
@@ -85,10 +82,7 @@ class DesktopUserRepositories(
     private fun onInit() {
         repositoryInitializer.initialize(this)
         shellController.addUserChangeListener(this)
-        if (
-            ENABLE_DESKTOP_WINDOWING_HSUM.isTrue() &&
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             userId = shellController.currentUserId
             userIdToProfileIdsMap[userId] = shellController.currentUserProfiles.map { it.id }
         }
@@ -96,11 +90,9 @@ class DesktopUserRepositories(
 
     /** Returns [DesktopRepository] for the parent user id. */
     fun getProfile(profileId: Int): DesktopRepository {
-        if (ENABLE_DESKTOP_WINDOWING_HSUM.isTrue()) {
-            for ((uid, profileIds) in userIdToProfileIdsMap) {
-                if (profileId in profileIds) {
-                    return desktopRepoByUserId.getOrCreate(uid)
-                }
+        for ((uid, profileIds) in userIdToProfileIdsMap) {
+            if (profileId in profileIds) {
+                return desktopRepoByUserId.getOrCreate(uid)
             }
         }
         return desktopRepoByUserId.getOrCreate(profileId)
@@ -133,17 +125,13 @@ class DesktopUserRepositories(
     override fun onUserChanged(newUserId: Int, userContext: Context) {
         logD("onUserChanged previousUserId=%d, newUserId=%d", userId, newUserId)
         userId = newUserId
-        if (ENABLE_DESKTOP_WINDOWING_HSUM.isTrue()) {
-            sanitizeUsers()
-        }
+        sanitizeUsers()
     }
 
     override fun onUserProfilesChanged(profiles: MutableList<UserInfo>) {
         logD("onUserProfilesChanged profiles=%s", profiles.toString())
-        if (ENABLE_DESKTOP_WINDOWING_HSUM.isTrue()) {
-            // TODO(b/366397912): Remove all persisted profile data when the profile changes.
-            userIdToProfileIdsMap[userId] = profiles.map { it.id }
-        }
+        // TODO(b/366397912): Remove all persisted profile data when the profile changes.
+        userIdToProfileIdsMap[userId] = profiles.map { it.id }
     }
 
     private fun sanitizeUsers() {

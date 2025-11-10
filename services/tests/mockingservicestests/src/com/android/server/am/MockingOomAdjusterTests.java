@@ -799,7 +799,7 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     @Test
     public void testUpdateOomAdj_DoOne_FgService_ShortFgs() {
-        mService.mConstants.TOP_TO_FGS_GRACE_DURATION = 100_000;
+        mOomConstants.mTopToFgsGraceDuration = 100_000;
         mOomConstants.mShortFgsProcStateExtraWaitDuration = 200_000;
 
         ServiceRecord s = ServiceRecord.newEmptyInstanceForTest(mService);
@@ -834,8 +834,7 @@ public class MockingOomAdjusterTests {
             mProcessStateController.setHasForegroundServices(app.mServices, true,
                     FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, /* hasNoneType=*/false);
             mProcessStateController.startService(app.mServices, s);
-            app.setLastTopTime(SystemClock.uptimeMillis()
-                    - mService.mConstants.TOP_TO_FGS_GRACE_DURATION);
+            app.setLastTopTime(SystemClock.uptimeMillis() - mOomConstants.mTopToFgsGraceDuration);
             mService.mWakefulness.set(PowerManagerInternal.WAKEFULNESS_AWAKE);
 
             updateOomAdj(app);
@@ -862,8 +861,7 @@ public class MockingOomAdjusterTests {
             mProcessStateController.setHasForegroundServices(app.mServices, true,
                     FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, /* hasNoneType=*/false);
             mProcessStateController.startService(app.mServices, s);
-            app.setLastTopTime(SystemClock.uptimeMillis()
-                    - mService.mConstants.TOP_TO_FGS_GRACE_DURATION);
+            app.setLastTopTime(SystemClock.uptimeMillis() - mOomConstants.mTopToFgsGraceDuration);
             setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
 
             updateOomAdj(app);
@@ -1293,7 +1291,7 @@ public class MockingOomAdjusterTests {
             ServiceRecord s = bindService(app, system,
                     null, null, Context.BIND_ALMOST_PERCEPTIBLE + 2, mock(IBinder.class));
             mProcessStateController.setLastTopAlmostPerceptibleBindRequest(s,
-                    nowUptime - 2 * mService.mConstants.mServiceBindAlmostPerceptibleTimeoutMs);
+                    nowUptime - 2 * mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs);
             mProcessStateController.updateHasTopStartedAlmostPerceptibleServices(app.mServices);
             setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
             updateOomAdj(app);
@@ -1315,7 +1313,7 @@ public class MockingOomAdjusterTests {
             ServiceRecord s = bindService(app, system,
                     null, null, Context.BIND_ALMOST_PERCEPTIBLE, mock(IBinder.class));
             mProcessStateController.setLastTopAlmostPerceptibleBindRequest(s,
-                    nowUptime - 2 * mService.mConstants.mServiceBindAlmostPerceptibleTimeoutMs);
+                    nowUptime - 2 * mOomConstants.mServiceBindAlmostPerceptibleTimeoutMs);
             s.getConnections().clear();
             mProcessStateController.updateHasTopStartedAlmostPerceptibleServices(app.mServices);
             setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
@@ -3642,7 +3640,7 @@ public class MockingOomAdjusterTests {
         doReturn(new ArrayMap<IBinder, ArrayList<ConnectionRecord>>()).when(s2).getConnections();
         mProcessStateController.setStartRequested(s2, true);
         mProcessStateController.setServiceLastActivityTime(s2,
-                now - mService.mConstants.MAX_SERVICE_INACTIVITY - 1);
+                now - mOomConstants.mMaxServiceInactivity - 1);
 
         mProcessStateController.startService(app2.mServices, s2);
         mProcessStateController.setHasShownUi(app2, false);
@@ -3671,7 +3669,7 @@ public class MockingOomAdjusterTests {
         app.setAdjType(null);
         app.setSetAdj(UNKNOWN_ADJ);
         mProcessStateController.setServiceLastActivityTime(s,
-                now - mService.mConstants.MAX_SERVICE_INACTIVITY - 1);
+                now - mOomConstants.mMaxServiceInactivity - 1);
         updateOomAdj();
 
         assertProcStates(app, PROCESS_STATE_SERVICE, cachedAdj1,
@@ -3706,7 +3704,7 @@ public class MockingOomAdjusterTests {
         app.setSetAdj(UNKNOWN_ADJ);
         mProcessStateController.setHasShownUi(app, false);
         mProcessStateController.setServiceLastActivityTime(s,
-                now - mService.mConstants.MAX_SERVICE_INACTIVITY - 1);
+                now - mOomConstants.mMaxServiceInactivity - 1);
         updateOomAdj();
 
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,

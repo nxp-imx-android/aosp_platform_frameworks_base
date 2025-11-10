@@ -24,7 +24,6 @@ import android.view.Display;
 import android.view.SurfaceControl;
 
 import com.android.server.display.LocalDisplayAdapter.DisplayModeRecord;
-import com.android.server.display.feature.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -140,9 +139,6 @@ public class DisplayModeFactory {
     @SuppressWarnings("MixedMutabilityReturnType")
     static List<DisplayModeRecord> createAnisotropyCorrectedModes(List<DisplayModeRecord> records,
             SparseArray<SurfaceControl.DisplayMode> modeIdToSfMode) {
-        if (!Flags.enableAnisotropyCorrectedModes()) {
-            return Collections.emptyList();
-        }
         List<DisplayModeRecord> syntheticModes = new ArrayList<>();
         int modeFlag = Display.Mode.FLAG_SIZE_OVERRIDE | Display.Mode.FLAG_ANISOTROPY_CORRECTION;
         for (DisplayModeRecord record: records) {

@@ -38,6 +38,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.fakeBlurChoreographer
 import com.android.systemui.scene.sceneTransitionBlurViewModel
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.android.systemui.wallpapers.domain.interactor.fakeWallpaperRepository
@@ -113,6 +114,95 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun idleOnBouncerOnCommunal_mapsToCorrectBlurValue() =
+        kosmos.runTest {
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(Scenes.Communal, currentOverlays = setOf(Overlays.Bouncer)),
+                1f,
+            )
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 0.95f))
+        }
+
+    @Test
+    fun idleOnBouncerOnLockscreen_mapsToCorrectBlurValue() =
+        kosmos.runTest {
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(Scenes.Lockscreen, currentOverlays = setOf(Overlays.Bouncer)),
+                1f,
+            )
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 1f))
+        }
+
+    @Test
+    fun idleOnBouncerOnOccluded_mapsToCorrectBlurValue() =
+        kosmos.runTest {
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(Scenes.Occluded, currentOverlays = setOf(Overlays.Bouncer)),
+                1f,
+            )
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect)
+                .isEqualTo(BlurEffect(blurConfig.maxBlurRadiusPx, 1f))
+        }
+
+    @Test
+    fun idleOnBouncerOnQuickSettings_isIgnored() =
+        kosmos.runTest {
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(
+                    Scenes.QuickSettings,
+                    currentOverlays = setOf(Overlays.Bouncer),
+                ),
+                1f,
+            )
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect).isNull()
+        }
+
+    @Test
+    fun idleOnBouncerOnShade_isIgnored() =
+        kosmos.runTest {
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(Scenes.Shade, currentOverlays = setOf(Overlays.Bouncer)),
+                1f,
+            )
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect).isNull()
+        }
+
+    @Test
+    fun idleOnQuickSettingsOnGone_isIgnored() =
+        kosmos.runTest {
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(
+                    Scenes.Gone,
+                    currentOverlays = setOf(Overlays.QuickSettingsShade),
+                ),
+                1f,
+            )
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect).isNull()
+        }
+
+    @Test
+    fun idleOnNotificationShadeOnGone_isIgnored() =
+        kosmos.runTest {
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(
+                    Scenes.Gone,
+                    currentOverlays = setOf(Overlays.NotificationsShade),
+                ),
+                1f,
+            )
+
+            assertThat(fakeBlurChoreographer.lastAppliedBlurEffect).isNull()
+        }
+
+    @Test
     fun idleOnCommunal_mapsToMaxBlur() =
         kosmos.runTest {
             underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.Communal), 1f)
@@ -124,7 +214,13 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
     @Test
     fun idleOnQuickSettingsScene_isIgnored() =
         kosmos.runTest {
-            underTest.requestWindowBackgroundBlur(TransitionState.Idle(Scenes.QuickSettings), 1f)
+            underTest.requestWindowBackgroundBlur(
+                TransitionState.Idle(
+                    Scenes.QuickSettings,
+                    currentOverlays = setOf(Overlays.Bouncer),
+                ),
+                1f,
+            )
 
             assertThat(fakeBlurChoreographer.lastAppliedBlurEffect).isNull()
         }

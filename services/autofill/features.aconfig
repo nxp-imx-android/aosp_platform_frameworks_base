@@ -81,3 +81,10 @@ flag {
   description: "Supports expressive style for save dialog"
   bug: "438420324"
 }
+
+flag {
+  name: "public_autofill_service_name"
+  namespace: "autofill"
+  description: "Make autofill service name in context a public API"
+  bug: "390180715"
+}

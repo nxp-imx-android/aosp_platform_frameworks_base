@@ -332,12 +332,10 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             .addGlobalInsetsChangedListener(insetsChangedCaptor.capture())
         desktopModeOnInsetsChangedListener = insetsChangedCaptor.firstValue
         val recentsTransitionStateListenerCaptor = argumentCaptor<RecentsTransitionStateListener>()
-        if (Flags.enableDesktopRecentsTransitionsCornersBugfix()) {
-            verify(mockRecentsTransitionHandler)
-                .addTransitionStateListener(recentsTransitionStateListenerCaptor.capture())
-            desktopModeRecentsTransitionStateListener =
-                recentsTransitionStateListenerCaptor.firstValue
-        }
+        verify(mockRecentsTransitionHandler)
+            .addTransitionStateListener(recentsTransitionStateListenerCaptor.capture())
+        desktopModeRecentsTransitionStateListener =
+            recentsTransitionStateListenerCaptor.firstValue
         val keyguardChangedCaptor = argumentCaptor<DesktopModeKeyguardChangeListener>()
         verify(mockShellController).addKeyguardChangeListener(keyguardChangedCaptor.capture())
         desktopModeOnKeyguardChangedListener = keyguardChangedCaptor.firstValue

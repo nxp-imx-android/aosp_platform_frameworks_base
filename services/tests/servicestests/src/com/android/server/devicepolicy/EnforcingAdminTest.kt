@@ -30,6 +30,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.role.RoleManagerLocal
 import com.android.server.devicepolicy.EnforcingAdmin.ROLE_AUTHORITY_PREFIX
 import com.android.server.testutils.LocalManagerRegistryKeeperRule
+import com.android.testutils.assertNotEqualEitherWay
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.Rule
@@ -241,6 +242,36 @@ class EnforcingAdminTest {
         assertEquals(SYSTEM_USER_HANDLE, parcelableAdmin.userHandle)
         assertEquals(SYSTEM_AUTHORITY, parcelableAdmin.authority)
         assertEquals(SYSTEM_ENTITY, (parcelableAdmin.authority as SystemAuthority).systemEntity)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PACKAGE_AS_ADMIN_ID)
+    fun DpcAndDaAdmins_notEquals() {
+        val daAdmin = EnforcingAdmin.createDeviceAdminEnforcingAdmin(COMPONENT_NAME, SYSTEM_USER_ID)
+        val dpcAdmin = EnforcingAdmin.createEnterpriseEnforcingAdmin(COMPONENT_NAME, SYSTEM_USER_ID)
+
+        assertNotEqualEitherWay(daAdmin, dpcAdmin)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PACKAGE_AS_ADMIN_ID)
+    fun RoleAndDaAdmins_notEquals() {
+        val daAdmin = EnforcingAdmin.createDeviceAdminEnforcingAdmin(COMPONENT_NAME, SYSTEM_USER_ID)
+        val roleAdmin =
+            EnforcingAdmin.createRoleEnforcingAdmin(COMPONENT_NAME.packageName, SYSTEM_USER_ID)
+
+        assertNotEqualEitherWay(daAdmin, roleAdmin)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PACKAGE_AS_ADMIN_ID)
+    fun DpcAndRoleAdmins_equals() {
+        val dpcAdmin = EnforcingAdmin.createEnterpriseEnforcingAdmin(COMPONENT_NAME, SYSTEM_USER_ID)
+        val roleAdmin =
+            EnforcingAdmin.createRoleEnforcingAdmin(COMPONENT_NAME.packageName, SYSTEM_USER_ID)
+
+        assertEquals(dpcAdmin, roleAdmin)
+        assertEquals(dpcAdmin.hashCode(), roleAdmin.hashCode())
     }
 
     companion object {

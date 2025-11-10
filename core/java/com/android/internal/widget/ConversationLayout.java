@@ -1313,7 +1313,7 @@ public class ConversationLayout extends FrameLayout
                 }
             }
         }
-        if (android.app.Flags.cleanUpSpansAndNewLines() && conversationText != null) {
+        if (conversationText != null) {
             // remove formatting from title.
             conversationText = conversationText.toString();
         }

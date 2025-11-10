@@ -1498,7 +1498,7 @@ public class CarrierConfigManager {
      * {@code true}, merging a locally hosted conference call with a remotely hosted conference
      * into a multi-party anchor conference call is permitted, {@code false otherwise}.
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
     public static final String KEY_SUPPORT_MULTI_PARTY_ANCHOR_CONFERENCE_BOOL =
             "support_multi_anchor_conf_bool";
 
@@ -1967,6 +1967,15 @@ public class CarrierConfigManager {
      */
     public static final String KEY_APN_SETTINGS_DEFAULT_APN_TYPES_STRING_ARRAY =
             "apn_settings_default_apn_types_string_array";
+
+    /**
+     * Specifies disallowed substrings for the {@link android.provider.Telephony.Carriers.APN}.
+     *
+     * Note: If the preset APN contains these strings, then adding or editing is not allowed.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_CARRIER_CONFIG_APN_STRING_RESTRICTION)
+    public static final String KEY_DISALLOW_ADDING_APN_STRING_ARRAY =
+            "disallow_adding_apn_string_array";
 
     /**
      * Configs used for APN setup.
@@ -10299,6 +10308,19 @@ public class CarrierConfigManager {
             "carrier_roaming_satellite_default_services_int_array";
 
     /**
+     * Indicate whether carrier roaming satellite supports handover from T911 to ESOS.
+     *
+     * <p>This config will be read by Android Messaging application to determine whether to allow
+     * user to show the option of moving to eSOS when they try to send emergency message. This
+     * config requires {@link #KEY_SATELLITE_ESOS_SUPPORTED_BOOL} to be true as well.
+     *
+     * <p>The default value is false.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_CARRIER_ROAMING_SATELLITE_T911_TO_ESOS_HANDOVER_SUPPORTED_BOOL =
+            "carrier_roaming_satellite_t911_to_esos_handover_supported_bool";
+
+    /**
      * Indicate whether carrier roaming to satellite is using ESOS (Emergency SOS) which connects
      * to an emergency provider instead of PSAP (Public Safety Answering Point) for emergency
      * messaging.
@@ -11356,6 +11378,9 @@ public class CarrierConfigManager {
         sDefaults.putStringArray(KEY_READ_ONLY_APN_TYPES_STRING_ARRAY, new String[] {"dun"});
         sDefaults.putStringArray(KEY_READ_ONLY_APN_FIELDS_STRING_ARRAY, null);
         sDefaults.putStringArray(KEY_APN_SETTINGS_DEFAULT_APN_TYPES_STRING_ARRAY, null);
+        if (Flags.enableCarrierConfigApnStringRestriction()) {
+            sDefaults.putStringArray(KEY_DISALLOW_ADDING_APN_STRING_ARRAY, null);
+        }
         sDefaults.putAll(Apn.getDefaults());
 
         sDefaults.putBoolean(KEY_BROADCAST_EMERGENCY_CALL_STATE_CHANGES_BOOL, false);
@@ -11943,6 +11968,8 @@ public class CarrierConfigManager {
         sDefaults.putInt(KEY_EMERGENCY_CALL_TO_SATELLITE_T911_HANDOVER_TIMEOUT_MILLIS_INT,
                 (int) TimeUnit.SECONDS.toMillis(30));
         sDefaults.putString(KEY_SATELLITE_DISPLAY_NAME_STRING, "");
+        sDefaults.putBoolean(
+                KEY_CARRIER_ROAMING_SATELLITE_T911_TO_ESOS_HANDOVER_SUPPORTED_BOOL, false);
         sDefaults.putBoolean(KEY_SATELLITE_ESOS_SUPPORTED_BOOL, false);
         sDefaults.putBoolean(KEY_SATELLITE_ROAMING_P2P_SMS_SUPPORTED_BOOL, false);
         sDefaults.putString(KEY_SATELLITE_NIDD_APN_NAME_STRING, "");

@@ -558,11 +558,15 @@ constructor(
             .flowOn(bgDispatcher)
 
     override val canShowOngoingActivityChips: Flow<Boolean> =
-        combine(isHomeStatusBarAllowed, shouldHideStatusBarForSecureCamera) {
-            isHomeStatusBarAllowed,
-            shouldHideStatusBarForSecureCamera ->
-            isHomeStatusBarAllowed && !shouldHideStatusBarForSecureCamera
-        }
+        combine(
+                isHomeStatusBarAllowed,
+                shouldHideStatusBarForSecureCamera,
+                desktopInteractor.useDesktopStatusBar,
+            ) { isHomeStatusBarAllowed, shouldHideStatusBarForSecureCamera, useDesktopStatusBar ->
+                (isHomeStatusBarAllowed && !shouldHideStatusBarForSecureCamera) ||
+                    useDesktopStatusBar
+            }
+            .distinctUntilChanged()
 
     private val chipsVisibilityModel: StateFlow<ChipsVisibilityModel> =
         combine(ongoingActivityChipsViewModel.chips, canShowOngoingActivityChips) { chips, canShow

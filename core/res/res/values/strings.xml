@@ -959,6 +959,9 @@
     <!-- Text shown when viewing channel settings for notifications related to displays -->
     <string name="notification_channel_display">Display</string>
 
+    <!-- Text shown when viewing channel settings for notifications related to parental controls -->
+    <string name="notification_channel_parental_controls">Parental controls</string>
+
     <!-- Label for foreground service notification when one app is running.
     [CHAR LIMIT=NONE BACKUP_MESSAGE_ID=6826789589341671842] -->
     <string name="foreground_service_app_in_background"><xliff:g id="app_name">%1$s</xliff:g> is
@@ -2784,6 +2787,9 @@
 
     <!-- Instructions telling the user how to unlock the phone. -->
     <string name="keyguard_label_text">To unlock, press Menu then 0.</string>
+
+    <!-- This can be used in any application wanting to disable the text "Emergency number" -->
+    <string name="emergency_call_dialog_number_for_display">Emergency number</string>
 
     <!--
        *** touch based lock / unlock ***

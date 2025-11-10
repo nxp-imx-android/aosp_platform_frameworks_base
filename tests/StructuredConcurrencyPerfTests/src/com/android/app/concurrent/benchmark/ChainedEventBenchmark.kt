@@ -16,7 +16,6 @@
 package com.android.app.concurrent.benchmark
 
 import androidx.benchmark.BlackHole
-import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.ConcurrentBenchmarkRule
 import com.android.app.concurrent.benchmark.event.BaseEventBenchmark
 import com.android.app.concurrent.benchmark.event.BaseKairosEventBenchmark
@@ -92,7 +91,6 @@ private sealed interface ChainedEventBenchmark<T, E : Any>
                         return@result "$receivedVal == $n + $chainLength"
                     },
             )
-            @OptIn(ExperimentalBlackHoleApi::class)
             afterLastIteration { BlackHole.consume(receivedVal) }
         }
     }

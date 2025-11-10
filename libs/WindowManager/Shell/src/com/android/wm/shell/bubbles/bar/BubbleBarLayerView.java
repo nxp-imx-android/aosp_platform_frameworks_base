@@ -20,7 +20,8 @@ import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
-import static com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_EXPANDED_SCRIM_ALPHA;
+import static com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_BAR_EXPANDED_SCRIM_ALPHA;
+import static com.android.wm.shell.shared.bubbles.ContextUtils.isRtl;
 
 import android.annotation.Nullable;
 import android.content.Context;
@@ -153,7 +154,7 @@ public class BubbleBarLayerView extends FrameLayout
     private void setupDropTargetManager() {
         mDropTargetManager = new DropTargetManager(getContext(), this,
                 new DropTargetManager.DragZoneChangedListener() {
-                    private DragZone mLastBubbleLocationDragZone = null;
+                    private BubbleBarLocation mBubbleBarLocation = BubbleBarLocation.DEFAULT;
                     private BubbleBarLocation mInitialLocation = null;
 
                     @Override
@@ -163,25 +164,14 @@ public class BubbleBarLayerView extends FrameLayout
                             return;
                         }
 
-                        final boolean isBubbleLeft = zone instanceof DragZone.Bubble.Left;
-                        final boolean isBubbleRight = zone instanceof DragZone.Bubble.Right;
-                        if (!isBubbleLeft && !isBubbleRight) {
-                            // If we didn't finish the "change" animation make sure to animate
-                            // it back to the right spot
-                            mBubbleController.animateBubbleBarLocation(mInitialLocation);
-                        }
                         if (zone instanceof DragZone.FullScreen) {
                             ((Bubble) mExpandedBubble).getTaskView().moveToFullscreen();
-                        }
-                        if (isBubbleLeft) {
+                        } else if (zone instanceof DragZone.Dismiss) {
+                            mExpandedView.setContentVisibility(false);
+                        } else if (zone instanceof DragZone.Bubble.Left) {
                             onRelease(BubbleBarLocation.LEFT);
-                        } else if (isBubbleRight) {
+                        } else if (zone instanceof DragZone.Bubble.Right) {
                             onRelease(BubbleBarLocation.RIGHT);
-                        } else {
-                            // Make sure location change listener is updated with the initial
-                            // location -- even if we "switched sides" during the drag, since we
-                            // didn't actually drop in a bubble zone, the location shouldn't change.
-                            onRelease(mInitialLocation);
                         }
                     }
 
@@ -190,6 +180,7 @@ public class BubbleBarLayerView extends FrameLayout
                         mInitialLocation = dragZone instanceof DragZone.Bubble.Left
                                 ? BubbleBarLocation.LEFT
                                 : BubbleBarLocation.RIGHT;
+                        mBubbleBarLocation = mInitialLocation;
                     }
 
                     @Override
@@ -197,13 +188,23 @@ public class BubbleBarLayerView extends FrameLayout
                             @Nullable DragZone from, @Nullable DragZone to) {
                         final boolean isBubbleLeft = to instanceof DragZone.Bubble.Left;
                         final boolean isBubbleRight = to instanceof DragZone.Bubble.Right;
-                        if ((isBubbleLeft || isBubbleRight)
-                                && to != mLastBubbleLocationDragZone) {
-                            mLastBubbleLocationDragZone = to;
-                            mBubbleController.animateBubbleBarLocation(isBubbleLeft
-                                    ? BubbleBarLocation.LEFT
-                                    : BubbleBarLocation.RIGHT);
+                        final boolean inDismissZone = to instanceof DragZone.Dismiss;
 
+                        if (isBubbleLeft && mBubbleBarLocation != BubbleBarLocation.LEFT) {
+                            mBubbleBarLocation = BubbleBarLocation.LEFT;
+                            mBubbleController.animateBubbleBarLocation(BubbleBarLocation.LEFT);
+                        } else if (isBubbleRight && mBubbleBarLocation != BubbleBarLocation.RIGHT) {
+                            mBubbleBarLocation = BubbleBarLocation.RIGHT;
+                            mBubbleController.animateBubbleBarLocation(BubbleBarLocation.RIGHT);
+                        } else if (inDismissZone) {
+                            final boolean lastBubbleLocationDifferentFromInitial =
+                                    BubbleBarLocation.isDifferentSides(
+                                            mBubbleBarLocation, mInitialLocation,
+                                            isRtl(BubbleBarLayerView.this.getContext()));
+                            if (lastBubbleLocationDifferentFromInitial) {
+                                mBubbleBarLocation = mInitialLocation;
+                                mBubbleController.animateBubbleBarLocation(mInitialLocation);
+                            }
                         }
                     }
 
@@ -671,7 +672,7 @@ public class BubbleBarLayerView extends FrameLayout
         if (show) {
             mScrimView.animate()
                     .setInterpolator(ALPHA_IN)
-                    .alpha(BUBBLE_EXPANDED_SCRIM_ALPHA)
+                    .alpha(BUBBLE_BAR_EXPANDED_SCRIM_ALPHA)
                     .start();
         } else {
             mScrimView.animate()

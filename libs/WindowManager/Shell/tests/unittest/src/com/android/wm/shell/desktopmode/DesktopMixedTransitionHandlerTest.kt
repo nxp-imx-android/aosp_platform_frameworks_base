@@ -285,28 +285,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP,
-        Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun startLaunchTransition_immersiveAndAppLaunchFlagsDisabled_doesNotUseMixedHandler() {
-        val wct = WindowContainerTransaction()
-        val task = createTask(WINDOWING_MODE_FREEFORM)
-        whenever(transitions.startTransition(eq(TRANSIT_OPEN), eq(wct), anyOrNull()))
-            .thenReturn(Binder())
-
-        mixedHandler.startLaunchTransition(
-            transitionType = TRANSIT_OPEN,
-            wct = wct,
-            taskId = task.taskId,
-            exitingImmersiveTask = null,
-        )
-
-        verify(transitions).startTransition(TRANSIT_OPEN, wct, /* handler= */ null)
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun startLaunchTransition_immersiveMixEnabled_usesMixedHandler() {
         val wct = WindowContainerTransaction()
@@ -325,7 +303,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX)
     fun startLaunchTransition_desktopAppLaunchEnabled_usesMixedHandler() {
         val wct = WindowContainerTransaction()
         val task = createTask(WINDOWING_MODE_FREEFORM)
@@ -421,7 +398,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX)
     fun startAndAnimateLaunchTransition_noMinimizeChange_doesNotReparentMinimizeChange() {
         val wct = WindowContainerTransaction()
         val launchingTask = createTask(WINDOWING_MODE_FREEFORM)
@@ -447,7 +423,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX)
     fun startAndAnimateLaunchTransition_withMinimizeChange_reparentsMinimizeChange() {
         val wct = WindowContainerTransaction()
         val launchingTask = createTask(WINDOWING_MODE_FREEFORM)
@@ -476,10 +451,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX,
-    )
     fun startAndAnimateLaunchTransition_withMinimizeChange_wrongTaskId_reparentsMinimizeChange() {
         val wct = WindowContainerTransaction()
         val launchingTask = createTask(WINDOWING_MODE_FREEFORM)
@@ -508,7 +479,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX)
     fun startAnimation_pendingTransition_noLaunchChange_returnsFalse() {
         val wct = WindowContainerTransaction()
         val launchingTask = createTask(WINDOWING_MODE_FREEFORM)
@@ -753,7 +723,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX)
     fun addPendingAndAnimateLaunchTransition_noMinimizeChange_doesNotReparentMinimizeChange() {
         val wct = WindowContainerTransaction()
         val launchingTask = createTask(WINDOWING_MODE_FREEFORM)
@@ -782,7 +751,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX)
     fun addPendingAndAnimateLaunchTransition_withMinimizeChange_reparentsMinimizeChange() {
         val wct = WindowContainerTransaction()
         val launchingTask = createTask(WINDOWING_MODE_FREEFORM)

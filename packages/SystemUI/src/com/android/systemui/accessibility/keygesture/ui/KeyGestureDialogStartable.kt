@@ -17,6 +17,7 @@
 package com.android.systemui.accessibility.keygesture.ui
 
 import android.annotation.StringRes
+import android.content.ComponentName
 import android.content.Context
 import android.hardware.input.KeyGestureEvent
 import android.text.Annotation
@@ -46,6 +47,7 @@ import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.theme.PlatformTheme
 import com.android.hardware.input.Flags
+import com.android.internal.accessibility.util.AccessibilityUtils
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.CoreStartable
@@ -129,12 +131,22 @@ constructor(
      * Delegate for the screen reader shortcut, which extends the base behavior by adding a
      * Text-to-Speech prompt for accessibility.
      */
-    private class ScreenReaderDialogDelegate(interactor: KeyGestureDialogInteractor) :
-        BaseDialogDelegate(interactor) {
+    private class ScreenReaderDialogDelegate(
+        private val context: Context,
+        interactor: KeyGestureDialogInteractor,
+    ) : BaseDialogDelegate(interactor) {
         private var ttsPrompt: TtsPrompt? = null
 
         override fun onDialogCreated(info: KeyGestureConfirmInfo) {
-            info.ttsText?.let { text -> ttsPrompt = interactor.createTtsPromptForText(text) }
+            ComponentName.unflattenFromString(info.targetName)
+                ?.flattenToString()
+                ?.takeUnless { AccessibilityUtils.isAccessibilityServiceEnabled(context, it) }
+                ?.let {
+                    info.ttsText?.let { text ->
+                        ttsPrompt = interactor.createTtsPromptForText(text)
+                    }
+                }
+
             interactor.enableShortcutsForTargets(enable = true, info.targetName)
         }
 
@@ -176,7 +188,10 @@ constructor(
         }
     }
 
-    private fun getDialogDelegate(keyGestureType: Int): DialogBehaviorDelegate {
+    private fun getDialogDelegate(
+        dialogContext: Context,
+        keyGestureType: Int,
+    ): DialogBehaviorDelegate {
         return when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION ->
                 if (Flags.enableMagnifyMagnificationKeyGestureDialog()) {
@@ -186,7 +201,7 @@ constructor(
                 }
 
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER ->
-                ScreenReaderDialogDelegate(interactor)
+                ScreenReaderDialogDelegate(dialogContext, interactor)
 
             else -> DefaultDialogDelegate(interactor)
         }
@@ -254,7 +269,7 @@ constructor(
                 dialogContext = context.createDisplayContext(displayToMagnify)
             }
         }
-        val delegate = getDialogDelegate(keyGestureConfirmInfo.keyGestureType)
+        val delegate = getDialogDelegate(dialogContext, keyGestureConfirmInfo.keyGestureType)
 
         currentDialog =
             dialogFactory.create(context = dialogContext) { dialog ->

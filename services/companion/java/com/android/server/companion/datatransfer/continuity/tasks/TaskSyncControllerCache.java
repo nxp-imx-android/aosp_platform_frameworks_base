@@ -18,6 +18,7 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 
 import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
+import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import com.android.server.LocalServices;
@@ -32,7 +33,9 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    private final AppOpsManager mAppOps;
     private final PackageManager mPackageManager;
+    private final RemoteTaskFactory mRemoteTaskFactory;
 
     public TaskSyncControllerCache(
             @NonNull Context context, @NonNull TaskContinuityMessenger taskContinuityMessenger) {
@@ -43,6 +46,8 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
         mActivityTaskManagerInternal =
                 Objects.requireNonNull(LocalServices.getService(ActivityTaskManagerInternal.class));
         mPackageManager = Objects.requireNonNull(context.getPackageManager());
+        mAppOps = Objects.requireNonNull(context.getSystemService(AppOpsManager.class));
+        mRemoteTaskFactory = new RemoteTaskFactory(mContext, mPackageManager);
     }
 
     @Override
@@ -56,10 +61,12 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
                                 userId,
                                 mActivityTaskManager,
                                 mActivityTaskManagerInternal,
-                                mPackageManager)),
+                                mPackageManager,
+                                mAppOps)),
                 new RemoteTaskStore(),
                 new RemoteTaskListenerHolder(),
                 mActivityTaskManager,
-                mActivityTaskManagerInternal);
+                mActivityTaskManagerInternal,
+                mRemoteTaskFactory);
     }
 }

@@ -61,7 +61,6 @@ val Kosmos.keyguardSmartspaceSection: SmartspaceSection by
             smartspaceController = lockscreenSmartspaceController,
             keyguardUnlockAnimationController = keyguardUnlockAnimationController,
             blueprintInteractor = { keyguardBlueprintInteractor },
-            keyguardRootViewModel = keyguardRootViewModel,
         )
     }
 

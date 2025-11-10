@@ -23,6 +23,7 @@ import static android.os.VibrationAttributes.USAGE_CLASS_MASK;
 import static android.os.Trace.TRACE_TAG_APP;
 import static android.os.Trace.TRACE_TAG_VIEW;
 import static android.service.autofill.Flags.FLAG_AUTOFILL_CREDMAN_DEV_INTEGRATION;
+import static android.service.autofill.Flags.getAutofillViewIdFromAutofillManager;
 import static android.view.ContentInfo.SOURCE_DRAG_AND_DROP;
 import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH;
 import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH_HINT;
@@ -12026,6 +12027,24 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         if (mAutofillViewId == NO_ID) {
             mAutofillViewId = mContext.getNextAutofillId();
         }
+
+        // There is a chance AutofillManager is created with activity context, in which case
+        // autofill could still work.
+        if (getAutofillViewIdFromAutofillManager()
+                && mAutofillViewId <= LAST_APP_AUTOFILL_ID) {
+            AutofillManager afm = getAutofillManager();
+            if (afm != null) {
+                int autofillViewId = afm.getNextAutofillViewId();
+                if (autofillViewId > LAST_APP_AUTOFILL_ID) {
+                    if (DBG) {
+                        Log.d(AUTOFILL_LOG_TAG, "getAutofillViewId(): Using autofill view id "
+                                + "created from autofill manager");
+                    }
+                    mAutofillViewId = autofillViewId;
+                }
+            }
+        }
+
         return mAutofillViewId;
     }
 
@@ -29660,8 +29679,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         Point shadowTouchPoint = new Point();
         shadowBuilder.onProvideShadowMetrics(shadowSize, shadowTouchPoint);
 
-        if ((shadowSize.x < 0) || (shadowSize.y < 0)
-                || (shadowTouchPoint.x < 0) || (shadowTouchPoint.y < 0)) {
+        if ((shadowSize.x < 0) || (shadowSize.y < 0)) {
             throw new IllegalStateException("Drag shadow dimensions must not be negative");
         }
         final float overrideInvScale = CompatibilityInfo.getOverrideInvertedScale();

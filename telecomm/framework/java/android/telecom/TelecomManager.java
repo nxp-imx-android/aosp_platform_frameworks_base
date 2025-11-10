@@ -341,6 +341,24 @@ public class TelecomManager {
     @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
     public static final String EXTRA_UUID = "android.telecom.extra.UUID";
 
+    /**
+     * An optional {@link Intent} extra used with {@link #ACTION_CALL_BACK} to specify
+     * the desired call type for the callback.
+     *
+     * <p>The value must be one of {@link android.telecom.CallAttributes#AUDIO_CALL},
+     * {@link android.telecom.CallAttributes#VIDEO_CALL}, or
+     * {@link android.telecom.CallAttributes#MESSAGING}.</p>
+     *
+     * <p>Type: int</p>
+     *
+     * <p>When an application receives an {@link #ACTION_CALL_BACK} intent, it should check
+     * for this extra. If present, the application should attempt to initiate the callback
+     * using the specified call type. If this extra is not provided, the application should
+     * default to using the original call type associated with the call.</p>
+     */
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS_STAGE2)
+    public static final String EXTRA_CALL_TYPE = "android.telecom.extra.CALL_TYPE";
+
     // Values for EXTRA_PRIORITY
     /**
      * Indicates the call composer call priority is normal.
@@ -2632,6 +2650,7 @@ public class TelecomManager {
      *   <li>{@link #EXTRA_PHONE_ACCOUNT_HANDLE}</li>
      *   <li>{@link #EXTRA_START_CALL_WITH_SPEAKERPHONE}</li>
      *   <li>{@link #EXTRA_START_CALL_WITH_VIDEO_STATE}</li>
+     *   <li>{@link #EXTRA_CALL_TYPE}</li>
      * </ul>
      * <p>
      * An app which implements the self-managed {@link ConnectionService} API uses
@@ -3412,8 +3431,9 @@ public class TelecomManager {
             return mTelecomServiceOverride;
         }
         if (sTelecomService == null) {
-            ITelecomService temp = ITelecomService.Stub.asInterface(
-                    ServiceManager.getService(Context.TELECOM_SERVICE));
+            ITelecomService temp =
+                    ITelecomService.Stub.asInterface(
+                            ServiceManager.getService(Context.TELECOM_SERVICE));
             synchronized (CACHE_LOCK) {
                 if (sTelecomService == null && temp != null) {
                     try {

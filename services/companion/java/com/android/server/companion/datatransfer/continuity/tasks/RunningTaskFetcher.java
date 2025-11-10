@@ -18,18 +18,16 @@ package com.android.server.companion.datatransfer.continuity.tasks;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.ActivityTaskManager;
 import android.app.ActivityManager.RunningTaskInfo;
-import android.content.pm.PackageManager;
+import android.app.ActivityTaskManager;
+import android.app.AppOpsManager;
+import android.app.HandoffActivityParams;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.util.Slog;
-
-import com.android.server.LocalServices;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
-import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadata;
-import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadataCache;
 import com.android.server.wm.ActivityTaskManagerInternal;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,38 +39,25 @@ import java.util.stream.Collectors;
  */
 public class RunningTaskFetcher {
 
-    private static final String TAG = "RunningTaskFetcher";
+    private static final String TAG = RunningTaskFetcher.class.getSimpleName();
 
     private final int mUserId;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final PackageManager mPackageManager;
-    private final PackageMetadataCache mPackageMetadataCache;
-
-    public RunningTaskFetcher(
-            int userId,
-            @NonNull ActivityTaskManager activityTaskManager,
-            @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-            @NonNull PackageManager packageManager) {
-        this(
-                userId,
-                Objects.requireNonNull(activityTaskManager),
-                Objects.requireNonNull(activityTaskManagerInternal),
-                Objects.requireNonNull(packageManager),
-                new PackageMetadataCache(Objects.requireNonNull(packageManager)));
-    }
+    private final AppOpsManager mAppOps;
 
     public RunningTaskFetcher(
             int userId,
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
             @NonNull PackageManager packageManager,
-            @NonNull PackageMetadataCache packageMetadataCache) {
+            @NonNull AppOpsManager appOps) {
         mUserId = userId;
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
         mPackageManager = Objects.requireNonNull(packageManager);
-        mPackageMetadataCache = Objects.requireNonNull(packageMetadataCache);
+        mAppOps = Objects.requireNonNull(appOps);
     }
 
     @Nullable
@@ -112,21 +97,26 @@ public class RunningTaskFetcher {
         }
 
         String packageName = taskInfo.baseActivity.getPackageName();
-        PackageMetadata packageMetadata = mPackageMetadataCache.getMetadataForPackage(packageName);
-        if (packageMetadata == null) {
-            Slog.w(TAG, "Could not get package metadata for task: " + taskInfo.taskId);
-            return null;
-        }
 
         boolean isHandoffEnabled =
                 mActivityTaskManagerInternal.isHandoffEnabledForTask(taskInfo.taskId);
+        if (!isHandoffEnabled) {
+            return null;
+        }
+
+        boolean requirePackageInstalled = true;
+        HandoffActivityParams params =
+                mActivityTaskManagerInternal.getHandoffActivityParamsForTask(taskInfo.taskId);
+        if (params != null) {
+            requirePackageInstalled = params.isAllowHandoffWithoutPackageInstalled();
+        }
 
         return new RemoteTaskInfo(
                 taskInfo.taskId,
-                packageMetadata.label(),
+                packageName,
+                taskInfo.isVisible(),
                 taskInfo.lastActiveTime,
-                packageMetadata.icon(),
-                isHandoffEnabled);
+                new HandoffOptions(isHandoffEnabled, requirePackageInstalled));
     }
 
     @NonNull
@@ -159,6 +149,18 @@ public class RunningTaskFetcher {
         if (defaultLauncherPackage == null) {
             Slog.w(TAG, "Could not get default launcher package");
             return true;
+        }
+
+        if (mAppOps.noteOpNoThrow(
+                        AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
+                        taskInfo.userId,
+                        taskInfo.baseActivity.getPackageName())
+                != AppOpsManager.MODE_ALLOWED) {
+            Slog.w(
+                    TAG,
+                    "AppOpsManager.OP_CONTINUE_ACROSS_DEVICES is not allowed for task: "
+                            + taskInfo.taskId);
+            return false;
         }
 
         return !defaultLauncherPackage.equals(taskInfo.baseActivity.getPackageName());

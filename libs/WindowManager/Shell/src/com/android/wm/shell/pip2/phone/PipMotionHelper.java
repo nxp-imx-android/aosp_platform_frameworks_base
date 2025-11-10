@@ -44,6 +44,7 @@ import com.android.wm.shell.animation.FloatProperties;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.pip.PipAppOpsListener;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipPerfHintController;
 import com.android.wm.shell.common.pip.PipSnapAlgorithm;
@@ -88,6 +89,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
     @NonNull private final PipDisplayLayoutState mPipDisplayLayoutState;
     @NonNull private final PipScheduler mPipScheduler;
     @NonNull private final PipTransitionState mPipTransitionState;
+    private final PipDesktopState mPipDesktopState;
     @NonNull private final PipUiEventLogger mPipUiEventLogger;
     private final PhonePipMenuController mMenuController;
     private final PipSnapAlgorithm mSnapAlgorithm;
@@ -177,6 +179,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
             PipTransitionState pipTransitionState,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipDesktopState pipDesktopState,
             PipUiEventLogger pipUiEventLogger,
             PipDisplayLayoutState pipDisplayLayoutState) {
         mContext = context;
@@ -196,6 +199,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipUiEventLogger = pipUiEventLogger;
         mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
+        mPipDesktopState = pipDesktopState;
         mPipDisplayLayoutState = pipDisplayLayoutState;
         mPipDisplayLayoutState.addDisplayIdListener(this);
     }
@@ -456,13 +460,20 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
             velocityX = (motionCenterX < displayCenterX) ? -0.001f : 0.001f;
         }
 
+        final Rect boundsInMotion = mPipBoundsState.getMotionBoundsState().getBoundsInMotion();
+        // Always snap to a horizontal edge if
+        // 1) free-floating PiP is not enabled, or
+        // 2) free-floating PiP is enabled, but we are dragging past the display bounds
+        final boolean snapToXEdge = !mPipDesktopState.isFreeFloatingPipEnabled()
+                || boundsInMotion.left < 0
+                || boundsInMotion.right > mPipBoundsState.getDisplayBounds().right;
         mTemporaryBoundsPhysicsAnimator
                 .spring(FloatProperties.RECT_WIDTH, getBounds().width(), mSpringConfig)
                 .spring(FloatProperties.RECT_HEIGHT, getBounds().height(), mSpringConfig)
                 .flingThenSpring(
                         FloatProperties.RECT_X, velocityX,
                         isStash ? mStashConfigX : mFlingConfigX,
-                        mSpringConfig, true /* flingMustReachMinOrMax */)
+                        mSpringConfig, snapToXEdge /* flingMustReachMinOrMax */)
                 .flingThenSpring(
                         FloatProperties.RECT_Y, velocityY, mFlingConfigY, mSpringConfig);
 
@@ -476,7 +487,9 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
                 - insetBounds.right
                 : mPipBoundsState.getMovementBounds().right;
 
-        final float xEndValue = velocityX < 0 ? leftEdge : rightEdge;
+        final float xEndValue = snapToXEdge
+                ? (velocityX < 0 ? leftEdge : rightEdge)
+                : boundsInMotion.left;
 
         final int startValueY = mPipBoundsState.getMotionBoundsState().getBoundsInMotion().top;
         final float estimatedFlingYEndValue =

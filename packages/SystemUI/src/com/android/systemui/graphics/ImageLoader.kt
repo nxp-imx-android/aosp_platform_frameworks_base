@@ -68,8 +68,10 @@ constructor(
     }
 
     /** Load image from a Uri. */
-    data class Uri(val uri: android.net.Uri) : Source {
-        constructor(uri: String) : this(android.net.Uri.parse(uri))
+    data class Uri(val uri: android.net.Uri, val context: Context?) : Source {
+        constructor(uri: String) : this(android.net.Uri.parse(uri), null)
+
+        constructor(uri: android.net.Uri) : this(uri, null)
     }
 
     /** Load image from a [File]. */
@@ -466,7 +468,10 @@ constructor(
                     ImageDecoder.createSource(context.resources, source.resId)
                 }
                 is File -> ImageDecoder.createSource(source.file)
-                is Uri -> ImageDecoder.createSource(defaultContext.contentResolver, source.uri)
+                is Uri -> {
+                    val context = source.context ?: defaultContext
+                    ImageDecoder.createSource(context.contentResolver, source.uri)
+                }
                 is InputStream -> {
                     val context = source.context ?: defaultContext
                     ImageDecoder.createSource(context.resources, source.inputStream)
@@ -489,14 +494,14 @@ constructor(
             if (width > DEFAULT_DECODE_HARD_LIMIT_PX || height > DEFAULT_DECODE_HARD_LIMIT_PX) {
                 Log.e(
                     TAG,
-                    "Image dimensions (${width}x${height}) " +
+                    "Image dimensions (${width}x$height) " +
                         "exceed the maximum " +
                         "${DEFAULT_DECODE_HARD_LIMIT_PX}x${DEFAULT_DECODE_HARD_LIMIT_PX}",
                 )
                 // The image is larger than what we can reasonably expect to decode without filling
                 // up the device memory, so let's bail.
                 throw OversizedImageException(
-                    "Image dimensions (${width}x${height}) exceed the maximum allowed size."
+                    "Image dimensions (${width}x$height) exceed the maximum allowed size."
                 )
             }
 

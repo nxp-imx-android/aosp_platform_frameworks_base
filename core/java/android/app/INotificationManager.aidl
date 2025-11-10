@@ -180,6 +180,7 @@ interface INotificationManager
     void setInterruptionFilter(String pkg, int interruptionFilter, boolean fromUser);
 
     NotificationChannel createConversationNotificationChannelForPackageFromPrivilegedListener(in INotificationListener token, String pkg, in UserHandle user, String parentChannelId, String conversationId);
+    void deleteConversationNotificationChannelFromPrivilegedListener(in INotificationListener token, String pkg, in UserHandle user, String channelId);
     void updateNotificationChannelFromPrivilegedListener(in INotificationListener token, String pkg, in UserHandle user, in NotificationChannel channel);
     ParceledListSlice getNotificationChannelsFromPrivilegedListener(in INotificationListener token, String pkg, in UserHandle user);
     ParceledListSlice getNotificationChannelGroupsFromPrivilegedListener(in INotificationListener token, String pkg, in UserHandle user);
@@ -191,7 +192,7 @@ interface INotificationManager
     void unsnoozeNotificationFromSystemListener(in INotificationListener token, String key);
     void createDynamicBundle(in INotificationListener token, int dynamicBundleId, String bundleName);
     void deleteDynamicBundle(in INotificationListener token, int dynamicBundleId);
-    List<DynamicBundle> getDynamicBundles(in INotificationListener token);
+    List<DynamicBundle> getDynamicBundles(in INotificationListener token, in UserHandle user);
 
     ComponentName getEffectsSuppressor();
     boolean matchesCallFilter(in Bundle extras);

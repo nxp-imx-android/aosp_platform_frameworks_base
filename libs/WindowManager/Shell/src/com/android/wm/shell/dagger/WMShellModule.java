@@ -61,14 +61,18 @@ import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser;
 import com.android.wm.shell.apptoweb.AppToWebRepository;
 import com.android.wm.shell.apptoweb.AppToWebRepositoryImpl;
 import com.android.wm.shell.apptoweb.AssistContentRequester;
+import com.android.wm.shell.apptoweb.data.AppToWebDatastoreRepository;
 import com.android.wm.shell.appzoomout.AppZoomOutController;
 import com.android.wm.shell.back.BackAnimationController;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.bubbles.BubbleData;
 import com.android.wm.shell.bubbles.BubbleDataRepository;
 import com.android.wm.shell.bubbles.BubbleEducationController;
+import com.android.wm.shell.bubbles.BubbleHelper;
+import com.android.wm.shell.bubbles.BubbleHelperImpl;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
+import com.android.wm.shell.bubbles.BubbleRootTask;
 import com.android.wm.shell.bubbles.BubbleTaskUnfoldTransitionMerger;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.BubbleViewInfoTask;
@@ -101,6 +105,7 @@ import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
+import com.android.wm.shell.compatui.api.CompatUISharedRepositoryCleanUp;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.LetterboxCommandHandler;
 import com.android.wm.shell.compatui.letterbox.config.DefaultLetterboxDependenciesHelper;
@@ -139,6 +144,7 @@ import com.android.wm.shell.desktopmode.DisplayFocusResolver;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
+import com.android.wm.shell.desktopmode.NormalAppLayerController;
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler;
 import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator;
@@ -180,6 +186,7 @@ import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.onehanded.OneHandedController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
@@ -311,10 +318,11 @@ public abstract class WMShellModule {
             @NonNull TaskViewRepository repository,
             @NonNull BubbleData bubbleData,
             @NonNull @Bubbles TaskViewTransitions taskViewTransitions,
-            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory
+            @NonNull BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
+            @NonNull BubbleHelper bubbleHelper
     ) {
         return new BubbleTransitions(context, transitions, organizer, repository,
-                bubbleData, taskViewTransitions, bubbleViewInfoTaskFactory);
+                bubbleData, taskViewTransitions, bubbleViewInfoTaskFactory, bubbleHelper);
     }
 
     @WMSingleton
@@ -325,9 +333,10 @@ public abstract class WMShellModule {
             @NonNull Transitions transitions,
             @NonNull TaskViewRepository repository,
             @NonNull ShellTaskOrganizer organizer,
-            SyncTransactionQueue syncQueue
+            SyncTransactionQueue syncQueue,
+            Optional<BubbleHelper> bubbleHelper
     ) {
-        return new TaskViewTransitions(transitions, repository, organizer, syncQueue);
+        return new TaskViewTransitions(transitions, repository, organizer, syncQueue, bubbleHelper);
     }
 
     @WMSingleton
@@ -357,6 +366,25 @@ public abstract class WMShellModule {
 
     @Binds
     abstract BubbleUserResolver bindUserResolver(UserManagerBubbleUserResolver impl);
+
+    @WMSingleton
+    @Provides
+    static BubbleRootTask provideBubbleRootTask(
+            Context context,
+            ShellInit shellInit,
+            ShellTaskOrganizer taskOrganizer,
+            @Bubbles TaskViewTransitions taskViewTransitions) {
+        return new BubbleRootTask(context, shellInit, taskOrganizer, taskViewTransitions);
+    }
+
+    @WMSingleton
+    @Provides
+    static BubbleHelper provideBubbleHelper(
+            Lazy<BubbleRootTask> bubbleRootTask,
+            Lazy<Optional<SplitScreenController>> splitScreenController) {
+        // Use Lazy to prevent circular dependencies
+        return new BubbleHelperImpl(bubbleRootTask, splitScreenController);
+    }
 
     // Note: Handler needed for LauncherApps.register
     @WMSingleton
@@ -394,7 +422,8 @@ public abstract class WMShellModule {
             @NonNull Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
             BubblesFoldLockSettingsObserver foldLockSettingsObserver,
             BubbleSessionTracker sessionTracker,
-            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
+            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
+            BubbleHelper bubbleHelper) {
         final WindowManager wm = enableViewCaptureTracing()
                 ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
                 : windowManager;
@@ -438,7 +467,8 @@ public abstract class WMShellModule {
                 unfoldProgressProvider,
                 foldLockSettingsObserver,
                 sessionTracker,
-                bubbleViewInfoTaskFactory);
+                bubbleViewInfoTaskFactory,
+                bubbleHelper);
     }
 
     //
@@ -500,10 +530,15 @@ public abstract class WMShellModule {
     static AppToWebRepositoryImpl provideAppToWebRepositoryImpl(
             Context context, AssistContentRequester assistContentRequester,
             AppToWebGenericLinksParser appToWebGenericLinksParser,
+            AppToWebDatastoreRepository appToWebDatastoreRepository,
+            @ShellMainThread CoroutineScope mainScope,
+            @ShellBackgroundThread CoroutineScope bgScope,
             ShellTaskOrganizer shellTaskOrganizer,
+            LauncherApps launcherApps,
             ShellInit shellInit) {
         return new AppToWebRepositoryImpl(context, assistContentRequester,
-                appToWebGenericLinksParser, shellTaskOrganizer, shellInit);
+                appToWebGenericLinksParser, appToWebDatastoreRepository, mainScope, bgScope,
+                shellTaskOrganizer, launcherApps, shellInit);
     }
 
     @WMSingleton
@@ -517,6 +552,13 @@ public abstract class WMShellModule {
             return appToWebRepositoryImpl;
         }
         return desktopModeWindowDecorViewModel.get();
+    }
+
+    @WMSingleton
+    @Provides
+    static AppToWebDatastoreRepository provideAppToWebDatastoreRepository(
+            Context context) {
+        return new AppToWebDatastoreRepository(context);
     }
 
     @Provides
@@ -773,13 +815,14 @@ public abstract class WMShellModule {
             Optional<SplitScreenController> splitScreenOptional,
             @Nullable PipTransitionController pipTransitionController,
             PipScheduler pipScheduler,
-            Optional<PinnedLayerController> pinnedLayerController,
+            Optional<PinnedLayerHandler> pinnedLayerHandler,
             Optional<RecentsTransitionHandler> recentsTransitionHandler,
             KeyguardTransitionHandler keyguardTransitionHandler,
             Optional<DesktopTasksController> desktopTasksController,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
             BubbleTransitions bubbleTransitions,
+            BubbleHelper bubbleHelper,
             Transitions transitions) {
         return new DefaultMixedHandler(
                 shellInit,
@@ -787,13 +830,14 @@ public abstract class WMShellModule {
                 splitScreenOptional,
                 pipTransitionController,
                 PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipScheduler) : Optional.empty(),
-                pinnedLayerController.orElse(null),
+                pinnedLayerHandler.orElse(null),
                 recentsTransitionHandler,
                 keyguardTransitionHandler,
                 desktopTasksController,
                 unfoldHandler,
                 activityEmbeddingController,
-                bubbleTransitions);
+                bubbleTransitions,
+                bubbleHelper);
     }
 
     @WMSingleton
@@ -998,7 +1042,8 @@ public abstract class WMShellModule {
             TaskSnapshotManager taskSnapshotManager,
             TransactionPool transactionPool,
             PipTransitionState pipTransitionState,
-            LockTaskChangeListener lockTaskChangeListener) {
+            LockTaskChangeListener lockTaskChangeListener,
+            LauncherApps launcherApps) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -1053,7 +1098,8 @@ public abstract class WMShellModule {
                 transactionPool,
                 PipFlags.isPip2ExperimentEnabled() ? Optional.of(pipTransitionState)
                         : Optional.empty(),
-                lockTaskChangeListener);
+                lockTaskChangeListener,
+                launcherApps);
     }
 
     @WMSingleton
@@ -1605,6 +1651,7 @@ public abstract class WMShellModule {
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             DisplayController displayController,
+            Optional<DesktopImmersiveController> desktopImmersiveController,
             DesktopState desktopState,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
@@ -1617,6 +1664,7 @@ public abstract class WMShellModule {
                                         desktopMixedTransitionHandler.get(),
                                         desktopWallpaperActivityTokenProvider,
                                         displayController,
+                                        desktopImmersiveController.get(),
                                         desktopState,
                                         shellInit)));
     }
@@ -2047,13 +2095,31 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static Optional<NormalAppLayerHandler> provideNormalAppLayerHandler(
-            Optional<DesktopTasksController> desktopTasksControllerOptional,
+            Optional<NormalAppLayerController> normalAppLayerController,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional) {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                     new NormalAppLayerHandler(
-                            desktopUserRepositoriesOptional.get(),
-                            desktopTasksControllerOptional.get()));
+                            normalAppLayerController.get(), desktopUserRepositoriesOptional.get()));
+        }
+        return Optional.empty();
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<NormalAppLayerController> provideNormalAppLayerController(
+            ShellInit shellInit,
+            Transitions transitions,
+            Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
+            Optional<PinnedLayerController> pinnedLayerController,
+            DesktopState desktopState) {
+        if (PinnedLayerFlags.isPinnedLayerEnabled()) {
+            return Optional.of(
+                    new NormalAppLayerController(
+                            shellInit, transitions, desktopUserRepositoriesOptional.get(),
+                            desktopTasksController.get(), pinnedLayerController.get(),
+                            desktopState));
         }
         return Optional.empty();
     }
@@ -2141,6 +2207,7 @@ public abstract class WMShellModule {
             @NonNull LetterboxCommandHandler letterboxCommandHandler,
             @NonNull LetterboxTaskListenerAdapter letterboxTaskListenerAdapter,
             @NonNull LetterboxCleanupAdapter letterboxCleanupAdapter,
+            @NonNull Optional<CompatUISharedRepositoryCleanUp> compatUISharedStateManager,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserverOptional,
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,

@@ -170,9 +170,13 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Изаберите апликацију за дељење"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Дели звук"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Прозор за дељење апликације"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Делите картицу"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
     <skip />
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Када делите, садржај екрана је видљив"</string>
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Направи снимак екрана прозора апликације"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Сними прозор апликације"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Направи снимак екрана изабране области"</string>
@@ -946,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Обавештења о позивима не могу да се мењају."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Ова група обавештења не може да се конфигурише овде"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Обавештење преко проксија"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Сва обавештења апликације <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Прикажи још"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Систем је ово обавештење аутоматски &lt;b&gt;унапредио у подразумевано&lt;/b&gt;."</string>
@@ -1151,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Мени дугмета за укључивање"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_1">%1$d</xliff:g>. страна од <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Желите да укључите функцију <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"Икона"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> је тастерска пречица за коришћење функције <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Поново притисните <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> да бисте омогућили <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Желите да укључите тастерску пречицу за <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не укључуј"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Укључи пречицу"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Тастерска пречица за <xliff:g id="ID_1">%1$s</xliff:g> је укључена"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"Икона"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> је тастерска пречица за коришћење функције приступачности за <xliff:g id="ID_4">^4</xliff:g>. То вам омогућава да брзо зумирате екран да би садржај био већи. Када је увећање укључено, притисните "<annotation id="action_key_icon">"икону"</annotation>" <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> и „+“ или „–“ да бисте прилагодили зумирање."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Искључи пречицу"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не искључуј"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"Икона"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> је тастерска пречица за коришћење функције <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> је читач екрана који вам омогућава да чујете наглас изговорене називе ставки. Може да буде користан особама које слабо виде екран. Може да промени начин рада уређаја."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ако укључите тастерску пречицу, дозволићете да TalkBack има потпуну контролу над уређајем."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Потпуна контрола је примерена за апликације које вам помажу код услуга приступачности, али не и за већину апликација."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Преглед и контрола екрана"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Може да чита сав садржај на екрану и приказује га у другим апликацијама."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Преглед и обављање радњи"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Може да прати интеракције са апликацијом или сензором хардвера и да користи апликације уместо вас."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Када притиснете "<annotation id="action_key_icon">"икону"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>, укључује се функција приступачности – <xliff:g id="ID_4">^4</xliff:g>. То вам омогућава да контролишете уређај хендсфри."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Приступачност"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Готово"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Закључан екран"</string>
@@ -1600,7 +1601,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Управљај приступом"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Користи телефонски позив"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Недавно коришћено у телефонском позиву"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Користи <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Користи: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"Недавно користила апликација <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Користи <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"Недавно користила апликација <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
@@ -1735,12 +1736,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Превуците од горњег левог угла да бисте отворили обавештења"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Превуците од горњег десног угла да бисте отворили Брза подешавања"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Приступачност"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Претходно"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Следеће"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"идите на следећу страницу"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"аутоматско попуњавање"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"прошири"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

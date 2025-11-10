@@ -37,6 +37,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -157,6 +158,18 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     }
 
     /**
+     * Get the client's {@link IEmbeddedInsightSurfaceCallback}.
+     *
+     * @return the client's {@link IEmbeddedInsightSurfaceCallback}
+     *
+     * @hide
+     */
+    @NonNull
+    public IEmbeddedInsightSurfaceCallback getCallback() {
+        return mCallback;
+    }
+
+    /**
      * Sends the given {@link SurfaceControlViewHost.SurfacePackage} to the client.
      *
      * @param surfacePackage the created {@link SurfaceControlViewHost.SurfacePackage}
@@ -166,7 +179,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
             mCallback.onSurfaceCreated(surfacePackage);
         } catch (RemoteException e) {
             Log.e(TAG, "Error sending SurfaceView to client", e);
-            e.rethrowFromSystemServer();
+            throw e.rethrowFromSystemServer();
         }
     }
 
@@ -183,7 +196,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
             mCallback.onReceiveInsight(new ContextInsightWrapper(insight));
         } catch (RemoteException e) {
             Log.e(TAG, "Error sending insight to client", e);
-            e.rethrowFromSystemServer();
+            throw e.rethrowFromSystemServer();
         }
     }
 
@@ -216,4 +229,55 @@ public final class InsightSurfaceClientInfo implements Parcelable {
                     return new InsightSurfaceClientInfo[size];
                 }
             };
+
+    /**
+     * A builder for {@link InsightSurfaceClientInfo} object.
+     *
+     * @hide
+     */
+    public static final class Builder {
+        private final UUID mId = UUID.randomUUID();
+        private InputTransferToken mInputTransferToken;
+        private final int mDisplayId;
+        private final int mWidthMeasureSpec;
+        private final int mHeightMeasureSpec;
+        private final Configuration mConfiguration;
+        private final IEmbeddedInsightSurfaceCallback mCallback;
+
+        /** Constructor a new builder. */
+        public Builder(
+                int displayId,
+                int widthMeasureSpec,
+                int heightMeasureSpec,
+                @NonNull Configuration configuration,
+                @NonNull IEmbeddedInsightSurfaceCallback callback) {
+            Objects.requireNonNull(configuration, "configuration must not be null");
+            Objects.requireNonNull(callback, "callback must not be null");
+
+            mDisplayId = displayId;
+            mWidthMeasureSpec = widthMeasureSpec;
+            mHeightMeasureSpec = heightMeasureSpec;
+            mConfiguration = configuration;
+            mCallback = callback;
+        }
+
+        /** Set the client's {@link InputTransferToken}. */
+        @NonNull
+        public Builder setInputTransferToken(InputTransferToken inputTransferToken) {
+            mInputTransferToken = inputTransferToken;
+            return this;
+        }
+
+        /** Build and return a new {@link InsightSurfaceClientInfo}. */
+        @NonNull
+        public InsightSurfaceClientInfo build() {
+            return new InsightSurfaceClientInfo(
+                    mInputTransferToken,
+                    mDisplayId,
+                    mWidthMeasureSpec,
+                    mHeightMeasureSpec,
+                    mConfiguration,
+                    mCallback);
+        }
+    }
 }

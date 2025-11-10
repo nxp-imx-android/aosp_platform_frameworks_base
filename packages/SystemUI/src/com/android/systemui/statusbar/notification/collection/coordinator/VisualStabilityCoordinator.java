@@ -96,6 +96,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     private boolean mNotifPanelLaunchingActivity;
     private boolean mCommunalShowing = false;
     private boolean mLockscreenShowing = false;
+    private String mLockscreenShowingReason = "unset";
     private boolean mTrackingHeadsUp = false;
     private boolean mLockscreenInGoneTransition = false;
     private Set<String> mHeadsUpGroupKeys = new HashSet<>();
@@ -159,7 +160,6 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         mSleepy = mWakefulnessLifecycle.getWakefulness() == WAKEFULNESS_ASLEEP;
         mFullyDozed = mStatusBarStateController.getDozeAmount() == 1f;
         mPanelExpanded = mStatusBarStateController.isExpanded();
-        mLockscreenShowing = mKeyguardStateController.isShowing();
 
         mStatusBarStateController.addCallback(mStatusBarStateControllerListener);
         mPulsing = mStatusBarStateController.isPulsing();
@@ -183,18 +183,26 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
             mJavaAdapter.alwaysCollectFlow(mKeyguardTransitionInteractor.transitionValue(
                             KeyguardState.LOCKSCREEN),
                     this::onLockscreenKeyguardStateTransitionValueChanged);
+
+            mJavaAdapter.alwaysCollectFlow(mKeyguardTransitionInteractor.isFinishedIn(
+                            Scenes.Gone, KeyguardState.GONE),
+                    this::onFinishedInGone);
+
             mJavaAdapter.alwaysCollectFlow(mHeadsUpRepository.isTrackingHeadsUp(),
                     this::onTrackingHeadsUpModeChanged);
-        }
-
-        if (SceneContainerFlag.isEnabled()) {
             mJavaAdapter.alwaysCollectFlow(mKeyguardTransitionInteractor.isInTransition(
                             Edge.create(KeyguardState.LOCKSCREEN, Scenes.Gone), null),
                     this::onLockscreenInGoneTransitionChanged);
         } else {
+            setLockscreenShowing(mKeyguardStateController.isShowing(), "attach with flexi off");
             mKeyguardStateController.addCallback(mKeyguardFadeAwayAnimationCallback);
         }
         pipeline.setVisualStabilityManager(mNotifStabilityManager);
+    }
+
+    private void setLockscreenShowing(boolean isShowing, String reason) {
+        mLockscreenShowing = isShowing;
+        mLockscreenShowingReason = reason;
     }
 
     /**
@@ -644,6 +652,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         pw.println("  fullyDozed: " + mFullyDozed);
         pw.println("  panelExpanded: " + mPanelExpanded);
         pw.println("  lockscreenShowing: " + mLockscreenShowing);
+        pw.println("  lockscreenShowingReason: " + mLockscreenShowingReason);
         pw.println("  trackingHeadsUp: " + mTrackingHeadsUp);
         pw.println("  pulsing: " + mPulsing);
         pw.println("  communalShowing: " + mCommunalShowing);
@@ -688,9 +697,21 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         if (isShowing == mLockscreenShowing) {
             return;
         }
+        String reason = "transitionValueShowing:" + isShowing;
+        setLockscreenShowing(isShowing, reason);
+        updateAllowedStates(reason, isShowing);
+    }
 
-        mLockscreenShowing = isShowing;
-        updateAllowedStates("lockscreenShowing", isShowing);
+    private void onFinishedInGone(boolean isFinishedInGone) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return;
+        }
+        if (isFinishedInGone) {
+            if (mLockscreenShowing) {
+                setLockscreenShowing(false, "inGone");
+            }
+            updateAllowedStates("onFinishedInGone", false);
+        }
     }
 
     private void onTrackingHeadsUpModeChanged(boolean isTrackingHeadsUp) {

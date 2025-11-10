@@ -27,6 +27,7 @@ import android.window.DisplayAreaInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_PIP
+import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP
 import com.android.window.flags.Flags.FLAG_ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
@@ -147,6 +148,29 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.isPipInDesktopMode()).isTrue()
     }
 
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
+    @Test
+    fun isFreeFloatingPipEnabled_notInDesktopMode_returnsFalse() {
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
+
+        assertThat(pipDesktopState.isFreeFloatingPipEnabled()).isFalse()
+    }
+
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
+    @Test
+    fun isFreeFloatingPipEnabled_touchFirstDisplay_returnsFalse() {
+        assertThat(pipDesktopState.isFreeFloatingPipEnabled()).isFalse()
+    }
+
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
+    @Test
+    fun isFreeFloatingPipEnabled_desktopFirstDisplay_returnsTrue() {
+        defaultTda.configuration.windowConfiguration.windowingMode =
+            DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
+
+        assertThat(pipDesktopState.isFreeFloatingPipEnabled()).isTrue()
+    }
+
     @Test
     fun outPipWindowingMode_exitToDesktop_displayFreeform_returnsUndefined() {
         setDisplayWindowingMode(WINDOWING_MODE_FREEFORM)
@@ -179,7 +203,6 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
 
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_midRecents_inDesktop_returnsFullscreen() {
         recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)

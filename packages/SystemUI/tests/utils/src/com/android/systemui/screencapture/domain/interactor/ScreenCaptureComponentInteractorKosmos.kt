@@ -38,6 +38,7 @@ val Kosmos.screenCaptureComponentInteractor by
             screenCaptureUiInteractor = screenCaptureUiInteractor,
             componentBuilder = FakeScreenCaptureComponentBuilder(this),
             screenRecordingServiceInteractor = screenRecordingServiceInteractor,
+            getFrameDelay = { 16 },
         )
     }
 

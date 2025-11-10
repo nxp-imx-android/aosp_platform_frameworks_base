@@ -21,6 +21,7 @@
          android:targetSdkVersion="36"/>
 
     <uses-permission android:name="android.permission.WRITE_DEVICE_CONFIG"/>
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
     <application android:testOnly="true" android:debuggable="true"/>
 

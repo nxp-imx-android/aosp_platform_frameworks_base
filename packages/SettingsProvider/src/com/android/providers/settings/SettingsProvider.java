@@ -2215,17 +2215,29 @@ public class SettingsProvider extends ContentProvider {
             }
             final boolean isPrivilegedApp = aInfo != null ? aInfo.isPrivilegedApp() : false;
             String mimeType = null;
+            final int uriUserId = ContentProvider.getUserIdFromUri(
+                    audioUri, /* defaultUserId= */ callingUserId);
+            // Ensure context matches the uriUserId; The wrong context may cause
+            // the ContentResolver to fail to obtain the MIME type.
+            Context context = getContext();
+            if (context.getUserId() != uriUserId
+                    && (isPrivilegedApp || callingUserId == uriUserId)) {
+                final long identity = Binder.clearCallingIdentity();
+                try {
+                    context = context.createContextAsUser(UserHandle.of(uriUserId), 0);
+                } finally {
+                    Binder.restoreCallingIdentity(identity);
+                }
+            }
             if (isPrivilegedApp) {
                 final long identity = Binder.clearCallingIdentity();
                 try {
-                    mimeType = getContext().getContentResolver().getType(audioUri);
+                    mimeType = context.getContentResolver().getType(audioUri);
                 } finally {
                     Binder.restoreCallingIdentity(identity);
                 }
             } else {
                 // Check if the URI has a userId and if it matches the callingUserId
-                final int uriUserId = ContentProvider.getUserIdFromUri(
-                        audioUri, /* defaultUserId= */ callingUserId);
                 if (callingUserId != uriUserId) {
                     Slog.e(LOG_TAG,
                             "mutateSystemSetting for setting: " + name + " URI: " + audioUri
@@ -2233,7 +2245,7 @@ public class SettingsProvider extends ContentProvider {
                                     + ") does not match calling userId (" + callingUserId + ")");
                     return false;
                 }
-                mimeType = getContext().getContentResolver().getType(audioUri);
+                mimeType = context.getContentResolver().getType(audioUri);
             }
             if (DEBUG) {
                 Slog.v(LOG_TAG, "isValidMediaUri mimeType: " + mimeType);
@@ -2756,12 +2768,14 @@ public class SettingsProvider extends ContentProvider {
             int targetSdkVersion, String name) {
         // If the app targets Lollipop MR1 or older SDK we warn, otherwise crash.
         if (targetSdkVersion <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            if (Settings.System.PRIVATE_SETTINGS.contains(name)) {
-                Slog.w(LOG_TAG, "You shouldn't not change private system settings."
-                        + " This will soon become an error.");
-            } else {
-                Slog.w(LOG_TAG, "You shouldn't keep your settings in the secure settings."
-                        + " This will soon become an error.");
+            if (Build.IS_DEBUGGABLE) {
+                if (Settings.System.PRIVATE_SETTINGS.contains(name)) {
+                    Slog.w(LOG_TAG, "You shouldn't not change private system settings."
+                            + " This will soon become an error.");
+                } else {
+                    Slog.w(LOG_TAG, "You shouldn't keep your settings in the secure settings."
+                            + " This will soon become an error.");
+                }
             }
         } else {
             if (Settings.System.PRIVATE_SETTINGS.contains(name)) {

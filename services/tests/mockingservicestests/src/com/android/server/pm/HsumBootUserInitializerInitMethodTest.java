@@ -46,8 +46,8 @@ import static org.mockito.Mockito.when;
 import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeNULL;
 import android.annotation.UserIdInt;
-import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.pm.UserInfo;
 import android.content.pm.UserInfo.UserInfoFlag;
 import android.os.UserManager;
@@ -513,7 +513,7 @@ public final class HsumBootUserInitializerInitMethodTest {
         when(mMockUms.setMainUser(userId)).thenReturn(false);
     }
 
-    private static UserInfo createUser(@UserIdInt int userId, @UserInfoFlag int flags) {
+    static UserInfo createUser(@UserIdInt int userId, @UserInfoFlag int flags) {
         return new UserInfo(userId, /* name= */ null, /* iconPath= */ null, flags,
                 // Not using userType (for now)
                 /* userType= */ "AB Positive");

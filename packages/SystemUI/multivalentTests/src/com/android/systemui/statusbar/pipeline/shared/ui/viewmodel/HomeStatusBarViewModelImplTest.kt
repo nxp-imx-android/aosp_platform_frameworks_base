@@ -21,6 +21,7 @@ import android.app.StatusBarManager.DISABLE_CLOCK
 import android.app.StatusBarManager.DISABLE_NONE
 import android.app.StatusBarManager.DISABLE_NOTIFICATION_ICONS
 import android.app.StatusBarManager.DISABLE_SYSTEM_INFO
+import android.content.res.Configuration
 import android.content.testableContext
 import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
@@ -60,6 +61,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.mediaprojection.data.model.MediaProjectionState
 import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
 import com.android.systemui.plugins.DarkIconDispatcher
+import com.android.systemui.res.R
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -79,7 +81,6 @@ import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppCh
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsWithNotifsViewModelTest.Companion.assertIsCallChip
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsWithNotifsViewModelTest.Companion.assertIsScreenRecordChip
 import com.android.systemui.statusbar.core.StatusBarForDesktop
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.model.StatusBarMode
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
@@ -106,6 +107,7 @@ import com.android.systemui.statusbar.pipeline.shared.domain.HomeStatusBarHelper
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarIconBlockList
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarInteractorShowOperatorName
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
+import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.statusbar.window.shared.model.StatusBarWindowState
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -846,6 +848,39 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    fun canShowOngoingActivityChips_statusBarNotAllowedByScene_useDesktopStatusBar_true() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            // GIVEN home status bar is NOT allowed by Scene(e.g. on lockscreen)
+            kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
+            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+
+            // WHEN desktop status bar is in use
+            overrideResource(R.bool.config_useDesktopStatusBar, true)
+            kosmos.configurationController.onConfigurationChanged(Configuration())
+
+            // THEN chips can still be shown
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    fun canShowOngoingActivityChips_secureCamera_useDesktopStatusBar_true() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            // GIVEN secure camera IS active (which usually hides chips)
+            launchSecureCamera()
+
+            // WHEN desktop status bar is in use
+            overrideResource(R.bool.config_useDesktopStatusBar, true)
+            kosmos.configurationController.onConfigurationChanged(Configuration())
+
+            // THEN chips can still be shown
+            assertThat(latest).isTrue()
+        }
+
+    @Test
     fun ongoingActivityChips_statusBarHidden_noSecureCamera_noHun_notAllowed() =
         kosmos.runTest {
             // home status bar not allowed
@@ -1034,22 +1069,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     fun isNotificationIconContainerVisible_anyChipShowing_chipsModernizationOn() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
-            transitionKeyguardToGone()
-
-            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
-
-            assertThat(latest!!.visibility).isEqualTo(View.GONE)
-
-            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.DoingNothing
-
-            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
-        }
-
-    @Test
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME)
-    fun isNotificationIconContainerVisible_anyChipShowing() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()

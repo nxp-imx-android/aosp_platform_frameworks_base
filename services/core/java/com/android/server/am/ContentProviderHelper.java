@@ -238,7 +238,7 @@ public class ContentProviderHelper {
                     if (mService.isSingleton(
                             cpi.processName, cpi.applicationInfo, cpi.name, cpi.flags)
                                 && mService.isValidSingletonCall(
-                                        r == null ? callingUid : r.uid, cpi.applicationInfo.uid)) {
+                                        r == null ? callingUid : r.uid, cpr.uid)) {
                         userId = UserHandle.USER_SYSTEM;
                         checkCrossUser = false;
                     } else if (isAuthorityRedirectedForCloneProfileCached(name)) {
@@ -397,7 +397,7 @@ public class ContentProviderHelper {
                 boolean singleton = mService.isSingleton(
                         cpi.processName, cpi.applicationInfo, cpi.name, cpi.flags)
                             && mService.isValidSingletonCall(
-                                    r == null ? callingUid : r.uid, cpi.applicationInfo.uid);
+                                    r == null ? callingUid : r.uid, cpi.getUid());
                 if (singleton) {
                     userId = UserHandle.USER_SYSTEM;
                 }
@@ -429,7 +429,7 @@ public class ContentProviderHelper {
                 // we don't want to allow it to run.
                 if (!mService.mUserController.isUserRunning(userId, 0)) {
                     Slog.w(TAG, "Unable to launch app "
-                            + cpi.applicationInfo.packageName + "/" + cpi.applicationInfo.uid
+                            + cpi.applicationInfo.packageName + "/" + cpi.getUid()
                             + " for provider " + name + ": user " + userId + " is stopped");
                     return null;
                 }
@@ -487,7 +487,7 @@ public class ContentProviderHelper {
 
                 if (ActivityManagerDebugConfig.DEBUG_PROVIDER) {
                     Slog.w(TAG, "LAUNCHING REMOTE PROVIDER (myuid " + (r != null ? r.uid : null)
-                            + " pruid " + cpr.appInfo.uid + "): " + cpr.info.name
+                            + " pruid " + cpr.uid + "): " + cpr.info.name
                             + " callers=" + Debug.getCallers(6));
                 }
 
@@ -527,7 +527,7 @@ public class ContentProviderHelper {
                         // Use existing process if already started
                         checkTime(startTime, "getContentProviderImpl: looking for process record");
                         ProcessRecord proc = mService.getProcessRecordLocked(
-                                cpi.processName, cpr.appInfo.uid);
+                                cpi.processName, cpr.uid);
                         IApplicationThread thread;
                         if (proc != null && (thread = proc.getThread()) != null
                                 && !proc.isKilled()) {
@@ -563,13 +563,14 @@ public class ContentProviderHelper {
                                     cpi.processName, cpr.appInfo, false, 0,
                                     new HostingRecord(HostingRecord.HOSTING_TYPE_CONTENT_PROVIDER,
                                         new ComponentName(
-                                                cpi.applicationInfo.packageName, cpi.name)),
+                                                cpi.applicationInfo.packageName, cpi.name),
+                                            /* isTopApp */ false, cpi.shouldRunInPccSandbox()),
                                     Process.ZYGOTE_POLICY_FLAG_EMPTY, false, false);
                             checkTime(startTime, "getContentProviderImpl: after start process");
                             if (proc == null) {
                                 Slog.w(TAG, "Unable to launch app "
                                         + cpi.applicationInfo.packageName + "/"
-                                        + cpi.applicationInfo.uid + " for provider " + name
+                                        + cpr.uid + " for provider " + name
                                         + ": process is bad");
                                 return null;
                             }
@@ -613,7 +614,7 @@ public class ContentProviderHelper {
             checkTime(startTime, "getContentProviderImpl: done!");
 
             mService.grantImplicitAccess(userId, null, callingUid,
-                    UserHandle.getAppId(cpi.applicationInfo.uid));
+                    UserHandle.getAppId(cpr.uid));
 
             if (caller != null) {
                 // The client will be waiting, and we'll notify it when the provider is ready.
@@ -622,12 +623,12 @@ public class ContentProviderHelper {
                         if (cpr.launchingApp == null) {
                             Slog.w(TAG, "Unable to launch app "
                                     + cpi.applicationInfo.packageName + "/"
-                                    + cpi.applicationInfo.uid + " for provider "
+                                    + cpr.uid + " for provider "
                                     + name + ": launching app became null");
                             EventLogTags.writeAmProviderLostProcess(
                                     UserHandle.getUserId(cpi.applicationInfo.uid),
                                     cpi.applicationInfo.packageName,
-                                    cpi.applicationInfo.uid, name);
+                                    cpr.uid, name);
                             return null;
                         }
 
@@ -657,11 +658,11 @@ public class ContentProviderHelper {
             while (cpr.provider == null) {
                 if (cpr.launchingApp == null) {
                     Slog.w(TAG, "Unable to launch app "
-                            + cpi.applicationInfo.packageName + "/" + cpi.applicationInfo.uid
+                            + cpi.applicationInfo.packageName + "/" + cpr.uid
                             + " for provider " + name + ": launching app became null");
                     EventLogTags.writeAmProviderLostProcess(
-                            UserHandle.getUserId(cpi.applicationInfo.uid),
-                            cpi.applicationInfo.packageName, cpi.applicationInfo.uid, name);
+                            UserHandle.getUserId(cpr.uid),
+                            cpi.applicationInfo.packageName, cpr.uid, name);
                     return null;
                 }
                 try {
@@ -702,7 +703,7 @@ public class ContentProviderHelper {
             }
 
             Slog.wtf(TAG, "Timeout waiting for provider "
-                    + cpi.applicationInfo.packageName + "/" + cpi.applicationInfo.uid
+                    + cpi.applicationInfo.packageName + "/" + cpr.uid
                     + " for provider " + name + " providerRunning=" + providerRunning
                     + " caller=" + callerName + "/" + Binder.getCallingUid());
             return null;
@@ -978,7 +979,7 @@ public class ContentProviderHelper {
                 // death notification...  just a bit prematurely.
                 mService.reportUidInfoMessageLocked(TAG, "Process " + proc.processName
                                 + " (pid " + proc.getPid() + ") early provider death",
-                                proc.info.uid);
+                                proc.uid);
                 final long token = Binder.clearCallingIdentity();
                 try {
                     mService.appDiedLocked(proc, "unstable content provider");
@@ -1301,7 +1302,7 @@ public class ContentProviderHelper {
                 mProviderMap.putProviderByClass(comp, cpr);
             }
             if (DEBUG_MU) {
-                Slog.v(TAG_MU, "generateApplicationProvidersLocked, cpi.uid = " + cpr.uid);
+                Slog.v(TAG_MU, "generateApplicationProvidersLocked, cpr.uid = " + cpr.uid);
             }
             pr.installProvider(cpi.name, cpr);
             if (!cpi.multiprocess || !"android".equals(cpi.packageName)) {
@@ -1597,12 +1598,12 @@ public class ContentProviderHelper {
             }
         }
         if (ActivityManagerService.checkComponentPermission(cpi.readPermission,
-                callingPid, callingUid, cpi.applicationInfo.uid, cpi.exported)
+                callingPid, callingUid, cpi.getUid(), cpi.exported)
                 == PackageManager.PERMISSION_GRANTED) {
             return null;
         }
         if (ActivityManagerService.checkComponentPermission(cpi.writePermission,
-                callingPid, callingUid, cpi.applicationInfo.uid, cpi.exported)
+                callingPid, callingUid, cpi.getUid(), cpi.exported)
                 == PackageManager.PERMISSION_GRANTED) {
             return null;
         }
@@ -1615,13 +1616,13 @@ public class ContentProviderHelper {
                 PathPermission pp = pps[i];
                 String pprperm = pp.getReadPermission();
                 if (pprperm != null && ActivityManagerService.checkComponentPermission(pprperm,
-                        callingPid, callingUid, cpi.applicationInfo.uid, cpi.exported)
+                        callingPid, callingUid, cpi.getUid(), cpi.exported)
                         == PackageManager.PERMISSION_GRANTED) {
                     return null;
                 }
                 String ppwperm = pp.getWritePermission();
                 if (ppwperm != null && ActivityManagerService.checkComponentPermission(ppwperm,
-                        callingPid, callingUid, cpi.applicationInfo.uid, cpi.exported)
+                        callingPid, callingUid, cpi.getUid(), cpi.exported)
                         == PackageManager.PERMISSION_GRANTED) {
                     return null;
                 }
@@ -1634,7 +1635,7 @@ public class ContentProviderHelper {
 
         final String suffix;
         if (!cpi.exported) {
-            suffix = " that is not exported from UID " + cpi.applicationInfo.uid;
+            suffix = " that is not exported from UID " + cpi.getUid();
         } else if (android.Manifest.permission.MANAGE_DOCUMENTS.equals(cpi.readPermission)) {
             suffix = " requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs";
         } else {
@@ -1651,11 +1652,11 @@ public class ContentProviderHelper {
             ProviderInfo cpi) {
         if (callingApp == null) {
             return mService.validateAssociationAllowedLocked(cpi.packageName,
-                    cpi.applicationInfo.uid, null, callingUid) ? null : "<null>";
+                    cpi.getUid(), null, callingUid) ? null : "<null>";
         }
         final String r = callingApp.getPkgList().searchEachPackage(pkgName -> {
             if (!mService.validateAssociationAllowedLocked(pkgName,
-                        callingApp.uid, cpi.packageName, cpi.applicationInfo.uid)) {
+                        callingApp.uid, cpi.packageName, cpi.getUid())) {
                 return cpi.packageName;
             }
             return null;

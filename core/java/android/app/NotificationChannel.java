@@ -43,6 +43,7 @@ import android.os.vibrator.persistence.VibrationXmlParser;
 import android.os.vibrator.persistence.VibrationXmlSerializer;
 import android.provider.Settings;
 import android.service.notification.Adjustment;
+import android.service.notification.DynamicBundle;
 import android.service.notification.NotificationListenerService;
 import android.text.TextUtils;
 import android.util.Log;
@@ -82,6 +83,11 @@ public final class NotificationChannel implements Parcelable {
      */
     public static final String DEFAULT_CHANNEL_ID = "miscellaneous";
 
+    /**
+     * A reserved prefix for dynamic bundle channels
+     *  @hide
+     */
+    public static final String DYNAMIC_BUNDLE_PREFIX = "android.app.dynamic.";
     /**
      * A reserved id for a system channel reserved for promotional notifications.
      *  @hide
@@ -1100,6 +1106,8 @@ public final class NotificationChannel implements Parcelable {
      *
      * @hide
      */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
     public boolean isBundleChannel() {
         return SYSTEM_RESERVED_IDS.contains(mId)
                 || (Flags.nmContextualDisplay() && mIsBundleChannel);
@@ -1674,8 +1682,9 @@ public final class NotificationChannel implements Parcelable {
             case TYPE_SOCIAL_MEDIA:
                 return SOCIAL_MEDIA_ID;
         }
-        if (Flags.nmContextualDisplay()) {
-            return String.valueOf(type);
+        if (Flags.nmContextualDisplay() && type >= DynamicBundle.DYNAMIC_RANGE_START
+                && type <= DynamicBundle.DYNAMIC_RANGE_END) {
+            return DYNAMIC_BUNDLE_PREFIX + type;
         }
         return null;
     }

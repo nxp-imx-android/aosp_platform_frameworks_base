@@ -650,6 +650,22 @@ public final class PlaybackActivityMonitor
     }
 
     /**
+     * @return uids which have an active playback configuration
+     */
+    public int[] getPlaybackActiveUids() {
+        synchronized (mPlayerLock) {
+            // could be more efficient... SparseIntArray needs bulk add methods
+            return mPlayers.values()
+                .stream()
+                .filter(AudioPlaybackConfiguration::isActive)
+                .mapToInt(AudioPlaybackConfiguration::getClientUid)
+                .sorted()
+                .distinct()
+                .toArray();
+        }
+    }
+
+    /**
      * Return true if an active playback for media use case is currently routed to
      * a remote submix device with the supplied address.
      * @param address

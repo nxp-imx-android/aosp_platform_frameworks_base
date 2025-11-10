@@ -20,7 +20,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AppGlobals;
-import android.app.admin.DevicePolicyManagerInternal;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -615,13 +614,13 @@ public class UserRestrictionsUtils {
      * <p>Note this method is called by {@link UserManagerService} without holding any locks.
      */
     public static void applyUserRestrictions(Context context, int userId,
-            Bundle newRestrictions, Bundle prevRestrictions) {
+            Bundle newRestrictions, Bundle prevRestrictions, int deviceOwnerUserId) {
         for (String key : USER_RESTRICTIONS) {
             final boolean newValue = newRestrictions.getBoolean(key);
             final boolean prevValue = prevRestrictions.getBoolean(key);
 
             if (newValue != prevValue) {
-                applyUserRestriction(context, userId, key, newValue);
+                applyUserRestriction(context, userId, key, newValue, deviceOwnerUserId);
             }
         }
     }
@@ -633,7 +632,7 @@ public class UserRestrictionsUtils {
      * which should be in sync with this method.
      */
     private static void applyUserRestriction(Context context, int userId, String key,
-            boolean newValue) {
+            boolean newValue, int deviceOwnerUserId) {
         if (UserManagerService.DBG) {
             Log.d(TAG, "Applying user restriction: userId=" + userId
                     + " key=" + key + " value=" + newValue);
@@ -684,7 +683,7 @@ public class UserRestrictionsUtils {
                     break;
                 case UserManager.DISALLOW_DEBUGGING_FEATURES:
                     if (newValue) {
-                        if (userId == UserHandle.USER_SYSTEM || userId == getDeviceOwnerUserId()) {
+                        if (userId == UserHandle.USER_SYSTEM || userId == deviceOwnerUserId) {
                             android.provider.Settings.Global.putStringForUser(cr,
                                     android.provider.Settings.Global.ADB_ENABLED, "0",
                                     userId);
@@ -779,7 +778,7 @@ public class UserRestrictionsUtils {
     }
 
     public static boolean isSettingRestrictedForUser(Context context, @NonNull String setting,
-            int userId, String value, int callingUid) {
+            int userId, String value, int callingUid, int deviceOwnerUserId) {
         Objects.requireNonNull(setting);
         final UserManager mUserManager = context.getSystemService(UserManager.class);
         String restriction;
@@ -809,7 +808,7 @@ public class UserRestrictionsUtils {
                     return false;
                 }
                 restriction = UserManager.DISALLOW_DEBUGGING_FEATURES;
-                if (deviceOwnerOrSystemUserHasRestriction(restriction)) {
+                if (deviceOwnerOrSystemUserHasRestriction(restriction, deviceOwnerUserId)) {
                     return true;
                 }
                 break;
@@ -971,13 +970,8 @@ public class UserRestrictionsUtils {
                 UserHandle.of(userId))) ? 0 : 1;
     }
 
-    private static int getDeviceOwnerUserId() {
-        DevicePolicyManagerInternal dpm = LocalServices.getService(
-                DevicePolicyManagerInternal.class);
-        return dpm.getDeviceOwnerUserId();
-    }
-
-    private static boolean deviceOwnerOrSystemUserHasRestriction(String restriction) {
+    private static boolean deviceOwnerOrSystemUserHasRestriction(
+            String restriction, int deviceOwnerUserId) {
         UserManagerInternal userManager = LocalServices.getService(UserManagerInternal.class);
         if (userManager == null) {
             return false;
@@ -987,8 +981,8 @@ public class UserRestrictionsUtils {
             return true;
         }
 
-        final int deviceOwnerId = getDeviceOwnerUserId();
-        return deviceOwnerId != UserHandle.USER_NULL && deviceOwnerId != UserHandle.USER_SYSTEM
-                && userManager.hasUserRestriction(restriction, deviceOwnerId);
+        return deviceOwnerUserId != UserHandle.USER_NULL
+                && deviceOwnerUserId != UserHandle.USER_SYSTEM
+                && userManager.hasUserRestriction(restriction, deviceOwnerUserId);
     }
 }

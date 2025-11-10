@@ -48,7 +48,7 @@ class UserTrackerImplReceiveTest : SysuiTestCase() {
                 Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE,
                 Intent.ACTION_MANAGED_PROFILE_ADDED,
                 Intent.ACTION_MANAGED_PROFILE_REMOVED,
-                Intent.ACTION_MANAGED_PROFILE_UNLOCKED
+                Intent.ACTION_MANAGED_PROFILE_UNLOCKED,
             )
     }
 
@@ -88,7 +88,7 @@ class UserTrackerImplReceiveTest : SysuiTestCase() {
                     "",
                     "",
                     UserInfo.FLAG_MANAGED_PROFILE,
-                    UserManager.USER_TYPE_PROFILE_MANAGED
+                    UserManager.USER_TYPE_PROFILE_MANAGED,
                 )
             infoProfile.profileGroupId = id
             listOf(info, infoProfile)
@@ -103,9 +103,9 @@ class UserTrackerImplReceiveTest : SysuiTestCase() {
                 dumpManager,
                 this,
                 testDispatcher,
-                handler
+                handler,
             )
-        tracker.initialize(0)
+        tracker.initialize { 0 }
         tracker.addCallback(callback, executor)
         val profileID = tracker.userId + 10
 

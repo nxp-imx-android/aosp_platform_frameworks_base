@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.phone.dagger
 
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
-import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.phone.ongoingcall.domain.interactor.OngoingCallStatusBarInteractor
 import com.android.systemui.statusbar.phone.ongoingcall.shared.PerDisplayOngoingCallStatusBarVisibility
@@ -40,10 +39,6 @@ interface PerDisplayStatusBarReferenceModule {
     fun homeStatusBarComponentFactory(
         factory: HomeStatusBarComponent.Factory
     ): HomeStatusBarComponent.Factory
-
-    @Binds
-    @DisplayAware
-    fun statusBarFragmentProvider(fragment: CollapsedStatusBarFragment): CollapsedStatusBarFragment
 
     @Binds
     @DisplayAware

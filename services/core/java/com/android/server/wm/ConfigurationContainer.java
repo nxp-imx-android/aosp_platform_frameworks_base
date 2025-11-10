@@ -447,10 +447,6 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
      *         fullscreen. {@code false} otherwise.
      */
     public boolean matchParentBounds() {
-        if (!com.android.window.flags.Flags.refactorMatchParentBounds()) {
-            return getResolvedOverrideBounds().isEmpty();
-        }
-
         final int windowingMode = getWindowingMode();
         if (windowingMode == WINDOWING_MODE_PINNED) return false;
         if (windowingMode == WINDOWING_MODE_FULLSCREEN) return true;

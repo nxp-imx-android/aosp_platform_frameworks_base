@@ -223,7 +223,7 @@ public final class MessageQueue {
         if (sSkipEpollWaitForZeroTimeoutInitialized) {
             return;
         }
-        if (!Flags.nativeLooperSkipEpollWaitForZeroTimeoutHoldback()) {
+        if (Flags.nativeLooperSkipEpollWaitForZeroTimeout()) {
             nativeSetSkipEpollWaitForZeroTimeout(ptr);
         }
         sSkipEpollWaitForZeroTimeoutInitialized = true;
@@ -286,7 +286,7 @@ public final class MessageQueue {
                 // If we're quitting then we're not allowed to increment the ref count.
                 return false;
             }
-            if (sMptrRefCount.compareAndSet(this, oldVal, oldVal + 1)) {
+            if (sMptrRefCount.compareAndSet(this, oldVal, oldVal + 1L)) {
                 // Successfully incremented the ref count without quitting.
                 return true;
             }
@@ -299,7 +299,7 @@ public final class MessageQueue {
      * Call after {@link #incrementMptrRefs()} to release the ref on mPtr.
      */
     private void decrementMptrRefs() {
-        long oldVal = (long) sMptrRefCount.getAndAdd(this, -1);
+        long oldVal = (long) sMptrRefCount.getAndAdd(this, -1L);
         // If quitting and we were the last ref, wake up looper thread
         if (oldVal - 1 == MPTR_TEARDOWN_MASK) {
             LockSupport.unpark(mLooperThread);
@@ -803,7 +803,7 @@ public final class MessageQueue {
                 // Idle handles only run if the queue is empty or if the first message
                 // in the queue (possibly a barrier) is due to be handled in the future.
                 if (pendingIdleHandlerCount < 0
-                        && isIdle()) {
+                        && looperCheckIsIdle()) {
                     pendingIdleHandlerCount = mIdleHandlers.size();
                 }
                 if (pendingIdleHandlerCount <= 0) {
@@ -981,6 +981,28 @@ public final class MessageQueue {
     private boolean isIdleDeliQueue() {
         final long now = SystemClock.uptimeMillis();
         return !mStack.hasMessages(sMatchDeliverableMessages, null, -1, null, null, now);
+    }
+
+    /**
+     * isIdle() variant for DeliQueue looper thread.
+     * We avoid the stack search and go directly to our heaps.
+     * This method is only to be called from the looper thread.
+     */
+    private boolean looperCheckIsIdle() {
+        mStack.heapSweep();
+
+        final long now = SystemClock.uptimeMillis();
+        Message msg = mStack.peek(false);
+        if (msg != null && msg.when <= now) {
+            return false;
+        }
+
+        Message asyncMsg = mStack.peek(true);
+        if (asyncMsg != null && asyncMsg.when <= now) {
+            return false;
+        }
+
+        return true;
     }
 
     private boolean isIdleLegacy() {

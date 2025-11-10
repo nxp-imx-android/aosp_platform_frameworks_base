@@ -48,7 +48,7 @@
 
     <!-- The color of the background in the grid of the Global Actions menu -->
     <color name="global_actions_grid_background">#F1F3F4</color>
-    <color name="global_actions_grid_background_blur">@androidprv:color/customColorSurfaceEffect0</color>
+    <color name="global_actions_grid_background_blur">@androidprv:color/surface_effect_0</color>
     <color name="global_actions_grid_background_blur_fallback">@android:color/system_accent1_200</color>
 
     <!-- Colors for Power Menu Lite -->
@@ -198,7 +198,7 @@
     <!-- Volume dialog colors -->
     <color name="volume_dialog_background_color">@android:color/transparent</color>
     <color name="volume_dialog_background_color_above_blur">@android:color/transparent</color>
-    <color name="volume_dialog_view_background_blur">@androidprv:color/customColorSurfaceEffect0</color>
+    <color name="volume_dialog_view_background_blur">@androidprv:color/surface_effect_0</color>
     <color name="volume_dialog_view_background_blur_fallback">@android:color/system_accent1_200</color>
 
     <!-- media -->
@@ -281,7 +281,7 @@
     <color name="low_light_clock_text_color">#CCCCCC</color>
 
     <!-- BG color for confirm and backspace button in non-auto confirm PIN bouncer.   -->
-    <color name="pin_bouncer_action_button_bg">@androidprv:color/customColorSurfaceEffect0</color>
+    <color name="pin_bouncer_action_button_bg">@androidprv:color/surface_effect_0</color>
     <!-- Bouncer background when blur is not enabled.   -->
     <color name="bouncer_fallback_bg">@android:color/system_accent2_200</color>
 </resources>

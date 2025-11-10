@@ -21,10 +21,10 @@ import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.Back
+import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.Swipe
-import com.android.compose.animation.scene.SwipeDirection
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
@@ -202,17 +202,11 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun upOrBackTransitionSceneKey_editing_noTransition() =
+    fun backTransitionSceneKey_editing_noTransition() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
 
             editModeViewModel.startEditing()
-            assertThat(
-                    actions!!.keys.filterIsInstance<Swipe>().filter {
-                        it.direction == SwipeDirection.Up
-                    }
-                )
-                .isEmpty()
             assertThat(actions!!.keys.filterIsInstance<Back>()).isEmpty()
         }
 
@@ -256,6 +250,21 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
                     .that((map[Back] as? UserActionResult.ChangeScene)?.toScene)
                     .isNotEqualTo(Scenes.Shade)
             }
+        }
+
+    @Test
+    fun upFromBottom_whenInEditMode_goesToGone() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+
+            editModeViewModel.startEditing()
+
+            assertThat(
+                    (actions?.get(Swipe.Up(fromSource = Edge.Bottom))
+                            as? UserActionResult.ChangeScene)
+                        ?.toScene
+                )
+                .isEqualTo(SceneFamilies.Home)
         }
 
     private fun Kosmos.setDeviceEntered(isEntered: Boolean) {

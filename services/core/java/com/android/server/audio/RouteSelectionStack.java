@@ -18,6 +18,7 @@ package com.android.server.audio;
 
 import static com.android.server.utils.EventLogger.Event.ALOGI;
 import static com.android.server.utils.EventLogger.Event.ALOGW;
+import static com.android.server.audio.AudioService.anonymizeBluetoothAddress;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -28,7 +29,6 @@ import android.media.AudioRecordingConfiguration;
 import android.media.AudioSystem;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.function.TriFunction;
@@ -77,7 +77,7 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
     public synchronized RouteClient removeClient(IBinder token) {
         RouteClient client = null;
         // really Java..
-        for (int i = mClients.size() - 1; i >= 0; i++) {
+        for (int i = mClients.size() - 1; i >= 0; i--) {
             if (mClients.get(i).getToken().equals(token)) {
                 token.unlinkToDeath(this, 0);
                 client = mClients.remove(i);
@@ -159,35 +159,16 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
         return null;
     }
 
-    public synchronized void updateClientActivities(
-            List<AudioPlaybackConfiguration> playbackConfigs,
-            List<AudioRecordingConfiguration> recordConfigs,
-            TriFunction<RouteClient, Boolean, Boolean, Object> captor) {
+    public synchronized boolean updateActiveForUid(int uid, boolean active) {
+        boolean updated = false;
         for (var client : mClients) {
-            boolean wasActive = client.isActive();
-            boolean updateClientState = false;
-            if (playbackConfigs != null) {
-                client.setPlaybackActive(false);
-                for (AudioPlaybackConfiguration config : playbackConfigs) {
-                    if (config.getClientUid() == client.getUid() && config.isActive()) {
-                        client.setPlaybackActive(true);
-                        updateClientState = true;
-                        break;
-                    }
-                }
+            if (client.getUid() != uid) continue;
+            if (client.isActive() != active) {
+                client.setStreamActive(active);
+                updated = true;
             }
-            if (recordConfigs != null) {
-                client.setRecordingActive(false);
-                for (AudioRecordingConfiguration config : recordConfigs) {
-                    if (config.getClientUid() == client.getUid() && !config.isClientSilenced()) {
-                        client.setRecordingActive(true);
-                        updateClientState = true;
-                        break;
-                    }
-                }
-            }
-            captor.apply(client, updateClientState, wasActive);
         }
+        return updated;
     }
 
     @Override
@@ -229,21 +210,19 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
         @NonNull private final AttributionSource mAttributionSource;
         private final boolean mIsPrivileged;
         @NonNull private AudioDeviceAttributes mDevice;
-        private boolean mPlaybackActive;
-        private boolean mRecordingActive;
+        private boolean mStreamActive;
 
         // Route selection should not be considered due to client state or device invalidation
         private boolean mDisabled;
 
         RouteClient(IBinder cb, @NonNull AttributionSource attributionSource,
-                @NonNull AudioDeviceAttributes device, boolean isPrivileged,
-                boolean playbackActive, boolean recordingActive) {
+                @NonNull AudioDeviceAttributes device, boolean isPrivileged) {
+
             mToken = cb;
             mAttributionSource = attributionSource;
             mDevice = device;
             mIsPrivileged = isPrivileged;
-            mPlaybackActive = playbackActive;
-            mRecordingActive = recordingActive;
+            mStreamActive = true;
             mDisabled = false;
         }
 
@@ -270,7 +249,7 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
         }
 
         public boolean isActive() {
-            return !mDisabled && (mIsPrivileged || mRecordingActive || mPlaybackActive);
+            return !mDisabled && (mIsPrivileged || mStreamActive);
         }
 
         public boolean isDisabled() {
@@ -281,16 +260,11 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
             mDevice = device;
         }
 
-        // TODO: internalize for synchronization
-        public void setPlaybackActive(boolean active) {
-            mPlaybackActive = active;
+        private void setStreamActive(boolean active) {
+            mStreamActive = active;
         }
 
-        public void setRecordingActive(boolean active) {
-            mRecordingActive = active;
-        }
-
-        public void setDisabled(boolean disabled) {
+        private void setDisabled(boolean disabled) {
             mDisabled = disabled;
         }
 
@@ -299,15 +273,16 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
             return "[RouteClient: " + mAttributionSource.getUid() + "("
                     + mAttributionSource.getPackageName() + ")"
                     + " mDevice: " + mDevice + " mIsPrivileged: " + mIsPrivileged
-                    + " mPlaybackActive: " + mPlaybackActive
-                    + " mRecordingActive: " + mRecordingActive + " mDisabled: " + mDisabled + "]";
+                    + " mStreamActive: " + mStreamActive
+                    + " mDisabled: " + mDisabled + "]";
         }
 
         public String toShortString() {
             String deviceName = AudioSystem.getDeviceName(getDevice().getType());
             return String.valueOf(getUid()) + "("
                     + abbrevPackage(getAttributionSource().getPackageName()) + ")"
-                    + ":" + clampedSubstr(deviceName, 0, 3) + "_" + getDevice().getAddress() + ":"
+                    + ":" + clampedSubstr(deviceName, 0, 3) + "_" +
+                    anonymizeBluetoothAddress(getDevice()) + ":"
                     + (isActive() ? "a" : "") + ":" + (isDisabled() ? "d" : "");
         }
     }

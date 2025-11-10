@@ -24,6 +24,7 @@ import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.flags.QsDetailedView
+import com.android.systemui.retail.domain.interactor.RetailModeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import javax.inject.Inject
@@ -43,6 +44,7 @@ constructor(
     private val dialogFactory: InternetDialogDelegateLegacy.Factory,
     @Background private val bgDispatcher: CoroutineDispatcher,
     private val shadeModeInteractor: ShadeModeInteractor,
+    private val retailModeInteractor: RetailModeInteractor,
 ) {
     private lateinit var coroutineScope: CoroutineScope
 
@@ -61,7 +63,7 @@ constructor(
         canConfigWifi: Boolean,
         expandable: Expandable?,
     ) {
-        if (shadeModeInteractor.isDualShade) {
+        if (shadeModeInteractor.isDualShade && !retailModeInteractor.isInRetailMode) {
             // If `QsDetailedView` is enabled, it should show the details view.
             QsDetailedView.assertInLegacyMode()
         }

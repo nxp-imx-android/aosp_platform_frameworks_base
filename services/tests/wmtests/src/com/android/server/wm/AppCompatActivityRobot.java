@@ -385,6 +385,8 @@ class AppCompatActivityRobot {
         mDisplayContent = new TestDisplayContent.Builder(mAtm, mDisplayWidth, mDisplayHeight)
                 .setType(type)
                 .build();
+        // Skip WAKE transition when adding a task to the empty display.
+        mDisplayContent.setIsSleeping(false);
         onPostDisplayContentCreation(mDisplayContent);
     }
 

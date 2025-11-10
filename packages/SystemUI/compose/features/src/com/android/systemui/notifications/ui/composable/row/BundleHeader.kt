@@ -205,7 +205,7 @@ private fun ContentScope.BundleHeaderContent(
         val config = LocalConfiguration.current
         val isBoldTextEnabled = config.fontWeightAdjustment > 0
         Text(
-            text = stringResource(viewModel.titleText),
+            text = viewModel.summaryText ?: stringResource(viewModel.titleText),
             style =
                 MaterialTheme.typography.titleMediumEmphasized.copy(
                     fontWeight = if (isBoldTextEnabled) FontWeight.ExtraBold else FontWeight.Bold

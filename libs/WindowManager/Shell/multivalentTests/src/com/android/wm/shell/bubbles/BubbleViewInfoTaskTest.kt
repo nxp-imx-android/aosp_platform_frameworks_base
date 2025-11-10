@@ -192,6 +192,7 @@ class BubbleViewInfoTaskTest {
                 { false },
                 sessionTracker,
                 bubbleViewInfoTaskFactory,
+                mock<BubbleHelper>(),
             )
 
         // TODO: (b/371829099) - when optional overflow is no longer flagged we can enable this

@@ -77,6 +77,7 @@ import com.android.systemui.plugins.VolumeDialogController;
 import com.android.systemui.plugins.VolumeDialogController.State;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.VibratorHelper;
+import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.DevicePostureController;
@@ -145,9 +146,17 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     InteractionJankMonitor mInteractionJankMonitor;
     @Mock
     private DumpManager mDumpManager;
-    @Mock CsdWarningDialog mCsdWarningDialog;
+    @Mock
+    CsdWarningDialogDelegate mCsdWarningDialogDelegate;
+    @Mock
+    SystemUIDialog mCsdWarningDialog;
     @Mock
     DevicePostureController mPostureController;
+    @Mock SystemUIDialog mSystemUIDialog;
+    @Mock
+    SafetyWarningDialogDelegate.Factory mSafetyWarningDialogFactory;
+    @Mock
+    SafetyWarningDialogDelegate mSafetyWarningDialogDelegate;
     @Mock
     private Lazy<SecureSettings> mLazySecureSettings;
     @Mock
@@ -159,12 +168,12 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     @Mock
     private VolumeDialogInteractor mVolumeDialogInteractor;
 
-    private final CsdWarningDialog.Factory mCsdWarningDialogFactory =
-            new CsdWarningDialog.Factory() {
+    private final CsdWarningDialogDelegate.Factory mCsdWarningDialogFactory =
+            new CsdWarningDialogDelegate.Factory() {
                 @Override
-                public CsdWarningDialog create(int warningType, Runnable onCleanup,
+                public CsdWarningDialogDelegate create(int warningType, Runnable onCleanup,
                         Optional<List<CsdWarningAction>> actionIntents) {
-                    return mCsdWarningDialog;
+                    return mCsdWarningDialogDelegate;
                 }
             };
     @Mock
@@ -202,11 +211,16 @@ public class VolumeDialogImplTest extends SysuiTestCase {
 
         mConfigurationController = new FakeConfigurationController();
 
+        when(mSafetyWarningDialogFactory.create(any())).thenReturn(mSafetyWarningDialogDelegate);
+        when(mSafetyWarningDialogDelegate.createDialog()).thenReturn(mSystemUIDialog);
+
         mSecureSettings = new FakeSettings();
 
         when(mLazySecureSettings.get()).thenReturn(mSecureSettings);
 
         when(mVibratorHelper.getPrimitiveDurations(anyInt())).thenReturn(new int[]{0});
+
+        when(mCsdWarningDialogDelegate.createDialog()).thenReturn(mCsdWarningDialog);
 
         mDialog = new VolumeDialogImpl(
                 getContext(),
@@ -221,6 +235,7 @@ public class VolumeDialogImplTest extends SysuiTestCase {
                 false,
                 mCsdWarningDialogFactory,
                 mPostureController,
+                mSafetyWarningDialogFactory,
                 mTestableLooper.getLooper(),
                 mVolumePanelFlag,
                 mDumpManager,
@@ -482,8 +497,9 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     @Test
     public void showCsdWarning_dialogShown() {
         mDialog.showCsdWarningH(AudioManager.CSD_WARNING_DOSE_REACHED_1X,
-                CsdWarningDialog.NO_ACTION_TIMEOUT_MS);
+                CsdWarningDialogDelegate.NO_ACTION_TIMEOUT_MS);
 
+        verify(mCsdWarningDialogDelegate).createDialog();
         verify(mCsdWarningDialog).show();
     }
 

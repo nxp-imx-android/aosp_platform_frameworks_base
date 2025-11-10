@@ -35,7 +35,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.res.Resources;
-import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.IBinder;
@@ -58,6 +57,7 @@ import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleInfo;
 import com.android.wm.shell.shared.bubbles.ParcelableFlyoutMessage;
+import com.android.wm.shell.shared.bubbles.UserType;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 
@@ -155,8 +155,8 @@ public class Bubble implements BubbleViewProvider {
     // App badge without any markings for important conversations
     private BitmapInfo mRawBadgeBitmap;
     private int mDotColor;
-    private Path mDotPath;
     private int mFlags;
+    private UserType mUserType;
 
     @NonNull
     private UserHandle mUser;
@@ -474,7 +474,8 @@ public class Bubble implements BubbleViewProvider {
                 getAppName(),
                 isImportantConversation(),
                 getParcelableFlyoutMessage(),
-                isApp());
+                isApp(),
+                mUserType);
     }
 
     /** Creates a parcelable flyout message to send to launcher. */
@@ -792,6 +793,8 @@ public class Bubble implements BubbleViewProvider {
         mBubbleIcon = info.bubbleIcon;
 
         mDotColor = info.dotColor;
+
+        mUserType = info.userType;
 
         if (mExpandedView != null) {
             mExpandedView.update(this /* bubble */);

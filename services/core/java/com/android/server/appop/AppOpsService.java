@@ -4235,9 +4235,10 @@ public class AppOpsService extends IAppOpsService.Stub {
 
         boolean isRestricted = false;
         synchronized (this) {
-            // Edit is false, as dry run shouldn't make any changes
-            final Ops ops = getOpsLocked(uid, packageName, attributionTag,
-                    pvr.isAttributionTagValid, pvr.bypass, /* edit */ false);
+            // Edit is true (so we create the Ops object if needed), but attribution tag is given as
+            // null, so we don't cache any information about it.
+            final Ops ops = getOpsLocked(uid, packageName, null,
+                    pvr.isAttributionTagValid, pvr.bypass, /* edit */ true);
             if (ops == null) {
                 if (DEBUG) {
                     Slog.d(TAG, "startOperation: no op for code " + code + " uid " + uid
@@ -4451,7 +4452,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             if (attributedOp.isRunning() || attributedOp.isPaused()) {
                 attributedOp.finished(clientId);
             } else {
-                Slog.e(TAG, "Operation not started: uid=" + proxiedUid
+                Slog.w(TAG, "Operation not started: uid=" + proxiedUid
                         + " pkg=" + proxiedPackageName + "("
                         + attributionTag + ") op=" + AppOpsManager.opToName(code));
             }
@@ -4963,6 +4964,31 @@ public class AppOpsService extends IAppOpsService.Stub {
                 isProxyTrusted, false);
     }
 
+    private int resolveSpecialUidIfNeeded(int uid, String packageName) {
+        final PackageManager pm = mContext.getPackageManager();
+        if (Process.isSdkSandboxUid(uid)) {
+            // SDK sandbox processes run in their own UID range, but their associated
+            // UID for checks should always be the UID of the package implementing SDK sandbox
+            // service.
+            // TODO: We will need to modify the callers of this function instead, so
+            // modifications and checks against the app ops state are done with the
+            // correct UID.
+            try {
+                final String supplementalPackageName = pm.getSdkSandboxPackageName();
+                if (Objects.equals(packageName, supplementalPackageName)) {
+                    uid = pm.getPackageUidAsUser(supplementalPackageName,
+                            PackageManager.PackageInfoFlags.of(0), UserHandle.getUserId(uid));
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                // Shouldn't happen for the supplemental package
+                e.printStackTrace();
+            }
+        } else if (Process.isPccUid(uid)) {
+            uid = pm.getAppUidForPccUid(uid);
+        }
+        return uid;
+    }
+
     /**
      * Verify that package belongs to uid and return the {@link RestrictionBypass bypass
      * description} for the package, along with a boolean indicating whether the attribution tag is
@@ -4993,26 +5019,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                     /* isAttributionTagValid */ isProxyTrusted
                     && isPackageNullOrSystem(proxyPackageName, proxyUid));
         }
-        if (Process.isSdkSandboxUid(uid)) {
-            // SDK sandbox processes run in their own UID range, but their associated
-            // UID for checks should always be the UID of the package implementing SDK sandbox
-            // service.
-            // TODO: We will need to modify the callers of this function instead, so
-            // modifications and checks against the app ops state are done with the
-            // correct UID.
-            try {
-                final PackageManager pm = mContext.getPackageManager();
-                final String supplementalPackageName = pm.getSdkSandboxPackageName();
-                if (Objects.equals(packageName, supplementalPackageName)) {
-                    uid = pm.getPackageUidAsUser(supplementalPackageName,
-                            PackageManager.PackageInfoFlags.of(0), UserHandle.getUserId(uid));
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                // Shouldn't happen for the supplemental package
-                e.printStackTrace();
-            }
-        }
 
+        uid = resolveSpecialUidIfNeeded(uid, packageName);
 
         // Do not check if uid/packageName/attributionTag is already known.
         synchronized (this) {

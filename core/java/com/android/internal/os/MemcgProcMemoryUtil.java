@@ -17,14 +17,10 @@ package com.android.internal.os;
 
 import static android.os.Process.PROC_OUT_LONG;
 
-import android.annotation.Nullable;
 import android.os.Process;
 import android.os.UserHandle;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -35,6 +31,20 @@ public final class MemcgProcMemoryUtil {
     private static final int[] MEMCG_MEMORY_FORMAT = new int[] {PROC_OUT_LONG};
     private static final String CGROUP_ROOT = "/sys/fs/cgroup";
     private static final String PROC_ROOT = "/proc/";
+
+    // Define constants for the indices for readability
+    private static final int MEMCG_STAT_ANON_IDX = 0;
+    private static final int MEMCG_STAT_FILE_IDX = 1;
+    private static final int MEMCG_STAT_KERNEL_IDX = 2;
+    private static final int MEMCG_STAT_SHMEM_IDX = 3;
+    private static final int MEMCG_STAT_FILE_MAPPED_IDX = 4;
+    private static final String[] MEMCG_STAT_FIELDS = new String[] {
+            "anon",
+            "file",
+            "kernel",
+            "shmem",
+            "file_mapped",
+    };
 
     private MemcgProcMemoryUtil() {}
 
@@ -64,6 +74,20 @@ public final class MemcgProcMemoryUtil {
             return null;
         }
         return readMemcgHighWaterMarkMemorySnapshot(cgroupPath);
+    }
+
+    /**
+     * Reads memcgv2 stats file for key vales for a process.
+     *
+     * Returns MemcgMemoryStatSnapshot
+     */
+    public static MemcgMemoryStatSnapshot readMemcgProcessStatSnapshot(
+            int uid, int pid) {
+        String cgroupPath = getCgroupPath(uid, pid);
+        if (cgroupPath == null) {
+            return null;
+        }
+        return readMemcgStatSnapshot(cgroupPath);
     }
 
     /**
@@ -152,6 +176,46 @@ public final class MemcgProcMemoryUtil {
         return snapshot;
     }
 
+    private static MemcgMemoryStatSnapshot readMemcgStatSnapshot(String cgroupPath) {
+        Path fullMemcgPath = Paths.get(CGROUP_ROOT, cgroupPath);
+        Path statsFilePath = Paths.get(CGROUP_ROOT, cgroupPath, "memory.stat");
+        final MemcgMemoryStatSnapshot snapshot = new MemcgMemoryStatSnapshot();
+
+        long[] outStats = new long[MEMCG_STAT_FIELDS.length];
+        Process.readProcLines(statsFilePath.toString(), MEMCG_STAT_FIELDS, outStats);
+
+        try {
+            snapshot.anonInKiloBytes = Math.toIntExact(outStats[MEMCG_STAT_ANON_IDX] / 1024);
+            snapshot.fileInKiloBytes = Math.toIntExact(outStats[MEMCG_STAT_FILE_IDX] / 1024);
+            snapshot.totalKernelInKiloBytes =
+                Math.toIntExact(outStats[MEMCG_STAT_KERNEL_IDX] / 1024);
+            snapshot.shmemInKiloBytes = Math.toIntExact(outStats[MEMCG_STAT_SHMEM_IDX] / 1024);
+            snapshot.fileMappedInKiloBytes =
+                Math.toIntExact(outStats[MEMCG_STAT_FILE_MAPPED_IDX] / 1024);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+
+        long[] currentSwapMemoryOutput = new long[1];
+        String memorySwapPath =
+                fullMemcgPath.resolve("memory.swap.current").toString();
+        if (Process.readProcFile(
+                memorySwapPath,
+                MEMCG_MEMORY_FORMAT,
+                null,
+                currentSwapMemoryOutput,
+                null
+        )) {
+            snapshot.memorySwapInKiloBytes =
+                   Math.toIntExact(currentSwapMemoryOutput[0] / 1024);
+        } else {
+            Log.d(TAG, "Failed to read memory.swap.current for " + cgroupPath);
+            return null;
+        }
+
+        return snapshot;
+    }
+
     private static Long readSingleValueFromMemcgFile(
             Path fullMemcgPath, String fileKey, int[] fileFormat) {
         long[] memoryValue = new long[1];
@@ -177,5 +241,14 @@ public final class MemcgProcMemoryUtil {
     public static final class MemcgMemorySnapshot {
         public long memcgMemoryInBytes;
         public long memcgSwapMemoryInBytes;
+    }
+
+    public static final class MemcgMemoryStatSnapshot {
+        public int anonInKiloBytes;
+        public int fileInKiloBytes;
+        public int totalKernelInKiloBytes;
+        public int shmemInKiloBytes;
+        public int fileMappedInKiloBytes;
+        public int memorySwapInKiloBytes;
     }
 }

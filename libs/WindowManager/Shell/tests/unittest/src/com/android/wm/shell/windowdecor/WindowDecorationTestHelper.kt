@@ -161,7 +161,6 @@ object WindowDecorationTestHelper {
                 windowDecorViewHostSupplier = viewHostSupplier,
                 multiInstanceHelper = mock(),
                 windowDecorCaptionRepository = mock(),
-                desktopModeEventLogger = mock(),
                 desktopModeUiEventLogger = desktopModeUiEventLogger,
                 desktopModeCompatPolicy = mock(),
                 desktopState = desktopState,
@@ -324,7 +323,7 @@ object WindowDecorationTestHelper {
             defaultWindowDecoration.captionController?.getCaptionHeight() ?: 0
     }
 
-    private class TestWindowDecorTaskResourceLoader : WindowDecorTaskResourceLoader {
+    class TestWindowDecorTaskResourceLoader : WindowDecorTaskResourceLoader {
         override suspend fun getNameAndHeaderIcon(
             taskInfo: RunningTaskInfo
         ): Pair<CharSequence, Bitmap> = Pair("Test", mock())

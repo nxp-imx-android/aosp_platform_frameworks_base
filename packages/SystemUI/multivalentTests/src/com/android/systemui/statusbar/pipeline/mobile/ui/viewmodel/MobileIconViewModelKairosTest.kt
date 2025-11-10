@@ -43,7 +43,6 @@ import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.MobileIconCarrierIdOverridesFake
 import com.android.systemui.statusbar.core.NewStatusBarIcons
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.fake
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
@@ -720,7 +719,7 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME)
     fun netTypeBackground_sliceUiEnabled_notNullWhenPrioritizedCapabilities_newIcons() = runTest {
         val latest by underTest.networkTypeBackground.collectLastValue()
 
@@ -731,7 +730,7 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    @DisableFlags(NewStatusBarIcons.FLAG_NAME)
     fun netTypeBackground_sliceUiDisabled_notNullWhenPrioritizedCapabilities_oldIcons() = runTest {
         val latest by underTest.networkTypeBackground.collectLastValue()
 

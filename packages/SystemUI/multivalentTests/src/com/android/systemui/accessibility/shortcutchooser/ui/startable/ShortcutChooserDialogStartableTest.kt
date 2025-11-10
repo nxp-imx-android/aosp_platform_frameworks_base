@@ -17,8 +17,6 @@
 package com.android.systemui.accessibility.shortcutchooser.ui.startable
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.accessibility.Flags
@@ -30,10 +28,10 @@ import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.common.ShortcutChooserDialogConstants
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.data.repository.FakeAccessibilityShortcutsRepository
 import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
-import com.android.systemui.accessibility.shortcutchooser.domain.ShortcutChooserDialogInteractor
-import com.android.systemui.accessibility.shortcutchooser.domain.shortcutChooserDialogInteractor
-import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
+import com.android.systemui.accessibility.shortcutchooser.domain.interactor.ShortcutChooserDialogInteractor
+import com.android.systemui.accessibility.shortcutchooser.domain.interactor.shortcutChooserDialogInteractor
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
@@ -51,28 +49,30 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(Flags.FLAG_ENABLE_A11Y_TOP_ROW_SHORTCUT)
 class ShortcutChooserDialogStartableTest : SysuiTestCase() {
+    private companion object {
+        const val SHORTCUT_TYPE = UserShortcutType.TOP_ROW_KEY
+
+        const val TALKBACK_TARGET_NAME =
+            FakeAccessibilityShortcutsRepository.FAKE_TALKBACK_TARGET_NAME
+        const val MAGNIFICATION_TARGET_NAME =
+            FakeAccessibilityShortcutsRepository.FAKE_MAGNIFICATION_TARGET_NAME
+    }
+
     @get:Rule val composeTestRule = createEmptyComposeRule()
 
     private val kosmos = testKosmosNew()
-    private val broadcastDispatcher = kosmos.broadcastDispatcher
-    private val interactor = kosmos.shortcutChooserDialogInteractor
-    private val repository = kosmos.accessibilityShortcutsRepository
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
             ShortcutChooserDialogStartable(
-                interactor,
-                kosmos.systemUIDialogFactory,
-                kosmos.backgroundScope,
+                shortcutChooserDialogInteractor,
+                systemUIDialogFactory,
+                backgroundScope,
             )
         }
 
     @Before
     fun setUp() {
-        // We need to clear the cache before each test running; so that if the previous test changed
-        // the list will not affect the other tests.
-        repository.setSelectedAccessibilityTargetsList(emptyList())
-
         onTeardown {
             runOnMainThreadAndWaitForIdleSync {
                 with(kosmos) { underTest.currentDialog?.dismiss() }
@@ -93,7 +93,9 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.start()
 
-            sendIntentInMainThread(UserShortcutType.TOP_ROW_KEY)
+            sendIntentInMainThread()
+            composeTestRule.waitForIdle()
+
             // Verify that when there is no selected targets by default, the dialog type should be
             // tutorial dialog.
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
@@ -123,8 +125,9 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.start()
 
-            sendIntentInMainThread(UserShortcutType.TOP_ROW_KEY)
+            sendIntentInMainThread()
             composeTestRule.waitForIdle()
+
             // Click on the composable positive button on the top row key tutorial dialog.
             composeTestRule.onNodeWithTag("add_features_button").performClick()
 
@@ -138,23 +141,21 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
     @Test
     fun createDialog_topRowKey_editTargetsDialog_selectOneTarget_dismissDialog() =
         kosmos.runTest {
-            val talkbackTargetName = "fakeTargetNameForTalkBack"
             underTest.start()
 
-            sendIntentInMainThread(UserShortcutType.TOP_ROW_KEY)
+            sendIntentInMainThread()
             composeTestRule.waitForIdle()
+
             // Click on the composable positive button on the top row key tutorial dialog.
             composeTestRule.onNodeWithTag("add_features_button").performClick()
             composeTestRule.waitForIdle()
+
             // Select only one target on EditDialog.
-            composeTestRule.onNodeWithTag(talkbackTargetName).performClick()
+            composeTestRule.onNodeWithTag(TALKBACK_TARGET_NAME).performClick()
             composeTestRule.waitForIdle()
-            assertThat(repository.areShortcutsEnabled).isTrue()
-            assertThat(repository.enabledShortcutTargetName).isEqualTo(talkbackTargetName)
-            // [AccessibilityManager.enableShortcutsForTargets] will automatically update the
-            // selected list in production code; in the fake repository, we have to manually to
-            // update the fake list.
-            setTalkBackSelected()
+
+            assertThat(getSelectedTargetNames()).isEqualTo(setOf(TALKBACK_TARGET_NAME))
+
             // Finally click on Done button.
             composeTestRule.onNodeWithTag("done_button").performClick()
             composeTestRule.waitForIdle()
@@ -166,26 +167,27 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
     @Test
     fun createDialog_topRowKey_editTargetsDialog_selectTwoTarget_showToggleTargetsDialog() =
         kosmos.runTest {
-            val talkbackTargetName = "fakeTargetNameForTalkBack"
-            val magnificationTargetName = "fakeTargetNameForMagnification"
             underTest.start()
 
-            sendIntentInMainThread(UserShortcutType.TOP_ROW_KEY)
+            sendIntentInMainThread()
             composeTestRule.waitForIdle()
+
             // Click on the composable positive button on the top row key tutorial dialog.
             composeTestRule.onNodeWithTag("add_features_button").performClick()
             composeTestRule.waitForIdle()
+
             // Select two targets on EditDialog, e.g. Talkback and Magnification.
-            composeTestRule.onNodeWithTag(talkbackTargetName).performClick()
+            composeTestRule.onNodeWithTag(TALKBACK_TARGET_NAME).performClick()
             composeTestRule.waitForIdle()
-            assertThat(repository.enabledShortcutTargetName).isEqualTo(talkbackTargetName)
-            composeTestRule.onNodeWithTag(magnificationTargetName).performClick()
+
+            assertThat(getSelectedTargetNames()).isEqualTo(setOf(TALKBACK_TARGET_NAME))
+
+            composeTestRule.onNodeWithTag(MAGNIFICATION_TARGET_NAME).performClick()
             composeTestRule.waitForIdle()
-            assertThat(repository.enabledShortcutTargetName).isEqualTo(magnificationTargetName)
-            // [AccessibilityManager.enableShortcutsForTargets] will automatically update the
-            // selected list in production code; in the fake repository, we have to manually to
-            // update the fake list.
-            setTalkbackAndMagnificationSelected()
+
+            assertThat(getSelectedTargetNames())
+                .isEqualTo(setOf(TALKBACK_TARGET_NAME, MAGNIFICATION_TARGET_NAME))
+
             // Finally click on Done button.
             composeTestRule.onNodeWithTag("done_button").performClick()
             composeTestRule.waitForIdle()
@@ -223,23 +225,24 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
     @Test
     fun createDialog_topRowKey_twoSelectedTargets_showToggleScreen_andClickTargetRow() =
         kosmos.runTest {
-            val talkbackTargetName = "fakeTargetNameForTalkBack"
             setTalkbackAndMagnificationSelected()
             underTest.start()
 
-            sendIntentInMainThread(UserShortcutType.TOP_ROW_KEY)
+            sendIntentInMainThread()
+            composeTestRule.waitForIdle()
+
             // Verify when there are two selected targets, the dialog type should be Toggle targets
             // dialog.
             assertThat(underTest.currentDialog!!.isShowing).isTrue()
             assertThat(underTest.currentScreenState!!.value)
                 .isEqualTo(ShortcutChooserDialogStartable.DialogScreen.TOGGLE_TARGETS)
-            composeTestRule.waitForIdle()
+
             // Click on the one target row, e.g. Talkback.
-            composeTestRule.onNodeWithTag(talkbackTargetName).performClick()
+            composeTestRule.onNodeWithTag(TALKBACK_TARGET_NAME).performClick()
             composeTestRule.waitForIdle()
 
             // Will toggle Talkback feature on/off and dismiss the dialog.
-            assertThat(repository.performedShortcutTargetName).isEqualTo(talkbackTargetName)
+            assertThat(getToggledOnTargetNames()).isEqualTo(setOf(TALKBACK_TARGET_NAME))
             assertThat(underTest.currentDialog).isNull()
         }
 
@@ -249,8 +252,9 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             setTalkbackAndMagnificationSelected()
             underTest.start()
 
-            sendIntentInMainThread(UserShortcutType.TOP_ROW_KEY)
+            sendIntentInMainThread()
             composeTestRule.waitForIdle()
+
             // Click on the Edit button.
             composeTestRule.onNodeWithTag("edit_button").performClick()
             composeTestRule.waitForIdle()
@@ -267,8 +271,9 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             setTalkbackAndMagnificationSelected()
             underTest.start()
 
-            sendIntentInMainThread(UserShortcutType.TOP_ROW_KEY)
+            sendIntentInMainThread()
             composeTestRule.waitForIdle()
+
             // Click on the Done button.
             composeTestRule.onNodeWithTag("done_button").performClick()
             composeTestRule.waitForIdle()
@@ -277,17 +282,17 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             assertThat(underTest.currentDialog).isNull()
         }
 
-    private fun sendIntentInMainThread(@UserShortcutType shortcutType: Int) {
-        val intent =
-            Intent().apply {
-                action = ShortcutChooserDialogInteractor.ACTION
-                putExtra(ShortcutChooserDialogConstants.SHORTCUT_TYPE, shortcutType)
-                putExtra(ShortcutChooserDialogConstants.DISPLAY_ID, DEFAULT_DISPLAY)
-            }
-
+    private fun Kosmos.sendIntentInMainThread(shortcutType: Int = SHORTCUT_TYPE) {
         // Sending broadcast to create SysUi dialog should be run in main thread.
         runOnMainThreadAndWaitForIdleSync {
-            broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent().apply {
+                    action = ShortcutChooserDialogInteractor.ACTION
+                    putExtra(ShortcutChooserDialogConstants.SHORTCUT_TYPE, shortcutType)
+                    putExtra(ShortcutChooserDialogConstants.DISPLAY_ID, DEFAULT_DISPLAY)
+                },
+            )
         }
     }
 
@@ -295,54 +300,34 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
      * A helper function called before launching dialog. This function is to assume we have two
      * selected targets, which are Talkback and Magnification.
      */
-    private fun setTalkbackAndMagnificationSelected() {
-        // Helper Drawable for the fake models
-        val fakeIcon = ColorDrawable(Color.BLACK)
-
-        repository.setSelectedAccessibilityTargetsList(
-            listOf(
-                AccessibilityTargetModel(
-                    shortcutType = UserShortcutType.TOP_ROW_KEY,
-                    targetName = "fakeTargetNameForTalkBack",
-                    featureName = "Screen Reader",
-                    icon = fakeIcon,
-                    isAssigned = true,
-                    isToggleable = true,
-                    isToggleOn = false,
-                ),
-                AccessibilityTargetModel(
-                    shortcutType = UserShortcutType.TOP_ROW_KEY,
-                    targetName = "fakeTargetNameForMagnification",
-                    featureName = "Magnification",
-                    icon = fakeIcon,
-                    isAssigned = true,
-                    isToggleable = false,
-                    isToggleOn = false,
-                ),
-            )
+    private fun Kosmos.setTalkbackAndMagnificationSelected() =
+        accessibilityShortcutsRepository.enableShortcutsForTargets(
+            enable = true,
+            shortcutType = SHORTCUT_TYPE,
+            targetNames = setOf(TALKBACK_TARGET_NAME, MAGNIFICATION_TARGET_NAME),
         )
-    }
 
     /**
      * A helper function called before launching dialog. This function is to assume we have only one
      * selected targets, which is Talkback.
      */
-    private fun setTalkBackSelected() {
-        // Helper Drawable for the fake models
-        val fakeIcon = ColorDrawable(Color.BLACK)
-
-        repository.setSelectedAccessibilityTargetsList(
-            listOf(
-                AccessibilityTargetModel(
-                    shortcutType = UserShortcutType.TOP_ROW_KEY,
-                    targetName = "fakeTargetNameForTalkBack",
-                    featureName = "Screen Reader",
-                    icon = fakeIcon,
-                    isAssigned = true,
-                    isToggleable = true,
-                    isToggleOn = false,
-                )
-            )
+    private fun Kosmos.setTalkBackSelected() =
+        accessibilityShortcutsRepository.enableShortcutsForTargets(
+            enable = true,
+            shortcutType = SHORTCUT_TYPE,
+            targetNames = setOf(TALKBACK_TARGET_NAME),
         )
-    }
+
+    private fun Kosmos.getSelectedTargetNames(): Set<String> =
+        accessibilityShortcutsRepository
+            .getSelectedAccessibilityTargetsInfo(SHORTCUT_TYPE)
+            .map { it.targetName }
+            .toSet()
+
+    private fun Kosmos.getToggledOnTargetNames(): Set<String> =
+        accessibilityShortcutsRepository
+            .getAllAccessibilityTargetsInfo(SHORTCUT_TYPE)
+            .filter { it.isToggleOn }
+            .map { it.targetName }
+            .toSet()
 }

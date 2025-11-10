@@ -326,6 +326,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"செவித்துணைக் கருவி"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"அணுகல்தன்மை உபயோகம்"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"டிஸ்ப்ளே"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸ் பேட்டரியைப் பயன்படுத்துகிறது"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> ஆப்ஸ் பேட்டரியைப் பயன்படுத்துகின்றன"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"பேட்டரி மற்றும் டேட்டா உபயோக விவரங்களைக் காண, தட்டவும்"</string>
@@ -2609,4 +2611,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"சிஸ்டம் ஆதாரம் தொடர்பான விழிப்பூட்டல்கள்"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ஆதாரத்தை அதிகளவில் பயன்படுத்துதல்"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\'<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸ் மிக அதிகளவிலான ஆதாரங்களைப் பயன்படுத்துகிறது\"."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

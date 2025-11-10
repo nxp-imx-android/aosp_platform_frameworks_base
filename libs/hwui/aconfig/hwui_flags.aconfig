@@ -159,16 +159,6 @@ flag {
 }
 
 flag {
-  name: "remove_vri_sketchy_destroy"
-  namespace: "core_graphics"
-  description: "Remove the eager yet thread-violating destroyHardwareResources in VRI#die"
-  bug: "377057106"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "early_preinit_buffer_allocator"
   namespace: "core_graphics"
   description: "Initialize GraphicBufferAllocater on ViewRootImpl init, to avoid blocking on init during buffer allocation, improving app launch latency."

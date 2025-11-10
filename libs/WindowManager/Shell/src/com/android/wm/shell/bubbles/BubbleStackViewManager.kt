@@ -39,6 +39,9 @@ interface BubbleStackViewManager {
     /** Allows callers to clear the runnable set by [hideCurrentInputMethod]. */
     fun clearImeHiddenRunnable()
 
+    /** Tells whether current active user using gesture navigation mode. */
+    fun isGestureNavigationMode(): Boolean
+
     companion object {
 
         @JvmStatic
@@ -61,6 +64,10 @@ interface BubbleStackViewManager {
 
             override fun clearImeHiddenRunnable() {
                 controller.clearImeHiddenRunnable()
+            }
+
+            override fun isGestureNavigationMode(): Boolean {
+                return controller.isGestureNavigationMode()
             }
         }
     }

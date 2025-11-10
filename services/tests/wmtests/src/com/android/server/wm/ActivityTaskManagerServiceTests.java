@@ -87,6 +87,7 @@ import android.os.PowerManagerInternal;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
@@ -199,6 +200,8 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     @Before
     public void setUp() throws Exception {
         setBooted(mAtm);
+        // Because the booted state is set, avoid starting real home if there is no task.
+        doReturn(false).when(mRootWindowContainer).resumeHomeActivity(any(), anyString(), any());
     }
 
     /** Verify that activity is finished correctly upon request. */
@@ -262,6 +265,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testAddHandoffEnablementListener_doesNotNotifyIfFlagDisabled() {
         ActivityTaskManagerInternal.HandoffEnablementListener handoffEnablementListener =
                 mock(ActivityTaskManagerInternal.HandoffEnablementListener.class);
@@ -348,6 +352,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testGetHandoffActivityParamsForTask_returnsNullIfFlagDisabled() {
         HandoffActivityParams handoffActivityParams =
         new HandoffActivityParams.Builder()
@@ -1269,6 +1274,8 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         addNewDisplayContentAt(DisplayContent.POSITION_TOP);
         final DisplayContent dc0 = mRootWindowContainer.getChildAt(0);
         final DisplayContent dc1 = mRootWindowContainer.getChildAt(1);
+        new TaskBuilder(mSupervisor).setCreateActivity(true).setDisplay(dc0).build();
+        new TaskBuilder(mSupervisor).setCreateActivity(true).setDisplay(dc1).build();
         dc0.setLastHasContent();
         dc1.setLastHasContent();
         final Configuration config = new Configuration();

@@ -91,6 +91,7 @@ class RootTaskDesksOrganizer(
         deskRootsByDeskId.forEach { deskId, root ->
             if (root.taskInfo.displayId == displayId && deskId !in removeDeskRootRequests) {
                 // A desk already exists.
+                logV("warmUpDefaultDesk found existing desk root: %d, ignoring", deskId)
                 return
             }
         }
@@ -98,6 +99,7 @@ class RootTaskDesksOrganizer(
             createDeskRootRequests.any { request -> request.displayId == displayId }
         if (requestInProgress) {
             // There isn't one ready yet, but a request for one is already in progress.
+            logV("warmUpDefaultDesk found existing request in progress, ignoring")
             return
         }
         // Request a new one, but do not associate to the user.

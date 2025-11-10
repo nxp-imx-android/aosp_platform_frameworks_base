@@ -42,6 +42,7 @@ import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.content.pm.ApplicationInfo
+import android.content.pm.LauncherApps
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
@@ -327,6 +328,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var pipTransitionState: PipTransitionState
     @Mock private lateinit var surfaceControlTransaction: SurfaceControl.Transaction
     @Mock private lateinit var lockTaskChangeListener: LockTaskChangeListener
+    @Mock private lateinit var launcherApps: LauncherApps
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -585,6 +587,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transactionPool,
             Optional.of(pipTransitionState),
             lockTaskChangeListener,
+            launcherApps,
         )
 
     @After
@@ -618,6 +621,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask()
 
         val argumentCaptor = argumentCaptor<Boolean>()
+        val displayIdCaptor = argumentCaptor<Int>()
         controller.toggleDesktopTaskSize(
             task1,
             ToggleTaskSizeInteraction(
@@ -627,7 +631,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             ),
         )
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(argumentCaptor.capture())
+        verify(taskbarDesktopTaskListener)
+            .onTaskbarCornerRoundingUpdate(argumentCaptor.capture(), displayIdCaptor.capture())
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
                 resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
@@ -639,6 +644,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 deskId = 0,
             )
         assertThat(argumentCaptor.firstValue).isTrue()
+        assertThat(displayIdCaptor.firstValue).isEqualTo(task1.displayId)
     }
 
     @Test
@@ -660,6 +666,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask(bounds = stableBounds, active = true)
 
         val argumentCaptor = argumentCaptor<Boolean>()
+        val displayIdCaptor = argumentCaptor<Int>()
         controller.toggleDesktopTaskSize(
             task1,
             ToggleTaskSizeInteraction(
@@ -669,7 +676,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             ),
         )
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(argumentCaptor.capture())
+        verify(taskbarDesktopTaskListener)
+            .onTaskbarCornerRoundingUpdate(argumentCaptor.capture(), displayIdCaptor.capture())
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
                 eq(ResizeTrigger.MAXIMIZE_BUTTON),
@@ -681,6 +689,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 anyOrNull(),
             )
         assertThat(argumentCaptor.firstValue).isFalse()
+        assertThat(displayIdCaptor.firstValue).isEqualTo(task1.displayId)
     }
 
     @Test
@@ -1964,6 +1973,65 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         assertThat(controller.getInitialBounds(displayLayout, rememberedTask, 0))
             .isEqualTo(controller.getInitialBounds(displayLayout, nonRememberedTask, 0))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun rememberedBounds_clearedOnRemoved() {
+        val callbackCaptor = argumentCaptor<LauncherApps.Callback>()
+        verify(launcherApps).registerCallback(callbackCaptor.capture())
+        val launcherAppsCallback = callbackCaptor.firstValue
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isEqualTo(boundsRatio)
+
+        // Package is removed.
+        launcherAppsCallback.onPackageRemoved(packageName, UserHandle.of(DEFAULT_USER_ID))
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun rememberedBounds_clearedOnUnavailable() {
+        val callbackCaptor = argumentCaptor<LauncherApps.Callback>()
+        verify(launcherApps).registerCallback(callbackCaptor.capture())
+        val launcherAppsCallback = callbackCaptor.firstValue
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isEqualTo(boundsRatio)
+
+        // Package is unavailable.
+        launcherAppsCallback.onPackagesUnavailable(
+            arrayOf(packageName),
+            UserHandle.of(DEFAULT_USER_ID),
+            /* replacing= */ false,
+        )
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun rememberedBounds_notClearedOnReplaced() {
+        val callbackCaptor = argumentCaptor<LauncherApps.Callback>()
+        verify(launcherApps).registerCallback(callbackCaptor.capture())
+        val launcherAppsCallback = callbackCaptor.firstValue
+        val packageName = "com.test.app"
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isEqualTo(boundsRatio)
+
+        // Package is just being replaced.
+        launcherAppsCallback.onPackagesUnavailable(
+            arrayOf(packageName),
+            UserHandle.of(DEFAULT_USER_ID),
+            /* replacing= */ true,
+        )
+        assertThat(taskRepository.getRememberedBoundsRatio(packageName)).isEqualTo(boundsRatio)
     }
 
     @Test
@@ -4572,7 +4640,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
         controller.moveToNextDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test
@@ -5256,7 +5324,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         minimizePipTask(task)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test
@@ -5640,7 +5708,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
-        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
     }
 
     @Test
@@ -9266,7 +9334,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             spyController.onDragPositioningEnd(
                 task,
                 mockSurface,
-                DEFAULT_DISPLAY,
                 inputCoordinate = PointF(200f, -200f),
                 currentDragBounds = Rect(100, -100, 500, 1000),
                 validDragArea = Rect(0, 50, 2000, 2000),
@@ -9320,7 +9387,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             spyController.onDragPositioningEnd(
                 task,
                 mockSurface,
-                DEFAULT_DISPLAY,
                 inputCoordinate = PointF(200f, 300f),
                 currentDragBounds = currentDragBounds,
                 validDragArea = Rect(0, 50, 2000, 2000),
@@ -9374,7 +9440,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             spyController.onDragPositioningEnd(
                 task,
                 mockSurface,
-                DEFAULT_DISPLAY,
                 inputCoordinate = PointF(200f, 300f),
                 currentDragBounds,
                 validDragArea = Rect(0, 50, 2000, 2000),
@@ -9417,7 +9482,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             taskInfo = task,
             taskSurface = mockSurface,
-            displayId = SECONDARY_DISPLAY_ID,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9473,7 +9537,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             spyController.onDragPositioningEnd(
                 task,
                 mockSurface,
-                DEFAULT_DISPLAY,
                 inputCoordinate = PointF(200f, 300f),
                 currentDragBounds = Rect(100, 50, 500, 1000),
                 validDragArea = Rect(0, 50, 2000, 2000),
@@ -9520,7 +9583,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
-            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9586,7 +9648,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
-            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9645,7 +9706,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
-            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9711,7 +9771,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             task,
             mockSurface,
-            DEFAULT_DISPLAY,
             inputCoordinate = PointF(200f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9756,7 +9815,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             taskInfo = task,
             taskSurface = mockSurface,
-            displayId = DEFAULT_DISPLAY,
             inputCoordinate = PointF(250f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 0, 2000, 2000),
@@ -9788,7 +9846,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             taskInfo = task,
             taskSurface = mockSurface,
-            displayId = DEFAULT_DISPLAY,
             inputCoordinate = PointF(250f, 300f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -9839,7 +9896,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         spyController.onDragPositioningEnd(
             taskInfo = task,
             taskSurface = mockSurface,
-            displayId = DEFAULT_DISPLAY,
             inputCoordinate = PointF(510f, 210f),
             currentDragBounds = currentDragBounds,
             validDragArea = Rect(0, 50, 2000, 2000),
@@ -12801,7 +12857,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
         com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
     )
-    @DisableFlags(Flags.FLAG_ROOT_TASK_FOR_BUBBLE)
+    @DisableFlags(Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
     fun addMoveToBubbleFromDesktopChange_disableRootTaskForBubble_reparentToTda() {
         val task = setUpFreeformTask()
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
@@ -12821,7 +12877,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-        Flags.FLAG_ROOT_TASK_FOR_BUBBLE,
+        Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
         com.android.launcher3.Flags.FLAG_ENABLE_ALT_TAB_KQS_FLATENNING,
     )
     fun addMoveToBubbleFromDesktopChange_enableAllFlags_reorder() {
@@ -12842,7 +12898,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL,
-        Flags.FLAG_ROOT_TASK_FOR_BUBBLE,
+        Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
     )
     fun addMoveToBubbleFromDesktopChange_multiTasks_notExitDesktop() {
         val task = setUpFreeformTask()

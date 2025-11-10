@@ -27,7 +27,6 @@ import com.android.settingslib.users.UserCreatingDialog
 import com.android.systemui.CoreStartable
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
-import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -53,7 +52,6 @@ class UserSwitcherDialogCoordinator
 constructor(
     @Application private val applicationScope: Lazy<CoroutineScope>,
     private val falsingManager: Lazy<FalsingManager>,
-    private val broadcastSender: Lazy<BroadcastSender>,
     private val dialogTransitionAnimator: Lazy<DialogTransitionAnimator>,
     private val interactor: Lazy<UserSwitcherInteractor>,
     private val userDetailAdapterProvider: Provider<UserDetailView.Adapter>,
@@ -63,6 +61,7 @@ constructor(
     private val userSwitcherViewModel: Lazy<UserSwitcherViewModel>,
     private val shadeDialogContextInteractor: Lazy<ShadeDialogContextInteractor>,
     private val displayPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
+    private val addUserDialogDelegateFactory: AddUserDialogDelegate.Factory,
 ) : CoreStartable {
 
     private var currentDialog: Dialog? = null
@@ -86,15 +85,13 @@ constructor(
                     when (request) {
                         is ShowDialogRequestModel.ShowAddUserDialog ->
                             Pair(
-                                AddUserDialog(
-                                    context = context,
-                                    userHandle = request.userHandle,
-                                    isKeyguardShowing = request.isKeyguardShowing,
-                                    showEphemeralMessage = request.showEphemeralMessage,
-                                    falsingManager = falsingManager.get(),
-                                    broadcastSender = broadcastSender.get(),
-                                    dialogTransitionAnimator = dialogTransitionAnimator.get(),
-                                ),
+                                addUserDialogDelegateFactory
+                                    .create(
+                                        request.userHandle,
+                                        request.isKeyguardShowing,
+                                        request.showEphemeralMessage,
+                                    )
+                                    .createDialog(),
                                 DialogCuj(
                                     InteractionJankMonitor.CUJ_USER_DIALOG_OPEN,
                                     INTERACTION_JANK_ADD_NEW_USER_TAG,

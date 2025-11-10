@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.testing.TestableLooper;
 import android.view.View;
@@ -200,6 +201,66 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         final Button stop = mMediaOutputDialog.mDialogView.requireViewById(R.id.stop);
 
         assertThat(stop.getText().toString()).isEqualTo(mContext.getString(stopResId));
+    }
+
+    @Test
+    public void onCreate_normalScreenHeight_showsNormalIconAndMetadata () {
+        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
+        mContext.getResources().getConfiguration().screenHeightDp = 500;
+
+        mMediaOutputDialog.refresh();
+
+        assertThat(mMediaOutputDialog.mDialogView
+                .requireViewById(R.id.app_source_icon_small_screen_height)
+                .getVisibility()).isEqualTo(View.GONE);
+        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.app_source_icon)
+                .getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
+    public void onCreate_smallScreenHeight_showsSmallIconAndHidesMetadata () {
+        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
+        mContext.getResources().getConfiguration().screenHeightDp = 300;
+
+        mMediaOutputDialog.refresh();
+
+        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.app_source_icon)
+                .getVisibility()).isEqualTo(View.GONE);
+        assertThat(mMediaOutputDialog.mDialogView
+                .requireViewById(R.id.app_source_icon_small_screen_height)
+                .getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
+    public void refresh_fromNormalToSmallScreenHeight_showsSmallIcon () {
+        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
+        mContext.getResources().getConfiguration().screenHeightDp = 500;
+        mMediaOutputDialog.refresh();
+        mContext.getResources().getConfiguration().screenHeightDp = 300;
+
+        mMediaOutputDialog.refresh();
+
+        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.app_source_icon)
+                .getVisibility()).isEqualTo(View.GONE);
+        assertThat(mMediaOutputDialog.mDialogView
+                .requireViewById(R.id.app_source_icon_small_screen_height)
+                .getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
+    public void refresh_fromSmallToNormalScreenHeight_showsNormalIcon () {
+        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
+        mContext.getResources().getConfiguration().screenHeightDp = 300;
+        mMediaOutputDialog.refresh();
+        mContext.getResources().getConfiguration().screenHeightDp = 500;
+
+        mMediaOutputDialog.refresh();
+
+        assertThat(mMediaOutputDialog.mDialogView
+                .requireViewById(R.id.app_source_icon_small_screen_height)
+                .getVisibility()).isEqualTo(View.GONE);
+        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.app_source_icon)
+                .getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     @Test

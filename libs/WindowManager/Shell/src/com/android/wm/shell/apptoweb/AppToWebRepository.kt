@@ -65,4 +65,10 @@ interface AppToWebRepository {
 
     /** Sets the first-run prompt as shown for the given task. */
     fun onFirstRunPromptShown(taskInfo: RunningTaskInfo)
+
+    /**
+     * Sets the first-run prompt as acknowledged (i.e., a user does not dismiss the prompt) for the
+     * given task.
+     */
+    fun onFirstRunPromptAcked(taskInfo: RunningTaskInfo)
 }

@@ -508,12 +508,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         expectedDesks1,
                         DEFAULT_DESKTOP_ID,
                         ArrayMap(),
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesks2,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                         ArrayMap(),
                     )
             }
@@ -602,12 +604,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         expectedDesksAfterAdding,
                         DEFAULT_DESKTOP_ID,
                         ArrayMap(),
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemoval,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                         ArrayMap(),
                     )
             }
@@ -677,12 +681,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         expectedDesksAfterAdding,
                         DEFAULT_DESKTOP_ID,
                         ArrayMap(),
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemoval,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                         ArrayMap(),
                     )
             }
@@ -1169,6 +1175,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         expectedDesksInOrder[0],
                         DEFAULT_DESKTOP_ID,
                         ArrayMap(),
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
@@ -1176,12 +1183,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         expectedDesksInOrder[1],
                         DEFAULT_DESKTOP_ID,
                         ArrayMap(),
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[2],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                         ArrayMap(),
                     )
             }
@@ -1310,12 +1319,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         expectedDesksInOrder[0],
                         DEFAULT_DESKTOP_ID,
                         ArrayMap(),
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[1],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                         ArrayMap(),
                     )
                 verify(persistentRepository)
@@ -1324,6 +1335,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         expectedDesksInOrder[2],
                         DEFAULT_DESKTOP_ID,
                         ArrayMap(),
+                        ArrayMap(),
                     )
                 // Triggers once for updateTask and once for minimize task
                 verify(persistentRepository, times(2))
@@ -1331,6 +1343,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[3],
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                         ArrayMap(),
                     )
             }
@@ -1471,12 +1484,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                         expectedDesksAfterAddingTask,
                         DEFAULT_DESKTOP_ID,
                         ArrayMap(),
+                        ArrayMap(),
                     )
                 verify(persistentRepository)
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemovingTask,
                         DEFAULT_DESKTOP_ID,
+                        ArrayMap(),
                         ArrayMap(),
                     )
             }
@@ -1983,6 +1998,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     DEFAULT_USER_ID,
                     expectedDesksAfterRemovingDesk,
                     DEFAULT_DESKTOP_ID,
+                    ArrayMap(),
                     ArrayMap(),
                 )
         }
@@ -2605,7 +2621,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastAddition).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+        verify(persistentRepository, never())
+            .addOrUpdateRepository(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -2627,7 +2644,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastAddition).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+        verify(persistentRepository, never())
+            .addOrUpdateRepository(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -2657,7 +2675,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastAddition).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+        verify(persistentRepository, never())
+            .addOrUpdateRepository(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -2689,7 +2708,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastRemoval).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+        verify(persistentRepository, never())
+            .addOrUpdateRepository(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -2724,7 +2744,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastRemoval).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+        verify(persistentRepository, never())
+            .addOrUpdateRepository(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -2755,7 +2776,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(listener.lastAddition).isNull()
         verify(persistentRepository, never())
             .addOrUpdateDesktop(any(), any(), any(), any(), any(), any(), any(), any())
-        verify(persistentRepository, never()).addOrUpdateRepository(any(), any(), any(), any())
+        verify(persistentRepository, never())
+            .addOrUpdateRepository(any(), any(), any(), any(), any())
     }
 
     @Test

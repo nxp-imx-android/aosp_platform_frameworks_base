@@ -1246,6 +1246,11 @@ public final class AccessibilityEvent extends AccessibilityRecord implements Par
         if (mRecords == null) {
             mRecords = new ArrayList<AccessibilityRecord>();
         }
+        if (Flags.preventA11yEventNullRecord()) {
+            if (record == null) {
+                return;
+            }
+        }
         mRecords.add(record);
     }
 

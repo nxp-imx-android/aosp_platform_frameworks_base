@@ -144,7 +144,10 @@ constructor(
         dumpManager.registerNormalDumpable(this)
     }
 
-    override val actions: StateFlow<List<ActionModel>> =
+    override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    /** Private flow containing all actions received. */
+    private val unfilteredActions: StateFlow<List<ActionModel>> =
         conflatedCallbackFlow {
                 if (smartSpaceManager == null) {
                     Log.i(TAG, "Cannot connect to SmartSpaceManager, it's null.")
@@ -206,6 +209,8 @@ constructor(
                                         EXTRA_ONE_TAP_DELAY_MS,
                                         DEFAULT_ONE_TAP_DELAY_MS,
                                     )
+                                val isEnabledWithImeVisible =
+                                    chip.extras?.getBoolean(EXTRA_ENABLED_WITH_IME_VISIBLE)
                                 ActionModel(
                                     icon =
                                         IconModel(
@@ -281,6 +286,7 @@ constructor(
                                     actionType = actionType,
                                     oneTapEnabled = oneTapEnabled == true,
                                     oneTapDelayMs = oneTapDelayMs ?: DEFAULT_ONE_TAP_DELAY_MS,
+                                    isEnabledWithImeVisible = isEnabledWithImeVisible == true,
                                 )
                             }
                             .let { actions -> cuebarPlugin?.filterActions(actions) ?: actions }
@@ -308,6 +314,17 @@ constructor(
             .stateIn(
                 scope = backgroundScope,
                 started = SharingStarted.WhileSubscribed(),
+                initialValue = emptyList(),
+            )
+
+    /** Public flow providing actions filtered by IME visibility. */
+    override val actions: StateFlow<List<ActionModel>> =
+        combine(unfilteredActions, isImeVisible) { currentActions, imeVisible ->
+                currentActions.filter { action -> !imeVisible || action.isEnabledWithImeVisible }
+            }
+            .stateIn(
+                scope = backgroundScope,
+                started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(),
                 initialValue = emptyList(),
             )
 
@@ -340,8 +357,6 @@ constructor(
 
     private val _recentsButtonPosition = MutableStateFlow<Rect?>(null)
     override val recentsButtonPosition: StateFlow<Rect?> = _recentsButtonPosition.asStateFlow()
-
-    override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     override val isDeactivated: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -391,12 +406,12 @@ constructor(
             )
 
     override val isRootViewAttached: StateFlow<Boolean> =
-        combine(isDeactivated, globallyFocusedTaskId, actions, isAmbientCueEnabled) {
+        combine(isDeactivated, globallyFocusedTaskId, unfilteredActions, isAmbientCueEnabled) {
                 isDeactivated,
                 globallyFocusedTaskId,
-                actions,
+                unfilteredActions,
                 isAmbientCueEnabled ->
-                actions.isNotEmpty() &&
+                unfilteredActions.isNotEmpty() &&
                     isAmbientCueEnabled &&
                     !isDeactivated &&
                     globallyFocusedTaskId == targetTaskId.value
@@ -407,7 +422,7 @@ constructor(
                     var maCount = 0
                     var mrCount = 0
                     val packageName = frontRunningTask?.baseIntent?.component?.packageName ?: ""
-                    actions.value.forEach { action ->
+                    unfilteredActions.value.forEach { action ->
                         when (action.actionType) {
                             MA_ACTION_TYPE_NAME -> maCount++
                             MR_ACTION_TYPE_NAME -> mrCount++
@@ -471,6 +486,7 @@ constructor(
         @VisibleForTesting const val EXTRA_ACTION_TYPE = "actionType"
         private const val EXTRA_ONE_TAP_ENABLED = "oneTapEnabled"
         private const val EXTRA_ONE_TAP_DELAY_MS = "oneTapDelayMs"
+        private const val EXTRA_ENABLED_WITH_IME_VISIBLE = "enabledWithImeVisible"
         private const val DEFAULT_ONE_TAP_DELAY_MS = 200L
 
         // Timeout to hide cuebar if it wasn't interacted with

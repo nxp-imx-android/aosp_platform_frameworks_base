@@ -16,10 +16,14 @@
 
 package com.android.extensions.computercontrol;
 
+import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.CallbackExecutor;
 import android.annotation.IntRange;
 import android.app.Activity;
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.companion.virtual.computercontrol.ComputerControlSession.Action;
 import android.companion.virtual.computercontrol.ComputerControlSession.SessionBlockReason;
 import android.companion.virtual.computercontrol.ComputerControlSession.SessionCloseReason;
@@ -38,6 +42,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -261,6 +266,15 @@ public final class ComputerControlSession implements AutoCloseable {
     }
 
     /**
+     * Sets the intent launched when the user wants to preview the automation, or null if none.
+     *
+     * <p>This overrides the intent set in {@link Params.Builder#setPreviewIntent}.
+     */
+    public void setPreviewIntent(@Nullable PendingIntent previewIntent) {
+        mSession.setPreviewIntent(previewIntent);
+    }
+
+    /**
      * Closes the ComputerControl session and release resources. The session can no longer be used
      * after calling this method.
      */
@@ -269,16 +283,22 @@ public final class ComputerControlSession implements AutoCloseable {
         mSession.close();
     }
 
+    /**
+     * Parameters for requesting a {@link ComputerControlSession}, using
+     * {@link ComputerControlExtensions#requestSession}.
+     */
     public static class Params {
         @NonNull private final Context mContext;
         @NonNull private final String mName;
         @NonNull private final List<String> mTargetPackageNames;
+        @Nullable private final PendingIntent mPreviewIntent;
 
         private Params(@NonNull Context context, @NonNull String name,
-                @NonNull List<String> targetPackageNames) {
+                @NonNull List<String> targetPackageNames, @Nullable PendingIntent previewIntent) {
             mContext = context;
             mName = name;
             mTargetPackageNames = targetPackageNames;
+            mPreviewIntent = previewIntent;
         }
 
         /**
@@ -290,9 +310,8 @@ public final class ComputerControlSession implements AutoCloseable {
         }
 
         /**
-         * Returns the name of the computer control session
-         *
-         * @see Builder#setName(String)
+         * Returns the name of the computer control session, only used internally and not shown to
+         * the user.
          */
         @NonNull
         public String getName() {
@@ -310,12 +329,24 @@ public final class ComputerControlSession implements AutoCloseable {
         }
 
         /**
-         * Builder for {@link ComputerControlSession}.
+         * Returns the intent launched when the user wants to preview the automation, or null if
+         * none is set.
+         *
+         * @see Builder#setPreviewIntent(PendingIntent)
+         */
+        @Nullable
+        public PendingIntent getPreviewIntent() {
+            return mPreviewIntent;
+        }
+
+        /**
+         * Builder for {@link Params}.
          */
         public static class Builder {
             @NonNull private final Context mContext;
             private String mName;
-            private List<String> mTargetPackageNames = new ArrayList<>();
+            private List<String> mTargetPackageNames = emptyList();
+            private PendingIntent mPreviewIntent;
 
             /**
              * Create a new Builder.
@@ -349,11 +380,21 @@ public final class ComputerControlSession implements AutoCloseable {
             }
 
             /**
+             * Set an intent launched when the user wants to preview the automation, or null if
+             * none.
+             */
+            @NonNull
+            public Builder setPreviewIntent(@Nullable PendingIntent pendingIntent) {
+                mPreviewIntent = pendingIntent;
+                return this;
+            }
+
+            /**
              * Build a computer control session.
              */
             @NonNull
             public Params build() {
-                return new Params(mContext, mName, mTargetPackageNames);
+                return new Params(mContext, mName, mTargetPackageNames, mPreviewIntent);
             }
         }
     }

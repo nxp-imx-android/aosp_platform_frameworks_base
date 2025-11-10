@@ -1,7 +1,7 @@
 {
   "imports": [
     {
-      "path": "frameworks/base/ravenwood/test-mapping-frameworks"
+      "path": "frameworks/base/ravenwood-framework-test-mapping"
     }
   ],
   "desktop-presubmit": [
@@ -66,6 +66,9 @@
     },
     {
       "name": "CtsStrictJavaPackagesTestCases"
+    },
+    {
+      "name": "CameraServicesTests"
     }
   ],
   "postsubmit-managedprofile-stress": [
@@ -100,6 +103,9 @@
    },
    {
      "name": "PackageManagerServiceServerTests_Presubmit"
+   },
+   {
+     "name": "CameraServicesTests"
    }
  ],
   "wear-cts-presubmit": [

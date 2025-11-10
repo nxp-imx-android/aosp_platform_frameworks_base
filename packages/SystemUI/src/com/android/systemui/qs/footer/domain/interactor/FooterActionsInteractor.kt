@@ -33,6 +33,7 @@ import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.globalactions.GlobalActionsDialogLite
+import com.android.systemui.globalactions.shared.model.GlobalActionsEvent
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.qs.FgsManagerController
 import com.android.systemui.qs.QSSecurityFooterUtils
@@ -169,7 +170,7 @@ constructor(
         globalActionsDialogLite: GlobalActionsDialogLite,
         expandable: Expandable,
     ) {
-        uiEventLogger.log(GlobalActionsDialogLite.GlobalActionsEvent.GA_OPEN_QS)
+        uiEventLogger.log(GlobalActionsEvent.GA_OPEN_QS)
         globalActionsDialogLite.showOrHideDialog(
             /* keyguardShowing= */ false,
             /* isDeviceProvisioned= */ true,

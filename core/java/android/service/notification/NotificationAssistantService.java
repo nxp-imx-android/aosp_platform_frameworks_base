@@ -27,6 +27,7 @@ import android.annotation.SdkConstant;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.app.ActivityManager;
 import android.app.Flags;
 import android.app.INotificationManager;
 import android.app.Notification;
@@ -391,15 +392,17 @@ public abstract class NotificationAssistantService extends NotificationListenerS
 
     /**
      * Creates a dynamic bundle type that notifications can later be classified to via a
-     * {@link Adjustment#KEY_TYPE} adjustment.
+     * {@link Adjustment#KEY_TYPE} adjustment. If a dynamic bundle with this type already exists,
+     * this request will be ignored.
      */
     @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
-    public final void createDynamicBundle(@IntRange(from=100, to=200) int dynamicBundleId,
+    public final void createDynamicBundle(@IntRange(from=DynamicBundle.DYNAMIC_RANGE_START,
+                    to=DynamicBundle.DYNAMIC_RANGE_END) int dynamicBundleType,
             @NonNull CharSequence bundleName) {
         if (!isBound()) return;
         try {
             getNotificationInterface().createDynamicBundle(
-                    mWrapper, dynamicBundleId, bundleName.toString());
+                    mWrapper, dynamicBundleType, bundleName.toString());
         } catch (android.os.RemoteException ex) {
             Log.v(TAG, "Unable to contact notification manager", ex);
             throw ex.rethrowFromSystemServer();
@@ -411,10 +414,11 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      * {@link #createDynamicBundle(int, CharSequence)}.
      */
     @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
-    public final void deleteDynamicBundle(@IntRange(from=100, to=200) int dynamicBundleId) {
+    public final void deleteDynamicBundle(@IntRange(from=DynamicBundle.DYNAMIC_RANGE_START,
+            to=DynamicBundle.DYNAMIC_RANGE_END) int dynamicBundleType) {
         if (!isBound()) return;
         try {
-            getNotificationInterface().deleteDynamicBundle(mWrapper, dynamicBundleId);
+            getNotificationInterface().deleteDynamicBundle(mWrapper, dynamicBundleType);
         } catch (android.os.RemoteException ex) {
             Log.v(TAG, "Unable to contact notification manager", ex);
             throw ex.rethrowFromSystemServer();
@@ -427,9 +431,10 @@ public abstract class NotificationAssistantService extends NotificationListenerS
      * dynamic bundles.
      */
     @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
-    public @NonNull Set<DynamicBundle> getDynamicBundles() {
+    public @NonNull final Set<DynamicBundle> getDynamicBundles() {
         try {
-            return new HashSet<>(getNotificationInterface().getDynamicBundles(mWrapper));
+            return new HashSet<>(getNotificationInterface().getDynamicBundles(mWrapper,
+                    getContext() != null ? getContext().getUser() : mSystemContext.getUser()));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

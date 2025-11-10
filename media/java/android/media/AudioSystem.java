@@ -1148,17 +1148,25 @@ public class AudioSystem
     /** @hide */
     public static final Set<Integer> DEVICE_OUT_ALL_SET;
     /** @hide */
-    public static final Set<Integer> DEVICE_OUT_ALL_A2DP_SET;
+    public static final Set<Integer> DEVICE_OUT_ALL_A2DP_SET = Set.of(DEVICE_OUT_BLUETOOTH_A2DP,
+            DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES, DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER);
+
     /** @hide */
-    public static final Set<Integer> DEVICE_OUT_ALL_SCO_SET;
+    public static final Set<Integer> DEVICE_OUT_ALL_SCO_SET = Set.of(DEVICE_OUT_BLUETOOTH_SCO,
+            DEVICE_OUT_BLUETOOTH_SCO_HEADSET, DEVICE_OUT_BLUETOOTH_SCO_CARKIT);
+
     /** @hide */
-    public static final Set<Integer> DEVICE_OUT_ALL_USB_SET;
+    public static final Set<Integer> DEVICE_OUT_ALL_USB_SET =
+            Set.of(DEVICE_OUT_USB_ACCESSORY, DEVICE_OUT_USB_DEVICE, DEVICE_OUT_USB_HEADSET);
+
     /** @hide */
     public static final Set<Integer> DEVICE_OUT_ALL_HDMI_SYSTEM_AUDIO_SET;
     /** @hide */
     public static final Set<Integer> DEVICE_ALL_HDMI_SYSTEM_AUDIO_AND_SPEAKER_SET;
     /** @hide */
-    public static final Set<Integer> DEVICE_OUT_ALL_BLE_SET;
+    public static final Set<Integer> DEVICE_OUT_ALL_BLE_SET =
+            Set.of(DEVICE_OUT_BLE_HEADSET, DEVICE_OUT_BLE_SPEAKER, DEVICE_OUT_BLE_BROADCAST);
+
     /** @hide */
     public static final Set<Integer> DEVICE_OUT_PICK_FOR_VOLUME_SET;
     /** @hide */
@@ -1202,21 +1210,6 @@ public class AudioSystem
         DEVICE_OUT_ALL_SET.add(DEVICE_OUT_BLE_BROADCAST);
         DEVICE_OUT_ALL_SET.add(DEVICE_OUT_DEFAULT);
 
-        DEVICE_OUT_ALL_A2DP_SET = new HashSet<>();
-        DEVICE_OUT_ALL_A2DP_SET.add(DEVICE_OUT_BLUETOOTH_A2DP);
-        DEVICE_OUT_ALL_A2DP_SET.add(DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES);
-        DEVICE_OUT_ALL_A2DP_SET.add(DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER);
-
-        DEVICE_OUT_ALL_SCO_SET = new HashSet<>();
-        DEVICE_OUT_ALL_SCO_SET.add(DEVICE_OUT_BLUETOOTH_SCO);
-        DEVICE_OUT_ALL_SCO_SET.add(DEVICE_OUT_BLUETOOTH_SCO_HEADSET);
-        DEVICE_OUT_ALL_SCO_SET.add(DEVICE_OUT_BLUETOOTH_SCO_CARKIT);
-
-        DEVICE_OUT_ALL_USB_SET = new HashSet<>();
-        DEVICE_OUT_ALL_USB_SET.add(DEVICE_OUT_USB_ACCESSORY);
-        DEVICE_OUT_ALL_USB_SET.add(DEVICE_OUT_USB_DEVICE);
-        DEVICE_OUT_ALL_USB_SET.add(DEVICE_OUT_USB_HEADSET);
-
         DEVICE_OUT_ALL_HDMI_SYSTEM_AUDIO_SET = new HashSet<>();
         DEVICE_OUT_ALL_HDMI_SYSTEM_AUDIO_SET.add(DEVICE_OUT_AUX_LINE);
         DEVICE_OUT_ALL_HDMI_SYSTEM_AUDIO_SET.add(DEVICE_OUT_HDMI_ARC);
@@ -1226,11 +1219,6 @@ public class AudioSystem
         DEVICE_ALL_HDMI_SYSTEM_AUDIO_AND_SPEAKER_SET = new HashSet<>();
         DEVICE_ALL_HDMI_SYSTEM_AUDIO_AND_SPEAKER_SET.addAll(DEVICE_OUT_ALL_HDMI_SYSTEM_AUDIO_SET);
         DEVICE_ALL_HDMI_SYSTEM_AUDIO_AND_SPEAKER_SET.add(DEVICE_OUT_SPEAKER);
-
-        DEVICE_OUT_ALL_BLE_SET = new HashSet<>();
-        DEVICE_OUT_ALL_BLE_SET.add(DEVICE_OUT_BLE_HEADSET);
-        DEVICE_OUT_ALL_BLE_SET.add(DEVICE_OUT_BLE_SPEAKER);
-        DEVICE_OUT_ALL_BLE_SET.add(DEVICE_OUT_BLE_BROADCAST);
 
         DEVICE_OUT_ALL_BLE_UNICAST_SET = new HashSet<>();
         DEVICE_OUT_ALL_BLE_UNICAST_SET.add(DEVICE_OUT_BLE_HEADSET);
@@ -1335,11 +1323,14 @@ public class AudioSystem
     /** @hide */
     public static final Set<Integer> DEVICE_IN_ALL_SET;
     /** @hide */
-    public static final Set<Integer> DEVICE_IN_ALL_SCO_SET;
+    public static final Set<Integer> DEVICE_IN_ALL_SCO_SET =
+            Set.of(DEVICE_IN_BLUETOOTH_SCO_HEADSET);
     /** @hide */
-    public static final Set<Integer> DEVICE_IN_ALL_USB_SET;
+    public static final Set<Integer> DEVICE_IN_ALL_USB_SET =
+            Set.of(DEVICE_IN_USB_ACCESSORY, DEVICE_IN_USB_DEVICE, DEVICE_IN_USB_HEADSET);
+
     /** @hide */
-    public static final Set<Integer> DEVICE_IN_ALL_BLE_SET;
+    public static final Set<Integer> DEVICE_IN_ALL_BLE_SET = Set.of(DEVICE_IN_BLE_HEADSET);
 
     static {
         DEVICE_IN_ALL_SET = new HashSet<>();
@@ -1372,17 +1363,6 @@ public class AudioSystem
         DEVICE_IN_ALL_SET.add(DEVICE_IN_ECHO_REFERENCE);
         DEVICE_IN_ALL_SET.add(DEVICE_IN_BLE_HEADSET);
         DEVICE_IN_ALL_SET.add(DEVICE_IN_DEFAULT);
-
-        DEVICE_IN_ALL_SCO_SET = new HashSet<>();
-        DEVICE_IN_ALL_SCO_SET.add(DEVICE_IN_BLUETOOTH_SCO_HEADSET);
-
-        DEVICE_IN_ALL_USB_SET = new HashSet<>();
-        DEVICE_IN_ALL_USB_SET.add(DEVICE_IN_USB_ACCESSORY);
-        DEVICE_IN_ALL_USB_SET.add(DEVICE_IN_USB_DEVICE);
-        DEVICE_IN_ALL_USB_SET.add(DEVICE_IN_USB_HEADSET);
-
-        DEVICE_IN_ALL_BLE_SET = new HashSet<>();
-        DEVICE_IN_ALL_BLE_SET.add(DEVICE_IN_BLE_HEADSET);
     }
 
     /** @hide */

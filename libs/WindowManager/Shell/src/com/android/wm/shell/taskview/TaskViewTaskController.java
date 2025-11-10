@@ -268,12 +268,23 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     }
 
     @Override
+    public boolean onNewTaskListenerDetected(ActivityManager.RunningTaskInfo taskInfo,
+            ShellTaskOrganizer.TaskListener newListener) {
+        // There should be only one TaskViewTaskController listening to the Task, let's reusing
+        // the existing task listener if the new listener is also a TaskViewTaskController.
+        return !(newListener instanceof TaskViewTaskController);
+    }
+
+    @Override
     public void onTaskVanished(ActivityManager.RunningTaskInfo taskInfo) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.onTaskVanished(): taskView=%d task=%s",
                 hashCode(), taskInfo);
-        // Unlike Appeared, we can't yet guarantee that vanish will happen within a transition that
-        // we know about -- so leave clean-up here even if shell transitions are enabled.
-        if (mTaskToken == null || !mTaskToken.equals(taskInfo.token)) return;
+        if (mTaskToken == null) {
+            setTaskNotFound();
+            return;
+        }
+
+        if (!mTaskToken.equals(taskInfo.token)) return;
 
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             handleAndNotifyTaskRemoval(taskInfo);

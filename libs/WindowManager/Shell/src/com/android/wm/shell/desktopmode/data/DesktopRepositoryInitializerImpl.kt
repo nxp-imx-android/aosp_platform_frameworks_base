@@ -18,11 +18,14 @@ package com.android.wm.shell.desktopmode.data
 
 import android.content.Context
 import android.graphics.Rect
+import android.graphics.RectF
+import android.util.ArrayMap
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import com.android.internal.protolog.ProtoLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRecreationFactory
@@ -32,6 +35,7 @@ import com.android.wm.shell.desktopmode.data.persistence.DesktopRepositoryState
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskState
 import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskTilingState
 import com.android.wm.shell.desktopmode.data.persistence.Rect as RectProto
+import com.android.wm.shell.desktopmode.data.persistence.RectF as RectFProto
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
@@ -112,11 +116,30 @@ class DesktopRepositoryInitializerImpl(
                             wasPreservedDisplay = true,
                         )
                     }
+                    if (Flags.enableRememberedBounds()) {
+                        restoreRememberedBoundsRatio(desktopRepositoryState, repository)
+                    }
                 }
             } finally {
                 _isInitialized.value = true
             }
         }
+    }
+
+    private suspend fun restoreRememberedBoundsRatio(
+        desktopRepositoryState: DesktopRepositoryState,
+        repository: DesktopRepository,
+    ) {
+        val map =
+            ArrayMap<String, RectF>().apply {
+                desktopRepositoryState.packageStateByPackageNameMap?.forEach { (packageName, state)
+                    ->
+                    state.rememberedBoundsRatio?.toRectF()?.let { bounds ->
+                        put(packageName, bounds)
+                    }
+                }
+            }
+        repository.restoreRememberedBoundsRatioByPackageName(map)
     }
 
     /** TODO: b/444034767 - Consider splitting this method into pieces. */
@@ -345,6 +368,8 @@ class DesktopRepositoryInitializerImpl(
     }
 
     private fun RectProto.toRect() = Rect(left, top, right, bottom)
+
+    private fun RectFProto.toRectF() = RectF(left, top, right, bottom)
 
     private fun getTaskLimit(persistedDesk: Desktop): Int =
         desktopConfig.maxTaskLimit.takeIf { it > 0 } ?: persistedDesk.zOrderedTasksCount

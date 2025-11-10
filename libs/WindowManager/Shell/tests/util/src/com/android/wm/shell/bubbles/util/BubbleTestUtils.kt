@@ -56,7 +56,7 @@ object BubbleTestUtils {
         }
 
         // Verify Change
-        if (isAppBubble && com.android.window.flags.Flags.rootTaskForBubble()) {
+        if (isAppBubble && com.android.window.flags.Flags.enableBubbleRootTask()) {
             assertThat(wct.changes[rootTaskToken]).isNotNull()
             val change = wct.changes[rootTaskToken]!!
             assertThat(change.windowSetMask and WindowConfiguration.WINDOW_CONFIG_BOUNDS)
@@ -109,7 +109,7 @@ object BubbleTestUtils {
         // Verify Change
         assertThat(wct.changes[taskToken]).isNotNull()
         val change = wct.changes[taskToken]!!
-        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+        if (!com.android.window.flags.Flags.enableBubbleRootTask()) {
             assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_UNDEFINED)
             assertThat(change.launchNextToBubble).isFalse()
             assertThat(change.interceptBackPressed).isFalse()

@@ -27,7 +27,6 @@ import com.android.internal.messages.nano.SystemMessageProto
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.plugins.Plugin
 import com.android.systemui.plugins.PluginListener
-import com.android.systemui.plugins.PluginManager
 import com.android.systemui.plugins.annotations.ProvidesInterface
 import com.android.systemui.shared.system.UncaughtExceptionPreHandlerManager
 import java.lang.Thread.UncaughtExceptionHandler
@@ -77,7 +76,8 @@ class PluginManagerTest : SysuiTestCase() {
                 mMockExPreHandlerManager,
                 mMockPluginEnabler,
                 mMockPluginPrefs,
-                PluginManager.Config(),
+                PackageConfig(),
+                PluginEnvironment(),
             )
         captureExceptionHandler()
     }
@@ -107,7 +107,8 @@ class PluginManagerTest : SysuiTestCase() {
                 mMockExPreHandlerManager,
                 mMockPluginEnabler,
                 mMockPluginPrefs,
-                PluginManager.Config(),
+                PackageConfig(),
+                PluginEnvironment(),
             )
         captureExceptionHandler()
 
@@ -132,7 +133,8 @@ class PluginManagerTest : SysuiTestCase() {
                 mMockExPreHandlerManager,
                 mMockPluginEnabler,
                 mMockPluginPrefs,
-                PluginManager.Config(listOf(PRIVILEGED_PACKAGE)),
+                PackageConfig(PRIVILEGED_PACKAGE),
+                PluginEnvironment(),
             )
         captureExceptionHandler()
 

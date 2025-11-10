@@ -204,8 +204,7 @@ public class ContextHintWithSignatureTest {
     }
 
     @Test
-    public void testSignatureBadSalt() throws GeneralSecurityException {
-        final String packageName = "com.google.packageName";
+    public void testSignatureWrongKey() throws GeneralSecurityException {
         final BundleHint hint = new BundleHint();
 
         final ContextHintWithSignature signedHint =
@@ -219,7 +218,6 @@ public class ContextHintWithSignatureTest {
     @Test
     public void testSignatureBadHash() throws GeneralSecurityException {
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
-        final String packageName = "com.google.packageName";
         final BundleHint hint = new BundleHint();
 
         final Parcel parcel = Parcel.obtain();
@@ -229,12 +227,11 @@ public class ContextHintWithSignatureTest {
 
         // Modify hash bytes in parcel.
         parcel.setDataPosition(0);
-        final byte[] data = parcel.createByteArray();
         final byte[] hash = parcel.createByteArray();
 
         hash[0] ^= 1;
 
-        parcel.writeByteArray(data);
+        parcel.setDataPosition(0);
         parcel.writeByteArray(hash);
         parcel.setDataPosition(0);
 
@@ -244,7 +241,6 @@ public class ContextHintWithSignatureTest {
 
         parcel.recycle();
 
-        assertThat(signedHint.isSignatureValid(ContextHintTestUtils.generateSignedHintKey()))
-                .isFalse();
+        assertThat(signedHint.isSignatureValid(key)).isFalse();
     }
 }

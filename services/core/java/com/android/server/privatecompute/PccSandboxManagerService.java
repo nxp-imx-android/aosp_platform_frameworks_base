@@ -18,7 +18,6 @@ package com.android.server.privatecompute;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 
 import android.content.Context;
-import android.os.Binder;
 
 import com.android.server.SystemService;
 
@@ -31,7 +30,7 @@ public class PccSandboxManagerService extends SystemService {
 
     public PccSandboxManagerService(Context context) {
         super(context);
-        mServiceImpl = new PccSandboxManagerServiceImpl();
+        mServiceImpl = new PccSandboxManagerServiceImpl(context);
     }
 
     @Override
@@ -40,7 +39,5 @@ public class PccSandboxManagerService extends SystemService {
             publishBinderService(Context.PCC_SANDBOX_SERVICE, mServiceImpl);
         }
     }
-
-    private static final class PccSandboxManagerServiceImpl extends Binder {
-    }
 }
+

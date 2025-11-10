@@ -895,7 +895,7 @@ final class BroadcastRecord extends Binder {
         if (receiver instanceof BroadcastFilter) {
             return ((BroadcastFilter) receiver).owningUid;
         } else /* if (receiver instanceof ResolveInfo) */ {
-            return ((ResolveInfo) receiver).activityInfo.applicationInfo.uid;
+            return ((ResolveInfo) receiver).activityInfo.getUid();
         }
     }
 
@@ -1154,7 +1154,7 @@ final class BroadcastRecord extends Binder {
                 } catch (SecurityException e) {
                     BroadcastQueue.logw(e.getMessage());
                 }
-                final int receiverUid = info.activityInfo.applicationInfo.uid;
+                final int receiverUid = info.activityInfo.getUid();
                 if (callingUid != android.os.Process.SYSTEM_UID && isSingleton
                         && service.isValidSingletonCall(callingUid, receiverUid)) {
                     info.activityInfo = service.getActivityInfoForUser(info.activityInfo,

@@ -16,8 +16,37 @@
 
 package com.android.systemui.screencapture.record.camera.data.repository
 
+import android.util.Size
+import android.view.Surface
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 
 @SysUISingleton
-class ScreenRecordCameraRepositoryImpl @Inject constructor() : ScreenRecordCameraRepository
+class ScreenRecordCameraRepositoryImpl @Inject constructor() : ScreenRecordCameraRepository {
+    override val errors: Flow<Int> = emptyFlow()
+    override val state: Flow<Int> = emptyFlow()
+    override val isConnected: Flow<Boolean> = flowOf(false)
+
+    override fun connect() {}
+
+    override fun disconnect() {}
+
+    override suspend fun startStream(surface: Surface, size: Size) {}
+
+    override suspend fun stopStream() {}
+
+    override suspend fun getOptimalCameraStreamSize(): Size? = null
+
+    override suspend fun setBackgroundColor(color: Int) {}
+
+    override suspend fun onTap() {}
+
+    override suspend fun isCameraSupported(): Boolean = false
+
+    override suspend fun isOnTapSupported(): Boolean = false
+
+    override suspend fun isBackgroundColorSupported(): Boolean = false
+}

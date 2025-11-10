@@ -53,6 +53,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.system.OsConstants;
 import android.text.TextUtils;
@@ -188,6 +189,16 @@ public class ApplicationExitInfoTest {
 
     @Test
     public void testApplicationExitInfo() throws Exception {
+        testApplicationExitInfoVariant(/*isNativeService=*/ false);
+    }
+
+    @Test
+    @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
+    public void testApplicationExitInfoNative() throws Exception {
+        testApplicationExitInfoVariant(/*isNativeService=*/ true);
+    }
+
+    private void testApplicationExitInfoVariant(boolean isNativeService) throws Exception {
         mAppExitInfoTracker.clearProcessExitInfo(true);
         mAppExitInfoTracker.mAppExitInfoLoaded.set(true);
         mAppExitInfoTracker.mProcExitStoreDir = new File(mContext.getFilesDir(),
@@ -236,7 +247,8 @@ public class ApplicationExitInfoTest {
                 app1Pss1,                    // pss
                 app1Rss1,                    // rss
                 app1ProcessName,             // processName
-                app1PackageName);            // packageName
+                app1PackageName,             // packageName
+                isNativeService);
         app.setHasShownUi(true);
 
         // Case 1: basic System.exit() test
@@ -292,7 +304,8 @@ public class ApplicationExitInfoTest {
                 app1sPss1,                   // pss
                 app1sRss1,                   // rss
                 app1sProcessName,            // processName
-                app1sPackageName);           // packageName
+                app1sPackageName,            // packageName
+                isNativeService);
         doReturn(new Pair<Long, Object>(now1s, Integer.valueOf(0)))
                 .when(mAppExitInfoTracker.mAppExitInfoSourceZygote)
                 .remove(anyInt(), anyInt());
@@ -315,7 +328,8 @@ public class ApplicationExitInfoTest {
                 app1Pss2,               // pss
                 app1Rss2,               // rss
                 app1ProcessName,        // processName
-                app1PackageName);       // packageName
+                app1PackageName,        // packageName
+                isNativeService);
         exitCode = 6;
 
         mAppExitInfoTracker.setProcessStateSummary(app1Uid, app1Pid2, app1Cookie1);
@@ -398,7 +412,8 @@ public class ApplicationExitInfoTest {
                 app1Pss3,                               // pss
                 app1Rss3,                               // rss
                 app1ProcessName,                        // processName
-                app1PackageName);                       // packageName
+                app1PackageName,                        // packageName
+                isNativeService);
         doReturn(new Pair<Long, Object>(now3, Integer.valueOf(makeSignalStatus(sigNum))))
                 .when(mAppExitInfoTracker.mAppExitInfoSourceZygote)
                 .remove(anyInt(), anyInt());
@@ -487,7 +502,8 @@ public class ApplicationExitInfoTest {
                 app2Pss1,                    // pss
                 app2Rss1,                    // rss
                 app2ProcessName,             // processName
-                app2PackageName);            // packageName
+                app2PackageName,             // packageName
+                isNativeService);
         updateExitInfo(app, now4);
         list.clear();
         mAppExitInfoTracker.getExitInfo(app2PackageName, app2UidUser2, app2PidUser2, 0, list);
@@ -551,7 +567,8 @@ public class ApplicationExitInfoTest {
                 app3Pss1,                // pss
                 app3Rss1,                // rss
                 app3ProcessName,         // processName
-                app3PackageName);        // packageName
+                app3PackageName,         // packageName
+                isNativeService);
         noteAppKill(app, ApplicationExitInfo.REASON_CRASH_NATIVE,
                 ApplicationExitInfo.SUBREASON_UNKNOWN, app3Description, now5);
 
@@ -675,7 +692,8 @@ public class ApplicationExitInfoTest {
                 app3Pss2,                    // pss
                 app3Rss2,                    // rss
                 app3ProcessName,             // processName
-                app3PackageName);            // packageName
+                app3PackageName,             // packageName
+                isNativeService);
         mAppExitInfoTracker.mIsolatedUidRecords.addIsolatedUid(app3IsolatedUid, app3Uid);
         noteAppKill(app, ApplicationExitInfo.REASON_CRASH,
                 ApplicationExitInfo.SUBREASON_UNKNOWN, app3Description2, now6);
@@ -760,7 +778,8 @@ public class ApplicationExitInfoTest {
                 app1Pss4,                     // pss
                 app1Rss4,                     // rss
                 app1ProcessName,              // processName
-                app1PackageName);             // packageName
+                app1PackageName,              // packageName
+                isNativeService);
 
         mAppExitInfoTracker.mIsolatedUidRecords.addIsolatedUid(app1IsolatedUidUser2, app1UidUser2);
         noteAppKill(app, ApplicationExitInfo.REASON_OTHER,
@@ -815,7 +834,8 @@ public class ApplicationExitInfoTest {
                 app1Pss5,                     // pss
                 app1Rss5,                     // rss
                 app1ProcessName,              // processName
-                app1PackageName);             // packageName
+                app1PackageName,              // packageName
+                isNativeService);
 
         mAppExitInfoTracker.mIsolatedUidRecords.addIsolatedUid(app1IsolatedUid2User2, app1UidUser2);
 
@@ -1275,14 +1295,15 @@ public class ApplicationExitInfoTest {
 
     private ProcessRecord makeProcessRecord(int pid, int uid, int packageUid, Integer definingUid,
             int connectionGroup, int procState, long pss, long rss,
-            String processName, String packageName) {
+            String processName, String packageName, boolean isNativeService) {
         return makeProcessRecord(pid, uid, packageUid, definingUid, connectionGroup,
-                procState, pss, rss, processName, packageName, mAms);
+                procState, pss, rss, processName, packageName, mAms, isNativeService);
     }
 
     static ProcessRecord makeProcessRecord(int pid, int uid, int packageUid, Integer definingUid,
             int connectionGroup, int procState, long pss, long rss,
-            String processName, String packageName, ActivityManagerService ams) {
+            String processName, String packageName, ActivityManagerService ams,
+            boolean isNativeService) {
         ApplicationInfo ai = new ApplicationInfo();
         ai.packageName = packageName;
         ProcessRecord app = new ProcessRecord(ams, ai, processName, uid);
@@ -1292,7 +1313,8 @@ public class ApplicationExitInfoTest {
             final String dummyPackageName = "com.android.test";
             final String dummyClassName = ".Foo";
             app.setHostingRecord(HostingRecord.byAppZygote(new ComponentName(
-                    dummyPackageName, dummyClassName), "", definingUid, ""));
+                    dummyPackageName, dummyClassName), "", definingUid, "",
+                    isNativeService));
         }
         app.mServices.setConnectionGroup(connectionGroup);
         app.setReportedProcState(procState);

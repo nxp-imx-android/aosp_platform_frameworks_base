@@ -42,6 +42,13 @@ flag {
 }
 
 flag {
+    name: "delegate_request_fullscreen_handling_to_shell"
+    namespace: "lse_desktop_experience"
+    description: "Fully migrates handling of client-requested fullscreen mode to Shell"
+    bug: "296268915"
+}
+
+flag {
     name: "dimming_wallpaper_for_maximized_and_tiled"
     namespace: "lse_desktop_experience"
     description: "Dim the wallpaper to make maximized and tiled window looks immersive."
@@ -113,6 +120,13 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Matches the App Header density to that of the app window, instead of SysUI's"
     bug: "332414819"
+}
+
+flag {
+    name: "enable_app_restart_after_update"
+    namespace: "lse_desktop_experience"
+    description: "Enables the app restart after update feature."
+    bug: "448577499"
 }
 
 flag {
@@ -227,16 +241,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Introduces a developer API to opt-out of Camera Compat treatment for fixed-orientation apps in desktop windowing mode"
     bug: "397165621"
-}
-
-flag {
-    name: "enable_camera_compat_sandbox_display_rotation_on_external_displays_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Whether to use primary display rotation when sandboxing rotation for responsive camera apps."
-    bug: "395063101"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -380,16 +384,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_app_launch_alttab_transitions_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables custom transitions for alt-tab app launches in Desktop Mode."
-    bug: "380225486"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_app_launch_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
@@ -404,26 +398,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables custom transitions for app launches in Desktop Mode."
     bug: "375992828"
-}
-
-flag {
-    name: "enable_desktop_app_launch_transitions_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables custom transitions for app launches in Desktop Mode."
-    bug: "380224832"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_close_shortcut_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix the window-close keyboard shortcut in Desktop Mode."
-    bug: "394599430"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -451,6 +425,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the drag-to-maximize capability triggered by desktop-first state."
     bug: "404626572"
+}
+
+flag {
+    name: "enable_desktop_first_exempted_source_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes desktop-first policy for the case where the source task is fullscreen but exempted from desktop."
+    bug: "443065273"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -574,26 +558,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_opening_deeplink_minimize_animation_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enabling a minimize animation when a new window is opened via deeplink and the Desktop Windowing open windows limit is reached."
-    bug: "360329773"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_recents_transitions_corners_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables rounded corners bugfix for Recents transitions."
-    bug: "383079261"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_tab_tearing_launch_animation"
     namespace: "lse_desktop_experience"
     description: "Enables the animation that occurs when a new window is opened via tab tearing."
@@ -628,16 +592,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Forces pinned taskbar with desktop tasks on freeform displays"
     bug: "390665752"
-}
-
-flag {
-    name: "enable_desktop_trampoline_close_animation_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables a close animation when the app trampolines (a second window is opened, and the first is closed)."
-    bug: "391548553"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -735,13 +689,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables free-floating PiP in desktop windowing."
     bug: "416788567"
-}
-
-flag {
-    name: "enable_desktop_windowing_hsum"
-    namespace: "lse_desktop_experience"
-    description: "Enables HSUM on desktop mode."
-    bug: "366397912"
 }
 
 flag {
@@ -958,29 +905,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables box shadows for freeform windows."
     bug: "367464660"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_freeform_display_launch_params"
-    namespace: "lse_desktop_experience"
-    description: "Enable only DesktopModeLaunchParamsModifier to resolve bounds for freeform display."
-    bug: "401564801"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_full_screen_window_on_removing_split_screen_stage_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables clearing the windowing mode of a freeform window when removing the task from the split screen stage."
-    bug: "372791604"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1071,10 +995,13 @@ flag {
 }
 
 flag {
-    name: "enable_minimize_button"
+    name: "enable_launcher_handle_go_home_keyboard_shortcut"
     namespace: "lse_desktop_experience"
-    description: "Adds a minimize button the the caption bar"
-    bug: "356843241"
+    description: "Enables handling the go home keyboard shortcut on the Launcher side."
+    bug: "427579352"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1208,10 +1135,10 @@ flag {
 }
 
 flag {
-    name: "enable_presentation_disallowed_on_unfocused_host_task"
+    name: "enable_pip_ui_state_change_callback_for_connected_displays"
     namespace: "lse_desktop_experience"
-    description: "Disallows presentations from being shown on their unfocused host tasks."
-    bug: "435586251"
+    description: "Enables sending Picture-in-Picture UI state change callbacks to apps on non-default displays."
+    bug: "449857733"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

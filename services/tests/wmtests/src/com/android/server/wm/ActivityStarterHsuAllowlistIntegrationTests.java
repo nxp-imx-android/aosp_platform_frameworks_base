@@ -35,8 +35,8 @@ import static org.mockito.Mockito.mock;
 
 import android.annotation.UserIdInt;
 import android.app.IApplicationThread;
+import android.content.pm.ActivityInfo;
 import android.os.UserHandle;
-import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 
@@ -50,6 +50,9 @@ import org.junit.Test;
  * launched when the user is the {@code HSU} (Headless System User).
  */
 public final class ActivityStarterHsuAllowlistIntegrationTests extends ActivityStarterTestBase {
+
+    private static final boolean HSUM = true;
+    private static final boolean NON_HSUM = false;
 
     @Test
     @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
@@ -67,14 +70,27 @@ public final class ActivityStarterHsuAllowlistIntegrationTests extends ActivityS
 
     @Test
     @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
-    public void testExecute_blockedWhenNotAllowlisted() {
-        ActivityStarter starter = createStarter();
+    public void testExecute_blockedWhenNotAllowlisted_notifyBecauseItsHsum() {
+        ActivityStarter starter = createStarter(HSUM);
         mockActivityAllowlistedForHsu(false);
 
         int result = starter.execute();
 
         assertWithMessage("result of execute()").that(result).isEqualTo(START_NOT_ALLOWED_FOR_USER);
         verifyUmiNotifiedActivityBlocked();
+        verifyUmiNotNotifiedActivityLaunched();
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testExecute_blockedWhenNotAllowlisted_dontNotifyBecauseNotHsum() {
+        ActivityStarter starter = createStarter(NON_HSUM);
+        mockActivityAllowlistedForHsu(false);
+
+        int result = starter.execute();
+
+        assertWithMessage("result of execute()").that(result).isEqualTo(START_NOT_ALLOWED_FOR_USER);
+        verifyUmiNotNotifiedActivityBlocked();
         verifyUmiNotNotifiedActivityLaunched();
     }
 
@@ -92,8 +108,8 @@ public final class ActivityStarterHsuAllowlistIntegrationTests extends ActivityS
 
     @Test
     @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
-    public void testExecute_allowedWhenAllowlistIsNotSet() {
-        ActivityStarter starter = createStarter();
+    public void testExecute_allowedWhenAllowlistIsNotSet_notifyBecauseItsHsum() {
+        ActivityStarter starter = createStarter(HSUM);
         // Don't need to mock - umi.getActivitiesAllowlist() will return null by default
 
         int result = starter.execute();
@@ -105,8 +121,9 @@ public final class ActivityStarterHsuAllowlistIntegrationTests extends ActivityS
 
     @Test
     @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
-    public void testExecute_allowedWhenDeviceIsNotHsum() {
-        ActivityStarter starter = createStarter(/* isHsum=*/ false);
+    public void testExecute_allowedWhenAllowlistIsNotSet_dontNotifyBecauseNotHsum() {
+        ActivityStarter starter = createStarter(NON_HSUM);
+        // Don't need to mock - umi.getActivitiesAllowlist() will return null by default
 
         int result = starter.execute();
 
@@ -117,8 +134,24 @@ public final class ActivityStarterHsuAllowlistIntegrationTests extends ActivityS
 
     @Test
     @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
-    public void testExecute_allowedWhenUserIsNotHsu() {
-        ActivityStarter starter = createStarterForUser(42);
+    public void testExecute_allowedWhenNotAllowlistedButShowForAllSet_notifyBecauseItsHsum() {
+        ActivityStarter starter = createStarter(HSUM);
+        addActivityInfoFlags(starter, ActivityInfo.FLAG_SHOW_FOR_ALL_USERS);
+        mockActivityAllowlistedForHsu(false);
+
+        int result = starter.execute();
+
+        assertWithMessage("result of execute()").that(result).isEqualTo(START_SUCCESS);
+        verifyUmiNotNotifiedActivityBlocked();
+        verifyUmiNotifiedActivityLaunched();
+    }
+
+    @Test
+    @EnableFlags(android.multiuser.Flags.FLAG_HSU_ALLOWLIST_ACTIVITIES)
+    public void testExecute_allowedWhenNotAllowlistedButShowForAllSet_dontNotifyBecauseNotHsum() {
+        ActivityStarter starter = createStarter(NON_HSUM);
+        addActivityInfoFlags(starter, ActivityInfo.FLAG_SHOW_FOR_ALL_USERS);
+        mockActivityAllowlistedForHsu(false);
 
         int result = starter.execute();
 
@@ -167,17 +200,14 @@ public final class ActivityStarterHsuAllowlistIntegrationTests extends ActivityS
         return starter;
     }
 
-    private ActivityStarter createStarterForUser(@UserIdInt int userId) {
-        ActivityStarter starter = createStarter();
-        starter.mRequest.activityInfo.applicationInfo.uid = userId * UserHandle.PER_USER_RANGE;
-        return starter;
+    private void addActivityInfoFlags(ActivityStarter starter, int flags) {
+        starter.mRequest.activityInfo.flags |= flags;
     }
 
     private void mockActivityAllowlistedForHsu(boolean value) {
         var mockAllowlist = mock(UserActivitiesAllowlist.class);
         doReturn(value).when(mockAllowlist).isAllowed(ActivityBuilder.getDefaultComponent());
-        doReturn(mockAllowlist).when(mMockUmi)
-                    .getActivitiesAllowlist(UserManager.USER_TYPE_SYSTEM_HEADLESS);
+        doReturn(mockAllowlist).when(mMockUmi).getActivitiesAllowlist(UserHandle.USER_SYSTEM);
     }
 
     private void verifyUmiNotifiedActivityBlocked() {

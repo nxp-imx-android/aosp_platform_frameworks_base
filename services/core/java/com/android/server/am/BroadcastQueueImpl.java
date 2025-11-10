@@ -1028,15 +1028,17 @@ class BroadcastQueueImpl extends BroadcastQueue {
             return true;
         }
 
-        final ApplicationInfo info = ((ResolveInfo) receiver).activityInfo.applicationInfo;
-        final ComponentName component = ((ResolveInfo) receiver).activityInfo.getComponentName();
+        final ActivityInfo activityInfo = ((ResolveInfo) receiver).activityInfo;
+        final ApplicationInfo info = activityInfo.applicationInfo;
+        final ComponentName component = activityInfo.getComponentName();
+        final boolean runInPccSandbox = activityInfo.shouldRunInPccSandbox();
 
         queue.setActiveWasStopped(info.isStopped());
         queue.setActiveFirstLaunch(info.isNotLaunched());
 
         final int intentFlags = r.intent.getFlags() | Intent.FLAG_FROM_BACKGROUND;
         final HostingRecord hostingRecord = new HostingRecord(HostingRecord.HOSTING_TYPE_BROADCAST,
-                component, r.intent.getAction(), r.getHostingRecordTriggerType());
+                component, r.intent.getAction(), r.getHostingRecordTriggerType(), runInPccSandbox);
         final boolean isActivityCapable = (r.options != null
                 && r.options.getTemporaryAppAllowlistDuration() > 0);
         final int zygotePolicyFlags = isActivityCapable ? ZYGOTE_POLICY_FLAG_LATENCY_SENSITIVE
@@ -2328,7 +2330,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @VisibleForTesting
     @GuardedBy("mService")
     @NonNull BroadcastProcessQueue getOrCreateProcessQueue(@NonNull ProcessRecord app) {
-        return getOrCreateProcessQueue(app.processName, app.info.uid);
+        return getOrCreateProcessQueue(app.processName, app.uid);
     }
 
     @VisibleForTesting
@@ -2359,7 +2361,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @VisibleForTesting
     @GuardedBy("mService")
     @Nullable BroadcastProcessQueue getProcessQueue(@NonNull ProcessRecord app) {
-        return getProcessQueue(app.processName, app.info.uid);
+        return getProcessQueue(app.processName, app.uid);
     }
 
     @VisibleForTesting

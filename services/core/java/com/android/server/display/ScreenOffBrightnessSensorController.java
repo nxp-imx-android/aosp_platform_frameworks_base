@@ -16,7 +16,6 @@
 
 package com.android.server.display;
 
-import android.annotation.Nullable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -48,7 +47,6 @@ public class ScreenOffBrightnessSensorController implements SensorEventListener 
     private long mSensorDisableTime = -1;
 
     // The mapper to translate ambient lux to screen brightness in the range [0, 1.0].
-    @Nullable
     private final BrightnessMappingStrategy mBrightnessMapper;
 
     public ScreenOffBrightnessSensorController(

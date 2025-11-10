@@ -20,6 +20,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.app.Dialog
+import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Looper
@@ -238,9 +239,9 @@ constructor(
      * Caveats: When calling this function and [dialog] is not a fullscreen dialog, then it will be
      * made fullscreen and 2 views will be inserted between the dialog DecorView and its children.
      *
-     * @return [Boolean] `true` if the dialog was successfully shown, `false` otherwise. 
-     * The dialog will not be shown if another instance with the same sourceIdentity
-     * is already in the process of dismissing.
+     * @return [Boolean] `true` if the dialog was successfully shown, `false` otherwise. The dialog
+     *   will not be shown if another instance with the same sourceIdentity is already in the
+     *   process of dismissing.
      */
     @JvmOverloads
     fun show(
@@ -476,7 +477,7 @@ constructor(
      * Dismiss [dialog]. If it was launched from another dialog using this animator, also dismiss
      * the stack of dialogs and simply fade out [dialog].
      */
-    fun dismissStack(dialog: Dialog) {
+    fun dismissStack(dialog: DialogInterface) {
         openedDialogs.firstOrNull { it.dialog == dialog }?.prepareForStackDismiss()
         dialog.dismiss()
     }

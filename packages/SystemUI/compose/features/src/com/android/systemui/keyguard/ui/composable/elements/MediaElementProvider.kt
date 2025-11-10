@@ -18,9 +18,12 @@ package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ElementContentScope
@@ -65,10 +68,14 @@ constructor(
                     LayoutType.WIDE -> dimensionResource(R.dimen.notification_side_paddings)
                     LayoutType.NARROW ->
                         dimensionResource(R.dimen.notification_side_paddings) +
-                                dimensionResource(R.dimen.notification_panel_margin_horizontal)
+                            dimensionResource(R.dimen.notification_panel_margin_horizontal)
                 }
 
-            AnimatedVisibility(viewModel.isMediaActive && !viewModel.isDozing) {
+            AnimatedVisibility(
+                viewModel.isMediaActive && !viewModel.isDozing,
+                enter = expandVertically(expandFrom = Alignment.Top),
+                exit = fadeOut(),
+            ) {
                 Element(
                     key = Media.Elements.mediaCarousel,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),

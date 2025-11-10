@@ -31,6 +31,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.GESTURE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.KEY_GESTURE;
+import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_ACCESS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.TOP_ROW_KEY;
@@ -70,14 +71,13 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Class that hold states and settings per user and share between
@@ -100,8 +100,7 @@ public class AccessibilityUserState {
     final Map<ComponentName, AccessibilityServiceConnection> mComponentNameToServiceMap =
             new HashMap<>();
 
-    final List<AccessibilityServiceInfo> mInstalledServices = new ArrayList<>();
-
+    final Map<ComponentName, AccessibilityServiceInfo> mInstalledServicesMap = new HashMap<>();
     final List<AccessibilityShortcutInfo> mInstalledShortcuts = new ArrayList<>();
 
     final Set<ComponentName> mBindingServices = new HashSet<>();
@@ -223,6 +222,7 @@ public class AccessibilityUserState {
         mShortcutTargets.put(QUICK_SETTINGS, new ArraySet<>());
         mShortcutTargets.put(KEY_GESTURE, new ArraySet<>());
         mShortcutTargets.put(TOP_ROW_KEY, new ArraySet<>());
+        mShortcutTargets.put(QUICK_ACCESS, new ArraySet<>());
     }
 
     boolean isHandlingAccessibilityEventsLocked() {
@@ -437,8 +437,7 @@ public class AccessibilityUserState {
      * Remove the service from the crashed and binding service lists if the user disabled it.
      */
     void removeDisabledServicesFromTemporaryStatesLocked() {
-        for (int i = 0, count = mInstalledServices.size(); i < count; i++) {
-            final AccessibilityServiceInfo installedService = mInstalledServices.get(i);
+        for (AccessibilityServiceInfo installedService : getInstalledServices()) {
             final ComponentName componentName = ComponentName.unflattenFromString(
                     installedService.getId());
 
@@ -584,7 +583,7 @@ public class AccessibilityUserState {
         pw.append(", autoclickEnabled=").append(String.valueOf(mIsAutoclickEnabled));
         pw.append(", nonInteractiveUiTimeout=").append(String.valueOf(mNonInteractiveUiTimeout));
         pw.append(", interactiveUiTimeout=").append(String.valueOf(mInteractiveUiTimeout));
-        pw.append(", installedServiceCount=").append(String.valueOf(mInstalledServices.size()));
+        pw.append(", installedServiceCount=").append(String.valueOf(getInstalledServices().size()));
         pw.append(", magnificationModes=").append(String.valueOf(mMagnificationModes));
         pw.append(", magnificationCapabilities=")
                 .append(String.valueOf(mMagnificationCapabilities));
@@ -612,6 +611,7 @@ public class AccessibilityUserState {
         pw.append("     a11y tiles in QS panel:").append(mA11yTilesInQsPanel.toString());
         pw.println();
         dumpShortcutTargets(pw, TOP_ROW_KEY, "top row key");
+        dumpShortcutTargets(pw, QUICK_ACCESS, "quick access dialog");
         pw.append("     Bound services:{");
         final int serviceCount = mBoundServices.size();
         for (int j = 0; j < serviceCount; j++) {
@@ -669,6 +669,10 @@ public class AccessibilityUserState {
             pw.append(Arrays.toString(client.mPackageNames));
         }
         pw.println("}]");
+    }
+
+    public Collection<AccessibilityServiceInfo> getInstalledServices() {
+        return Collections.unmodifiableCollection(mInstalledServicesMap.values());
     }
 
     public boolean isAutoclickEnabledLocked() {
@@ -964,13 +968,7 @@ public class AccessibilityUserState {
      * Returns installed accessibility service info by the given service component name.
      */
     public AccessibilityServiceInfo getInstalledServiceInfoLocked(ComponentName componentName) {
-        for (int i = 0; i < mInstalledServices.size(); i++) {
-            final AccessibilityServiceInfo serviceInfo = mInstalledServices.get(i);
-            if (serviceInfo.getComponentName().equals(componentName)) {
-                return serviceInfo;
-            }
-        }
-        return null;
+        return mInstalledServicesMap.getOrDefault(componentName, null);
     }
 
     /**
@@ -1179,7 +1177,7 @@ public class AccessibilityUserState {
 
     public void updateTileServiceMapForAccessibilityServiceLocked() {
         mA11yServiceToTileService.clear();
-        mInstalledServices.forEach(
+        getInstalledServices().forEach(
                 a11yServiceInfo -> {
                     String tileServiceName = a11yServiceInfo.getTileServiceName();
                     if (!TextUtils.isEmpty(tileServiceName)) {
@@ -1196,6 +1194,33 @@ public class AccessibilityUserState {
                     }
                 }
         );
+    }
+
+    /**
+     * Builds and populates the internal map of installed accessibility services
+     * for O(1) lookups.
+     *
+     * <p>The map uses the service's {@link ComponentName} as the key and the
+     * {@link AccessibilityServiceInfo} object as the value. This replaces the
+     * need for a slower O(N) linear search when querying a service by its component name.</p>
+     *
+     * @param installedServices The list of {@link AccessibilityServiceInfo} objects
+     * representing all installed services for the current user.
+     * This list is typically retrieved from the system's package manager.
+     */
+    void buildInstalledServicesMapLocked(
+            List<AccessibilityServiceInfo> installedServices) {
+        mInstalledServicesMap.clear();
+        if (installedServices == null) {
+            return;
+        }
+
+        for (AccessibilityServiceInfo serviceInfo : installedServices) {
+            final ComponentName componentName = serviceInfo.getComponentName();
+            if (componentName != null) {
+                mInstalledServicesMap.put(componentName, serviceInfo);
+            }
+        }
     }
 
     public void updateTileServiceMapForAccessibilityActivityLocked() {
@@ -1242,16 +1267,11 @@ public class AccessibilityUserState {
     public Map<ComponentName, AccessibilityServiceInfo> getTileServiceToA11yServiceInfoMapLocked() {
         Map<ComponentName, AccessibilityServiceInfo> tileServiceToA11yServiceInfoMap =
                 new ArrayMap<>();
-        Map<ComponentName, AccessibilityServiceInfo> a11yServiceToServiceInfoMap =
-                mInstalledServices.stream().collect(
-                        Collectors.toMap(
-                                AccessibilityServiceInfo::getComponentName,
-                                Function.identity()));
         for (Map.Entry<ComponentName, ComponentName> serviceToTile :
                 mA11yServiceToTileService.entrySet()) {
-            if (a11yServiceToServiceInfoMap.containsKey(serviceToTile.getKey())) {
+            if (mInstalledServicesMap.containsKey(serviceToTile.getKey())) {
                 tileServiceToA11yServiceInfoMap.put(serviceToTile.getValue(),
-                        a11yServiceToServiceInfoMap.get(serviceToTile.getKey()));
+                        mInstalledServicesMap.get(serviceToTile.getKey()));
             }
         }
         return tileServiceToA11yServiceInfoMap;

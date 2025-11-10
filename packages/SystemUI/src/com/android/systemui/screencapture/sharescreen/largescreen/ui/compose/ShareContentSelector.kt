@@ -50,6 +50,8 @@ import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.AppContentsViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DisplaysViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.RecentTasksViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.TargetsViewModel
 
@@ -68,7 +70,11 @@ fun ShareContentSelector(targetsViewModel: TargetsViewModel) {
                     stringResource(
                         when (targetsViewModel) {
                             is AppContentsViewModel -> R.string.screen_share_tab_sharing_title
-                            else -> R.string.screen_share_app_window_sharing_title
+                            is RecentTasksViewModel ->
+                                R.string.screen_share_app_window_sharing_title
+                            is DisplaysViewModel ->
+                                R.string.screen_share_entire_screen_sharing_title
+                            else -> throw IllegalArgumentException("Unknown TargetsViewModel type")
                         }
                     ),
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp).height(24.dp).fillMaxWidth(),
@@ -86,7 +92,7 @@ fun ShareContentSelector(targetsViewModel: TargetsViewModel) {
                     itemSelected = selectedItem != null,
                 )
             }
-            DisclaimerText()
+            DisclaimerText(targetsViewModel)
             AudioSwitch(targetsViewModel, selectedItem)
         }
     }
@@ -125,9 +131,17 @@ private fun ItemPreview(
 }
 
 @Composable
-private fun DisclaimerText() {
+private fun DisclaimerText(targetsViewModel: TargetsViewModel) {
     Text(
-        text = stringResource(R.string.screen_share_disclaimer),
+        text =
+            stringResource(
+                when (targetsViewModel) {
+                    is DisplaysViewModel -> R.string.screen_share_disclaimer_full_screen_sharing
+                    // TODO(b/423708479) Fill the tab sharing legal text with potential text
+                    // refactoring.
+                    else -> R.string.screen_share_disclaimer_app_sharing
+                }
+            ),
         style = MaterialTheme.typography.labelMedium,
         modifier = Modifier.padding(start = 8.dp, end = 8.dp).fillMaxWidth(),
     )
@@ -143,7 +157,10 @@ private fun AudioSwitch(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.padding(4.dp, bottom = 12.dp).height(24.dp).fillMaxWidth(),
+        modifier =
+            Modifier.padding(start = 4.dp, top = 4.dp, end = 4.dp, bottom = 12.dp)
+                .height(24.dp)
+                .fillMaxWidth(),
     ) {
         LoadingIcon(
             icon =

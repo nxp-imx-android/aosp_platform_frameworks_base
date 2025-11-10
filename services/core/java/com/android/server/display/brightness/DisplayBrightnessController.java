@@ -463,6 +463,18 @@ public final class DisplayBrightnessController {
     }
 
     /**
+     * Remove the Automatic Brightness Controller.
+     */
+    public void resetAutoBrightness() {
+        setAutomaticBrightnessController(null);
+        AutoBrightnessFallbackStrategy autoBrightnessFallbackStrategy =
+                getAutoBrightnessFallbackStrategy();
+        if (autoBrightnessFallbackStrategy != null) {
+            autoBrightnessFallbackStrategy.stop();
+        }
+    }
+
+    /**
      * TODO(b/253226419): Remove once auto-brightness is a fully-functioning strategy.
      */
     public AutomaticBrightnessStrategy getAutomaticBrightnessStrategy() {
@@ -675,11 +687,13 @@ public final class DisplayBrightnessController {
      */
     @VisibleForTesting
     void setAutomaticBrightnessController(
-            AutomaticBrightnessController automaticBrightnessController) {
+            @Nullable AutomaticBrightnessController automaticBrightnessController) {
         mAutomaticBrightnessController = automaticBrightnessController;
         getAutomaticBrightnessStrategy()
                 .setAutomaticBrightnessController(automaticBrightnessController);
-        loadNitBasedBrightnessSetting();
+        if (automaticBrightnessController != null) {
+            loadNitBasedBrightnessSetting();
+        }
     }
 
     private void setUpAutoBrightnessFallbackStrategy(SensorManager sensorManager,

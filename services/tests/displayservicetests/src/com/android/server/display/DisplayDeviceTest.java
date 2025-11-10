@@ -32,8 +32,6 @@ import static org.mockito.Mockito.verify;
 
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
@@ -43,8 +41,6 @@ import android.view.SurfaceControl;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
-
-import com.android.server.display.feature.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -94,30 +90,6 @@ public class DisplayDeviceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testGetDisplaySurfaceDefaultSizeLocked_notRotated_anisotropyCorrection() {
-        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
-        mDisplayDeviceInfo.xDpi = 0.5f;
-        mDisplayDeviceInfo.yDpi = 1.0f;
-        DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
-                mMockDisplayAdapter);
-        assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(
-                PORTRAIT_DOUBLE_WIDTH);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testGetDisplaySurfaceDefaultSizeLocked_notRotated_noAnisotropyCorrection() {
-        mDisplayDeviceInfo.type = Display.TYPE_INTERNAL;
-        mDisplayDeviceInfo.xDpi = 0.5f;
-        mDisplayDeviceInfo.yDpi = 1.0f;
-        DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
-                mMockDisplayAdapter);
-        assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(PORTRAIT_SIZE);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
     public void testGetDisplaySurfaceDefaultSizeLocked_notRotated_userModeNotSet() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
@@ -129,7 +101,6 @@ public class DisplayDeviceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
     public void testGetDisplaySurfaceDefaultSizeLocked_notRotated_userModeNormal() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
@@ -143,7 +114,6 @@ public class DisplayDeviceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
     public void testGetDisplaySurfaceDefaultSizeLocked_notRotated_userModeSizeOverride() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
@@ -173,32 +143,6 @@ public class DisplayDeviceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testGetDisplaySurfaceDefaultSizeLocked_rotation90_anisotropyCorrection() {
-        mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
-        mDisplayDeviceInfo.xDpi = 0.5f;
-        mDisplayDeviceInfo.yDpi = 1.0f;
-        DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
-                mMockDisplayAdapter);
-        displayDevice.setProjectionLocked(mMockTransaction, ROTATION_90, new Rect(), new Rect());
-        assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(
-                LANDSCAPE_DOUBLE_HEIGHT);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
-    public void testGetDisplaySurfaceDefaultSizeLocked_rotation90_noAnisotropyCorrection() {
-        mDisplayDeviceInfo.type = Display.TYPE_INTERNAL;
-        mDisplayDeviceInfo.xDpi = 0.5f;
-        mDisplayDeviceInfo.yDpi = 1.0f;
-        DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
-                mMockDisplayAdapter);
-        displayDevice.setProjectionLocked(mMockTransaction, ROTATION_90, new Rect(), new Rect());
-        assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(LANDSCAPE_SIZE);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
     public void testGetDisplaySurfaceDefaultSizeLocked_rotation90_userModeNotSet() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
@@ -211,7 +155,6 @@ public class DisplayDeviceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
     public void testGetDisplaySurfaceDefaultSizeLocked_rotation90_userModeNormal() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;
@@ -226,7 +169,6 @@ public class DisplayDeviceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_ANISOTROPY_CORRECTED_MODES)
     public void testGetDisplaySurfaceDefaultSizeLocked_rotation90_userModeSizeOverride() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mDisplayDeviceInfo.xDpi = 0.5f;

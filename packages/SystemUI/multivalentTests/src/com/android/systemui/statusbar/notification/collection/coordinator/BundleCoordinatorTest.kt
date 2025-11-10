@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.app.INotificationManager
 import android.app.NotificationChannel
 import android.app.NotificationChannel.NEWS_ID
 import android.app.NotificationChannel.PROMOTIONS_ID
@@ -23,6 +24,7 @@ import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
+import android.service.notification.DynamicBundle
 import android.testing.TestableLooper
 import android.util.Pair
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -33,8 +35,10 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.currentValue
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.collection.BundleEntry
+import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.InternalNotificationsApi
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -46,7 +50,11 @@ import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC_2
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.statusbar.notification.stack.NotificationSectionsManager
+import com.android.systemui.util.concurrency.FakeExecutor
+import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.SystemClock
+import com.google.common.truth.Correspondence
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -56,9 +64,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mock
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 @OptIn(
     ExperimentalMaterial3ExpressiveApi::class,
@@ -76,6 +87,12 @@ class BundleCoordinatorTest : SysuiTestCase() {
     @Mock private lateinit var bundleBarn: BundleBarn
     @Mock private lateinit var systemClock: SystemClock
     @Mock private lateinit var sectionHeaderVisProvider: SectionHeaderVisibilityProvider
+
+    @Mock private lateinit var notificationManager: INotificationManager
+    @Mock private lateinit var sectionsManager: NotificationSectionsManager
+    @Mock private lateinit var userTracker: UserTracker
+
+    private var executor: FakeExecutor = FakeExecutor(FakeSystemClock())
 
     private val onboardingMgr by lazy {
         OnboardingAffordanceManager("test bundle onboarding", sectionHeaderVisProvider)
@@ -102,6 +119,11 @@ class BundleCoordinatorTest : SysuiTestCase() {
                 systemClock,
                 TestScope(UnconfinedTestDispatcher()),
                 onboardingMgr,
+                notificationManager,
+                executor,
+                executor,
+                userTracker,
+                sectionsManager,
             )
     }
 
@@ -601,6 +623,24 @@ class BundleCoordinatorTest : SysuiTestCase() {
 
         coordinator.bundleCountUpdater.onBeforeFinalizeFilter(listOf(bundle))
         assertThat(bundle.bundleRepository.numberOfChildren).isEqualTo(0)
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
+    fun testAddDynamicBundles() {
+        var bundles = listOf(DynamicBundle(130, "Group Chats"), DynamicBundle(140, "Spoilers"))
+        whenever(notificationManager.getDynamicBundles(any(), any())).thenReturn(bundles)
+
+        executor.runAllReady()
+
+        assertThat(coordinator.bundler.bundleSpecs)
+            .comparingElementsUsing<BundleSpec, Int>(
+                Correspondence.transforming({ it.bundleType }, "bundleType")
+            )
+            .containsAtLeast(130, 140)
+
+        verify(sectionsManager).addSection(130)
+        verify(sectionsManager).addSection(140)
     }
 
     private fun makeEntryOfChannelType(

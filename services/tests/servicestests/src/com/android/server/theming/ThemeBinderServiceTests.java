@@ -34,25 +34,34 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.testing.TestableContext;
 import android.testing.TestablePermissions;
+import android.testing.TestableResources;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.R;
 import com.android.server.LocalServices;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+@HardwareColors(color = "", options = {
+        "*|TONAL_SPOT|#00FF00"
+})
 @RunWith(AndroidJUnit4.class)
 public class ThemeBinderServiceTests {
+    @Rule
+    public final HardwareColorRule mHardwareColorRule = new HardwareColorRule();
+
     private final IThemeSettingsCallback mCallback = new IThemeSettingsCallback.Stub() {
         @Override
         public void onSettingsChanged(ThemeSettings oldSettings, ThemeSettings newSettings) {
@@ -86,6 +95,9 @@ public class ThemeBinderServiceTests {
         TestableContext context = new TestableContext(InstrumentationRegistry.getTargetContext(),
                 null);
 
+        TestableResources testableResources = context.getOrCreateTestableResources();
+        testableResources.addOverride(R.array.theming_defaults, mHardwareColorRule.options);
+
         mUserId = UserHandle.getUserId(Binder.getCallingUid());
 
         Settings.Secure.putStringForUser(context.getContentResolver(),
@@ -101,7 +113,7 @@ public class ThemeBinderServiceTests {
             @NonNull
             @Override
             public String get(@NonNull String key, @Nullable String def) {
-                return "";
+                return mHardwareColorRule.color;
             }
         };
         ThemeStateManager stateManager = new ThemeStateManager(context,

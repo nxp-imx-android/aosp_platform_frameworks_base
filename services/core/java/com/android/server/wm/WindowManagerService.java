@@ -102,6 +102,7 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManager.fixScale;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
+import static android.view.WindowManagerGlobal.RELAYOUT_RES_BUFFER_SYNC;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_CANCEL_AND_REDRAW;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
@@ -2608,7 +2609,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 Slog.v(TAG_WM, "Relayout " + win + ": viewVisibility=" + viewVisibility
                         + " req=" + requestedWidth + "x" + requestedHeight + " " + win.mAttrs);
             }
-            if ((attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
+            if (!WindowManager.useClientSurface()
+                    && (attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
                 winAnimator.mAlpha = attrs.alpha;
             }
             if ((attrChanges & WindowManager.LayoutParams.TITLE_CHANGED) != 0) {
@@ -2617,10 +2619,11 @@ public class WindowManagerService extends IWindowManager.Stub
             }
             win.setWindowScale(win.mRequestedWidth, win.mRequestedHeight);
 
-            if (win.mAttrs.surfaceInsets.left != 0
+            if (!WindowManager.useClientSurface()
+                    && (win.mAttrs.surfaceInsets.left != 0
                     || win.mAttrs.surfaceInsets.top != 0
                     || win.mAttrs.surfaceInsets.right != 0
-                    || win.mAttrs.surfaceInsets.bottom != 0) {
+                    || win.mAttrs.surfaceInsets.bottom != 0)) {
                 winAnimator.setOpaqueLocked(false);
             }
 
@@ -2654,6 +2657,10 @@ public class WindowManagerService extends IWindowManager.Stub
                     viewVisibility);
             if (becameVisible) {
                 onWindowVisible(win);
+            }
+            if (WindowManager.useClientSurface() && viewVisibility == View.VISIBLE
+                    && outSurfaceControl != null) {
+                win.setClientSurface(outSurfaceControl);
             }
 
             win.setDisplayLayoutNeeded();
@@ -2690,7 +2697,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
             // Create surfaceControl before surface placement otherwise layout will be skipped
             // (because WS.isGoneForLayout() is true when there is no surface.
-            if (shouldRelayout && outSurfaceControl != null) {
+            if (shouldRelayout && outSurfaceControl != null && !WindowManager.useClientSurface()) {
                 try {
                     result = createSurfaceControl(outSurfaceControl, result, win, winAnimator);
                 } catch (Exception e) {
@@ -2737,7 +2744,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 winAnimator.mEnterAnimationPending = false;
                 winAnimator.mEnteringAnimation = false;
 
-                if (outSurfaceControl != null) {
+                if (outSurfaceControl != null && !WindowManager.useClientSurface()) {
                     if (viewVisibility == View.VISIBLE && winAnimator.hasSurface()) {
                         // We already told the client to go invisible, but the message may not be
                         // handled yet, or it might want to draw a last frame. If we already have a
@@ -2859,14 +2866,16 @@ public class WindowManagerService extends IWindowManager.Stub
                             && !displayContent.mWaitingForConfig) {
                         // Surface-placement has resulted in a new configuration or a new sync.
                         // This means the layout is technically invalid; however, it's very unlikely
-                        // that this will matter and we can often save a frame of latency by
-                        // returning the config/seqId here.
-                        // Returning a seqId indicates, to the client, that it can use this
-                        // result even though it called relayout with out-of-date config.
-                        outRelayoutResult.syncSeqId = win.mSyncSeqId;
+                        // that this will matter since we've always ignored this fact. So, we can
+                        // often save a frame of latency by returning the config/seqId here.
+                        outRelayoutResult.syncSeqId = Math.max(win.mBufferSeqId, win.mSyncSeqId);
+                        if (win.mBufferSeqId >= win.mSyncSeqId) {
+                            result = result | RELAYOUT_RES_BUFFER_SYNC;
+                        }
                         if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
                             Trace.instant(TRACE_TAG_WINDOW_MANAGER, "ignoreCancelDraw seqId="
-                                    + win.mSyncSeqId);
+                                    + win.mSyncSeqId + " buffer="
+                                    + ((result & RELAYOUT_RES_BUFFER_SYNC) != 0));
                         }
                     }
                 }
@@ -3817,11 +3826,6 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @VisibleForTesting
     void setAnimationsDisabledForDisplay(int displayId, boolean disabled) {
-        if (!android.companion.virtualdevice.flags.Flags.enableAnimationsPerDisplay()) {
-            Slog.e(TAG, "Required feature flag is disabled");
-            return;
-        }
-
         synchronized (mGlobalLock) {
             DisplayContent displayContent = mRoot.getDisplayContentOrCreate(displayId);
             displayContent.setAnimationsDisabledLocked(disabled);

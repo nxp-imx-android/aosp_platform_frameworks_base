@@ -16,7 +16,7 @@
 
 package android.app.appfunctions;
 
-import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -24,7 +24,7 @@ import android.os.CancellationSignal;
 import android.os.OutcomeReceiver;
 
 /** An interface for implementing the logic of an app function. */
-@FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+@FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public interface AppFunction {
     /**
      * Called when the app function is invoked using {@link AppFunctionManager#executeAppFunction}.

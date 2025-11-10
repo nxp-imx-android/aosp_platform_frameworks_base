@@ -1042,6 +1042,8 @@ public abstract class Context {
     public abstract PackageManager getPackageManager();
 
     /** Return a ContentResolver instance for your application's package. */
+    @RavenwoodSupported(type = SupportType.SUBCLASS, subclass = "ContextImpl",
+            comment = "only content://settings/ is understood for now", bug = 457841012)
     public abstract ContentResolver getContentResolver();
 
     /**
@@ -5780,12 +5782,13 @@ public abstract class Context {
     public static final String VOICE_INTERACTION_MANAGER_SERVICE = "voiceinteraction";
 
     /**
-     * Official published name of the (internal) autofill service.
+     * Use with {@link #getSystemService(String)} to retrieve an
+     *      {@link android.view.autofill.AutofillManager}.
      *
-     * @hide
      * @see #getSystemService(String)
      */
-    public static final String AUTOFILL_MANAGER_SERVICE = "autofill";
+    @FlaggedApi(android.service.autofill.Flags.FLAG_PUBLIC_AUTOFILL_SERVICE_NAME)
+    public static final String AUTOFILL_SERVICE = "autofill";
 
     /**
      * Official published name of the (internal) text to speech manager service.
@@ -6833,10 +6836,10 @@ public abstract class Context {
     public static final String REMOTE_PROVISIONING_SERVICE = "remote_provisioning";
 
     /**
-     * Binder service for {@link com.android.server.privatecompute.PccSandboxManagerService}.
-     *
-     * @hide
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.app.privatecompute.PccSandboxManager}.
      */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public static final String PCC_SANDBOX_SERVICE = "pcc_sandbox";
 
     /**

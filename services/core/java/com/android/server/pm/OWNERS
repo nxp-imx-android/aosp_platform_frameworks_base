@@ -20,6 +20,7 @@ per-file *User* = file:/MULTIUSER_OWNERS
 per-file *user* = file:/MULTIUSER_OWNERS
 per-file *HSU*.java = file:/MULTIUSER_OWNERS
 per-file *Hsu*.java = file:/MULTIUSER_OWNERS
+per-file GenericAllowlist.java = file:/MULTIUSER_OWNERS
 
 # security
 per-file AppLockPackageHelper.java = file:/core/java/android/content/pm/APP_LOCK_OWNERS

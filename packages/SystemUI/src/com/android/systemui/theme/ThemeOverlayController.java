@@ -53,6 +53,7 @@ import android.content.theming.ThemeStyle;
 import android.database.ContentObserver;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -127,6 +128,9 @@ import javax.inject.Inject;
 public class ThemeOverlayController implements CoreStartable, Dumpable {
     protected static final String TAG = "ThemeOverlayController";
     private static final boolean DEBUG = false;
+
+    private static final String KEY_COLOR_PALETTE_VERSION = "global_color_palette_version";
+
     // The wallpaper colors source is always the home wallpaper.
     private static final int WALLPAPER_COLORS_SOURCE = WallpaperManager.FLAG_SYSTEM;
 
@@ -264,6 +268,18 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             reevaluateSystemTheme(true /* forceReload */);
         }
     };
+
+    private boolean shouldForceReloadForVersion() {
+        String storedVersion = Settings.Global.getString(mContext.getContentResolver(),
+                KEY_COLOR_PALETTE_VERSION);
+
+        if (storedVersion != null && storedVersion.equals(Build.ID)) return false;
+
+        Log.i(TAG, "Palette version bumped from " + storedVersion + " to " + Build.ID);
+        Settings.Global.putString(mContext.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
+                Build.ID);
+        return true;
+    }
 
     private final UiModeManager.ContrastChangeListener mContrastChangeListener = contrast -> {
         mContrast = contrast;
@@ -579,7 +595,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         Runnable updateColors = () -> {
             if (DEBUG) Log.d(TAG, "Boot colors: " + systemColor);
             mCurrentColors.put(mUserTracker.getUserId(), systemColor);
-            reevaluateSystemTheme(false /* forceReload */);
+            reevaluateSystemTheme(shouldForceReloadForVersion());
         };
 
         // Whenever we're going directly to setup wizard, we need to process colors synchronously,

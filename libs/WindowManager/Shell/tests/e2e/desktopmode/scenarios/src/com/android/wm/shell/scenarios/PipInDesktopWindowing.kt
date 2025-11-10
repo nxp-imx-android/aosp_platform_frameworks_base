@@ -47,7 +47,6 @@ abstract class PipInDesktopWindowing(val rotation: Rotation = Rotation.ROTATION_
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableMinimizeButton())
         Assume.assumeTrue(Flags.enableDesktopWindowingPip())
         Assume.assumeTrue(com.android.wm.shell.Flags.enablePip2())
 
@@ -85,7 +84,7 @@ abstract class PipInDesktopWindowing(val rotation: Rotation = Rotation.ROTATION_
             device,
             DesktopModeAppHelper.Corners.LEFT_TOP,
             -200,
-            -200
+            -200,
         )
     }
 

@@ -84,6 +84,7 @@ constructor(
         }
 
     override suspend fun onActivated() {
+        SceneContainerFlag.isUnexpectedlyInLegacyMode()
         coroutineScope { launch { strongFaceAuthLockout.collect { onStrongFaceAuthLockout() } } }
     }
 
@@ -104,7 +105,7 @@ constructor(
         primaryBouncerInteractor.setDismissAction(null, null)
     }
 
-    private fun onStrongFaceAuthLockout() {
+    fun onStrongFaceAuthLockout() {
         statusBarKeyguardViewManager.showPrimaryBouncer(true, "strongFaceAuthLockout")
     }
 }

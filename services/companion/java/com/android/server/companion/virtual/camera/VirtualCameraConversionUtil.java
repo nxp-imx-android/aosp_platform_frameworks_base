@@ -137,7 +137,7 @@ public final class VirtualCameraConversionUtil {
         SupportedStreamConfiguration supportedConfig = new SupportedStreamConfiguration();
         supportedConfig.height = stream.getHeight();
         supportedConfig.width = stream.getWidth();
-        supportedConfig.pixelFormat = convertToHalFormat(stream.getFormat());
+        supportedConfig.imageFormat = convertToHalFormat(stream.getFormat());
         supportedConfig.maxFps = stream.getMaximumFramesPerSecond();
         supportedConfig.index = stream.getStreamIndex();
         return supportedConfig;
@@ -147,6 +147,8 @@ public final class VirtualCameraConversionUtil {
         return switch (javaFormat) {
             case ImageFormat.YUV_420_888 -> Format.YUV_420_888;
             case PixelFormat.RGBA_8888 -> Format.RGBA_8888;
+            case ImageFormat.JPEG -> Format.JPEG;
+            case ImageFormat.HEIC -> Format.HEIC;
             default -> Format.UNKNOWN;
         };
     }
@@ -155,6 +157,8 @@ public final class VirtualCameraConversionUtil {
         return switch (halFormat) {
             case Format.YUV_420_888 -> ImageFormat.YUV_420_888;
             case Format.RGBA_8888 -> PixelFormat.RGBA_8888;
+            case Format.JPEG -> ImageFormat.JPEG;
+            case Format.HEIC -> ImageFormat.HEIC;
             default -> ImageFormat.UNKNOWN;
         };
     }

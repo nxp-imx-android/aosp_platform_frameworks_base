@@ -68,6 +68,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -87,11 +88,13 @@ import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.util.CopyOnWriteSparseArray;
 import android.view.Display;
 import android.view.DisplayAddress;
 import android.view.DisplayInfo;
@@ -197,6 +200,8 @@ public class LogicalDisplayMapperTest {
     SyntheticModeManager mSyntheticModeManagerMock;
     @Mock
     Predicate<DisplayInfo> mIsDisplayAllowedInTopologyMock;
+    @Mock
+    CopyOnWriteSparseArray<LogicalDisplay.CachedDisplayInfo> mDisplayInfoCacheMock;
 
     @Captor ArgumentCaptor<LogicalDisplay> mDisplayCaptor;
     @Captor ArgumentCaptor<Integer> mDisplayEventCaptor;
@@ -301,17 +306,35 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_DISPLAY_INFO_COPY_ON_WRITE_CACHE_ENABLED)
     public void testDisplayDeviceAddAndRemove_NonInternalTypes() {
+        boolean infoCacheEnabled = false;
         initLogicalDisplayMapper();
-        testDisplayDeviceAddAndRemove_NonInternal(TYPE_EXTERNAL);
-        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_WIFI);
-        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_OVERLAY);
-        testDisplayDeviceAddAndRemove_NonInternal(TYPE_VIRTUAL);
-        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_UNKNOWN);
+        testDisplayDeviceAddAndRemove_NonInternal(TYPE_EXTERNAL, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_WIFI, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_OVERLAY, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(TYPE_VIRTUAL, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_UNKNOWN, infoCacheEnabled);
 
         // Call the internal test again, just to verify that adding non-internal displays
         // doesn't affect the ability for an internal display to become the default display.
-        testDisplayDeviceAddAndRemove_Internal_Helper();
+        testDisplayDeviceAddAndRemove_Internal_Helper(infoCacheEnabled);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DISPLAY_INFO_COPY_ON_WRITE_CACHE_ENABLED)
+    public void testDisplayDeviceAddAndRemove_NonInternalTypes_displayInfoCacheEnabled() {
+        boolean infoCacheEnabled = true;
+        initLogicalDisplayMapper();
+        testDisplayDeviceAddAndRemove_NonInternal(TYPE_EXTERNAL, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_WIFI, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_OVERLAY, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(TYPE_VIRTUAL, infoCacheEnabled);
+        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_UNKNOWN, infoCacheEnabled);
+
+        // Call the internal test again, just to verify that adding non-internal displays
+        // doesn't affect the ability for an internal display to become the default display.
+        testDisplayDeviceAddAndRemove_Internal_Helper(infoCacheEnabled);
     }
 
     @Test
@@ -1446,6 +1469,70 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
+    public void testDisplayIsEnabledInLayout() {
+        initLogicalDisplayMapper();
+        DisplayAddress displayAddressOne = createTestDisplayAddress();
+        DisplayAddress displayAddressTwo = createTestDisplayAddress();
+        TestDisplayDevice device1 = createDisplayDevice(displayAddressOne, "one",
+                TYPE_INTERNAL, 600, 800, DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        TestDisplayDevice device2 = createDisplayDevice(displayAddressTwo, "two",
+                TYPE_EXTERNAL, 1920, 1080, DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP);
+        Layout twoDevicesEnabledLayout = new Layout();
+        createDefaultDisplay(twoDevicesEnabledLayout, displayAddressOne);
+        createNonDefaultDisplay(twoDevicesEnabledLayout, displayAddressTwo,
+                /* enabled= */ true, /* group= */ null);
+        when(mDeviceStateToLayoutMapSpy.get(STATE_DEFAULT)).thenReturn(twoDevicesEnabledLayout);
+
+        LogicalDisplay display1 = add(device1);
+        LogicalDisplay display2 = add(device2);
+
+        assertThat(mLogicalDisplayMapper.isEnabledInLayoutLocked(display1)).isTrue();
+        assertThat(mLogicalDisplayMapper.isEnabledInLayoutLocked(display2)).isTrue();
+    }
+
+    @Test
+    public void testDisplayIsDisabledInLayout() {
+        initLogicalDisplayMapper();
+        DisplayAddress displayAddressOne = createTestDisplayAddress();
+        DisplayAddress displayAddressTwo = createTestDisplayAddress();
+        TestDisplayDevice device1 = createDisplayDevice(displayAddressOne, "one",
+                TYPE_INTERNAL, 600, 800, DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        TestDisplayDevice device2 = createDisplayDevice(displayAddressTwo, "two",
+                TYPE_EXTERNAL, 1920, 1080, DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP);
+        Layout oneDeviceEnabledLayout = new Layout();
+        createDefaultDisplay(oneDeviceEnabledLayout, displayAddressOne);
+        createNonDefaultDisplay(oneDeviceEnabledLayout, displayAddressTwo,
+                /* enabled= */ false, /* group= */ null);
+        when(mDeviceStateToLayoutMapSpy.get(STATE_DEFAULT)).thenReturn(oneDeviceEnabledLayout);
+
+        LogicalDisplay display1 = add(device1);
+        LogicalDisplay display2 = add(device2);
+
+        assertThat(mLogicalDisplayMapper.isEnabledInLayoutLocked(display1)).isTrue();
+        assertThat(mLogicalDisplayMapper.isEnabledInLayoutLocked(display2)).isFalse();
+    }
+
+    @Test
+    public void testDisplayIsDisabledNotInLayout() {
+        initLogicalDisplayMapper();
+        DisplayAddress displayAddressOne = createTestDisplayAddress();
+        DisplayAddress displayAddressTwo = createTestDisplayAddress();
+        TestDisplayDevice device1 = createDisplayDevice(displayAddressOne, "one",
+                TYPE_INTERNAL, 600, 800, DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+        TestDisplayDevice device2 = createDisplayDevice(displayAddressTwo, "two",
+                TYPE_EXTERNAL, 1920, 1080, DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP);
+        Layout oneDeviceLayout = new Layout();
+        createDefaultDisplay(oneDeviceLayout, displayAddressOne);
+        when(mDeviceStateToLayoutMapSpy.get(STATE_DEFAULT)).thenReturn(oneDeviceLayout);
+
+        LogicalDisplay display1 = add(device1);
+        LogicalDisplay display2 = add(device2);
+
+        assertThat(mLogicalDisplayMapper.isEnabledInLayoutLocked(display1)).isTrue();
+        assertThat(mLogicalDisplayMapper.isEnabledInLayoutLocked(display2)).isFalse();
+    }
+
+    @Test
     public void testEnabledAndDisabledDisplays() {
         initLogicalDisplayMapper();
         DisplayAddress displayAddressOne = createTestDisplayAddress();
@@ -1772,12 +1859,20 @@ public class LogicalDisplayMapperTest {
     // Helper Methods
     /////////////////
 
-    private void testDisplayDeviceAddAndRemove_Internal_Helper() {
+    private void testDisplayDeviceAddAndRemove_Internal_Helper(boolean infoCacheEnabled) {
         DisplayDevice device = createDisplayDevice(TYPE_INTERNAL, 600, 800,
                 FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
-
+        if (infoCacheEnabled) {
+            clearInvocations(mDisplayInfoCacheMock);
+        }
         // add
         LogicalDisplay displayAdded = add(device);
+        if (infoCacheEnabled) {
+            verify(mDisplayInfoCacheMock, atLeastOnce())
+                    .put(eq(displayAdded.getDisplayIdLocked()), any());
+        } else {
+            verify(mDisplayInfoCacheMock, never()).put(anyInt(), any());
+        }
         assertEquals(info(displayAdded).address, info(device).address);
         assertEquals(DEFAULT_DISPLAY, id(displayAdded));
 
@@ -1798,7 +1893,7 @@ public class LogicalDisplayMapperTest {
                 mDisplayDeviceRepo,
                 mListenerMock, new DisplayManagerService.SyncRoot(), mHandler,
                 mDeviceStateToLayoutMapSpy, mFlagsMock, mSyntheticModeManagerMock,
-                mDisplayGroupAllocatorSpy, mIsDisplayAllowedInTopologyMock);
+                mDisplayGroupAllocatorSpy, mIsDisplayAllowedInTopologyMock, mDisplayInfoCacheMock);
         mLogicalDisplayMapper.onWindowManagerReady();
     }
 
@@ -1982,11 +2077,20 @@ public class LogicalDisplayMapperTest {
         return display;
     }
 
-    private void testDisplayDeviceAddAndRemove_NonInternal(int type) {
+    private void testDisplayDeviceAddAndRemove_NonInternal(int type, boolean infoCacheEnabled) {
         DisplayDevice device = createDisplayDevice(type, 600, 800, 0);
 
+        if (infoCacheEnabled) {
+            clearInvocations(mDisplayInfoCacheMock);
+        }
         // add
         LogicalDisplay displayAdded = add(device);
+        if (infoCacheEnabled) {
+            verify(mDisplayInfoCacheMock, atLeastOnce())
+                    .put(eq(displayAdded.getDisplayIdLocked()), any());
+        } else {
+            verify(mDisplayInfoCacheMock, never()).put(anyInt(), any());
+        }
         assertEquals(info(displayAdded).address, info(device).address);
         assertNotEquals(DEFAULT_DISPLAY, id(displayAdded));
 

@@ -74,8 +74,8 @@ import org.mockito.kotlin.whenever
  * Tests for [BubbleTaskViewListener].
  *
  * Build/Install/Run:
- *  atest WMShellRobolectricTests:BubbleTaskViewListenerTest (on host)
- *  atest WMShellMultivalentTestsOnDevice:BubbleTaskViewListenerTest (on device)
+ *  - atest WMShellRobolectricTests:BubbleTaskViewListenerTest (on host)
+ *  - atest WMShellMultivalentTestsOnDevice:BubbleTaskViewListenerTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -295,7 +295,7 @@ class BubbleTaskViewListenerTest {
 
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
-        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+        if (!com.android.window.flags.Flags.enableBubbleRootTask()) {
             assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
         }
     }
@@ -536,7 +536,7 @@ class BubbleTaskViewListenerTest {
             wctCaptor.lastValue
         }
         val change = wct.changes[taskViewTaskToken.asBinder()]!!
-        if (!com.android.window.flags.Flags.rootTaskForBubble()) {
+        if (!com.android.window.flags.Flags.enableBubbleRootTask()) {
             assertThat(change.interceptBackPressed).isFalse()
         }
         assertThat(parentView.lastRemovedView).isEqualTo(mockTaskView)

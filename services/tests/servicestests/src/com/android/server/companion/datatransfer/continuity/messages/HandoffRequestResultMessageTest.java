@@ -17,7 +17,6 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertThrows;
 
 import android.app.HandoffActivityData;
 import android.content.ComponentName;
@@ -27,16 +26,10 @@ import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-
+import java.io.IOException;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)

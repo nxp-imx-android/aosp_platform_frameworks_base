@@ -35,6 +35,7 @@ soong_config_module_type {
         "release_ondevice_intelligence_module",
         "release_package_profiling_module",
         "release_telephony_module",
+        "release_uprobestats_bridge_service",
     ],
     properties: [
         "fragments",
@@ -211,6 +212,15 @@ custom_platform_bootclasspath {
                 {
                     apex: "com.android.telephonycore",
                     module: "com.android.telephony-bootclasspath-fragment",
+                },
+            ],
+        },
+        release_uprobestats_bridge_service: {
+            fragments: [
+                // only used if uprobestats is enabled.
+                {
+                    apex: "com.android.uprobestats",
+                    module: "com.android.uprobestats-bootclasspath-fragment",
                 },
             ],
         },

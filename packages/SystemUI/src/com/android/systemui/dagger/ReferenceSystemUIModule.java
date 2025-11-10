@@ -32,7 +32,7 @@ import com.android.systemui.accessibility.data.repository.AccessibilityRepositor
 import com.android.systemui.actioncorner.ActionCornerModule;
 import com.android.systemui.battery.BatterySaverModule;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayOverrideModule;
-import com.android.systemui.communal.posturing.dagger.NoopPosturingModule;
+import com.android.systemui.communal.posturing.dagger.PosturingModule;
 import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.display.data.repository.DisplayPhoneModule;
@@ -88,7 +88,6 @@ import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.DozeServiceHost;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 import com.android.systemui.statusbar.phone.dagger.StatusBarPhoneModule;
-import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragmentStartableModule;
 import com.android.systemui.statusbar.policy.AospPolicyModule;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedControllerImpl;
@@ -139,7 +138,6 @@ import javax.inject.Provider;
         BatterySaverModule.class,
         CentralSurfacesModule.class,
         ClipboardOverlayOverrideModule.class,
-        CollapsedStatusBarFragmentStartableModule.class,
         ConnectingDisplayViewModel.StartableModule.class,
         DisplayPhoneModule.class,
         EmergencyGestureModule.class,
@@ -161,7 +159,7 @@ import javax.inject.Provider;
         RearDisplayModule.class,
         RecentsModule.class,
         ReferenceNotificationsModule.class,
-        NoopPosturingModule.class,
+        PosturingModule.class,
         NoopAmbientLightModeMonitorModule.class,
         ReferenceScreenshotModule.class,
         RotationLockModule.class,

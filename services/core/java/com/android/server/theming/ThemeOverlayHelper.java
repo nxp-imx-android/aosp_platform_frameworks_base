@@ -25,16 +25,13 @@ import android.os.UserHandle;
 import android.util.Pair;
 import android.util.Slog;
 
-import com.android.internal.graphics.ColorUtils;
 import com.android.server.om.OverlayManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.monet.DynamicColors;
-import com.android.systemui.monet.TonalPalette;
 
 import com.google.ux.material.libmonet.dynamiccolor.DynamicColor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
@@ -73,9 +70,9 @@ final class ThemeOverlayHelper {
                 .map(UserHandle::of)
                 .collect(Collectors.toSet());
 
-        final FabricatedOverlay neutralOverlay = createNeutralOverlay(darkScheme);
+        final FabricatedOverlay neutralOverlay = createNeutralOverlay(lightScheme, darkScheme);
         checkCancellation();
-        final FabricatedOverlay accentOverlay = createAccentOverlay(darkScheme);
+        final FabricatedOverlay accentOverlay = createAccentOverlay(lightScheme, darkScheme);
         checkCancellation();
         final FabricatedOverlay dynamicOverlay = createDynamicOverlay(lightScheme, darkScheme);
         checkCancellation();
@@ -112,45 +109,36 @@ final class ThemeOverlayHelper {
         }
     }
 
-    private static FabricatedOverlay createNeutralOverlay(ColorScheme colorScheme) {
+    private static FabricatedOverlay createNeutralOverlay(ColorScheme lightColorScheme,
+            ColorScheme darkColorScheme) {
         FabricatedOverlay overlay = newFabricatedOverlay("neutral");
-        assignTonalPaletteToOverlay("neutral1", overlay, colorScheme.getNeutral1());
-        assignTonalPaletteToOverlay("neutral2", overlay, colorScheme.getNeutral2());
+        assignColorsToOverlay(overlay, DynamicColors.getAllNeutralPalette(), false,
+                lightColorScheme, darkColorScheme);
         return overlay;
     }
 
-    private static FabricatedOverlay createAccentOverlay(ColorScheme colorScheme) {
+    private static FabricatedOverlay createAccentOverlay(ColorScheme lightColorScheme,
+            ColorScheme darkColorScheme) {
         FabricatedOverlay overlay = newFabricatedOverlay("accent");
-        assignTonalPaletteToOverlay("accent1", overlay, colorScheme.getAccent1());
-        assignTonalPaletteToOverlay("accent2", overlay, colorScheme.getAccent2());
-        assignTonalPaletteToOverlay("accent3", overlay, colorScheme.getAccent3());
+        assignColorsToOverlay(overlay, DynamicColors.getAllAccentPalette(), false,
+                lightColorScheme, darkColorScheme);
         return overlay;
     }
 
     static FabricatedOverlay createDynamicOverlay(ColorScheme lightColorScheme,
             ColorScheme darkColorScheme) {
         FabricatedOverlay overlay = newFabricatedOverlay("dynamic");
+
         //Themed Colors
         assignColorsToOverlay(overlay, DynamicColors.getAllDynamicColorsMapped(),
                 false, lightColorScheme, darkColorScheme);
         // Fixed Colors
-        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(),
-                true, lightColorScheme, darkColorScheme);
+        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(), true, lightColorScheme,
+                darkColorScheme);
         //Custom Colors
-        assignColorsToOverlay(overlay, DynamicColors.getCustomColorsMapped(),
-                false, lightColorScheme, darkColorScheme);
+        assignColorsToOverlay(overlay, DynamicColors.getCustomColorsMapped(), false,
+                lightColorScheme, darkColorScheme);
         return overlay;
-    }
-
-    private static void assignTonalPaletteToOverlay(String name, FabricatedOverlay overlay,
-            TonalPalette tonalPalette) {
-        String resourcePrefix = "android:color/system_" + name;
-        for (Map.Entry<Integer, Integer> entry : tonalPalette.allShadesMapped.entrySet()) {
-            String resourceName = resourcePrefix + "_" + entry.getKey();
-            int colorValue = ColorUtils.setAlphaComponent(entry.getValue(), 0xFF);
-            overlay.setResourceValue(resourceName, TYPE_INT_COLOR_ARGB8, colorValue,
-                    null /* configuration */);
-        }
     }
 
     private static void assignColorsToOverlay(FabricatedOverlay overlay,

@@ -29,12 +29,36 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.mockito.Mockito.mock
+import org.mockito.kotlin.mock
 
 class FakeAccessibilityShortcutsRepository(
     @param:Application private val context: Context,
     @param:Main private val handler: Handler,
 ) : AccessibilityShortcutsRepository {
+    companion object {
+        const val FAKE_TALKBACK_TARGET_NAME = "com.android.test/.FakeTalkBack"
+        const val FAKE_MAGNIFICATION_TARGET_NAME = "com.android.test/.FakeMagnification"
+        const val FAKE_VOICE_ACCESS_TARGET_NAME = "com.android.test/.FakeVoiceAccess"
+    }
+
+    private data class TargetInfo(
+        val targetName: String,
+        val featureName: String,
+        val isToggleable: Boolean,
+    )
+
+    private val allTargets =
+        listOf(
+            TargetInfo(FAKE_TALKBACK_TARGET_NAME, "Screen Reader", true),
+            TargetInfo(FAKE_MAGNIFICATION_TARGET_NAME, "Magnification", false),
+            TargetInfo(FAKE_VOICE_ACCESS_TARGET_NAME, "Voice Access", true),
+        )
+
+    // Target names existing in the set means they are assigned.
+    private val assignedTargetNamesByShortcutType = mutableMapOf<Int, MutableSet<String>>()
+    // Target names existing in the set means they are turned on.
+    private val enabledTargetNamesByShortcutType = mutableMapOf<Int, MutableSet<String>>()
+
     private val featureNameTestMap =
         mapOf(
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION to "Magnification",
@@ -42,15 +66,9 @@ class FakeAccessibilityShortcutsRepository(
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to "Select to Speak",
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to "Voice Access",
         )
-    private var selectedTargetsList: List<AccessibilityTargetModel> = emptyList()
 
-    var areShortcutsEnabled: Boolean = false
-    var isMagnificationAndZoomInEnabled: Boolean = false
     var ttsPrompt: TtsPrompt? = null
     var ttsText: CharSequence = ""
-    var shortcutTypeAssigned: Int = 0
-    var enabledShortcutTargetName = ""
-    var performedShortcutTargetName = ""
 
     override suspend fun getKeyGestureConfirmInfo(
         keyGestureType: Int,
@@ -90,69 +108,53 @@ class FakeAccessibilityShortcutsRepository(
     override fun enableShortcutsForTargets(
         enable: Boolean,
         @UserShortcutType shortcutType: Int,
-        targetName: String,
+        targetNames: Set<String>,
     ) {
-        areShortcutsEnabled = enable
-        shortcutTypeAssigned = shortcutType
-        enabledShortcutTargetName = targetName
+        targetNames
+            .filter { allTargets.map { it.targetName }.contains(it) }
+            .forEach { targetName ->
+                with(assignedTargetNamesByShortcutType) {
+                    if (enable) {
+                        add(shortcutType, targetName)
+                    } else {
+                        remove(shortcutType, targetName)
+                    }
+                }
+            }
     }
 
     override fun enableMagnificationAndZoomIn(displayId: Int) {
-        isMagnificationAndZoomInEnabled = true
+        enabledTargetNamesByShortcutType.add(
+            UserShortcutType.KEY_GESTURE,
+            FAKE_MAGNIFICATION_TARGET_NAME,
+        )
     }
 
-    override fun createTtsPromptForText(text: CharSequence): TtsPrompt {
-        ttsText = text
-        return mock(TtsPrompt::class.java).also { ttsPrompt = it }
-    }
+    override fun createTtsPromptForText(text: CharSequence): TtsPrompt =
+        mock<TtsPrompt>().also {
+            ttsPrompt = it
+            ttsText = text
+        }
 
     override fun performAccessibilityShortcut(
         displayId: Int,
         @UserShortcutType shortcutType: Int,
         targetName: String,
     ) {
-        shortcutTypeAssigned = shortcutType
-        performedShortcutTargetName = targetName
+        if (allTargets.map { it.targetName }.contains(targetName)) {
+            with(enabledTargetNamesByShortcutType) {
+                if (contains(shortcutType, targetName)) {
+                    remove(shortcutType, targetName)
+                } else {
+                    add(shortcutType, targetName)
+                }
+            }
+        }
     }
 
     override fun getAllAccessibilityTargetsInfo(
         @UserShortcutType shortcutType: Int
-    ): List<AccessibilityTargetModel> {
-        shortcutTypeAssigned = shortcutType
-
-        // Helper Drawable for the fake models
-        val fakeIcon = ColorDrawable(Color.BLACK)
-
-        return listOf(
-            AccessibilityTargetModel(
-                shortcutType = shortcutType,
-                targetName = "fakeTargetNameForTalkBack",
-                featureName = "Screen Reader",
-                icon = fakeIcon,
-                isAssigned = false,
-                isToggleable = true,
-                isToggleOn = false,
-            ),
-            AccessibilityTargetModel(
-                shortcutType = shortcutType,
-                targetName = "fakeTargetNameForMagnification",
-                featureName = "Magnification",
-                icon = fakeIcon,
-                isAssigned = false,
-                isToggleable = false,
-                isToggleOn = false,
-            ),
-            AccessibilityTargetModel(
-                shortcutType = shortcutType,
-                targetName = "fakeTargetNameForVoiceAccess",
-                featureName = "Voice Access",
-                icon = fakeIcon,
-                isAssigned = false,
-                isToggleable = true,
-                isToggleOn = false,
-            ),
-        )
-    }
+    ): List<AccessibilityTargetModel> = allTargets.map { it.toTargetModel(shortcutType) }
 
     override fun getAllAccessibilityTargets(
         @UserShortcutType shortcutType: Int
@@ -162,13 +164,40 @@ class FakeAccessibilityShortcutsRepository(
 
     override fun getSelectedAccessibilityTargetsInfo(
         @UserShortcutType shortcutType: Int
-    ): List<AccessibilityTargetModel> {
-        shortcutTypeAssigned = shortcutType
+    ): List<AccessibilityTargetModel> =
+        allTargets.map { it.toTargetModel(shortcutType) }.filter { it.isAssigned }
 
-        return selectedTargetsList
+    override fun getSelectedAccessibilityTargets(
+        @UserShortcutType shortcutType: Int
+    ): Flow<List<AccessibilityTargetModel>> = flow {
+        emit(getSelectedAccessibilityTargetsInfo(shortcutType))
     }
 
-    fun setSelectedAccessibilityTargetsList(list: List<AccessibilityTargetModel>) {
-        selectedTargetsList = list.toList()
-    }
+    private fun TargetInfo.toTargetModel(
+        @UserShortcutType shortcutType: Int
+    ): AccessibilityTargetModel =
+        AccessibilityTargetModel(
+            shortcutType = shortcutType,
+            targetName = targetName,
+            featureName = featureName,
+            icon = ColorDrawable(Color.RED),
+            isAssigned = assignedTargetNamesByShortcutType.contains(shortcutType, targetName),
+            isToggleable = isToggleable,
+            isToggleOn = enabledTargetNamesByShortcutType.contains(shortcutType, targetName),
+        )
+
+    private fun MutableMap<Int, MutableSet<String>>.add(
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    ) = getOrPut(shortcutType) { mutableSetOf() }.add(targetName)
+
+    private fun MutableMap<Int, MutableSet<String>>.remove(
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    ) = getOrPut(shortcutType) { mutableSetOf() }.remove(targetName)
+
+    private fun Map<Int, MutableSet<String>>.contains(
+        @UserShortcutType shortcutType: Int,
+        targetName: String,
+    ) = get(shortcutType)?.contains(targetName) ?: false
 }

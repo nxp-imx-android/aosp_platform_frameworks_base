@@ -331,6 +331,28 @@ public class InteractionJankMonitor {
     /**
      * Begins a trace session.
      *
+     * @param view an attached view.
+     * @param cujType the specific {@link Cuj.CujType}.
+     * @param tag to be appended to the cuj.
+     * @return boolean true if the tracker is started successfully, false otherwise.
+     */
+    public boolean begin(View view, @Cuj.CujType int cujType, String tag) {
+        try {
+            final Configuration.Builder builder =
+                    Configuration.Builder.withView(cujType, view);
+            if (!TextUtils.isEmpty(tag)) {
+                builder.setTag(tag);
+            }
+            return begin(builder);
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "Build configuration failed!", ex);
+            return false;
+        }
+    }
+
+    /**
+     * Begins a trace session.
+     *
      * @param surface a handle for the surface to begin tracing for.
      * @param context context to provide display and handler information.
      * @param cujType the specific {@link Cuj.CujType}.

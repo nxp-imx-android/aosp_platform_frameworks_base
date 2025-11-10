@@ -106,7 +106,10 @@ public class LightsService extends SystemService {
                 for (int i = 0; i < mLightsById.size(); i++) {
                     if (!mLightsById.valueAt(i).isSystemLight()) {
                         HwLight hwLight = mLightsById.valueAt(i).mHwLight;
-                        lights.add(new Light(hwLight.id, hwLight.ordinal, hwLight.type));
+                        Light.Builder lightBuilder =
+                                new Light.Builder(hwLight.id, hwLight.ordinal, hwLight.type);
+
+                        lights.add(lightBuilder.build());
                     }
                 }
                 return lights;
@@ -166,6 +169,12 @@ public class LightsService extends SystemService {
             getLightSequence_enforcePermission();
 
             return null;
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
+        @Override
+        public void setEnabledState(boolean enabled) {
+            setEnabledState_enforcePermission();
         }
 
         @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
@@ -251,10 +260,11 @@ public class LightsService extends SystemService {
          */
         private void invalidateLightStatesLocked() {
             final Map<Integer, LightState> states = new HashMap<>();
-            for (int i = mSessions.size() - 1; i >= 0; i--) {
+            for (int i = 0; i < mSessions.size(); i++) {
                 SparseArray<LightState> requests = mSessions.get(i).mRequests;
                 for (int j = 0; j < requests.size(); j++) {
-                    states.put(requests.keyAt(j), requests.valueAt(j));
+                    // Add the light state if a higher priority session is not using the light.
+                    states.putIfAbsent(requests.keyAt(j), requests.valueAt(j));
                 }
             }
             for (int i = 0; i < mLightsById.size(); i++) {

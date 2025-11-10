@@ -147,7 +147,7 @@ public class RavenwoodSystemServer {
         ServiceManager.addService(Context.INPUT_METHOD_SERVICE,
                 IInputMethodManager_ravenwood.sIBinder.asBinder());
 
-        ServiceManager.addService(Context.AUTOFILL_MANAGER_SERVICE,
+        ServiceManager.addService(Context.AUTOFILL_SERVICE,
                 IAutoFillManager_ravenwood.sIBinder.asBinder());
 
         ServiceManager.addService(Context.ACTIVITY_SERVICE,

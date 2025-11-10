@@ -88,6 +88,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -130,6 +131,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.transitions.BOUNCER_INITIAL_TRANSLATION
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.MotionTestValues
@@ -163,11 +165,13 @@ fun ContentScope.BouncerContent(
     val animatedAlpha: Float by
         animateFloatAsState(
             animationSpec =
-                tween(
-                    durationMillis = appearAnimationDuration,
-                    delayMillis = appearAnimationDelay,
-                    easing = appearAnimationInterpolator,
-                ),
+                if (appearAnimationDuration == 0) snap(delayMillis = appearAnimationDelay)
+                else
+                    tween(
+                        durationMillis = appearAnimationDuration,
+                        delayMillis = appearAnimationDelay,
+                        easing = appearAnimationInterpolator,
+                    ),
             targetValue =
                 if (startAppearAnimation) {
                     1f
@@ -181,11 +185,13 @@ fun ContentScope.BouncerContent(
     val animatedOffsetY by
         animateDpAsState(
             animationSpec =
-                tween(
-                    durationMillis = appearAnimationDuration,
-                    delayMillis = appearAnimationDelay,
-                    easing = appearAnimationInterpolator,
-                ),
+                if (appearAnimationDuration == 0) snap(delayMillis = appearAnimationDelay)
+                else
+                    tween(
+                        durationMillis = appearAnimationDuration,
+                        delayMillis = appearAnimationDelay,
+                        easing = appearAnimationInterpolator,
+                    ),
             targetValue =
                 if (startAppearAnimation) {
                     0.dp
@@ -218,11 +224,14 @@ fun ContentScope.BouncerContent(
                 .offset {
                     val yOffset =
                         if (isDraggingToBouncer()) {
-                            ((1 -
-                                    appearAnimationInterpolator.transform(
-                                        layoutState.currentTransition!!.progress
-                                    )) * BOUNCER_INITIAL_TRANSLATION)
-                                .toPx()
+                            min(
+                                ((1 -
+                                        appearAnimationInterpolator.transform(
+                                            layoutState.currentTransition!!.progress
+                                        )) * BOUNCER_INITIAL_TRANSLATION)
+                                    .toPx(),
+                                animatedOffsetY.value,
+                            )
                         } else {
                             animatedOffsetY.value
                         }
@@ -231,9 +240,12 @@ fun ContentScope.BouncerContent(
                 .graphicsLayer {
                     alpha =
                         if (isDraggingToBouncer()) {
-                            appearAnimationInterpolator.transform(
-                                // animate in along with the layout's transition
-                                layoutState.currentTransition!!.progress
+                            min(
+                                appearAnimationInterpolator.transform(
+                                    // animate in along with the layout's transition
+                                    layoutState.currentTransition!!.progress
+                                ),
+                                animatedAlpha,
                             )
                         } else {
                             // animate in separately from the layout's transition
@@ -255,9 +267,11 @@ fun ContentScope.BouncerContentLayout(
     val showSignInButton by viewModel.showSignInButton.collectAsStateWithLifecycle()
     Box(
         modifier =
-            modifier.onKeyEvent(viewModel::onKeyEvent).scale(scale).pointerInput(Unit) {
-                detectTapGestures { viewModel.backgroundTap() }
-            }
+            modifier
+                .onKeyEvent(viewModel::onKeyEvent)
+                .semantics { customActions = viewModel.accessibilityActions }
+                .scale(scale)
+                .pointerInput(Unit) { detectTapGestures { viewModel.backgroundTap() } }
     ) {
         when (layout) {
             BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)

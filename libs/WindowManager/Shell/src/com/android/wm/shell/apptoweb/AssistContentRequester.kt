@@ -55,7 +55,7 @@ class AssistContentRequester(
      * Request the [AssistContent] from the task with the provided id.
      *
      * @param taskId to query for the content.
-     * @param callback to call when the content is available, called on the main thread.
+     * @param callback to call when [AssistContent] is received, called on the main thread.
      */
     fun requestAssistContent(taskId: Int, callback: Callback) {
         // ActivityTaskManager interaction here is synchronous, so call off the main thread.
@@ -98,15 +98,11 @@ class AssistContentRequester(
         }
 
         override fun onHandleAssistData(data: Bundle?) {
-            val content = data?.getParcelable(ASSIST_KEY_CONTENT, AssistContent::class.java)
-            if (content == null) {
-                Slog.d(TAG, "Received AssistData, but no AssistContent found")
-                return
-            }
             val requester = parentRef.get()
             if (requester != null) {
                 val callback = requester.pendingCallbacks[callbackKey]
                 if (callback != null) {
+                    val content = data?.getParcelable(ASSIST_KEY_CONTENT, AssistContent::class.java)
                     requester.executeOnMainExecutor { callback.onAssistContentAvailable(content) }
                 } else {
                     Slog.d(TAG, "Callback received after calling UI was disposed of")

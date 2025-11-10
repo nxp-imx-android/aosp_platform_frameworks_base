@@ -2314,9 +2314,10 @@ class MediaRouter2ServiceImpl {
         Slog.i(
                 TAG,
                 TextUtils.formatSimple(
-                        "setDeviceSuggestions | manager: %d, suggestingPackageName: %d suggestion:"
-                            + " %d",
+                        "setDeviceSuggestions | manager: %d, target: %s, "
+                                + "suggestingPackageName: %s suggestion: %s",
                         managerRecord.mManagerId,
+                        managerRecord.mTargetPackageName,
                         managerRecord.mOwnerPackageName,
                         suggestedDeviceInfo));
 
@@ -2550,9 +2551,7 @@ class MediaRouter2ServiceImpl {
 
         void removeRouterRecord(RouterRecord routerRecord) {
             mRouterRecords.remove(routerRecord);
-            if (Flags.cleanUpDeadRouterRecordsAfterUnbinding()) {
-                mHandler.removeRouterRecord(routerRecord);
-            }
+            mHandler.removeRouterRecord(routerRecord);
         }
 
         // TODO: This assumes that only one router exists in a package.
@@ -3949,8 +3948,7 @@ class MediaRouter2ServiceImpl {
 
             mSessionCreationRequests.remove(matchingRequest);
 
-            if (Flags.cleanUpDeadRouterRecordsAfterUnbinding()
-                    && !mUserRecord.isRouterRecordBinded(matchingRequest.mRouterRecord)) {
+            if (!mUserRecord.isRouterRecordBinded(matchingRequest.mRouterRecord)) {
                 Slog.w(
                         TAG,
                         "Ignoring session creation request for unbound router:"
@@ -4046,8 +4044,7 @@ class MediaRouter2ServiceImpl {
                         + sessionInfo);
                 return;
             }
-            if (!Flags.cleanUpDeadRouterRecordsAfterUnbinding()
-                    || mUserRecord.isRouterRecordBinded(routerRecord)) {
+            if (mUserRecord.isRouterRecordBinded(routerRecord)) {
                 notifySessionInfoChangedToRouters(Arrays.asList(routerRecord), sessionInfo);
             }
         }
@@ -4066,14 +4063,10 @@ class MediaRouter2ServiceImpl {
                 return;
             }
 
-            if (Flags.cleanUpDeadRouterRecordsAfterUnbinding()) {
-                if (mUserRecord.isRouterRecordBinded(routerRecord)) {
-                    routerRecord.notifySessionReleased(sessionInfo);
-                }
-                mSessionToRouterMap.remove(sessionInfo.getId());
-            } else {
+            if (mUserRecord.isRouterRecordBinded(routerRecord)) {
                 routerRecord.notifySessionReleased(sessionInfo);
             }
+            mSessionToRouterMap.remove(sessionInfo.getId());
         }
 
         private void onRequestFailedOnHandler(@NonNull MediaRoute2Provider provider,
@@ -4128,8 +4121,7 @@ class MediaRouter2ServiceImpl {
 
             mSessionCreationRequests.remove(matchingRequest);
 
-            if (Flags.cleanUpDeadRouterRecordsAfterUnbinding()
-                    && !mUserRecord.isRouterRecordBinded(matchingRequest.mRouterRecord)) {
+            if (!mUserRecord.isRouterRecordBinded(matchingRequest.mRouterRecord)) {
                 Slog.w(
                         TAG,
                         "handleSessionCreationRequestFailed | Ignoring with unbound router:"

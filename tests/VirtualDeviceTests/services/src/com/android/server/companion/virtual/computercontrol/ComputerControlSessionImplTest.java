@@ -25,12 +25,12 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
+import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_EMPTY;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
 
-import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.KEY_EVENT_DELAY_MS;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.LONG_PRESS_TIMEOUT_MULTIPLIER;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_DPAD;
-import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_KEYBOARD;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.PRODUCT_ID_TOUCHSCREEN;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.SWIPE_STEPS;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionImpl.TOUCH_EVENT_DELAY_MS;
@@ -68,7 +68,6 @@ import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
-import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.Context;
@@ -86,7 +85,6 @@ import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.VirtualDpad;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyEvent;
-import android.hardware.input.VirtualKeyboard;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreen;
@@ -96,8 +94,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
@@ -117,6 +113,7 @@ import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.testutils.StubTransaction;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
@@ -186,6 +183,8 @@ public class ComputerControlSessionImplTest {
     @Mock
     private InputManagerInternal mInputManagerInternal;
     @Mock
+    private ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    @Mock
     private ViewConfiguration mViewConfiguration;
     @Mock
     private ComputerControlSessionProcessor.VirtualDeviceFactory mVirtualDeviceFactory;
@@ -205,8 +204,6 @@ public class ComputerControlSessionImplTest {
     private IRemoteComputerControlInputConnection mRemoteComputerControlInputConnection;
     @Mock
     private VirtualDpad mVirtualDpad;
-    @Mock
-    private VirtualKeyboard mVirtualKeyboard;
     @Mock
     private VirtualTouchscreen mVirtualTouchscreen;
     @Mock
@@ -238,6 +235,8 @@ public class ComputerControlSessionImplTest {
     private ArgumentCaptor<VirtualKeyboardConfig> mVirtualKeyboardConfigArgumentCaptor;
     @Captor
     private ArgumentCaptor<VirtualDeviceManager.ActivityListener> mActivityListenerArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<SurfaceControl> mSurfaceControlArgumentCaptor;
 
     private SurfaceControl.Transaction mTransaction;
     private AutoCloseable mMockitoSession;
@@ -270,6 +269,7 @@ public class ComputerControlSessionImplTest {
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
         LocalServices.addService(InputMethodManagerInternal.class, mInputMethodManagerInternal);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
+        LocalServices.addService(ActivityTaskManagerInternal.class, mActivityTaskManagerInternal);
         ViewConfiguration.setInstanceForTesting(mContext, mViewConfiguration);
 
         when(mUserManagerInternal.getMainDisplayAssignedToUser(anyInt()))
@@ -295,7 +295,6 @@ public class ComputerControlSessionImplTest {
         when(mDisplay.getDisplayId()).thenReturn(VIRTUAL_DISPLAY_ID);
 
         when(mVirtualDevice.createVirtualTouchscreen(any())).thenReturn(mVirtualTouchscreen);
-        when(mVirtualDevice.createVirtualKeyboard(any())).thenReturn(mVirtualKeyboard);
         when(mVirtualDevice.createVirtualDpad(any())).thenReturn(mVirtualDpad);
         when(mViewConfiguration.getLongPressTimeoutMillis()).thenReturn(1000);
         when(mVirtualDevice.createVirtualAudioDevice(any(), any(), any())).thenReturn(
@@ -322,6 +321,7 @@ public class ComputerControlSessionImplTest {
                 eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue().getName())
                 .isEqualTo(mDefaultParams.getName());
+        assertTrue(mVirtualDeviceParamsArgumentCaptor.getValue().isLocalDeviceOnly());
         assertThat(mVirtualDeviceParamsArgumentCaptor.getValue()
                 .getDevicePolicy(POLICY_TYPE_RECENTS))
                 .isEqualTo(DEVICE_POLICY_DEFAULT);
@@ -379,23 +379,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
-    public void createSession_createsKeyboard() throws Exception {
-        createComputerControlSession(mDefaultParams);
-
-        verify(mVirtualDeviceFactory).createVirtualDevice(
-                eq(mAppToken), any(), mVirtualDeviceParamsArgumentCaptor.capture());
-        verify(mVirtualDevice).createVirtualKeyboard(
-                mVirtualKeyboardConfigArgumentCaptor.capture());
-        VirtualKeyboardConfig virtualKeyboardConfig =
-                mVirtualKeyboardConfigArgumentCaptor.getValue();
-        assertThat(virtualKeyboardConfig.getAssociatedDisplayId()).isEqualTo(VIRTUAL_DISPLAY_ID);
-        assertThat(virtualKeyboardConfig.getInputDeviceName()).contains(mDefaultParams.getName());
-        assertThat(virtualKeyboardConfig.getProductId()).isEqualTo(PRODUCT_ID_KEYBOARD);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
     public void createSession_doesNotCreateKeyboard() throws Exception {
         createComputerControlSession(mDefaultParams);
 
@@ -569,62 +552,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
-    public void insertText_sendsCharacterKeysToVirtualKeyboard() throws RemoteException {
-        createComputerControlSession(mDefaultParams);
-
-        mSession.insertText("t", false /* replaceExisting */, false /* commit */);
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_T,
-                        VirtualKeyEvent.ACTION_DOWN)));
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_T,
-                        VirtualKeyEvent.ACTION_UP)));
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
-    public void insertTextWithReplaceExisting_sendsDeleteTextSequenceToVirtualKeyboard()
-            throws RemoteException {
-        createComputerControlSession(mDefaultParams);
-
-        mSession.insertText("text", true /* replaceExisting */, false /* commit */);
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_CTRL_LEFT,
-                        VirtualKeyEvent.ACTION_DOWN)));
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_A,
-                        VirtualKeyEvent.ACTION_DOWN)));
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_A,
-                        VirtualKeyEvent.ACTION_UP)));
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_CTRL_LEFT,
-                        VirtualKeyEvent.ACTION_UP)));
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_DEL,
-                        VirtualKeyEvent.ACTION_DOWN)));
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_DEL,
-                        VirtualKeyEvent.ACTION_UP)));
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
-    public void insertTextWithCommit_sendsEnterKeyToVirtualKeyboard() throws RemoteException {
-        createComputerControlSession(mDefaultParams);
-
-        mSession.insertText("", false /* replaceExisting */, true /* commit */);
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_ENTER,
-                        VirtualKeyEvent.ACTION_DOWN)));
-        verify(mVirtualKeyboard, timeout(10 * KEY_EVENT_DELAY_MS)).sendKeyEvent(
-                argThat(new MatchesVirtualKeyEvent(KeyEvent.KEYCODE_ENTER,
-                        VirtualKeyEvent.ACTION_UP)));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
     public void insertText_callsCommitTextOnAvailableInputConnection() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         mSession.insertText("text", false /* replaceExisting */, false /* commit */);
@@ -632,7 +559,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
     public void insertTextWithReplaceExisting_callsReplaceTextOnAvailableInputConnection()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -642,7 +568,6 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_TYPING)
     public void insertTextWithCommit_sendEnterKeyOnAvailableInputConnection()
             throws RemoteException {
         createComputerControlSession(mDefaultParams);
@@ -675,18 +600,21 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void createInteractiveMirror_successfullyReturnsMirrorWithInputDisabled()
+    public void createInteractiveMirror_successfullyReturnsInitializedMirror()
             throws Exception {
         createComputerControlSession(mDefaultParams);
         final var mirrorSurface = new SurfaceControl();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
                 .thenReturn(mirrorSurface);
 
-        final var returnedMirrorSurface = new SurfaceControl();
+        final var returnedMirrorSurface = Mockito.mock(SurfaceControl.class);
         IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
 
         verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
         assertThat(mirror).isNotNull();
+        verify(mTransaction).reparent(eq(mirrorSurface), mSurfaceControlArgumentCaptor.capture());
+        verify(returnedMirrorSurface).copyFrom(eq(mSurfaceControlArgumentCaptor.getValue()), any());
+        assertThat(mSurfaceControlArgumentCaptor.getValue()).isNotEqualTo(mirrorSurface);
         verify(mTransaction).setDropInputMode(eq(mirrorSurface), eq(DropInputMode.ALL));
     }
 
@@ -701,6 +629,45 @@ public class ComputerControlSessionImplTest {
 
         verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
         assertThat(mirror).isNull();
+    }
+
+    @Test
+    public void closeInteractiveMirror_removesMirrorSurface() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        final var mirrorSurface = new SurfaceControl();
+        when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
+                .thenReturn(mirrorSurface);
+        final var returnedMirrorSurface = new SurfaceControl();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+        assertThat(mirror).isNotNull();
+        verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
+        Mockito.reset(mTransaction);
+
+        mirror.close();
+
+        verify(mTransaction).reparent(eq(mirrorSurface), eq(null));
+    }
+
+    @Test
+    public void closeSession_removesAllInteractiveMirrors() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        final var mirrorSurface1 = new SurfaceControl();
+        when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
+                .thenReturn(mirrorSurface1);
+        IInteractiveMirror mirror1 = mSession.createInteractiveMirror(new SurfaceControl());
+        assertThat(mirror1).isNotNull();
+        final var mirrorSurface2 = new SurfaceControl();
+        when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
+                .thenReturn(mirrorSurface2);
+        IInteractiveMirror mirror2 = mSession.createInteractiveMirror(new SurfaceControl());
+        assertThat(mirror2).isNotNull();
+        verify(mWindowManagerInternal, times(2)).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
+        Mockito.reset(mTransaction);
+
+        mSession.close();
+
+        verify(mTransaction).reparent(eq(mirrorSurface1), eq(null));
+        verify(mTransaction).reparent(eq(mirrorSurface2), eq(null));
     }
 
     @Test
@@ -910,7 +877,6 @@ public class ComputerControlSessionImplTest {
 
         final var interactionDevices = List.of(
                 mVirtualDpad,
-                mVirtualKeyboard,
                 mVirtualTouchscreen,
                 mRemoteComputerControlInputConnection
         );
@@ -933,7 +899,6 @@ public class ComputerControlSessionImplTest {
 
         final var interactionDevices = List.of(
                 mVirtualDpad,
-                mVirtualKeyboard,
                 mVirtualTouchscreen,
                 mRemoteComputerControlInputConnection
         );
@@ -950,6 +915,44 @@ public class ComputerControlSessionImplTest {
                                 .allMatch((i) -> (i == 0)));
             }
         }
+    }
+
+    @Test
+    public void handOverApplications_closesSession() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.handOverApplications();
+
+        verify(mLifecycleCallback).onClosed(CLOSE_REASON_SESSION_EMPTY);
+    }
+
+    @Test
+    public void displayEmpty_closesSessionAfterTimeout() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+
+        activityListener.onDisplayEmpty(VIRTUAL_DISPLAY_ID);
+
+        verify(mLifecycleCallback, never()).onClosed(anyInt());
+        verify(mLifecycleCallback, timeout(CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS * 2)).onClosed(
+                CLOSE_REASON_SESSION_EMPTY);
+    }
+
+    @Test
+    public void transientDisplayEmpty_doesNotCloseSession() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        final var activityListener = mActivityListenerArgumentCaptor.getValue();
+
+        activityListener.onDisplayEmpty(VIRTUAL_DISPLAY_ID);
+        activityListener.onTopActivityChanged(VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+
+        verify(mLifecycleCallback,
+                timeout(CLOSE_ON_DISPLAY_EMPTY_TIMEOUT_MS * 2).times(0))
+                .onClosed(anyInt());
     }
 
     /** A default way to enter the blocked state to test block state functionality. */

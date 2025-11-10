@@ -39,11 +39,14 @@ import android.graphics.drawable.Icon;
 import android.service.notification.Adjustment;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.service.personalcontext.hint.ContextHintTestUtils;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueuedEvent;
 import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.InsightActionDetails;
 import android.service.personalcontext.insight.InsightDisplayDetails;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -59,6 +62,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -120,8 +124,10 @@ public class NotificationActionRendererTest {
 
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title", FAKE_ICON).build();
+        InsightActionDetails actionDetails =
+                new InsightActionDetails.Builder().setIntent(new Intent()).build();
         ActionableInsight insight =
-                new ActionableInsight.Builder(new Intent(), displayDetails).build();
+                new ActionableInsight.Builder(actionDetails, displayDetails).build();
 
         mRenderer.render(insight, false);
 
@@ -129,7 +135,8 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_actionableInsightWithNotificationHint_requestsAdjustment() {
+    public void testRender_actionableInsightWithNotificationHint_requestsAdjustment()
+            throws GeneralSecurityException {
         mockPackageManagerResolvesIntent();
         ActionableInsight insight = createActionableInsight("Test Title", FAKE_ICON);
         Notification.Action action = renderAndGetAction(insight);
@@ -141,7 +148,7 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_noTitleInsight_usesDefaultTitle() {
+    public void testRender_noTitleInsight_usesDefaultTitle() throws GeneralSecurityException {
         mockPackageManagerResolvesIntent();
         ActionableInsight insight = createActionableInsight(null, FAKE_ICON);
         Notification.Action action = renderAndGetAction(insight);
@@ -152,7 +159,7 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_noIconInsight_usesDefaultIcon() {
+    public void testRender_noIconInsight_usesDefaultIcon() throws GeneralSecurityException {
         mockPackageManagerResolvesIntent();
         ActionableInsight insight = createActionableInsight("Test Title", null);
         Notification.Action action = renderAndGetAction(insight);
@@ -162,18 +169,21 @@ public class NotificationActionRendererTest {
     }
 
     @Test
-    public void testRender_cannotResolveIntent_noAction() {
+    public void testRender_cannotResolveIntent_noAction() throws GeneralSecurityException {
         NotificationHint hint =
                 new NotificationHint.Builder(
                                 new NotificationEnqueuedEvent(
                                         mNotification, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
-        Intent actionIntent = new Intent("ACTION");
+        ContextHintWithSignature signedHint = new ContextHintWithSignature.Builder(
+                hint, ContextHintTestUtils.generateSignedHintKey()).build();
+        InsightActionDetails actionDetails =
+                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("Test Title", FAKE_ICON).build();
         ActionableInsight insight =
-                new ActionableInsight.Builder(actionIntent, displayDetails)
-                        .setOriginHints(List.of(hint))
+                new ActionableInsight.Builder(actionDetails, displayDetails)
+                        .addOriginHint(signedHint)
                         .build();
         when(mPackageManager.queryIntentActivitiesAsUser(any(), anyInt(), anyInt()))
                 .thenReturn(Collections.emptyList());
@@ -183,13 +193,17 @@ public class NotificationActionRendererTest {
         verify(mNotificationManagerInternal, never()).requestSystemAdjustments(any());
     }
 
-    private ActionableInsight createActionableInsight(@Nullable String title, @Nullable Icon icon) {
+    private ActionableInsight createActionableInsight(@Nullable String title, @Nullable Icon icon)
+            throws GeneralSecurityException {
         NotificationHint hint =
                 new NotificationHint.Builder(
                                 new NotificationEnqueuedEvent(
                                         mNotification, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
-        Intent actionIntent = new Intent("ACTION");
+        ContextHintWithSignature signedHint = new ContextHintWithSignature.Builder(
+                hint, ContextHintTestUtils.generateSignedHintKey()).build();
+        InsightActionDetails actionDetails =
+                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
         InsightDisplayDetails.Builder displayDetailsBuilder;
         if (title != null && icon != null) {
             displayDetailsBuilder = new InsightDisplayDetails.Builder(title, icon);
@@ -199,8 +213,8 @@ public class NotificationActionRendererTest {
             displayDetailsBuilder = new InsightDisplayDetails.Builder(icon);
         }
         InsightDisplayDetails displayDetails = displayDetailsBuilder.build();
-        return new ActionableInsight.Builder(actionIntent, displayDetails)
-                .setOriginHints(List.of(hint))
+        return new ActionableInsight.Builder(actionDetails, displayDetails)
+                .addOriginHint(signedHint)
                 .build();
     }
 

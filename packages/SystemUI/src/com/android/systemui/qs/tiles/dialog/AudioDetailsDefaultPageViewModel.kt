@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.volume.dialog.domain.interactor.VolumeDialogStateInteractor
 import com.android.systemui.volume.panel.component.volume.domain.model.SliderType
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderViewModel
 import com.android.systemui.volume.panel.ui.viewmodel.ComponentState
@@ -31,11 +32,18 @@ import com.android.systemui.volume.panel.ui.viewmodel.VolumePanelViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class AudioDetailsDefaultPageViewModel
@@ -43,6 +51,7 @@ class AudioDetailsDefaultPageViewModel
 constructor(
     private val volumePanelViewModelFactory: VolumePanelViewModel.Factory,
     private val audioStreamSliderViewModelFactory: AudioStreamSliderViewModel.Factory,
+    private val volumeDialogStateInteractor: VolumeDialogStateInteractor,
 ) : AudioDetailsViewModel.ContentViewModel, HydratedActivatable() {
     private var volumePanelViewModel: VolumePanelViewModel? by mutableStateOf(null)
 
@@ -59,6 +68,10 @@ constructor(
 
     var volumeSliderViewModel: AudioStreamSliderViewModel? = null
 
+    private val _a11yVolumeSliderViewModel = MutableStateFlow<AudioStreamSliderViewModel?>(null)
+    val a11yVolumeSliderViewModel: StateFlow<AudioStreamSliderViewModel?> =
+        _a11yVolumeSliderViewModel.asStateFlow()
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch {
@@ -73,6 +86,27 @@ constructor(
                         )
                 }
             }
+
+            var job: Job? = null
+            volumeDialogStateInteractor.volumeDialogState
+                .distinctUntilChangedBy { it.shouldShowA11ySlider }
+                .onEach { state ->
+                    job?.cancel()
+                    if (state.shouldShowA11ySlider) {
+                        job = launch {
+                            _a11yVolumeSliderViewModel.value =
+                                audioStreamSliderViewModelFactory.create(
+                                    AudioStreamSliderViewModel.FactoryAudioStreamWrapper(
+                                        AudioStream(AudioManager.STREAM_ACCESSIBILITY)
+                                    ),
+                                    this,
+                                )
+                        }
+                    } else {
+                        _a11yVolumeSliderViewModel.value = null
+                    }
+                }
+                .launchIn(this)
         }
         awaitCancellation()
     }

@@ -41,7 +41,8 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.model.DualShadeEducationModel
 import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeCollapse
+import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.PrivacyChipInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -55,6 +56,7 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIc
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
+import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -84,6 +86,7 @@ constructor(
     val mobileIconsViewModelKairos: dagger.Lazy<MobileIconsViewModelKairos>,
     private val dualShadeEducationInteractor: DualShadeEducationInteractor,
     desktopInteractor: DesktopInteractor,
+    @ShadeDisplayAware systemBarUtilsState: SystemBarUtilsState,
     @Assisted private val ignoreTestHarness: Boolean,
 ) : ExclusiveActivatable() {
 
@@ -199,6 +202,13 @@ constructor(
                 ChipHighlightModel.Weak
             }
 
+    val statusBarHeightPx: Int by
+        hydrator.hydratedStateOf(
+            traceName = "ShadeHeader#statusBarHeight",
+            initialValue = 0,
+            source = systemBarUtilsState.statusBarHeight,
+        )
+
     private val useDesktopStatusBar: Boolean by
         hydrator.hydratedStateOf(
             traceName = "useDesktopStatusBar",
@@ -250,7 +260,7 @@ constructor(
         if (Overlays.NotificationsShade in currentOverlays) {
             shadeInteractor.collapseNotificationsShade(
                 loggingReason = loggingReason,
-                transitionKey = SlightlyFasterShadeCollapse,
+                transitionKey = SlightlyFasterShadeTransition,
             )
             if (launchClockActivityOnCollapse) {
                 clockInteractor.launchClockActivity()
@@ -268,7 +278,7 @@ constructor(
             if (Overlays.QuickSettingsShade in currentOverlays) {
                 shadeInteractor.collapseQuickSettingsShade(
                     loggingReason = loggingReason,
-                    transitionKey = SlightlyFasterShadeCollapse,
+                    transitionKey = SlightlyFasterShadeTransition,
                 )
             } else {
                 shadeInteractor.expandQuickSettingsShade(loggingReason)
@@ -276,7 +286,7 @@ constructor(
         } else {
             shadeInteractor.collapseEitherShade(
                 loggingReason = loggingReason,
-                transitionKey = SlightlyFasterShadeCollapse,
+                transitionKey = SlightlyFasterShadeTransition,
             )
         }
     }

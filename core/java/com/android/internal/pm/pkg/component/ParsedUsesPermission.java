@@ -60,4 +60,6 @@ public interface ParsedUsesPermission {
 
     @NonNull
     Set<String> getGeneralPurposes();
+
+    int getPurposeStringResource();
 }

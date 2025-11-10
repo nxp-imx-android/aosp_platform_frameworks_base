@@ -37,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -55,6 +54,7 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.thenIf
 import com.android.compose.modifiers.width
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 import kotlin.math.roundToInt
@@ -123,7 +123,7 @@ fun ContentScope.HeadsUpNotificationPlaceholder(
  * A version of [HeadsUpNotificationPlaceholder] that can be swiped up off the top edge of the
  * screen by the user. When swiped up, the heads up notification is snoozed.
  *
- * @param useDrawBounds Whether to communicate drawBounds updated to the [stackScrollView]. This
+ * @param useStackBounds Whether to communicate stackBounds updated to the [stackScrollView]. This
  *   should be `true` when content rendering the regular stack is not setting draw bounds anymore,
  *   but HUNs can still appear.
  * @param stackScrollView The legacy view that hosts the notification stack.
@@ -134,7 +134,7 @@ fun ContentScope.HeadsUpNotificationPlaceholder(
 fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
     tag: String,
     stackScrollView: NotificationScrollView,
-    useDrawBounds: () -> Boolean,
+    useStackBounds: () -> Boolean,
     viewModel: NotificationsPlaceholderViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -183,10 +183,10 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
 
     // Wait for being Idle on this content, otherwise LaunchedEffect would fire too soon, and
     // another transition could override the NSSL stack bounds.
-    val updateDrawBounds = layoutState.transitionState.isIdle() && useDrawBounds()
+    val updateStackBounds = layoutState.transitionState.isIdle() && useStackBounds()
 
-    LaunchedEffect(updateDrawBounds) {
-        if (updateDrawBounds) {
+    LaunchedEffect(updateStackBounds) {
+        if (updateStackBounds) {
             // Reset the stack bounds to avoid caching these values from the previous Scenes, and
             // not to confuse the StackScrollAlgorithm when it displays a HUN over GONE.
             stackScrollView.apply {
@@ -219,14 +219,9 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
                     )
                 }
                 .onGloballyPositioned {
-                    if (updateDrawBounds) {
-                        stackScrollView.updateDrawBounds(
-                            it.boundsInWindow().toAndroidRectF().apply {
-                                // extend bounds to the screen top to avoid cutting off HUN
-                                // transitions
-                                top = 0f
-                            }
-                        )
+                    if (updateStackBounds) {
+                        val bounds = it.boundsInWindow()
+                        stackScrollView.updateStackBounds(YSpace(bounds.top, bounds.bottom))
                     }
                 }
                 .thenIf(isSnoozable) { Modifier.nestedScroll(snoozeScrollConnection) }

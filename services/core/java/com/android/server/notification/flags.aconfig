@@ -178,18 +178,6 @@ flag {
 }
 
 flag {
-  name: "log_cached_posts"
-  namespace: "systemui"
-  description: "Logs an event if notify was called from a cached process state"
-  bug: "392740866"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-
-
-flag {
   name: "random_conversation_ids"
   namespace: "systemui"
   description: "Use random ids for new conversation channels, instead of concatenating parent id and conversation id"

@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopmode.data.persistence
 
 import android.content.Context
 import android.graphics.Rect
+import android.graphics.RectF
 import android.util.ArrayMap
 import android.util.ArraySet
 import android.util.Log
@@ -30,9 +31,11 @@ import androidx.datastore.core.Serializer
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStoreFile
 import com.android.framework.protobuf.InvalidProtocolBufferException
+import com.android.window.flags.Flags
 import com.android.wm.shell.desktopmode.data.Desk
 import com.android.wm.shell.desktopmode.data.DesktopDisplay
 import com.android.wm.shell.desktopmode.data.persistence.Rect as RectProto
+import com.android.wm.shell.desktopmode.data.persistence.RectF as RectFProto
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import java.io.IOException
 import java.io.InputStream
@@ -118,6 +121,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
         desks: List<Desk>,
         activeDeskId: Int?,
         preservedDisplays: ArrayMap<String, DesktopDisplay>,
+        rememberedBoundsRatioByPackageName: ArrayMap<String, RectF>,
     ) {
         try {
             dataStore.updateData { persistentRepositories: DesktopPersistentRepositories ->
@@ -169,6 +173,13 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         }
                     }
                     addOrUpdatePreservedDisplays(currentUserRepoBuilder, preservedDisplays)
+                }
+
+                if (Flags.enableRememberedBounds()) {
+                    addOrUpdatePackageState(
+                        currentUserRepoBuilder,
+                        rememberedBoundsRatioByPackageName,
+                    )
                 }
 
                 persistentRepositories
@@ -281,6 +292,19 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                 "Error in updating desktop mode related data, data is " +
                     "stored in a file named $DESKTOP_REPOSITORIES_DATASTORE_FILE",
                 exception,
+            )
+        }
+    }
+
+    private suspend fun addOrUpdatePackageState(
+        currentUserRepoBuilder: DesktopRepositoryState.Builder,
+        rememberedBoundsRatioByPackageName: ArrayMap<String, RectF>,
+    ) {
+        currentUserRepoBuilder.clearPackageStateByPackageName()
+        rememberedBoundsRatioByPackageName.forEach { (packageName, bounds) ->
+            currentUserRepoBuilder.putPackageStateByPackageName(
+                packageName,
+                PackageState.newBuilder().setRememberedBoundsRatio(bounds.toRectFProto()).build(),
             )
         }
     }
@@ -448,11 +472,12 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             bounds: Rect,
             boundsBeforeSnapOrMaximize: Rect,
         ): DesktopTask {
-            val builder = DesktopTask.newBuilder()
-                .setTaskId(taskId)
-                .setDesktopTaskState(state)
-                .setDesktopTaskTilingState(tilingState)
-                .setTaskBounds(bounds.toRectProto())
+            val builder =
+                DesktopTask.newBuilder()
+                    .setTaskId(taskId)
+                    .setDesktopTaskState(state)
+                    .setDesktopTaskTilingState(tilingState)
+                    .setTaskBounds(bounds.toRectProto())
             if (!boundsBeforeSnapOrMaximize.isEmpty) {
                 builder.setBoundsBeforeSnapOrMaximize(boundsBeforeSnapOrMaximize.toRectProto())
             }
@@ -461,5 +486,8 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
 
         private fun Rect.toRectProto() =
             RectProto.newBuilder().setLeft(left).setTop(top).setRight(right).setBottom(bottom)
+
+        private fun RectF.toRectFProto() =
+            RectFProto.newBuilder().setLeft(left).setTop(top).setRight(right).setBottom(bottom)
     }
 }

@@ -22,7 +22,7 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE;
+import static com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction;
@@ -58,6 +58,7 @@ import androidx.test.filters.SmallTest;
 import com.android.wm.shell.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.transition.Transitions;
@@ -75,6 +76,7 @@ import platform.test.runner.parameterized.Parameters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 /**
@@ -101,6 +103,8 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     ShellTaskOrganizer mOrganizer;
     @Mock
     SyncTransactionQueue mSyncQueue;
+    @Mock
+    BubbleHelper mBubbleHelper;
 
     Executor mExecutor = Runnable::run;
 
@@ -121,7 +125,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         mTaskViewRepository = new TaskViewRepository();
         when(mOrganizer.getExecutor()).thenReturn(mExecutor);
         mTaskViewTransitions = spy(new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mOrganizer, mSyncQueue));
+                mOrganizer, mSyncQueue, Optional.of(mBubbleHelper)));
         mTaskViewTaskController = createMockTaskController(mTaskInfo);
         mTaskViewTransitions.registerTaskView(mTaskViewTaskController);
     }
@@ -568,7 +572,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assertThat(finishCalled[0]).isFalse();
     }
 
-    @EnableFlags({FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ROOT_TASK_FOR_BUBBLE})
+    @EnableFlags({FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK})
     @Test
     public void testUpdateTaskViewTaskBounds_rootTask() {
         WindowContainerToken rootTaskToken = new MockToken().token();
@@ -697,6 +701,9 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         TransitionInfo info = new TransitionInfo(TRANSIT_CLOSE, 0);
         info.addChange(openingBubble);
         info.addChange(closingBubble);
+
+        when(mBubbleHelper.containsBubbleSwitch(info)).thenReturn(true);
+
         return info;
     }
 

@@ -345,12 +345,12 @@ class BroadcastController {
                 Slog.w(TAG, "registerReceiverWithFeature: no app for " + caller);
                 return null;
             }
-            if (!UserHandle.isCore(callerApp.info.uid)
+            if (!UserHandle.isCore(callerApp.uid)
                     && !callerApp.getPkgList().containsKey(callerPackage)) {
                 throw new SecurityException("Given caller package " + callerPackage
                         + " is not running in process " + callerApp);
             }
-            callingUid = callerApp.info.uid;
+            callingUid = callerApp.uid;
             callingPid = callerApp.getPid();
 
             instantApp = isInstantApp(callerApp, callerPackage, callingUid);
@@ -2142,7 +2142,7 @@ class BroadcastController {
         if (receivers != null && broadcastAllowList != null) {
             for (int i = receivers.size() - 1; i >= 0; i--) {
                 final int receiverAppId = UserHandle.getAppId(
-                        receivers.get(i).activityInfo.applicationInfo.uid);
+                        receivers.get(i).activityInfo.getUid());
                 if (receiverAppId >= Process.FIRST_APPLICATION_UID
                         && Arrays.binarySearch(broadcastAllowList, receiverAppId) < 0) {
                     receivers.remove(i);

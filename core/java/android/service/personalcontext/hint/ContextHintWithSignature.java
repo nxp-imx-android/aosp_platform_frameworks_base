@@ -19,12 +19,13 @@ package android.service.personalcontext.hint;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SystemApi;
+import android.annotation.TestApi;
 import android.content.ComponentName;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.insight.ContextInsight;
 
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -37,16 +38,17 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Wrapper for a {@link ContextHint} that includes verified information about provenance.
- * @hide
+ * Wrapper for a {@link ContextHint} that includes verified information about provenance. Instances
+ * will be provided to {@link android.service.personalcontext.refiner.HintRefinerService}, and
+ * {@link android.service.personalcontext.understander.ContextUnderstanderService} service
+ * implementations. Instances will also be available from {@link ContextInsight#getOriginHints()}.
  */
-@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ContextHintWithSignature implements Parcelable {
     /** @hide */
+    @TestApi
     public static final String HMAC_ALGORITHM = "HmacSHA256";
 
-    private final @NonNull byte[] mRawData;
     private final @NonNull byte[] mHash;
     private final @NonNull ContextHintWrapper mContextHintWrapper;
     private final @NonNull List<ContextHintWithSignature> mAttributionHints;
@@ -54,13 +56,11 @@ public final class ContextHintWithSignature implements Parcelable {
     private final @Nullable RenderToken mRenderToken;
 
     private ContextHintWithSignature(
-            @NonNull byte[] rawData,
             @NonNull byte[] hash,
             @NonNull ContextHintWrapper contextHint,
             @NonNull List<ContextHintWithSignature> attributionHints,
             @Nullable ComponentName originatingComponent,
             @Nullable RenderToken renderToken) {
-        mRawData = rawData;
         mHash = hash;
         mContextHintWrapper = contextHint;
         mAttributionHints = attributionHints;
@@ -69,26 +69,16 @@ public final class ContextHintWithSignature implements Parcelable {
     }
 
     private ContextHintWithSignature(Parcel source) {
-        mRawData = Objects.requireNonNull(source.createByteArray());
         mHash = Objects.requireNonNull(source.createByteArray());
+        mContextHintWrapper = Objects.requireNonNull(
+                source.readParcelable(/* loader= */ null, ContextHintWrapper.class));
 
-        final Parcel details = Parcel.obtain();
-        try {
-            details.unmarshall(mRawData, 0, mRawData.length);
-            details.setDataPosition(0);
+        mAttributionHints = new ArrayList<>();
+        source.readParcelableList(
+                mAttributionHints, /* loader= */ null, ContextHintWithSignature.class);
 
-            mContextHintWrapper = Objects.requireNonNull(
-                    details.readParcelable(/* loader= */ null, ContextHintWrapper.class));
-
-            final List<ContextHintWithSignature> hints = new ArrayList<>();
-            details.readParcelableList(hints, /* loader= */ null, ContextHintWithSignature.class);
-            mAttributionHints = hints;
-
-            mOriginatingComponent = details.readParcelable(null, ComponentName.class);
-            mRenderToken = details.readParcelable(/* loader= */ null, RenderToken.class);
-        } finally {
-            details.recycle();
-        }
+        mOriginatingComponent = source.readParcelable(null, ComponentName.class);
+        mRenderToken = source.readParcelable(/* loader= */ null, RenderToken.class);
     }
 
     /** Returns the {@link ContextHint} contained in this wrapper. */
@@ -128,25 +118,36 @@ public final class ContextHintWithSignature implements Parcelable {
      * Checks that the data hasn't been tampered with.
      * @hide
      */
+    @TestApi
     public boolean isSignatureValid(@NonNull SecretKeySpec secretKey)
             throws GeneralSecurityException {
-        final Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-        mac.init(secretKey);
-        final byte[] signature = mac.doFinal(mRawData);
-        return Arrays.equals(mHash, signature);
+        return Arrays.equals(mHash, signData(
+                mContextHintWrapper,
+                mAttributionHints,
+                mOriginatingComponent,
+                mRenderToken,
+                secretKey));
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         final ContextHintWithSignature that = (ContextHintWithSignature) o;
-        return Objects.deepEquals(mRawData, that.mRawData)
+        return Objects.equals(mContextHintWrapper, that.mContextHintWrapper)
+                && Objects.equals(mAttributionHints, that.mAttributionHints)
+                && Objects.equals(mOriginatingComponent, that.mOriginatingComponent)
+                && Objects.equals(mRenderToken, that.mRenderToken)
                 && Objects.deepEquals(mHash, that.mHash);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(mRawData), Arrays.hashCode(mHash));
+        return Objects.hash(
+                mContextHintWrapper,
+                mAttributionHints,
+                mOriginatingComponent,
+                mRenderToken,
+                Arrays.hashCode(mHash));
     }
 
     @Override
@@ -165,13 +166,18 @@ public final class ContextHintWithSignature implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeByteArray(mRawData);
         dest.writeByteArray(mHash);
+        dest.writeParcelable(mContextHintWrapper, 0);
+        dest.writeParcelableList(mAttributionHints, 0);
+        dest.writeParcelable(mOriginatingComponent, 0);
+        dest.writeParcelable(mRenderToken, 0);
     }
 
     /**
      * Utility method to unwrap a collection of {@link ContextHintWithSignature} into a list of
      * {@link ContextHint}.
+     *
+     * @hide
      */
     @NonNull
     public static List<ContextHint> unwrapList(
@@ -182,6 +188,8 @@ public final class ContextHintWithSignature implements Parcelable {
     /**
      * Utility method to unwrap a collection of {@link ContextHintWithSignature} into a collection
      * of {@link ContextHint}.
+     *
+     * @hide
      */
     @NonNull
     public static <T extends Collection<ContextHint>> T unwrapInto(
@@ -206,7 +214,34 @@ public final class ContextHintWithSignature implements Parcelable {
                 }
             };
 
-    /** @hide */
+    private static byte[] signData(
+            @NonNull ContextHintWrapper contextHintWrapper,
+            @NonNull List<ContextHintWithSignature> attributionHints,
+            @Nullable ComponentName originatingComponent,
+            @Nullable RenderToken renderToken,
+            @NonNull SecretKeySpec secretKey) throws GeneralSecurityException {
+        final Parcel scratch = Parcel.obtain();
+        try {
+            contextHintWrapper.getContextHint().writeToSignatureParcel(scratch);
+            scratch.writeParcelableList(attributionHints, 0);
+            scratch.writeParcelable(originatingComponent, 0);
+            scratch.writeParcelable(renderToken, 0);
+
+            // Generate the signature.
+            final Mac mac = Mac.getInstance(HMAC_ALGORITHM);
+            mac.init(secretKey);
+            return mac.doFinal(scratch.marshall());
+        } finally {
+            scratch.recycle();
+        }
+
+    }
+
+    /**
+     * Builder for {@link ContextHintWithSignature}.
+     * @hide
+     */
+    @TestApi
     public static final class Builder {
         private final @NonNull ContextHintWrapper mContextHintWrapper;
         private final @NonNull List<ContextHintWithSignature> mAttributionHints = new ArrayList<>();
@@ -214,17 +249,20 @@ public final class ContextHintWithSignature implements Parcelable {
         private @Nullable ComponentName mOriginatingComponent;
         private @Nullable RenderToken mRenderToken = null;
 
+        /** @hide */
         public Builder(
                 @NonNull ContextHintWrapper contextHintWrapper, @NonNull SecretKeySpec secretKey) {
             mContextHintWrapper = contextHintWrapper;
             mSecretKey = secretKey;
         }
 
+        /** Used by CTS tests to create an instance of {@link ContextHintWithSignature}. */
         public Builder(@NonNull ContextHint contextHint, @NonNull SecretKeySpec secretKey) {
             this(new ContextHintWrapper(contextHint), secretKey);
         }
 
         /** Sets the originating component of the ContextHint. */
+        @SuppressWarnings("MissingGetterMatchingBuilder")
         @NonNull
         public Builder setOriginatingComponent(@Nullable ComponentName originatingComponent) {
             mOriginatingComponent = originatingComponent;
@@ -254,31 +292,16 @@ public final class ContextHintWithSignature implements Parcelable {
 
         /** Signs the data pieces and builds an instance of {@link ContextHintWithSignature}. */
         @NonNull
-        public ContextHintWithSignature build()
-                throws GeneralSecurityException {
-            // Build the raw data byte[].
-            final byte[] rawData;
-            final Parcel scratch = Parcel.obtain();
-            try {
-                scratch.writeParcelable(mContextHintWrapper, 0);
-                scratch.writeParcelableList(mAttributionHints, 0);
-                scratch.writeParcelable(mOriginatingComponent, 0);
-                scratch.writeParcelable(mRenderToken, 0);
-
-                rawData = scratch.marshall();
-            } finally {
-                scratch.recycle();
-            }
-
-            // Generate the signature.
-            final Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-            mac.init(mSecretKey);
-            final byte[] signature = mac.doFinal(rawData);
+        public ContextHintWithSignature build() throws GeneralSecurityException {
 
             // Build the new instance.
             return new ContextHintWithSignature(
-                    rawData,
-                    signature,
+                    signData(
+                            mContextHintWrapper,
+                            mAttributionHints,
+                            mOriginatingComponent,
+                            mRenderToken,
+                            mSecretKey),
                     mContextHintWrapper,
                     mAttributionHints,
                     mOriginatingComponent,

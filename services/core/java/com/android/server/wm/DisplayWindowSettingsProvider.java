@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import static android.os.UserHandle.USER_SYSTEM;
+import static android.view.Display.TYPE_OVERLAY;
 import static android.view.Display.TYPE_VIRTUAL;
 
 import static com.android.server.wm.DisplayWindowSettingsXmlHelper.DisplayIdentifierType;
@@ -283,7 +284,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
         @NonNull
         private final WritableSettingsStorage mSettingsStorage;
         @NonNull
-        private final ArraySet<String> mVirtualDisplayIdentifiers = new ArraySet<>();
+        private final ArraySet<String> mNonPhysicalDisplayIdentifiers = new ArraySet<>();
 
         WritableSettings(@NonNull String name, @NonNull WritableSettingsStorage settingsStorage) {
             super(name, settingsStorage);
@@ -309,10 +310,10 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
 
             settings = new SettingsEntry();
             mSettings.put(identifier, settings);
-            if (info.type == TYPE_VIRTUAL) {
+            if (info.type == TYPE_VIRTUAL || info.type == TYPE_OVERLAY) {
                 // Keep track of virtual display. We don't want to write virtual display settings to
                 // file.
-                mVirtualDisplayIdentifiers.add(identifier);
+                mNonPhysicalDisplayIdentifiers.add(identifier);
             }
             return settings;
         }
@@ -320,7 +321,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
         void updateSettingsEntry(@NonNull DisplayInfo info, @NonNull SettingsEntry settings) {
             final SettingsEntry overrideSettings = getOrCreateSettingsEntry(info);
             final boolean changed = overrideSettings.setTo(settings);
-            if (changed && info.type != TYPE_VIRTUAL) {
+            if (changed && info.type != TYPE_VIRTUAL && info.type != TYPE_OVERLAY) {
                 writeSettings();
             }
         }
@@ -330,7 +331,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
             if (mSettings.get(identifier) == null) {
                 return;
             }
-            if (mVirtualDisplayIdentifiers.remove(identifier)
+            if (mNonPhysicalDisplayIdentifiers.remove(identifier)
                     || mSettings.get(identifier).isEmpty()) {
                 // Don't keep track of virtual display or empty settings to avoid growing the cached
                 // map.
@@ -341,7 +342,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
         void clearDisplaySettings(@NonNull DisplayInfo info) {
             final String identifier = getIdentifier(info);
             mSettings.remove(identifier);
-            mVirtualDisplayIdentifiers.remove(identifier);
+            mNonPhysicalDisplayIdentifiers.remove(identifier);
         }
 
         private void writeSettings() {
@@ -349,7 +350,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
             fileData.mIdentifierType = mIdentifierType;
             for (final Map.Entry<String, SettingsEntry> entry : mSettings.snapshot().entrySet()) {
                 final String identifier = entry.getKey();
-                if (mVirtualDisplayIdentifiers.contains(identifier)) {
+                if (mNonPhysicalDisplayIdentifiers.contains(identifier)) {
                     // Do not write virtual display settings to file.
                     continue;
                 }

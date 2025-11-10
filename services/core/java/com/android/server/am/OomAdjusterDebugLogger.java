@@ -23,12 +23,11 @@ import android.util.SparseBooleanArray;
  * Helper for writing debug log about proc/uid state changes.
  */
 class OomAdjusterDebugLogger {
-    // Use the "am_" tag to make it similar to  event logs.
+    // Use the "am_" tag to make it similar to event logs.
     private static final String STACK_TRACE_TAG = "am_stack";
 
     private final OomAdjuster mOomAdjuster;
     private final OomAdjuster.Constants mOomConstants;
-    private final ActivityManagerConstants mConstants;
 
     private static final int MISC_SCHEDULE_IDLE_UIDS_MSG_1 = 1;
     private static final int MISC_SCHEDULE_IDLE_UIDS_MSG_2 = 2;
@@ -37,11 +36,9 @@ class OomAdjusterDebugLogger {
     private static final int MISC_SET_LAST_BG_TIME = 10;
     private static final int MISC_CLEAR_LAST_BG_TIME = 11;
 
-    OomAdjusterDebugLogger(OomAdjuster oomAdjuster, OomAdjuster.Constants oomConstants,
-            ActivityManagerConstants constants) {
+    OomAdjusterDebugLogger(OomAdjuster oomAdjuster, OomAdjuster.Constants oomConstants) {
         mOomAdjuster = oomAdjuster;
         mOomConstants = oomConstants;
-        mConstants = constants;
     }
 
     boolean shouldLog(int uid) {
@@ -63,7 +60,7 @@ class OomAdjusterDebugLogger {
     }
 
     private void maybeLogStacktrace(String msg) {
-        if (!mConstants.mEnableProcStateStacktrace) {
+        if (!mOomConstants.mEnableProcStateStacktrace) {
             return;
         }
         Slog.i(STACK_TRACE_TAG,
@@ -87,7 +84,7 @@ class OomAdjusterDebugLogger {
                 uid, mOomAdjuster.mAdjSeq, uidstate, olduidstate, capability, oldcapability, flags,
                 OomAdjuster.oomAdjReasonToString(mOomAdjuster.mLastReason));
         maybeLogStacktrace("uidStateChanged");
-        maybeSleep(mConstants.mProcStateDebugSetUidStateDelay);
+        maybeSleep(mOomConstants.mProcStateDebugSetUidStateDelay);
     }
 
     void logProcStateChanged(int uid, int pid, int procstate, int oldprocstate,
@@ -96,7 +93,7 @@ class OomAdjusterDebugLogger {
                 uid, pid, mOomAdjuster.mAdjSeq, procstate, oldprocstate, oomadj, oldoomadj,
                 OomAdjuster.oomAdjReasonToString(mOomAdjuster.mLastReason));
         maybeLogStacktrace("procStateChanged");
-        maybeSleep(mConstants.mProcStateDebugSetProcStateDelay);
+        maybeSleep(mOomConstants.mProcStateDebugSetProcStateDelay);
     }
 
     void logScheduleUidIdle1(int uid, long delay) {

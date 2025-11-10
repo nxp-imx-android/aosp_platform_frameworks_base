@@ -177,9 +177,6 @@ flag {
     namespace: "multitasking"
     description: "Enables box shadows for PiP"
     bug: "367464660"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -222,15 +219,6 @@ flag {
     }
 }
 
-flag {
-    name: "dismiss_pip_from_lockscreen"
-    namespace: "multitasking"
-    description: "Fixes a bug where tapping on a notification for a PiP-ed app while on Lockscreen does not launch it in fullscreen."
-    bug: "373314569"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
     name: "fix_bubble_stack_view_expanded_when_added"
@@ -324,4 +312,14 @@ flag {
     namespace: "multitasking"
     description: "Add one-off leashes to non-Shell handlers (Remote, Recents, etc.) when starting or taking over an animation."
     bug: "403529740"
+}
+
+flag {
+    name: "fix_bubble_swipe_up_dismiss_bubble_bar"
+    namespace: "multitasking"
+    description: "Allows you to swipe up to dismiss a bubble in bubble bar"
+    bug: "399910368"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

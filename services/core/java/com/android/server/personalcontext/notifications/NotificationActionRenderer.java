@@ -16,14 +16,13 @@
 
 package com.android.server.personalcontext.notifications;
 
-import android.annotation.Nullable;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Icon;
@@ -32,10 +31,11 @@ import android.os.UserHandle;
 import android.service.notification.Adjustment;
 import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.NotificationHint;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueuedEvent;
-import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.hint.NotificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
+import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.InsightDisplayDetails;
 import android.util.Log;
 import android.util.Slog;
@@ -79,7 +79,7 @@ public class NotificationActionRenderer implements Renderer {
 
     @Nullable
     private StatusBarNotification getSbnFromInsight(ContextInsight insight) {
-        for (ContextHint hint : insight.getOriginHints()) {
+        for (ContextHint hint : ContextHintWithSignature.unwrapList(insight.getOriginHints())) {
             if (hint instanceof NotificationHint notificationHint
                     && notificationHint.getNotificationEvent()
                             instanceof NotificationEnqueuedEvent enqueuedEvent) {
@@ -144,7 +144,7 @@ public class NotificationActionRenderer implements Renderer {
     @Nullable
     private Notification.Action createNotificationAction(
             ActionableInsight insight, UserHandle user) {
-        final Intent actionIntent = insight.createActionIntent();
+        final Intent actionIntent = insight.getActionDetails().createActionIntent();
         final ActivityInfo activityInfo = getActivityInfo(actionIntent, user);
 
         if (activityInfo == null) {
@@ -240,7 +240,9 @@ public class NotificationActionRenderer implements Renderer {
     }
 
     @Override
-    public boolean isInsightInteresting(ContextInsight insight) {
-        return insight instanceof ActionableInsight && getSbnFromInsight(insight) != null;
+    public boolean isInterestedInInsight(ContextInsight insight) {
+        // Notifications should be rendered due to a RenderToken, which bypasses this filter.
+        // We don't want any other random insights.
+        return false;
     }
 }

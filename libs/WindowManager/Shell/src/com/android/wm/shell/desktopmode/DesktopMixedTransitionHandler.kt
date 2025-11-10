@@ -143,13 +143,6 @@ class DesktopMixedTransitionHandler(
         exitingImmersiveTask: Int? = null,
         dragEvent: DragEvent? = null,
     ): IBinder {
-        if (
-            !DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue &&
-                !DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue &&
-                !DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue
-        ) {
-            return transitions.startTransition(transitionType, wct, /* handler= */ null)
-        }
         if (exitingImmersiveTask == null) {
             logV("Starting mixed launch transition for task#%d", taskId)
         } else {
@@ -372,12 +365,10 @@ class DesktopMixedTransitionHandler(
             closeTopTransparentFullscreenTaskChange?.taskInfo?.taskId,
             immersiveExitChange?.taskInfo?.taskId,
         )
-        if (DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue) {
-            // Only apply minimize change reparenting here if we implement the new app launch
-            // transitions, otherwise this reparenting is handled in the default handler.
-            minimizeChange?.let {
-                applyMinimizeChangeReparenting(info, minimizeChange, startTransaction)
-            }
+        // Only apply minimize change reparenting here if we implement the new app launch
+        // transitions, otherwise this reparenting is handled in the default handler.
+        minimizeChange?.let {
+            applyMinimizeChangeReparenting(info, minimizeChange, startTransaction)
         }
         if (
             DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue &&
@@ -516,12 +507,10 @@ class DesktopMixedTransitionHandler(
             minimizeChange?.taskInfo?.taskId,
             closeTopTransparentFullscreenTaskChange?.taskInfo?.taskId,
         )
-        if (DesktopModeFlags.ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX.isTrue) {
-            // Only apply minimize change reparenting here if we implement the new app launch
-            // transitions, otherwise this reparenting is handled in the default handler.
-            minimizeChange?.let {
-                applyMinimizeChangeReparenting(info, minimizeChange, startTransaction)
-            }
+        // Only apply minimize change reparenting here if we implement the new app launch
+        // transitions, otherwise this reparenting is handled in the default handler.
+        minimizeChange?.let {
+            applyMinimizeChangeReparenting(info, minimizeChange, startTransaction)
         }
         if (closeTopTransparentFullscreenTaskChange != null) {
             systemModalsTransitionHandler.ifPresent { handler ->
@@ -742,15 +731,7 @@ class DesktopMixedTransitionHandler(
         return if (launchTaskId != null) {
             // Launching a known task (probably from background or moving to front), so
             // specifically look for it.
-            val launchChange = findTaskChange(info, launchTaskId)
-            if (
-                DesktopModeFlags.ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX.isTrue &&
-                    launchChange == null
-            ) {
-                findLaunchChange(info)
-            } else {
-                launchChange
-            }
+            findTaskChange(info, launchTaskId) ?: findLaunchChange(info)
         } else {
             // Launching a new task, so the first opening freeform task.
             findLaunchChange(info)

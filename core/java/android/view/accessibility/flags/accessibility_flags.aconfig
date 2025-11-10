@@ -20,6 +20,14 @@ flag {
 }
 
 flag {
+    name: "a11y_extra_rendering_info_color_additions"
+    namespace: "accessibility"
+    is_exported: true
+    description: "Adds a public Builder API for AccessibilityNodeInfo.ExtraRenderingInfo and adds color properties"
+    bug: "452371989"
+}
+
+flag {
     name: "a11y_is_required_api"
     namespace: "accessibility"
     description: "Adds an API to indicate whether a form field (or similar element) is required."
@@ -32,6 +40,14 @@ flag {
     namespace: "accessibility"
     description: "Adds an API to indicate whether a URL has been visited or not."
     bug: "391469786"
+    is_exported: true
+}
+
+flag {
+    name: "a11y_layout_based_actions_api"
+    namespace: "accessibility"
+    description: "Enables new extra data key for an AccessibilityService to request layout-based actions."
+    bug: "455070192"
     is_exported: true
 }
 
@@ -212,6 +228,16 @@ flag {
     namespace: "accessibility"
     description: "Adds a setting for users to change the order of the navbar's 3 main buttons."
     bug: "410601652"
+}
+
+flag {
+    name: "prevent_a11y_event_null_record"
+    namespace: "accessibility"
+    description: "Prevent apps adding null record via accessibilityEvent#appendRecord"
+    bug: "454269244"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

@@ -18,8 +18,6 @@ package com.android.wm.shell.pip2.phone;
 
 import static android.view.WindowManager.INPUT_CONSUMER_PIP;
 
-import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.PIP_STASHING;
-import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.PIP_STASH_MINIMUM_VELOCITY_THRESHOLD;
 import static com.android.wm.shell.common.pip.PipBoundsState.STASH_TYPE_LEFT;
 import static com.android.wm.shell.common.pip.PipBoundsState.STASH_TYPE_NONE;
 import static com.android.wm.shell.common.pip.PipBoundsState.STASH_TYPE_RIGHT;
@@ -39,7 +37,6 @@ import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.SystemProperties;
 import android.os.Trace;
-import android.provider.DeviceConfig;
 import android.util.Size;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
@@ -108,7 +105,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     private PipResizeGestureHandler mPipResizeGestureHandler;
     private final PipDisplayTransferHandler mPipDisplayTransferHandler;
     private final PhonePipMenuController mMenuController;
-    private final AccessibilityManager mAccessibilityManager;
+    @VisibleForTesting AccessibilityManager mAccessibilityManager;
     private final DisplayController mDisplayController;
 
     /**
@@ -116,8 +113,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
      * screen, it will be shown in "stashed" mode, where PIP will only show partially.
      */
     @VisibleForTesting boolean mEnableStash = true;
-
-    private float mStashVelocityThreshold;
 
     // Used to workaround an issue where the WM rotation happens before we are notified, allowing
     // us to send stale bounds
@@ -292,32 +287,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 INPUT_CONSUMER_PIP, mPipDisplayLayoutState, mMainExecutor);
         mPipInputConsumer.setInputListener(this::handleTouchEvent);
         mPipInputConsumer.setRegistrationListener(this::onRegistrationChanged);
-
-        mEnableStash = DeviceConfig.getBoolean(
-                DeviceConfig.NAMESPACE_SYSTEMUI,
-                PIP_STASHING,
-                /* defaultValue = */ true);
-        DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_SYSTEMUI,
-                mMainExecutor,
-                properties -> {
-                    if (properties.getKeyset().contains(PIP_STASHING)) {
-                        mEnableStash = properties.getBoolean(
-                                PIP_STASHING, /* defaultValue = */ true);
-                    }
-                });
-        mStashVelocityThreshold = DeviceConfig.getFloat(
-                DeviceConfig.NAMESPACE_SYSTEMUI,
-                PIP_STASH_MINIMUM_VELOCITY_THRESHOLD,
-                DEFAULT_STASH_VELOCITY_THRESHOLD);
-        DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_SYSTEMUI,
-                mMainExecutor,
-                properties -> {
-                    if (properties.getKeyset().contains(PIP_STASH_MINIMUM_VELOCITY_THRESHOLD)) {
-                        mStashVelocityThreshold = properties.getFloat(
-                                PIP_STASH_MINIMUM_VELOCITY_THRESHOLD,
-                                DEFAULT_STASH_VELOCITY_THRESHOLD);
-                    }
-                });
     }
 
     private void reloadResources() {
@@ -342,6 +311,10 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         return false;
     }
 
+    @VisibleForTesting void setPipInputConsumer(PipInputConsumer consumer) {
+        mPipInputConsumer = consumer;
+    }
+
     void setTouchGesture(PipTouchGesture gesture) {
         mGesture = gesture;
     }
@@ -364,6 +337,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     }
 
     void onActivityPinned() {
+        // If free-floating PiP is enabled, we don't stash and always snap-to-edge if PiP is dragged
+        // past display bounds
+        mEnableStash = !mPipDesktopState.isFreeFloatingPipEnabled();
         mPipDismissTargetHandler.createOrUpdateDismissTarget();
         mPipResizeGestureHandler.onActivityPinned();
         mFloatingContentCoordinator.onContentAdded(mMotionHelper);
@@ -629,7 +605,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 // If Touch Exploration is enabled, some a11y services (e.g. Talkback) is probably
                 // on and changing MotionEvents into HoverEvents.
                 // Let's not enable menu show/hide for a11y services.
-                if (!mAccessibilityManager.isTouchExplorationEnabled()) {
+                // Additioally, don't show PiP menu if the PiP is stashed.
+                if (!mAccessibilityManager.isTouchExplorationEnabled()
+                        && !mPipBoundsState.isStashed()) {
                     mTouchState.removeHoverExitTimeoutCallback();
                     mMenuController.showMenu(MENU_STATE_FULL, mPipBoundsState.getBounds(),
                             false /* allowMenuTimeout */, false /* willResizeMenu */,
@@ -1069,8 +1047,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         }
 
         private boolean shouldStash(PointF vel, Rect motionBounds, int displayIdOnUp) {
-            final boolean flingToLeft = vel.x < -mStashVelocityThreshold;
-            final boolean flingToRight = vel.x > mStashVelocityThreshold;
+            final boolean flingToLeft = vel.x < -DEFAULT_STASH_VELOCITY_THRESHOLD;
+            final boolean flingToRight = vel.x > DEFAULT_STASH_VELOCITY_THRESHOLD;
             final int offset = motionBounds.width() / 2;
             final boolean droppingOnLeft =
                     motionBounds.left < mPipBoundsState.getDisplayBounds().left - offset;

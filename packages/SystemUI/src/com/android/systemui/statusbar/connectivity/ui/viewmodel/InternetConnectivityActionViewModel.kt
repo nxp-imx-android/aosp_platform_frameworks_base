@@ -28,6 +28,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager
+import com.android.systemui.retail.domain.interactor.RetailModeInteractor
 import com.android.systemui.scene.shared.model.TransitionKeys
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -54,6 +55,7 @@ constructor(
     private val shadeInteractor: ShadeInteractor,
     private val detailsViewModel: DetailsViewModel,
     private val shadeModeInteractor: ShadeModeInteractor,
+    private val retailModeInteractor: RetailModeInteractor,
 ) : CoreStartable {
 
     override fun start() {
@@ -67,7 +69,11 @@ constructor(
     }
 
     private fun handleInternetConnectivityAction() {
-        if (QsDetailedView.isEnabled && shadeModeInteractor.isDualShade) {
+        if (
+            QsDetailedView.isEnabled &&
+                shadeModeInteractor.isDualShade &&
+                !retailModeInteractor.isInRetailMode
+        ) {
             val activeTileDetails: TileDetailsViewModel? = detailsViewModel.activeTileDetails
             if (activeTileDetails is InternetDetailsViewModel) {
                 return

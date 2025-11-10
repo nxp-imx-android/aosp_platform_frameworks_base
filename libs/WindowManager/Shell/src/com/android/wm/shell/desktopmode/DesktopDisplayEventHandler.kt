@@ -316,7 +316,7 @@ class DesktopDisplayEventHandler(
             // A display has become desktop eligible. Treat this as a potential reconnect.
             val keyguardLocked = keyguardManager.isKeyguardLocked
             logV(
-                "onDesktopModeEligibleChanged: keyguardLocked=%b, " +
+                "handlePotentialDeskDisplayChange: keyguardLocked=%b, " +
                     "displayId=%d has become desktop eligible",
                 keyguardLocked,
                 displayId,
@@ -338,17 +338,28 @@ class DesktopDisplayEventHandler(
         val defaultDeskDisplayIds = mutableSetOf<Int>()
         for (displayIdByUniqueId in displaysByUniqueId) {
             val displayId = displayIdByUniqueId.value
-            if (displayId != DEFAULT_DISPLAY && !handlePotentialReconnect(displayId)) {
+            if (!handlePotentialReconnect(displayId)) {
                 defaultDeskDisplayIds.add(displayIdByUniqueId.value)
             }
         }
+        logV("onKeyguardVisibilityChanged: defaultDeskDisplayIds=%s", defaultDeskDisplayIds)
         createDefaultDesksIfNeeded(defaultDeskDisplayIds, null)
     }
 
     private fun handlePotentialReconnect(displayId: Int): Boolean {
         // Do not handle restoration while locked; it will be handled when keyguard is gone.
-        if (keyguardManager.isKeyguardLocked) return false
-        val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId ?: return false
+        if (keyguardManager.isKeyguardLocked)
+            return false.also { logV("handlePotentialReconnect: Keyguard locked; aborting.") }
+        if (displayId == DEFAULT_DISPLAY)
+            return false.also { logV("handlePotentialReconnect: default display; aborting.") }
+        val uniqueDisplayId =
+            displayController.getDisplay(displayId)?.uniqueId
+                ?: return false.also {
+                    logV(
+                        "handlePotentialReconnect: display(%d) uniqueId not found; aborting.",
+                        displayId,
+                    )
+                }
         uniqueIdByDisplayId[displayId] = uniqueDisplayId
         val currentUserRepository = desktopUserRepositories.current
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
@@ -413,6 +424,10 @@ class DesktopDisplayEventHandler(
             logW("createDefaultDesksIfNeeded ignoring attempt for ineligible user")
             return
         }
+        if (displayIds.isEmpty()) {
+            logW("createDefaultDesksIfNeeded ignoring attempt with empty displayIds")
+            return
+        }
         mainScope.launch {
             desktopRepositoryInitializer.isInitialized.collect { initialized ->
                 if (!initialized) return@collect
@@ -469,10 +484,8 @@ class DesktopDisplayEventHandler(
         return true
     }
 
-    private fun isUserDesktopEligible(userId: Int): Boolean =
-        !(DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_HSUM.isTrue &&
-            UserManager.isHeadlessSystemUserMode() &&
-            UserHandle.USER_SYSTEM == userId)
+    private fun isUserDesktopEligible(userId: Int): Boolean = !(UserManager.isHeadlessSystemUserMode() &&
+        UserHandle.USER_SYSTEM == userId)
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)

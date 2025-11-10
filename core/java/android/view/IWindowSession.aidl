@@ -91,6 +91,11 @@ interface IWindowSession {
             int requestedHeight, int viewVisibility, int flags, int seq, int lastSyncSeqId,
             out @nullable WindowRelayoutResult outRelayoutResult, out SurfaceControl outSurface);
 
+    // TODO(b/308662081): Remove "2" methods and switch original methods to the new implemetantion.
+    int relayout2(IWindow window, in WindowManager.LayoutParams attrs, int requestedWidth,
+            int requestedHeight, int viewVisibility, int flags, int seq, int lastSyncSeqId,
+            in SurfaceControl surface, out @nullable WindowRelayoutResult outRelayoutResult);
+
     /**
      * Similar to {@link #relayout} but this is an oneway method which doesn't return anything.
      *
@@ -106,6 +111,10 @@ interface IWindowSession {
     oneway void relayoutAsync(IWindow window, in WindowManager.LayoutParams attrs,
             int requestedWidth, int requestedHeight, int viewVisibility, int flags, int seq,
             int lastSyncSeqId);
+
+    oneway void relayoutAsync2(IWindow window, in WindowManager.LayoutParams attrs,
+            int requestedWidth, int requestedHeight, int viewVisibility, int flags, int seq,
+            int lastSyncSeqId, in SurfaceControl surface);
 
     /**
      * Called by a client to report that it ran out of graphics memory.

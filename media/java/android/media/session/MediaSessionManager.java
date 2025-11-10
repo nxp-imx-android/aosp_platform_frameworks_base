@@ -451,17 +451,18 @@ public final class MediaSessionManager {
      * the calling app.
      * </p>
      *
-     * @param executor The executor to be used for sending events to listener.
      * @param packageName The package name filter to be applied for the listener.
+     * @param executor The executor to be used for sending events to listener.
      * @param sessionListener The listener to add.
      */
     @FlaggedApi(Flags.FLAG_FETCH_MEDIA_CONTROLLERS_FOR_APP)
     @RequiresPermission(value = Manifest.permission.MEDIA_CONTENT_CONTROL, conditional = true)
     public void addOnActiveSessionsForPackageChangedListener(
-            @NonNull @CallbackExecutor Executor executor,
             @NonNull String packageName,
+            @NonNull @CallbackExecutor Executor executor,
             @NonNull OnActiveSessionsChangedListener sessionListener) {
         Objects.requireNonNull(packageName, "packageName shouldn't be null");
+        Objects.requireNonNull(executor, "executor shouldn't be null");
         Objects.requireNonNull(sessionListener, "sessionListener shouldn't be null");
         try {
             addOnActiveSessionsChangedListenerInternal(
@@ -494,19 +495,20 @@ public final class MediaSessionManager {
      * {@link ComponentName} of your enabled listener.
      * </p>
      *
-     * @param executor The executor to be used for sending events to listener.
      * @param packageName The package name filter to be applied for the listener.
+     * @param executor The executor to be used for sending events to listener.
      * @param notificationListener The enabled notification listener component. May be null.
      * @param sessionListener The listener to add.
      */
     @FlaggedApi(Flags.FLAG_FETCH_MEDIA_CONTROLLERS_FOR_APP)
     @RequiresPermission(value = Manifest.permission.MEDIA_CONTENT_CONTROL, conditional = true)
     public void addOnActiveSessionsForPackageChangedListener(
-            @NonNull @CallbackExecutor Executor executor,
             @NonNull String packageName,
+            @NonNull @CallbackExecutor Executor executor,
             @Nullable ComponentName notificationListener,
             @NonNull OnActiveSessionsChangedListener sessionListener) {
         Objects.requireNonNull(packageName, "packageName shouldn't be null");
+        Objects.requireNonNull(executor, "executor shouldn't be null");
         Objects.requireNonNull(sessionListener, "sessionListener shouldn't be null");
         try {
             addOnActiveSessionsChangedListenerInternal(

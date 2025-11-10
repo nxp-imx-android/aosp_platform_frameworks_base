@@ -136,6 +136,8 @@ java_import {
         ":androidx.test.runner",
         // Adds android.os.ext.SdkExtensions
         ":framework-sdkextensions.impl{.jar}",
+        // Adds android.test.mock classes
+        ":android.test.mock.impl{.jar}",
     ],
     visibility: ["//visibility:private"],
 }
@@ -624,7 +626,6 @@ android_ravenwood_libgroup {
         "kxml2-android",
         "json-prebuilt",
         "ext-ravenwood",
-        "android.test.mock.ravenwood",
         "icu4j-icudata-jarjar",
         "icu4j-icutzdata-jarjar",
         "mockito-ravenwood-prebuilt",

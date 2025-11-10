@@ -954,6 +954,35 @@ public class AccessibilityNodeInfo implements Parcelable {
     public static final String EXTRA_DATA_RENDERING_INFO_KEY =
             "android.view.accessibility.extra.DATA_RENDERING_INFO_KEY";
 
+    /**
+     * Key used to request that the node source re-evaluate and update this node's layout-dependent
+     * actions. This request is made with {@link #refreshWithExtraData(String, Bundle)} and takes no
+     * arguments.
+     * <p>
+     * Some actions may depend on the on-screen layout of a node. In complex or dynamic UIs, it
+     * may be difficult for a source to determine if a node is truly actionable without more
+     * intensive inspection. For example, a node may be misreported as clickable despite being
+     * occluded, requiring a hit-test to confirm the availability of the action.
+     * <p>
+     * Using this key requests that the source perform a more intensive, layout-based analysis to
+     * determine which actions are available to the user. After this request, the source will update
+     * the actions and related properties of this node. For example, for clickability, this may
+     * result in changes to the value returned by {@link #isClickable()} and the presence of
+     * {@link AccessibilityAction#ACTION_CLICK} in the node's {@link #getActionList()}.
+     * <p>
+     * This analysis can be computationally expensive and should only be requested when needed to
+     * resolve ambiguous or inaccurate actions.
+     * <p>
+     * Providers may advertise that they support this request using
+     * {@link #setAvailableExtraData(List)}. Services may check for support with
+     * {@link #getAvailableExtraData()}.
+     *
+     * @see #refreshWithExtraData(String, Bundle)
+     */
+    @FlaggedApi(Flags.FLAG_A11Y_LAYOUT_BASED_ACTIONS_API)
+    public static final String EXTRA_DATA_REQUEST_LAYOUT_BASED_ACTIONS_KEY =
+            "android.view.accessibility.extra.DATA_REQUEST_LAYOUT_BASED_ACTIONS_KEY";
+
     /** @hide */
     public static final String EXTRA_DATA_REQUESTED_KEY =
             "android.view.accessibility.AccessibilityNodeInfo.extra_data_requested";
@@ -6143,7 +6172,7 @@ public class AccessibilityNodeInfo implements Parcelable {
         /**
          * Action that clears input focus of the node.
          * <p>The node that is cleared should return {@code false} for
-         * {@link AccessibilityNodeInfo#isFocused)}.
+         * {@link AccessibilityNodeInfo#isFocused()}.
          */
         public static final AccessibilityAction ACTION_CLEAR_FOCUS =
                 new AccessibilityAction(AccessibilityNodeInfo.ACTION_CLEAR_FOCUS);
@@ -8109,11 +8138,11 @@ public class AccessibilityNodeInfo implements Parcelable {
 
     /**
      * Class with information of a view useful to evaluate accessibility needs. Developers can
-     * refresh the node with the key {@link #EXTRA_DATA_RENDERING_INFO_KEY} to fetch the text size
-     * and unit if it is {@link TextView} and the height and the width of layout params from
-     * {@link ViewGroup} or {@link TextView}.
+     * refresh the node with the key {@link #EXTRA_DATA_RENDERING_INFO_KEY} to fetch this
+     * information if it is available for this node.
      *
      * @see #EXTRA_DATA_RENDERING_INFO_KEY
+     * @see #getAvailableExtraData()
      * @see #refreshWithExtraData(String, Bundle)
      */
     public static final class ExtraRenderingInfo {
@@ -8147,6 +8176,9 @@ public class AccessibilityNodeInfo implements Parcelable {
         private static ExtraRenderingInfo obtain(ExtraRenderingInfo other) {
             return new ExtraRenderingInfo(other);
         }
+
+        /** Creates a new instance. */
+        private ExtraRenderingInfo() {}
 
         /**
          * Creates a new rendering info of a view, and this new instance is initialized from
@@ -8242,6 +8274,119 @@ public class AccessibilityNodeInfo implements Parcelable {
          */
         @Deprecated
         void recycle() {}
+
+        /** The builder for ExtraRenderingInfo. */
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public static final class Builder {
+            private Size mLayoutSize;
+            private float mTextSizeInPx = UNDEFINED_VALUE;
+            private int mTextSizeUnit = UNDEFINED_VALUE;
+
+            /** Creates a new Builder. */
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public Builder() {}
+
+            /**
+             * Creates a new Builder that is initialized from an {@link ExtraRenderingInfo}.
+             *
+             * @param info an instance from which to initialize the builder
+             */
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public Builder(@NonNull ExtraRenderingInfo info) {
+                mLayoutSize = info.mLayoutSize;
+                mTextSizeInPx = info.mTextSizeInPx;
+                mTextSizeUnit = info.mTextSizeUnit;
+            }
+
+            /**
+             * Sets layout width and layout height of the view.
+             *
+             * @param width The layout width.
+             * @param height The layout height.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setLayoutSize(int width, int height) {
+                mLayoutSize = new Size(width, height);
+                return this;
+            }
+
+            /**
+             * Clears the layout width and layout height of the view.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearLayoutSize() {
+                mLayoutSize = null;
+                return this;
+            }
+
+            /**
+             * Sets text size of the view.
+             *
+             * @param textSizeInPx The text size in pixels.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setTextSizeInPx(float textSizeInPx) {
+                mTextSizeInPx = textSizeInPx;
+                return this;
+            }
+
+            /**
+             * Clears the text size of the view.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearTextSizeInPx() {
+                mTextSizeInPx = UNDEFINED_VALUE;
+                return this;
+            }
+
+            /**
+             * Sets text size unit of the view.
+             *
+             * @param textSizeUnit The text size unit.
+             * @return This builder.
+             * @see TypedValue#TYPE_DIMENSION
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setTextSizeUnit(int textSizeUnit) {
+                mTextSizeUnit = textSizeUnit;
+                return this;
+            }
+
+            /**
+             * Clears the text size unit of the view.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearTextSizeUnit() {
+                mTextSizeUnit = UNDEFINED_VALUE;
+                return this;
+            }
+
+            /** Creates a new {@link ExtraRenderingInfo} instance. */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo build() {
+                ExtraRenderingInfo extraRenderingInfo = new ExtraRenderingInfo();
+                extraRenderingInfo.mLayoutSize = mLayoutSize;
+                extraRenderingInfo.mTextSizeInPx = mTextSizeInPx;
+                extraRenderingInfo.mTextSizeUnit = mTextSizeUnit;
+
+                return extraRenderingInfo;
+            }
+        }
     }
 
     /**

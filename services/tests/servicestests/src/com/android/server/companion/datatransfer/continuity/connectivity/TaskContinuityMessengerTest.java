@@ -17,45 +17,41 @@
 package com.android.server.companion.datatransfer.continuity.connectivity;
 
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
-
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.never;
-import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.companion.IOnMessageReceivedListener;
-import android.companion.IOnTransportsChangedListener;
+import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
-import android.companion.AssociationInfo;
+import android.companion.IOnMessageReceivedListener;
+import android.companion.IOnTransportsChangedListener;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-
 import androidx.test.platform.app.InstrumentationRegistry;
-
-import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
-import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -68,6 +64,12 @@ public class TaskContinuityMessengerTest {
     @Mock private TaskContinuityMessenger.Listener mMockListener;
 
     private TaskContinuityMessenger mTaskContinuityMessenger;
+
+    private static final TaskStackBroadcastMessage TEST_MESSAGE =
+            new TaskStackBroadcastMessage(
+                    List.of(
+                            new RemoteTaskInfo(
+                                    1, "package_name", true, 50, new HandoffOptions(true, true))));
 
     @Before
     public void setUp() {
@@ -103,15 +105,11 @@ public class TaskContinuityMessengerTest {
         // Send a message to the listener.
         int expectedAssociationId = 1;
         connectAssociations(List.of(expectedAssociationId));
-        ContinuityDeviceConnected expectedMessage =
-                new ContinuityDeviceConnected(
-                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
-
         listener.onMessageReceived(
-                expectedAssociationId, TaskContinuityMessageSerializer.serialize(expectedMessage));
+                expectedAssociationId, TaskContinuityMessageSerializer.serialize(TEST_MESSAGE));
         TestableLooper.get(this).processAllMessages();
         verify(mMockListener, times(1))
-                .onMessageReceived(eq(expectedAssociationId), eq(expectedMessage));
+                .onMessageReceived(eq(expectedAssociationId), eq(TEST_MESSAGE));
 
         // Stop listening, verifying the message listener is removed.
         mTaskContinuityMessenger.removeListener(mMockListener);
@@ -147,15 +145,12 @@ public class TaskContinuityMessengerTest {
 
         mTaskContinuityMessenger.addListener(mMockListener);
         connectAssociations(List.of(associationId));
-        ContinuityDeviceConnected expectedMessage =
-                new ContinuityDeviceConnected(
-                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
         TaskContinuityMessenger.SendMessageResult result =
-                mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
+                mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
         verify(mMockCompanionDeviceManagerService, times(1))
                 .sendMessage(
                         eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                        eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                        eq(TaskContinuityMessageSerializer.serialize(TEST_MESSAGE)),
                         aryEq(new int[] {associationId}));
         assertThat(result).isEqualTo(TaskContinuityMessenger.SendMessageResult.SUCCESS);
     }
@@ -165,15 +160,12 @@ public class TaskContinuityMessengerTest {
             throws RemoteException, IOException {
 
         int associationId = 1;
-        ContinuityDeviceConnected expectedMessage =
-                new ContinuityDeviceConnected(
-                        List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0], true)));
         TaskContinuityMessenger.SendMessageResult result =
-                mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
+                mTaskContinuityMessenger.sendMessage(associationId, TEST_MESSAGE);
         verify(mMockCompanionDeviceManagerService, never())
                 .sendMessage(
                         eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                        eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                        eq(TaskContinuityMessageSerializer.serialize(TEST_MESSAGE)),
                         aryEq(new int[] {associationId}));
         assertThat(result)
                 .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);

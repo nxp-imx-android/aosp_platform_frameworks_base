@@ -27,6 +27,7 @@ import static android.security.advancedprotection.AdvancedProtectionManager.FEAT
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_WEP;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_DISABLED_SETTING;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_UNKNOWN;
@@ -249,5 +250,34 @@ public class AdvancedProtectionManagerTest {
     public void featureStringToId_nullString_throwsNullPointerException() {
         assertThrows(NullPointerException.class,
                 () -> AdvancedProtectionManager.featureStringToId(null));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testCreateSupportIntent_restrictNonToolA11yServices_createsIntent() {
+        Intent intent = AdvancedProtectionManager.createSupportIntent(
+                FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES, SUPPORT_DIALOG_TYPE_UNKNOWN);
+
+        assertEquals(ACTION_SHOW_ADVANCED_PROTECTION_SUPPORT_DIALOG, intent.getAction());
+        assertEquals(FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES, intent.getIntExtra(
+                EXTRA_SUPPORT_DIALOG_FEATURE, FEATURE_ID_INVALID));
+        assertEquals(SUPPORT_DIALOG_TYPE_UNKNOWN, intent.getIntExtra(EXTRA_SUPPORT_DIALOG_TYPE,
+                SUPPORT_DIALOG_TYPE_INVALID));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testCreateSupportIntent_restrictA11yServicesFlagDisabled_throwsIllegalArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> AdvancedProtectionManager.createSupportIntent(
+                        FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES, SUPPORT_DIALOG_TYPE_UNKNOWN));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void featureIdToString_restrictA11yServicesFlagEnabled_returnsCorrectString() {
+        assertEquals("RESTRICT_NON_TOOL_A11Y_SERVICES",
+                AdvancedProtectionManager.featureIdToString(
+                        FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES));
     }
 }

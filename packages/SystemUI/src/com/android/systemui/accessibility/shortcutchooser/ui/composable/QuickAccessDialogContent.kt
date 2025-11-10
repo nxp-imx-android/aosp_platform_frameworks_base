@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
@@ -67,7 +68,7 @@ fun QuickAccessDialogContent(
                 )
             },
             positiveButton = {
-                PlatformButton(onClick = onDoneClick) {
+                PlatformButton(onClick = onDoneClick, modifier = Modifier.testTag("done_button")) {
                     Text(
                         stringResource(R.string.accessibility_quick_access_dialog_done_button_text)
                     )

@@ -16,14 +16,18 @@
 
 package com.android.wm.shell.dagger.pinnedlayer
 
+import android.content.Context
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.dagger.WMShellBaseModule
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPresentationController
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
-import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import java.util.Optional
@@ -33,19 +37,41 @@ object PinnedLayerModule {
 
     @WMSingleton
     @Provides
-    // TODO(b/449681882): Remove Lazy from normal layer when PinnedLayerRepository is added.
-    fun providePinnedLayerController(
+    fun providePinnedLayerHandler(
         shellInit: ShellInit,
         transitions: Transitions,
-        normalAppLayerHandler: Lazy<Optional<NormalAppLayerHandler>>,
+        normalAppLayerHandler: Optional<NormalAppLayerHandler>,
+        pinnedLayerController: Optional<PinnedLayerController>,
+    ): Optional<PinnedLayerHandler> {
+        if (PinnedLayerFlags.isPinnedLayerEnabled()) {
+            return Optional.of(
+                PinnedLayerHandler(
+                    shellInit = shellInit,
+                    transitions = transitions,
+                    normalAppLayerHandler = normalAppLayerHandler.get(),
+                    pinnedLayerController = pinnedLayerController.get(),
+                )
+            )
+        }
+        return Optional.empty()
+    }
+
+    @WMSingleton
+    @Provides
+    fun providePinnedLayerController(
+        context: Context,
+        shellInit: ShellInit,
+        transitions: Transitions,
+        displayController: DisplayController,
+        desktopState: DesktopState,
     ): Optional<PinnedLayerController> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                 PinnedLayerController(
                     shellInit = shellInit,
                     transitions = transitions,
-                    normalAppLayerHandler =
-                        lazy(LazyThreadSafetyMode.NONE) { normalAppLayerHandler.get().get() },
+                    presentationController =
+                        PinnedLayerPresentationController(context, displayController, desktopState),
                 )
             )
         }

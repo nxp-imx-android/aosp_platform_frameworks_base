@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_DEFAULT;
 import static android.content.pm.ApplicationInfo.FLAG_SUSPENDED;
+import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -37,9 +38,11 @@ import static org.mockito.Mockito.mock;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
 import android.app.KeyguardManager;
+import android.app.TaskInfo;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.content.Context;
 import android.content.Intent;
@@ -129,6 +132,8 @@ public class ActivityStartInterceptorTest {
     private LockTaskController mLockTaskController;
     @Mock
     private TaskDisplayArea mTaskDisplayArea;
+
+    private TaskInfo mTaskInfo = new RunningTaskInfo();
 
     private ActivityStartInterceptor mInterceptor;
     private ActivityInfo mAInfo = new ActivityInfo();
@@ -398,7 +403,7 @@ public class ActivityStartInterceptorTest {
         assertSame(expectedIntent, mInterceptor.mIntent);
     }
 
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_AUTOMATED_APP_LAUNCH_INTERCEPTION)
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
     @Test
     public void testAutomatedAppIntentInterception() {
         // GIVEN the package we're about to launch is automated
@@ -420,6 +425,60 @@ public class ActivityStartInterceptorTest {
 
         // THEN the returned intent is the replacement intent
         assertSame(expectedIntent, mInterceptor.mIntent);
+    }
+
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
+    @Test
+    public void testShouldInterceptStartActivityFromRecents_withAutomatedAppIntentInterception() {
+        // GIVEN the package we're about to launch is automated
+        final int secondaryDisplayId = 7;
+        when(mSupervisor.createAutomatedAppLaunchWarningIntent(
+                TEST_PACKAGE_NAME, TEST_USER_ID, TEST_CALLING_PACKAGE, secondaryDisplayId))
+                .thenReturn(new Intent(Intent.ACTION_MAIN));
+        mTaskInfo.baseIntent = new Intent().setClassName(TEST_PACKAGE_NAME, "activity");
+        mTaskInfo.userId = TEST_USER_ID;
+
+        // THEN startActivityFromRecents should intercept it
+        boolean shouldIntercept = ActivityStartInterceptor.shouldInterceptStartActivityFromRecents(
+                    mSupervisor,
+                    mTaskInfo,
+                    TEST_CALLING_PACKAGE,
+                    ActivityOptions.makeBasic().setLaunchDisplayId(secondaryDisplayId));
+        assertTrue(shouldIntercept);
+    }
+
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_ACCESS)
+    @Test
+    public void testShouldInterceptStartActivityFromRecents_nullOptions() {
+        // GIVEN the package we're about to launch is automated
+        when(mSupervisor.createAutomatedAppLaunchWarningIntent(
+                TEST_PACKAGE_NAME, TEST_USER_ID, TEST_CALLING_PACKAGE, DEFAULT_DISPLAY))
+                .thenReturn(new Intent(Intent.ACTION_MAIN));
+        mTaskInfo.baseIntent = new Intent().setClassName(TEST_PACKAGE_NAME, "activity");
+        mTaskInfo.userId = TEST_USER_ID;
+
+        // WHEN shouldInterceptStartActivityFromRecents is called with null options
+        // THEN it should be intercepted, and not crash.
+        assertTrue("Interception should occur for automated app launch with null options",
+                ActivityStartInterceptor.shouldInterceptStartActivityFromRecents(
+                        mSupervisor,
+                        mTaskInfo,
+                        TEST_CALLING_PACKAGE,
+                        null /* options */));
+
+        // GIVEN the package we're about to launch is not automated
+        when(mSupervisor.createAutomatedAppLaunchWarningIntent(
+                TEST_PACKAGE_NAME, TEST_USER_ID, TEST_CALLING_PACKAGE, DEFAULT_DISPLAY))
+                .thenReturn(null);
+
+        // WHEN shouldInterceptStartActivityFromRecents is called with null options
+        // THEN it should not be intercepted
+        assertFalse("Interception should not occur for non-automated app launch with null options",
+                ActivityStartInterceptor.shouldInterceptStartActivityFromRecents(
+                        mSupervisor,
+                        mTaskInfo,
+                        TEST_CALLING_PACKAGE,
+                        null /* options */));
     }
 
     @Test

@@ -65,7 +65,7 @@ constructor(
         repository.enableShortcutsForTargets(
             enable,
             ShortcutConstants.UserShortcutType.KEY_GESTURE,
-            targetName,
+            setOf(targetName),
         )
     }
 

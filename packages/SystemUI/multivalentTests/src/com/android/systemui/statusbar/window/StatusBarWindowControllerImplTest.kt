@@ -25,11 +25,9 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.fragments.fragmentService
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -73,7 +71,7 @@ class StatusBarWindowControllerImplTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarConnectedDisplays.FLAG_NAME)
+    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
     fun stop_statusBarModernizationFlagEnabled_doesNotRemoveFragment() {
         val underTest = kosmos.statusBarWindowControllerImpl
         val windowView = fakeStatusBarWindowViewInflater.inflatedMockViews.first()
@@ -82,33 +80,6 @@ class StatusBarWindowControllerImplTest : SysuiTestCase() {
         fakeExecutor.runAllReady()
 
         verify(mockFragmentService, never()).removeAndDestroy(windowView)
-    }
-
-    @Test
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME)
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun stop_statusBarModernizationFlagDisabled_removesFragment() {
-        val underTest = kosmos.statusBarWindowControllerImpl
-        val windowView = fakeStatusBarWindowViewInflater.inflatedMockViews.first()
-
-        underTest.stop()
-        fakeExecutor.runAllReady()
-
-        verify(mockFragmentService).removeAndDestroy(windowView)
-    }
-
-    @Test
-    @DisableFlags(StatusBarRootModernization.FLAG_NAME)
-    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
-    fun stop_statusBarModernizationFlagDisabled_removesFragmentOnExecutor() {
-        val underTest = kosmos.statusBarWindowControllerImpl
-        val windowView = fakeStatusBarWindowViewInflater.inflatedMockViews.first()
-
-        underTest.stop()
-
-        verify(mockFragmentService, never()).removeAndDestroy(windowView)
-        fakeExecutor.runAllReady()
-        verify(mockFragmentService).removeAndDestroy(windowView)
     }
 
     @Test
@@ -127,9 +98,7 @@ class StatusBarWindowControllerImplTest : SysuiTestCase() {
     fun stop_connectedDisplaysFlagDisabled_crashes() {
         val underTest = kosmos.statusBarWindowControllerImpl
 
-        assertThrows(IllegalStateException::class.java) {
-            underTest.stop()
-        }
+        assertThrows(IllegalStateException::class.java) { underTest.stop() }
     }
 
     @Test

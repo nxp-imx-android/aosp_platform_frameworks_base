@@ -223,6 +223,16 @@ class TransitionController {
     final SparseArray<ArrayList<Task>> mLatestOnTopTasksReported = new SparseArray<>();
 
     /**
+     * The most recently reported focused display.
+     */
+    int mLatestFocusedDisplayId = Integer.MIN_VALUE;
+
+    /**
+     * The most recently reported globally focused task.
+     */
+    Task mLatestFocusedTask = null;
+
+    /**
      * `true` when building surface layer order for the start/finish transaction. We want to prevent
      * wm from touching z-order of surfaces during transitions, but we still need to be able to
      * calculate the layers. So, when assigning layers into the start/finish transaction, set this
@@ -857,7 +867,7 @@ class TransitionController {
             @Nullable TransitionRequestInfo.UserChange userChange) {
         return requestStartTransition(transition, null /* startTask */,
                 null /* remoteTransition */, null /* displayChange */, userChange,
-                null /* windowingLayerChange */);
+                null /* windowingLayerChange */, null /* fullscreenRequestChange */);
     }
 
     @NonNull
@@ -865,7 +875,8 @@ class TransitionController {
             @Nullable RemoteTransition remoteTransition,
             @Nullable TransitionRequestInfo.DisplayChange displayChange) {
         return requestStartTransition(transition, startTask, remoteTransition, displayChange,
-                null /* userChange */, null /* windowingLayerChange */);
+                null /* userChange */, null /* windowingLayerChange */,
+                null /* fullscreenRequestChange */);
     }
 
     @NonNull
@@ -873,7 +884,17 @@ class TransitionController {
             @NonNull Task startTask,
             @NonNull TransitionRequestInfo.WindowingLayerChange windowingLayerChange) {
         return requestStartTransition(transition, startTask, null /* remoteTransition */,
-                null /* displayChange */, null /* userChange */, windowingLayerChange);
+                null /* displayChange */, null /* userChange */, windowingLayerChange,
+                null /* fullscreenRequestChange */);
+    }
+
+    @NonNull
+    Transition requestStartFullscreenRequestTransition(@NonNull Transition transition,
+            @NonNull Task startTask,
+            @NonNull TransitionRequestInfo.FullscreenRequestChange fullscreenRequestChange) {
+        return requestStartTransition(transition, startTask, null /* remoteTransition */,
+                null /* displayChange */, null /* userChange */, null /* windowingLayerChange */,
+                fullscreenRequestChange);
     }
 
     /** Asks the transition player (shell) to start a created but not yet started transition. */
@@ -882,7 +903,8 @@ class TransitionController {
             @Nullable RemoteTransition remoteTransition,
             @Nullable TransitionRequestInfo.DisplayChange displayChange,
             @Nullable TransitionRequestInfo.UserChange userChange,
-            @Nullable TransitionRequestInfo.WindowingLayerChange windowingLayerChange) {
+            @Nullable TransitionRequestInfo.WindowingLayerChange windowingLayerChange,
+            @Nullable TransitionRequestInfo.FullscreenRequestChange fullscreenRequestChange) {
         if (mIsWaitingForDisplayEnabled) {
             ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
                     "Disabling player for transition #%d because display isn't enabled yet",
@@ -937,7 +959,7 @@ class TransitionController {
             final TransitionRequestInfo request = new TransitionRequestInfo(transition.mType,
                     startTaskInfo, pipChange, remoteInfo, displayChange,
                     transition.getRequestedLocation(), userChange, windowingLayerChange,
-                    transition.getFlags(), transition.getSyncId());
+                    fullscreenRequestChange, transition.getFlags(), transition.getSyncId());
 
             transition.mLogger.mRequestTimeNs = SystemClock.elapsedRealtimeNanos();
             transition.mLogger.mRequest = request;
@@ -1273,13 +1295,13 @@ class TransitionController {
 
     /**
      * Removes transitions with {@link WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION} flag
-     * from the queue
+     * from the queue that are not disconnect transitions.
      */
     void removeDisplayChangesFromQueue() {
         for (int i = mQueuedTransitions.size() - 1; i >= 0; i--) {
             final Transition t = mQueuedTransitions.get(i).mTransition;
-            if (t != null &&
-                    (t.getFlags() & WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION) != 0) {
+            if (t != null && t.getDisconnectReparentDisplays().isEmpty()
+                    && (t.getFlags() & WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION) != 0) {
                 mQueuedTransitions.remove(i);
             }
         }

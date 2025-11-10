@@ -60,7 +60,6 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 
 import com.android.internal.R;
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.DecorView;
 
 /**
@@ -101,8 +100,7 @@ public class SnapshotDrawerUtils {
     /**
      * The internal object to hold the surface and drawing on it.
      */
-    @VisibleForTesting
-    public static class SnapshotSurface {
+    private static class SnapshotSurface {
         private final SurfaceControl.Transaction mTransaction = new SurfaceControl.Transaction();
         private final SurfaceControl mRootSurface;
         private final TaskSnapshot mSnapshot;
@@ -113,7 +111,7 @@ public class SnapshotDrawerUtils {
         private final int mContainerW;
         private final int mContainerH;
 
-        public SnapshotSurface(SurfaceControl rootSurface, TaskSnapshot snapshot,
+        SnapshotSurface(SurfaceControl rootSurface, TaskSnapshot snapshot,
                 Rect windowBounds, CharSequence title) {
             mRootSurface = rootSurface;
             mSnapshot = snapshot;
@@ -130,7 +128,7 @@ public class SnapshotDrawerUtils {
             mContainerH = windowBounds.height();
         }
 
-        private void drawSnapshot(boolean releaseAfterDraw) {
+        void drawSnapshot(@Nullable Runnable reportDrawn, boolean releaseAfterDraw) {
             final Rect letterboxInsets = mSnapshot.getLetterboxInsets();
             final boolean sizeMismatch = mContainerW != mSnapshotW || mContainerH != mSnapshotH
                     || letterboxInsets.left != 0 || letterboxInsets.top != 0;
@@ -142,6 +140,9 @@ public class SnapshotDrawerUtils {
                 drawSizeMismatchSnapshot();
             } else {
                 drawSizeMatchSnapshot();
+            }
+            if (reportDrawn != null) {
+                reportDrawn.run();
             }
 
             // In case window manager leaks us, make sure we don't retain the snapshot.
@@ -167,19 +168,23 @@ public class SnapshotDrawerUtils {
         }
 
         private void drawSizeMismatchSnapshot() {
-            // Keep a reference to it such that it doesn't get destroyed when finalized.
-            final SurfaceControl.Builder builder = new SurfaceControl.Builder()
-                    .setName(mTitle + " - task-snapshot-surface")
-                    .setBLASTLayer()
-                    .setParent(mRootSurface)
-                    .setCallsite("TaskSnapshotWindow.drawSizeMismatchSnapshot");
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                builder.setFormat(mSnapshot.getHardwareBufferFormat());
+            final SurfaceControl childSurfaceControl;
+            if (WindowManager.useClientSurface()) {
+                childSurfaceControl = mRootSurface;
             } else {
-                final HardwareBuffer buffer = mSnapshot.getHardwareBuffer();
-                builder.setFormat(buffer.getFormat());
+                final SurfaceControl.Builder builder = new SurfaceControl.Builder()
+                        .setName(mTitle + " - task-snapshot-surface")
+                        .setBLASTLayer()
+                        .setParent(mRootSurface)
+                        .setCallsite("TaskSnapshotWindow.drawSizeMismatchSnapshot");
+                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                    builder.setFormat(mSnapshot.getHardwareBufferFormat());
+                } else {
+                    final HardwareBuffer buffer = mSnapshot.getHardwareBuffer();
+                    builder.setFormat(buffer.getFormat());
+                }
+                childSurfaceControl = builder.build();
             }
-            SurfaceControl childSurfaceControl = builder.build();
 
             final Rect letterboxInsets = mSnapshot.getLetterboxInsets();
             float offsetX = letterboxInsets.left;
@@ -205,7 +210,9 @@ public class SnapshotDrawerUtils {
                 mTransaction.setBuffer(childSurfaceControl, mSnapshot.getHardwareBuffer());
             }
             mTransaction.apply();
-            childSurfaceControl.release();
+            if (!WindowManager.useClientSurface()) {
+                childSurfaceControl.release();
+            }
         }
     }
 
@@ -225,6 +232,16 @@ public class SnapshotDrawerUtils {
     }
 
     /**
+     * Draws the snapshot on the surface with invoking the drawn callback and releases the surface.
+     */
+    public static void drawSnapshotOnSurface(WindowManager.LayoutParams lp,
+            SurfaceControl rootSurface, TaskSnapshot snapshot,
+            Rect windowBounds, Runnable reportDrawn) {
+        new SnapshotSurface(rootSurface, snapshot, windowBounds, lp.getTitle())
+                .drawSnapshot(reportDrawn, true /* releaseAfterDraw */);
+    }
+
+    /**
      * Help method to draw the snapshot on a surface.
      */
     public static void drawSnapshotOnSurface(WindowManager.LayoutParams lp,
@@ -236,7 +253,7 @@ public class SnapshotDrawerUtils {
         }
         final SnapshotSurface drawSurface = new SnapshotSurface(
                 rootSurface, snapshot, windowBounds, lp.getTitle());
-        drawSurface.drawSnapshot(releaseAfterDraw);
+        drawSurface.drawSnapshot(null /* reportDrawn */, releaseAfterDraw);
     }
 
     /**

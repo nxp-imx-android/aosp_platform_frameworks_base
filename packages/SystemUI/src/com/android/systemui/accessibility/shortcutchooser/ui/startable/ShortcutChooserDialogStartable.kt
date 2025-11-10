@@ -25,7 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.systemui.CoreStartable
-import com.android.systemui.accessibility.shortcutchooser.domain.ShortcutChooserDialogInteractor
+import com.android.systemui.accessibility.shortcutchooser.domain.interactor.ShortcutChooserDialogInteractor
 import com.android.systemui.accessibility.shortcutchooser.shared.model.DialogRequestModel
 import com.android.systemui.accessibility.shortcutchooser.ui.composable.ShortcutEditorDialogContent
 import com.android.systemui.accessibility.shortcutchooser.ui.composable.ShortcutPickerDialogContent

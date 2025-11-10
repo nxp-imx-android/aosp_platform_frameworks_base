@@ -139,4 +139,33 @@ class ScreenshotInteractorTest : SysuiTestCase() {
                     ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_REQUESTED.id
                 )
         }
+
+    @Test
+    fun requestAppWindowScreenshot_callsScreenshotHelper_withCorrectRequest() {
+        kosmos.runTest {
+            val taskId = 1
+            val displayId = 3
+            whenever(mockImageCapture.captureTask(eq(taskId))).thenReturn(mockBitmap)
+
+            val mainUser = UserInfo(0, "primary user", UserInfo.FLAG_MAIN)
+            val secondaryUser = UserInfo(1, "secondary user", 0)
+            fakeUserRepository.setUserInfos(listOf(mainUser, secondaryUser))
+            fakeUserRepository.setSelectedUserInfo(secondaryUser)
+
+            interactor.requestAppWindowScreenshot(taskId, displayId)
+
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(mockImageCapture, times(1)).captureTask(eq(taskId))
+            verify(mockScreenshotHelper, times(1))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE)
+            assertThat(capturedRequest.source)
+                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
+            assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
+            assertThat(capturedRequest.userId).isEqualTo(secondaryUser.id)
+        }
+    }
 }

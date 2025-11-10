@@ -118,6 +118,7 @@ import com.android.settingslib.Utils;
 import com.android.systemui.Dumpable;
 import com.android.systemui.Flags;
 import com.android.systemui.Prefs;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.haptics.slider.HapticSlider;
 import com.android.systemui.haptics.slider.HapticSliderPlugin;
@@ -132,6 +133,7 @@ import com.android.systemui.plugins.VolumeDialogController.State;
 import com.android.systemui.plugins.VolumeDialogController.StreamState;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.VibratorHelper;
+import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.DevicePostureController;
@@ -155,6 +157,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 /**
  * Visual presentation of the volume dialog.
  *
@@ -166,6 +171,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         ConfigurationController.ConfigurationListener,
         ViewTreeObserver.OnComputeInternalInsetsListener {
     private static final String TAG = Util.logTag(VolumeDialogImpl.class);
+    public static final String VOLUME_DIALOG_JANK = "volume_dialog_jank";
 
     private static final long USER_ATTEMPT_GRACE_PERIOD = 1000;
     private static final int UPDATE_ANIMATION_DURATION = 80;
@@ -278,7 +284,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private final Accessibility mAccessibility = new Accessibility();
     private final ConfigurationController mConfigurationController;
     private final MediaOutputDialogManager mMediaOutputDialogManager;
-    private final CsdWarningDialog.Factory mCsdWarningDialogFactory;
+    private final CsdWarningDialogDelegate.Factory mCsdWarningDialogFactory;
     private final VolumePanelNavigationInteractor mVolumePanelNavigationInteractor;
     private final VolumeNavigator mVolumeNavigator;
     private boolean mShowing;
@@ -288,10 +294,11 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private boolean mAutomute = VolumePrefs.DEFAULT_ENABLE_AUTOMUTE;
     private boolean mSilentMode = VolumePrefs.DEFAULT_ENABLE_SILENT_MODE;
     private State mState;
+    private final SafetyWarningDialogDelegate.Factory mSafetyWarningDialogDelegateFactory;
     @GuardedBy("mSafetyWarningLock")
-    private SafetyWarningDialog mSafetyWarning;
+    private SystemUIDialog mSafetyWarning;
     @GuardedBy("mSafetyWarningLock")
-    private CsdWarningDialog mCsdDialog;
+    private SystemUIDialog mCsdDialog;
     private boolean mHovering = false;
     private final boolean mIsTv;
     private boolean mConfigChanged = false;
@@ -328,6 +335,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private Optional<List<CsdWarningAction>>
             mCsdWarningNotificationActions = Optional.of(Collections.emptyList());
 
+    @Inject
     public VolumeDialogImpl(
             Context context,
             VolumeDialogController volumeDialogController,
@@ -338,10 +346,11 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             InteractionJankMonitor interactionJankMonitor,
             VolumePanelNavigationInteractor volumePanelNavigationInteractor,
             VolumeNavigator volumeNavigator,
-            boolean shouldListenForJank,
-            CsdWarningDialog.Factory csdWarningDialogFactory,
+            @Named(VOLUME_DIALOG_JANK) boolean shouldListenForJank,
+            CsdWarningDialogDelegate.Factory csdWarningDialogFactory,
             DevicePostureController devicePostureController,
-            Looper looper,
+            SafetyWarningDialogDelegate.Factory safetyWarningDialogDelegateFactory,
+            @Main Looper looper,
             VolumePanelFlag volumePanelFlag,
             DumpManager dumpManager,
             Lazy<SecureSettings> secureSettings,
@@ -364,6 +373,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         mConfigurationController = configurationController;
         mMediaOutputDialogManager = mediaOutputDialogManager;
         mCsdWarningDialogFactory = csdWarningDialogFactory;
+        mSafetyWarningDialogDelegateFactory = safetyWarningDialogDelegateFactory;
         mIsTv = isTv();
         mHasSeenODICaptionsTooltip =
                 Prefs.getBoolean(context, Prefs.Key.HAS_SEEN_ODI_CAPTIONS_TOOLTIP, false);
@@ -2220,15 +2230,13 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                 if (mSafetyWarning != null) {
                     return;
                 }
-                mSafetyWarning = new SafetyWarningDialog(mContext, mController.getAudioManager()) {
-                    @Override
-                    protected void cleanUp() {
-                        synchronized (mSafetyWarningLock) {
-                            mSafetyWarning = null;
-                        }
-                        recheckH(null);
+                mSafetyWarning = mSafetyWarningDialogDelegateFactory.create(() -> {
+                    synchronized (mSafetyWarningLock) {
+                        mSafetyWarning = null;
                     }
-                };
+                    recheckH(null);
+                }).createDialog();
+
                 mSafetyWarning.show();
             }
             recheckH(null);
@@ -2255,9 +2263,10 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                 recheckH(null);
             };
 
-            mCsdDialog = mCsdWarningDialogFactory.create(
-                    csdWarning, cleanUp, mCsdWarningNotificationActions);
-            mCsdDialog.show();
+            CsdWarningDialogDelegate delegate = mCsdWarningDialogFactory
+                    .create(csdWarning, cleanUp, mCsdWarningNotificationActions);
+            mCsdDialog = delegate.createDialog();
+            delegate.maybeShow(mCsdDialog);
         }
         recheckH(null);
         if (durationMs > 0) {

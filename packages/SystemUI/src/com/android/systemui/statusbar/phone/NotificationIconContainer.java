@@ -382,7 +382,7 @@ public class NotificationIconContainer extends ViewGroup {
             View view = getChildAt(i);
             ViewState iconState = mIconStates.get(view);
             iconState.initFrom(view);
-            iconState.setAlpha(1.0f);
+            iconState.setAlpha(1.0f, "notifIconContainer reset");
             iconState.hidden = false;
         }
     }

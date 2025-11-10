@@ -66,7 +66,7 @@ public class TelecomLoaderService extends SystemService {
                 ITelecomLoader telecomLoader = ITelecomLoader.Stub.asInterface(service);
                 PackageManagerInternal packageManagerInternal =
                         LocalServices.getService(PackageManagerInternal.class);
-                ITelecomService telecomService = telecomLoader.createTelecomService(mServiceRepo,
+                ITelecomService telecomService = telecomLoader.createTelecomService(
                         packageManagerInternal.getSystemUiServiceComponent().getPackageName());
 
                 SmsApplication.getDefaultMmsApplication(mContext, false);
@@ -120,8 +120,6 @@ public class TelecomLoaderService extends SystemService {
     @GuardedBy("mLock")
     private TelecomServiceConnection mServiceConnection;
 
-    private InternalServiceRepository mServiceRepo;
-
     public TelecomLoaderService(Context context) {
         super(context);
         mContext = context;
@@ -138,7 +136,6 @@ public class TelecomLoaderService extends SystemService {
             registerDefaultAppNotifier();
             registerCarrierConfigChangedReceiver();
             // core services will have already been loaded.
-            setupServiceRepository();
             connectToTelecom();
         }
     }
@@ -163,12 +160,6 @@ public class TelecomLoaderService extends SystemService {
             }
         }
     }
-
-    private void setupServiceRepository() {
-        DeviceIdleInternal deviceIdleInternal = getLocalService(DeviceIdleInternal.class);
-        mServiceRepo = new InternalServiceRepository(deviceIdleInternal);
-    }
-
 
     private void registerDefaultAppProviders() {
         final LegacyPermissionManagerInternal permissionManager =

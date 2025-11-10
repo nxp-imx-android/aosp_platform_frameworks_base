@@ -70,6 +70,9 @@ interface MediaInteractor {
     /** Whether media carousel should show first media session. */
     val shouldScrollToFirst: Boolean
 
+    /** Whether guts state should show on carousel. */
+    val isGutsVisible: Boolean
+
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
     fun seek(sessionKey: Any, to: Long)
 
@@ -84,6 +87,8 @@ interface MediaInteractor {
     fun storeCurrentCarouselIndex(index: Int)
 
     fun resetScrollToFirst()
+
+    fun setIsGutsVisible(isGutsVisible: Boolean)
 }
 
 @SysUISingleton
@@ -109,6 +114,9 @@ constructor(
     override val shouldScrollToFirst: Boolean
         get() = repository.shouldScrollToFirst
 
+    override val isGutsVisible: Boolean
+        get() = repository.isGutsVisible
+
     override fun seek(sessionKey: Any, to: Long) {
         repository.seek(sessionKey as InstanceId, to)
     }
@@ -131,6 +139,10 @@ constructor(
 
     override fun resetScrollToFirst() {
         repository.resetScrollToFirst()
+    }
+
+    override fun setIsGutsVisible(isGutsVisible: Boolean) {
+        repository.storeIsGutsVisible(isGutsVisible)
     }
 
     private fun toMediaSessionModel(dataModel: MediaDataModel): MediaSessionModel {

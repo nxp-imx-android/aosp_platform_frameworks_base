@@ -25,7 +25,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_HANDLERS_DEBUGGING_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS;
-import static com.android.window.flags.Flags.FLAG_ROOT_TASK_FOR_BUBBLE;
+import static com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK;
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.Flags.FLAG_TASK_VIEW_TRANSITIONS_REFACTOR;
@@ -63,6 +63,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
@@ -82,6 +83,7 @@ import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Verifies the behavior of {@link TaskViewTransitions#startAnimation}.
@@ -107,7 +109,7 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
                 FLAG_TASK_VIEW_TRANSITIONS_REFACTOR,
                 FLAG_ENABLE_CREATE_ANY_BUBBLE,
                 FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS,
-                FLAG_ROOT_TASK_FOR_BUBBLE);
+                FLAG_ENABLE_BUBBLE_ROOT_TASK);
     }
 
     @Mock
@@ -134,6 +136,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
     private SurfaceControl mSurfaceControl;
     @Mock
     private Transitions.TransitionFinishCallback mFinishCallback;
+    @Mock
+    private BubbleHelper mBubbleHelper;
 
     private final TaskViewRepository mTaskViewRepository = new TaskViewRepository();
     private TaskViewTransitions mTaskViewTransitions;
@@ -167,7 +171,8 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
         mTaskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
 
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mTaskViewRepository,
-                mock(ShellTaskOrganizer.class), mock(SyncTransactionQueue.class));
+                mock(ShellTaskOrganizer.class), mock(SyncTransactionQueue.class),
+                Optional.of(mBubbleHelper));
         mTaskViewTransitions.registerTaskView(mTaskViewTaskController);
         when(mTaskViewTaskController.getTaskInfo()).thenReturn(mTaskInfo);
         when(mTaskViewTaskController.getPendingInfo()).thenReturn(mTaskInfo);

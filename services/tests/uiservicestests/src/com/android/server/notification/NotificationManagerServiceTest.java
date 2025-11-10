@@ -24,7 +24,6 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIB
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_FOREGROUND_SERVICE;
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
-import static android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_UI;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
@@ -123,6 +122,8 @@ import static android.service.notification.Condition.SOURCE_CONTEXT;
 import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_TRUE;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOADING;
+import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
+import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_SILENT_FLAG;
@@ -146,7 +147,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
-import static com.android.server.notification.Flags.FLAG_LOG_CACHED_POSTS;
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
 import static com.android.server.notification.GroupHelper.AUTOGROUP_KEY;
 import static com.android.server.notification.NotificationManagerService.BITMAP_DURATION;
@@ -304,6 +304,7 @@ import android.service.notification.NotificationStats;
 import android.service.notification.StatusBarNotification;
 import android.service.notification.ZenModeConfig;
 import android.service.notification.ZenPolicy;
+import android.service.personalcontext.hint.NotificationEvent;
 import android.telecom.TelecomManager;
 import android.testing.TestWithLooperRule;
 import android.testing.TestableContentResolver;
@@ -351,12 +352,11 @@ import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
 import com.android.server.notification.GroupHelper.NotificationAttributes;
-import android.service.personalcontext.hint.NotificationEvent;
-import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.notification.NotificationManagerService.NotificationAssistants;
 import com.android.server.notification.NotificationManagerService.NotificationListeners;
 import com.android.server.notification.NotificationManagerService.PostNotificationTracker;
 import com.android.server.notification.NotificationManagerService.PostNotificationTrackerFactory;
+import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
 import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
@@ -433,6 +433,16 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                     .build();
 
     private static final int MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING = 10;
+
+    private final NotificationChannel mParentChannel =
+            new NotificationChannel(PARENT_CHANNEL_ID, "parentName", IMPORTANCE_DEFAULT);
+    private final NotificationChannel mConversationChannel =
+            new NotificationChannel(CONVERSATION_CHANNEL_ID,
+                    "conversationName", IMPORTANCE_DEFAULT);
+
+    private static final String PARENT_CHANNEL_ID = "parentChannelId";
+    private static final String CONVERSATION_CHANNEL_ID = "conversationChannelId";
+    private static final String CONVERSATION_ID = "conversationId";
 
     @ClassRule
     public static final LimitDevicesRule sLimitDevicesRule = new LimitDevicesRule();
@@ -591,6 +601,17 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private NotificationManagerService.WorkerHandler mWorkerHandler;
     private Handler mBroadcastsHandler;
     private int mPromotedMode = 0;
+
+    private void setUpChannelsForConversationChannelTest() throws RemoteException {
+        when(mPreferencesHelper.getNotificationChannel(
+                eq(mPkg), eq(mUid), eq(PARENT_CHANNEL_ID), eq(false)))
+                .thenReturn(mParentChannel);
+        when(mPreferencesHelper.getConversationNotificationChannel(
+                eq(mPkg), eq(mUid), eq(PARENT_CHANNEL_ID),
+                eq(CONVERSATION_ID), eq(false), eq(false)))
+                .thenReturn(mConversationChannel);
+        when(mPackageManager.getPackageUid(mPkg, 0, mUserId)).thenReturn(mUid);
+    }
 
     private class TestableToastCallback extends ITransientNotification.Stub {
         @Override
@@ -5645,6 +5666,166 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         assertThat(again).isSameInstanceAs(created);
     }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_cdm_success()
+            throws Exception {
+        // Set up a trusted listener
+        INotificationListener listener = mock(INotificationListener.class);
+        when(listener.asBinder()).thenReturn(mock(IBinder.class));
+        mListener = mListeners.new ManagedServiceInfo(
+                     null, new ComponentName(mPkg, "test_class"),
+                     mUserId, true, null, 0, 123);
+        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
+
+        // Set up cdm
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+
+        // Set up conversation channel
+        setUpChannelsForConversationChannelTest();
+        mConversationChannel.setConversationId(PARENT_CHANNEL_ID, CONVERSATION_ID);
+        when(mPreferencesHelper.getNotificationChannel(eq(mPkg), eq(mUid),
+                eq(CONVERSATION_CHANNEL_ID),eq(false)))
+                .thenReturn(mConversationChannel);
+        when(mPreferencesHelper.deleteNotificationChannel(eq(mPkg), eq(mUid),
+                eq(CONVERSATION_CHANNEL_ID),anyInt(), anyBoolean()))
+                .thenReturn(true);
+
+        mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(listener,
+                mPkg, mUser, CONVERSATION_CHANNEL_ID);
+
+        verify(mPreferencesHelper, times(1)).
+                deleteNotificationChannel(eq(mPkg), eq(mUid),
+                        eq(CONVERSATION_CHANNEL_ID),anyInt(), anyBoolean());
+   }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_cdm_noAccess()
+            throws Exception {
+        // Set up cdm without access
+        mService.setPreferencesHelper(mPreferencesHelper);
+        assertThrows(SecurityException.class, () ->
+                mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                        null, mPkg, mUser, "channelId"));
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_assistant_success()
+            throws Exception {
+        // Set up a trusted listener
+        mListener = mListeners.new ManagedServiceInfo(
+                null, new ComponentName(mPkg, "test_class"),
+                mUserId, true, null, 0, 123);
+        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
+
+        // Set up assistant
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(emptyList());
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+
+        // Set up conversation channel
+        setUpChannelsForConversationChannelTest();
+        mConversationChannel.setConversationId(PARENT_CHANNEL_ID, CONVERSATION_ID);
+        when(mPreferencesHelper.getNotificationChannel(
+                eq(mPkg), eq(mUid), eq(CONVERSATION_CHANNEL_ID), eq(false)))
+                .thenReturn(mConversationChannel);
+
+        mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                null, mPkg, mUser, CONVERSATION_CHANNEL_ID);
+
+        verify(mPreferencesHelper, times(1)).deleteNotificationChannel(
+                eq(mPkg), eq(mUid), eq(CONVERSATION_CHANNEL_ID), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_assistant_noAccess()
+            throws Exception {
+        // Set up assistant without access
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(emptyList());
+        assertThrows(SecurityException.class, () ->
+                mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                        null, mPkg, mUser, "channelId"));
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_badUser() throws Exception {
+        // Set up bad user
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+        mListener = mock(ManagedServices.ManagedServiceInfo.class);
+        mListener.component = new ComponentName(mPkg, mPkg);
+        when(mListener.enabledAndUserMatches(anyInt())).thenReturn(false);
+        when(mListeners.checkServiceTokenLocked(any())).thenReturn(mListener);
+
+        assertThrows(SecurityException.class, () ->
+                mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                        null, mPkg, mUser, "channelId"));
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_notConversationChannel()
+            throws Exception {
+        // Set up cdm
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+
+        // Set up a non-conversation channel
+        setUpChannelsForConversationChannelTest();
+        when(mPreferencesHelper.getNotificationChannel(
+                eq(mPkg), eq(mUid), eq(PARENT_CHANNEL_ID), eq(false)))
+                .thenReturn(mParentChannel);
+
+        mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                null, mPkg, mUser, PARENT_CHANNEL_ID);
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION)
+    public void deleteConversationChannelForPkgFromPrivilegedListener_channelNotFound()
+            throws Exception {
+        // Set up cdm
+        mService.setPreferencesHelper(mPreferencesHelper);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+
+        // Channel does not exist
+        when(mPreferencesHelper.getNotificationChannel(
+                eq(mPkg), eq(mUid), anyString(), eq(false)))
+                .thenReturn(null);
+
+        mBinderService.deleteConversationNotificationChannelFromPrivilegedListener(
+                null, mPkg, mUser, "nonExistentChannel");
+
+        verify(mPreferencesHelper, never()).deleteNotificationChannel(
+                anyString(), anyInt(), anyString(), anyInt(), anyBoolean());
+    }
+
+
 
     @Test
     @EnableFlags({FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT,
@@ -17282,6 +17463,13 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             parcel.writeInt(0);
         }
 
+        if (notif.getBridgedNotificationMetadata() != null) {
+            parcel.writeInt(1);
+            notif.getBridgedNotificationMetadata().writeToParcel(parcel, 0);
+        } else {
+            parcel.writeInt(0);
+        }
+
         parcel.writeBoolean(notif.getAllowSystemGeneratedContextualActions());
 
         parcel.writeInt(Notification.FOREGROUND_SERVICE_DEFAULT); // no getter for mFgsDeferBehavior
@@ -18999,15 +19187,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(r2.getChannel().getId()).isEqualTo(NEWS_ID);
     }
 
-    @Test
-    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
-    // TODO(b/450242013): change this test to work when the flag is *enabled*.
-    public void testSetCanBePromoted_granted_ui() throws Exception {
-        // UI flag includes permission enforcement via PermissionMgr/AppOps
-        preparePermissionManagerFake();
-        testSetCanBePromoted_granted();
-    }
-
     private void preparePermissionManagerFake() {
         when(mPermissionHelper.hasRequestedPermission(Manifest.permission.USE_FULL_SCREEN_INTENT,
                 mPkg, mUserId)).thenReturn(true);
@@ -19035,7 +19214,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                         });
     }
 
-    private void testSetCanBePromoted_granted() throws Exception {
+    @Test
+    public void testSetCanBePromoted_granted() throws Exception {
+        preparePermissionManagerFake();
         // qualifying posted notification
         Notification n = createPromotableNotification();
 
@@ -19095,15 +19276,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
-    // TODO(b/450242013): change this test to work when the flag is *enabled*.
-    public void testSetCanBePromoted_granted_onlyNotifiesOnce_ui() throws Exception {
-        // UI flag includes permission enforcement via PermissionMgr/AppOps
+    public void testSetCanBePromoted_granted_onlyNotifiesOnce() throws Exception {
         preparePermissionManagerFake();
-        testSetCanBePromoted_granted_onlyNotifiesOnce();
-    }
-
-    private void testSetCanBePromoted_granted_onlyNotifiesOnce() throws Exception {
         // qualifying posted notification
         Notification n = createPromotableNotification();
 
@@ -19224,7 +19398,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testPostPromotableNotification_noPermission_appOps() throws Exception {
         when(mPermissionManager.checkPermissionForPreflight(
                 eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any()))
@@ -20915,7 +21088,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_LOG_CACHED_POSTS)
     public void notifyAsCached_Logs() throws Exception {
         when(mActivityManager.getUidImportance(anyInt())).thenReturn(IMPORTANCE_CACHED);
 

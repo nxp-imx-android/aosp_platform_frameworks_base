@@ -26,7 +26,6 @@ val Kosmos.dreamUserActionsViewModelFactory by Fixture {
     object : DreamUserActionsViewModel.Factory {
         override fun create(): DreamUserActionsViewModel {
             return DreamUserActionsViewModel(
-                deviceUnlockedInteractor = deviceUnlockedInteractor,
                 shadeInteractor = shadeInteractor,
                 shadeModeInteractor = shadeModeInteractor,
             )

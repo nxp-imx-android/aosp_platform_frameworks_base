@@ -26,6 +26,7 @@ import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_DETACHED;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_UNKNOWN;
+import static android.security.advancedprotection.AdvancedProtectionManager.FeatureId;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_ENABLED;
 import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SINK;
@@ -71,6 +72,7 @@ import android.os.UserManager;
 import android.os.SystemClock;
 
 import android.security.Flags;
+import android.security.advancedprotection.AdvancedProtectionManager;
 import android.util.Slog;
 import android.content.pm.PackageManager;
 
@@ -182,9 +184,6 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private Handler mDelayedDisableHandler = new Handler(Looper.getMainLooper());
     private Handler mDelayedNotificationHandler = new Handler(Looper.getMainLooper());
 
-    private AdvancedProtectionFeature mFeature =
-            new AdvancedProtectionFeature(FEATURE_ID_DISALLOW_USB);
-
     private UsbManager mUsbManager;
     private UserManager mUserManager;
     private IUsbManagerInternal mUsbManagerInternal;
@@ -264,8 +263,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     }
 
     @Override
-    public AdvancedProtectionFeature getFeature() {
-        return mFeature;
+    public @FeatureId int getFeatureId() {
+        return FEATURE_ID_DISALLOW_USB;
     }
 
     @Override

@@ -682,7 +682,7 @@ constructor(
         zoomOutCalculatedFromShadeRadius = zoomOutFromShadeRadius
 
         // Do not blur or zoom out the wallpaper if the blurred wallpaper is not supported.
-        if (!windowRootViewBlurInteractor.isBlurredWallpaperSupported) {
+        if (!windowRootViewBlurInteractor.isBlurredWallpaperOnShadeSupported) {
             return
         }
 

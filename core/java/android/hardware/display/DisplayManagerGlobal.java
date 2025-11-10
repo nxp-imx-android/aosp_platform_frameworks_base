@@ -49,6 +49,7 @@ import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.Trace;
@@ -65,13 +66,17 @@ import android.view.Surface;
 import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.display.feature.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
@@ -91,13 +96,13 @@ public final class DisplayManagerGlobal {
     private static final String EXTRA_LOGGING_PACKAGE_NAME =
             DisplayProperties.debug_vri_package().orElse(null);
     private static String sCurrentPackageName = ActivityThread.currentPackageName();
+    // To enable these logs, run:
+    // adb shell setprop persist.debug.vri_package <package_name>
     private static boolean sExtraDisplayListenerLogging = initExtraLogging();
 
     // To enable these logs, run:
     // 'adb shell setprop persist.log.tag.DisplayManager DEBUG && adb reboot'
-    @SuppressWarnings("DebugTrue") // See b/449949226
-    private static final boolean DEBUG = true; // See b/449949226
-    private static final boolean DEBUG_2 = DisplayManager.DEBUG; // See b/449949226
+    private static final boolean DEBUG = DisplayManager.DEBUG || sExtraDisplayListenerLogging;
 
 
     @IntDef(prefix = {"EVENT_DISPLAY_"}, flag = true, value = {
@@ -157,7 +162,6 @@ public final class DisplayManagerGlobal {
     public static final long INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED = 1L << 8;
     public static final long INTERNAL_EVENT_FLAG_DISPLAY_REMOVED = 1L << 9;
 
-
     @UnsupportedAppUsage
     private static DisplayManagerGlobal sInstance;
 
@@ -168,6 +172,7 @@ public final class DisplayManagerGlobal {
 
     @UnsupportedAppUsage
     private final IDisplayManager mDm;
+    private final @Nullable DisplayManagerInternal mDmInternal;
 
     private DisplayManagerCallback mCallback;
     private @InternalEventFlag long mRegisteredInternalEventFlag = 0;
@@ -187,10 +192,22 @@ public final class DisplayManagerGlobal {
 
     // Guarded by mLock
     private boolean mShouldImplicitlyRegisterRrChanges = false;
+    // Guarded by mLock
+    private boolean mShouldImplicitlyRegisterAdded = false;
+    // Guarded by mLock
+    private boolean mShouldImplicitlyRegisterConnected = false;
+
+    private final DisplayIdsCache mDisplayIdsCache;
 
     @VisibleForTesting
     public DisplayManagerGlobal(IDisplayManager dm) {
+        mDisplayIdsCache = Flags.displayListenerSnapshot() ? new DisplayIdsCache() : null;
         mDm = dm;
+        if (Flags.displayInfoCopyOnWriteCacheEnabled() && Process.myUid() == Process.SYSTEM_UID) {
+            mDmInternal = LocalServices.getService(DisplayManagerInternal.class);
+        } else {
+            mDmInternal = null;
+        }
         initExtraLogging();
 
         try {
@@ -250,22 +267,37 @@ public final class DisplayManagerGlobal {
      * This object belongs to an internal cache and should be treated as if it were immutable.
      */
     @UnsupportedAppUsage
+    @Nullable
     public DisplayInfo getDisplayInfo(int displayId) {
-        synchronized (mLock) {
-            return getDisplayInfoLocked(displayId);
+        if (mDmInternal != null) {
+            if (DEBUG) {
+                Log.d(TAG, "getDisplayInfo: displayId=" + displayId + ", using internal service");
+            }
+            return mDmInternal.getDisplayInfo(displayId);
+        }
+        if (Flags.getDisplayInfoOutsideLock()) {
+            return getDisplayInfoInternal(displayId);
+        } else {
+            synchronized (mLock) {
+                return getDisplayInfoInternal(displayId);
+            }
         }
     }
 
     /**
      * Gets information about a particular logical display
-     * See {@link getDisplayInfo}, but assumes that {@link mLock} is held
+     * See {@link getDisplayInfo}
      */
-    private @Nullable DisplayInfo getDisplayInfoLocked(int displayId) {
+    private @Nullable DisplayInfo getDisplayInfoInternal(int displayId) {
         DisplayInfo info = null;
         if (mDisplayCache != null) {
             info = mDisplayCache.query(displayId);
         } else {
             try {
+                if (DEBUG) {
+                    Log.d(TAG, "getDisplayInfo: displayId=" + displayId
+                            + ", package=" + ActivityThread.currentPackageName());
+                }
                 info = mDm.getDisplayInfo(displayId);
             } catch (RemoteException ex) {
                 ex.rethrowFromSystemServer();
@@ -275,9 +307,11 @@ public final class DisplayManagerGlobal {
             return null;
         }
 
-        registerCallbackIfNeededLocked();
+        synchronized (mLock) {
+            registerCallbackIfNeededLocked();
+        }
 
-        if (DEBUG_2) {
+        if (DEBUG) {
             Log.d(TAG, "getDisplayInfo: displayId=" + displayId + ", info=" + info);
         }
         return info;
@@ -302,6 +336,40 @@ public final class DisplayManagerGlobal {
     public int[] getDisplayIds(boolean includeDisabled) {
         try {
             synchronized (mLock) {
+                if (mDisplayIdsCache != null) {
+                    // If caching is not enabled for the requested type of display IDs,
+                    // we implicitly register for the corresponding events.
+                    // This allows the cache to be enabled and populated when the first snapshot
+                    // arrives, even if no explicit display listener was registered for these
+                    // specific event types yet.
+                    if (!mDisplayIdsCache.isCachingEnabledLocked(includeDisabled)) {
+                        if (includeDisabled) {
+                            mShouldImplicitlyRegisterConnected = true;
+                        } else {
+                            mShouldImplicitlyRegisterAdded = true;
+                        }
+                        // updateCallbackIfNeededLocked will enable caching now.
+                        registerCallbackIfNeededLocked();
+                        updateCallbackIfNeededLocked();
+                    }
+                    // If the cache is valid - there is no reason to make getDisplayIds binder call.
+                    if (mDisplayIdsCache.isCacheValidLocked(includeDisabled)) {
+                        if (DEBUG) {
+                            Slog.d(TAG, "getDisplayIds from cache"
+                                    + " includeDisabled=" + includeDisabled
+                                    + " package=" + ActivityThread.currentPackageName());
+                        }
+                        if (includeDisabled) {
+                            return mDisplayIdsCache.getConnectedLocked();
+                        } else {
+                            return mDisplayIdsCache.getAddedLocked();
+                        }
+                    }
+                }
+                if (DEBUG) {
+                    Slog.d(TAG, "getDisplayIds from API includeDisabled=" + includeDisabled
+                            + " package=" + ActivityThread.currentPackageName());
+                }
                 int[] displayIds = mDm.getDisplayIds(includeDisabled);
                 registerCallbackIfNeededLocked();
                 return displayIds;
@@ -441,14 +509,22 @@ public final class DisplayManagerGlobal {
 
         synchronized (mLock) {
             int index = findDisplayListenerLocked(listener);
+            DisplayListenerDelegate delegate;
             if (index < 0) {
-                mDisplayListeners.add(new DisplayListenerDelegate(listener, executor,
-                        internalEventFlagsMask, packageName, isEventFilterExplicit));
+                delegate = new DisplayListenerDelegate(listener, executor,
+                        internalEventFlagsMask, packageName, isEventFilterExplicit);
+                mDisplayListeners.add(delegate);
                 registerCallbackIfNeededLocked();
             } else {
-                mDisplayListeners.get(index).setEventsMask(internalEventFlagsMask);
+                delegate = mDisplayListeners.get(index);
+                delegate.setEventsMask(internalEventFlagsMask);
             }
             updateCallbackIfNeededLocked();
+            if (mDisplayIdsCache != null) {
+                delegate.updateSnapshotExpectation();
+                delegate.sendDisplaySnapshot(
+                        mDisplayIdsCache.getConnectedLocked(), mDisplayIdsCache.getAddedLocked());
+            }
         }
         maybeLogAllDisplayListeners();
     }
@@ -552,6 +628,12 @@ public final class DisplayManagerGlobal {
     @InternalEventFlag
     private long calculateEventsMaskLocked() {
         long mask = 0;
+        if (mShouldImplicitlyRegisterConnected) {
+            mask |= INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED;
+        }
+        if (mShouldImplicitlyRegisterAdded) {
+            mask |= INTERNAL_EVENT_FLAG_DISPLAY_ADDED | INTERNAL_EVENT_FLAG_DISPLAY_REMOVED;
+        }
         final int numListeners = mDisplayListeners.size();
         for (int i = 0; i < numListeners; i++) {
             DisplayListenerDelegate displayListenerDelegate = mDisplayListeners.get(i);
@@ -594,9 +676,18 @@ public final class DisplayManagerGlobal {
     private void updateCallbackIfNeededLocked() {
         long mask = calculateEventsMaskLocked();
         if (DEBUG) {
-            Log.d(TAG, "Mask for listener: " + mask);
+            Log.d(TAG, "Mask for listener: " + mask
+                        + " package=" + ActivityThread.currentPackageName());
         }
         if (mask != mRegisteredInternalEventFlag) {
+            if (mDisplayIdsCache != null) {
+                // If any of the listeners are subscribed to these events, then we can have cache.
+                mDisplayIdsCache.setConnectedCachingEnabledLocked((
+                        mask & INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED) != 0);
+                mDisplayIdsCache.setAddedCachingEnabledLocked(
+                        (mask & INTERNAL_EVENT_FLAG_DISPLAY_ADDED) != 0
+                        && (mask & INTERNAL_EVENT_FLAG_DISPLAY_REMOVED) != 0);
+            }
             try {
                 mDm.registerCallbackWithEventMask(mCallback, mask);
                 mRegisteredInternalEventFlag = mask;
@@ -610,7 +701,7 @@ public final class DisplayManagerGlobal {
         final DisplayInfo info;
         boolean shouldNotifyNativeListeners  = false;
         synchronized (mLock) {
-            info = getDisplayInfoLocked(displayId);
+            info = getDisplayInfoInternal(displayId);
             if ((((eventMask & EVENT_DISPLAY_BASIC_CHANGED) != 0)
                     || (eventMask & EVENT_DISPLAY_REFRESH_RATE_CHANGED) != 0)
                     && mDispatchNativeCallbacks) {
@@ -626,7 +717,7 @@ public final class DisplayManagerGlobal {
                     } else {
                         // We can likely save a binder hop if we attach the refresh rate onto the
                         // listener.
-                        DisplayInfo display = getDisplayInfoLocked(displayId);
+                        DisplayInfo display = getDisplayInfoInternal(displayId);
                         if (display != null
                                 && mNativeCallbackReportedRefreshRate != display.getRefreshRate()) {
                             mNativeCallbackReportedRefreshRate = display.getRefreshRate();
@@ -635,6 +726,9 @@ public final class DisplayManagerGlobal {
                         }
                     }
                 }
+            }
+            if (mDisplayIdsCache != null) {
+                mDisplayIdsCache.updateCacheLocked(displayId, eventMask);
             }
         }
 
@@ -646,6 +740,20 @@ public final class DisplayManagerGlobal {
         // not be holding mLock when we do so
         for (DisplayListenerDelegate listener : mDisplayListeners) {
             listener.sendDisplayEvents(displayId, eventMask, info, forceUpdate);
+        }
+    }
+
+    private void handleDisplaySnapshot(int[] connected, int[] added) {
+        if (mDisplayIdsCache == null) {
+            return;
+        }
+        synchronized (mLock) {
+            mDisplayIdsCache.updateCacheLocked(connected, added);
+            connected = mDisplayIdsCache.getConnectedLocked();
+            added = mDisplayIdsCache.getAddedLocked();
+            for (DisplayListenerDelegate listener : mDisplayListeners) {
+                listener.sendDisplaySnapshot(connected, added);
+            }
         }
     }
 
@@ -661,7 +769,6 @@ public final class DisplayManagerGlobal {
             Log.e(TAG, "Error trying to enable external display", ex);
         }
     }
-
 
     /**
      * Disable a connected display that is currently enabled.
@@ -1566,7 +1673,8 @@ public final class DisplayManagerGlobal {
         public void onDisplayEvent(int displayId, int eventMask) {
             if (DEBUG) {
                 Log.d(TAG, "onDisplayEvent: displayId=" + displayId + ", event="
-                        + eventsToString(eventMask));
+                        + eventsToString(eventMask)
+                        + " package=" + ActivityThread.currentPackageName());
             }
             handleDisplayEvents(displayId, eventMask, false /* forceUpdate */);
         }
@@ -1574,12 +1682,29 @@ public final class DisplayManagerGlobal {
         @Override
         public void onTopologyChanged(DisplayTopology topology) {
             if (DEBUG) {
-                Log.d(TAG, "onTopologyChanged: " + topology);
+                Log.d(TAG, "onTopologyChanged: " + topology
+                        + " package=" + ActivityThread.currentPackageName());
             }
             for (DisplayTopologyListenerDelegate listener : mTopologyListeners) {
                 listener.onTopologyChanged(topology);
             }
         }
+
+        @Override
+        public void onDisplaySnapshot(int[] connected, int[] added) {
+            if (DEBUG) {
+                Log.d(TAG, "onDisplaySnapshot: connected[" + Arrays.toString(connected) + "]"
+                        + " added[" + Arrays.toString(added) + "]"
+                        + " package=" + ActivityThread.currentPackageName());
+            }
+            handleDisplaySnapshot(connected, added);
+        }
+    }
+
+    enum SnapshotReceived {
+        NEVER,
+        STALE,
+        LATEST
     }
 
     @VisibleForTesting
@@ -1596,6 +1721,12 @@ public final class DisplayManagerGlobal {
         private final AtomicLong mGenerationId = new AtomicLong(1);
         private final String mPackageName;
 
+        private volatile boolean mIsConnectedSnapshotExpected;
+        private volatile SnapshotReceived mConnectedSnapshotReceived = SnapshotReceived.NEVER;
+
+        private volatile boolean mIsAddedSnapshotExpected;
+        private volatile SnapshotReceived mAddedSnapshotReceived = SnapshotReceived.NEVER;
+
         DisplayListenerDelegate(DisplayListener listener, @NonNull Executor executor,
                 @InternalEventFlag long internalEventFlag, String packageName,
                 boolean isEventFilterExplicit) {
@@ -1608,14 +1739,19 @@ public final class DisplayManagerGlobal {
 
         void sendDisplayEvents(int displayId, int eventMask, @Nullable DisplayInfo info,
                 boolean forceUpdate) {
-            if (extraLogging() && (((eventMask & EVENT_DISPLAY_STATE_CHANGED) != 0) || (
-                    (eventMask & EVENT_DISPLAY_BASIC_CHANGED) != 0) || (
-                    (eventMask & EVENT_DISPLAY_COMMITTED_STATE_CHANGED) != 0))) {
+            if (extraLogging()) {
                 Slog.i(TAG, "Sending Display Events: " + eventsToString(eventMask));
-                final String infoState = (info != null) ? String.valueOf(info.state) : "null";
-                Slog.d(TAG, "Display" + displayId + ": state changed to: " + infoState);
             }
-
+            if (Flags.displayListenerSnapshot()
+                    && (mIsConnectedSnapshotExpected || mIsAddedSnapshotExpected)
+                    && mAddedSnapshotReceived == SnapshotReceived.NEVER
+                    && mConnectedSnapshotReceived == SnapshotReceived.NEVER) {
+                Slog.i(TAG, "Skipping new events until a snapshot is received"
+                        + " package=" + ActivityThread.currentPackageName()
+                        + " connectedExpected=" + mIsConnectedSnapshotExpected
+                        + " addedExpected=" + mIsAddedSnapshotExpected);
+                return;
+            }
             long generationId = this.mGenerationId.get();
             mExecutor.execute(() -> {
                 // If the generation id's don't match we were canceled
@@ -1623,6 +1759,64 @@ public final class DisplayManagerGlobal {
                     handleDisplayEventsInner(displayId, eventMask, info, forceUpdate);
                 }
             });
+        }
+
+        void sendDisplaySnapshot(@Nullable int[] connected, @Nullable int[] added) {
+            if ((connected == null || connected.length == 0) && mIsConnectedSnapshotExpected
+                    && mConnectedSnapshotReceived != SnapshotReceived.LATEST) {
+                if (DEBUG) {
+                    Slog.d(TAG, "Not satisfactory. Expected connected"
+                            + ", but no connected are provided."
+                            + " package=" + ActivityThread.currentPackageName());
+                }
+                return;
+            }
+            if ((added == null || added.length == 0) && mIsAddedSnapshotExpected
+                    && mAddedSnapshotReceived != SnapshotReceived.LATEST) {
+                if (DEBUG) {
+                    Slog.d(TAG, "Not satisfactory. Expected added, but no added are provided."
+                            + " package=" + ActivityThread.currentPackageName());
+                }
+                return;
+            }
+            if (mConnectedSnapshotReceived == SnapshotReceived.LATEST) {
+                if (DEBUG) {
+                    Slog.d(TAG, "latest connected already received"
+                            + ", no need to receive connected again."
+                            + " package=" + ActivityThread.currentPackageName());
+                }
+                connected = null;
+            }
+            if (mAddedSnapshotReceived == SnapshotReceived.LATEST) {
+                if (DEBUG) {
+                    Slog.d(TAG, "latest added already received, no need to receive added again."
+                            + " package=" + ActivityThread.currentPackageName());
+                }
+                added = null;
+            }
+            if ((connected == null || connected.length == 0)
+                    && (added == null || added.length == 0)) {
+                if (DEBUG) {
+                    Slog.d(TAG, "connected and added are not satisfactory, or not needed."
+                            + " package=" + ActivityThread.currentPackageName());
+                }
+                return;
+            }
+            int[] connectedFinal = connected;
+            int[] addedFinal = added;
+            long generationId = this.mGenerationId.get();
+            mExecutor.execute(() -> {
+                // If the generation id's don't match we were canceled
+                if (generationId == this.mGenerationId.get()) {
+                    handleDisplaySnapshotInner(connectedFinal, addedFinal);
+                }
+            });
+            if (connected != null && connected.length > 0) {
+                mConnectedSnapshotReceived = SnapshotReceived.LATEST;
+            }
+            if (added != null && added.length > 0) {
+                mAddedSnapshotReceived = SnapshotReceived.LATEST;
+            }
         }
 
         @VisibleForTesting
@@ -1635,7 +1829,27 @@ public final class DisplayManagerGlobal {
         }
 
         void setEventsMask(@InternalEventFlag long newInternalEventFlagsMask) {
-            this.internalEventFlagsMask = newInternalEventFlagsMask;
+            internalEventFlagsMask = newInternalEventFlagsMask;
+        }
+
+        void updateSnapshotExpectation() {
+            // The listener for this Delegate may be expecting connected and added snapshot
+            mIsConnectedSnapshotExpected =
+                    (internalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_CONNECTION_CHANGED) != 0;
+            mIsAddedSnapshotExpected =
+                    (internalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_ADDED) != 0
+                        && (internalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_REMOVED) != 0;
+            // In case connected snapshot is no longer expected, but was previously received,
+            // mark the snapshot as STALE.
+            if (!mIsConnectedSnapshotExpected
+                    && mConnectedSnapshotReceived == SnapshotReceived.LATEST) {
+                mConnectedSnapshotReceived = SnapshotReceived.STALE;
+            }
+            // In case added snapshot is no longer expected, but was previously received,
+            // mark the snapshot as STALE.
+            if (!mIsAddedSnapshotExpected && mAddedSnapshotReceived == SnapshotReceived.LATEST) {
+                mAddedSnapshotReceived = SnapshotReceived.STALE;
+            }
         }
 
         private void implicitlyRegisterForRRChanges() {
@@ -1664,9 +1878,7 @@ public final class DisplayManagerGlobal {
 
         private void handleDisplayEventInner(int displayId, @DisplayEvent int event,
                 @Nullable DisplayInfo info, boolean forceUpdate) {
-            if (extraLogging() && (event == EVENT_DISPLAY_STATE_CHANGED
-                    || event == EVENT_DISPLAY_COMMITTED_STATE_CHANGED
-                    || event == EVENT_DISPLAY_BASIC_CHANGED)) {
+            if (extraLogging()) {
                 Slog.i(TAG,
                         "DLD(" + eventToString(event) + ", display=" + displayId + ", mEventsMask="
                                 + Long.toBinaryString(internalEventFlagsMask) + ", mPackageName="
@@ -1747,6 +1959,33 @@ public final class DisplayManagerGlobal {
                         mListener.onDisplayChanged(displayId);
                     }
                     break;
+            }
+            if (DEBUG) {
+                Trace.endSection();
+            }
+        }
+
+        private void handleDisplaySnapshotInner(@Nullable int[] connected, @Nullable int[] added) {
+            if (extraLogging()) {
+                Slog.i(TAG, "DLD(SNAPSHOT"
+                        + ", connected=" + Arrays.toString(connected)
+                        + ", added=" + Arrays.toString(added)
+                        + ", mPackageName=" + mPackageName
+                        + ", listener=" + mListener.getClass() + ")");
+            }
+            if (DEBUG) {
+                Trace.beginSection(
+                        TextUtils.trimToSize(
+                                "DLD(SNAPSHOT"
+                                        + ", connected=" + Arrays.toString(connected)
+                                        + ", added=" + Arrays.toString(added)
+                                        + ", listener=" + mListener.getClass() + ")", 127));
+            }
+            if (connected != null && connected.length > 0) {
+                mListener.onDisplayConnectedSnapshot(connected);
+            }
+            if (added != null && added.length > 0) {
+                mListener.onDisplayAddedSnapshot(added);
             }
             if (DEBUG) {
                 Trace.endSection();
@@ -1871,7 +2110,7 @@ public final class DisplayManagerGlobal {
             }
             registerCallbackIfNeededLocked();
             updateCallbackIfNeededLocked();
-            DisplayInfo display = getDisplayInfoLocked(Display.DEFAULT_DISPLAY);
+            DisplayInfo display = getDisplayInfoInternal(Display.DEFAULT_DISPLAY);
             if (display != null) {
                 // We need to tell AChoreographer instances the current refresh rate so that apps
                 // can get it for free once a callback first registers.
@@ -1946,11 +2185,11 @@ public final class DisplayManagerGlobal {
             sExtraDisplayListenerLogging = !TextUtils.isEmpty(EXTRA_LOGGING_PACKAGE_NAME)
                     && EXTRA_LOGGING_PACKAGE_NAME.equals(sCurrentPackageName);
         }
-        return true; // See b/449949226
+        return sExtraDisplayListenerLogging;
     }
 
     private static boolean extraLogging() {
-        return true; // See b/449949226
+        return sExtraDisplayListenerLogging;
     }
 
 
@@ -2021,5 +2260,162 @@ public final class DisplayManagerGlobal {
     @VisibleForTesting
     public CopyOnWriteArrayList<DisplayListenerDelegate> getDisplayListeners() {
         return mDisplayListeners;
+    }
+
+    /**
+     * Cache of display ids: connected and added. The cache gets updated with
+     * {@link #EVENT_DISPLAY_CONNECTED}, {@link #EVENT_DISPLAY_ADDED},
+     * {@link #EVENT_DISPLAY_REMOVED}, {@link #EVENT_DISPLAY_DISCONNECTED}.
+     * The cache must be first initialized with {@link #updateCacheLocked}.
+     * The cache is possible to init only if it is enabled with
+     * {@link #setConnectedCachingEnabledLocked} or {@link #setAddedCachingEnabledLocked}.
+     */
+    public static class DisplayIdsCache {
+        private volatile boolean mIsConnectedCachingEnabled;
+        private volatile boolean mIsAddedCachingEnabled;
+        private volatile boolean mIsConnectedCacheValid;
+        private volatile boolean mIsAddedCacheValid;
+        private final HashSet<Integer> mConnectedDisplayIdsCache = new HashSet<>();
+        private final HashSet<Integer> mAddedDisplayIdsCache = new HashSet<>();
+
+        void updateCacheLocked(int[] connected, int[] added) {
+            if (DEBUG) {
+                Log.d(TAG, "updateCacheLocked"
+                        + " package=" + ActivityThread.currentPackageName()
+                        + " connectedCaching=" + mIsConnectedCachingEnabled
+                        + " addedCaching=" + mIsAddedCachingEnabled
+                        + " connected=" + Arrays.toString(connected)
+                        + " added=" + Arrays.toString(added));
+            }
+            if (mIsConnectedCachingEnabled && connected.length > 0) {
+                mConnectedDisplayIdsCache.clear();
+                for (int i = 0; i < connected.length; i++) {
+                    mConnectedDisplayIdsCache.add(connected[i]);
+                }
+                mIsConnectedCacheValid = true;
+            }
+            if (mIsAddedCachingEnabled && added.length > 0) {
+                mAddedDisplayIdsCache.clear();
+                for (int i = 0; i < added.length; i++) {
+                    mAddedDisplayIdsCache.add(added[i]);
+                }
+                mIsAddedCacheValid = true;
+            }
+        }
+
+        /**
+         * Sets whether caching is enabled.
+         */
+        void setConnectedCachingEnabledLocked(boolean isCachingEnabled) {
+            mIsConnectedCachingEnabled = isCachingEnabled;
+            // If caching is no longer enabled, then the cache is no longer valid either.
+            if (DEBUG && mIsConnectedCacheValid && !isCachingEnabled) {
+                Log.d(TAG, "setConnectedCachingEnabledLocked disabling cache"
+                        + " package=" + ActivityThread.currentPackageName());
+            }
+            mIsConnectedCacheValid &= isCachingEnabled;
+        }
+
+        /**
+         * Sets whether caching is enabled.
+         */
+        void setAddedCachingEnabledLocked(boolean isCachingEnabled) {
+            mIsAddedCachingEnabled = isCachingEnabled;
+            // If caching is no longer enabled, then the cache is no longer valid either.
+            if (DEBUG && mIsAddedCacheValid && !isCachingEnabled) {
+                Log.d(TAG, "setAddedCachingEnabledLocked disabling cache"
+                        + " package=" + ActivityThread.currentPackageName());
+            }
+            mIsAddedCacheValid &= isCachingEnabled;
+        }
+
+        void updateCacheLocked(int displayId, int eventMask) {
+            if (!mIsConnectedCacheValid && !mIsAddedCacheValid) {
+                return;
+            }
+            // Given that the cache is valid:
+            // This event can NOT be a duplicate of the snapshot which might have been
+            // recently received by the listener. This is because EVENT and SNAPSHOT message
+            // delivery is strongly ordered by the binder, but also that DisplayManagerService
+            // uses global lock while processing CONNECT/DISCONNECT, ADD/REMOVE displays, and
+            // SNAPSHOT uses the same global lock. So the client must receive the consistent state
+            // with or without the respective displays. It would be a regression if it does not!
+            // Local mDisplayIdsCache gets updated IN ORDER due to binder execution guarantees,
+            // which ensures that there is NO WAY of having a duplicated event, such as ADDED
+            // while it is already present in the cache (received in the snapshot a moment ago).
+            if (mIsConnectedCacheValid && (eventMask & EVENT_DISPLAY_CONNECTED) != 0) {
+                if (mConnectedDisplayIdsCache.contains(displayId)) {
+                    throw new IllegalStateException("DisplayId " + displayId
+                            + " is already present in the mConnectedDisplayIdsCache!");
+                }
+                mConnectedDisplayIdsCache.add(displayId);
+            }
+
+            if (mIsAddedCacheValid && (eventMask & EVENT_DISPLAY_ADDED) != 0) {
+                if (mAddedDisplayIdsCache.contains(displayId)) {
+                    throw new IllegalStateException("DisplayId " + displayId
+                            + " is already present in the mAddedDisplayIdsCache!");
+                }
+                mAddedDisplayIdsCache.add(displayId);
+            }
+
+            if (mIsAddedCacheValid && (eventMask & EVENT_DISPLAY_REMOVED) != 0) {
+                if (!mAddedDisplayIdsCache.contains(displayId)) {
+                    throw new IllegalStateException("DisplayId " + displayId
+                            + " is NOT present in the mAddedDisplayIdsCache!");
+                }
+                mAddedDisplayIdsCache.remove(displayId);
+            }
+
+            if (mIsConnectedCacheValid && (eventMask & EVENT_DISPLAY_DISCONNECTED) != 0) {
+                if (!mConnectedDisplayIdsCache.contains(displayId)) {
+                    throw new IllegalStateException("DisplayId " + displayId
+                            + " is NOT present in the mConnectedDisplayIdsCache!");
+                }
+                mConnectedDisplayIdsCache.remove(displayId);
+            }
+        }
+
+        boolean isCachingEnabledLocked(boolean includeDisabled) {
+            if (includeDisabled) {
+                return mIsConnectedCachingEnabled;
+            } else {
+                return mIsAddedCachingEnabled;
+            }
+        }
+
+        boolean isCacheValidLocked(boolean includeDisabled) {
+            if (includeDisabled) {
+                return mIsConnectedCacheValid;
+            } else {
+                return mIsAddedCacheValid;
+            }
+        }
+
+        @Nullable
+        int[] getConnectedLocked() {
+            if (!mIsConnectedCacheValid) {
+                return null;
+            }
+            return convertToArray(mConnectedDisplayIdsCache);
+        }
+
+        @Nullable
+        int[] getAddedLocked() {
+            if (!mIsAddedCacheValid) {
+                return null;
+            }
+            return convertToArray(mAddedDisplayIdsCache);
+        }
+
+        private static int[] convertToArray(Set<Integer> s) {
+            int[] res = new int[s.size()];
+            int i = 0;
+            for (Integer v : s) {
+                res[i++] = v;
+            }
+            return res;
+        }
+
     }
 }

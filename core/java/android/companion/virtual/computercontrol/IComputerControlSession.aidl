@@ -16,6 +16,7 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.app.PendingIntent;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.view.Surface;
@@ -68,6 +69,14 @@ interface IComputerControlSession {
 
     /** Attaches a notification to the session, to make it non-dismissable. */
     void attachNotificationInfo(int notificationId, in String notificationTag);
+
+    /**
+     * Sets the intent launched when the user wants to preview the automation, or null if none.
+     *
+     * <p>This overrides the intent set in {@link
+     * ComputerControlSessionParams.Builder#setPreviewIntent}.
+     */
+    void setPreviewIntent(in @nullable PendingIntent previewIntent);
 
     /** Closes this session. */
     void close();

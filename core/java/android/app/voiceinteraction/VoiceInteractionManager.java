@@ -27,10 +27,12 @@ import android.content.Intent;
 
 import com.android.internal.app.IVoiceInteractionManagerService;
 
-/** Provides access to VoiceInteraction API */
+/**
+ * Service that provides information about and interacts with the current global voice interactor
+ */
 @FlaggedApi(FLAG_ASSIST_SETTINGS_PRIVACY_IMPROVEMENTS_ENABLED)
 @SystemService(Context.VOICE_INTERACTION_MANAGER_SERVICE)
-public class VoiceInteractionManager {
+public final class VoiceInteractionManager {
     private final IVoiceInteractionManagerService mService;
     private final Context mContext;
 
@@ -61,10 +63,10 @@ public class VoiceInteractionManager {
     }
 
     /**
-     * Creates an intent which can be used to request access to assist structure for current
-     * assistant role holder. This intent MUST be used with
-     * {@link android.app.Activity#startActivityForResult}.The result code of the activity will be
-     * {@link android.app.Activity#RESULT_OK} if the request was granted,
+     * Creates an intent which can be used to request access to
+     * {@link android.app.assist.AssistStructure} for current assistant role holder. This intent
+     * MUST be used with {@link android.app.Activity#startActivityForResult}.The result code of the
+     * activity will be {@link android.app.Activity#RESULT_OK} if the request was granted,
      * {@link android.app.Activity#RESULT_CANCELED} if not. If the caller is not the current
      * default assistant, the request will be denied automatically.
      *

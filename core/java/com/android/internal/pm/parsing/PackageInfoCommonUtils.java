@@ -520,6 +520,7 @@ public class PackageInfoCommonUtils {
         pi.requiresPurpose = p.isPurposeRequired();
         pi.requiresPurposeTargetSdkVersion = p.getRequiresPurposeTargetSdkVersion();
         pi.requiresGeneralPurposeTargetSdkVersion = p.getRequiresGeneralPurposeTargetSdkVersion();
+        pi.requiresPurposeStringTargetSdkVersion = p.getRequiresPurposeStringTargetSdkVersion();
         for (ParsedValidPurpose validPurpose : p.getValidPurposes()) {
             if (validPurpose != null) {
                 pi.validPurposes =

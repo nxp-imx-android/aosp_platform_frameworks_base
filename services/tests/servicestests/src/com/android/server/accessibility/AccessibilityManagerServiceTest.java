@@ -224,35 +224,56 @@ public class AccessibilityManagerServiceTest {
             "com.android.server.accessibility", "AccessibilityManagerServiceTest");
     static final int SERVICE_ID = 42;
 
-    @Mock private AccessibilityServiceInfo mMockServiceInfo;
-    @Mock private ResolveInfo mMockResolveInfo;
-    @Mock private AbstractAccessibilityServiceConnection.SystemSupport mMockSystemSupport;
-    @Mock private WindowManagerInternal.AccessibilityControllerInternal mMockA11yController;
-    @Mock private PackageManager mMockPackageManager;
+    @Mock
+    private AccessibilityServiceInfo mMockServiceInfo;
+    @Mock
+    private ResolveInfo mMockResolveInfo;
+    @Mock
+    private AbstractAccessibilityServiceConnection.SystemSupport mMockSystemSupport;
+    @Mock
+    private WindowManagerInternal.AccessibilityControllerInternal mMockA11yController;
+    @Mock
+    private PackageManager mMockPackageManager;
     @Mock
     private PackageManagerInternal mMockPackageManagerInternal;
-    @Mock private WindowManagerInternal mMockWindowManagerService;
-    @Mock private AccessibilitySecurityPolicy mMockSecurityPolicy;
-    @Mock private SystemActionPerformer mMockSystemActionPerformer;
-    @Mock private AccessibilityWindowManager mMockA11yWindowManager;
-    @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
-    @Mock private UserManagerInternal mMockUserManagerInternal;
-    @Mock private IBinder mMockBinder;
-    @Mock private IAccessibilityServiceClient mMockServiceClient;
-    @Mock private MagnificationConnectionManager mMockMagnificationConnectionManager;
-    @Mock private MagnificationController mMockMagnificationController;
-    @Mock private FullScreenMagnificationController mMockFullScreenMagnificationController;
-    @Mock private ProxyManager mProxyManager;
-    @Mock private StatusBarManagerInternal mStatusBarManagerInternal;
-    @Mock private DevicePolicyManager mDevicePolicyManager;
+    @Mock
+    private WindowManagerInternal mMockWindowManagerService;
+    @Mock
+    private AccessibilitySecurityPolicy mMockSecurityPolicy;
+    @Mock
+    private SystemActionPerformer mMockSystemActionPerformer;
+    @Mock
+    private AccessibilityWindowManager mMockA11yWindowManager;
+    @Mock
+    private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
+    @Mock
+    private UserManagerInternal mMockUserManagerInternal;
+    @Mock
+    private IBinder mMockBinder;
+    @Mock
+    private IAccessibilityServiceClient mMockServiceClient;
+    @Mock
+    private MagnificationConnectionManager mMockMagnificationConnectionManager;
+    @Mock
+    private MagnificationController mMockMagnificationController;
+    @Mock
+    private FullScreenMagnificationController mMockFullScreenMagnificationController;
+    @Mock
+    private ProxyManager mProxyManager;
+    @Mock
+    private StatusBarManagerInternal mStatusBarManagerInternal;
+    @Mock
+    private DevicePolicyManager mDevicePolicyManager;
     @Mock
     private HearingDevicePhoneCallNotificationController
             mMockHearingDevicePhoneCallNotificationController;
     @Mock
     private IInputManager mMockInputManagerService;
     private InputManagerGlobal.TestSession mInputManagerTestSession;
-    @Spy private IUserInitializationCompleteCallback mUserInitializationCompleteCallback;
-    @Captor private ArgumentCaptor<Intent> mIntentArgumentCaptor;
+    @Spy
+    private IUserInitializationCompleteCallback mUserInitializationCompleteCallback;
+    @Captor
+    private ArgumentCaptor<Intent> mIntentArgumentCaptor;
     private IAccessibilityManager mA11yManagerServiceOnDevice;
     private AccessibilityServiceConnection mAccessibilityServiceConnection;
     private AccessibilityInputFilter mInputFilter;
@@ -349,7 +370,9 @@ public class AccessibilityManagerServiceTest {
 
     @After
     public void cleanUp() throws Exception {
-        mTestableLooper.processAllMessages();
+        if (mTestableLooper != null) {
+            mTestableLooper.processAllMessages();
+        }
         AccessibilityManager am = mTestableContext.getSystemService(AccessibilityManager.class);
         FieldSetter.setField(
                 am, AccessibilityManager.class.getDeclaredField("mService"),
@@ -357,7 +380,9 @@ public class AccessibilityManagerServiceTest {
         if (mInputManagerTestSession != null) {
             mInputManagerTestSession.close();
         }
-        mCloseable.close();
+        if (mCloseable != null) {
+            mCloseable.close();
+        }
     }
 
     private void setupAccessibilityServiceConnection(int serviceInfoFlag) {
@@ -946,14 +971,15 @@ public class AccessibilityManagerServiceTest {
         final AccessibilityServiceInfo info_b = new AccessibilityServiceInfo();
         info_b.setComponentName(new ComponentName("package", "class"));
         writeStringsToSetting(Set.of(
-                info_a.getComponentName().flattenToString(),
-                info_b.getComponentName().flattenToString()),
+                        info_a.getComponentName().flattenToString(),
+                        info_b.getComponentName().flattenToString()),
                 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
 
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.clear();
-        userState.mInstalledServices.add(info_a);
-        userState.mInstalledServices.add(info_b);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(info_a);
+        installedServices.add(info_b);
+        userState.buildInstalledServicesMapLocked(installedServices);
         userState.mEnabledServices.clear();
         userState.mEnabledServices.add(info_a.getComponentName());
         userState.mEnabledServices.add(info_b.getComponentName());
@@ -982,9 +1008,11 @@ public class AccessibilityManagerServiceTest {
         info_b.setComponentName(new ComponentName("package", "class"));
 
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.clear();
-        userState.mInstalledServices.add(info_a);
-        userState.mInstalledServices.add(info_b);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(info_a);
+        installedServices.add(info_b);
+        userState.buildInstalledServicesMapLocked(installedServices);
+
         userState.updateShortcutTargetsLocked(Set.of(
                         info_a.getComponentName().flattenToString(),
                         info_b.getComponentName().flattenToString()),
@@ -1029,10 +1057,11 @@ public class AccessibilityManagerServiceTest {
                 new ComponentName("FakeA11yPkg", "FakeA11yServiceC"), /* hasQsTile= */ true);
 
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.clear();
-        userState.mInstalledServices.add(info_a);
-        userState.mInstalledServices.add(info_b);
-        userState.mInstalledServices.add(info_c);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(info_a);
+        installedServices.add(info_b);
+        installedServices.add(info_c);
+        userState.buildInstalledServicesMapLocked(installedServices);
         userState.updateTileServiceMapForAccessibilityServiceLocked();
 
         Set<String> shortcutTargets = Set.of(
@@ -1091,9 +1120,10 @@ public class AccessibilityManagerServiceTest {
                 ShortcutUtils.convertToKey(SOFTWARE));
 
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.clear();
-        userState.mInstalledServices.add(info_a);
-        userState.mInstalledServices.add(info_b);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(info_a);
+        installedServices.add(info_b);
+        userState.buildInstalledServicesMapLocked(installedServices);
         userState.updateShortcutTargetsLocked(Set.of(
                         info_a.getComponentName().flattenToString(),
                         info_b.getComponentName().flattenToString()),
@@ -1140,12 +1170,12 @@ public class AccessibilityManagerServiceTest {
     public void onPackageChanged_disableComponent_updateInstalledServices() {
         // Sets up two accessibility services as installed services
         setupShortcutTargetServices();
-        assertThat(mA11yms.getCurrentUserState().mInstalledServices).hasSize(2);
-        AccessibilityServiceInfo installedService1 =
-                mA11yms.getCurrentUserState().mInstalledServices.getFirst();
+        assertThat(mA11yms.getCurrentUserState().getInstalledServices()).hasSize(2);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                mA11yms.getCurrentUserState().getInstalledServices());
+        AccessibilityServiceInfo installedService1 = installedServices.getFirst();
         ResolveInfo resolveInfo1 = installedService1.getResolveInfo();
-        AccessibilityServiceInfo installedService2 =
-                mA11yms.getCurrentUserState().mInstalledServices.getLast();
+        AccessibilityServiceInfo installedService2 = installedServices.getLast();
         // Invokes client change to trigger onUserStateChanged.
         mA11yms.onClientChangeLocked(false);
 
@@ -1163,9 +1193,9 @@ public class AccessibilityManagerServiceTest {
                         installedService2.getComponentName().flattenToString()});
         mA11yms.getPackageMonitor().doHandlePackageEvent(packageIntent);
 
-        assertThat(mA11yms.getCurrentUserState().mInstalledServices).hasSize(1);
-        ComponentName installedService =
-                mA11yms.getCurrentUserState().mInstalledServices.getFirst().getComponentName();
+        assertThat(mA11yms.getCurrentUserState().getInstalledServices()).hasSize(1);
+        ComponentName installedService = new ArrayList<>(
+                mA11yms.getCurrentUserState().getInstalledServices()).getFirst().getComponentName();
         assertThat(installedService)
                 .isEqualTo(installedService1.getComponentName());
     }
@@ -1556,10 +1586,10 @@ public class AccessibilityManagerServiceTest {
         mTestableLooper.processAllMessages();
 
         assertThat(
-                        ShortcutUtils.isComponentIdExistingInSettings(
-                                mTestableContext,
-                                HARDWARE,
-                                TARGET_STANDARD_A11Y_SERVICE_NAME))
+                ShortcutUtils.isComponentIdExistingInSettings(
+                        mTestableContext,
+                        HARDWARE,
+                        TARGET_STANDARD_A11Y_SERVICE_NAME))
                 .isFalse();
     }
 
@@ -1848,7 +1878,7 @@ public class AccessibilityManagerServiceTest {
         setupShortcutTargetServices();
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
         userState.mEnabledServices.addAll(
-                userState.mInstalledServices.stream().map(
+                userState.getInstalledServices().stream().map(
                         (AccessibilityServiceInfo::getComponentName)).toList());
         String[] packages = userState.mEnabledServices.stream().map(
                 ComponentName::getPackageName).toList().toArray(new String[0]);
@@ -1870,7 +1900,7 @@ public class AccessibilityManagerServiceTest {
         setupShortcutTargetServices();
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
         userState.mEnabledServices.addAll(
-                userState.mInstalledServices.stream().map(
+                userState.getInstalledServices().stream().map(
                         (AccessibilityServiceInfo::getComponentName)).toList());
         String[] packages = userState.mEnabledServices.stream().map(
                 ComponentName::getPackageName).toList().toArray(new String[0]);
@@ -2254,9 +2284,9 @@ public class AccessibilityManagerServiceTest {
         assertThat(intentCaptor.getValue().getAction())
                 .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
         assertThat(
-                        intentCaptor
-                                .getValue()
-                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                intentCaptor
+                        .getValue()
+                        .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
                 .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION);
     }
 
@@ -2270,7 +2300,10 @@ public class AccessibilityManagerServiceTest {
                 new ComponentName("package_a", "class_a"),
                 /* isSystemApp= */ true, /* isAlwaysOnService= */ true);
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.add(trustedService);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(trustedService);
+        userState.buildInstalledServicesMapLocked(installedServices);
         mTestableContext.getOrCreateTestableResources().addOverride(
                 R.string.config_defaultSelectToSpeakService,
                 trustedService.getComponentName().flattenToString());
@@ -2293,9 +2326,9 @@ public class AccessibilityManagerServiceTest {
         assertThat(intentCaptor.getValue().getAction())
                 .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
         assertThat(
-                        intentCaptor
-                                .getValue()
-                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                intentCaptor
+                        .getValue()
+                        .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
                 .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK);
     }
 
@@ -2309,7 +2342,10 @@ public class AccessibilityManagerServiceTest {
                 new ComponentName("package_a", "class_a"),
                 /* isSystemApp= */ true, /* isAlwaysOnService= */ true);
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.add(untrustedService);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(untrustedService);
+        userState.buildInstalledServicesMapLocked(installedServices);
         mTestableContext.getOrCreateTestableResources().addOverride(
                 R.string.config_defaultSelectToSpeakService,
                 untrustedService.getComponentName().flattenToString());
@@ -2334,7 +2370,10 @@ public class AccessibilityManagerServiceTest {
                 new ComponentName("package_a", "class_a"),
                 /* isSystemApp= */ false, /* isAlwaysOnService= */ true);
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.add(downloadedService);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(downloadedService);
+        userState.buildInstalledServicesMapLocked(installedServices);
         mTestableContext.getOrCreateTestableResources().addOverride(
                 R.string.config_defaultSelectToSpeakService,
                 downloadedService.getComponentName().flattenToString());
@@ -2365,7 +2404,10 @@ public class AccessibilityManagerServiceTest {
                 new ComponentName("package_b", "class_b"),
                 /* isSystemApp= */ true, /* isAlwaysOnService= */ true);
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.add(installedService);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(installedService);
+        userState.buildInstalledServicesMapLocked(installedServices);
         mTestableContext.getOrCreateTestableResources().addOverride(
                 R.string.config_defaultSelectToSpeakService,
                 defaultService.getComponentName().flattenToString());
@@ -2393,7 +2435,10 @@ public class AccessibilityManagerServiceTest {
                 new ComponentName("package_a", "class_a"),
                 /* isSystemApp= */ true, /* isAlwaysOnService= */ true);
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.add(installedService);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(installedService);
+        userState.buildInstalledServicesMapLocked(installedServices);
         mTestableContext.getOrCreateTestableResources().addOverride(
                 R.array.config_trustedAccessibilityServices,
                 new String[]{installedService.getComponentName().flattenToString()});
@@ -2419,7 +2464,10 @@ public class AccessibilityManagerServiceTest {
                 new ComponentName("package_a", "class_a"),
                 /* isSystemApp= */ true, /* isAlwaysOnService= */ true);
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.add(trustedService);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(trustedService);
+        userState.buildInstalledServicesMapLocked(installedServices);
         mTestableContext.getOrCreateTestableResources().addOverride(
                 R.string.config_defaultVoiceAccessService,
                 trustedService.getComponentName().flattenToString());
@@ -2442,9 +2490,9 @@ public class AccessibilityManagerServiceTest {
         assertThat(intentCaptor.getValue().getAction())
                 .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
         assertThat(
-                        intentCaptor
-                                .getValue()
-                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                intentCaptor
+                        .getValue()
+                        .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
                 .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
     }
 
@@ -2457,7 +2505,10 @@ public class AccessibilityManagerServiceTest {
                 new ComponentName("package_a", "class_a"),
                 /* isSystemApp= */ true, /* isAlwaysOnService= */ true);
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.add(trustedService);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(trustedService);
+        userState.buildInstalledServicesMapLocked(installedServices);
         mTestableContext.getOrCreateTestableResources().addOverride(
                 R.string.config_defaultAccessibilityService,
                 trustedService.getComponentName().flattenToString());
@@ -2480,9 +2531,9 @@ public class AccessibilityManagerServiceTest {
         assertThat(intentCaptor.getValue().getAction())
                 .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
         assertThat(
-                        intentCaptor
-                                .getValue()
-                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                intentCaptor
+                        .getValue()
+                        .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
                 .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
     }
 
@@ -2497,21 +2548,24 @@ public class AccessibilityManagerServiceTest {
                         /* isAlwaysOnService= */ true);
         final String targetName = trustedService.getComponentName().flattenToString();
         AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.add(trustedService);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(trustedService);
+        userState.buildInstalledServicesMapLocked(installedServices);
         mTestableContext
                 .getOrCreateTestableResources()
                 .addOverride(R.string.config_defaultAccessibilityService, targetName);
         mTestableContext
                 .getOrCreateTestableResources()
                 .addOverride(
-                        R.array.config_trustedAccessibilityServices, new String[] {targetName});
+                        R.array.config_trustedAccessibilityServices, new String[]{targetName});
         // In production code, we enable shortcut in SysUi. For test here, we assume it already
         // enabled before the second-time pressing "Action + Alt + T".
         userState.updateShortcutTargetsLocked(Set.of(targetName), KEY_GESTURE);
         mTestableLooper.processAllMessages();
         assertThat(
-                        mA11yms.getAccessibilityShortcutTargets(
-                                KEY_GESTURE, mA11yms.getCurrentUserIdLocked()))
+                mA11yms.getAccessibilityShortcutTargets(
+                        KEY_GESTURE, mA11yms.getCurrentUserIdLocked()))
                 .containsExactly(targetName);
 
         // Simulate the second-time pressing "Action + Alt + T"
@@ -2527,20 +2581,20 @@ public class AccessibilityManagerServiceTest {
         assertThat(intentCaptor.getValue().getAction())
                 .isEqualTo(ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG);
         assertThat(
-                        intentCaptor
-                                .getValue()
-                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                intentCaptor
+                        .getValue()
+                        .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
                 .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
     }
 
     @Test
     public void displayListReturnsDisplays_containsAddedDisplays() {
         mTestDisplayManagerWrapper.mDisplays = createFakeDisplayList(
-                        Display.TYPE_INTERNAL,
-                        Display.TYPE_EXTERNAL,
-                        Display.TYPE_WIFI,
-                        Display.TYPE_OVERLAY,
-                        Display.TYPE_VIRTUAL
+                Display.TYPE_INTERNAL,
+                Display.TYPE_EXTERNAL,
+                Display.TYPE_WIFI,
+                Display.TYPE_OVERLAY,
+                Display.TYPE_VIRTUAL
         );
         List<Integer> expectedDisplayIds = mTestDisplayManagerWrapper.mDisplays.stream()
                 .map(Display::getDisplayId)
@@ -2695,8 +2749,10 @@ public class AccessibilityManagerServiceTest {
                 eq(info.getComponentName().getPackageName()), anyInt()))
                 .thenReturn(samePackage);
         final AccessibilityUserState userState = mA11yms.getCurrentUserState();
-        userState.mInstalledServices.clear();
-        userState.mInstalledServices.add(info);
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.add(info);
+        userState.buildInstalledServicesMapLocked(installedServices);
         return info;
     }
 
@@ -2726,7 +2782,7 @@ public class AccessibilityManagerServiceTest {
                 new KeyGestureEvent.Builder()
                         .setKeyGestureType(gestureType)
                         .setModifierState(modifierState)
-                        .setKeycodes(new int[] {keyCode})
+                        .setKeycodes(new int[]{keyCode})
                         .setAction(KeyGestureEvent.ACTION_GESTURE_COMPLETE)
                         .build());
     }
@@ -2806,8 +2862,11 @@ public class AccessibilityManagerServiceTest {
                 TARGET_STANDARD_A11Y_SERVICE,
                 /* isSystemApp= */ false,
                 /* isAlwaysOnService= */ false);
-        userState.mInstalledServices.addAll(
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>(
+                userState.getInstalledServices());
+        installedServices.addAll(
                 List.of(alwaysOnServiceInfo, standardServiceInfo));
+        userState.buildInstalledServicesMapLocked(installedServices);
         userState.updateTileServiceMapForAccessibilityServiceLocked();
     }
 

@@ -199,7 +199,7 @@ import sun.misc.Cleaner;
  *
  * <p>It is safe to call <code>AutofillManager</code> methods from any thread.
  */
-@SystemService(Context.AUTOFILL_MANAGER_SERVICE)
+@SystemService(Context.AUTOFILL_SERVICE)
 @RequiresFeature(PackageManager.FEATURE_AUTOFILL)
 public final class AutofillManager {
 
@@ -1534,6 +1534,15 @@ public final class AutofillManager {
             flags |= FLAG_VIEW_NOT_FOCUSED;
         }
         notifyViewEntered(view, flags);
+    }
+
+    /**
+     * Get next autofill view id from context of AutofillManager
+     *
+     * @hide
+     */
+    public int getNextAutofillViewId() {
+        return mContext.getNextAutofillId();
     }
 
     /**

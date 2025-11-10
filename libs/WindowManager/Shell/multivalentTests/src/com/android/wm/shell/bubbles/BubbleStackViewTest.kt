@@ -73,7 +73,7 @@ import java.util.function.Consumer
  * Unit tests for [BubbleStackView].
  *
  * Build/Install/Run:
- *  atest WMShellMultivalentTestsOnDevice:BubbleStackViewTest (on device)
+ *  - atest WMShellMultivalentTestsOnDevice:BubbleStackViewTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -1536,6 +1536,8 @@ class BubbleStackViewTest {
         override fun clearImeHiddenRunnable() {
             this.onImeHidden = null
         }
+
+        override fun isGestureNavigationMode() = false
     }
 
     private class FakeBubbleExpandListener : BubbleExpandListener {

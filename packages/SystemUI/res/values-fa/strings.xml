@@ -59,7 +59,7 @@
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"دستگاه دیگری درخواست کرده است زبان سیستم تغییر کند"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"تغییر زبان"</string>
     <string name="hdmi_cec_set_menu_language_decline" msgid="7650721096558646011">"حفظ زبان فعلی"</string>
-    <string name="share_wifi_button_text" msgid="1285273973812029240">"‏اشتراک‌گذاری Wi‑Fi"</string>
+    <string name="share_wifi_button_text" msgid="1285273973812029240">"‏هم‌رسانی کردن Wi‑Fi"</string>
     <string name="add_network_button_text" msgid="4046392140897987570">"افزودن شبکه"</string>
     <string name="wifi_debugging_title" msgid="7300007687492186076">"اشکال‌زدایی بی‌سیم در این شبکه مجاز شود؟"</string>
     <string name="wifi_debugging_message" msgid="5461204211731802995">"‏نام شبکه (SSID)\n<xliff:g id="SSID_0">%1$s</xliff:g>\n\nنشانی Wi‑Fi (BSSID)‎\n<xliff:g id="BSSID_1">%2$s</xliff:g>"</string>
@@ -170,9 +170,13 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"برنامه‌ای را برای هم‌رسانی انتخاب کنید."</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"هم‌رسانی صدا"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"هم‌رسانی پنجره برنامه"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"هم‌رسانی کردن زبانه"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
     <skip />
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"هنگام هم‌رسانی، محتوای صفحه‌نمایش شما قابل‌مشاهده است"</string>
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"نماگرفت پنجره"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"پنجره ضبط"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"گرفتن نماگرفت از ناحیه انتخاب شده"</string>
@@ -258,7 +262,7 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"درستی‌سنجی با روشی دیگر"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"مدیریت «احراز هویت»"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"درباره «احراز هویت» بیشتر بدانید"</string>
-    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"‏بررسی هویت روشن است و فقط با اثر انگشت یا چهره شما را تایید می‌کند. %1$s"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"‏«احراز هویت» روشن است و فقط با اثر انگشت یا چهره شما را تایید می‌کند. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"درحال ارزیابی مخاطرات…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"دردسترس نیست"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استفاده از پین"</string>
@@ -946,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"این اعلان‌ها قابل‌اصلاح نیستند."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"نمی‌توانید این گروه اعلان‌ها را در اینجا پیکربندی کنید"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"اعلان‌های دارای پراکسی"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"تمام اعلان‌های <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"مشاهده موارد بیشتر"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"‏سیستم این اعلان را به‌طور خودکار &lt;b&gt;به «پیش‌فرض» ارتقا داد&lt;/b&gt;."</string>
@@ -1043,7 +1049,7 @@
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"به‌حداکثر رساندن اندازه پنجره"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"به‌حداقل رساندن اندازه پنجره"</string>
     <string name="system_desktop_mode_close_window" msgid="3072490692608682536">"بستن پنجره فعلی"</string>
-    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"جابه‌جایی بین میزهای کار"</string>
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"حرکت کردن بین میزهای کار"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ورودی"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"رفتن به زبان بعدی"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"رفتن به زبان قبلی"</string>
@@ -1127,7 +1133,7 @@
     <item msgid="8619482474544321778">"این نماد نشان داده نشود"</item>
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"نمایش نمادهای اعلان کم‌اهمیت"</string>
-    <string name="other" msgid="429768510980739978">"موارد دیگر"</string>
+    <string name="other" msgid="429768510980739978">"غیره"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"تغییر اندازه کاشی"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="4811778796933958616">"برداشتن کاشی"</string>
     <string name="accessibility_qs_edit_place_tile_action" msgid="7073332873378207231">"جای‌گذاری کاشی"</string>
@@ -1151,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"منوی روشن/خاموش"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"صفحه <xliff:g id="ID_1">%1$d</xliff:g> از <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"‫<xliff:g id="ID_1">%1$s</xliff:g> روشن شود؟"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"نماد"</annotation>" «<xliff:g id="ID_1">^1</xliff:g>» و <xliff:g id="ID_2">^2</xliff:g> و <xliff:g id="ID_3">^3</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_4">^4</xliff:g> است. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"برای فعال کردن <xliff:g id="ID_4">%4$s</xliff:g>، دوباره «<xliff:g id="ID_1">%1$s</xliff:g>» و <xliff:g id="ID_2">%2$s</xliff:g> و <xliff:g id="ID_3">%3$s</xliff:g> را فشار دهید"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"میان‌بر صفحه‌کلید <xliff:g id="ID_1">%1$s</xliff:g> روشن شود؟"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"روشن نشود"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"میان‌بر روشن شود"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> میان‌بر صفحه‌کلید فعال شد"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"نماد"</annotation>" «<xliff:g id="ID_1">^1</xliff:g>» و <xliff:g id="ID_2">^2</xliff:g> و <xliff:g id="ID_3">^3</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_4">^4</xliff:g> است که یک ویژگی دسترس‌پذیری است. به شما امکان می‌دهد صفحه‌نمایش را به‌سرعت زوم‌پیش کنید تا محتوا درشت‌تر نمایش داده شود. پس‌از روشن شدن درشت‌نمایی، "<annotation id="action_key_icon">"نماد"</annotation>" «<xliff:g id="ID_5">^1</xliff:g>» و <xliff:g id="ID_6">^2</xliff:g> و «+» یا «-» را برای میزان کردن بزرگ‌نمایی فشار دهید."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"خاموش کردن میان‌بر"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"روشن بماند"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"نماد"</annotation>" «<xliff:g id="ID_1">^1</xliff:g>» و <xliff:g id="ID_2">^2</xliff:g> و <xliff:g id="ID_3">^3</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_4">^4</xliff:g> است. ‫<xliff:g id="ID_5">^4</xliff:g> صفحه‌خوانی است که به شما امکان می‌دهد موارد روی صفحه را با صدای بلند بشنوید. این ویژگی برای افرادی که دیدن صفحه‌نمایش برایشان دشوار است می‌تواند مفید باشد. این ویژگی ممکن است نحوه عملکرد دستگاهتان را تغییر دهد."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"‏با روشن کردن میان‌بر صفحه‌کلید، به TalkBack اجازه می‌دهید بر دستگاهتان کنترل کامل داشته باشد."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"کنترل کامل برای بیشتر برنامه‌ها مناسب نیست، به‌جز برنامه‌هایی که به شما در زمینه نیازهای دسترس‌پذیری کمک می‌کند."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"مشاهده و کنترل صفحه"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"می‌تواند همه محتوای صفحه را بخواند و آن را روی بقیه برنامه‌ها نمایش دهد."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"مشاهده و انجام کنش‌ها"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"این عملکرد می‌تواند با برنامه یا حسگری سخت‌افزاری تعاملاتتان را ردگیری کند و ازطرف شما با برنامه‌ها تعامل داشته باشد."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"فشار دادن "<annotation id="action_key_icon">"نماد"</annotation>" «<xliff:g id="ID_1">^1</xliff:g>» و <xliff:g id="ID_2">^2</xliff:g> و <xliff:g id="ID_3">^3</xliff:g> باعث روشن شدن «<xliff:g id="ID_4">^4</xliff:g>» که یک ویژگی دسترس‌پذیری است می‌شود. این ویژگی به شما امکان می‌دهد دستگاهتان را به‌صورت دست‌آزاد کنترل کنید."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"دسترس‌پذیری"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"تمام"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"صفحه قفل"</string>
@@ -1341,7 +1342,7 @@
     <string name="controls_favorite_back_to_editing" msgid="184125114090062713">"برگشتن به ویرایش"</string>
     <string name="controls_favorite_load_error" msgid="5126216176144877419">"کنترل‌ها بار نشدند. برنامه <xliff:g id="APP">%s</xliff:g> را بررسی کنید تا مطمئن شوید تنظیمات برنامه تغییر نکرده باشد."</string>
     <string name="controls_favorite_load_none" msgid="7687593026725357775">"کنترل‌های سازگار دردسترس نیستند"</string>
-    <string name="controls_favorite_other_zone_header" msgid="9089613266575525252">"موارد دیگر"</string>
+    <string name="controls_favorite_other_zone_header" msgid="9089613266575525252">"غیره"</string>
     <string name="controls_dialog_title" msgid="2343565267424406202">"افزودن به کنترل‌های دستگاه"</string>
     <string name="controls_dialog_ok" msgid="2770230012857881822">"افزودن"</string>
     <string name="controls_dialog_remove" msgid="3775288002711561936">"برداشتن"</string>
@@ -1735,12 +1736,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"برای باز کردن «اعلان‌ها»، از بالا سمت چپ تند بکشید"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"برای باز کردن «تنظیمات فوری»، از بالا سمت راست تند بکشید"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"برگشتن"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"دسترس‌پذیری"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"قبلی"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"بعدی"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"پیمایش کردن به صفحه بعد"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"تکمیل خودکار"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ازهم باز کردن"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

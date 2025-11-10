@@ -16,7 +16,6 @@
 package com.android.app.concurrent.benchmark
 
 import androidx.benchmark.BlackHole
-import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.ConcurrentBenchmarkRule
 import com.android.app.concurrent.benchmark.event.BaseEventBenchmark
 import com.android.app.concurrent.benchmark.event.EventContextProvider
@@ -39,7 +38,6 @@ import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 
-@OptIn(ExperimentalBlackHoleApi::class)
 private sealed interface SampleEventBenchmark<T, E : Any>
     where T : WritableEventFactory<E>, T : EventContextProvider<E>, T : SampleOperator<E> {
     val benchmarkRule: ConcurrentBenchmarkRule

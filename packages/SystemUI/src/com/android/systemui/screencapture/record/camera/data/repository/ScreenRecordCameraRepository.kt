@@ -16,4 +16,34 @@
 
 package com.android.systemui.screencapture.record.camera.data.repository
 
-interface ScreenRecordCameraRepository
+import android.util.Size
+import android.view.Surface
+import androidx.annotation.ColorInt
+import kotlinx.coroutines.flow.Flow
+
+interface ScreenRecordCameraRepository {
+
+    val errors: Flow<Int>
+    val state: Flow<Int>
+    val isConnected: Flow<Boolean>
+
+    fun connect()
+
+    fun disconnect()
+
+    suspend fun startStream(surface: Surface, size: Size)
+
+    suspend fun stopStream()
+
+    suspend fun isCameraSupported(): Boolean
+
+    suspend fun isOnTapSupported(): Boolean
+
+    suspend fun isBackgroundColorSupported(): Boolean
+
+    suspend fun getOptimalCameraStreamSize(): Size?
+
+    suspend fun setBackgroundColor(@ColorInt color: Int)
+
+    suspend fun onTap()
+}

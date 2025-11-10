@@ -15,7 +15,7 @@
  */
 package android.app.appfunctions;
 
-import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS;
+import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS;
 
 import static java.util.Objects.requireNonNull;
 
@@ -32,7 +32,7 @@ import java.util.Objects;
  * <p>A schema defines a function's input parameters and output. This class holds identifying
  * information about a specific, SDK-provided schema.
  */
-@FlaggedApi(FLAG_ENABLE_CONTEXTUAL_APP_FUNCTIONS)
+@FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 public final class AppFunctionSchemaMetadata implements Parcelable {
     @NonNull
     public static final Creator<AppFunctionSchemaMetadata> CREATOR =

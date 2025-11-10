@@ -51,11 +51,12 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
-import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
@@ -66,6 +67,7 @@ import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.transition.DefaultMixedHandler.MixedTransition.MixedTransitionType;
 import com.android.wm.shell.unfold.UnfoldTransitionHandler;
 
 import java.lang.annotation.Retention;
@@ -92,9 +94,10 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     private final KeyguardTransitionHandler mKeyguardHandler;
     private DesktopTasksController mDesktopTasksController;
     private BubbleTransitions mBubbleTransitions;
+    private BubbleHelper mBubbleHelper;
     private UnfoldTransitionHandler mUnfoldHandler;
     private ActivityEmbeddingController mActivityEmbeddingController;
-    private @Nullable PinnedLayerController mPinnedLayerController;
+    private @Nullable PinnedLayerHandler mPinnedLayerHandler;
 
     abstract static class MixedTransition {
 
@@ -227,7 +230,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         protected final StageCoordinator mSplitHandler;
         protected final KeyguardTransitionHandler mKeyguardHandler;
         protected final BubbleTransitions mBubbleTransitions;
-        protected final @Nullable PinnedLayerController mPinnedLayerController;
+        protected final @Nullable PinnedLayerHandler mPinnedLayerHandler;
 
         Transitions.TransitionHandler mLeftoversHandler = null;
         TransitionInfo mInfo = null;
@@ -252,7 +255,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         MixedTransition(@MixedTransitionType int type, IBinder transition, Transitions player,
                 MixedTransitionHandler mixedHandler, PipTransitionController pipHandler,
                 StageCoordinator splitHandler, KeyguardTransitionHandler keyguardHandler,
-                BubbleTransitions bubbleTransitions, PinnedLayerController pinnedLayerController) {
+                BubbleTransitions bubbleTransitions, PinnedLayerHandler pinnedLayerHandler) {
             mType = type;
             mTransition = transition;
             mPlayer = player;
@@ -261,7 +264,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             mSplitHandler = splitHandler;
             mKeyguardHandler = keyguardHandler;
             mBubbleTransitions = bubbleTransitions;
-            mPinnedLayerController = pinnedLayerController;
+            mPinnedLayerHandler = pinnedLayerHandler;
         }
 
         abstract boolean startAnimation(
@@ -355,13 +358,14 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             Optional<SplitScreenController> splitScreenControllerOptional,
             @Nullable PipTransitionController pipTransitionController,
             @Nullable Optional<PipScheduler> pipScheduler,
-            @Nullable PinnedLayerController pinnedLayerController,
+            @Nullable PinnedLayerHandler pinnedLayerHandler,
             Optional<RecentsTransitionHandler> recentsHandlerOptional,
             KeyguardTransitionHandler keyguardHandler,
             Optional<DesktopTasksController> desktopTasksControllerOptional,
             Optional<UnfoldTransitionHandler> unfoldHandler,
             Optional<ActivityEmbeddingController> activityEmbeddingController,
-            BubbleTransitions bubbleTransitions) {
+            BubbleTransitions bubbleTransitions,
+            BubbleHelper bubbleHelper) {
         mPlayer = player;
         mKeyguardHandler = keyguardHandler;
         mPipHandler = pipTransitionController;
@@ -371,7 +375,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mPipHandler.setMixedHandler(this);
             }
             mPipScheduler = pipScheduler.orElse(null);
-            mPinnedLayerController = pinnedLayerController;
+            mPinnedLayerHandler = pinnedLayerHandler;
             mSplitHandler = splitScreenControllerOptional.map(
                     SplitScreenController::getTransitionHandler).orElse(null);
             if (mSplitHandler != null) {
@@ -385,6 +389,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             mUnfoldHandler = unfoldHandler.orElse(null);
             mActivityEmbeddingController = activityEmbeddingController.orElse(null);
             mBubbleTransitions = bubbleTransitions;
+            mBubbleHelper = bubbleHelper;
             mPlayer.addHandler(this);
         }, this);
     }
@@ -476,8 +481,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
 
             WindowContainerTransaction out = new WindowContainerTransaction();
             mPipHandler.augmentRequest(transition, request, out);
-            if (mPinnedLayerController != null && mPinnedLayerController.hasActivePinnedTask()) {
-                mPinnedLayerController.augmentRequestDismissPinnedTask(transition, request, out);
+            if (mPinnedLayerHandler != null && mPinnedLayerHandler.hasActivePinnedTask()) {
+                mPinnedLayerHandler.augmentRequestDismissPinnedTask(transition, request, out);
             }
             if (PipFlags.isPip2ExperimentEnabled() && mSplitHandler.isSplitScreenVisible()) {
                 mSplitHandler.removePipFromSplitIfNeeded(request, out);
@@ -502,8 +507,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             // Postpone transition splitting to later.
             WindowContainerTransaction out = new WindowContainerTransaction();
             mPipHandler.augmentRequest(transition, request, out);
-            if (mPinnedLayerController != null && mPinnedLayerController.hasActivePinnedTask()) {
-                mPinnedLayerController.augmentRequestDismissPinnedTask(transition, request, out);
+            if (mPinnedLayerHandler != null && mPinnedLayerHandler.hasActivePinnedTask()) {
+                mPinnedLayerHandler.augmentRequestDismissPinnedTask(transition, request, out);
             }
             return out;
         } else if (request.getRemoteTransition() != null
@@ -528,10 +533,10 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mixed.mHasRequestToRemote = true;
                 mPlayer.getRemoteTransitionHandler().handleRequest(transition, request);
             }
-            if (handler.first == mPipHandler && mPinnedLayerController != null
-                    && mPinnedLayerController.hasActivePinnedTask()) {
+            if (handler.first == mPipHandler && mPinnedLayerHandler != null
+                    && mPinnedLayerHandler.hasActivePinnedTask()) {
                 // pip side effect to dismiss the pinned layer
-                mPinnedLayerController.augmentRequestDismissPinnedTask(transition, request,
+                mPinnedLayerHandler.augmentRequestDismissPinnedTask(transition, request,
                         handler.second);
             }
             return handler.second;
@@ -582,12 +587,12 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         }
 
         // all mixed transitions related to pinned layer should be handled here.
-        if (mPinnedLayerController != null && mPipScheduler != null) {
+        if (mPinnedLayerHandler != null && mPipScheduler != null) {
             // pinned layer works only with pip2, therefore it's expected to have both controllers
             // always set at this point.
 
             // dismissing media pip when task is moving a to pinned layer
-            if (mPinnedLayerController.isPinningRequest(request) && mPipHandler.isInPip()) {
+            if (mPinnedLayerHandler.isPinningRequest(request) && mPipHandler.isInPip()) {
                 // TODO: b/451545067 - Optimize this to be done in one transition
                 // it's safe to just call schedule, do not actually handle the request here
                 // and let the request be handled normally by pinned layer controller
@@ -596,12 +601,12 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             }
 
             // dismissing pinned layer if pip is opening
-            if (requestHasPipEnter(request) && mPinnedLayerController.hasActivePinnedTask()) {
+            if (requestHasPipEnter(request) && mPinnedLayerHandler.hasActivePinnedTask()) {
                 mActiveTransitions.add(createDefaultMixedTransition(
                     MixedTransition.TYPE_ENTER_PIP_WITH_PINNED_LAYER_DISMISS, transition));
                 final WindowContainerTransaction out = new WindowContainerTransaction();
                 mPipHandler.augmentRequest(transition, request, out);
-                mPinnedLayerController.augmentRequestDismissPinnedTask(transition, request, out);
+                mPinnedLayerHandler.augmentRequestDismissPinnedTask(transition, request, out);
                 return out;
             }
         }
@@ -649,11 +654,11 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     }
 
     private DefaultMixedTransition createDefaultMixedTransition(
-            @MixedTransition.MixedTransitionType int type, IBinder transition) {
+            @MixedTransitionType int type, IBinder transition) {
         return new DefaultMixedTransition(
                 type, transition, mPlayer, this, mPipHandler, mSplitHandler, mKeyguardHandler,
                 mUnfoldHandler, mActivityEmbeddingController, mDesktopTasksController,
-                mBubbleTransitions, mPinnedLayerController);
+                mBubbleTransitions, mBubbleHelper, mPinnedLayerHandler);
     }
 
     @Override
@@ -716,11 +721,11 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 MixedTransition.TYPE_RECENTS_DURING_DESKTOP, transition, displayId));
     }
 
-    private MixedTransition createRecentsMixedTransition(int type, IBinder transition,
-            int displayId) {
+    private MixedTransition createRecentsMixedTransition(@MixedTransitionType int type,
+            IBinder transition, int displayId) {
         return new RecentsMixedTransition(type, transition, mPlayer, this, mPipHandler,
                 mSplitHandler, mKeyguardHandler, mRecentsHandler, mDesktopTasksController,
-                mBubbleTransitions, mPinnedLayerController, displayId);
+                mBubbleTransitions, mPinnedLayerHandler, displayId);
     }
 
     static TransitionInfo subCopy(@NonNull TransitionInfo info,
@@ -1015,7 +1020,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         return false;
     }
 
-    /** Use to when split use taskId to enter, check if this enter transition should be mixed or
+   /** Use to when split use taskId to enter, check if this enter transition should be mixed or
      * not.*/
     public boolean isTaskInPip(int taskId, ShellTaskOrganizer shellTaskOrganizer) {
         // Check if this intent package is same as pip one or not, if true we want let the pip
@@ -1097,7 +1102,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             return null;
         }
-        final TransitionInfo.Change change = mBubbleTransitions.getEnterBubbleTask(info);
+        final TransitionInfo.Change change = mBubbleHelper.getEnterBubbleTask(info);
         if (!com.android.wm.shell.Flags.fixTaskViewRotationAnimation()) {
             return change;
         }

@@ -170,9 +170,13 @@
     <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"App zum Teilen auswählen"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Audioinhalte freigeben"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"App-Fenster teilen"</string>
-    <!-- no translation found for screen_share_tab_sharing_title (1178046793832072728) -->
+    <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Tab teilen"</string>
+    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
     <skip />
-    <string name="screen_share_disclaimer" msgid="3953761426122528262">"Wenn du deinen Bildschirm freigibst, sind die Inhalte darauf sichtbar"</string>
+    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
+    <skip />
+    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
+    <skip />
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Screenshot des Fensters erstellen"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Fenster aufnehmen"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Screenshot des ausgewählten Bereichs erstellen"</string>
@@ -255,7 +259,7 @@
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Authentifizierung abbrechen"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Weitere Optionen"</string>
     <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Auf andere Weise bestätigen"</string>
-    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Auf andere Weise verifizieren"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Identität auf andere Weise bestätigen"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Identitätsüberprüfung verwalten"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Weitere Informationen zur Identitätsüberprüfung"</string>
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"Die Identitätsüberprüfung ist aktiviert. Du kannst deine Identität nur per Fingerabdruck oder Gesichtserkennung bestätigen. %1$s"</string>
@@ -381,7 +385,7 @@
     <string name="quick_settings_modes_label" msgid="879156359479504244">"Modi"</string>
     <string name="quick_settings_bluetooth_label" msgid="7018763367142041481">"Bluetooth"</string>
     <string name="quick_settings_bluetooth_detail_empty_text" msgid="5760239584390514322">"Keine gekoppelten Geräte verfügbar"</string>
-    <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Zum Verbinden oder Trennen eines Geräts tippen"</string>
+    <string name="quick_settings_bluetooth_tile_subtitle" msgid="212752719010829550">"Tippe auf ein Gerät, um es zu verbinden oder zu trennen"</string>
     <string name="pair_new_bluetooth_devices" msgid="4601767620843349645">"Neues Gerät koppeln"</string>
     <string name="see_all_bluetooth_devices" msgid="1761596816620200433">"Alle anzeigen"</string>
     <string name="turn_on_bluetooth" msgid="5681370462180289071">"Bluetooth verwenden"</string>
@@ -644,7 +648,7 @@
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Sperrbildschirm-Widgets"</string>
     <string name="communal_widgets_disclaimer_text" msgid="7363411191173297965">"Wenn du eine App mit einem Widget öffnen möchtest, musst du deine Identität bestätigen. Beachte auch, dass jeder die Widgets sehen kann, auch wenn dein Gerät gesperrt ist. Einige Widgets sind möglicherweise nicht für den Sperrbildschirm vorgesehen, sodass es unsicher sein kann, sie hier hinzuzufügen."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Ok"</string>
-    <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"Schaltfläche „Bildschirmschoner anzeigen“"</string>
+    <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"Button „Bildschirmschoner anzeigen“"</string>
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"Hub-Modus entdecken"</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Du kannst während des Ladevorgangs auf deine bevorzugten Widgets und Bildschirmschoner zugreifen."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Los gehts"</string>
@@ -946,6 +950,8 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Anrufbenachrichtigungen können nicht geändert werden."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Die Benachrichtigungsgruppe kann hier nicht konfiguriert werden"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Weitergeleitete Benachrichtigung"</string>
+    <!-- no translation found for notification_summarization_header (511445254923268688) -->
+    <skip />
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Alle Benachrichtigungen von <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Mehr"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Diese Benachrichtigung wurde durch das System automatisch &lt;b&gt;auf „Standard“ hochgestuft&lt;/b&gt;."</string>
@@ -1151,28 +1157,23 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Ein/Aus-Menü"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Seite <xliff:g id="ID_1">%1$d</xliff:g> von <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> aktivieren?"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_content (2409946187069273612) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_screen_reader_tts (6466269887128043486) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Drücke noch einmal <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g>, um <xliff:g id="ID_4">%4$s</xliff:g> zu aktivieren"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Tastenkombination für „<xliff:g id="ID_1">%1$s</xliff:g>“ aktivieren?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nicht aktivieren"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Tastenkombination aktivieren"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Verknüpfung mit <xliff:g id="ID_1">%1$s</xliff:g> aktiviert"</string>
-    <!-- no translation found for accessibility_key_gesture_magnification_dialog_content (1647246652170256645) -->
-    <skip />
-    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Verknüpfung deaktivieren"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Tastenkombination für <xliff:g id="ID_1">%1$s</xliff:g> aktiviert"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_4">^4</xliff:g>, einer Bedienungshilfe. Dadurch kannst du schnell auf dem Display heranzoomen, um Inhalte zu vergrößern. Wenn die Vergrößerung aktiviert ist, drücke <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> und „+“ oder „-“, um den Zoom anzupassen."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Tastenkombination deaktivieren"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Aktiviert lassen"</string>
-    <!-- no translation found for accessibility_key_gesture_screen_reader_dialog_content (2322728522389883751) -->
-    <skip />
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> ist ein Screenreader, mit dem du dir Text vorlesen lassen kannst. Das kann Nutzern helfen, die den Bildschirm nur schlecht oder gar nicht sehen können. Dadurch kann sich die Funktionsweise deines Geräts ändern."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Wenn du die Tastenkombination aktivierst, gewährst du TalkBack die vollständige Kontrolle über dein Gerät."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Die vollständige Kontrolle sollte nur für Apps aktiviert werden, die dir Zugang zu App-Funktionen erleichtern. Das ist in der Regel nur ein kleiner Teil der Apps."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Display aufrufen und steuern"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Die Funktion dient dazu, den Bildschirminhalt zu lesen und Inhalte über anderen Apps anzuzeigen"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Aktionen aufrufen und durchführen"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Die Funktion kann deine Interaktionen mit einer App oder einem Hardwaresensor verfolgen und in deinem Namen mit Apps interagieren."</string>
-    <!-- no translation found for accessibility_key_gesture_voice_access_dialog_content (8539054865187379687) -->
-    <skip />
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Wenn du <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> drückst, wird die Bedienungshilfe <xliff:g id="ID_4">^4</xliff:g> aktiviert. Damit kannst du dein Gerät per Sprachbefehl steuern."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Bedienungshilfen"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"Fertig"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Sperrbildschirm"</string>
@@ -1735,12 +1736,12 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Zum Öffnen von Benachrichtigungen von links oben nach unten wischen"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Zum Öffnen der Schnelleinstellungen von rechts oben nach unten wischen"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Zurück"</string>
+    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
+    <skip />
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Bedienungshilfen"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Zurück"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Weiter"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"zur nächsten Seite zu gehen"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatisch ausfüllen"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"maximieren"</string>
-    <!-- no translation found for notification_animated_action_content_description (3798244023514868301) -->
-    <skip />
 </resources>

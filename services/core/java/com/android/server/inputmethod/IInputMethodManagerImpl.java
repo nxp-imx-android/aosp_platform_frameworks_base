@@ -24,6 +24,8 @@ import android.annotation.BinderThread;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.os.Binder;
 import android.os.IBinder;
@@ -108,6 +110,29 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
                 boolean allowsImplicitlyEnabledSubtypes, @UserIdInt int userId);
 
         InputMethodSubtype getLastInputMethodSubtype(@UserIdInt int userId);
+
+        @PermissionVerified(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+                Manifest.permission.TEST_INPUT_METHOD,
+                Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+        boolean enableInputMethodForTesting(@NonNull String imeId,
+                @CanBeALL @CanBeCURRENT @UserIdInt int userId);
+
+        @PermissionVerified(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+                Manifest.permission.TEST_INPUT_METHOD,
+                Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+        boolean disableInputMethodForTesting(@NonNull String imeId,
+                @CanBeALL @CanBeCURRENT @UserIdInt int userId);
+
+        @PermissionVerified(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+                Manifest.permission.TEST_INPUT_METHOD,
+                Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+        boolean setInputMethodForTesting(@NonNull String imeId,
+                @CanBeALL @CanBeCURRENT @UserIdInt int userId);
+
+        @PermissionVerified(allOf = {Manifest.permission.WRITE_SECURE_SETTINGS,
+                Manifest.permission.TEST_INPUT_METHOD,
+                Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+        void resetInputMethodsForTesting(@CanBeALL @CanBeCURRENT @UserIdInt int userId);
 
         @PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
         void hideSoftInputFromServerForTest();
@@ -265,6 +290,49 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
     @Override
     public InputMethodSubtype getLastInputMethodSubtype(@UserIdInt int userId) {
         return mCallback.getLastInputMethodSubtype(userId);
+    }
+
+    @EnforcePermission(allOf = {Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    @Override
+    public boolean enableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        super.enableInputMethodForTesting_enforcePermission();
+
+        return mCallback.enableInputMethodForTesting(imeId, userId);
+    }
+
+    @EnforcePermission(allOf = {Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    @Override
+    public boolean disableInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        super.disableInputMethodForTesting_enforcePermission();
+
+        return mCallback.disableInputMethodForTesting(imeId, userId);
+    }
+
+    @EnforcePermission(allOf = {Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    @Override
+    public boolean setInputMethodForTesting(@NonNull String imeId,
+            @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        super.setInputMethodForTesting_enforcePermission();
+
+        return mCallback.setInputMethodForTesting(imeId, userId);
+    }
+
+    @EnforcePermission(allOf = {Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.TEST_INPUT_METHOD,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    @Override
+    public void resetInputMethodsForTesting(@CanBeALL @CanBeCURRENT @UserIdInt int userId) {
+        super.resetInputMethodsForTesting_enforcePermission();
+
+        mCallback.resetInputMethodsForTesting(userId);
     }
 
     @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)

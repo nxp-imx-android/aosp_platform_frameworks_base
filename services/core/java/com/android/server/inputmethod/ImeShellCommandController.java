@@ -38,7 +38,6 @@ import android.view.inputmethod.InputMethodInfo;
 
 import com.android.internal.inputmethod.DirectBootAwareness;
 import com.android.internal.inputmethod.ImeTracing;
-import com.android.internal.inputmethod.SoftInputShowHideReason;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -282,8 +281,15 @@ final class ImeShellCommandController extends ShellCommand {
             return false;
         }
 
-        final boolean previouslyEnabled =
-                mService.setInputMethodEnabledLocked(imeId, enabled, userId);
+        final var enabledInputMethodsController = mService.getEnabledInputMethodsControllerLocked();
+        /** TODO: Currently ImeShellCommandController#enableOrDisable already handles user ID
+         *  resolution, and we call into enabledInputMethodsController which handles it again.
+         *  We should remove this duplication in the future
+         */
+
+        final boolean previouslyEnabled = enabled
+                ? enabledInputMethodsController.enableInputMethodForTesting(imeId, userId)
+                : enabledInputMethodsController.disableInputMethodForTesting(imeId, userId);
         out.print("Input method ");
         out.print(imeId);
         out.print(": ");
@@ -319,9 +325,9 @@ final class ImeShellCommandController extends ShellCommand {
     @BinderThread
     private boolean setInternal(
             @UserIdInt int userId, String imeId, PrintWriter out, PrintWriter error) {
-        boolean failedToSelectUnknownIme = !mService.switchToInputMethodLocked(imeId,
-                InputMethodUtils.NOT_A_SUBTYPE_INDEX, userId);
-        if (failedToSelectUnknownIme) {
+        boolean failedToSelectUnknownIme = mService.getEnabledInputMethodsControllerLocked()
+                .setInputMethodForTesting(imeId, userId);
+        if(failedToSelectUnknownIme){
             error.print("Unknown input method ");
             error.print(imeId);
             error.print(" cannot be selected for user #");
@@ -333,23 +339,6 @@ final class ImeShellCommandController extends ShellCommand {
             out.print(imeId);
             out.print(" selected for user #");
             out.println(userId);
-
-            final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
-            final var bindingController = mService.getInputMethodBindingController(userId);
-            final int deviceId = bindingController.getDeviceIdToShowIme();
-            final String settingsValue = (deviceId == DEVICE_ID_DEFAULT)
-                    ? settings.getSelectedInputMethod()
-                    : settings.getSelectedDefaultDeviceInputMethod();
-            if (!TextUtils.equals(settingsValue, imeId)) {
-                Slog.w(TAG, "DEFAULT_INPUT_METHOD=" + settingsValue
-                        + " is not updated. Fixing it up to " + imeId
-                        + " See b/354782333.");
-                if (deviceId == DEVICE_ID_DEFAULT) {
-                    settings.putSelectedInputMethod(imeId);
-                } else {
-                    settings.putSelectedDefaultDeviceInputMethod(imeId);
-                }
-            }
         }
         return failedToSelectUnknownIme;
     }
@@ -379,30 +368,8 @@ final class ImeShellCommandController extends ShellCommand {
         if (userInfo != null && UserManager.USER_TYPE_SYSTEM_HEADLESS.equals(userInfo.userType)) {
             return;
         }
+        mService.getEnabledInputMethodsControllerLocked().resetInputMethodsForTesting(userId);
         final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
-        final UserData userData = mService.getUserData(userId);
-        final var statsToken = mService.createStatsTokenForFocusedClient(false /* show */,
-                SoftInputShowHideReason.HIDE_RESET_SHELL_COMMAND, userId);
-        mService.setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
-        userData.mBindingController.unbindCurrentMethod();
-
-        var toDisable = settings.getEnabledInputMethodList();
-        var defaultEnabled = InputMethodInfoUtils.getDefaultEnabledImes(
-                mService.mContext, settings.getMethodList());
-        toDisable.removeAll(defaultEnabled);
-        for (InputMethodInfo info : toDisable) {
-            mService.setInputMethodEnabledLocked(info.getId(), false, userId);
-        }
-        for (InputMethodInfo info : defaultEnabled) {
-            mService.setInputMethodEnabledLocked(info.getId(), true, userId);
-        }
-        if (!mService.chooseNewDefaultIMELocked(userId)) {
-            mService.resetSelectedInputMethodAndSubtypeLocked(null, userId);
-        }
-        mService.updateInputMethodsFromSettingsLocked(true, userId);
-        InputMethodUtils.setNonSelectedSystemImesDisabledUntilUsed(
-                InputMethodManagerService.getPackageManagerForUser(mService.mContext, userId),
-                settings.getEnabledInputMethodList());
         final String nextIme = settings.getSelectedInputMethod();
         final List<InputMethodInfo> nextEnabledImes = settings.getEnabledInputMethodList();
         out.println("Reset current and enabled IMEs for user #" + userId);

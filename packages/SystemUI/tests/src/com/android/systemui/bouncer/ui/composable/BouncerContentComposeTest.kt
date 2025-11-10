@@ -22,10 +22,15 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions.CustomActions
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
@@ -33,9 +38,11 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModelFactory
+import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,6 +54,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
     private companion object {
         const val BACK_BUTTON_TAG = "BackButton"
         const val A11Y_BUTTON_TAG = "AccessibilityButton"
+        const val BOUNCER_CONTENT_ROOT_TAG = "BouncerContentRoot"
     }
 
     private val kosmos = testKosmos()
@@ -70,7 +78,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
                             kosmos.bouncerOverlayContentViewModelFactory.create()
                         },
                     layout = BouncerOverlayLayout.BESIDE_USER_SWITCHER,
-                    modifier = Modifier,
+                    modifier = Modifier.testTag(BOUNCER_CONTENT_ROOT_TAG),
                     dialogFactory = bouncerDialogFactory,
                 )
             }
@@ -145,5 +153,46 @@ class BouncerContentComposeTest : SysuiTestCase() {
         composeTestRule.waitForIdle()
 
         composeTestRule.onNodeWithTag(A11Y_BUTTON_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun accessibilityActions_retriesFaceAuth_disabled() {
+        // Disable face auth
+        kosmos.fakeDeviceEntryFaceAuthRepository.canRunFaceAuth.value = false
+
+        composeTestRule.setContent { BouncerContentUnderTest() }
+        composeTestRule.waitForIdle()
+
+        // Assert the a11y action is missing
+        composeTestRule
+            .onNodeWithTag(BOUNCER_CONTENT_ROOT_TAG)
+            .assertMissingCustomAction(context.getString(R.string.retry_face))
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun accessibilityActions_retriesFaceAuth_enabled() {
+        // Enable face auth
+        kosmos.fakeDeviceEntryFaceAuthRepository.canRunFaceAuth.value = true
+
+        composeTestRule.setContent { BouncerContentUnderTest() }
+        composeTestRule.waitForIdle()
+
+        // Assert the a11y action is available
+        composeTestRule
+            .onNodeWithTag(BOUNCER_CONTENT_ROOT_TAG)
+            .performCustomAccessibilityActionWithLabel(context.getString(R.string.retry_face))
+    }
+
+    private fun SemanticsNodeInteraction.assertMissingCustomAction(
+        label: String
+    ): SemanticsNodeInteraction {
+        assertThat(
+                fetchSemanticsNode().config.getOrElse(CustomActions, { emptyList() }).map {
+                    it.label
+                }
+            )
+            .doesNotContain(label)
+        return this
     }
 }

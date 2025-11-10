@@ -118,7 +118,7 @@ public class NotificationChildrenContainer extends ViewGroup
     private TextView mOverflowNumber;
     private ViewState mGroupOverFlowState;
     private int mRealHeight;
-    private boolean mUserLocked;
+    private boolean mIsUserSwipingToExpandRow;
     private int mActualHeight;
     private boolean mNeverAppliedGroupState;
 
@@ -373,7 +373,7 @@ public class NotificationChildrenContainer extends ViewGroup
         int newIndex = childIndex < 0 ? mAttachedChildren.size() : childIndex;
         mAttachedChildren.add(newIndex, row);
         addView(row);
-        row.setUserLocked(mUserLocked);
+        row.setUserSwipingToExpandRow(mIsUserSwipingToExpandRow);
 
         View divider = inflateDivider();
         addView(divider);
@@ -419,7 +419,7 @@ public class NotificationChildrenContainer extends ViewGroup
 
         row.setSystemChildExpanded(false);
         row.setNotificationFaded(false);
-        row.setUserLocked(false);
+        row.setUserSwipingToExpandRow(false);
         if (!row.isRemoved()) {
             mGroupingUtil.restoreChildNotification(row);
         }
@@ -758,7 +758,7 @@ public class NotificationChildrenContainer extends ViewGroup
      * To be called any time the rows have been updated
      */
     public void updateExpansionStates() {
-        if (mChildrenExpanded || mUserLocked) {
+        if (mChildrenExpanded || mIsUserSwipingToExpandRow) {
             // we don't modify it the group is expanded or if we are expanding it
             return;
         }
@@ -794,7 +794,7 @@ public class NotificationChildrenContainer extends ViewGroup
         int childCount = mAttachedChildren.size();
         boolean firstChild = true;
         float expandFactor = 0;
-        if (mUserLocked) {
+        if (mIsUserSwipingToExpandRow) {
             expandFactor = getGroupExpandFraction();
         }
         boolean childrenExpanded = mChildrenExpanded;
@@ -803,14 +803,14 @@ public class NotificationChildrenContainer extends ViewGroup
                 break;
             }
             if (!firstChild) {
-                if (mUserLocked) {
+                if (mIsUserSwipingToExpandRow) {
                     intrinsicHeight += NotificationUtils.interpolate(mChildPadding, mDividerHeight,
                             expandFactor);
                 } else {
                     intrinsicHeight += childrenExpanded ? mDividerHeight : mChildPadding;
                 }
             } else {
-                if (mUserLocked) {
+                if (mIsUserSwipingToExpandRow) {
                     intrinsicHeight += NotificationUtils.interpolate(
                             0,
                             getAdditionalExpandedHeaderMargin() + mDividerHeight,
@@ -826,7 +826,7 @@ public class NotificationChildrenContainer extends ViewGroup
             intrinsicHeight += child.getIntrinsicHeight();
             visibleChildren++;
         }
-        if (mUserLocked) {
+        if (mIsUserSwipingToExpandRow) {
             intrinsicHeight += NotificationUtils.interpolate(mCollapsedBottomPadding, 0.0f,
                     expandFactor);
         } else if (!childrenExpanded) {
@@ -854,8 +854,8 @@ public class NotificationChildrenContainer extends ViewGroup
         int lastVisibleIndex = maxAllowedVisibleChildren - 1;
         int firstOverflowIndex = lastVisibleIndex + 1;
         float expandFactor = 0;
-        boolean expandingToExpandedGroup = mUserLocked && !showingAsLowPriority();
-        if (mUserLocked) {
+        boolean expandingToExpandedGroup = mIsUserSwipingToExpandRow && !showingAsLowPriority();
+        if (mIsUserSwipingToExpandRow) {
             expandFactor = getGroupExpandFraction();
             firstOverflowIndex = getMaxAllowedVisibleChildren(true /* likeCollapsed */);
         }
@@ -913,13 +913,12 @@ public class NotificationChildrenContainer extends ViewGroup
             childState.hideSensitive = parentState.hideSensitive;
             childState.belowSpeedBump = parentState.belowSpeedBump;
             childState.clipTopAmount = 0;
-            childState.setAlpha(0);
+            childState.setAlpha(0, "ncc updateState");
             if (i < firstOverflowIndex) {
-                childState.setAlpha(showingAsLowPriority() ? expandFactor : 1.0f);
+                childState.setAlpha(showingAsLowPriority() ? expandFactor : 1.0f, "ncc overflow");
             } else if (expandFactor == 1.0f && i <= lastVisibleIndex) {
-                childState.setAlpha(
-                        (mActualHeight - childState.getYTranslation()) / childState.height);
-                childState.setAlpha(Math.max(0.0f, Math.min(1.0f, childState.getAlpha())));
+                float rawAlpha = (mActualHeight - childState.getYTranslation()) / childState.height;
+                childState.setAlpha(Math.max(0.0f, Math.min(1.0f, rawAlpha)), "ncc alpha");
             }
             childState.location = parentState.location;
             childState.inShelf = parentState.inShelf;
@@ -947,7 +946,7 @@ public class NotificationChildrenContainer extends ViewGroup
                     if (mirrorView.getVisibility() == GONE) {
                         mirrorView = alignView;
                     }
-                    mGroupOverFlowState.setAlpha(mirrorView.getAlpha());
+                    mGroupOverFlowState.setAlpha(mirrorView.getAlpha(), "group overflow");
                     float yTranslation = mGroupOverFlowState.getYTranslation()
                             + NotificationUtils.getRelativeYOffset(
                             mirrorView, overflowView);
@@ -956,7 +955,7 @@ public class NotificationChildrenContainer extends ViewGroup
             } else {
                 mGroupOverFlowState.setYTranslation(
                         mGroupOverFlowState.getYTranslation() + getCollapsedHeaderMargin());
-                mGroupOverFlowState.setAlpha(0.0f);
+                mGroupOverFlowState.setAlpha(0.0f, "group overflow");
             }
         }
         if (mGroupHeader != null) {
@@ -971,7 +970,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 mHeaderViewState.setZTranslation(0);
             }
             mHeaderViewState.setYTranslation(mCurrentHeaderTranslation);
-            mHeaderViewState.setAlpha(mHeaderVisibleAmount);
+            mHeaderViewState.setAlpha(mHeaderVisibleAmount, "header visible amount");
 
             if (notificationsRedesignTemplates()) {
                 // While mUserLocked, the expandFactor reflects where in the drag-to-expand gesture
@@ -979,7 +978,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 // header components. Otherwise, we just set the final desired translation based
                 // on whether the group is expanded or not.
                 float topLineTranslation = 0, expandButtonTranslation = 0;
-                if (mUserLocked) {
+                if (mIsUserSwipingToExpandRow) {
                     topLineTranslation = mGroupHeader.getTopLineTranslation() * expandFactor;
                     expandButtonTranslation =
                             mGroupHeader.getExpandButtonTranslation() * expandFactor;
@@ -1026,13 +1025,14 @@ public class NotificationChildrenContainer extends ViewGroup
     int getMaxAllowedVisibleChildren(boolean likeCollapsed) {
         if (isBundle()) {
             if (mContainingNotification.isGroupExpanded()
-                    || mContainingNotification.isUserLocked()) {
+                    || mContainingNotification.isUserSwipingToExpandRow()) {
                 return getNumberOfChildrenWhenExpanded();
             } else {
                 return getNumberOfChildrenWhenCollapsed();
             }
         }
-        if (!likeCollapsed && (mChildrenExpanded || mContainingNotification.isUserLocked())
+        if (!likeCollapsed
+                && (mChildrenExpanded || mContainingNotification.isUserSwipingToExpandRow())
                 && !showingAsLowPriority()) {
             return getNumberOfChildrenWhenExpanded();
         }
@@ -1081,11 +1081,11 @@ public class NotificationChildrenContainer extends ViewGroup
         int childCount = mAttachedChildren.size();
         ViewState tmpState = new ViewState();
         float expandFraction = 0.0f;
-        if (mUserLocked) {
+        if (mIsUserSwipingToExpandRow) {
             expandFraction = getGroupExpandFraction();
         }
         final boolean isExpanding = !showingAsLowPriority()
-                && (mUserLocked || mContainingNotification.isGroupExpansionChanging());
+                && (mIsUserSwipingToExpandRow || mContainingNotification.isGroupExpansionChanging());
         final boolean dividersVisible = (mChildrenExpanded && mShowDividersWhenExpanded)
                 || (isExpanding && !mHideDividersDuringExpand);
         for (int i = 0; i < childCount; i++) {
@@ -1098,12 +1098,12 @@ public class NotificationChildrenContainer extends ViewGroup
             tmpState.initFrom(divider);
             tmpState.setYTranslation(viewState.getYTranslation() - mDividerHeight);
             float alpha = mChildrenExpanded && viewState.getAlpha() != 0 ? mDividerAlpha : 0;
-            if (mUserLocked && !showingAsLowPriority() && viewState.getAlpha() != 0) {
+            if (mIsUserSwipingToExpandRow && !showingAsLowPriority() && viewState.getAlpha() != 0) {
                 alpha = NotificationUtils.interpolate(0, mDividerAlpha,
                         Math.min(viewState.getAlpha(), expandFraction));
             }
             tmpState.hidden = !dividersVisible;
-            tmpState.setAlpha(alpha);
+            tmpState.setAlpha(alpha, "divider");
             tmpState.applyToView(divider);
             // There is no fake shadow to be drawn on the children
             child.setFakeShadowIntensity(0.0f, 0.0f, 0, 0);
@@ -1246,7 +1246,7 @@ public class NotificationChildrenContainer extends ViewGroup
         ViewState tmpState = new ViewState();
         float expandFraction = getGroupExpandFraction();
         final boolean isExpansionChanging = !showingAsLowPriority()
-                && (mUserLocked || mContainingNotification.isGroupExpansionChanging());
+                && (mIsUserSwipingToExpandRow || mContainingNotification.isGroupExpansionChanging());
         final boolean dividersVisible = (mChildrenExpanded && mShowDividersWhenExpanded)
                 || (isExpansionChanging && !mHideDividersDuringExpand);
         for (int i = childCount - 1; i >= 0; i--) {
@@ -1259,22 +1259,23 @@ public class NotificationChildrenContainer extends ViewGroup
             tmpState.initFrom(divider);
             tmpState.setYTranslation(viewState.getYTranslation() - mDividerHeight);
             float alpha = mChildrenExpanded && viewState.getAlpha() != 0 ? mDividerAlpha : 0;
-            if (mUserLocked && !showingAsLowPriority() && viewState.getAlpha() != 0) {
+            if (mIsUserSwipingToExpandRow && !showingAsLowPriority() && viewState.getAlpha() != 0) {
                 alpha = NotificationUtils.interpolate(0, mDividerAlpha,
                         Math.min(viewState.getAlpha(), expandFraction));
             }
             tmpState.hidden = !dividersVisible;
-            tmpState.setAlpha(alpha);
+            tmpState.setAlpha(alpha, "divider");
             tmpState.animateTo(divider, properties);
             // There is no fake shadow to be drawn on the children
             child.setFakeShadowIntensity(0.0f, 0.0f, 0, 0);
         }
         if (mOverflowNumber != null) {
             if (mNeverAppliedGroupState) {
-                float alpha = mGroupOverFlowState.getAlpha();
-                mGroupOverFlowState.setAlpha(0);
+                float oldAlpha = mGroupOverFlowState.getAlpha();
+                String oldReason = mGroupOverFlowState.getAlphaReason();
+                mGroupOverFlowState.setAlpha(0, "group overflow init");
                 mGroupOverFlowState.applyToView(mOverflowNumber);
-                mGroupOverFlowState.setAlpha(alpha);
+                mGroupOverFlowState.setAlpha(oldAlpha, oldReason);
                 mNeverAppliedGroupState = false;
             }
             mGroupOverFlowState.animateTo(mOverflowNumber, properties);
@@ -1455,7 +1456,7 @@ public class NotificationChildrenContainer extends ViewGroup
             child.setAlpha(start);
             ViewState viewState = new ViewState();
             viewState.initFrom(child);
-            viewState.setAlpha(target);
+            viewState.setAlpha(target, "child alpha animation");
             ALPHA_FADE_IN.setDelay(i * 50);
             viewState.animateTo(child, ALPHA_FADE_IN);
         }
@@ -1463,7 +1464,7 @@ public class NotificationChildrenContainer extends ViewGroup
 
 
     private void updateHeaderTransformation() {
-        if (mUserLocked && showingAsLowPriority()) {
+        if (mIsUserSwipingToExpandRow && showingAsLowPriority()) {
             float fraction = getGroupExpandFraction();
             mGroupHeaderWrapper.transformFrom(mMinimizedGroupHeaderWrapper,
                     fraction);
@@ -1541,7 +1542,7 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     public void setActualHeight(int actualHeight) {
-        if (!mUserLocked) {
+        if (!mIsUserSwipingToExpandRow) {
             return;
         }
         mActualHeight = actualHeight;
@@ -1719,22 +1720,22 @@ public class NotificationChildrenContainer extends ViewGroup
         }
     }
 
-    public void setUserLocked(boolean userLocked) {
-        mUserLocked = userLocked;
-        if (!mUserLocked) {
+    public void setUserSwipingToExpandRow(boolean isUserSwiping) {
+        mIsUserSwipingToExpandRow = isUserSwiping;
+        if (!mIsUserSwipingToExpandRow) {
             updateHeaderVisibility(false /* animate */);
         }
         int childCount = mAttachedChildren.size();
         for (int i = 0; i < childCount; i++) {
             ExpandableNotificationRow child = mAttachedChildren.get(i);
-            child.setUserLocked(userLocked && !showingAsLowPriority());
+            child.setUserSwipingToExpandRow(isUserSwiping && !showingAsLowPriority());
         }
         updateHeaderTouchability();
     }
 
     private void updateHeaderTouchability() {
         if (mGroupHeader != null) {
-            mGroupHeader.setAcceptAllTouches(mChildrenExpanded || mUserLocked);
+            mGroupHeader.setAcceptAllTouches(mChildrenExpanded || mIsUserSwipingToExpandRow);
         }
     }
 
@@ -1783,8 +1784,8 @@ public class NotificationChildrenContainer extends ViewGroup
             }
             updateHeaderVisibility(false /* animate */);
         }
-        if (mUserLocked) {
-            setUserLocked(mUserLocked);
+        if (mIsUserSwipingToExpandRow) {
+            setUserSwipingToExpandRow(true);
         }
     }
 
@@ -1800,16 +1801,16 @@ public class NotificationChildrenContainer extends ViewGroup
 
     public void onExpansionChanged() {
         if (mIsMinimized) {
-            if (mUserLocked) {
-                setUserLocked(mUserLocked);
+            if (mIsUserSwipingToExpandRow) {
+                setUserSwipingToExpandRow(mIsUserSwipingToExpandRow);
             }
             updateHeaderVisibility(true /* animate */);
         }
     }
 
     @VisibleForTesting
-    public boolean isUserLocked() {
-        return mUserLocked;
+    public boolean isUserSwipingToExpandRow() {
+        return mIsUserSwipingToExpandRow;
     }
 
     @Override

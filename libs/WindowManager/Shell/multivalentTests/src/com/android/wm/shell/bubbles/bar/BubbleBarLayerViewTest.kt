@@ -46,6 +46,7 @@ import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleData
 import com.android.wm.shell.bubbles.BubbleDataRepository
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager
+import com.android.wm.shell.bubbles.BubbleHelper
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker
 import com.android.wm.shell.bubbles.BubbleTransitions
@@ -278,6 +279,7 @@ class BubbleBarLayerViewTest {
             { false },
             sessionTracker,
             bubbleViewInfoTaskFactory,
+            mock<BubbleHelper>(),
         )
     }
 
@@ -446,7 +448,38 @@ class BubbleBarLayerViewTest {
     }
 
     @Test
-    fun dragExpandedViewToRight_thenToDismiss_shouldUpdateBubbleBarLocation() {
+    fun dragExpandedViewRight_shouldUpdateBubbleBarLocation() {
+        val bubble = createBubble("first")
+        bubblePositioner.bubbleBarLocation = BubbleBarLocation.LEFT
+
+        getInstrumentation().runOnMainSync {
+            bubbleBarLayerView.showExpandedView(bubble)
+            bubble.bubbleBarExpandedView!!.onContentVisibilityChanged(true /* visible */)
+        }
+        waitForExpandedViewAnimation()
+
+        val handleView = bubbleBarLayerView.findViewById<View>(R.id.bubble_bar_handle_view)
+        assertThat(handleView).isNotNull()
+
+        val dragZones = dragZoneFactory.createSortedDragZones(
+            DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
+        )
+        val rightDragZone = dragZones.filterIsInstance<DragZone.Bubble.Right>().first().bounds.rect
+        val rightPoint = PointF(rightDragZone.exactCenterX(), rightDragZone.exactCenterY())
+        val leftDragZone = dragZones.filterIsInstance<DragZone.Bubble.Left>().first().bounds.rect
+        val leftPoint = PointF(leftDragZone.exactCenterX(), leftDragZone.exactCenterY())
+
+        // Drag from left to right
+        handleView.dispatchTouchEvent(0L, MotionEvent.ACTION_DOWN, leftPoint)
+        handleView.dispatchTouchEvent(10L, MotionEvent.ACTION_MOVE, rightPoint)
+        handleView.dispatchTouchEvent(20L, MotionEvent.ACTION_UP, rightPoint)
+
+        assertThat(bubblePositioner.bubbleBarLocation).isEqualTo(BubbleBarLocation.RIGHT)
+        assertThat(bubbleStateListener.bubbleBarLocation).isEqualTo(BubbleBarLocation.RIGHT)
+    }
+
+    @Test
+    fun dragExpandedViewToRight_thenToDismiss_shouldNotUpdateBubbleBarLocation() {
         val bubble = createBubble("first")
         bubblePositioner.bubbleBarLocation = BubbleBarLocation.LEFT
 
@@ -476,7 +509,8 @@ class BubbleBarLayerViewTest {
         handleView.dispatchTouchEvent(30L, MotionEvent.ACTION_UP, dismissPoint)
 
         assertThat(bubblePositioner.bubbleBarLocation).isEqualTo(BubbleBarLocation.LEFT)
-        assertThat(bubbleStateListener.bubbleBarLocation).isEqualTo(BubbleBarLocation.LEFT)
+        // since we dragged to dismiss, the bubble bar location should not be updated
+        assertThat(bubbleStateListener.bubbleBarLocation).isNull()
     }
 
     @Test

@@ -2981,7 +2981,8 @@ public class ApplicationPackageManager extends PackageManager {
     public void clearApplicationUserData(String packageName,
                                          IPackageDataObserver observer) {
         try {
-            mPM.clearApplicationUserData(packageName, observer, getUserId());
+            mPM.clearApplicationUserData(packageName, observer, getUserId(),
+                    /* restorePregrantedPermissions */ true);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -4413,5 +4414,14 @@ public class ApplicationPackageManager extends PackageManager {
             return;
         }
         sQueryIntentActivitiesCache.invalidateCache();
+    }
+
+    @Override
+    public int getAppUidForPccUid(int pccUid) {
+        try {
+            return mPM.getAppUidForPccUid(pccUid);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 }

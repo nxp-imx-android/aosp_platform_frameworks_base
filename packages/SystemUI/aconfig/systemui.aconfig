@@ -88,6 +88,17 @@ flag {
 }
 
 flag {
+    name: "notification_x_button_clip_fix"
+    namespace: "systemui"
+    description: "fix the clipped notification x button which shows when the group notification is "
+        "under mouse hover"
+    bug: "455839877"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "notification_async_group_header_inflation"
     namespace: "systemui"
     description: "Inflates the notification group summary header views from the background thread."
@@ -264,16 +275,6 @@ flag {
     description: "Move the StatusBar window to a new UI thread, which is separate from the main "
         "thread."
     bug: "374159193"
-}
-
-flag {
-    name: "status_bar_privacy_chip_animation_exemption"
-    namespace: "systemui"
-    description: "Exempt the default camera app from the privacy chip animation."
-    bug: "422243884"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1058,6 +1059,13 @@ flag {
 }
 
 flag {
+  name: "aosp_posture_detection"
+  namespace: "systemui"
+  description: "Enables an AOSP-based posture detection algorithm using device accelerometer data"
+  bug: "456482519"
+}
+
+flag {
   name: "app_clips_backlinks"
   namespace: "systemui"
   description: "Enables Backlinks improvement feature in App Clips"
@@ -1323,6 +1331,13 @@ flag {
     namespace: "systemui"
     description: "Enables the expanded audio detailed view and entry point."
     bug: "374173773"
+}
+
+flag {
+    name: "desktop_optimized_notification"
+    namespace: "systemui"
+    description: "Enables improved notification UX for Desktop."
+    bug: "456554989"
 }
 
 flag {
@@ -1762,17 +1777,6 @@ flag {
     bug: "418243972"
 }
 
-
-flag {
-    name: "hub_blurred_by_shade_fix"
-    namespace: "systemui"
-    description: "Fixes the blurring issue on hub after the shade is pulled down slightly."
-    bug: "412261838"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
 flag {
     name: "animation_library_shell_migration"
     namespace: "systemui"
@@ -1795,16 +1799,6 @@ flag {
     namespace: "systemui"
     description: "Sets brightness to minimum when using lowlight clock"
     bug: "419096438"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "lowlight_clock_uses_keyguard_charging_status"
-    namespace: "systemui"
-    description: "Make sure keyguard and low-light clock show the same charging status."
-    bug: "424297980"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -1862,16 +1856,6 @@ flag {
     namespace: "systemui"
     description: "Enable glanceable hub by default (this flag is intended to enable GH for DF only)."
     bug: "428215526"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "reset_tiles_removes_custom_tiles"
-    namespace: "systemui"
-    description: "Fixes bug where calling Reset Tiles will not properly mark custom tiles as removed."
-    bug: "431235255"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -2094,4 +2078,11 @@ flag {
     namespace: "systemui"
     description: "Splits the 'Show passwords' setting into two new settings: one for touch inputs and one for physical inputs."
     bug: "417951523"
+}
+
+flag {
+    name: "enable_ambient_cue_with_ime_visible"
+    namespace: "ailabs"
+    description: "Enables showing Cue Bar while IME is visible"
+    bug: "451865977"
 }

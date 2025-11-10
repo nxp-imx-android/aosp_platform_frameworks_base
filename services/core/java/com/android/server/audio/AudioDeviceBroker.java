@@ -137,6 +137,13 @@ public class AudioDeviceBroker {
     private final @NonNull AudioService mAudioService;
     private final @NonNull Context mContext;
     private final @NonNull AudioSystemAdapter mAudioSystem;
+    // Manages all connected devices, only ever accessed on the message loop
+    private final AudioDeviceInventory mDeviceInventory;
+    // Manages notifications to BT service
+    private final BtHelper mBtHelper;
+    // Adapter for system_server-reserved operations
+    private final SystemServerAdapter mSystemServer;
+
 
     /** ID for Communication strategy retrieved form audio policy manager */
     /*package*/  int mCommunicationStrategyId = -1;
@@ -149,13 +156,6 @@ public class AudioDeviceBroker {
     /*package*/ AudioDeviceInfo mActiveCommunicationDevice;
     /** Last preferred device set for communication strategy */
     private AudioDeviceAttributes mPreferredCommunicationDevice;
-
-    // Manages all connected devices, only ever accessed on the message loop
-    private final AudioDeviceInventory mDeviceInventory;
-    // Manages notifications to BT service
-    private final BtHelper mBtHelper;
-    // Adapter for system_server-reserved operations
-    private final SystemServerAdapter mSystemServer;
 
     //-------------------------------------------------------------------
     // we use a different lock than mDeviceStateLock so as not to create
@@ -302,6 +302,12 @@ public class AudioDeviceBroker {
 
     private void init() {
         setupMessaging(mContext);
+
+        mCommunicationActivityDebouncer =
+                new ActivityDebouncer(mBrokerHandler, MSG_L_COMMUNICATION_ROUTE_INACTIVE,
+                        uid -> updateCommunicationClientActivity(uid, true),
+                        CLIENT_INACTIVITY_DEBOUNCE_MS
+                        );
 
         initAudioHalBluetoothState();
         initRoutingStrategyIds();
@@ -599,59 +605,8 @@ public class AudioDeviceBroker {
 
 
     // check playback or record activity after 6 seconds for UIDs
-    private static final int CHECK_CLIENT_STATE_DELAY_MS = 6000;
-
-    /*package */
-    void postCheckCommunicationRouteClientState(int uid, boolean wasActive, int delay) {
-        RouteClient client = mCommunicationStack.getClientForUid(uid);
-        if (client != null) {
-            sendMsgForCheckClientState(MSG_CHECK_COMMUNICATION_ROUTE_CLIENT_STATE,
-                                        SENDMSG_REPLACE,
-                                        uid,
-                                        wasActive ? 1 : 0,
-                                        client,
-                                        delay);
-        }
-    }
-
-    @GuardedBy("mDeviceStateLock")
-    void onCheckCommunicationRouteClientState(int uid, boolean wasActive) {
-        RouteClient client = mCommunicationStack.getClientForUid(uid);
-        if (client == null) {
-            return;
-        }
-        updateCommunicationRouteClientState(client, wasActive);
-    }
-
-    @GuardedBy("mDeviceStateLock")
-    /*package*/ void updateCommunicationRouteClientState(
-                            RouteClient client, boolean wasActive) {
-        client.setPlaybackActive(mAudioService.isPlaybackActiveForUid(client.getUid()));
-        client.setRecordingActive(mAudioService.isRecordingActiveForUid(client.getUid()));
-        if (wasActive != client.isActive()) {
-            postUpdateCommunicationRouteClient(wasActive ?
-                    client.getAttributionSource() : null,
-                    "updateCommunicationRouteClientState");
-        }
-    }
-
-    @GuardedBy("mDeviceStateLock")
-    /*package*/ void setForceCommunicationClientStateAndDelayedCheck(
-                            RouteClient client,
-                            boolean forcePlaybackActive,
-                            boolean forceRecordingActive) {
-        if (client == null) {
-            return;
-        }
-        if (forcePlaybackActive) {
-            client.setPlaybackActive(true);
-        }
-        if (forceRecordingActive) {
-            client.setRecordingActive(true);
-        }
-        postCheckCommunicationRouteClientState(
-                client.getUid(), client.isActive(), CHECK_CLIENT_STATE_DELAY_MS);
-    }
+    private static final int CLIENT_INACTIVITY_DEBOUNCE_MS = 6000;
+    private ActivityDebouncer mCommunicationActivityDebouncer;
 
     /* package */ static List<AudioDeviceInfo> getAvailableCommunicationDevices() {
         ArrayList<AudioDeviceInfo> commDevices = new ArrayList<>();
@@ -1361,6 +1316,7 @@ public class AudioDeviceBroker {
                 false, isPrivileged, eventSource));
     }
 
+
     /*package*/ int setPreferredDevicesForStrategySync(int strategy,
             @NonNull List<AudioDeviceAttributes> devices) {
         return mDeviceInventory.setPreferredDevicesForStrategyAndSave(strategy, devices);
@@ -1603,6 +1559,10 @@ public class AudioDeviceBroker {
             AttributionSource attributionSource, String eventSource) {
         sendLMsgNoDelay(MSG_L_UPDATE_COMMUNICATION_ROUTE_CLIENT, SENDMSG_QUEUE,
             new UpdateCommRouteClientInfo(attributionSource, eventSource));
+    }
+
+    /*package*/ void postUpdateActiveUids(int[] activeUids) {
+        sendLMsgNoDelay(MSG_L_ACTIVE_UIDS_UPDATE, SENDMSG_QUEUE, activeUids);
     }
 
     /*package*/ void postSetCommunicationDeviceForClient(CommunicationDeviceInfo info) {
@@ -2099,6 +2059,22 @@ public class AudioDeviceBroker {
                     }
                     break;
 
+                case MSG_L_COMMUNICATION_ROUTE_INACTIVE:
+                    synchronized (mSetModeLock) {
+                        synchronized (mDeviceStateLock) {
+                            updateCommunicationClientActivity(
+                                    (Integer) msg.obj, /*active=*/false);
+                        }
+                    }
+                    break;
+                case MSG_L_ACTIVE_UIDS_UPDATE:
+                    synchronized (mSetModeLock) {
+                        synchronized (mDeviceStateLock) {
+                            mCommunicationActivityDebouncer.update((int[]) msg.obj);
+                        }
+                    }
+                    break;
+
                 case MSG_L_COMMUNICATION_ROUTE_CLIENT_DIED:
                     synchronized (mSetModeLock) {
                         synchronized (mDeviceStateLock) {
@@ -2176,12 +2152,6 @@ public class AudioDeviceBroker {
                     onPersistAudioDeviceSettings();
                     break;
 
-                case MSG_CHECK_COMMUNICATION_ROUTE_CLIENT_STATE: {
-                    synchronized (mDeviceStateLock) {
-                        onCheckCommunicationRouteClientState(msg.arg1, msg.arg2 == 1);
-                    }
-                } break;
-
                 case MSG_I_UPDATE_LE_AUDIO_GROUP_ADDRESSES:
                     synchronized (mSetModeLock) {
                         synchronized (mDeviceStateLock) {
@@ -2254,11 +2224,13 @@ public class AudioDeviceBroker {
 
     private static final int MSG_L_SET_COMMUNICATION_DEVICE_FOR_CLIENT = 42;
     private static final int MSG_L_UPDATE_COMMUNICATION_ROUTE_CLIENT = 43;
+    private static final int MSG_L_COMMUNICATION_ROUTE_INACTIVE = 44;
+    private static final int MSG_L_ACTIVE_UIDS_UPDATE = 45;
 
-    private static final int MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT = 45;
+    private static final int MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT = 46;
     //
     // process set volume for Le Audio, obj is BleVolumeInfo
-    private static final int MSG_II_SET_LE_AUDIO_OUT_VOLUME = 46;
+    private static final int MSG_II_SET_LE_AUDIO_OUT_VOLUME = 47;
 
     private static final int MSG_IIL_BTLEAUDIO_TIMEOUT = 49;
 
@@ -2268,7 +2240,6 @@ public class AudioDeviceBroker {
 
     private static final int MSG_L_RECEIVED_BT_EVENT = 55;
 
-    private static final int MSG_CHECK_COMMUNICATION_ROUTE_CLIENT_STATE = 56;
     private static final int MSG_I_UPDATE_LE_AUDIO_GROUP_ADDRESSES = 57;
     private static final int MSG_L_SYNCHRONIZE_ADI_DEVICES_IN_INVENTORY = 58;
     private static final int MSG_IL_UPDATED_ADI_DEVICE_STATE = 59;
@@ -2388,14 +2359,6 @@ public class AudioDeviceBroker {
             }
             mBrokerHandler.sendMessageAtTime(mBrokerHandler.obtainMessage(msg, arg1, arg2, obj),
                     time);
-        }
-    }
-
-    // TODO this doesn't post-removal since the crc for the uid is no longer found
-    private void removeMsgForCheckClientState(int uid) {
-        RouteClient crc = mCommunicationStack.getClientForUid(uid);
-        if (crc != null) {
-            mBrokerHandler.removeEqualMessages(MSG_CHECK_COMMUNICATION_ROUTE_CLIENT_STATE, crc);
         }
     }
 
@@ -2598,8 +2561,8 @@ public class AudioDeviceBroker {
         Set<Integer> inDeviceSet = null;
         // Special case for SCO because several device types are equivalent
         if (isBluetoothScoOutDevice(deviceType)) {
-            outDeviceSet = DEVICE_OUT_ALL_SCO_SET;
-            inDeviceSet = DEVICE_IN_ALL_SCO_SET;
+            outDeviceSet = new HashSet<>(DEVICE_OUT_ALL_SCO_SET);
+            inDeviceSet = new HashSet<>(DEVICE_IN_ALL_SCO_SET);
         } else {
             outDeviceSet = new HashSet<>();
             outDeviceSet.add(deviceType);
@@ -2679,11 +2642,7 @@ public class AudioDeviceBroker {
     @GuardedBy("mDeviceStateLock")
     private RouteClient removeCommunicationRouteClient(
                     IBinder cb, boolean unregister) {
-        var cl = mCommunicationStack.removeClient(cb);
-        if (cl != null) {
-            removeMsgForCheckClientState(cl.getUid());
-        }
-        return cl;
+        return mCommunicationStack.removeClient(cb);
     }
 
     @GuardedBy("mDeviceStateLock")
@@ -2691,16 +2650,12 @@ public class AudioDeviceBroker {
             IBinder cb, @NonNull AttributionSource attributionSource, AudioDeviceAttributes device,
             boolean isPrivileged) {
         RouteClient client =
-                new RouteClient(cb, attributionSource, device, isPrivileged,
-                                mAudioService.isPlaybackActiveForUid(attributionSource.getUid()),
-                                mAudioService.isRecordingActiveForUid(attributionSource.getUid()));
+                new RouteClient(cb, attributionSource, device, isPrivileged);
         mCommunicationStack.addClient(client);
-        if (!client.isActive()) {
-            // initialize the inactive client's state as active and check it after 6 seconds
-            setForceCommunicationClientStateAndDelayedCheck(
-                    client,
-                    !mAudioService.isPlaybackActiveForUid(client.getUid()),
-                    !mAudioService.isRecordingActiveForUid(client.getUid()));
+        // now that a new client is in the stack, if unprivileged, consider the uid as starting
+        // active (from the debouncer perspective)
+        if (!isPrivileged) {
+            mCommunicationActivityDebouncer.simulateActive(attributionSource.getUid());
         }
         return client;
     }
@@ -2741,30 +2696,16 @@ public class AudioDeviceBroker {
         return device;
     }
 
-    // TODO: needs rewrite
-    void updateCommunicationRouteClientsActivity(
-            List<AudioPlaybackConfiguration> playbackConfigs,
-            List<AudioRecordingConfiguration> recordConfigs) {
-        synchronized (mSetModeLock) {
-            synchronized (mDeviceStateLock) {
-                // hack for pure refactor
-                mCommunicationStack.updateClientActivities(
-                        playbackConfigs, recordConfigs, (crc, updateClientState, wasActive) -> {
-                            if (updateClientState) {
-                                removeMsgForCheckClientState(crc.getUid());
-                                updateCommunicationRouteClientState(crc, wasActive);
-                            } else {
-                                if (wasActive) {
-                                    setForceCommunicationClientStateAndDelayedCheck(crc,
-                                            playbackConfigs != null /* forcePlaybackActive */,
-                                            recordConfigs != null /* forceRecordingActive */);
-                                }
-                            }
-                            return null;
-                        });
-            }
+    @GuardedBy("mDeviceStateLock")
+    private void updateCommunicationClientActivity(int uid, boolean active) {
+        boolean changed = mCommunicationStack.updateActiveForUid(uid, active);
+        if (changed) {
+            var client = mCommunicationStack.getClientForUid(uid);
+            var prevAttrSource = !active ? client.getAttributionSource() : null;
+            onUpdateCommunicationRouteClient(prevAttrSource, "updateCommunicationClientActivity");
         }
     }
+
 
     List<String> getDeviceIdentityAddresses(AudioDeviceAttributes device) {
         synchronized (mDeviceStateLock) {

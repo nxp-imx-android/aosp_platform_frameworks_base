@@ -27,7 +27,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Data class representing a configuration for displaying Notifications on the Lockscreen.
@@ -47,17 +48,30 @@ constructor(
     private val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
 ) {
     private val showOnlyFullHeightNotifications: Flow<Boolean> =
-        sceneInteractor.transitionState.map { transitionState ->
+        sceneInteractor.transitionState.flatMapLatest { transitionState ->
             when (transitionState) {
                 is Idle ->
-                    transitionState.currentScene in keyguardScenes &&
-                        Overlays.NotificationsShade !in transitionState.currentOverlays
+                    flowOf(
+                        transitionState.currentScene in keyguardScenes &&
+                            Overlays.NotificationsShade !in transitionState.currentOverlays
+                    )
 
-                is Transition.ChangeScene -> transitionState.fromScene in keyguardScenes
+                is Transition.ChangeScene ->
+                    if (transitionState.fromScene in keyguardScenes) {
+                        combine(transitionState.isUserInputOngoing, transitionState.progress) {
+                            userInput,
+                            progress ->
+                            userInput || progress < EXPANSION_FOR_DELAYED_STACK_FADE_IN
+                        }
+                    } else {
+                        flowOf(false)
+                    }
 
                 is Transition.OverlayTransition ->
-                    transitionState.currentScene in keyguardScenes &&
-                        transitionState.fromContent != Overlays.NotificationsShade
+                    flowOf(
+                        transitionState.currentScene in keyguardScenes &&
+                            transitionState.fromContent != Overlays.NotificationsShade
+                    )
             }
         }
 
@@ -94,5 +108,11 @@ constructor(
     companion object {
         /** Scenes where only full height notifications are allowed to be shown. */
         val keyguardScenes: Set<SceneKey> = setOf(Scenes.Lockscreen, Scenes.Communal, Scenes.Dream)
+
+        /**
+         * The expansion progress threshold at which the delayed fade-in of the notification stack
+         * begins.
+         */
+        const val EXPANSION_FOR_DELAYED_STACK_FADE_IN = 0.5f
     }
 }

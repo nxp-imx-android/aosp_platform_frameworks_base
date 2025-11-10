@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopmode.data.persistence
 
 import android.content.Context
 import android.graphics.Rect
+import android.graphics.RectF
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.util.ArrayMap
@@ -33,6 +34,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
 import com.android.window.flags.Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX
+import com.android.window.flags.Flags.FLAG_ENABLE_REMEMBERED_BOUNDS
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.data.Desk
 import com.android.wm.shell.desktopmode.data.DesktopDisplay
@@ -327,6 +329,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(desk),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
@@ -362,6 +365,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(desk),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             var actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
@@ -380,6 +384,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(desk),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
@@ -416,6 +421,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(desk),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
@@ -467,6 +473,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(desk1, desk2, desk3),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             // Back to back removals
@@ -476,6 +483,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                     desks = listOf(desk1, desk3),
                     activeDeskId = DEFAULT_DESKTOP_ID,
                     preservedDisplays = ArrayMap(),
+                    rememberedBoundsRatioByPackageName = ArrayMap(),
                 )
             }
             launch {
@@ -484,6 +492,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                     desks = listOf(desk3),
                     activeDeskId = DEFAULT_DESKTOP_ID + 3,
                     preservedDisplays = ArrayMap(),
+                    rememberedBoundsRatioByPackageName = ArrayMap(),
                 )
             }
             launch {
@@ -492,6 +501,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                     desks = listOf(),
                     activeDeskId = null,
                     preservedDisplays = ArrayMap(),
+                    rememberedBoundsRatioByPackageName = ArrayMap(),
                 )
             }
             advanceUntilIdle()
@@ -529,6 +539,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(desk),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             val desktopState = datastoreRepository.getDesktopRepositoryState(DEFAULT_USER_ID)
@@ -568,6 +579,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = preservedDisplays,
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             val desktopState = datastoreRepository.getDesktopRepositoryState(DEFAULT_USER_ID)
@@ -605,6 +617,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(desk),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
@@ -643,11 +656,42 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 desks = listOf(desk),
                 activeDeskId = DEFAULT_DESKTOP_ID,
                 preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = ArrayMap(),
             )
 
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
             val actualTask = actualDesktop?.tasksByTaskIdMap?.get(1)
             assertThat(actualTask?.hasBoundsBeforeSnapOrMaximize()).isFalse()
+        }
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun addOrUpdateRepository_addsNewRememberedBoundsRatio() {
+        runTest(StandardTestDispatcher()) {
+            // Create a basic repository state
+            val task = createDesktopTask(1)
+            val desktopPersistentRepositories = createRepositoryWithOneDesk(ArrayList(listOf(task)))
+            testDatastore.updateData { desktopPersistentRepositories }
+
+            val rememberedBounds = ArrayMap<String, RectF>()
+            rememberedBounds["test.package"] = RectF(0f, 0f, 1f, 1f)
+
+            // Update with new state
+            datastoreRepository.addOrUpdateRepository(
+                userId = DEFAULT_USER_ID,
+                desks = listOf(),
+                activeDeskId = DEFAULT_DESKTOP_ID,
+                preservedDisplays = ArrayMap(),
+                rememberedBoundsRatioByPackageName = rememberedBounds,
+            )
+
+            val desktopState = datastoreRepository.getDesktopRepositoryState(DEFAULT_USER_ID)
+            val rememberedBoundsFound = desktopState?.packageStateByPackageNameMap?.values?.first()
+            assertThat(rememberedBoundsFound?.rememberedBoundsRatio?.left).isEqualTo(0f)
+            assertThat(rememberedBoundsFound?.rememberedBoundsRatio?.top).isEqualTo(0f)
+            assertThat(rememberedBoundsFound?.rememberedBoundsRatio?.right).isEqualTo(1f)
+            assertThat(rememberedBoundsFound?.rememberedBoundsRatio?.bottom).isEqualTo(1f)
         }
     }
 

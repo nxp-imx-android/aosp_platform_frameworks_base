@@ -6867,4 +6867,9 @@ public interface WindowManager extends ViewManager {
     default WindowManager createLocalWindowManager(@NonNull Window parentWindow) {
         throw new UnsupportedOperationException();
     }
+
+    /** @hide */
+    static boolean useClientSurface() {
+        return com.android.window.flags.Flags.useClientSurface();
+    }
 }

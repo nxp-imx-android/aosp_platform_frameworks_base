@@ -2,7 +2,6 @@ package com.android.systemui.statusbar.notification.stack
 
 import android.annotation.DimenRes
 import android.content.pm.PackageManager
-import android.graphics.RectF
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.view.View
@@ -35,6 +34,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.statusbar.notification.stack.ui.YSpace
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
 import com.android.systemui.surfaceeffects.utils.MathUtils
@@ -472,13 +472,13 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun resetViewStates_childPositionedAtStackTop() {
-        val stackTop = 100f
-        ambientState.stackTop = stackTop
+    fun resetViewStates_childPositionedAtStackScrollTop() {
+        val stackScrollTop = 100f
+        ambientState.stackScrollTop = stackScrollTop
 
         stackScrollAlgorithm.resetViewStates(ambientState, 0)
 
-        assertThat(notificationRow.viewState.yTranslation).isEqualTo(stackTop)
+        assertThat(notificationRow.viewState.yTranslation).isEqualTo(stackScrollTop)
     }
 
     @Test
@@ -538,14 +538,14 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun resetViewStates_defaultHunInShade_stackTopEqualsHunTop_hunHasFullHeight() {
-        // Given: headsUpTop == stackTop -> haven't scrolled the stack yet
+    fun resetViewStates_defaultHunInShade_scrollTopEqualsHunTop_hunHasFullHeight() {
+        // Given: headsUpTop == stackScrollTop -> haven't scrolled the stack yet
         val headsUpTop = 150f
         val collapsedHeight = 100
         val intrinsicHeight = 300
         fakeHunInShade(
             headsUpTop = headsUpTop,
-            stackTop = headsUpTop,
+            stackScrollTop = headsUpTop,
             collapsedHeight = collapsedHeight,
             intrinsicHeight = intrinsicHeight,
         )
@@ -563,15 +563,15 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun resetViewStates_defaultHunInShade_stackTopGreaterThanHeadsUpTop_hunClampedToHeadsUpTop() {
-        // Given: headsUpTop < stackTop -> scrolled the stack a little bit
-        val stackTop = -25f
+    fun resetViewStates_defaultHunInShade_scrollTopGreaterThanHeadsUpTop_hunClampedToHeadsUpTop() {
+        // Given: headsUpTop < stackScrollTop -> scrolled the stack a little bit
+        val stackScrollTop = -25f
         val headsUpTop = 150f
         val collapsedHeight = 100
         val intrinsicHeight = 300
         fakeHunInShade(
             headsUpTop = headsUpTop,
-            stackTop = stackTop,
+            stackScrollTop = stackScrollTop,
             collapsedHeight = collapsedHeight,
             intrinsicHeight = intrinsicHeight,
         )
@@ -593,14 +593,14 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     @EnableSceneContainer
     fun resetViewStates_defaultHunInShade_stackOverscrolledHun_hunClampedToHeadsUpTop() {
-        // Given: headsUpTop << stackTop -> stack has fully overscrolled the HUN
-        val stackTop = -500f
+        // Given: headsUpTop << stackScrollTop -> stack has fully overscrolled the HUN
+        val stackScrollTop = -500f
         val headsUpTop = 150f
         val collapsedHeight = 100
         val intrinsicHeight = 300
         fakeHunInShade(
             headsUpTop = headsUpTop,
-            stackTop = stackTop,
+            stackScrollTop = stackScrollTop,
             collapsedHeight = collapsedHeight,
             intrinsicHeight = intrinsicHeight,
         )
@@ -624,7 +624,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val intrinsicHunHeight = 300
         fakeHunInShade(
             headsUpTop = headsUpTop,
-            stackTop = 2600f, // stack scrolled below the screen
+            stackScrollTop = 2600f, // stack scrolled below the screen
             stackBottom = 4000f,
             collapsedHeight = 100,
             intrinsicHeight = intrinsicHunHeight,
@@ -863,8 +863,8 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val stackTop = 200f
         val stackBottom = 2000f
         val stackHeight = stackBottom - stackTop
-        ambientState.stackTop = stackTop
-        ambientState.drawBounds = RectF(0f, stackTop, 400f, stackBottom)
+        ambientState.stackScrollTop = stackTop
+        ambientState.stackBounds = YSpace(top = stackTop, bottom = stackBottom)
 
         stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
 
@@ -1111,8 +1111,8 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun resetViewStates_noSpaceForFooter_footerHidden_withSceneContainer() {
         ambientState.isShadeExpanded = true
-        ambientState.stackTop = 0f
-        ambientState.drawBounds = RectF(0f, 0f, 400f, 100f)
+        ambientState.stackScrollTop = 0f
+        ambientState.stackBounds = YSpace(top = 0f, bottom = 100f)
         val footerView = mockFooterView(height = 200) // no space for the footer in the stack
         hostView.addView(footerView)
 
@@ -1126,8 +1126,8 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun resetViewStates_noSpaceForFooterDuringExpansion_footerShown_withSceneContainer() {
         ambientState.isShadeExpanded = true
         ambientState.isExpansionChanging = true
-        ambientState.stackTop = 0f
-        ambientState.drawBounds = RectF(0f, 0f, 400f, 100f)
+        ambientState.stackScrollTop = 0f
+        ambientState.stackBounds = YSpace(top = 0f, bottom = 100f)
         val footerView = mockFooterView(height = 200) // no space for the footer in the stack
         hostView.addView(footerView)
 
@@ -1800,7 +1800,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val headsUpTop = 200f
         fakeHunInShade(
             headsUpTop = headsUpTop,
-            stackTop = 100f,
+            stackScrollTop = 100f,
             collapsedHeight = 100,
             intrinsicHeight = 300,
         )
@@ -1935,14 +1935,15 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         intrinsicHeight: Int,
         headsUpTop: Float,
         headsUpBottom: Float = headsUpTop + intrinsicHeight, // assume all the space available
-        stackTop: Float,
+        stackScrollTop: Float,
+        stackTop: Float = 100f,
         stackBottom: Float = 2000f,
         fullStackHeight: Float = 3000f,
     ) {
         ambientState.headsUpTop = headsUpTop
         headsUpAnimator.headsUpAppearHeightBottom = headsUpBottom.roundToInt()
-        ambientState.stackTop = stackTop
-        ambientState.drawBounds = RectF(0f, stackTop, 400f, stackBottom)
+        ambientState.stackScrollTop = stackScrollTop
+        ambientState.stackBounds = YSpace(top = stackTop, bottom = stackBottom)
 
         // shade is fully open
         ambientState.expansionFraction = 1.0f

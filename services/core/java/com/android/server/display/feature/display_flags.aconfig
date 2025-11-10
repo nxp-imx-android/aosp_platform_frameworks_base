@@ -363,16 +363,6 @@ flag {
 }
 
 flag {
-    name: "enable_anisotropy_corrected_modes"
-    namespace: "display_manager"
-    description: "Enable synthetic anisotropy corrected modes for external displays."
-    bug: "375563565"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_display_mirror_in_lock_task_mode"
     namespace: "lse_desktop_experience"
     description: "Starts mirroring on the connected display if the device is in lock task mode."
@@ -400,6 +390,13 @@ flag {
 }
 
 flag {
+    name: "display_listener_snapshot"
+    namespace: "display_manager"
+    description: "Feature flag for the API to request snapshot of display ids"
+    bug: "445140099"
+}
+
+flag {
     name: "force_color_fade"
     namespace: "wear_systems"
     description: "Force Color Fade."
@@ -420,6 +417,16 @@ flag {
 }
 
 flag {
+    name: "get_display_info_outside_lock"
+    namespace: "display_manager"
+    description: "Makes DisplayManagerGlobal call DisplayManagerService.getDisplayInfo() outside the lock"
+    bug: "342607960"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_display_event_merging"
     namespace: "display_manager"
     description: "Enable merging of display events"
@@ -427,10 +434,10 @@ flag {
 }
 
 flag {
-    name: "send_non_rr_callbacks_when_in_background"
+    name: "display_info_copy_on_write_cache_enabled"
     namespace: "display_manager"
-    description: "Continue sending non refresh rate events callbacks when the corresponding pid is not in the foreground"
-    bug: "449949226"
+    description: "Enable copy on write cache for display info"
+    bug: "430010606"
     metadata {
           purpose: PURPOSE_BUGFIX
     }

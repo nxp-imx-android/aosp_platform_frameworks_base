@@ -64,6 +64,7 @@ import android.hardware.input.IStickyModifierStateListener;
 import android.hardware.input.ITabletModeChangedListener;
 import android.hardware.input.IVirtualGamepad;
 import android.hardware.input.IVirtualInputDevice;
+import android.hardware.input.IVirtualKeyboard;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
@@ -579,8 +580,8 @@ public class InputManagerService extends IInputManager.Stub
                 mContext, mContext.getMainThreadHandler(), this);
         mModifierKeyRemapper = new ModifierKeyRemapper(mContext, mNative, mDataStore,
                 injector.getLooper());
-        mInputDeviceRemapper = new InputDeviceRemapper(mContext, mNative,
-                injector.getLooper());
+        mInputDeviceRemapper = new InputDeviceRemapper(mContext, mNative, injector.getLooper(),
+                injector.getIoLooper(), mInputDataStore);
         mKeyboardGlyphManager = new KeyboardGlyphManager(mContext, injector.getLooper());
         mPointerIconCache = new PointerIconCache(mContext, mNative);
 
@@ -705,7 +706,9 @@ public class InputManagerService extends IInputManager.Stub
         mKeyboardBacklightController.systemRunning();
         mKeyboardLedController.systemRunning();
         mModifierKeyRemapper.systemRunning();
-        mInputDeviceRemapper.systemRunning();
+        if (com.android.hardware.input.Flags.controllerRemapping()) {
+            mInputDeviceRemapper.systemRunning();
+        }
         mPointerIconCache.systemRunning();
         mKeyboardGlyphManager.systemRunning();
         mKeyGestureController.systemRunning();
@@ -1077,7 +1080,7 @@ public class InputManagerService extends IInputManager.Stub
             Manifest.permission.INJECT_KEY_EVENTS,
             Manifest.permission.INJECT_EVENTS
     })
-    public IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
+    public IVirtualKeyboard createVirtualKeyboard(@NonNull IBinder token,
             @NonNull VirtualKeyboardConfig config) {
         super.createVirtualKeyboard_enforcePermission();
 
@@ -1987,10 +1990,31 @@ public class InputManagerService extends IInputManager.Stub
         mNative.changeVirtualDevices();
     }
 
+    /**
+     * Creates a virtual keyboard that is passed via binder to other non-internal processes.
+     * Returns a {@link IVirtualKeyboard} that is safe for client processes to own.
+     */
     @NonNull
-    IVirtualInputDevice createVirtualKeyboardInternal(@NonNull IBinder token,
+    IVirtualKeyboard createVirtualKeyboardInternal(@NonNull IBinder token,
             @NonNull VirtualKeyboardConfig config) {
         return mVirtualInputDeviceController.createKeyboard(config.getInputDeviceName(),
+                config.getVendorId(), config.getProductId(), token,
+                InputManagerService.this.getTargetDisplayIdForInput(
+                        config.getAssociatedDisplayId()),
+                config.getLanguageTag(), config.getLayoutType());
+    }
+
+    /**
+     * Creates a virtual keyboard that is to be used by internal local services, such as VDM.
+     * Returns a {@link IVirtualInputDevice} that is not safe for client processes (can send
+     * non-keyboard events) to own but is safe for internal services dependent on the
+     * template.
+     */
+    @NonNull
+    IVirtualInputDevice createVirtualInputKeyboardDeviceInternal(@NonNull IBinder token,
+            @NonNull VirtualKeyboardConfig config) {
+        return mVirtualInputDeviceController.createVirtualInputKeyboardDevice(
+                config.getInputDeviceName(),
                 config.getVendorId(), config.getProductId(), token,
                 InputManagerService.this.getTargetDisplayIdForInput(
                         config.getAssociatedDisplayId()),
@@ -2343,7 +2367,9 @@ public class InputManagerService extends IInputManager.Stub
         mKeyboardGlyphManager.dump(ipw);
         mKeyGestureController.dump(ipw);
         mVirtualInputDeviceController.dump(ipw);
-        mInputDeviceRemapper.dump(ipw);
+        if (com.android.hardware.input.Flags.controllerRemapping()) {
+            mInputDeviceRemapper.dump(ipw);
+        }
     }
 
     private void dumpAssociations(IndentingPrintWriter pw) {
@@ -3169,6 +3195,9 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull InputDeviceIdentifier identifier,
             @InputManager.ControllerButton int fromButton, int toKeyCode) {
         super.remapControllerButton_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         if (!isControllerButton(fromButton)) {
             throw new IllegalArgumentException("fromButton " + KeyEvent.keyCodeToString(fromButton)
                     + " is not a valid controller button");
@@ -3186,6 +3215,9 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull InputDeviceIdentifier identifier,
             @InputManager.ControllerButton int fromButton) {
         super.removeControllerButtonRemapping_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         if (!isControllerButton(fromButton)) {
             throw new IllegalArgumentException("fromButton " + KeyEvent.keyCodeToString(fromButton)
                     + " is not a valid controller button");
@@ -3198,6 +3230,9 @@ public class InputManagerService extends IInputManager.Stub
     public void clearAllControllerButtonRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
         super.clearAllControllerButtonRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         mInputDeviceRemapper.clearAllKeyRemappings(userId, identifier);
     }
 
@@ -3207,6 +3242,9 @@ public class InputManagerService extends IInputManager.Stub
     public Map<Integer, Integer> getControllerButtonRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
         super.getControllerButtonRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return Map.of();
+        }
         return mInputDeviceRemapper.getKeyRemappings(userId, identifier);
     }
 
@@ -3216,6 +3254,9 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull InputDeviceIdentifier identifier, @MotionEvent.Axis int fromAxis,
             @MotionEvent.Axis int toAxis) {
         super.remapControllerAxis_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         if (!isControllerAxis(fromAxis)) {
             throw new IllegalArgumentException("fromAxis " + MotionEvent.axisToString(fromAxis)
                     + " is not a valid controller axis");
@@ -3232,6 +3273,9 @@ public class InputManagerService extends IInputManager.Stub
     public void removeControllerAxisRemapping(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier, @MotionEvent.Axis int fromAxis) {
         super.removeControllerAxisRemapping_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         if (!isControllerAxis(fromAxis)) {
             throw new IllegalArgumentException("fromAxis " + MotionEvent.axisToString(fromAxis)
                     + " is not a valid controller axis");
@@ -3244,6 +3288,9 @@ public class InputManagerService extends IInputManager.Stub
     public void clearAllControllerAxisRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
         super.clearAllControllerAxisRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
         mInputDeviceRemapper.clearAllAxisRemappings(userId, identifier);
     }
 
@@ -3253,6 +3300,9 @@ public class InputManagerService extends IInputManager.Stub
     public Map<Integer, Integer> getControllerAxisRemappings(@UserIdInt int userId,
             @NonNull InputDeviceIdentifier identifier) {
         super.getControllerAxisRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return Map.of();
+        }
         return mInputDeviceRemapper.getAxisRemappings(userId, identifier);
     }
 
@@ -3445,7 +3495,9 @@ public class InputManagerService extends IInputManager.Stub
 
     private void handleCurrentUserChanged(@UserIdInt int userId) {
         mKeyGestureController.setCurrentUserId(userId);
-        mInputDeviceRemapper.setCurrentUserId(userId);
+        if (com.android.hardware.input.Flags.controllerRemapping()) {
+            mInputDeviceRemapper.setCurrentUserId(userId);
+        }
     }
 
     private void checkDisplayAssociationPermission(int displayId, int callingUid) {
@@ -4074,7 +4126,7 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
                 @NonNull VirtualKeyboardConfig config) {
-            return InputManagerService.this.createVirtualKeyboardInternal(token, config);
+            return InputManagerService.this.createVirtualInputKeyboardDeviceInternal(token, config);
         }
 
         @NonNull

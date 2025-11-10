@@ -19,7 +19,6 @@ package com.android.server.wm;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.view.WindowManager.LayoutParams.TYPE_PRESENTATION;
 import static android.view.WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION;
-import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK;
 import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_ERROR;
@@ -180,8 +179,7 @@ class PresentationController implements DisplayManager.DisplayListener {
                 hostTask = globallyFocusedTask;
             }
 
-            if (ENABLE_PRESENTATION_DISALLOWED_ON_UNFOCUSED_HOST_TASK.isTrue()
-                    && hostTask == null) {
+            if (hostTask == null) {
                 final Task[] topVisibleTaskWithSameUid = new Task[1];
                 // Assume that the top visible task from the same app is the host task.
                 displayContent.mWmService.mRoot.forAllLeafTasks(task -> {

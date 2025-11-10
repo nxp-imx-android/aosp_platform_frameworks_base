@@ -86,6 +86,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     private val desktopWallpaperActivityTokenProvider =
         mock<DesktopWallpaperActivityTokenProvider>()
     private val displayController = mock<DisplayController>()
+    private val desktopImmersiveController = mock<DesktopImmersiveController>()
     private val wallpaperToken = MockToken().token()
     private val desktopState = FakeDesktopState()
 
@@ -109,6 +110,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
                 mixedHandler,
                 desktopWallpaperActivityTokenProvider,
                 displayController,
+                desktopImmersiveController,
                 desktopState,
                 shellInit,
             )
@@ -394,6 +396,62 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
             )
 
         verify(taskRepository).setRememberedBoundsRatio(packageName, expectedBoundsRatio)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_changeTransition_doesNotUpdateLastPackageState_inImmersive() {
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(10, 20, 120, 130)
+        val stableBounds = Rect(0, 0, 200, 200)
+        val packageName = "package"
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                baseActivity = ComponentName(packageName, "component.name")
+                configuration.windowConfiguration.bounds.set(endBounds)
+            }
+        val displayLayout = mock<DisplayLayout>()
+        whenever(displayLayout.getStableBoundsForDesktopMode(any())).thenAnswer {
+            (it.arguments[0] as Rect).set(stableBounds)
+        }
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(displayLayout)
+        whenever(taskRepository.isTaskInFullImmersiveState(task.taskId)).thenReturn(true)
+
+        transitionObserver.onTransitionReady(
+            transition = mock(),
+            info = createChangeTransition(task, startBounds, endBounds),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+        verify(taskRepository, never()).setRememberedBoundsRatio(any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_changeTransition_doesNotUpdateLastPackageState_immersiveTransition() {
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(10, 20, 120, 130)
+        val stableBounds = Rect(0, 0, 200, 200)
+        val packageName = "package"
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                baseActivity = ComponentName(packageName, "component.name")
+                configuration.windowConfiguration.bounds.set(endBounds)
+            }
+        val displayLayout = mock<DisplayLayout>()
+        whenever(displayLayout.getStableBoundsForDesktopMode(any())).thenAnswer {
+            (it.arguments[0] as Rect).set(stableBounds)
+        }
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(displayLayout)
+        whenever(desktopImmersiveController.isImmersiveChange(any(), any())).thenReturn(true)
+
+        transitionObserver.onTransitionReady(
+            transition = mock(),
+            info = createChangeTransition(task, startBounds, endBounds),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+        verify(taskRepository, never()).setRememberedBoundsRatio(any(), any())
     }
 
     private fun createBackNavigationTransition(

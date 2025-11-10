@@ -531,6 +531,11 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         }
         mBaseVirtualDisplayFlags = flags;
 
+        if (mParams.isLocalDeviceOnly() && Binder.getCallingUid() != Process.SYSTEM_UID) {
+            throw new SecurityException("Only system_server can create a local-only "
+                    + "virtual device.");
+        }
+
         if (inputController == null) {
             mInputController = new InputController(mContext, mAttributionSource);
         } else {
@@ -1382,7 +1387,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                     mActivityListenerAdapter,
                     displayCategories,
                     showTasksInHostDeviceRecents,
-                    mParams.getHomeComponent());
+                    mParams.getHomeComponent(),
+                    mParams.isLocalDeviceOnly());
         }
     }
 

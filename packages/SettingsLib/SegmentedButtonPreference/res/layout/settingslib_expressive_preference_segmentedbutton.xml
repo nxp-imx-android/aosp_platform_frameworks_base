@@ -79,7 +79,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall.Emphasized"
+            android:importantForAccessibility="no"
+            android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall"
             android:textColor="@color/settingslib_materialColorOnSurface"
             android:visibility="gone" />
 
@@ -89,7 +90,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall.Emphasized"
+            android:importantForAccessibility="no"
+            android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall"
             android:textColor="@color/settingslib_materialColorOnSurface"
             android:visibility="gone" />
 
@@ -99,7 +101,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall.Emphasized"
+            android:importantForAccessibility="no"
+            android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall"
             android:textColor="@color/settingslib_materialColorOnSurface"
             android:visibility="gone" />
 
@@ -109,7 +112,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall.Emphasized"
+            android:importantForAccessibility="no"
+            android:textAppearance="@style/TextAppearance.SettingsLib.TitleSmall"
             android:textColor="@color/settingslib_materialColorOnSurface"
             android:visibility="gone" />
     </LinearLayout>

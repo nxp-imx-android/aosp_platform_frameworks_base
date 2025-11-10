@@ -16,13 +16,16 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
+import android.app.ActivityManager
 import android.graphics.Bitmap
+import android.graphics.Point
 import android.graphics.Rect
 import android.view.WindowManager
 import android.view.WindowMetrics
 import android.view.windowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.activityTaskManager
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
@@ -65,7 +68,9 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
     @Mock private lateinit var mockBitmap: Bitmap
+    @Mock private lateinit var mockBackgroundBitmap: Bitmap
     @Mock private lateinit var mockWindowMetrics: WindowMetrics
+
     private val screenBounds = Rect(0, 0, 100, 100)
     private val displayId = 1234
     private lateinit var viewModel: PreCaptureViewModel
@@ -427,5 +432,180 @@ class PreCaptureViewModelTest : SysuiTestCase() {
 
             viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
             assertThat(toolbarViewModel.toolbarOpacity).isEqualTo(1f)
+        }
+
+    @Test
+    fun updateTaskSelectionFromHover_selectsCorrectTask() =
+        kosmos.runTest {
+            val task1 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 1
+                    configuration.windowConfiguration.setBounds(Rect(0, 0, 50, 50))
+                }
+            val task2 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 2
+                    configuration.windowConfiguration.setBounds(Rect(60, 60, 100, 100))
+                }
+            val runningTasks = listOf(task1, task2)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            // Hover over task 1
+            viewModel.updateTaskSelectionFromHover(Point(25, 25))
+            assertThat(viewModel.topTask).isEqualTo(task1)
+
+            // Hover over task 2
+            viewModel.updateTaskSelectionFromHover(Point(75, 75))
+            assertThat(viewModel.topTask).isEqualTo(task2)
+
+            // Hover outside any task
+            viewModel.updateTaskSelectionFromHover(Point(55, 55))
+            assertThat(viewModel.topTask).isNull()
+
+            // Hover on the edge of task 1
+            viewModel.updateTaskSelectionFromHover(Point(0, 0))
+            assertThat(viewModel.topTask).isEqualTo(task1)
+
+            // Hover on the edge of task 2
+            viewModel.updateTaskSelectionFromHover(Point(99, 99))
+            assertThat(viewModel.topTask).isEqualTo(task2)
+        }
+
+    @Test
+    fun captureTaskAtPosition_requestsScreenshotForSingleTask() =
+        kosmos.runTest {
+            val topTask =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 1
+                    configuration.windowConfiguration.setBounds(Rect(0, 0, 50, 50))
+                }
+            whenever(activityTaskManager.getTasks(1)).thenReturn(listOf(topTask))
+            setupViewModel()
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+            whenever(kosmos.mockImageCapture.captureTask(topTask.taskId)).thenReturn(mockBitmap)
+
+            viewModel.beginCapture()
+            runCurrent()
+
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(kosmos.mockScreenshotHelper, times(1))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE)
+            assertThat(capturedRequest.source)
+                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
+            assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
+
+            assertUiClosed()
+        }
+
+    @Test
+    fun captureTaskAtPosition_requestsScreenshotForMultipleTasks() =
+        kosmos.runTest {
+            setupViewModel()
+            val task1 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 1
+                    isVisible = true
+                    configuration.windowConfiguration.setBounds(Rect(0, 0, 50, 50))
+                }
+            val task2 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 2
+                    isVisible = true
+                    configuration.windowConfiguration.setBounds(Rect(60, 60, 100, 100))
+                }
+            val runningTasks = listOf(task1, task2)
+
+            whenever(activityTaskManager.getTasks(Integer.MAX_VALUE)).thenReturn(runningTasks)
+            whenever(kosmos.mockImageCapture.captureTask(task1.taskId)).thenReturn(mockBitmap)
+            whenever(kosmos.mockImageCapture.captureTask(task2.taskId))
+                .thenReturn(mockBackgroundBitmap)
+
+            viewModel.captureTaskAtPosition(Point(25, 25))
+            runCurrent()
+
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(kosmos.mockScreenshotHelper, times(1))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE)
+            assertThat(capturedRequest.source)
+                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
+            assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
+
+            assertUiClosed()
+        }
+
+    @Test
+    fun captureTaskAtPosition_requestsScreenshotForMultipleTasksWithOverlap() =
+        kosmos.runTest {
+            setupViewModel()
+            val task1 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 1
+                    isVisible = true
+                    configuration.windowConfiguration.setBounds(Rect(0, 0, 50, 50))
+                }
+            val task2 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 2
+                    isVisible = true
+                    configuration.windowConfiguration.setBounds(Rect(10, 10, 60, 60))
+                }
+            // The list of tasks is ordered from top to bottom. task1 is on top of task2.
+            val runningTasks = listOf(task1, task2)
+
+            whenever(activityTaskManager.getTasks(Integer.MAX_VALUE)).thenReturn(runningTasks)
+            whenever(kosmos.mockImageCapture.captureTask(task1.taskId)).thenReturn(mockBitmap)
+            whenever(kosmos.mockImageCapture.captureTask(task2.taskId))
+                .thenReturn(mockBackgroundBitmap)
+
+            // Click on a point that is within both tasks.
+            viewModel.captureTaskAtPosition(Point(25, 25))
+            runCurrent()
+
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(kosmos.mockScreenshotHelper, times(1))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE)
+            assertThat(capturedRequest.source)
+                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
+            assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
+
+            assertUiClosed()
+        }
+
+    @Test
+    fun captureTaskAtPosition_withInvalidPosition_doesNothing() =
+        kosmos.runTest {
+            setupViewModel()
+            val task1 =
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = 1
+                    isVisible = true
+                    configuration.windowConfiguration.setBounds(Rect(0, 0, 50, 50))
+                }
+            val runningTasks = listOf(task1)
+
+            whenever(activityTaskManager.getTasks(Integer.MAX_VALUE)).thenReturn(runningTasks)
+
+            viewModel.captureTaskAtPosition(Point(75, 75))
+            runCurrent()
+
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(kosmos.mockScreenshotHelper, times(0))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
+            assertThat(viewModel.isShowingUi).isTrue()
         }
 }

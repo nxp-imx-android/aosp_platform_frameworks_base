@@ -47,4 +47,8 @@ interface ILightsManager {
 
   @EnforcePermission("CONTROL_DEVICE_LIGHTS")
   ColorSequence getLightSequence(in int lightId);
+
+  @EnforcePermission("CONTROL_DEVICE_LIGHTS")
+  @UnsupportedAppUsage
+  void setEnabledState(boolean enabled);
 }

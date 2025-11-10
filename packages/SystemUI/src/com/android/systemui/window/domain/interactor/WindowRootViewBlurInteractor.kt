@@ -102,7 +102,7 @@ constructor(
     val isBlurCurrentlySupported: StateFlow<Boolean> = repository.isBlurSupported
 
     /** Whether the blurred wallpaper is supported. This feature is disabled on desktop. */
-    val isBlurredWallpaperSupported: Boolean =
+    val isBlurredWallpaperOnShadeSupported: Boolean =
         resources.getBoolean(R.bool.config_supportBlurredWallpaper)
 
     /** Radius of blur to be applied on the window root view. */

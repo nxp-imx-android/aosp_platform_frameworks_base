@@ -41,8 +41,10 @@ import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.graph.proto.PreferenceProto.ActionTarget
 import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.TextProto
+import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
+import com.android.settingslib.metadata.KeyParameters
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceHierarchy
@@ -64,6 +66,7 @@ import com.android.settingslib.metadata.isPreferenceIndexable
 import com.android.settingslib.preference.PreferenceScreenCreator
 import com.android.settingslib.preference.PreferenceScreenFactory
 import com.android.settingslib.preference.PreferenceScreenProvider
+import com.google.errorprone.annotations.CanIgnoreReturnValue
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -211,11 +214,23 @@ private constructor(
             Log.e(TAG, "\"$preferenceScreen\" has no key")
             return
         }
+
         val args = preferenceScreen.peekExtras()?.getBundle(EXTRA_BINDING_SCREEN_ARGS)
-        @Suppress("CheckReturnValue")
-        addPreferenceScreen(key, args) {
-            this.intent = intent.toProto()
-            root = preferenceScreen.toProto()
+
+        if (CatalystFlags.catalystUseKeyParameters()) {
+            val parametersSchema = PreferenceScreenRegistry.getScreenParametersSchema(key)
+            val keyParameters = args?.let { parametersSchema?.prepare(it) }
+
+            addPreferenceScreenWithKeyParameters(key, keyParameters) {
+                this.intent = intent.toProto()
+                root = preferenceScreen.toProto()
+            }
+        } else {
+            @Suppress("CheckReturnValue")
+            addPreferenceScreen(key, args) {
+                this.intent = intent.toProto()
+                root = preferenceScreen.toProto()
+            }
         }
     }
 
@@ -226,21 +241,41 @@ private constructor(
         if (factory !is PreferenceScreenMetadataParameterizedFactory) {
             return addPreferenceScreen(factory.create(context))
         }
-        if (visitedScreens.add(PreferenceScreenCoordinate(screenKey, null))) {
+        if (visitedScreens.add(PreferenceScreenCoordinate(screenKey))) {
             val screen = screens.getOrPut(screenKey) { PreferenceScreenProto.newBuilder() }
             screen.root = preferenceGroupProto { preference = preferenceProto { key = screenKey } }
             screen.parameterized = true
             if (includeParameters) {
-                factory.parameters(context).collect { screen.addParameters(it.toProto()) }
+                if (CatalystFlags.catalystUseKeyParameters()) {
+                    // TODO (b/452555836): make screen.addParameters(KeyParametersProto). For now use toBundle().toProto()
+                    factory.keyParameters(context).collect {
+                        val bundle = it.toBundle().apply {
+                            // TODO (b/452555836): remove this line since it isn't necessary anymore
+                            putString("schemaDevtool", factory.parametersSchema.toParametersSchemaString())
+                        }
+                        screen.addParameters(bundle.toProto())
+                    }
+                } else {
+                    factory.parameters(context).collect { screen.addParameters(it.toProto()) }
+                }
             }
         }
         if (includeHierarchy) {
             var flagEnabled: Boolean? = null
-            factory.parameters(context).collect {
-                if (flagEnabled == false) return@collect
-                val screenMetadata = factory.create(context, it)
-                if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
-                if (flagEnabled) addPreferenceScreen(screenMetadata)
+            if (CatalystFlags.catalystUseKeyParameters()) {
+                factory.keyParameters(context).collect {
+                    if (flagEnabled == false) return@collect
+                    val screenMetadata = factory.createWithKeyParameters(context, it)
+                    if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
+                    if (flagEnabled) addPreferenceScreen(screenMetadata)
+                }
+            } else {
+                factory.parameters(context).collect {
+                    if (flagEnabled == false) return@collect
+                    val screenMetadata = factory.create(context, it)
+                    if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
+                    if (flagEnabled) addPreferenceScreen(screenMetadata)
+                }
             }
         }
         return true
@@ -248,14 +283,25 @@ private constructor(
 
     private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata): Boolean {
         if (!checkScreenFlag(metadata)) return false
-        return addPreferenceScreen(metadata.key, metadata.arguments) {
-            completeHierarchy = metadata.hasCompleteHierarchy()
-            root =
-                if (includeHierarchy) {
+
+        return if (CatalystFlags.catalystUseKeyParameters()) {
+            addPreferenceScreenWithKeyParameters(metadata.key, metadata.keyParameters) {
+                completeHierarchy = metadata.hasCompleteHierarchy()
+                root = if (includeHierarchy) {
                     metadata.getPreferenceHierarchy(context, coroutineScope).toProto(metadata, true)
                 } else {
                     preferenceGroupProto { preference = toProto(metadata, metadata, true) }
                 }
+            }
+        } else {
+            addPreferenceScreen(metadata.key, metadata.arguments) {
+                completeHierarchy = metadata.hasCompleteHierarchy()
+                root = if (includeHierarchy) {
+                    metadata.getPreferenceHierarchy(context, coroutineScope).toProto(metadata, true)
+                } else {
+                    preferenceGroupProto { preference = toProto(metadata, metadata, true) }
+                }
+            }
         }
     }
 
@@ -287,6 +333,40 @@ private constructor(
             val builder = screens.getOrPut(key) { newParameterizedScreenBuilder() }
             val parameterizedScreen = parameterizedPreferenceScreenProto {
                 setArgs(args.toProto())
+                setScreen(newParameterizedScreenBuilder().also { init(it) })
+            }
+            builder.addParameterizedScreens(parameterizedScreen)
+        }
+        return true
+    }
+
+    @CanIgnoreReturnValue
+    private suspend fun addPreferenceScreenWithKeyParameters(
+        key: String,
+        keyParameters: KeyParameters?,
+        init: suspend PreferenceScreenProto.Builder.() -> Unit,
+    ): Boolean {
+        if (!visitedScreens.add(PreferenceScreenCoordinate(key, keyParameters))) return false
+
+        val parametersSchema = PreferenceScreenRegistry.getScreenParametersSchema(key)
+
+        fun newParameterizedScreenBuilder() =
+            PreferenceScreenProto.newBuilder().also { it.parameterized = true }
+
+        if (keyParameters == null) { // normal screen
+            screens[key] = PreferenceScreenProto.newBuilder().also { init(it) }
+        } else if (keyParameters.isEmpty) { // parameterized screen with backward compatibility
+            val builder = screens.getOrPut(key) { newParameterizedScreenBuilder() }
+            init(builder)
+        } else { // parameterized screen with non-empty arguments
+            val builder = screens.getOrPut(key) { newParameterizedScreenBuilder() }
+            val parameterizedScreen = parameterizedPreferenceScreenProto {
+                // TODO (b/452555836): make screen.addParameters(KeyParametersProto). For now use toBundle().toProto()
+                val bundle = keyParameters.toBundle().apply {
+                    // TODO (b/452555836): remove this line since it isn't necessary anymore
+                    putString("schemaDevtool", parametersSchema?.toParametersSchemaString())
+                }
+                setArgs(bundle.toProto())
                 setScreen(newParameterizedScreenBuilder().also { init(it) })
             }
             builder.addParameterizedScreens(parameterizedScreen)
@@ -413,8 +493,12 @@ private constructor(
                     fragment.createPreferenceScreen(preferenceScreenFactory, coroutineScope)
                 val screenKey = screen?.key
                 if (!screenKey.isNullOrEmpty()) {
-                    @Suppress("CheckReturnValue")
-                    addPreferenceScreen(screenKey, null) { root = screen.toProto() }
+                    if (CatalystFlags.catalystUseKeyParameters()) {
+                        addPreferenceScreenWithKeyParameters(screenKey, null) { root = screen.toProto() }
+                    } else {
+                        @Suppress("CheckReturnValue")
+                        addPreferenceScreen(screenKey, null) { root = screen.toProto() }
+                    }
                     return actionTargetProto { key = screenKey }
                 }
             } catch (e: Exception) {
@@ -482,7 +566,12 @@ fun PreferenceMetadata.toProto(
         if (metadata is PreferenceScreenMetadata) {
             actionTarget = actionTargetProto {
                 key = metadata.key
-                metadata.arguments?.let { args = it.toProto() }
+                if (CatalystFlags.catalystUseKeyParameters()) {
+                    // TODO (b/452555836): Introduce KeyParameterProto for type-safe screen parameterization. Introduce keyParameters to ActionTarget message
+                    metadata.keyParameters?.let { args = it.toBundle().toProto() }
+                } else {
+                    metadata.arguments?.let { args = it.toProto() }
+                }
             }
         } else {
             metadata.intent(context)?.let { actionTarget = it.toActionTarget(context) }

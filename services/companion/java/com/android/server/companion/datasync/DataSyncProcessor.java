@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -168,10 +168,23 @@ public class DataSyncProcessor {
             localMetadata.writeToStream(outputStream);
 
             // Send the metadata update to the remote devices.
-            SparseArray<Future<byte[]>> results = mTransportManager.sendMessage(
+            SparseArray<CompletableFuture<byte[]>> results = mTransportManager.sendMessage(
                     MESSAGE_REQUEST_METADATA_UPDATE,
                     outputStream.toByteArray(),
                     associationIds);
+
+            // Update the metadata sent time after receiving ACK.
+            for (int associationId : associationIds) {
+                results.get(associationId).thenRunAsync(() -> {
+                    AssociationInfo association =
+                            mAssociationStore.getAssociationWithCallerChecks(associationId);
+                    AssociationInfo updated = new AssociationInfo.Builder(association)
+                        .setTimeMetadataSent(System.currentTimeMillis())
+                        .build();
+                    mAssociationStore.updateAssociation(updated);
+                });
+            }
+
         } catch (IOException e) {
             Slog.e(TAG, "Failed to send metadata update", e);
         }

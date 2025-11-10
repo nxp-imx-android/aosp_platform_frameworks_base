@@ -54,11 +54,8 @@ import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MimeTypes
-import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
-import com.android.compose.PlatformTextButton
 import com.android.compose.theme.PlatformTheme
-import com.android.systemui.dialog.ui.composable.AlertDialogContent
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
@@ -67,12 +64,10 @@ import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.smallscreen.player.ui.compose.VideoPlayer
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.PostRecordingViewModel
+import com.android.systemui.screencapture.ui.postRecordingConfirmDeletion
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
-import com.android.systemui.statusbar.phone.create
 import javax.inject.Inject
-import kotlin.coroutines.resume
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 class SmallScreenPostRecordingActivity
 @Inject
@@ -145,7 +140,13 @@ constructor(
                     PostRecordButton(
                         onClick = {
                             coroutineScope.launch {
-                                if (confirmDeletion(viewModel)) {
+                                if (
+                                    postRecordingConfirmDeletion(
+                                        systemUIDialogFactory,
+                                        this@SmallScreenPostRecordingActivity,
+                                        viewModel,
+                                    )
+                                ) {
                                     postRecordSnackbarDialogs.showVideoDeleted(viewModel.videoUri)
                                     finish()
                                 }
@@ -184,53 +185,6 @@ constructor(
             }
         }
     }
-
-    private suspend fun confirmDeletion(viewModel: DrawableLoaderViewModel) =
-        suspendCancellableCoroutine { continuation ->
-            val dialog =
-                systemUIDialogFactory.create(context = this) { dialog ->
-                    LaunchedEffect(dialog) {
-                        dialog.setOnDismissListener {
-                            if (continuation.isActive) continuation.resume(false)
-                        }
-                    }
-                    AlertDialogContent(
-                        title = {
-                            Text(stringResource(R.string.screen_record_delete_dialog_title))
-                        },
-                        content = {
-                            Text(stringResource(R.string.screen_record_delete_dialog_content))
-                        },
-                        icon = {
-                            LoadingIcon(
-                                loadIcon(
-                                        viewModel = viewModel,
-                                        resId = R.drawable.ic_screenshot_delete,
-                                        contentDescription = null,
-                                    )
-                                    .value
-                            )
-                        },
-                        positiveButton = {
-                            PlatformButton(
-                                onClick = {
-                                    continuation.resume(true)
-                                    dialog.dismiss()
-                                }
-                            ) {
-                                Text(stringResource(id = R.string.screen_record_delete))
-                            }
-                        },
-                        negativeButton = {
-                            PlatformTextButton(onClick = { dialog.dismiss() }) {
-                                Text(stringResource(id = R.string.cancel))
-                            }
-                        },
-                    )
-                }
-            dialog.show()
-            continuation.invokeOnCancellation { dialog.dismiss() }
-        }
 
     companion object {
 

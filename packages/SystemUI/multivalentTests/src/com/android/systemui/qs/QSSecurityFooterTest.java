@@ -662,7 +662,7 @@ public class QSSecurityFooterTest extends SysuiTestCase {
         when(mSecurityController.getIcon(any())).thenReturn(null);
         SecurityButtonConfig buttonConfig = getButtonConfig();
         assertEquals(
-                mContext.getString(R.string.quick_settings_disclosure_parental_controls),
+                mContext.getString(R.string.quick_settings_disclosure_parental_controls_legacy),
                 buttonConfig.getText());
         assertIsDefaultIcon(buttonConfig.getIcon());
 
@@ -672,7 +672,7 @@ public class QSSecurityFooterTest extends SysuiTestCase {
         buttonConfig = getButtonConfig();
         assertNotNull(buttonConfig);
         assertEquals(
-                mContext.getString(R.string.quick_settings_disclosure_parental_controls),
+                mContext.getString(R.string.quick_settings_disclosure_parental_controls_legacy),
                 buttonConfig.getText());
         assertIsIconDrawable(buttonConfig.getIcon(), testDrawable);
 
@@ -694,7 +694,7 @@ public class QSSecurityFooterTest extends SysuiTestCase {
         when(mSecurityController.getIcon()).thenReturn(null);
         SecurityButtonConfig buttonConfig = getButtonConfig();
         assertEquals(
-                mContext.getString(R.string.quick_settings_disclosure_parental_controls),
+                mContext.getString(R.string.quick_settings_disclosure_parental_controls_legacy),
                 buttonConfig.getText());
         assertIsDefaultIcon(buttonConfig.getIcon());
 
@@ -704,7 +704,7 @@ public class QSSecurityFooterTest extends SysuiTestCase {
         buttonConfig = getButtonConfig();
         assertNotNull(buttonConfig);
         assertEquals(
-                mContext.getString(R.string.quick_settings_disclosure_parental_controls),
+                mContext.getString(R.string.quick_settings_disclosure_parental_controls_legacy),
                 buttonConfig.getText());
         assertIsIconDrawable(buttonConfig.getIcon(), testDrawable);
 

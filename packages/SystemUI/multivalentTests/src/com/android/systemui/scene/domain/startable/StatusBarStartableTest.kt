@@ -295,8 +295,7 @@ class StatusBarStartableTest : SysuiTestCase() {
 
         kosmos.fakePowerRepository.updateWakefulness(
             rawState =
-                if (preconditions.isPowerGestureIntercepted || preconditions.isOccluded)
-                    WakefulnessState.AWAKE
+                if (preconditions.isPowerGestureIntercepted) WakefulnessState.AWAKE
                 else WakefulnessState.ASLEEP,
             lastWakeReason = WakeSleepReason.POWER_BUTTON,
             lastSleepReason = WakeSleepReason.POWER_BUTTON,

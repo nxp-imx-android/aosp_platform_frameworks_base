@@ -328,6 +328,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"Слыхавы апарат"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"Выкарыстанне спецыяльных магчымасцей"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"Дысплэй"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> выкарыстоўвае акумулятар"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"Наступная колькасць праграм выкарыстоўваюць акумулятар: <xliff:g id="NUMBER">%1$d</xliff:g>"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Дакраніцеся, каб даведацца пра выкарыстанне трафіка і акумулятара"</string>
@@ -643,10 +645,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Праграма зможа адпраўляць даныя на прылады Wi-Fi паблізу, падключацца да іх і вызначаць іх месцазнаходжанне"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"доступ да прылад, падключаных да лакальнай сеткі"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Дазваляе праграме атрымліваць доступ да прылад, падключаных да лакальнай сеткі"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"выкарыстоўваць інтэрфейс зваротнай пятлі"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Праграма зможа ўзаемадзейнічаць з іншымі праграмамі праз інтэрфейс зваротнай пятлі"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"вызначаць адноснае месцазнаходжанне прылад паблізу"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Дазвольце праграме вызначаць адноснае месцазнаходжанне прылад паблізу"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Інфармацыя пра прыярытэтны сэрвіс аплаты NFC"</string>
@@ -2613,4 +2613,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Абвесткі пра рэсурсы сістэмы"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Празмернае выкарыстанне рэсурсаў"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Праграма \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" выкарыстоўвае занадта шмат рэсурсаў."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

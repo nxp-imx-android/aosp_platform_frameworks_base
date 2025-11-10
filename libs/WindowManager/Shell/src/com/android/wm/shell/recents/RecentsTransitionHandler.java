@@ -30,7 +30,6 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
-import static android.window.DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 
@@ -1449,14 +1448,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             consumeMerge(info, startT, finishT, finishCallback);
 
             // Notify Launcher of the new opening tasks if necessary
-            boolean passTransitionInfo = ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue();
             if (appearedTargets != null) {
                 try {
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                             "[%d] RecentsController.merge: calling onTasksAppeared", mInstanceId);
                     final RemoteAnimationTarget[] targets = appearedTargets.toArray(
                             new RemoteAnimationTarget[0]);
-                    mListener.onTasksAppeared(targets, passTransitionInfo ? info : null);
+                    mListener.onTasksAppeared(targets, info);
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Error sending appeared tasks to recents animation", e);
                 }
@@ -1477,12 +1475,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             // Since we're accepting the merge, update the finish transaction so that changes via
             // that transaction will be applied on top of those of the merged transitions
             mFinishTransaction = finishT;
-            boolean passTransitionInfo = ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue();
-            if (!passTransitionInfo
-                    && !com.android.window.flags.Flags.releaseAllTransitionSurfaces()) {
-                // not using the incoming anim-only surfaces
-                info.releaseAnimSurfaces();
-            }
             finishCallback.onTransitionFinished(null /* wct */);
         }
 
@@ -1810,9 +1802,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 Context context,
                 SurfaceControl.Transaction t,
                 List<TaskState> tasks) {
-            if (!ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue()) {
-                return;
-            }
             for (int i = 0; i < tasks.size(); ++i) {
                 TaskState task = tasks.get(i);
                 if (task.mTaskInfo != null && task.mTaskInfo.isFreeform()) {

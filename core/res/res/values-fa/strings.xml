@@ -326,6 +326,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"سمعک"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"کاربرد دسترس‌پذیری"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"نمایشگر"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> درحال استفاده کردن از باتری است"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> برنامه درحال استفاده کردن از باتری هستند"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"برای جزئیات مربوط به مصرف باتری و داده، تک‌ضرب بزنید"</string>
@@ -641,10 +643,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"‏به برنامه اجازه می‌دهد در دستگاه‌های Wi-Fi اطراف تبلیغ کند، به آن‌ها متصل شود، و موقعیت نسبی آن‌ها را تشخیص دهد"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"به دستگاه های شبکه محلی دسترسی داشته باشید"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"به برنامه اجازه می دهد تا به دستگاه های شبکه محلی دسترسی پیدا کند"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"استفاده کردن از میانای حلقه بازگشتی"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"به برنامه اجازه می‌دهد ازطریق میانای حلقه بازگشتی با برنامه‌های دیگر تعامل داشته باشد"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"تعیین موقعیت نسبی بین دستگاه‌های اطراف"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"به برنامه اجازه داده می‌شود موقعیت نسبی بین دستگاه‌های اطراف را تعیین کند"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"‏اطلاعات ترجیحی سرویس پرداخت NFC"</string>
@@ -937,7 +937,7 @@
   <string-array name="emailAddressTypes">
     <item msgid="7786349763648997741">"خانه"</item>
     <item msgid="435564470865989199">"کاری"</item>
-    <item msgid="4199433197875490373">"سایر موارد"</item>
+    <item msgid="4199433197875490373">"غیره"</item>
     <item msgid="3233938986670468328">"سفارشی"</item>
   </string-array>
   <string-array name="postalAddressTypes">
@@ -974,7 +974,7 @@
     <string name="phoneTypeFaxWork" msgid="6757519896109439123">"نمابر محل کار"</string>
     <string name="phoneTypeFaxHome" msgid="6678559953115904345">"نمابر خانه"</string>
     <string name="phoneTypePager" msgid="576402072263522767">"پی‌جو"</string>
-    <string name="phoneTypeOther" msgid="6918196243648754715">"سایر موارد"</string>
+    <string name="phoneTypeOther" msgid="6918196243648754715">"غیره"</string>
     <string name="phoneTypeCallback" msgid="3455781500844157767">"برگرداندن تماس"</string>
     <string name="phoneTypeCar" msgid="4604775148963129195">"خودرو"</string>
     <string name="phoneTypeCompanyMain" msgid="4482773154536455441">"شماره اصلی شرکت"</string>
@@ -1000,11 +1000,11 @@
     <string name="postalTypeCustom" msgid="5645590470242939129">"سفارشی"</string>
     <string name="postalTypeHome" msgid="7562272480949727912">"خانه"</string>
     <string name="postalTypeWork" msgid="8553425424652012826">"محل کار"</string>
-    <string name="postalTypeOther" msgid="7094245413678857420">"سایر موارد"</string>
+    <string name="postalTypeOther" msgid="7094245413678857420">"غیره"</string>
     <string name="imTypeCustom" msgid="5653384545085765570">"سفارشی"</string>
     <string name="imTypeHome" msgid="6996507981044278216">"خانه"</string>
     <string name="imTypeWork" msgid="2099668940169903123">"محل کار"</string>
-    <string name="imTypeOther" msgid="8068447383276219810">"سایر موارد"</string>
+    <string name="imTypeOther" msgid="8068447383276219810">"غیره"</string>
     <string name="imProtocolCustom" msgid="4437878287653764692">"سفارشی"</string>
     <string name="imProtocolAim" msgid="4050198236506604378">"AIM"</string>
     <string name="imProtocolMsn" msgid="2257148557766499232">"Windows Live"</string>
@@ -1016,7 +1016,7 @@
     <string name="imProtocolJabber" msgid="7919269388889582015">"Jabber"</string>
     <string name="imProtocolNetMeeting" msgid="4985002408136148256">"NetMeeting"</string>
     <string name="orgTypeWork" msgid="8684458700669564172">"کاری"</string>
-    <string name="orgTypeOther" msgid="5450675258408005553">"سایر موارد"</string>
+    <string name="orgTypeOther" msgid="5450675258408005553">"غیره"</string>
     <string name="orgTypeCustom" msgid="1126322047677329218">"سفارشی"</string>
     <string name="relationTypeCustom" msgid="282938315217441351">"سفارشی"</string>
     <string name="relationTypeAssistant" msgid="4057605157116589315">"دستیار"</string>
@@ -1036,7 +1036,7 @@
     <string name="sipAddressTypeCustom" msgid="6283889809842649336">"سفارشی"</string>
     <string name="sipAddressTypeHome" msgid="5918441930656878367">"صفحهٔ اصلی"</string>
     <string name="sipAddressTypeWork" msgid="7873967986701216770">"محل کار"</string>
-    <string name="sipAddressTypeOther" msgid="6317012577345187275">"سایر موارد"</string>
+    <string name="sipAddressTypeOther" msgid="6317012577345187275">"غیره"</string>
     <string name="quick_contacts_not_available" msgid="1262709196045052223">"هیچ برنامه‌ای برای مشاهده این مخاطب پیدا نشد."</string>
     <string name="keyguard_password_enter_pin_code" msgid="6401406801060956153">"پین کد را وارد کنید"</string>
     <string name="keyguard_password_enter_puk_code" msgid="3112256684547584093">"‏PUK و پین کد جدید را تایپ کنید"</string>
@@ -1068,7 +1068,7 @@
     <string name="lockscreen_missing_sim_instructions" msgid="5823469004536805423">"سیم‌کارت اضافه کنید."</string>
     <string name="lockscreen_missing_sim_instructions_long" msgid="4403843937236648032">"سیم‌کارت موجود نیست یا قابل‌خواندن نیست. سیم‌کارت اضافه کنید."</string>
     <string name="lockscreen_permanent_disabled_sim_message_short" msgid="1925200607820809677">"سیم‌کارت قابل‌استفاده نیست."</string>
-    <string name="lockscreen_permanent_disabled_sim_instructions" msgid="6902979937802238429">"سیم‌کارت شما برای همیشه غیرفعال شده است.\n برای دریافت سیم‌کارتی دیگر، با رساننده خدمات بی‌سیم خود تماس بگیرید."</string>
+    <string name="lockscreen_permanent_disabled_sim_instructions" msgid="6902979937802238429">"سیم‌کارت شما برای همیشه غیرفعال شده است.\n برای دریافت سیم‌کارتی دیگر، با فراهم‌ساز خدمات بی‌سیم خود تماس بگیرید."</string>
     <string name="lockscreen_transport_prev_description" msgid="2879469521751181478">"آهنگ قبلی"</string>
     <string name="lockscreen_transport_next_description" msgid="2931509904881099919">"آهنگ بعدی"</string>
     <string name="lockscreen_transport_pause_description" msgid="6705284702135372494">"مکث"</string>
@@ -1240,7 +1240,7 @@
     <string name="paste_as_plain_text" msgid="7664800665823182587">"جای‌گذاری به عنوان متن ساده"</string>
     <string name="replace" msgid="7842675434546657444">"جایگزین شود…"</string>
     <string name="delete" msgid="1514113991712129054">"حذف"</string>
-    <string name="copyUrl" msgid="6229645005987260230">"‏کپی URL"</string>
+    <string name="copyUrl" msgid="6229645005987260230">"کپی کردن نشانی وب"</string>
     <string name="selectTextMode" msgid="3225108910999318778">"انتخاب متن"</string>
     <string name="undo" msgid="3175318090002654673">"واگرد"</string>
     <string name="redo" msgid="7231448494008532233">"ازنو انجام دادن"</string>
@@ -2377,7 +2377,7 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ENTRY" msgid="6144227308185112176">"پین باز کردن قفل ارائه‌دهنده خدمات زیرمجموعه شبکه"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_IN_PROGRESS" msgid="4233355366318061180">"درحال درخواست باز کردن قفل شبکه سیم‌کارت…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_IN_PROGRESS" msgid="2917242135129860371">"درحال درخواست باز کردن قفل زیرمجموعه شبکه سیم‌کارت…"</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"درحال درخواست باز کردن قفل رساننده خدمات سیم‌کارت…"</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_IN_PROGRESS" msgid="4435641041692795695">"درحال درخواست باز کردن قفل فراهم‌ساز خدمات سیم‌کارت…"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_IN_PROGRESS" msgid="4795977251920732254">"درحال درخواست باز کردن قفل شرکت سیم‌کارت…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_IN_PROGRESS" msgid="1090425878157254446">"‏درحال درخواست باز کردن قفل PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_IN_PROGRESS" msgid="6476898876518094438">"‏درحال درخواست باز کردن قفل PUK…"</string>
@@ -2404,14 +2404,14 @@
     <string name="PERSOSUBSTATE_RUIM_RUIM_PUK_IN_PROGRESS" msgid="1230605365926493599">"‏درحال درخواست باز کردن قفل PUK…"</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_ERROR" msgid="1924844017037151535">"درخواست باز کرد قفل شبکه سیم‌کارت انجام نشد."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_ERROR" msgid="7136658591279283417">"درخواست باز کردن قفل «زیرمجموعه شبکه سیم‌کارت» ناموفق بود."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"درخواست باز کردن قفل «رساننده خدمات سیم‌کارت» ناموفق بود."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_ERROR" msgid="8344463467085504202">"درخواست باز کردن قفل «فراهم‌ساز خدمات سیم‌کارت» ناموفق بود."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_ERROR" msgid="7664778312218023192">"درخواست باز کردن قفل شرکت سیم‌کارت انجام شد."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_ERROR" msgid="2472944311643350302">"درخواست باز کردن قفل سیم‌کارت انجام نشد."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_ERROR" msgid="828089694480999120">"‏درخواست باز کردن قفل شبکه ۱ RUIM انجام نشد."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_ERROR" msgid="17619001007092511">"‏درخواست باز کردن قفل شبکه ۲ RUIM انجام نشد."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_ERROR" msgid="807214229604353614">"‏درخواست باز کردن قفل RUIM Hrpd انجام نشد."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_ERROR" msgid="8644184447744175747">"‏درخواست باز کردن قفل شرکت RUIM انجام نشد."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"‏درخواست باز کردن قفل «رساننده خدمات RUIM» ناموفق بود."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_ERROR" msgid="1882547895012628428">"‏درخواست باز کردن قفل «فراهم‌ساز خدمات RUIM» ناموفق بود."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_ERROR" msgid="707397021218680753">"‏درخواست باز کردن قفل RUIM انجام نشد."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_ERROR" msgid="894358680773257820">"‏قفل PUK باز نشد."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_ERROR" msgid="352466878146726991">"‏قفل PUK باز نشد."</string>
@@ -2431,13 +2431,13 @@
     <string name="PERSOSUBSTATE_SIM_NS_SP_ERROR" msgid="1890493954453456758">"درخواست باز کردن قفل ارائه‌دهنده خدمات زیرمجموعه شبکه انجام نشد."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUCCESS" msgid="4886243367747126325">"قفل شبکه سیم‌کارت باز شد."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_SUCCESS" msgid="4053809277733513987">"قفل زیرمجموعه شبکه سیم‌کارت باز شد."</string>
-    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"قفل «رساننده خدمات سیم‌کارت» باز شد."</string>
+    <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_SUCCESS" msgid="6233653087159353652">"قفل «فراهم‌ساز خدمات سیم‌کارت» باز شد."</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_SUCCESS" msgid="2339794542560381270">"قفل شرکت سیم‌کارت باز شد."</string>
     <string name="PERSOSUBSTATE_SIM_SIM_SUCCESS" msgid="6975608174152828954">"قفل سیم‌کارت باز شد."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_SUCCESS" msgid="2846699261330463192">"‏قفل شبکه ۱ RUIM باز شد."</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_SUCCESS" msgid="5335414726057102801">"‏قفل شبکه ۲ RUIM باز شد."</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_SUCCESS" msgid="8868100318474971969">"‏قفل RUIM Hrpd باز شد."</string>
-    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"‏قفل «رساننده خدمات RUIM» باز شد."</string>
+    <string name="PERSOSUBSTATE_RUIM_SERVICE_PROVIDER_SUCCESS" msgid="6724555357287036238">"‏قفل «فراهم‌ساز خدمات RUIM» باز شد."</string>
     <string name="PERSOSUBSTATE_RUIM_CORPORATE_SUCCESS" msgid="6944873647584595489">"‏قفل شرکت RUIM باز شد."</string>
     <string name="PERSOSUBSTATE_RUIM_RUIM_SUCCESS" msgid="2526483514124121988">"‏قفل RUIM باز شد."</string>
     <string name="PERSOSUBSTATE_SIM_NETWORK_PUK_SUCCESS" msgid="7662200333621664621">"‏قفل PUK باز شد."</string>
@@ -2611,4 +2611,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"هشدار منابع سیستم"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"مصرف بیش از حد منابع"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"برنامه‌ی \'<xliff:g id="APP_NAME">%1$s</xliff:g>\' از منابع زیادی استفاده می‌کند."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

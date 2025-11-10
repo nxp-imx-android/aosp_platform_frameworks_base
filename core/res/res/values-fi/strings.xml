@@ -326,6 +326,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"Kuulolaite"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"Esteetön käyttö"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"Näyttö"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> käyttää akkua."</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> sovellusta käyttää akkua."</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Katso lisätietoja akun ja datan käytöstä napauttamalla."</string>
@@ -641,10 +643,8 @@
     <string name="permdesc_nearby_wifi_devices" msgid="3054307728646332906">"Sallii sovelluksen ilmoittaa ja määrittää lähellä olevien Wi-Fi-laitteiden suhteellisen sijainnin sekä yhdistää niihin"</string>
     <string name="permlab_access_local_network" msgid="3420360767259066877">"pääsy lähiverkon laitteisiin"</string>
     <string name="permdesc_access_local_network" msgid="6364679803386822638">"Sallii sovelluksen käyttää paikallisen verkon laitteita"</string>
-    <!-- no translation found for permlab_use_loopback_interface (8032765172835686213) -->
-    <skip />
-    <!-- no translation found for permdesc_use_loopback_interface (47684087751145157) -->
-    <skip />
+    <string name="permlab_use_loopback_interface" msgid="8032765172835686213">"käytä silmukkarajapintaa"</string>
+    <string name="permdesc_use_loopback_interface" msgid="47684087751145157">"Antaa sovelluksen olla yhteydessä muihin sovelluksiin silmukkarajapinnan kautta"</string>
     <string name="permlab_ranging" msgid="2854543350668593390">"määrittää laitteiden suhteellisen sijainnin"</string>
     <string name="permdesc_ranging" msgid="6703905535621521710">"Sallii sovelluksen määrittää lähellä olevien laitteiden sijainnin suhteessa toisiinsa"</string>
     <string name="permlab_preferredPaymentInfo" msgid="5274423844767445054">"Ensisijaiset NFC-maksupalvelutiedot"</string>
@@ -1825,7 +1825,7 @@
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"<xliff:g id="SERVICE_NAME">%s</xliff:g> on laitettu pois päältä"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Muokkaa pikakuvakkeita"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Valmis"</string>
-    <string name="disable_accessibility_shortcut" msgid="5806091378745232383">"Poista pikanäppäin käytöstä"</string>
+    <string name="disable_accessibility_shortcut" msgid="5806091378745232383">"Laita pikanäppäin pois päältä"</string>
     <string name="leave_accessibility_shortcut_on" msgid="6543362062336990814">"Käytä pikanäppäintä"</string>
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Käänteiset värit"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Värinkorjaus"</string>
@@ -2611,4 +2611,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Järjestelmäresurssien ilmoitukset"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Resurssien liikakäyttö"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Sovellus \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" käyttää liikaa resursseja."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

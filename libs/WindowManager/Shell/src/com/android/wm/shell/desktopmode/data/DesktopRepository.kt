@@ -85,9 +85,6 @@ class DesktopRepository(
     private var desktopGestureExclusionListener: Consumer<Region>? = null
     private var desktopGestureExclusionExecutor: Executor? = null
 
-    // TODO: b/452164707 - Remove an entry when its package is removed (e.g., observing
-    // [onPackageRemoved]).
-    // TODO: b/452164081 - Add this to persistent repository.
     private val rememberedBoundsRatioByPackageName = ArrayMap<String, RectF>()
 
     // TODO - b/365873835: Add this to persistent repository.
@@ -1263,6 +1260,23 @@ class DesktopRepository(
         rememberedBoundsRatioByPackageName[packageName] = bounds
     }
 
+    /** Clears the remembered bounds ratio for the given package. */
+    fun clearRememberedBoundsRatio(packageName: String) {
+        if (!Flags.enableRememberedBounds()) {
+            return
+        }
+        rememberedBoundsRatioByPackageName.remove(packageName)
+    }
+
+    fun restoreRememberedBoundsRatioByPackageName(source: ArrayMap<String, RectF>) {
+        if (!Flags.enableRememberedBounds()) {
+            return
+        }
+        rememberedBoundsRatioByPackageName.putAll(
+            source.filterKeys { it !in rememberedBoundsRatioByPackageName }
+        )
+    }
+
     private fun updatePersistentRepository(displayId: Int): Unit =
         traceSection("DesktopRepository#updatePersistentRepository") {
             logD("updatePersistentRepository: displayId=%d", displayId)
@@ -1286,6 +1300,7 @@ class DesktopRepository(
                             desks,
                             getActiveDeskId(displayId),
                             preservedDisplaysByUniqueId,
+                            rememberedBoundsRatioByPackageName,
                         )
                     } catch (exception: Exception) {
                         logE(

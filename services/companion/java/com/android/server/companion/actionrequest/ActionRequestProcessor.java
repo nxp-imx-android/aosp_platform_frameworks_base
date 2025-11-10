@@ -223,13 +223,18 @@ public class ActionRequestProcessor implements AssociationStore.OnChangeListener
                 break;
 
             case RESULT_DEACTIVATED:
-                // This handles both a successful deactivation and failed after activation was
-                // succeed.
-                Slog.i(TAG, "Action " + ActionRequest.actionToString(action)
-                        + " is now DEACTIVATED.");
+                if (actionState.mState == ActionState.STATE_ACTIVE
+                    || actionState.mState == ActionState.STATE_IDLE) {
+                    Slog.i(TAG, "Action " + ActionRequest.actionToString(action)
+                            + " is now DEACTIVATED.");
 
-                broadcastToRequestingServices(actionState, associationId, result);
-                associationActions.remove(action);
+                    broadcastToRequestingServices(actionState, associationId, result);
+                    associationActions.remove(action);
+                } else {
+                    Slog.w(TAG, "Ignoring stale RESULT_DEACTIVATED for action "
+                        + ActionRequest.actionToString(action)
+                        + " which is in PENDING_ACTIVATION state.");
+                }
                 break;
         }
     }
@@ -331,6 +336,10 @@ public class ActionRequestProcessor implements AssociationStore.OnChangeListener
                         // activation request is currently in flight.
                         if (actionState.mState == ActionState.STATE_ACTIVE
                                 || actionState.mState == ActionState.STATE_PENDING_ACTIVATION) {
+                            // Immediately reset the state to IDLE to prevent a race condition
+                            // where a quick deactivate then activate sequence request would
+                            // cause the new activation request to be missed.
+                            actionState.mState = ActionState.STATE_IDLE;
                             postActionRequest(association, request);
                         }
                     } else {

@@ -37,9 +37,11 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME;
 import static android.content.pm.ApplicationInfo.FLAG_SUSPENDED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.KeyguardManager;
@@ -570,7 +572,7 @@ class ActivityStartInterceptor {
     }
 
     private boolean interceptAutomatedPackageIfNeeded() {
-        if (!android.companion.virtualdevice.flags.Flags.automatedAppLaunchInterception()) {
+        if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
             return false;
         }
         if (mAInfo == null || mAInfo.packageName == null || mPresumableLaunchDisplayArea == null) {
@@ -596,7 +598,27 @@ class ActivityStartInterceptor {
         mRInfo = mSupervisor.resolveIntent(mIntent, mResolvedType, mUserId, 0,
                 mRealCallingUid, mRealCallingPid);
         mAInfo = mSupervisor.resolveActivity(mIntent, mRInfo, mStartFlags, null /*profilerInfo*/);
+        mInTask = null;
         return true;
+    }
+
+    static boolean shouldInterceptStartActivityFromRecents(
+            @NonNull ActivityTaskSupervisor supervisor,
+            @NonNull TaskInfo taskInfo,
+            @NonNull String callingPackage,
+            @Nullable ActivityOptions options) {
+        // TODO(b/456665032): handle other interceptions here too.
+        if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
+            return false;
+        }
+        final int launchDisplayId =
+                options != null ? options.getLaunchDisplayId() : DEFAULT_DISPLAY;
+        return supervisor.createAutomatedAppLaunchWarningIntent(
+                        taskInfo.baseIntent.getComponent().getPackageName(),
+                        taskInfo.userId,
+                        callingPackage,
+                        launchDisplayId)
+                != null;
     }
 
     private void normalizeHomeIntent() {

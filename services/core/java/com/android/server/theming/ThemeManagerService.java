@@ -26,7 +26,6 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.ActivityManagerInternal;
 import android.app.KeyguardManager;
-import android.app.WallpaperColors;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -36,6 +35,7 @@ import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeStyle;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.SystemProperties;
 import android.os.UserHandle;
@@ -52,6 +52,7 @@ import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 /**
@@ -94,6 +95,8 @@ import java.util.concurrent.Executor;
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 public class ThemeManagerService extends SystemService {
     private static final String TAG = "ThemeManagerService";
+
+    private static final String KEY_COLOR_PALETTE_VERSION = "global_color_palette_version";
 
     private final ThemeManagerInternal mInternal;
     private final ThemeBinderService mPublic;
@@ -144,7 +147,7 @@ public class ThemeManagerService extends SystemService {
         }
 
         if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
-            mStateManager.onBootComplete();
+            mStateManager.onBootComplete(/*isPaletteOutdated*/ shouldForceReloadForVersion());
         }
 
     }
@@ -225,6 +228,11 @@ public class ThemeManagerService extends SystemService {
         // Wallpaper Color Change
         mWallpaperManagerInternal.addOnColorsChangedListener(
                 (wallpaperColors, which, displayId, userId, fromForegroundApp) -> {
+                    ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
+                    if (userSettings.colorSource().equals(VALUE_PRESET)) {
+                        Slog.d(TAG, "Wallpaper color change ignored due to preset color source");
+                        return;
+                    }
                     Slog.d(TAG, "User: " + userId + " changed wallpaper");
                     mStateManager.onSeedColorChange(activityManagerInternal.getCurrentUserId(),
                             ColorScheme.getSeedColor(wallpaperColors),
@@ -274,8 +282,7 @@ public class ThemeManagerService extends SystemService {
                         // the event
 
                         if (userSettings.colorSource().equals(VALUE_PRESET)) {
-                            int newSeed = ColorScheme.getSeedColor(
-                                    new WallpaperColors(userSettings.systemPalette(), null, null));
+                            int newSeed = userSettings.systemPalette().toArgb();
 
                             Slog.d(TAG, "User: " + userId + " changed seed to "
                                     + Integer.toHexString(newSeed));
@@ -287,5 +294,17 @@ public class ThemeManagerService extends SystemService {
                         mStateManager.onStyleChange(userId, userSettings.themeStyle());
                     }
                 }, UserHandle.USER_ALL);
+    }
+
+    private boolean shouldForceReloadForVersion() {
+        String storedVersion = Settings.Global.getString(mContext.getContentResolver(),
+                KEY_COLOR_PALETTE_VERSION);
+
+        if (storedVersion != null && Objects.equals(storedVersion, Build.ID)) return false;
+
+        Slog.i(TAG, "Palette version bumped from " + storedVersion + " to " + Build.ID);
+        Settings.Global.putString(mContext.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
+                Build.ID);
+        return true;
     }
 }

@@ -326,6 +326,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"เครื่องช่วยฟัง"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"การใช้งานการช่วยเหลือพิเศษ"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"จอแสดงผล"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> กำลังใช้แบตเตอรี่"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"แอป <xliff:g id="NUMBER">%1$d</xliff:g> แอปกำลังใช้แบตเตอรี่"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"แตะเพื่อดูรายละเอียดเกี่ยวกับแบตเตอรี่และปริมาณการใช้อินเทอร์เน็ต"</string>
@@ -2609,4 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"การแจ้งเตือนทรัพยากรระบบ"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"การใช้ทรัพยากรมากเกินไป"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"แอป <xliff:g id="APP_NAME">%1$s</xliff:g> ใช้ทรัพยากรมากเกินไป"</string>
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"อัปเดตจากผู้ปกครองของคุณ"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ถูกลบออกแล้วในตอนนี้"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> พร้อมใช้งานแล้ว"</string>
 </resources>

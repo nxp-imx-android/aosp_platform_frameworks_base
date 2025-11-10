@@ -32,8 +32,6 @@ import android.os.UserHandle;
 import android.testing.TestableContext;
 import android.testing.TestableResources;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
@@ -60,14 +58,6 @@ public class ThemeManagerServiceTests {
 
     @Rule
     public final HardwareColorRule mHardwareColorRule = new HardwareColorRule();
-
-    private final SystemPropertiesReader mSystemPropertiesReader = new SystemPropertiesReader() {
-        @NonNull
-        @Override
-        public String get(@NonNull String key, @Nullable String def) {
-            return mHardwareColorRule.color;
-        }
-    };
 
     private static final int DEFAULT_USER_ID = 11;
     private static final int DEFAULT_SEED_COLOR = 0xFFFF0000; // RED
@@ -149,6 +139,7 @@ public class ThemeManagerServiceTests {
     }
 
     @Test
+    @HardwareColors(color = "", options = {"*|TONAL_SPOT|#00FF00"})
     public void test_onBootPhase_complete_colorSchemeNotApplied_shouldForceUpdate() {
         // This test now creates its own ThemeService instance.
         mThemeManagerService = testableServiceStart();
@@ -172,7 +163,8 @@ public class ThemeManagerServiceTests {
 
     private ThemeManagerService testableServiceStart() {
         // The context used here should match the one used for resource overrides.
-        return new ThemeManagerService(mMainContext, mSystemPropertiesReader, mThemeStateManager,
+        return new ThemeManagerService(mMainContext, mHardwareColorRule.sysPropReader,
+                mThemeStateManager,
                 mWallpaperManager);
     }
 }

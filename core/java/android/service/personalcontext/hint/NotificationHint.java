@@ -21,6 +21,8 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.Flags;
 
 /**
@@ -71,6 +73,26 @@ public final class NotificationHint extends ContextHint {
     @Override
     Bundle toBundleImpl() {
         return mNotificationEvent.toBundle();
+    }
+
+    /** @hide */
+    @Override
+    public void writeToSignatureParcel(@NonNull Parcel dest) {
+        final StatusBarNotification sbn;
+        if (mNotificationEvent instanceof NotificationEvent.NotificationEnqueuedEvent) {
+            sbn = ((NotificationEvent.NotificationEnqueuedEvent) mNotificationEvent)
+                    .getStatusBarNotification();
+        } else if (mNotificationEvent instanceof NotificationEvent.NotificationRemovedEvent) {
+            sbn = ((NotificationEvent.NotificationRemovedEvent) mNotificationEvent)
+                    .getStatusBarNotification();
+        } else {
+            throw new UnsupportedOperationException("Unexpected NotificationEvent type");
+        }
+
+        dest.writeString(sbn.getPackageName());
+        dest.writeString(sbn.getKey());
+        dest.writeParcelable(sbn.getUser(), 0);
+        dest.writeLong(sbn.getPostTime());
     }
 
     /**

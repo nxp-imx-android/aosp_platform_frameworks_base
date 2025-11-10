@@ -48,6 +48,8 @@ public interface ParsedPermission extends ParsedComponent {
 
     int getRequiresGeneralPurposeTargetSdkVersion();
 
+    int getRequiresPurposeStringTargetSdkVersion();
+
     @NonNull
     List<ParsedValidPurpose> getValidPurposes();
 

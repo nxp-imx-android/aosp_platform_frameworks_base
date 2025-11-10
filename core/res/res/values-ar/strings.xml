@@ -330,6 +330,8 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"سماعة الأذن الطبية"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"استخدام \"أدوات تسهيل الاستخدام\""</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"الشاشة"</string>
+    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
+    <skip />
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"يستخدم تطبيق <xliff:g id="APP_NAME">%1$s</xliff:g> البطارية"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"تستخدم <xliff:g id="NUMBER">%1$d</xliff:g> من التطبيقات البطارية"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"انقر للحصول على تفاصيل حول البطارية واستخدام البيانات"</string>
@@ -1248,7 +1250,7 @@
     <string name="redo" msgid="7231448494008532233">"إعادة"</string>
     <string name="autofill" msgid="511224882647795296">"الملء التلقائي"</string>
     <string name="textSelectionCABTitle" msgid="5151441579532476940">"تحديد النص"</string>
-    <string name="addToDictionary" msgid="8041821113480950096">"إضافة إلى القاموس"</string>
+    <string name="addToDictionary" msgid="8041821113480950096">"الإضافة إلى القاموس"</string>
     <string name="deleteText" msgid="4200807474529938112">"حذف"</string>
     <string name="inputMethod" msgid="1784759500516314751">"طريقة الإرسال"</string>
     <string name="editTextMenuTitle" msgid="857666911134482176">"إجراءات النص"</string>
@@ -2613,4 +2615,10 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"تنبيهات بشأن موارد النظام"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"فرط استخدام الموارد"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"يستخدم التطبيق \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" الكثير من الموارد."</string>
+    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
+    <skip />
+    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
+    <skip />
+    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
+    <skip />
 </resources>

@@ -1226,5 +1226,22 @@
             android:exported="true"
             />
 
+        <service android:name="com.android.systemui.personalcontext.SysuiVisualizerService"
+            android:exported="true"
+            android:singleUser="true"
+            android:permission="android.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE">
+            <intent-filter>
+                <action
+                    android:name="android.service.personalcontext.embedded.InsightSurfaceVisualizerService"
+                    />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="com.android.systemui.locationbutton.LocationButtonRenderService"
+            android:permission="android.permission.USE_LOCATION_BUTTON"
+            android:exported="true"
+           />
+
     </application>
 </manifest>

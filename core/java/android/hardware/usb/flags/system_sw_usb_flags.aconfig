@@ -71,3 +71,10 @@ flag {
     description: "Enables AOA userspace implementation all pixel devices except pixel 8 series"
     bug: "440091110"
 }
+
+flag {
+    name: "enable_power_profile_reporting"
+    namespace: "system_sw_usb"
+    description: "Feature flag to enable power profile info and bc12 type reporting funtionality"
+    bug: "450113925"
+}

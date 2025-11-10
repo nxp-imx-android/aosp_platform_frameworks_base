@@ -28,6 +28,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.bubbles.BubbleData;
 import com.android.wm.shell.bubbles.BubbleDataRepository;
+import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.BubbleViewInfoTask;
@@ -90,7 +91,8 @@ public class TestableBubbleController extends BubbleController {
             HomeIntentProvider homeIntentProvider,
             Optional<SplitScreenController> splitScreenController,
             BubbleSessionTracker sessionTracker,
-            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory) {
+            BubbleViewInfoTask.Factory bubbleViewInfoTaskFactory,
+            BubbleHelper bubbleHelper) {
         super(context, shellInit, shellCommandHandler, shellController, data, Runnable::run,
                 floatingContentCoordinator, dataRepository, bubbleTransitions, statusBarService,
                 windowManager, displayInsetsController, displayImeController, userManager,
@@ -99,7 +101,7 @@ public class TestableBubbleController extends BubbleController {
                 shellMainHandler, new SyncExecutor(), taskViewTransitions,
                 transitions, syncQueue, wmService, resizabilityChecker, homeIntentProvider,
                 () -> splitScreenController, Optional.empty(), () -> false, sessionTracker,
-                bubbleViewInfoTaskFactory);
+                bubbleViewInfoTaskFactory, bubbleHelper);
         setInflateSynchronously(true);
         onInit();
     }

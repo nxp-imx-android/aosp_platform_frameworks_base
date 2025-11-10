@@ -255,24 +255,16 @@ public final class CompanionDeviceManager {
     public static final String FEATURE_TASK_CONTINUITY = "task_continuity_manager";
 
     /**
-     * The feature name for the mode Sync.
+     * The feature name for the CrossDeviceSync.
      * @hide
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-    public static final String FEATURE_MODE_SYNC = "mode_sync";
-
-    /**
-     * The feature name for airplane mode sync.
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
-    public static final String FEATURE_AIRPLANE_MODE_SYNC = "airplane_mode_sync";
+    public static final String FEATURE_CROSS_DEVICE_SYNC = "cross_device_sync";
 
     /** @hide */
     @StringDef(prefix = { "FEATURE_" }, value = {
             FEATURE_TASK_CONTINUITY,
-            FEATURE_MODE_SYNC,
-            FEATURE_AIRPLANE_MODE_SYNC,
+            FEATURE_CROSS_DEVICE_SYNC,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface FeatureName {}
@@ -2414,6 +2406,42 @@ public final class CompanionDeviceManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Checks if a transport is currently attached for a given association id.
+     *
+     * <p>A transport is considered attached if
+     * {@link #attachSystemDataTransport(int, InputStream, OutputStream)} has been successfully
+     * called for the given {@code associationId}, and
+     * {@link #detachSystemDataTransport(int)} has not yet been called.
+     *
+     * <p>This is useful for determining if the system is ready to handle data transfers
+     * before calling {@link #startSystemDataTransfer(int, Executor, OutcomeReceiver)}.
+     *
+     * @param associationId The unique {@link AssociationInfo#getId() id} of the device association
+     *
+     * @return {@code true} if a system data transport is attached for the given association id,
+     *         {@code false} otherwise.
+     *
+     * @see #attachSystemDataTransport(int, InputStream, OutputStream)
+     * @see #detachSystemDataTransport(int)
+     * @see #startSystemDataTransfer(int, Executor, OutcomeReceiver)
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    public boolean isSystemDataTransportAttached(int associationId) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return false;
+        }
+
+        try {
+            return mService.isSystemDataTransportAttached(associationId);
+        }  catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+
 
     private static class AssociationRequestCallbackProxy extends IAssociationRequestCallback.Stub {
         private final Handler mHandler;

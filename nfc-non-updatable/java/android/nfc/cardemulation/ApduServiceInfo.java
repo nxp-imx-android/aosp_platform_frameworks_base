@@ -57,9 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 /**
@@ -140,7 +138,7 @@ public final class ApduServiceInfo implements Parcelable {
 
     private final Map<String, Boolean> mAutoTransact;
 
-    private final ConcurrentMap<Pattern, Boolean> mAutoTransactPatterns;
+    private final Map<Pattern, Boolean> mAutoTransactPatterns;
 
     /**
      * Whether this service should only be started when the device is unlocked.
@@ -182,6 +180,8 @@ public final class ApduServiceInfo implements Parcelable {
      * Wallet role owner.
      */
     private boolean mWantsRoleHolderPriority;
+
+    private final Object mLock = new Object();
 
     /**
      * Constructor of {@link ApduServiceInfo}.
@@ -236,7 +236,7 @@ public final class ApduServiceInfo implements Parcelable {
         this(info, onHost, description, staticAidGroups, dynamicAidGroups,
                 requiresUnlock, requiresScreenOn, bannerResource, uid,
                 settingsActivityName, offHost, staticOffHost, isEnabled,
-                new HashMap<String, Boolean>(), new ConcurrentSkipListMap<>(
+                new HashMap<String, Boolean>(), new TreeMap<>(
                         Comparator.comparing(Pattern::toString)));
     }
 
@@ -253,7 +253,7 @@ public final class ApduServiceInfo implements Parcelable {
         this.mStaticAidGroups = new HashMap<String, AidGroup>();
         this.mDynamicAidGroups = new HashMap<String, AidGroup>();
         this.mAutoTransact = autoTransact;
-        this.mAutoTransactPatterns = new ConcurrentHashMap<>(autoTransactPatterns);
+        this.mAutoTransactPatterns = autoTransactPatterns;
         this.mOffHostName = offHost;
         this.mStaticOffHostName = staticOffHost;
         this.mOnHost = onHost;
@@ -385,7 +385,7 @@ public final class ApduServiceInfo implements Parcelable {
             mStaticAidGroups = new HashMap<String, AidGroup>();
             mDynamicAidGroups = new HashMap<String, AidGroup>();
             mAutoTransact = new HashMap<String, Boolean>();
-            mAutoTransactPatterns = new ConcurrentSkipListMap<Pattern, Boolean>(
+            mAutoTransactPatterns = new TreeMap<Pattern, Boolean>(
                     Comparator.comparing(Pattern::toString));
             mOnHost = onHost;
 
@@ -586,23 +586,27 @@ public final class ApduServiceInfo implements Parcelable {
         if (mAutoTransact.getOrDefault(plf.toUpperCase(Locale.ROOT), false)) {
             return true;
         }
-        boolean isPattern = plf.contains("?") || plf.contains("*");
+        synchronized (mLock) {
+            boolean isPattern = plf.contains("?") || plf.contains("*");
 
-        // Create a copy of the key set to avoid ConcurrentModificationException
-        List<Pattern> patternKeys = new ArrayList<>(mAutoTransactPatterns.keySet());
+            // Create a copy of the key set to avoid ConcurrentModificationException
+            List<Pattern> patternKeys = new ArrayList<>(mAutoTransactPatterns.keySet());
 
-        List<Pattern> patternMatches =
-                patternKeys.stream()
-                        .filter(p
-                                -> isPattern ? p.toString().equals(plf) : p.matcher(plf).matches())
-                        .toList();
+            List<Pattern> patternMatches =
+                    patternKeys.stream()
+                            .filter(p
+                                    -> isPattern
+                                            ? p.toString().equals(plf)
+                                            : p.matcher(plf).matches())
+                            .toList();
 
-        if (patternMatches == null || patternMatches.size() == 0) {
-            return false;
-        }
-        for (Pattern patternMatch : patternMatches) {
-            if (Boolean.TRUE.equals(mAutoTransactPatterns.get(patternMatch))) {
-                return true;
+            if (patternMatches == null || patternMatches.size() == 0) {
+                return false;
+            }
+            for (Pattern patternMatch : patternMatches) {
+                if (Boolean.TRUE.equals(mAutoTransactPatterns.get(patternMatch))) {
+                    return true;
+                }
             }
         }
         return false;
@@ -614,7 +618,9 @@ public final class ApduServiceInfo implements Parcelable {
      */
     @NonNull
     public List<Pattern> getPollingLoopPatternFilters() {
-        return new ArrayList<>(mAutoTransactPatterns.keySet());
+        synchronized (mLock) {
+            return new ArrayList<>(mAutoTransactPatterns.keySet());
+        }
     }
 
     /**
@@ -891,8 +897,10 @@ public final class ApduServiceInfo implements Parcelable {
         if (!mOnHost && !autoTransact) {
             return;
         }
-        mAutoTransactPatterns.put(Pattern.compile(
-                pollingLoopPatternFilter.toUpperCase(Locale.ROOT)), autoTransact);
+        synchronized (mLock) {
+            mAutoTransactPatterns.put(Pattern.compile(
+                    pollingLoopPatternFilter.toUpperCase(Locale.ROOT)), autoTransact);
+        }
     }
 
     /**
@@ -901,8 +909,10 @@ public final class ApduServiceInfo implements Parcelable {
      * @param pollingLoopPatternFilter this polling loop filter to add.
      */
     public void removePollingLoopPatternFilter(@NonNull String pollingLoopPatternFilter) {
-        mAutoTransactPatterns.remove(
-                Pattern.compile(pollingLoopPatternFilter.toUpperCase(Locale.ROOT)));
+        synchronized (mLock) {
+            mAutoTransactPatterns.remove(
+                    Pattern.compile(pollingLoopPatternFilter.toUpperCase(Locale.ROOT)));
+        }
     }
 
     /**

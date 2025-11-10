@@ -19,13 +19,18 @@ import android.content.Context
 import android.hardware.input.InputManager
 import android.os.Looper
 import android.os.TestLooperManager
+import android.os.UserHandle
+import android.os.UserManager
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
+import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.TestableContext
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.input.data.TestDataStore
 import com.android.server.testutils.TestUtils
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -49,25 +54,34 @@ import org.mockito.kotlin.reset
  */
 @Presubmit
 @RunWith(MockitoJUnitRunner::class)
+@EnableFlags(com.android.hardware.input.Flags.FLAG_CONTROLLER_REMAPPING)
 class InputDeviceRemapperTests {
 
     @JvmField
     @Rule
     val testableContext = TestableContext(ApplicationProvider.getApplicationContext())
+
+    @JvmField @Rule val rule = SetFlagsRule()
+
     @Mock private lateinit var native: NativeInputManagerService
     @Mock private lateinit var inputManager: InputManager
+    @Mock private lateinit var userManager: UserManager
 
-    private lateinit var mInputDeviceRemapper: InputDeviceRemapper
     private lateinit var mainLooperManager: TestLooperManager
+    private lateinit var testDataStore: TestDataStore
     private var inputDeviceIds = mutableListOf<Int>()
 
     @Before
     fun setup() {
         testableContext.addMockSystemService(Context.INPUT_SERVICE, inputManager)
+        testableContext.addMockSystemService(Context.USER_SERVICE, userManager)
         whenever(inputManager.inputDeviceIds).thenAnswer { inputDeviceIds.toIntArray() }
+        whenever(userManager.getUserHandles(any()))
+            .thenReturn(listOf(UserHandle(USER_ID), UserHandle(SECOND_USER_ID)))
         mainLooperManager =
             InstrumentationRegistry.getInstrumentation()
                 .acquireLooperManager(Looper.getMainLooper())
+        testDataStore = TestDataStore()
     }
 
     @After
@@ -75,22 +89,32 @@ class InputDeviceRemapperTests {
         mainLooperManager.release()
     }
 
-    private fun setupControllerRemapper() {
-        mInputDeviceRemapper = InputDeviceRemapper(testableContext, native, Looper.getMainLooper())
-        mInputDeviceRemapper.systemRunning()
+    private fun setupControllerRemapper(userId: Int = USER_ID): InputDeviceRemapper {
+        val inputDeviceRemapper =
+            InputDeviceRemapper(
+                testableContext,
+                native,
+                Looper.getMainLooper(),
+                Looper.getMainLooper(),
+                testDataStore.getDataStore(),
+            )
+        inputDeviceRemapper.systemRunning()
+        inputDeviceRemapper.setCurrentUserId(userId)
         TestUtils.flushLoopers(mainLooperManager)
+        return inputDeviceRemapper
     }
 
     @Test
     fun testRemapKey_appliesToCorrectDevice() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device = createDevice(deviceId, vendorId = 123, productId = 456)
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
-        mInputDeviceRemapper.remapKey(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapKey(
+            USER_ID,
             device.identifier,
             KeyEvent.KEYCODE_1,
             KeyEvent.KEYCODE_2,
@@ -103,14 +127,14 @@ class InputDeviceRemapperTests {
                 eq(intArrayOf(KeyEvent.KEYCODE_2)),
             )
         assertEquals(
-            mInputDeviceRemapper.getKeyRemappings(/* userId= */ 0, device.identifier),
+            inputDeviceRemapper.getKeyRemappings(USER_ID, device.identifier),
             mapOf(KeyEvent.KEYCODE_1 to KeyEvent.KEYCODE_2),
         )
     }
 
     @Test
     fun testRemapKey_doesNotApplyToMouse() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device =
             createDevice(
@@ -120,10 +144,11 @@ class InputDeviceRemapperTests {
                 sources = InputDevice.SOURCE_MOUSE,
             )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
-        mInputDeviceRemapper.remapKey(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapKey(
+            USER_ID,
             device.identifier,
             KeyEvent.KEYCODE_1,
             KeyEvent.KEYCODE_2,
@@ -134,96 +159,95 @@ class InputDeviceRemapperTests {
 
     @Test
     fun testRemoveKeyRemapping() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device = createDevice(deviceId, vendorId = 123, productId = 456)
-        mInputDeviceRemapper.remapKey(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapKey(
+            USER_ID,
             device.identifier,
             KeyEvent.KEYCODE_1,
             KeyEvent.KEYCODE_2,
         )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
-        mInputDeviceRemapper.removeKeyRemapping(
-            /* userId= */ 0,
-            device.identifier,
-            KeyEvent.KEYCODE_1,
-        )
+        inputDeviceRemapper.removeKeyRemapping(USER_ID, device.identifier, KeyEvent.KEYCODE_1)
 
         verify(native).setKeyRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
         assertEquals(
-            mInputDeviceRemapper.getKeyRemappings(/* userId= */ 0, device.identifier),
+            inputDeviceRemapper.getKeyRemappings(USER_ID, device.identifier),
             mapOf<Int, Int>(),
         )
     }
 
     @Test
     fun testClearAllKeyRemappings() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device = createDevice(deviceId, vendorId = 123, productId = 456)
-        mInputDeviceRemapper.remapKey(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapKey(
+            USER_ID,
             device.identifier,
             KeyEvent.KEYCODE_1,
             KeyEvent.KEYCODE_2,
         )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
-        mInputDeviceRemapper.clearAllKeyRemappings(/* userId= */ 0, device.identifier)
+        inputDeviceRemapper.clearAllKeyRemappings(USER_ID, device.identifier)
 
         verify(native).setKeyRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
         assertEquals(
-            mInputDeviceRemapper.getKeyRemappings(/* userId= */ 0, device.identifier),
+            inputDeviceRemapper.getKeyRemappings(USER_ID, device.identifier),
             mapOf<Int, Int>(),
         )
     }
 
     @Test
     fun testDeviceRemoved_removesKeyRemapping() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device = createDevice(deviceId, vendorId = 123, productId = 456)
-        mInputDeviceRemapper.remapKey(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapKey(
+            USER_ID,
             device.identifier,
             KeyEvent.KEYCODE_1,
             KeyEvent.KEYCODE_2,
         )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
         removeInputDevice(deviceId, device.descriptor)
+        inputDeviceRemapper.onInputDeviceRemoved(deviceId)
 
         verify(native).setKeyRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
     }
 
     @Test
     fun testSetCurrentUser_appliesKeyRemapping() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper(userId = USER_ID)
         val deviceId = 1
-        val userId = 0
-        val newUserId = 1
         val device = createDevice(deviceId, vendorId = 123, productId = 456)
-        mInputDeviceRemapper.remapKey(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapKey(
+            USER_ID,
             device.identifier,
             KeyEvent.KEYCODE_1,
             KeyEvent.KEYCODE_2,
         )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
         // Switch to a different user with no remapping
-        mInputDeviceRemapper.setCurrentUserId(newUserId)
+        inputDeviceRemapper.setCurrentUserId(SECOND_USER_ID)
         TestUtils.flushLoopers(mainLooperManager)
         verify(native).setKeyRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
 
         // Switch back to the user with remapping
-        mInputDeviceRemapper.setCurrentUserId(userId)
+        inputDeviceRemapper.setCurrentUserId(USER_ID)
         TestUtils.flushLoopers(mainLooperManager)
         verify(native)
             .setKeyRemappingForDevice(
@@ -234,8 +258,43 @@ class InputDeviceRemapperTests {
     }
 
     @Test
+    fun testKeyRemappingRestored_onServiceRecreation() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
+        inputDeviceRemapper.remapKey(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_2,
+        )
+        TestUtils.flushLoopers(mainLooperManager)
+
+        val recreatedInputDeviceRemapper = setupControllerRemapper()
+        addInputDevice(deviceId, device.descriptor, device)
+        recreatedInputDeviceRemapper.onInputDeviceAdded(deviceId)
+
+        verify(native)
+            .setKeyRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_1)),
+                eq(intArrayOf(KeyEvent.KEYCODE_2)),
+            )
+        assertEquals(
+            recreatedInputDeviceRemapper.getKeyRemappings(USER_ID, device.identifier),
+            mapOf(KeyEvent.KEYCODE_1 to KeyEvent.KEYCODE_2),
+        )
+    }
+
+    @Test
     fun testRemapAxis_appliesToCorrectDevice() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device =
             createDevice(
@@ -245,10 +304,11 @@ class InputDeviceRemapperTests {
                 sources = InputDevice.SOURCE_JOYSTICK,
             )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
-        mInputDeviceRemapper.remapAxis(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
             device.identifier,
             MotionEvent.AXIS_X,
             MotionEvent.AXIS_Y,
@@ -261,14 +321,14 @@ class InputDeviceRemapperTests {
                 eq(intArrayOf(MotionEvent.AXIS_Y)),
             )
         assertEquals(
-            mInputDeviceRemapper.getAxisRemappings(/* userId= */ 0, device.identifier),
+            inputDeviceRemapper.getAxisRemappings(USER_ID, device.identifier),
             mapOf(MotionEvent.AXIS_X to MotionEvent.AXIS_Y),
         )
     }
 
     @Test
     fun testRemapAxis_doesNotApplyToKeyboard() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device =
             createDevice(
@@ -278,10 +338,11 @@ class InputDeviceRemapperTests {
                 sources = InputDevice.SOURCE_KEYBOARD,
             )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
-        mInputDeviceRemapper.remapAxis(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
             device.identifier,
             MotionEvent.AXIS_X,
             MotionEvent.AXIS_Y,
@@ -292,7 +353,7 @@ class InputDeviceRemapperTests {
 
     @Test
     fun testRemoveAxisRemapping() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device =
             createDevice(
@@ -301,26 +362,23 @@ class InputDeviceRemapperTests {
                 productId = 456,
                 sources = InputDevice.SOURCE_JOYSTICK,
             )
-        mInputDeviceRemapper.remapAxis(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
             device.identifier,
             MotionEvent.AXIS_X,
             MotionEvent.AXIS_Y,
         )
-        mInputDeviceRemapper.remapAxis(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
             device.identifier,
             MotionEvent.AXIS_Y,
             MotionEvent.AXIS_Z,
         )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
-        mInputDeviceRemapper.removeAxisRemapping(
-            /* userId= */ 0,
-            device.identifier,
-            MotionEvent.AXIS_X,
-        )
+        inputDeviceRemapper.removeAxisRemapping(USER_ID, device.identifier, MotionEvent.AXIS_X)
 
         verify(native)
             .setAxisRemappingForDevice(
@@ -329,14 +387,14 @@ class InputDeviceRemapperTests {
                 eq(intArrayOf(MotionEvent.AXIS_Z)),
             )
         assertEquals(
-            mInputDeviceRemapper.getAxisRemappings(/* userId= */ 0, device.identifier),
+            inputDeviceRemapper.getAxisRemappings(USER_ID, device.identifier),
             mapOf(MotionEvent.AXIS_Y to MotionEvent.AXIS_Z),
         )
     }
 
     @Test
     fun testClearAllAxisRemappings() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device =
             createDevice(
@@ -345,33 +403,34 @@ class InputDeviceRemapperTests {
                 productId = 456,
                 sources = InputDevice.SOURCE_JOYSTICK,
             )
-        mInputDeviceRemapper.remapAxis(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
             device.identifier,
             MotionEvent.AXIS_X,
             MotionEvent.AXIS_Y,
         )
-        mInputDeviceRemapper.remapAxis(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
             device.identifier,
             MotionEvent.AXIS_Y,
             MotionEvent.AXIS_Z,
         )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
-        mInputDeviceRemapper.clearAllAxisRemappings(/* userId= */ 0, device.identifier)
+        inputDeviceRemapper.clearAllAxisRemappings(USER_ID, device.identifier)
 
         verify(native).setAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
         assertEquals(
-            mInputDeviceRemapper.getAxisRemappings(/* userId= */ 0, device.identifier),
+            inputDeviceRemapper.getAxisRemappings(USER_ID, device.identifier),
             mapOf<Int, Int>(),
         )
     }
 
     @Test
     fun testDeviceRemoved_removesAxisRemappings() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1
         val device =
             createDevice(
@@ -380,26 +439,26 @@ class InputDeviceRemapperTests {
                 productId = 456,
                 sources = InputDevice.SOURCE_JOYSTICK,
             )
-        mInputDeviceRemapper.remapAxis(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
             device.identifier,
             MotionEvent.AXIS_X,
             MotionEvent.AXIS_Y,
         )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
         removeInputDevice(deviceId, device.descriptor)
+        inputDeviceRemapper.onInputDeviceRemoved(deviceId)
 
         verify(native).setAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
     }
 
     @Test
     fun testSetCurrentUser_appliesAxisRemappings() {
-        setupControllerRemapper()
+        val inputDeviceRemapper = setupControllerRemapper(userId = USER_ID)
         val deviceId = 1
-        val userId = 0
-        val newUserId = 1
         val device =
             createDevice(
                 deviceId,
@@ -407,22 +466,23 @@ class InputDeviceRemapperTests {
                 productId = 456,
                 sources = InputDevice.SOURCE_JOYSTICK,
             )
-        mInputDeviceRemapper.remapAxis(
-            /* userId = */ 0,
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
             device.identifier,
             MotionEvent.AXIS_X,
             MotionEvent.AXIS_Y,
         )
         addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
         reset(native)
 
         // Switch to a different user with no remapping
-        mInputDeviceRemapper.setCurrentUserId(newUserId)
+        inputDeviceRemapper.setCurrentUserId(SECOND_USER_ID)
         TestUtils.flushLoopers(mainLooperManager)
         verify(native).setAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
 
         // Switch back to the user with remapping
-        mInputDeviceRemapper.setCurrentUserId(userId)
+        inputDeviceRemapper.setCurrentUserId(USER_ID)
         TestUtils.flushLoopers(mainLooperManager)
         verify(native)
             .setAxisRemappingForDevice(
@@ -432,18 +492,51 @@ class InputDeviceRemapperTests {
             )
     }
 
+    @Test
+    fun testAxisRemappingRestored_onServiceRecreation() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+        TestUtils.flushLoopers(mainLooperManager)
+
+        val recreatedInputDeviceRemapper = setupControllerRemapper()
+        addInputDevice(deviceId, device.descriptor, device)
+        recreatedInputDeviceRemapper.onInputDeviceAdded(deviceId)
+
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_X)),
+                eq(intArrayOf(MotionEvent.AXIS_Y)),
+            )
+        assertEquals(
+            recreatedInputDeviceRemapper.getAxisRemappings(USER_ID, device.identifier),
+            mapOf(MotionEvent.AXIS_X to MotionEvent.AXIS_Y),
+        )
+    }
+
     private fun addInputDevice(deviceId: Int, descriptor: String, device: InputDevice) {
         inputDeviceIds.add(deviceId)
         whenever(inputManager.getInputDevice(deviceId)).thenReturn(device)
         whenever(inputManager.getInputDeviceByDescriptor(descriptor)).thenReturn(device)
-        mInputDeviceRemapper.onInputDeviceAdded(deviceId)
     }
 
     private fun removeInputDevice(deviceId: Int, descriptor: String) {
         inputDeviceIds.remove(deviceId)
         whenever(inputManager.getInputDevice(deviceId)).thenReturn(null)
         whenever(inputManager.getInputDeviceByDescriptor(descriptor)).thenReturn(null)
-        mInputDeviceRemapper.onInputDeviceRemoved(deviceId)
     }
 
     private fun createDevice(
@@ -460,4 +553,9 @@ class InputDeviceRemapperTests {
             .setDescriptor("descriptor $deviceId")
             .setSources(sources)
             .build()
+
+    companion object {
+        const val USER_ID = 1
+        const val SECOND_USER_ID = 2
+    }
 }

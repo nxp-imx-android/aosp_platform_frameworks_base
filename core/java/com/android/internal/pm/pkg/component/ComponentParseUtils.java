@@ -64,15 +64,16 @@ public class ComponentParseUtils {
         // Beginning in Android 17, permissions may specify valid usage purposes. Currently, valid
         // purposes are only processed for enforcement if the permission is defined within the
         // Android platform manifest. This limitation might be lifted in future versions.
+        final boolean isParsedPermissionComponent =
+                component instanceof ParsedPermissionImpl
+                && "android".equals(pkg.getPackageName());
         final boolean shouldParseAllValidPurposes =
                 Flags.ppdManifestEnabled()
-                        && component instanceof ParsedPermissionImpl
-                        && "android".equals(pkg.getPackageName());
+                        && isParsedPermissionComponent;
         // TODO(b/443057927): rename to shouldParseValidSpecificPurposes
         final boolean shouldParseValidPurposes =
                 shouldParseAllValidPurposes || (Flags.ppdInstallTimeEnabled()
-                        && component instanceof ParsedPermissionImpl
-                        && "android".equals(pkg.getPackageName()));
+                        && isParsedPermissionComponent);
         final List<ParsedValidPurpose> validPurposes = new ArrayList<>();
         final List<ParsedValidGeneralPurpose> validGeneralPurposes = new ArrayList<>();
         final int depth = parser.getDepth();

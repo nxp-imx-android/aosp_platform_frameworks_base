@@ -256,6 +256,7 @@ package android {
     field @FlaggedApi("android.app.api_rich_ongoing_permission") public static final String POST_PROMOTED_NOTIFICATIONS = "android.permission.POST_PROMOTED_NOTIFICATIONS";
     field @Deprecated public static final String PROCESS_OUTGOING_CALLS = "android.permission.PROCESS_OUTGOING_CALLS";
     field public static final String PROVIDE_OWN_AUTOFILL_SUGGESTIONS = "android.permission.PROVIDE_OWN_AUTOFILL_SUGGESTIONS";
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final String PROVIDE_PRIVATE_COMPUTE_SERVICES = "android.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES";
     field public static final String PROVIDE_REMOTE_CREDENTIALS = "android.permission.PROVIDE_REMOTE_CREDENTIALS";
     field public static final String QUERY_ADVANCED_PROTECTION_MODE = "android.permission.QUERY_ADVANCED_PROTECTION_MODE";
     field public static final String QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES";
@@ -353,6 +354,7 @@ package android {
     field @Deprecated public static final String USE_FINGERPRINT = "android.permission.USE_FINGERPRINT";
     field public static final String USE_FULL_SCREEN_INTENT = "android.permission.USE_FULL_SCREEN_INTENT";
     field public static final String USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER = "android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER";
+    field @FlaggedApi("android.widget.flags.location_button_enabled") public static final String USE_LOCATION_BUTTON = "android.permission.USE_LOCATION_BUTTON";
     field @FlaggedApi("android.permission.flags.use_loopback_interface_permission_enabled") public static final String USE_LOOPBACK_INTERFACE = "android.permission.USE_LOOPBACK_INTERFACE";
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final String USE_PINNED_WINDOWING_LAYER = "android.permission.USE_PINNED_WINDOWING_LAYER";
     field public static final String USE_SIP = "android.permission.USE_SIP";
@@ -1392,6 +1394,7 @@ package android {
     field public static final int propertyYName = 16843893; // 0x1010475
     field public static final int protectionLevel = 16842761; // 0x1010009
     field public static final int publicKey = 16843686; // 0x10103a6
+    field @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public static final int purposeString;
     field @FlaggedApi("android.content.pm.relative_reference_intent_filters") public static final int query = 16844431; // 0x101068f
     field public static final int queryActionMsg = 16843227; // 0x10101db
     field @FlaggedApi("android.content.pm.relative_reference_intent_filters") public static final int queryAdvancedPattern = 16844434; // 0x1010692
@@ -1987,6 +1990,8 @@ package android {
     field public static final int yesNoPreferenceStyle = 16842896; // 0x1010090
     field public static final int zAdjustment = 16843201; // 0x10101c1
     field public static final int zygotePreloadName = 16844189; // 0x101059d
+    field @FlaggedApi("android.os.native_app_zygote") public static final int zygotePreloadNativeFunc;
+    field @FlaggedApi("android.os.native_app_zygote") public static final int zygotePreloadNativeLib;
   }
 
   public static final class R.bool {
@@ -6556,6 +6561,7 @@ package android.app {
     method @Nullable public android.util.Pair<android.app.RemoteInput,android.app.Notification.Action> findRemoteInputActionPair(boolean);
     method public boolean getAllowSystemGeneratedContextualActions();
     method public int getBadgeIconType();
+    method @FlaggedApi("android.app.bridged_notifications_api") @Nullable public android.app.Notification.BridgedNotificationMetadata getBridgedNotificationMetadata();
     method @Nullable public android.app.Notification.BubbleMetadata getBubbleMetadata();
     method public String getChannelId();
     method @NonNull public java.util.List<android.app.Notification.Action> getContextualActions();
@@ -6820,6 +6826,22 @@ package android.app {
     method public android.app.Notification.BigTextStyle bigText(CharSequence);
     method public android.app.Notification.BigTextStyle setBigContentTitle(CharSequence);
     method public android.app.Notification.BigTextStyle setSummaryText(CharSequence);
+  }
+
+  @FlaggedApi("android.app.bridged_notifications_api") public static final class Notification.BridgedNotificationMetadata implements android.os.Parcelable {
+    ctor public Notification.BridgedNotificationMetadata(int, @NonNull String, @NonNull android.graphics.drawable.Icon);
+    method public int describeContents();
+    method @NonNull public android.graphics.drawable.Icon getIcon();
+    method public int getOriginDeviceType();
+    method @NonNull public String getPackageName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int BRIDGED_METADATA_TYPE_LAPTOP = 3; // 0x3
+    field public static final int BRIDGED_METADATA_TYPE_PHONE = 1; // 0x1
+    field public static final int BRIDGED_METADATA_TYPE_TABLET = 2; // 0x2
+    field public static final int BRIDGED_METADATA_TYPE_TV = 5; // 0x5
+    field public static final int BRIDGED_METADATA_TYPE_UNKNOWN = 0; // 0x0
+    field public static final int BRIDGED_METADATA_TYPE_WATCH = 4; // 0x4
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.BridgedNotificationMetadata> CREATOR;
   }
 
   public static final class Notification.BubbleMetadata implements android.os.Parcelable {
@@ -9084,7 +9106,7 @@ package android.app.admin {
 
 package android.app.appfunctions {
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public interface AppFunction {
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public interface AppFunction {
     method public void onExecuteAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
   }
 
@@ -9139,7 +9161,7 @@ package android.app.appfunctions {
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public int getAccessRequestState(@NonNull String);
     method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
-    method @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") @NonNull public android.app.appfunctions.AppFunctionRegistration registerAppFunction(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunction);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.AppFunctionRegistration registerAppFunction(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunction);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public void revokeSelfAccess(@NonNull String);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_DENIED = 1; // 0x1
@@ -9153,7 +9175,7 @@ package android.app.appfunctions {
     field public static final int APP_FUNCTION_STATE_ENABLED = 1; // 0x1
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public final class AppFunctionMetadata implements android.os.Parcelable {
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionMetadata implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public android.app.appsearch.GenericDocument getMetadataDocument();
     method @NonNull public android.app.appfunctions.AppFunctionName getName();
@@ -9169,7 +9191,7 @@ package android.app.appfunctions {
     field public static final String PROPERTY_SCHEMA_VERSION = "schemaVersion";
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public final class AppFunctionName implements android.os.Parcelable {
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionName implements android.os.Parcelable {
     ctor public AppFunctionName(@NonNull String, @NonNull String);
     method public int describeContents();
     method @NonNull public String getFunctionId();
@@ -9178,7 +9200,7 @@ package android.app.appfunctions {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionName> CREATOR;
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public final class AppFunctionPackageMetadata implements android.os.Parcelable {
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionPackageMetadata implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public android.app.appsearch.GenericDocument getMetadataDocument();
     method @NonNull public String getPackageName();
@@ -9187,11 +9209,11 @@ package android.app.appfunctions {
     field public static final String PROPERTY_TOP_LEVEL_DOCUMENTS = "topLevelMetadataDocuments";
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public interface AppFunctionRegistration {
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public interface AppFunctionRegistration {
     method public void unregister();
   }
 
-  @FlaggedApi("android.app.appfunctions.flags.enable_contextual_app_functions") public final class AppFunctionSchemaMetadata implements android.os.Parcelable {
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionSchemaMetadata implements android.os.Parcelable {
     ctor public AppFunctionSchemaMetadata(@NonNull String, @NonNull String, long);
     method public int describeContents();
     method @NonNull public String getCategory();
@@ -9846,6 +9868,14 @@ package android.app.people {
 
 }
 
+package android.app.privatecompute {
+
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccSandboxManager {
+    method public boolean isPrivateComputeServicesUid(int);
+  }
+
+}
+
 package android.app.slice {
 
   @Deprecated public final class Slice implements android.os.Parcelable {
@@ -10152,7 +10182,7 @@ package android.app.usage {
 
 package android.app.voiceinteraction {
 
-  @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public class VoiceInteractionManager {
+  @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") public final class VoiceInteractionManager {
     method @FlaggedApi("android.permission.flags.assist_settings_privacy_improvements_enabled") @NonNull public android.content.Intent createRequestAssistStructureIntent();
   }
 
@@ -10425,7 +10455,6 @@ package android.companion {
     method public int getId();
     method public int getSystemDataSyncFlags();
     method public boolean isSelfManaged();
-    method @FlaggedApi("android.companion.enable_data_sync") public boolean isTransportAttached();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.AssociationInfo> CREATOR;
   }
@@ -10513,6 +10542,7 @@ package android.companion {
     method @NonNull public java.util.List<android.companion.AssociationInfo> getMyAssociations();
     method @Deprecated public boolean hasNotificationAccess(android.content.ComponentName);
     method @FlaggedApi("android.companion.perm_sync_user_consent") public boolean isPermissionTransferUserConsented(int);
+    method @FlaggedApi("android.companion.enable_data_sync") public boolean isSystemDataTransportAttached(int);
     method @FlaggedApi("android.companion.enable_data_sync") public void notifyActionResult(int, @NonNull android.companion.ActionResult);
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
@@ -11422,6 +11452,7 @@ package android.content {
     field public static final String APP_OPS_SERVICE = "appops";
     field public static final String APP_SEARCH_SERVICE = "app_search";
     field public static final String AUDIO_SERVICE = "audio";
+    field @FlaggedApi("android.service.autofill.public_autofill_service_name") public static final String AUTOFILL_SERVICE = "autofill";
     field public static final String BATTERY_SERVICE = "batterymanager";
     field public static final int BIND_ABOVE_CLIENT = 8; // 0x8
     field public static final int BIND_ADJUST_WITH_ACTIVITY = 128; // 0x80
@@ -11503,6 +11534,7 @@ package android.content {
     field @FlaggedApi("com.android.npumanager.npumanager_enabled") public static final String NPU_SERVICE = "npu";
     field public static final String NSD_SERVICE = "servicediscovery";
     field public static final String OVERLAY_SERVICE = "overlay";
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final String PCC_SANDBOX_SERVICE = "pcc_sandbox";
     field public static final String PEOPLE_SERVICE = "people";
     field public static final String PERFORMANCE_HINT_SERVICE = "performance_hint";
     field public static final String PERSISTENT_DATA_BLOCK_SERVICE = "persistent_data_block";
@@ -13606,7 +13638,7 @@ package android.content.pm {
     method public boolean hasParentSessionId();
     method public boolean isActive();
     method public boolean isApplicationEnabledSettingPersistent();
-    method @FlaggedApi("android.content.pm.sdk_dependency_installer") public boolean isAutoInstallDependenciesEnabled();
+    method @Deprecated @FlaggedApi("android.content.pm.sdk_dependency_installer_deprecation") public boolean isAutoInstallDependenciesEnabled();
     method public boolean isCommitted();
     method public boolean isMultiPackage();
     method public boolean isPreApprovalRequested();
@@ -13640,7 +13672,7 @@ package android.content.pm {
     method public void setAppLabel(@Nullable CharSequence);
     method public void setAppPackageName(@Nullable String);
     method public void setApplicationEnabledSettingPersistent();
-    method @FlaggedApi("android.content.pm.sdk_dependency_installer") public void setAutoInstallDependenciesEnabled(boolean);
+    method @Deprecated @FlaggedApi("android.content.pm.sdk_dependency_installer_deprecation") public void setAutoInstallDependenciesEnabled(boolean);
     method @Deprecated public void setAutoRevokePermissionsMode(boolean);
     method public void setDontKillApp(boolean);
     method @FlaggedApi("android.content.pm.verification_service") public void setExtensionParams(@NonNull android.os.PersistableBundle);
@@ -19802,9 +19834,12 @@ package android.hardware.biometrics {
     field public static final int BIOMETRIC_SUCCESS = 0; // 0x0
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_ACCOUNT = 2; // 0x2
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_GENERIC = 3; // 0x3
+    field @FlaggedApi("android.hardware.biometrics.add_fallback_icons") public static final int ICON_TYPE_MESSAGE = 6; // 0x6
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_PASSWORD = 0; // 0x0
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_QR_CODE = 1; // 0x1
+    field @FlaggedApi("android.hardware.biometrics.add_fallback_icons") public static final int ICON_TYPE_RESET = 5; // 0x5
     field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_SETTING = 4; // 0x4
+    field @FlaggedApi("android.hardware.biometrics.add_fallback_icons") public static final int ICON_TYPE_SUPERVISED = 7; // 0x7
   }
 
   public static interface BiometricManager.Authenticators {
@@ -21301,6 +21336,7 @@ package android.hardware.display {
 
   public static interface DisplayManager.DisplayListener {
     method public void onDisplayAdded(int);
+    method @FlaggedApi("com.android.server.display.feature.flags.display_listener_snapshot") public default void onDisplayAddedSnapshot(@NonNull int[]);
     method public void onDisplayChanged(int);
     method public void onDisplayRemoved(int);
   }
@@ -28315,8 +28351,8 @@ package android.media.session {
   public final class MediaSessionManager {
     method public void addOnActiveSessionsChangedListener(@NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener, @Nullable android.content.ComponentName);
     method public void addOnActiveSessionsChangedListener(@NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener, @Nullable android.content.ComponentName, @Nullable android.os.Handler);
-    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public void addOnActiveSessionsForPackageChangedListener(@NonNull java.util.concurrent.Executor, @NonNull String, @NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener);
-    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public void addOnActiveSessionsForPackageChangedListener(@NonNull java.util.concurrent.Executor, @NonNull String, @Nullable android.content.ComponentName, @NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener);
+    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public void addOnActiveSessionsForPackageChangedListener(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener);
+    method @FlaggedApi("com.android.media.mediasession.flags.fetch_media_controllers_for_app") @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public void addOnActiveSessionsForPackageChangedListener(@NonNull String, @NonNull java.util.concurrent.Executor, @Nullable android.content.ComponentName, @NonNull android.media.session.MediaSessionManager.OnActiveSessionsChangedListener);
     method public void addOnMediaKeyEventSessionChangedListener(@NonNull java.util.concurrent.Executor, @NonNull android.media.session.MediaSessionManager.OnMediaKeyEventSessionChangedListener);
     method @Deprecated @FlaggedApi("com.android.media.mediasession.flags.deprecate_platform_mediasession2_apis") public void addOnSession2TokensChangedListener(@NonNull android.media.session.MediaSessionManager.OnSession2TokensChangedListener);
     method @Deprecated @FlaggedApi("com.android.media.mediasession.flags.deprecate_platform_mediasession2_apis") public void addOnSession2TokensChangedListener(@NonNull android.media.session.MediaSessionManager.OnSession2TokensChangedListener, @NonNull android.os.Handler);
@@ -34162,6 +34198,8 @@ package android.os {
     field @NonNull public static final String SKU;
     field @NonNull public static final String SOC_MANUFACTURER;
     field @NonNull public static final String SOC_MODEL;
+    field @FlaggedApi("android.os.strongbox_properties_api") @NonNull public static final String STRONGBOX_MANUFACTURER;
+    field @FlaggedApi("android.os.strongbox_properties_api") @NonNull public static final String STRONGBOX_MODEL;
     field public static final String[] SUPPORTED_32_BIT_ABIS;
     field public static final String[] SUPPORTED_64_BIT_ABIS;
     field public static final String[] SUPPORTED_ABIS;
@@ -38699,6 +38737,7 @@ package android.provider {
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String ACTION_PICK_CONTACTS = "android.provider.action.PICK_CONTACTS";
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String AUTHORITY = "com.android.contacts.picker.sessions";
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") @NonNull public static final android.net.Uri AUTHORITY_URI;
+    field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_MATCH_ALL_DATA_FIELDS = "android.provider.extra.PICK_CONTACTS_MATCH_ALL_DATA_FIELDS";
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_REQUESTED_DATA_FIELDS = "android.provider.extra.PICK_CONTACTS_REQUESTED_DATA_FIELDS";
     field @FlaggedApi("android.content.flags.enable_system_contacts_picker") public static final String EXTRA_PICK_CONTACTS_SELECTION_LIMIT = "android.provider.extra.PICK_CONTACTS_SELECTION_LIMIT";
   }
@@ -43002,6 +43041,7 @@ package android.service.notification {
     method public final void cancelNotifications(String[]);
     method public final void clearRequestedListenerHints();
     method @FlaggedApi("android.service.notification.notification_conversation_channel_management") @Nullable public final android.app.NotificationChannel createConversationNotificationChannelForPackage(@NonNull String, @NonNull android.os.UserHandle, @NonNull String, @NonNull String);
+    method @FlaggedApi("android.service.notification.notification_conversation_channel_deletion") public final void deleteConversationNotificationChannel(@NonNull String, @NonNull android.os.UserHandle, @NonNull String);
     method public android.service.notification.StatusBarNotification[] getActiveNotifications();
     method public android.service.notification.StatusBarNotification[] getActiveNotifications(String[]);
     method public final int getCurrentInterruptionFilter();
@@ -43266,6 +43306,16 @@ package android.service.personalcontext.hint {
     method @NonNull public final java.util.UUID getHintId();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
+    method @NonNull public android.service.personalcontext.hint.ContextHint getContextHint();
+    method @Nullable public String getOriginatingPackage();
+    method @Nullable public android.service.personalcontext.RenderToken getRenderToken();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ContextHintWithSignature> CREATOR;
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
     method public abstract int getEventType();
     field public static final int EVENT_TYPE_ENQUEUED = 1; // 0x1
@@ -43312,14 +43362,16 @@ package android.service.personalcontext.hint {
 package android.service.personalcontext.insight {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ActionableInsight extends android.service.personalcontext.insight.ContextInsight {
-    method @NonNull public android.content.Intent createActionIntent();
+    method @Deprecated @Nullable public android.content.Intent createActionIntent();
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails getActionDetails();
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails getDisplayDetails();
   }
 
   public static final class ActionableInsight.Builder {
-    ctor public ActionableInsight.Builder(@NonNull android.content.Intent, @NonNull android.service.personalcontext.insight.InsightDisplayDetails);
+    ctor public ActionableInsight.Builder(@NonNull android.service.personalcontext.insight.InsightActionDetails, @NonNull android.service.personalcontext.insight.InsightDisplayDetails);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addOriginHints(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
     method @NonNull public android.service.personalcontext.insight.ActionableInsight build();
-    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder setOriginHints(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleInsight extends android.service.personalcontext.insight.ContextInsight {
@@ -43328,14 +43380,34 @@ package android.service.personalcontext.insight {
 
   public static final class BundleInsight.Builder {
     ctor public BundleInsight.Builder();
-    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHint);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHints(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
     method @NonNull public android.service.personalcontext.insight.BundleInsight build();
     method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setDataBundle(@NonNull android.os.Bundle);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
     method @NonNull public final java.util.UUID getInsightId();
-    method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHint> getOriginHints();
+    method @NonNull public final java.util.List<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightActionDetails implements android.os.Parcelable {
+    method @Nullable public android.content.Intent createActionIntent();
+    method public int describeContents();
+    method public int getActionTypes();
+    method @Nullable public android.app.RemoteAction getRemoteAction();
+    method public boolean hasActionType(int);
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int ACTION_TYPE_INTENT = 1; // 0x1
+    field public static final int ACTION_TYPE_REMOTE_ACTION = 2; // 0x2
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightActionDetails> CREATOR;
+  }
+
+  public static final class InsightActionDetails.Builder {
+    ctor public InsightActionDetails.Builder();
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails build();
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails.Builder setIntent(@NonNull android.content.Intent);
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails.Builder setRemoteAction(@NonNull android.app.RemoteAction);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightDisplayDetails implements android.os.Parcelable {
@@ -44735,6 +44807,7 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT = "carrier_roaming_ntn_connect_type_int";
     field public static final String KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT = "carrier_roaming_ntn_emergency_call_to_satellite_handover_type_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_ROAMING_SATELLITE_DEFAULT_SERVICES_INT_ARRAY = "carrier_roaming_satellite_default_services_int_array";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final String KEY_CARRIER_ROAMING_SATELLITE_T911_TO_ESOS_HANDOVER_SUPPORTED_BOOL = "carrier_roaming_satellite_t911_to_esos_handover_supported_bool";
     field public static final String KEY_CARRIER_SERVICE_NAME_STRING_ARRAY = "carrier_service_name_array";
     field public static final String KEY_CARRIER_SERVICE_NUMBER_STRING_ARRAY = "carrier_service_number_array";
     field public static final String KEY_CARRIER_SETTINGS_ACTIVITY_COMPONENT_NAME_STRING = "carrier_settings_activity_component_name_string";
@@ -44792,6 +44865,7 @@ package android.telephony {
     field public static final String KEY_DISABLE_CHARGE_INDICATION_BOOL = "disable_charge_indication_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_DISABLE_DUN_APN_WHILE_ROAMING_WITH_PRESET_APN_BOOL = "disable_dun_apn_while_roaming_with_preset_apn_bool";
     field public static final String KEY_DISABLE_SUPPLEMENTARY_SERVICES_IN_AIRPLANE_MODE_BOOL = "disable_supplementary_services_in_airplane_mode_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_carrier_config_apn_string_restriction") public static final String KEY_DISALLOW_ADDING_APN_STRING_ARRAY = "disallow_adding_apn_string_array";
     field public static final String KEY_DISCONNECT_CAUSE_PLAY_BUSYTONE_INT_ARRAY = "disconnect_cause_play_busytone_int_array";
     field public static final String KEY_DISPLAY_CALL_STRENGTH_INDICATOR_BOOL = "display_call_strength_indicator_bool";
     field public static final String KEY_DISPLAY_HD_AUDIO_PROPERTY_BOOL = "display_hd_audio_property_bool";
@@ -44984,7 +45058,7 @@ package android.telephony {
     field public static final String KEY_SUPPORT_EMERGENCY_SMS_OVER_IMS_BOOL = "support_emergency_sms_over_ims_bool";
     field public static final String KEY_SUPPORT_ENHANCED_CALL_BLOCKING_BOOL = "support_enhanced_call_blocking_bool";
     field public static final String KEY_SUPPORT_IMS_CONFERENCE_EVENT_PACKAGE_BOOL = "support_ims_conference_event_package_bool";
-    field @FlaggedApi("com.android.server.telecom.flags.multi_party_anchor_conf") public static final String KEY_SUPPORT_MULTI_PARTY_ANCHOR_CONFERENCE_BOOL = "support_multi_anchor_conf_bool";
+    field @FlaggedApi("android.telecom.flags.multi_party_anchor_conf") public static final String KEY_SUPPORT_MULTI_PARTY_ANCHOR_CONFERENCE_BOOL = "support_multi_anchor_conf_bool";
     field public static final String KEY_SUPPORT_PAUSE_IMS_VIDEO_CALLS_BOOL = "support_pause_ims_video_calls_bool";
     field @Deprecated public static final String KEY_SUPPORT_SWAP_AFTER_MERGE_BOOL = "support_swap_after_merge_bool";
     field public static final String KEY_SUPPORT_TDSCDMA_BOOL = "support_tdscdma_bool";
@@ -56367,6 +56441,7 @@ package android.view.accessibility {
     field @FlaggedApi("android.view.accessibility.a11y_expansion_state_api") public static final int EXPANDED_STATE_PARTIAL = 2; // 0x2
     field @FlaggedApi("android.view.accessibility.a11y_expansion_state_api") public static final int EXPANDED_STATE_UNDEFINED = 0; // 0x0
     field public static final String EXTRA_DATA_RENDERING_INFO_KEY = "android.view.accessibility.extra.DATA_RENDERING_INFO_KEY";
+    field @FlaggedApi("android.view.accessibility.a11y_layout_based_actions_api") public static final String EXTRA_DATA_REQUEST_LAYOUT_BASED_ACTIONS_KEY = "android.view.accessibility.extra.DATA_REQUEST_LAYOUT_BASED_ACTIONS_KEY";
     field public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH";
     field public static final int EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_MAX_LENGTH = 20000; // 0x4e20
     field public static final String EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX = "android.view.accessibility.extra.DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX";
@@ -56508,6 +56583,18 @@ package android.view.accessibility {
     method @Nullable public android.util.Size getLayoutSize();
     method public float getTextSizeInPx();
     method public int getTextSizeUnit();
+  }
+
+  @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public static final class AccessibilityNodeInfo.ExtraRenderingInfo.Builder {
+    ctor @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public AccessibilityNodeInfo.ExtraRenderingInfo.Builder();
+    ctor @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public AccessibilityNodeInfo.ExtraRenderingInfo.Builder(@NonNull android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo build();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearLayoutSize();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearTextSizeInPx();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearTextSizeUnit();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setLayoutSize(int, int);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setTextSizeInPx(float);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setTextSizeUnit(int);
   }
 
   public static final class AccessibilityNodeInfo.RangeInfo {
@@ -58396,6 +58483,7 @@ package android.view.textclassifier {
     method @NonNull @WorkerThread public default android.view.textclassifier.TextSelection suggestSelection(@NonNull android.view.textclassifier.TextSelection.Request);
     method @NonNull @WorkerThread public default android.view.textclassifier.TextSelection suggestSelection(@NonNull CharSequence, @IntRange(from=0) int, @IntRange(from=0) int, @Nullable android.os.LocaleList);
     field public static final String EXTRA_FROM_TEXT_CLASSIFIER = "android.view.textclassifier.extra.FROM_TEXT_CLASSIFIER";
+    field @FlaggedApi("android.view.flags.redact_otp_app_compat_api") public static final String EXTRA_SMS_TRUSTED_PACKAGES = "android.view.textclassifier.extra.SMS_TRUSTED_PACKAGES";
     field @FlaggedApi("android.permission.flags.text_classifier_choice_api_enabled") public static final String EXTRA_TEXT_ORIGIN_PACKAGE = "android.view.textclassifier.extra.TEXT_ORIGIN_PACKAGE";
     field public static final String HINT_TEXT_IS_EDITABLE = "android.text_is_editable";
     field public static final String HINT_TEXT_IS_NOT_EDITABLE = "android.text_is_not_editable";
@@ -58409,6 +58497,7 @@ package android.view.textclassifier {
     field @FlaggedApi("android.permission.flags.text_classifier_choice_api_enabled") public static final String TYPE_OTP = "otp";
     field public static final String TYPE_PHONE = "phone";
     field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String TYPE_SMS_RETRIEVER_OTP = "sms_retriever_otp";
+    field @FlaggedApi("android.view.flags.redact_web_otp_sms_api") public static final String TYPE_SMS_WEB_OTP = "sms_web_otp";
     field public static final String TYPE_UNKNOWN = "";
     field public static final String TYPE_URL = "url";
     field public static final String WIDGET_TYPE_CLIPBOARD = "clipboard";
@@ -62849,12 +62938,15 @@ package android.widget.location {
   }
 
   @FlaggedApi("android.widget.flags.location_button_enabled") public final class LocationButtonRequest implements android.os.Parcelable {
-    ctor public LocationButtonRequest(int, int, int, float, int, int, int);
+    ctor public LocationButtonRequest(int, int, @ColorInt int, @ColorInt int, int, float, @ColorInt int, int, @ColorInt int, @NonNull android.content.res.Configuration);
     method public int describeContents();
     method @ColorInt public int getBackgroundColor();
+    method @NonNull public android.content.res.Configuration getConfiguration();
     method public float getCornerRadius();
     method public int getHeight();
     method @ColorInt public int getIconTint();
+    method @ColorInt public int getStrokeColor();
+    method public int getStrokeWidth();
     method @ColorInt public int getTextColor();
     method public int getTextType();
     method public int getWidth();
@@ -62870,6 +62962,8 @@ package android.widget.location {
     method public void setBackgroundColor(@ColorInt int);
     method public void setCornerRadius(float);
     method public void setIconTint(@ColorInt int);
+    method public void setStrokeColor(@ColorInt int);
+    method public void setStrokeWidth(int);
     method public void setTextColor(@ColorInt int);
     method public void setTextType(int);
     field public static final int TEXT_TYPE_NEAR_PRECISE_LOCATION = 1; // 0x1

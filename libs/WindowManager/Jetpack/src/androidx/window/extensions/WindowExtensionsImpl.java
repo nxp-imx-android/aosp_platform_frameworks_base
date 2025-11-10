@@ -39,8 +39,6 @@ import androidx.window.extensions.embedding.SplitController;
 import androidx.window.extensions.layout.WindowLayoutComponent;
 import androidx.window.extensions.layout.WindowLayoutComponentImpl;
 
-import com.android.window.flags.Flags;
-
 import java.util.Objects;
 
 
@@ -57,7 +55,6 @@ class WindowExtensionsImpl implements WindowExtensions {
      */
     private static final int NO_LEVEL_OVERRIDE = -1;
 
-    private static final int EXTENSIONS_VERSION_V10 = 10;
     private static final int EXTENSIONS_VERSION_V9 = 9;
 
     private final Object mLock = new Object();
@@ -79,12 +76,7 @@ class WindowExtensionsImpl implements WindowExtensions {
      */
     @VisibleForTesting
     static int getExtensionsVersionCurrentPlatform() {
-        if (Flags.deviceEngagementMode()) {
-            // Device engagement mode is the only major feature for v10.
-            return EXTENSIONS_VERSION_V10;
-        } else {
-            return EXTENSIONS_VERSION_V9;
-        }
+        return EXTENSIONS_VERSION_V9;
     }
 
     private String generateLogMessage() {

@@ -142,6 +142,11 @@ combined_apis {
             "framework-npumanager",
         ],
         default: [],
+    }) + select(release_flag("RELEASE_UPROBESTATS_BRIDGE_SERVICE"), {
+        true: [
+            "framework-uprobestats",
+        ],
+        default: [],
     }),
     system_server_classpath: [
         "service-art",
@@ -398,7 +403,7 @@ stubs_defaults {
     srcs: [":android-non-updatable-stub-sources"],
     sdk_version: "none",
     system_modules: "none",
-    java_version: "1.8",
+    java_version: "17",
     arg_files: [":frameworks-base-core-AndroidManifest.xml"],
     aidl: {
         include_dirs: [

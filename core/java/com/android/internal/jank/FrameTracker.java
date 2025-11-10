@@ -27,6 +27,8 @@ import static com.android.internal.jank.InteractionJankMonitor.ACTION_SESSION_CA
 import static com.android.internal.jank.InteractionJankMonitor.ACTION_SESSION_END;
 import static com.android.internal.jank.InteractionJankMonitor.EXECUTOR_TASK_TIMEOUT;
 
+import static java.lang.Double.isNaN;
+
 import android.animation.AnimationHandler;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -136,6 +138,7 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
         @JankType int jankType;
         long frameInterval;
         long presentDelay;
+        @RefreshRate int refreshRate = UNKNOWN_REFRESH_RATE;
 
         static JankInfo createFromHwuiCallback(
                 long frameVsyncId, long totalDurationNanos, boolean isFirstFrame) {
@@ -161,6 +164,14 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
             this.surfaceControlCallbackFired = true;
             this.jankType = jankStat.getJankType();
             this.frameInterval = jankStat.getFrameIntervalNanos();
+            if (this.frameInterval <= 0) {
+                Trace.instant(
+                    TRACE_TAG_APP, "Invalid frame interval, assuming 120Hz: " + frameInterval);
+                this.frameInterval = 8_333_333;
+                this.refreshRate = UNKNOWN_REFRESH_RATE;
+            } else {
+                this.refreshRate = DisplayRefreshRate.getRefreshRate(this.frameInterval);
+            }
             if (Flags.useSfFrameDuration()) {
                 this.totalDurationNanos = jankStat.getActualAppFrameTimeNanos();
             }
@@ -632,7 +643,7 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
                 if (missedFrame) {
                     missedFramesCount++;
                     successiveMissedFramesCount++;
-                    totalAnimationTime += info.frameInterval + info.presentDelay;
+                    totalAnimationTime += info.frameInterval + Math.max(info.presentDelay, 0);
 
                     float weightedJank = computeWeightedJank(info);
                     if ((info.jankType & JANK_APPLICATION) != 0) {
@@ -648,10 +659,9 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
                     totalAnimationTime += info.frameInterval;
                 }
 
-                int frameRefreshRate = DisplayRefreshRate.getRefreshRate(info.frameInterval);
-                if (frameRefreshRate != UNKNOWN_REFRESH_RATE && frameRefreshRate != refreshRate) {
+                if (info.refreshRate != UNKNOWN_REFRESH_RATE && info.refreshRate != refreshRate) {
                     refreshRate = (refreshRate == UNKNOWN_REFRESH_RATE)
-                            ? frameRefreshRate : VARIABLE_REFRESH_RATE;
+                            ? info.refreshRate : VARIABLE_REFRESH_RATE;
                 }
                 // TODO (b/174755489): Early latch currently gets fired way too often, so we have
                 // to ignore it for now.
@@ -725,8 +735,11 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
     }
 
     private static float computeWeightedJank(JankInfo info) {
-        double frameTime = info.frameInterval + info.presentDelay;
         double frameInterval = info.frameInterval;
+
+        // Treat negative present delay, i.e. an early frame, the same as if it was late by the same
+        // amount of time it was early.
+        double frameTime = frameInterval + Math.abs(info.presentDelay);
 
         // Compute the jank severity, based on jank duration, and frame rate, normalized to 120Hz,
         // weights. See go/refined-jank-metric.
@@ -738,7 +751,7 @@ public class FrameTracker implements HardwareRendererObserver.OnFrameMetricsAvai
                     "vsync=" + info.frameVsyncId + ", omega_s=" + omegaS + ", omega_f=" + omegaF);
         }
 
-        return (float) (omegaS * omegaF);
+        return (float) ((isNaN(omegaS) ? 1.0 : omegaS) * (isNaN(omegaF) ? 1.0 : omegaF));
     }
 
     /**
