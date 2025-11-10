@@ -26,7 +26,6 @@ import static android.media.codec.Flags.FLAG_VVC_SUPPORT;
 import static android.media.tv.flags.Flags.FLAG_APPLY_PICTURE_PROFILES;
 
 import static com.android.media.codec.flags.Flags.FLAG_CODEC_IMPORTANCE;
-import static com.android.media.codec.flags.Flags.FLAG_LARGE_AUDIO_FRAME;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -502,7 +501,6 @@ public final class MediaFormat {
      *
      * @see MediaCodecInfo.CodecCapabilities#FEATURE_MultipleFrames
      */
-    @FlaggedApi(FLAG_LARGE_AUDIO_FRAME)
     public static final String KEY_BUFFER_BATCH_MAX_OUTPUT_SIZE = "buffer-batch-max-output-size";
 
     /**
@@ -525,7 +523,6 @@ public final class MediaFormat {
      *
      * @see MediaCodecInfo.CodecCapabilities#FEATURE_MultipleFrames
      */
-    @FlaggedApi(FLAG_LARGE_AUDIO_FRAME)
     public static final String KEY_BUFFER_BATCH_THRESHOLD_OUTPUT_SIZE =
             "buffer-batch-threshold-output-size";
 

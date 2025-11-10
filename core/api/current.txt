@@ -23728,9 +23728,9 @@ package android.media {
     method @NonNull public java.util.List<java.lang.String> getSupportedVendorParameters();
     method @Nullable public static android.media.Image mapHardwareBuffer(@NonNull android.hardware.HardwareBuffer);
     method public void queueInputBuffer(int, int, int, long, int) throws android.media.MediaCodec.CryptoException;
-    method @FlaggedApi("com.android.media.codec.flags.large_audio_frame") public void queueInputBuffers(int, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>);
+    method public void queueInputBuffers(int, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>);
     method public void queueSecureInputBuffer(int, int, @NonNull android.media.MediaCodec.CryptoInfo, long, int) throws android.media.MediaCodec.CryptoException;
-    method @FlaggedApi("com.android.media.codec.flags.large_audio_frame") public void queueSecureInputBuffers(int, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>, @NonNull java.util.ArrayDeque<android.media.MediaCodec.CryptoInfo>);
+    method public void queueSecureInputBuffers(int, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>, @NonNull java.util.ArrayDeque<android.media.MediaCodec.CryptoInfo>);
     method public void release();
     method public void releaseOutputBuffer(int, boolean);
     method public void releaseOutputBuffer(int, long);
@@ -23795,7 +23795,7 @@ package android.media {
     method public abstract void onInputBufferAvailable(@NonNull android.media.MediaCodec, int);
     method @FlaggedApi("android.media.codec.subsession_metrics") public void onMetricsFlushed(@NonNull android.media.MediaCodec, @NonNull android.os.PersistableBundle);
     method public abstract void onOutputBufferAvailable(@NonNull android.media.MediaCodec, int, @NonNull android.media.MediaCodec.BufferInfo);
-    method @FlaggedApi("com.android.media.codec.flags.large_audio_frame") public void onOutputBuffersAvailable(@NonNull android.media.MediaCodec, int, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>);
+    method public void onOutputBuffersAvailable(@NonNull android.media.MediaCodec, int, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>);
     method public abstract void onOutputFormatChanged(@NonNull android.media.MediaCodec, @NonNull android.media.MediaFormat);
   }
 
@@ -23883,7 +23883,7 @@ package android.media {
   }
 
   public static final class MediaCodec.OutputFrame {
-    method @FlaggedApi("com.android.media.codec.flags.large_audio_frame") @NonNull public java.util.ArrayDeque<android.media.MediaCodec.BufferInfo> getBufferInfos();
+    method @NonNull public java.util.ArrayDeque<android.media.MediaCodec.BufferInfo> getBufferInfos();
     method @NonNull public java.util.Set<java.lang.String> getChangedKeys();
     method public int getFlags();
     method @NonNull public android.media.MediaFormat getFormat();
@@ -23907,8 +23907,8 @@ package android.media {
     method @NonNull public android.media.MediaCodec.QueueRequest setIntegerParameter(@NonNull String, int);
     method @NonNull public android.media.MediaCodec.QueueRequest setLinearBlock(@NonNull android.media.MediaCodec.LinearBlock, int, int);
     method @NonNull public android.media.MediaCodec.QueueRequest setLongParameter(@NonNull String, long);
-    method @FlaggedApi("com.android.media.codec.flags.large_audio_frame") @NonNull public android.media.MediaCodec.QueueRequest setMultiFrameEncryptedLinearBlock(@NonNull android.media.MediaCodec.LinearBlock, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>, @NonNull java.util.ArrayDeque<android.media.MediaCodec.CryptoInfo>);
-    method @FlaggedApi("com.android.media.codec.flags.large_audio_frame") @NonNull public android.media.MediaCodec.QueueRequest setMultiFrameLinearBlock(@NonNull android.media.MediaCodec.LinearBlock, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>);
+    method @NonNull public android.media.MediaCodec.QueueRequest setMultiFrameEncryptedLinearBlock(@NonNull android.media.MediaCodec.LinearBlock, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>, @NonNull java.util.ArrayDeque<android.media.MediaCodec.CryptoInfo>);
+    method @NonNull public android.media.MediaCodec.QueueRequest setMultiFrameLinearBlock(@NonNull android.media.MediaCodec.LinearBlock, @NonNull java.util.ArrayDeque<android.media.MediaCodec.BufferInfo>);
     method @NonNull public android.media.MediaCodec.QueueRequest setPresentationTimeUs(long);
     method @NonNull public android.media.MediaCodec.QueueRequest setStringParameter(@NonNull String, @NonNull String);
   }
@@ -24872,8 +24872,8 @@ package android.media {
     field public static final String KEY_AUDIO_SESSION_ID = "audio-session-id";
     field public static final String KEY_BITRATE_MODE = "bitrate-mode";
     field public static final String KEY_BIT_RATE = "bitrate";
-    field @FlaggedApi("com.android.media.codec.flags.large_audio_frame") public static final String KEY_BUFFER_BATCH_MAX_OUTPUT_SIZE = "buffer-batch-max-output-size";
-    field @FlaggedApi("com.android.media.codec.flags.large_audio_frame") public static final String KEY_BUFFER_BATCH_THRESHOLD_OUTPUT_SIZE = "buffer-batch-threshold-output-size";
+    field public static final String KEY_BUFFER_BATCH_MAX_OUTPUT_SIZE = "buffer-batch-max-output-size";
+    field public static final String KEY_BUFFER_BATCH_THRESHOLD_OUTPUT_SIZE = "buffer-batch-threshold-output-size";
     field public static final String KEY_CAPTION_SERVICE_NUMBER = "caption-service-number";
     field public static final String KEY_CAPTURE_RATE = "capture-rate";
     field public static final String KEY_CHANNEL_COUNT = "channel-count";
