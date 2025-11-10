@@ -728,7 +728,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
         val CHARGE_INTERPOLATOR = PathInterpolator(0.26873f, 0f, 0.45042f, 1f)
         val CHARGE_DISTS =
             listOf(
-                AxisAnimation(GSFAxes.WEIGHT, 400f),
+                AxisAnimation(GSFAxes.WEIGHT, 200f),
                 AxisAnimation(GSFAxes.WIDTH, 0f),
                 AxisAnimation(GSFAxes.ROUND, 0f),
                 AxisAnimation(GSFAxes.SLANT, 0f),
