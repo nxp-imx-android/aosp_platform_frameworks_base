@@ -804,7 +804,7 @@ public abstract class OomAdjuster {
         }
         final ProcessServiceRecordInternal psr = app.getServices();
         for (int j = psr.numberOfRunningServices() - 1; j >= 0; j--) {
-            psr.getRunningServiceAt(j).updateKeepWarmLocked();
+            psr.getRunningServiceInternalAt(j).updateKeepWarmLocked();
         }
     }
 
@@ -985,7 +985,7 @@ public abstract class OomAdjuster {
             // If this process is a sandbox itself, also scan the app on whose behalf its running
             if (pr.isSdkSandbox) {
                 for (int is = psr.numberOfRunningServices() - 1; is >= 0; is--) {
-                    ServiceRecordInternal s = psr.getRunningServiceAt(is);
+                    ServiceRecordInternal s = psr.getRunningServiceInternalAt(is);
                     for (int conni = s.getConnectionsSize() - 1; conni >= 0; conni--) {
                         ArrayList<? extends ConnectionRecordInternal> clist =
                                 s.getConnectionAt(conni);

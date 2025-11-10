@@ -1032,7 +1032,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         final ProcessServiceRecordInternal psr = app.getServices();
 
         for (int i = psr.numberOfRunningServices() - 1; i >= 0; i--) {
-            final ServiceRecordInternal s = psr.getRunningServiceAt(i);
+            final ServiceRecordInternal s = psr.getRunningServiceInternalAt(i);
             for (int j = s.getConnectionsSize() - 1; j >= 0; j--) {
                 final ArrayList<? extends ConnectionRecordInternal> clist =
                         s.getConnectionAt(j);
@@ -1551,7 +1551,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                         || schedGroup == SCHED_GROUP_BACKGROUND
                         || procState > PROCESS_STATE_TOP);
                 is--) {
-            ServiceRecordInternal s = psr.getRunningServiceAt(is);
+            ServiceRecordInternal s = psr.getRunningServiceInternalAt(is);
             if (s.isStartRequested()) {
                 app.setHasStartedServices(true);
                 if (procState > PROCESS_STATE_SERVICE) {

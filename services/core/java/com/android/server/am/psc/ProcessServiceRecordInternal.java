@@ -85,6 +85,8 @@ public abstract class ProcessServiceRecordInternal {
      */
     private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
 
+    /** All ServiceRecord running in this process. */
+    final ArraySet<ServiceRecordInternal> mServices = new ArraySet<>();
     /** All outgoing connections from this process. */
     private final ArraySet<ConnectionRecordInternal> mConnections = new ArraySet<>();
     /** All ConnectionRecord this process holds indirectly to SDK sandbox processes. */
@@ -228,7 +230,7 @@ public abstract class ProcessServiceRecordInternal {
         mHasTopStartedAlmostPerceptibleServices = false;
         mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = 0;
         for (int s = numberOfRunningServices() - 1; s >= 0; --s) {
-            final ServiceRecordInternal sr = getRunningServiceAt(s);
+            final ServiceRecordInternal sr = getRunningServiceInternalAt(s);
             mLastTopStartedAlmostPerceptibleBindRequestUptimeMs = Math.max(
                     mLastTopStartedAlmostPerceptibleBindRequestUptimeMs,
                     sr.getLastTopAlmostPerceptibleBindRequestUptimeMs());
@@ -270,7 +272,7 @@ public abstract class ProcessServiceRecordInternal {
 
     private boolean hasUndemotedShortForegroundService(long nowUptime) {
         for (int i = numberOfRunningServices() - 1; i >= 0; i--) {
-            final ServiceRecordInternal sr = getRunningServiceAt(i);
+            final ServiceRecordInternal sr = getRunningServiceInternalAt(i);
             if (!sr.isShortFgs() || !sr.hasShortFgsStartTime()) {
                 continue;
             }
@@ -283,10 +285,29 @@ public abstract class ProcessServiceRecordInternal {
     }
 
     /** Returns the number of services currently running in this process. */
-    public abstract int numberOfRunningServices();
+    public int numberOfRunningServices() {
+        return mServices.size();
+    }
 
     /** Retrieves the {@link ServiceRecordInternal} for a running service at the specified index. */
-    public abstract ServiceRecordInternal getRunningServiceAt(int index);
+    public ServiceRecordInternal getRunningServiceInternalAt(int index) {
+        return mServices.valueAt(index);
+    }
+
+    /** Adds the specified service to the set of running services for this process. */
+    public boolean addRunningService(ServiceRecordInternal service) {
+        return mServices.add(service);
+    }
+
+    /** Removes the specified service from the set of running services for this process. */
+    public boolean removeRunningService(ServiceRecordInternal service) {
+        return mServices.remove(service);
+    }
+
+    /** Removes all services from the set of running services for this process. */
+    public void clearRunningServices() {
+        mServices.clear();
+    }
 
     /** Returns the number of active connections to services in this process. */
     public int numberOfConnections() {
