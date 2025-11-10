@@ -30,9 +30,7 @@ import com.android.internal.util.Preconditions;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * Represents an ionospheric model as a single-layer 2D grid with a constant height. This is also
@@ -77,20 +75,20 @@ public final class IonexAssistance implements Parcelable {
 
         // Check that the TEC map size matches the grid dimensions from the header.
         Preconditions.checkArgument(
-                snapshot.getTecMap().size() == expectedGridSize,
+                snapshot.getTecMap().length == expectedGridSize,
                 "TEC map size (%s) must match the grid size defined in the header (%s x %s = %s).",
-                snapshot.getTecMap().size(),
+                snapshot.getTecMap().length,
                 numLatPoints,
                 numLonPoints,
                 expectedGridSize);
 
         // If the optional RMS map is present, it must also have the correct size.
-        if (!snapshot.getRmsMap().isEmpty()) {
+        if (snapshot.getRmsMap().length > 0) {
             Preconditions.checkArgument(
-                    snapshot.getRmsMap().size() == expectedGridSize,
+                    snapshot.getRmsMap().length == expectedGridSize,
                     "RMS map size (%s) must match the grid size defined in the header (%s x %s ="
                             + " %s).",
-                    snapshot.getRmsMap().size(),
+                    snapshot.getRmsMap().length,
                     numLatPoints,
                     numLonPoints,
                     expectedGridSize);
@@ -599,7 +597,7 @@ public final class IonexAssistance implements Parcelable {
          * longitude_deg = longitudeAxis.startDeg + (i % n) * longitudeAxis.deltaDeg;
          * </pre>
          */
-        @NonNull private final List<Float> mTecMap;
+        @NonNull private final float[] mTecMap;
 
         /**
          * An optional flattened 2D list of TEC Root-Mean-Square (RMS) error values in TECU. Values
@@ -607,15 +605,16 @@ public final class IonexAssistance implements Parcelable {
          *
          * <p>If not available, this list will be empty.
          */
-        @NonNull private final List<Float> mRmsMap;
+        @NonNull private final float[] mRmsMap;
 
         private TecMapSnapshot(Builder builder) {
             Preconditions.checkArgument(
                     builder.mEpochTimeSeconds >= 0, "Epoch time must be non-negative");
             Preconditions.checkNotNull(builder.mTecMap, "TEC map cannot be null");
             mEpochTimeSeconds = builder.mEpochTimeSeconds;
-            mTecMap = Collections.unmodifiableList(new ArrayList<>(builder.mTecMap));
-            mRmsMap = Collections.unmodifiableList(new ArrayList<>(builder.mRmsMap));
+            // Defensive copy to ensure immutability
+            mTecMap = Arrays.copyOf(builder.mTecMap, builder.mTecMap.length);
+            mRmsMap = Arrays.copyOf(builder.mRmsMap, builder.mRmsMap.length);
         }
 
         /** Returns the epoch of the TEC map, in seconds since the Unix epoch (UTC). */
@@ -625,23 +624,23 @@ public final class IonexAssistance implements Parcelable {
         }
 
         /**
-         * Returns the flattened list of values in Total Electron Content units (TECU).
+         * Returns the flattened array of values in Total Electron Content units (TECU).
          *
          * <p>See {@link TecMapSnapshot#mTecMap} for details on data organization and
          * interpretation.
          */
         @NonNull
-        public List<Float> getTecMap() {
+        public float[] getTecMap() {
             return mTecMap;
         }
 
         /**
-         * Returns the list of TEC Root-Mean-Square (RMS) error values in TECU.
+         * Returns the array of TEC Root-Mean-Square (RMS) error values in TECU.
          *
          * <p>If not available, this list will be empty.
          */
         @NonNull
-        public List<Float> getRmsMap() {
+        public float[] getRmsMap() {
             return mRmsMap;
         }
 
@@ -650,23 +649,11 @@ public final class IonexAssistance implements Parcelable {
                     @Override
                     @NonNull
                     public TecMapSnapshot createFromParcel(Parcel in) {
-                        Builder builder = new Builder().setEpochTimeSeconds(in.readLong());
-
-                        float[] tecMapArray = in.createFloatArray();
-                        List<Float> tecMapList = new ArrayList<>(tecMapArray.length);
-                        for (float val : tecMapArray) {
-                            tecMapList.add(val);
-                        }
-                        builder.setTecMap(tecMapList);
-
-                        float[] rmsMapArray = in.createFloatArray();
-                        List<Float> rmsMapList = new ArrayList<>(rmsMapArray.length);
-                        for (float val : rmsMapArray) {
-                            rmsMapList.add(val);
-                        }
-                        builder.setRmsMap(rmsMapList);
-
-                        return builder.build();
+                        return new Builder()
+                                .setEpochTimeSeconds(in.readLong())
+                                .setTecMap(in.createFloatArray())
+                                .setRmsMap(in.createFloatArray())
+                                .build();
                     }
 
                     @Override
@@ -683,18 +670,8 @@ public final class IonexAssistance implements Parcelable {
         @Override
         public void writeToParcel(@NonNull Parcel parcel, int flags) {
             parcel.writeLong(mEpochTimeSeconds);
-
-            float[] tecMapArray = new float[mTecMap.size()];
-            for (int i = 0; i < mTecMap.size(); i++) {
-                tecMapArray[i] = mTecMap.get(i);
-            }
-            parcel.writeFloatArray(tecMapArray);
-
-            float[] rmsMapArray = new float[mRmsMap.size()];
-            for (int i = 0; i < mRmsMap.size(); i++) {
-                rmsMapArray[i] = mRmsMap.get(i);
-            }
-            parcel.writeFloatArray(rmsMapArray);
+            parcel.writeFloatArray(mTecMap);
+            parcel.writeFloatArray(mRmsMap);
         }
 
         @Override
@@ -702,8 +679,8 @@ public final class IonexAssistance implements Parcelable {
         public String toString() {
             StringBuilder builder = new StringBuilder("TecMapSnapshot[");
             builder.append("epochTimeSeconds=").append(mEpochTimeSeconds);
-            builder.append(", tecMap.size=").append(mTecMap.size());
-            builder.append(", rmsMap.size=").append(mRmsMap.size());
+            builder.append(", tecMap.length=").append(mTecMap.length);
+            builder.append(", rmsMap.length=").append(mRmsMap.length);
             builder.append("]");
             return builder.toString();
         }
@@ -711,8 +688,8 @@ public final class IonexAssistance implements Parcelable {
         /** Builder for {@link TecMapSnapshot}. */
         public static final class Builder {
             private long mEpochTimeSeconds;
-            private List<Float> mTecMap;
-            private List<Float> mRmsMap = Collections.emptyList();
+            private float[] mTecMap;
+            private float[] mRmsMap = new float[0];
 
             /** Sets the epoch of the TEC map, in seconds since the Unix epoch (UTC). */
             @NonNull
@@ -765,16 +742,17 @@ public final class IonexAssistance implements Parcelable {
              * </pre>
              */
             @NonNull
-            public Builder setTecMap(@NonNull List<Float> tecMap) {
+            public Builder setTecMap(@NonNull float[] tecMap) {
                 mTecMap = tecMap;
                 return this;
             }
 
             /**
-             * Sets the optional, flattened list of TEC Root-Mean-Square (RMS) error values in TECU.
+             * Sets the optional, flattened array of TEC Root-Mean-Square (RMS) error values in
+             * TECU.
              */
             @NonNull
-            public Builder setRmsMap(@NonNull List<Float> rmsMap) {
+            public Builder setRmsMap(@NonNull float[] rmsMap) {
                 mRmsMap = rmsMap;
                 return this;
             }
