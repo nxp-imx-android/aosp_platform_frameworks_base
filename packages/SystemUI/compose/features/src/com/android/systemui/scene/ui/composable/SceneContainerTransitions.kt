@@ -354,6 +354,16 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             from(from = Overlays.Bouncer, to = Scenes.Dream, key = TransitionKey.PredictiveBack) {
                 fromBouncerBackGestureTransition()
             }
+            from(from = Overlays.Bouncer, to = Scenes.Shade, key = TransitionKey.PredictiveBack) {
+                fromBouncerBackGestureTransition()
+            }
+            from(
+                from = Overlays.Bouncer,
+                to = Scenes.QuickSettings,
+                key = TransitionKey.PredictiveBack,
+            ) {
+                fromBouncerBackGestureTransition()
+            }
             to(
                 Overlays.NotificationsShade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_EXPAND_COLLAPSE,
