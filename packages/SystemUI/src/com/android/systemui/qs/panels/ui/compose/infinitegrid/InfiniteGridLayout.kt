@@ -53,6 +53,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.TileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements.toElementKey
 import com.android.systemui.res.R
+import com.android.systemui.shade.shared.flag.DualShadeFlag
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -201,9 +202,10 @@ constructor(
                 }
             }
         val showDualShadeSetting =
-            LocalResources.current.getBoolean(
-                com.android.settingslib.R.bool.config_useDualShadeSetting
-            )
+            DualShadeFlag.isEnabled &&
+                LocalResources.current.getBoolean(
+                    com.android.settingslib.R.bool.config_useDualShadeSetting
+                )
         val actions =
             remember(topBarActionsViewModel, showDualShadeSetting) {
                 topBarActionsViewModel.actions(showDualShadeSetting).toMutableStateList()
