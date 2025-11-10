@@ -208,6 +208,17 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun updateCaptureType_whenPartialRecordingIsSelected_updateCaptureRegionToFullScreen() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(defaultCaptureRegion = ScreenCaptureRegion.PARTIAL)
+            )
+
+            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
+            assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.FULLSCREEN)
+        }
+
+    @Test
     fun updateCaptureRegion_toPartial_logsPartialScreenshot() =
         kosmos.runTest {
             setupViewModel()
