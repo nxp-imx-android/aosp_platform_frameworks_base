@@ -24,7 +24,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.plugins.VolumeDialog
 import com.android.systemui.volume.CsdWarningAction
 import com.android.systemui.volume.CsdWarningDialog
-import com.android.systemui.volume.SafetyWarningDialogDelegate
+import com.android.systemui.volume.SafetyWarningDialog
 import com.android.systemui.volume.dialog.dagger.VolumeDialogPluginComponent
 import com.android.systemui.volume.dialog.dagger.factory.VolumeDialogPluginComponentFactory
 import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogPluginViewModel
@@ -45,7 +45,6 @@ constructor(
     private val audioManager: AudioManager,
     private val volumeDialogPluginComponentFactory: VolumeDialogPluginComponentFactory,
     private val csdWarningDialogFactory: CsdWarningDialog.Factory,
-    private val safetyWarningDialogDelegateFactory: SafetyWarningDialogDelegate.Factory,
 ) : VolumeDialog {
 
     private var job: Job? = null
@@ -95,15 +94,14 @@ constructor(
     private suspend fun showSafetyWarningVisibility(onDismissed: () -> Unit) =
         suspendCancellableCoroutine { continuation ->
             val dialog =
-                safetyWarningDialogDelegateFactory
-                    .create(
-                        /* cleanup = */ {
+                object : SafetyWarningDialog(context, audioManager) {
+                    override fun cleanUp() {
                         onDismissed()
                         if (!continuation.isCompleted) {
                             continuation.resume(Unit)
                         }
-                    })
-                    .createDialog()
+                    }
+                }
             dialog.show()
             continuation.invokeOnCancellation { dialog.dismiss() }
         }
