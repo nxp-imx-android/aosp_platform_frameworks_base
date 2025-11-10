@@ -77,13 +77,8 @@ constructor(
 
     private var animator: ValueAnimator? = null
 
-    private val hapticPlayer: SqueezeEffectHapticPlayer? by lazy {
-        if (squeezeEffectInteractor.isSqueezeEffectHapticEnabled) {
-            squeezeEffectHapticPlayerFactory.create()
-        } else {
-            null
-        }
-    }
+    private val hapticPlayer: SqueezeEffectHapticPlayer by lazy {
+        squeezeEffectHapticPlayerFactory.create() }
 
     override fun start() {
         applicationScope.launch {
@@ -155,14 +150,14 @@ constructor(
         val outwardsAnimationDuration =
             squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis()
         if (useHapticRumble) {
-            hapticPlayer?.playRumble(inwardsAnimationDuration.toInt())
+            hapticPlayer.playRumble(inwardsAnimationDuration.toInt())
         }
         animateSqueezeProgressTo(
             targetProgress = 1f,
             duration = inwardsAnimationDuration,
             interpolator = InterpolatorsAndroidX.LEGACY,
         ) {
-            hapticPlayer?.startZoomOutEffect(
+            hapticPlayer.startZoomOutEffect(
                 durationMillis =
                     (HAPTIC_OUTWARD_EFFECT_DURATION_SCALE * outwardsAnimationDuration).toInt()
             )
@@ -177,14 +172,14 @@ constructor(
         squeezeEffectInteractor.isPowerButtonLongPressed.collectLatest { isLongPressed ->
             if (isLongPressed) {
                 isAnimationInterruptible = false
-                hapticPlayer?.playLppIndicator()
+                hapticPlayer.playLppIndicator()
             }
         }
     }
 
     private fun cancelSqueeze() {
         if (isAnimationInterruptible && animator != null) {
-            hapticPlayer?.cancel()
+            hapticPlayer.cancel()
             animateSqueezeProgressTo(
                 targetProgress = 0f,
                 duration = squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis(),
@@ -223,7 +218,7 @@ constructor(
         topUiController.setRequestTopUi(requestTopUi, TAG)
     }
 
-    private fun playDefaultAssistantHaptic() = hapticPlayer?.playDefaultAssistantEffect()
+    private fun playDefaultAssistantHaptic() = hapticPlayer.playDefaultAssistantEffect()
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("$TAG:")

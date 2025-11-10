@@ -30,8 +30,6 @@ class FakeSqueezeEffectRepository : SqueezeEffectRepository {
     var invocationEffectOutwardsAnimationDurationMs = DEFAULT_OUTWARD_EFFECT_DURATION_MS
     var gestureInvocationEffectInAnimationDurationMillisValue = 0L
 
-    override var isSqueezeEffectHapticEnabled = false
-
     override val isEffectEnabled = MutableStateFlow(true)
 
     override val isPowerButtonPressedAsSingleGesture = MutableStateFlow(false)

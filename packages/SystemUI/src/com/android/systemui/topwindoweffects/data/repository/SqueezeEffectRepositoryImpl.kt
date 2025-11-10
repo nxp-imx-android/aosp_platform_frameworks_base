@@ -70,8 +70,6 @@ constructor(
     InvocationEffectEnabler,
     InvocationEffectGestureController {
 
-    override val isSqueezeEffectHapticEnabled = Flags.enableLppAssistInvocationHapticEffect()
-
     private fun getLongPressPowerDurationFromSettings() =
         globalSettings
             .getInt(
@@ -254,7 +252,6 @@ constructor(
         pw.println(
             "  isPowerButtonDownAndPowerKeySingleGestureActive=$isPowerButtonDownAndPowerKeySingleGestureActive"
         )
-        pw.println("  isSqueezeEffectHapticEnabled=$isSqueezeEffectHapticEnabled")
         pw.println(
             "  longPressPowerDurationFromSettings=${getLongPressPowerDurationFromSettings()}"
         )
