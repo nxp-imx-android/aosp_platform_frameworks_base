@@ -74,17 +74,18 @@ class BubblesUnfoldListenerTest {
                 bubblePositioner,
                 BubbleEducationController(context),
                 mainExecutor,
-                backgroundExecutor
+                backgroundExecutor,
             )
         foldLockSettingsObserver = BubblesFoldLockSettingsObserver { isStayAwakeOnFold }
-        unfoldListener = BubblesUnfoldListener(
-            bubbleData, foldLockSettingsObserver) { bubble, moveToFullscreen ->
-            if (moveToFullscreen) {
-                barToFullscreenTransitionStarted = true
-            } else {
-                barToFloatingTransitionStarted = true
+        unfoldListener =
+            BubblesUnfoldListener(bubbleData, foldLockSettingsObserver) { bubble, moveToFullscreen
+                ->
+                if (moveToFullscreen) {
+                    barToFullscreenTransitionStarted = true
+                } else {
+                    barToFloatingTransitionStarted = true
+                }
             }
-        }
     }
 
     @Test

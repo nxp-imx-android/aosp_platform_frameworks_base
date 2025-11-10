@@ -53,39 +53,36 @@ import org.mockito.kotlin.verifyNoInteractions
  * Unit tests for [BubbleTaskStackListener].
  *
  * Build/Install/Run:
- *  - atest WMShellRobolectricTests:BubbleTaskStackListenerTest (on host)
- *  - atest WMShellMultivalentTestsOnDevice:BubbleTaskStackListenerTest (on device)
+ * - atest WMShellRobolectricTests:BubbleTaskStackListenerTest (on host)
+ * - atest WMShellMultivalentTestsOnDevice:BubbleTaskStackListenerTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class BubbleTaskStackListenerTest {
 
-    @get:Rule
-    val setFlagsRule = SetFlagsRule()
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
-    private val mockTaskViewTaskController = mock<TaskViewTaskController> {
-        on { taskOrganizer } doReturn mock<ShellTaskOrganizer>()
-    }
-    private val mockTaskView = mock<TaskView> {
-        on { controller } doReturn mockTaskViewTaskController
-    }
-    private val bubble = mock<Bubble> {
-        on { taskView } doReturn mockTaskView
-    }
+    private val mockTaskViewTaskController =
+        mock<TaskViewTaskController> { on { taskOrganizer } doReturn mock<ShellTaskOrganizer>() }
+    private val mockTaskView =
+        mock<TaskView> { on { controller } doReturn mockTaskViewTaskController }
+    private val bubble = mock<Bubble> { on { taskView } doReturn mockTaskView }
     private val bubbleController = mock<BubbleController>()
     private val bubbleData = mock<BubbleData>()
     private val splitScreenController = mock<SplitScreenController>()
-    private val bubbleTaskStackListener = BubbleTaskStackListener(
-        bubbleController,
-        bubbleData,
-        { Optional.of(splitScreenController) },
-    )
+    private val bubbleTaskStackListener =
+        BubbleTaskStackListener(
+            bubbleController,
+            bubbleData,
+            { Optional.of(splitScreenController) },
+        )
     private val bubbleTaskId = 123
     private val bubbleTaskToken: WindowContainerToken = MockToken.token()
-    private val task = ActivityManager.RunningTaskInfo().apply {
-        taskId = bubbleTaskId
-        token = bubbleTaskToken
-    }
+    private val task =
+        ActivityManager.RunningTaskInfo().apply {
+            taskId = bubbleTaskId
+            token = bubbleTaskToken
+        }
 
     @Before
     fun setUp() {
@@ -95,9 +92,7 @@ class BubbleTaskStackListenerTest {
 
     @Test
     fun onActivityRestartAttempt_inStackAppBubbleRestart_selectsAndExpandsStack() {
-        bubbleData.stub {
-            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
-        }
+        bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
 
         bubbleTaskStackListener.onActivityRestartAttempt(
             task,
@@ -112,12 +107,8 @@ class BubbleTaskStackListenerTest {
     @Test
     fun onActivityRestartAttempt_inStackAppBubbleMovingToFront_doesNothing() {
         task.configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
-        bubbleController.stub {
-            on { shouldBeAppBubble(task) } doReturn true
-        }
-        bubbleData.stub {
-            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
-        }
+        bubbleController.stub { on { shouldBeAppBubble(task) } doReturn true }
+        bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
 
         bubbleTaskStackListener.onActivityRestartAttempt(
             task,
@@ -130,19 +121,12 @@ class BubbleTaskStackListenerTest {
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_CREATE_ANY_BUBBLE,
-        FLAG_ENABLE_BUBBLE_ANYTHING,
-    )
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ANYTHING)
     fun onActivityRestartAttempt_inStackAppBubbleToFullscreen_notifiesTaskRemoval() {
         val captionInsetsOwner = Binder()
-        mockTaskView.stub {
-            on { getCaptionInsetsOwner() } doReturn captionInsetsOwner
-        }
+        mockTaskView.stub { on { getCaptionInsetsOwner() } doReturn captionInsetsOwner }
         task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
-        bubbleData.stub {
-            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
-        }
+        bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
 
         bubbleTaskStackListener.onActivityRestartAttempt(
             task,
@@ -153,28 +137,22 @@ class BubbleTaskStackListenerTest {
 
         val taskViewTaskController = bubble.taskView.controller
         val taskOrganizer = taskViewTaskController.taskOrganizer
-        val wct = argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
-            verify(taskOrganizer).applyTransaction(wctCaptor.capture())
-            wctCaptor.lastValue
-        }
+        val wct =
+            argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
+                verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+                wctCaptor.lastValue
+            }
         verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder(), captionInsetsOwner)
         verify(taskViewTaskController).notifyTaskRemovalStarted(task)
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_CREATE_ANY_BUBBLE,
-        FLAG_ENABLE_BUBBLE_ANYTHING,
-    )
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ANYTHING)
     fun onActivityRestartAttempt_inStackAppBubbleToSplit_doesNothing() {
         task.parentTaskId = 456
-        bubbleData.stub {
-            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
-        }
+        bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
 
-        splitScreenController.stub {
-            on { isTaskRootOrStageRoot(456) } doReturn true
-        }
+        splitScreenController.stub { on { isTaskRootOrStageRoot(456) } doReturn true }
 
         val taskViewTaskController = bubble.taskView.controller
         val taskOrganizer = taskViewTaskController.taskOrganizer
@@ -192,24 +170,20 @@ class BubbleTaskStackListenerTest {
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_CREATE_ANY_BUBBLE,
-        FLAG_ENABLE_BUBBLE_ANYTHING,
-    )
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ANYTHING)
     fun onTaskMovedToFront_inStackAppBubbleToFullscreen_notifiesTaskRemoval() {
         task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
-        bubbleData.stub {
-            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
-        }
+        bubbleData.stub { on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble }
 
         bubbleTaskStackListener.onTaskMovedToFront(task)
 
         val taskViewTaskController = bubble.taskView.controller
         val taskOrganizer = taskViewTaskController.taskOrganizer
-        val wct = argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
-            verify(taskOrganizer).applyTransaction(wctCaptor.capture())
-            wctCaptor.lastValue
-        }
+        val wct =
+            argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
+                verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+                wctCaptor.lastValue
+            }
         verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder())
         verify(taskViewTaskController).notifyTaskRemovalStarted(task)
     }

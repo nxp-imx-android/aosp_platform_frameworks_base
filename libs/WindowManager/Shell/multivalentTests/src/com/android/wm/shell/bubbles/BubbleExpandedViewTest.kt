@@ -44,13 +44,12 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
-
 /**
  * Tests for [BubbleExpandedView].
  *
  * Build/Install/Run:
- *  - atest WMShellRobolectricTests:BubbleExpandedViewTest (on host)
- *  - atest WMShellMultivalentTestsOnDevice:BubbleExpandedViewTest (on device)
+ * - atest WMShellRobolectricTests:BubbleExpandedViewTest (on host)
+ * - atest WMShellMultivalentTestsOnDevice:BubbleExpandedViewTest (on device)
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -62,10 +61,11 @@ class BubbleExpandedViewTest {
     private val taskOrganizer = mock<ShellTaskOrganizer>()
     private val taskViewTaskToken: WindowContainerToken = MockToken.token()
     private var taskViewController = mock<TaskViewController>()
-    private val taskViewTaskController = mock<TaskViewTaskController> {
-        on { taskOrganizer } doReturn taskOrganizer
-        on { taskToken } doReturn taskViewTaskToken
-    }
+    private val taskViewTaskController =
+        mock<TaskViewTaskController> {
+            on { taskOrganizer } doReturn taskOrganizer
+            on { taskToken } doReturn taskViewTaskToken
+        }
     private val bubbleController = mock<BubbleController>()
 
     private lateinit var taskView: TaskView
@@ -90,11 +90,11 @@ class BubbleExpandedViewTest {
 
         expandedView = view
         expandedView.initialize(
-                mock<BubbleExpandedViewManager>(),
-                mock<BubbleStackView>(),
-                mock<BubblePositioner>(),
-                false /* isOverflow */,
-                bubbleTaskView,
+            mock<BubbleExpandedViewManager>(),
+            mock<BubbleStackView>(),
+            mock<BubblePositioner>(),
+            false /* isOverflow */,
+            bubbleTaskView,
         )
         // Default to animating state for existing tests.
         expandedView.setAnimating(true)
@@ -115,11 +115,7 @@ class BubbleExpandedViewTest {
         val wctCaptor = argumentCaptor<WindowContainerTransaction>()
         verify(taskOrganizer).applyTransaction(wctCaptor.capture())
         val wct = wctCaptor.lastValue
-        verifyEnterBubbleTransaction(
-            wct,
-            taskViewTaskToken.asBinder(),
-            isAppBubble = false,
-        )
+        verifyEnterBubbleTransaction(wct, taskViewTaskToken.asBinder(), isAppBubble = false)
     }
 
     @Test
@@ -210,9 +206,7 @@ class BubbleExpandedViewTest {
 
     private fun createPointerView(): View = View(context).apply { id = R.id.pointer_view }
 
-    /**
-     * Testable subclass of [BubbleExpandedView] to expose protected methods for testing.
-     */
+    /** Testable subclass of [BubbleExpandedView] to expose protected methods for testing. */
     private class TestableBubbleExpandedView(context: Context) : BubbleExpandedView(context) {
         // Make onFinishInflate public so we can call it in the test.
         public override fun onFinishInflate() {

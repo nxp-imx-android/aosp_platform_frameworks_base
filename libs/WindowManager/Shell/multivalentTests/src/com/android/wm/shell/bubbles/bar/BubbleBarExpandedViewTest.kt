@@ -89,7 +89,7 @@ class BubbleBarExpandedViewTest {
                 isSmallTablet = false,
                 isLandscape = true,
                 isRtl = false,
-                insets = Insets.of(10, 20, 30, 40)
+                insets = Insets.of(10, 20, 30, 40),
             )
         positioner.update(deviceConfig)
 
@@ -99,9 +99,10 @@ class BubbleBarExpandedViewTest {
         bubble = FakeBubbleFactory.createChatBubble(context)
         bubbleTaskView = bubbleTaskViewFactory.create()
 
-        bubbleExpandedView = LayoutInflater.from(context).inflate(
-            R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
-        ) as BubbleBarExpandedView
+        bubbleExpandedView =
+            LayoutInflater.from(context)
+                .inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
+                as BubbleBarExpandedView
         bubbleExpandedView.bubbleLogger = BubbleLogger(uiEventLoggerFake)
         bubbleExpandedView.initialize(
             expandedViewManager,
@@ -122,8 +123,10 @@ class BubbleBarExpandedViewTest {
     @Test
     fun testEventLogging_dismissBubbleViaAppMenu() {
         getInstrumentation().runOnMainSync { bubbleExpandedView.handleView.performClick() }
-        val dismissMenuItem = bubbleExpandedView.menuView()
-            .actionViewWithText(context.getString(R.string.bubble_dismiss_text))
+        val dismissMenuItem =
+            bubbleExpandedView
+                .menuView()
+                .actionViewWithText(context.getString(R.string.bubble_dismiss_text))
         assertThat(dismissMenuItem).isNotNull()
         getInstrumentation().runOnMainSync { dismissMenuItem.performClick() }
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
@@ -135,8 +138,12 @@ class BubbleBarExpandedViewTest {
     @Test
     fun testEventLogging_openAppSettings() {
         getInstrumentation().runOnMainSync { bubbleExpandedView.handleView.performClick() }
-        val appMenuItem = bubbleExpandedView.menuView()
-            .actionViewWithText(context.getString(R.string.bubbles_app_settings, bubble.appName))
+        val appMenuItem =
+            bubbleExpandedView
+                .menuView()
+                .actionViewWithText(
+                    context.getString(R.string.bubbles_app_settings, bubble.appName)
+                )
         getInstrumentation().runOnMainSync { appMenuItem.performClick() }
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
         assertThat(uiEventLoggerFake.logs[0].eventId)
@@ -147,8 +154,10 @@ class BubbleBarExpandedViewTest {
     @Test
     fun testEventLogging_unBubbleConversation() {
         getInstrumentation().runOnMainSync { bubbleExpandedView.handleView.performClick() }
-        val menuItem = bubbleExpandedView.menuView()
-            .actionViewWithText(context.getString(R.string.bubbles_dont_bubble_conversation))
+        val menuItem =
+            bubbleExpandedView
+                .menuView()
+                .actionViewWithText(context.getString(R.string.bubbles_dont_bubble_conversation))
         getInstrumentation().runOnMainSync { menuItem.performClick() }
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
         assertThat(uiEventLoggerFake.logs[0].eventId)
@@ -162,7 +171,7 @@ class BubbleBarExpandedViewTest {
         var endRunnableRun = false
         bubbleExpandedView.animateExpansionWhenTaskViewVisible(
             { animated = true },
-            { endRunnableRun = true }
+            { endRunnableRun = true },
         )
         assertThat(animated).isFalse()
         assertThat(endRunnableRun).isFalse()
@@ -176,9 +185,9 @@ class BubbleBarExpandedViewTest {
     @Test
     fun animateExpansion_taskViewAttachedAndVisible() {
         val inflater = LayoutInflater.from(context)
-        val expandedView = inflater.inflate(
-            R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
-        ) as BubbleBarExpandedView
+        val expandedView =
+            inflater.inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
+                as BubbleBarExpandedView
         val taskView = bubbleTaskViewFactory.create()
         val taskViewParent = FrameLayout(context)
         taskViewParent.addView(taskView.taskView)
@@ -200,7 +209,7 @@ class BubbleBarExpandedViewTest {
         var endRunnableRun = false
         expandedView.animateExpansionWhenTaskViewVisible(
             { animated = true },
-            { endRunnableRun = true }
+            { endRunnableRun = true },
         )
         assertThat(animated).isTrue()
         // The end runnable should not be run unless the animation is canceled by
@@ -211,9 +220,9 @@ class BubbleBarExpandedViewTest {
     @Test
     fun animateExpansion_taskViewAttachedAndInvisible() {
         val inflater = LayoutInflater.from(context)
-        val expandedView = inflater.inflate(
-            R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
-        ) as BubbleBarExpandedView
+        val expandedView =
+            inflater.inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
+                as BubbleBarExpandedView
         val taskView = bubbleTaskViewFactory.create()
         val taskViewParent = FrameLayout(context)
         taskViewParent.addView(taskView.taskView)
@@ -237,7 +246,7 @@ class BubbleBarExpandedViewTest {
         var endRunnableRun = false
         expandedView.animateExpansionWhenTaskViewVisible(
             { animated = true },
-            { endRunnableRun = true }
+            { endRunnableRun = true },
         )
         assertThat(animated).isFalse()
         assertThat(endRunnableRun).isFalse()
@@ -249,13 +258,12 @@ class BubbleBarExpandedViewTest {
         assertThat(endRunnableRun).isFalse()
     }
 
-
     @Test
     fun animateExpansion_taskViewAttachedAndInvisibleThenAnimationCanceled() {
         val inflater = LayoutInflater.from(context)
-        val expandedView = inflater.inflate(
-            R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
-        ) as BubbleBarExpandedView
+        val expandedView =
+            inflater.inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
+                as BubbleBarExpandedView
         val taskView = bubbleTaskViewFactory.create()
         val taskViewParent = FrameLayout(context)
         taskViewParent.addView(taskView.taskView)
@@ -279,7 +287,7 @@ class BubbleBarExpandedViewTest {
         var endRunnableRun = false
         expandedView.animateExpansionWhenTaskViewVisible(
             { animated = true },
-            { endRunnableRun = true }
+            { endRunnableRun = true },
         )
         assertThat(animated).isFalse()
         assertThat(endRunnableRun).isFalse()
@@ -293,17 +301,18 @@ class BubbleBarExpandedViewTest {
 
     @Test
     fun initialize_forOverflow_hidesCaptionAndHandle() {
-        val overflowExpandedView = LayoutInflater.from(context).inflate(
-                R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
-        ) as BubbleBarExpandedView
+        val overflowExpandedView =
+            LayoutInflater.from(context)
+                .inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
+                as BubbleBarExpandedView
         overflowExpandedView.bubbleLogger = BubbleLogger(uiEventLoggerFake)
 
         overflowExpandedView.initialize(
-                expandedViewManager,
-                positioner,
-                true /* isOverflow */,
-                null, /* bubble */
-                null /* bubbleTaskView */
+            expandedViewManager,
+            positioner,
+            true /* isOverflow */,
+            null, /* bubble */
+            null, /* bubbleTaskView */
         )
 
         val captionView = overflowExpandedView.findViewById<View>(R.id.bubble_bar_caption_view)

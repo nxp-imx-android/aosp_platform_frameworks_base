@@ -121,18 +121,18 @@ import org.mockito.kotlin.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
-/** Tests for [BubbleController].
+/**
+ * Tests for [BubbleController].
  *
  * Build/Install/Run:
- *  - atest WMShellRobolectricTests:BubbleControllerTest (on host)
- *  - atest WMShellMultivalentTestsOnDevice:BubbleControllerTest (on device)
+ * - atest WMShellRobolectricTests:BubbleControllerTest (on host)
+ * - atest WMShellMultivalentTestsOnDevice:BubbleControllerTest (on device)
  */
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class BubbleControllerTest(flags: FlagsParameterization) {
 
-    @get:Rule
-    val setFlagsRule = SetFlagsRule(flags)
+    @get:Rule val setFlagsRule = SetFlagsRule(flags)
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val uiEventLoggerFake = UiEventLoggerFake()
@@ -172,11 +172,12 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             isRtl = false,
             insets = Insets.of(10, 20, 30, 40),
         )
-    private val deviceConfigUnfolded = deviceConfigFolded.copy(
-        windowBounds = Rect(0, 0, 1400, 2000),
-        isLargeScreen = true,
-        isSmallTablet = true,
-    )
+    private val deviceConfigUnfolded =
+        deviceConfigFolded.copy(
+            windowBounds = Rect(0, 0, 1400, 2000),
+            isLargeScreen = true,
+            isSmallTablet = true,
+        )
 
     @Before
     fun setUp() {
@@ -199,9 +200,11 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             on { currentWindowMetrics } doReturn realWindowManager.currentWindowMetrics
             on { defaultDisplay } doReturn realDefaultDisplay
         }
-        displayController = mock<DisplayController> {
-            on { getDisplayLayout(anyInt()) } doReturn DisplayLayout(context, realDefaultDisplay)
-        }
+        displayController =
+            mock<DisplayController> {
+                on { getDisplayLayout(anyInt()) } doReturn
+                    DisplayLayout(context, realDefaultDisplay)
+            }
 
         bubblePositioner = BubblePositioner(context, deviceConfigFolded)
 
@@ -232,7 +235,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 bubbleAppInfoProvider,
                 mainExecutor,
                 bgExecutor,
-                FakeBubbleUserResolver()
+                FakeBubbleUserResolver(),
             )
 
         bubbleTransitions =
@@ -299,7 +302,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
@@ -321,7 +324,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
@@ -359,7 +362,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
@@ -410,14 +413,15 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         bubbleTaskViewController.setTaskViewVisible(taskView, true /* visible */)
 
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
-            verify(baseTransitions).setTaskViewVisible(
-                taskView,
-                true, /* visible */
-                true, /* reorder */
-                false, /* syncHiddenWithVisibilityOnReorder */
-                false, /* nonBlockingIfPossible */
-                null, /* overrideTransaction */
-            )
+            verify(baseTransitions)
+                .setTaskViewVisible(
+                    taskView,
+                    true, /* visible */
+                    true, /* reorder */
+                    false, /* syncHiddenWithVisibilityOnReorder */
+                    false, /* nonBlockingIfPossible */
+                    null, /* overrideTransaction */
+                )
         } else {
             verify(baseTransitions).setTaskViewVisible(taskView, true /* visible */)
         }
@@ -433,14 +437,15 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         bubbleTaskViewController.setTaskViewVisible(taskView, false /* visible */)
 
-        verify(baseTransitions, never()).setTaskViewVisible(
-            any(), /* taskView */
-            any(), /* visible */
-            any(), /* reorder */
-            any(), /* syncHiddenWithVisibilityOnReorder */
-            any(), /* nonBlockingIfPossible */
-            any(), /* overrideTransaction */
-        )
+        verify(baseTransitions, never())
+            .setTaskViewVisible(
+                any(), /* taskView */
+                any(), /* visible */
+                any(), /* reorder */
+                any(), /* syncHiddenWithVisibilityOnReorder */
+                any(), /* nonBlockingIfPossible */
+                any(), /* overrideTransaction */
+            )
     }
 
     @Test
@@ -451,8 +456,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleData.notificationEntryUpdated(
                 bubble,
                 true, /* suppressFlyout */
-                true, /* showInShade= */
-            )
+                true,
+            /* showInShade= */ )
         }
 
         assertThat(bubbleController.hasStableBubbleForTask(taskId)).isTrue()
@@ -466,8 +471,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleData.notificationEntryUpdated(
                 bubble,
                 true, /* suppressFlyout */
-                true, /* showInShade= */
-            )
+                true,
+            /* showInShade= */ )
         }
 
         assertThat(bubbleController.hasStableBubbleForTask(taskId)).isFalse()
@@ -480,8 +485,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleData.notificationEntryUpdated(
                 bubble,
                 true, /* suppressFlyout */
-                true, /* showInShade= */
-            )
+                true,
+            /* showInShade= */ )
         }
 
         assertThat(bubbleController.hasStableBubbleForTask(777)).isFalse()
@@ -502,17 +507,18 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.registerBubbleStateListener(bubbleStateListener)
         }
 
-        val taskInfo = ActivityManager.RunningTaskInfo().apply {
-            taskId = 123
-            baseActivity = COMPONENT
-        }
+        val taskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                taskId = 123
+                baseActivity = COMPONENT
+            }
         val bubble = createAppBubble(taskInfo)
         getInstrumentation().runOnMainSync {
             bubbleData.notificationEntryUpdated(
                 bubble,
                 true, /* suppressFlyout */
-                true, /* showInShade= */
-            )
+                true,
+            /* showInShade= */ )
         }
 
         getInstrumentation().runOnMainSync {
@@ -540,28 +546,31 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
         }
 
-        val taskInfo = ActivityManager.RunningTaskInfo().apply {
-            baseActivity = COMPONENT
-            taskId = 123
-            token = mock<WindowContainerToken>()
-        }
+        val taskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                baseActivity = COMPONENT
+                taskId = 123
+                token = mock<WindowContainerToken>()
+            }
 
         var transitionHandler: TransitionHandler? = null
         getInstrumentation().runOnMainSync {
-            transitionHandler = bubbleController.expandStackAndSelectBubbleForExistingTransition(
-                taskInfo,
-                mock(), /* transition */
-            ) {}
+            transitionHandler =
+                bubbleController.expandStackAndSelectBubbleForExistingTransition(
+                    taskInfo,
+                    mock(), /* transition */
+                ) {}
         }
 
         assertThat(transitionHandler).isNotNull()
 
         val leash = SurfaceControl.Builder().setName("taskLeash").build()
         val transitionInfo = TransitionInfo(TRANSIT_CONVERT_TO_BUBBLE, 0)
-        val change = TransitionInfo.Change(taskInfo.token, leash).apply {
-            setTaskInfo(taskInfo)
-            mode = TRANSIT_CHANGE
-        }
+        val change =
+            TransitionInfo.Change(taskInfo.token, leash).apply {
+                setTaskInfo(taskInfo)
+                mode = TRANSIT_CHANGE
+            }
         transitionInfo.addChange(change)
         transitionInfo.addRoot(TransitionInfo.Root(0, mock(), 0, 0))
         getInstrumentation().runOnMainSync {
@@ -580,7 +589,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
@@ -607,7 +616,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
@@ -636,7 +645,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
@@ -675,7 +684,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
@@ -720,7 +729,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
@@ -754,14 +763,12 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
 
-        getInstrumentation().runOnMainSync {
-            bubbleController.onAllBubblesAnimatedOut()
-        }
+        getInstrumentation().runOnMainSync { bubbleController.onAllBubblesAnimatedOut() }
         assertThat(bubbleController.stackView!!.visibility).isEqualTo(View.VISIBLE)
     }
 
@@ -773,7 +780,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         getInstrumentation().runOnMainSync {
@@ -781,9 +788,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         }
         assertThat(bubbleData.hasBubbles()).isFalse()
 
-        getInstrumentation().runOnMainSync {
-            bubbleController.onAllBubblesAnimatedOut()
-        }
+        getInstrumentation().runOnMainSync { bubbleController.onAllBubblesAnimatedOut() }
         assertThat(bubbleController.stackView!!.visibility).isEqualTo(View.INVISIBLE)
     }
 
@@ -802,14 +807,12 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         assertThat(bubbleData.hasBubbles()).isTrue()
 
-        getInstrumentation().runOnMainSync {
-            bubbleController.onAllBubblesAnimatedOut()
-        }
+        getInstrumentation().runOnMainSync { bubbleController.onAllBubblesAnimatedOut() }
         assertThat(bubbleController.layerView!!.visibility).isEqualTo(View.VISIBLE)
     }
 
@@ -828,7 +831,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
         getInstrumentation().runOnMainSync {
@@ -836,34 +839,34 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         }
         assertThat(bubbleData.hasBubbles()).isFalse()
 
-        getInstrumentation().runOnMainSync {
-            bubbleController.onAllBubblesAnimatedOut()
-        }
+        getInstrumentation().runOnMainSync { bubbleController.onAllBubblesAnimatedOut() }
         assertThat(bubbleController.layerView!!.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
     fun testOnThemeChanged_skipInflationForOverflowBubbles() {
-        val taskInfo1 = ActivityManager.RunningTaskInfo().apply {
-            taskId = 123
-            baseActivity = COMPONENT
-        }
+        val taskInfo1 =
+            ActivityManager.RunningTaskInfo().apply {
+                taskId = 123
+                baseActivity = COMPONENT
+            }
         val bubble = createAppBubble(taskInfo1)
-        val taskInfo2 = ActivityManager.RunningTaskInfo().apply {
-            taskId = 124
-            baseActivity = COMPONENT
-        }
+        val taskInfo2 =
+            ActivityManager.RunningTaskInfo().apply {
+                taskId = 124
+                baseActivity = COMPONENT
+            }
         val overflowBubble = createAppBubble(taskInfo2)
         getInstrumentation().runOnMainSync {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
             bubbleController.inflateAndAdd(
                 overflowBubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
             bubbleController.dismissBubble(overflowBubble, DISMISS_USER_GESTURE)
         }
@@ -871,14 +874,14 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleData.hasBubbles()).isTrue()
         assertThat(bubbleData.hasOverflowBubbles()).isTrue()
         assertWithMessage("Overflow bubble should not be inflated since it's dismissed")
-            .that(overflowBubble.isInflated).isFalse()
+            .that(overflowBubble.isInflated)
+            .isFalse()
 
-        getInstrumentation().runOnMainSync {
-            bubbleController.onThemeChanged()
-        }
+        getInstrumentation().runOnMainSync { bubbleController.onThemeChanged() }
 
         assertWithMessage("Overflow bubble should not be inflated even if #onThemeChanged")
-            .that(overflowBubble.isInflated).isFalse()
+            .that(overflowBubble.isInflated)
+            .isFalse()
     }
 
     @Test
@@ -894,11 +897,13 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
     @Test
     fun bubbleCreatedFromNotificationButton_shouldLogEntryPoint() {
-        bubbleController.asBubbles().onEntryUpdated(
-            createBubbleEntry(pkgName = "package.name"),
-            /* shouldBubbleUp= */ true,
-            /* fromSystem= */ true
-        )
+        bubbleController
+            .asBubbles()
+            .onEntryUpdated(
+                createBubbleEntry(pkgName = "package.name"),
+                /* shouldBubbleUp= */ true,
+                /* fromSystem= */ true,
+            )
         mainExecutor.flushAll()
 
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
@@ -914,14 +919,16 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             bubbleController.inflateAndAdd(
                 bubble,
                 /* suppressFlyout= */ true,
-                /* showInShade= */ true
+                /* showInShade= */ true,
             )
         }
-        bubbleController.asBubbles().onEntryUpdated(
-            createBubbleEntry(bubbleKey = "bubble-key", pkgName = "package.name"),
-            /* shouldBubbleUp= */ true,
-            /* fromSystem= */ true
-        )
+        bubbleController
+            .asBubbles()
+            .onEntryUpdated(
+                createBubbleEntry(bubbleKey = "bubble-key", pkgName = "package.name"),
+                /* shouldBubbleUp= */ true,
+                /* fromSystem= */ true,
+            )
         mainExecutor.flushAll()
 
         assertThat(uiEventLoggerFake.logs).isEmpty()
@@ -930,15 +937,13 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
     @Test
     fun expandStackAndSelectBubble_shouldLogEntryPoint() {
-        val intent = Intent().apply {
-            setPackage("package.name")
-        }
+        val intent = Intent().apply { setPackage("package.name") }
         getInstrumentation().runOnMainSync {
             bubbleController.expandStackAndSelectBubble(
                 intent,
                 UserHandle.of(0),
                 EntryPoint.ALL_APPS_ICON_MENU,
-                /* bubbleBarLocation= */ null
+                /* bubbleBarLocation= */ null,
             )
         }
 
@@ -954,18 +959,19 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 .setBubbleMetadata(Notification.BubbleMetadata.Builder("shortcutId").build())
                 .setFlag(Notification.FLAG_BUBBLE, true)
                 .build()
-        val sbn = mock<StatusBarNotification>().stub {
-            on { key } doReturn bubbleKey
-            on { packageName } doReturn pkgName
-            on { notification } doReturn notif
-        }
+        val sbn =
+            mock<StatusBarNotification>().stub {
+                on { key } doReturn bubbleKey
+                on { packageName } doReturn pkgName
+                on { notification } doReturn notif
+            }
         return BubbleEntry(
             sbn,
             mock<NotificationListenerService.Ranking>(),
             /* isDismissable= */ false,
             /* shouldSuppressNotificationDot= */ true,
             /* shouldSuppressNotificationList= */ true,
-            /* shouldSuppressPeek= */ true
+            /* shouldSuppressPeek= */ true,
         )
     }
 
@@ -981,7 +987,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 "title",
                 taskId,
                 "locus",
-                /* isDismissable= */ true
+                /* isDismissable= */ true,
             ) {}
         return bubble
     }
@@ -1086,7 +1092,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         override fun addListener(
             executor: Executor,
-            listener: ShellUnfoldProgressProvider.UnfoldListener
+            listener: ShellUnfoldProgressProvider.UnfoldListener,
         ) {
             this.listener = listener
         }
@@ -1108,8 +1114,6 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         @JvmStatic
         @Parameters(name = "{0}")
-        fun getParams() = FlagsParameterization.allCombinationsOf(
-            FLAG_ENABLE_CREATE_ANY_BUBBLE,
-        )
+        fun getParams() = FlagsParameterization.allCombinationsOf(FLAG_ENABLE_CREATE_ANY_BUBBLE)
     }
 }
