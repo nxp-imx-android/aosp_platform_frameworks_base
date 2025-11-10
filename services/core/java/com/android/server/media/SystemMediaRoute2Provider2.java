@@ -585,6 +585,11 @@ import java.util.stream.Stream;
             int oldVolume = currentSessionInfo.getVolume();
             int newVolume = oldVolume + volumeStep;
             newVolume = Math.clamp(newVolume, /* min= */ 0, currentSessionInfo.getVolumeMax());
+            mHandler.removeCallbacks(mClearShouldShowVolumeUiFlagRunnable);
+            mHandler.postDelayed(
+                    mClearShouldShowVolumeUiFlagRunnable, SHOW_UI_FOR_VOLUME_CHANGE_TIMEOUT_MS);
+            mRecentRecipientOfVolumeKeyPressOriginalId =
+                    volumeAdjustmentTargetSessionRecord.mOriginalId;
             if (oldVolume != newVolume) {
                 String logMessage =
                         TextUtils.formatSimple(
@@ -593,11 +598,6 @@ import java.util.stream.Stream;
                                 currentSessionInfo.getVolumeMax(),
                                 currentSessionInfo.getOwnerPackageName());
                 Log.i(TAG, logMessage);
-                mHandler.removeCallbacks(mClearShouldShowVolumeUiFlagRunnable);
-                mHandler.postDelayed(
-                        mClearShouldShowVolumeUiFlagRunnable, SHOW_UI_FOR_VOLUME_CHANGE_TIMEOUT_MS);
-                mRecentRecipientOfVolumeKeyPressOriginalId =
-                        volumeAdjustmentTargetSessionRecord.mOriginalId;
                 proxyRecord.mProxy.setSessionVolume(
                         requestId,
                         volumeAdjustmentTargetSessionRecord.getServiceSessionId(),
@@ -605,12 +605,14 @@ import java.util.stream.Stream;
             } else {
                 String logMessage =
                         TextUtils.formatSimple(
-                                "Ignoring request to set volume to %d/%d on system media session"
-                                        + " managed by '%s'",
+                                "New volume from volume key press event matches current volume %d."
+                                    + " Dispatching volume event with no change to display slider.",
                                 newVolume,
                                 currentSessionInfo.getVolumeMax(),
                                 currentSessionInfo.getOwnerPackageName());
                 Log.i(TAG, logMessage);
+                onSessionOverrideUpdated(
+                        volumeAdjustmentTargetSessionRecord.mTranslatedSessionInfo);
             }
             return true;
         }
