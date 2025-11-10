@@ -22,7 +22,6 @@ import android.view.VelocityTracker
 import android.view.animation.AccelerateInterpolator
 import androidx.annotation.FloatRange
 import androidx.annotation.VisibleForTesting
-import com.android.systemui.Flags
 import com.android.systemui.statusbar.VibratorHelper
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.InteractionProperties
@@ -73,20 +72,12 @@ class SliderHapticFeedbackProvider(
      */
     private fun vibrateOnEdgeCollision(absoluteVelocity: Float) {
         val powerScale = scaleOnEdgeCollision(absoluteVelocity)
-        if (Flags.msdlFeedback()) {
-            val properties =
-                InteractionProperties.DynamicVibrationScale(
-                    powerScale,
-                    VIBRATION_ATTRIBUTES_PIPELINING,
-                )
-            msdlPlayer.playToken(MSDLToken.DRAG_THRESHOLD_INDICATOR_LIMIT, properties)
-        } else {
-            val vibration =
-                VibrationEffect.startComposition()
-                    .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, powerScale)
-                    .compose()
-            vibratorHelper.vibrate(vibration, VIBRATION_ATTRIBUTES_PIPELINING)
-        }
+        val properties =
+            InteractionProperties.DynamicVibrationScale(
+                powerScale,
+                vibrationAttributes = VIBRATION_ATTRIBUTES_PIPELINING,
+            )
+        msdlPlayer.playToken(MSDLToken.DRAG_THRESHOLD_INDICATOR_LIMIT, properties)
     }
 
     /**
@@ -151,31 +142,21 @@ class SliderHapticFeedbackProvider(
     }
 
     private fun performDiscreteSliderDragVibration(scale: Float) {
-        if (Flags.msdlFeedback()) {
-            val properties =
-                InteractionProperties.DynamicVibrationScale(scale, VIBRATION_ATTRIBUTES_PIPELINING)
-            msdlPlayer.playToken(MSDLToken.DRAG_INDICATOR_DISCRETE, properties)
-        } else {
-            val effect =
-                VibrationEffect.startComposition()
-                    .addPrimitive(VibrationEffect.Composition.PRIMITIVE_TICK, scale)
-                    .compose()
-            vibratorHelper.vibrate(effect, VIBRATION_ATTRIBUTES_PIPELINING)
-        }
+        val properties =
+            InteractionProperties.DynamicVibrationScale(
+                scale,
+                vibrationAttributes = VIBRATION_ATTRIBUTES_PIPELINING,
+            )
+        msdlPlayer.playToken(MSDLToken.DRAG_INDICATOR_DISCRETE, properties)
     }
 
     private fun performContinuousSliderDragVibration(scale: Float) {
-        if (Flags.msdlFeedback()) {
-            val properties =
-                InteractionProperties.DynamicVibrationScale(scale, VIBRATION_ATTRIBUTES_PIPELINING)
-            msdlPlayer.playToken(MSDLToken.DRAG_INDICATOR_CONTINUOUS, properties)
-        } else {
-            val composition = VibrationEffect.startComposition()
-            repeat(config.numberOfLowTicks) {
-                composition.addPrimitive(VibrationEffect.Composition.PRIMITIVE_LOW_TICK, scale)
-            }
-            vibratorHelper.vibrate(composition.compose(), VIBRATION_ATTRIBUTES_PIPELINING)
-        }
+        val properties =
+            InteractionProperties.DynamicVibrationScale(
+                scale,
+                vibrationAttributes = VIBRATION_ATTRIBUTES_PIPELINING,
+            )
+        msdlPlayer.playToken(MSDLToken.DRAG_INDICATOR_CONTINUOUS, properties)
     }
 
     /**
