@@ -77,6 +77,7 @@ import com.android.systemui.plugins.VolumeDialogController;
 import com.android.systemui.plugins.VolumeDialogController.State;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.VibratorHelper;
+import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.DevicePostureController;
@@ -148,6 +149,11 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     @Mock CsdWarningDialog mCsdWarningDialog;
     @Mock
     DevicePostureController mPostureController;
+    @Mock SystemUIDialog mSystemUIDialog;
+    @Mock
+    SafetyWarningDialogDelegate.Factory mSafetyWarningDialogFactory;
+    @Mock
+    SafetyWarningDialogDelegate mSafetyWarningDialogDelegate;
     @Mock
     private Lazy<SecureSettings> mLazySecureSettings;
     @Mock
@@ -202,6 +208,9 @@ public class VolumeDialogImplTest extends SysuiTestCase {
 
         mConfigurationController = new FakeConfigurationController();
 
+        when(mSafetyWarningDialogFactory.create(any())).thenReturn(mSafetyWarningDialogDelegate);
+        when(mSafetyWarningDialogDelegate.createDialog()).thenReturn(mSystemUIDialog);
+
         mSecureSettings = new FakeSettings();
 
         when(mLazySecureSettings.get()).thenReturn(mSecureSettings);
@@ -221,6 +230,7 @@ public class VolumeDialogImplTest extends SysuiTestCase {
                 false,
                 mCsdWarningDialogFactory,
                 mPostureController,
+                mSafetyWarningDialogFactory,
                 mTestableLooper.getLooper(),
                 mVolumePanelFlag,
                 mDumpManager,
