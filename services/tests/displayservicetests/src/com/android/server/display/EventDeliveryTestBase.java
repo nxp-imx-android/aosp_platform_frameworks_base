@@ -51,6 +51,7 @@ public abstract class EventDeliveryTestBase {
     protected static final long TEST_FAILURE_TIMEOUT_MSEC = 10000;
 
     private static final String TEST_MESSENGER = "MESSENGER";
+    private static final String TEST_EVENT_MASK = "EVENT_MASK";
 
     private Instrumentation mInstrumentation;
     private Context mContext;
@@ -139,13 +140,20 @@ public abstract class EventDeliveryTestBase {
         });
     }
 
+    protected int launchTestActivity() {
+        return launchTestActivity(0);
+    }
+
     /**
      * Launch the test activity that would listen to events. Return its process ID.
      */
-    protected int launchTestActivity() {
+    protected int launchTestActivity(long eventMask) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.setClassName(getTestPackage(), getTestActivity());
         intent.putExtra(TEST_MESSENGER, mMessenger);
+        if (eventMask != 0) {
+            intent.putExtra(TEST_EVENT_MASK, eventMask);
+        }
         putExtra(intent);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         SystemUtil.runWithShellPermissionIdentity(

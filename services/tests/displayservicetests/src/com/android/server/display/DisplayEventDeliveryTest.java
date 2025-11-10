@@ -28,11 +28,11 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import android.content.Intent;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -277,7 +277,10 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
             boolean isSnapshotEnabled) {
         Log.i(TAG, "Start test testDisplayEvents " + mDisplayCount + " " + cached + " " + frozen);
         // Launch DisplayEventActivity and start listening to display events
-        int pid = launchTestActivity();
+        int pid = launchTestActivity(/* eventMask= */ DisplayManager.EVENT_TYPE_DISPLAY_ADDED
+                | DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                | DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
+                | ((isSnapshotEnabled) ? DisplayManager.EVENT_TYPE_DISPLAY_SNAPSHOT : 0));
 
         if (isSnapshotEnabled) {
             mSnapshotBundle.waitDisplayEvent(DISPLAY_SNAPSHOT);
@@ -362,7 +365,6 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * Create virtual displays, change their configurations and release them.
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEvents() {
         testDisplayEventsInternal(
                 /* cached = */ false, /* frozen */ false, /* isSnapshotEnabled= */ false);
@@ -380,7 +382,6 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * moved to cached and the test verifies that no events are delivered to the cached app.
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEventsCached() {
         testDisplayEventsInternal(
                 /* cached = */ true, /* frozen */ false, /* isSnapshotEnabled= */ false);
@@ -398,7 +399,6 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * frozen and the test verifies that no events are delivered to the frozen app.
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEventsFrozen() {
         assumeTrue(isAppFreezerEnabled());
         testDisplayEventsInternal(
@@ -418,7 +418,6 @@ public class DisplayEventDeliveryTest extends EventDeliveryTestBase {
      * cached and frozen and the test verifies that no events are delivered to the app.
      */
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEventsCachedFrozen() {
         assumeTrue(isAppFreezerEnabled());
         testDisplayEventsInternal(
