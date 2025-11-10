@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Stoor tans skermskoot in privaat"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Skermkiekie is gestoor"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Kon nie skermkiekie stoor nie"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Eksterne skerm"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Toestel moet ontsluit word voordat skermkiekie gestoor kan word"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Probeer weer skermkiekie neem"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Jou toestelvolume en -waarskuwings word outomaties vir tot 2 minute lank verminder wanneer jy te veel kennisgewings op een slag kry."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Skakel af"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Ontsluit om ouer kennisgewings te sien"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Hierdie toestel word deur jou ouer bestuur"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Sekere toestelinstellings word deur ’n PIN beskerm."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Jou organisasie besit hierdie toestel en kan netwerkverkeer monitor"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> besit hierdie toestel en kan netwerkverkeer monitor"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Swiep van bo links af om kennisgewings oop te maak"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Swiep van bo regs af om Kitsinstellings oop te maak"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Terug"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Meld aan"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Toeganklikheid"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Vorige"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Volgende"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigeer na die volgende bladsy"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"outovul"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"vou uit"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

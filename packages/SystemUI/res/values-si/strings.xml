@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"තිර රුව පුද්ගලික ලෙස සුරැකේ"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"තිර රුව සුරකින ලදී"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"තිර රුව සුරැකිය නොහැකි විය"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"බාහිර සංදර්ශකය"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"තිර රුව සුරැකීමට පෙර උපාංගය අගුලු හැරිය යුතුය"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"තිර රුව නැවත ගැනීමට උත්සාහ කරන්න"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ඔබට එකවර දැනුම්දීම් වැඩි ප්‍රමාණයක් ලැබෙන විට ඔබේ උපාංග පරිමාව සහ ඇඟවීම් මිනිත්තු 2ක් දක්වා ස්වයංක්‍රීයව අඩු වේ."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ක්‍රියාවිරහිත කරන්න"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"පැරණි දැනුම්දීම් බැලීමට අගුළු හරින්න"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"මෙම උපාංගය ඔබගේ මාපියන්ගෙන් අයකු විසින් කළමනාකරණය කෙරේ"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"සමහර උපාංග සැකසුම් PIN ආරක්ෂිතයි."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ඔබේ සංවිධානයට මෙම උපාංගය අයිති අතර ජාල තදබදය නිරීක්ෂණය කළ හැකිය"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> සංවිධානයට මෙම උපාංගය අයිති අතර ජාල තදබදය නිරීක්ෂණය කළ හැකිය"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"දැනුම්දීම් විවෘත කිරීමට ඉහළ වමේ සිට ස්වයිප් කරන්න"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ඉක්මන් සැකසීම් විවෘත කිරීමට ඉහළ දකුණේ සිට ස්වයිප් කරන්න"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ආපසු"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"පුරන්න"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"ප්‍රවේශ්‍යතාව"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"පෙර"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"මීළඟ"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ඊළඟ පිටුවට යන්න"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ස්වයං පිරවුම"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"දිග හරින්න"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

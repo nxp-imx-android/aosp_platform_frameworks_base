@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"درحال ذخیره کردن نماگرفت در نمایه خصوصی"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"نماگرفت ذخیره شد"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"نماگرفت ذخیره نشد"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"نمایشگر خارجی"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"برای ذخیره کردن نماگرفت، قفل دستگاه باید باز باشد"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"دوباره نماگرفت بگیرید"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"وقتی به‌طور هم‌زمان تعداد بسیار زیادی اعلان دریافت کنید، میزان صدای دستگاه و هشدارها به‌طور خودکار تا ۲ دقیقه کاهش می‌یابد."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"خاموش کردن"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"برای دیدن اعلان‌های قبلی قفل را باز کنید"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"این دستگاه را ولی‌تان مدیریت می‌کند"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"برخی‌از تنظیمات دستگاه با پین محافظت می‌شوند."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"مالک این دستگاه سازمان شما است و ممکن است ترافیک شبکه را پایش کند"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"مالک این دستگاه <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> است و ممکن است ترافیک شبکه را پایش کند"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"برای باز کردن «اعلان‌ها»، از بالا سمت چپ تند بکشید"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"برای باز کردن «تنظیمات فوری»، از بالا سمت راست تند بکشید"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"برگشتن"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"ورود به سیستم"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"دسترس‌پذیری"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"قبلی"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"بعدی"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"پیمایش کردن به صفحه بعد"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"تکمیل خودکار"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ازهم باز کردن"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

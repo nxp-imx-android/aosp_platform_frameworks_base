@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Pamja e ekranit po ruhet te profili privat"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Pamja e ekranit u ruajt"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Pamja e ekranit nuk mund të ruhej"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Ekrani i jashtëm"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Pajisja duhet të shkyçet para se të mund të ruhet pamja e ekranit"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Provo ta nxjerrësh përsëri pamjen e ekranit"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Volumi i pajisjes dhe sinjalizimet zvogëlohen automatikisht për deri në 2 minuta kur merr shumë njoftime në të njëjtën kohë."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Çaktivizo"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Shkyç për të parë njoftimet e vjetra"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Kjo pajisje menaxhohet nga prindi yt"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Disa cilësime të pajisjes janë të mbrojtur me një kod PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Organizata jote e zotëron këtë pajisje dhe mund të monitorojë trafikun e rrjetit"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> e zotëron këtë pajisje dhe mund të monitorojë trafikun e rrjetit"</string>
@@ -1173,7 +1180,7 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Mund të lexojë të gjitha përmbajtjet në ekran dhe të shfaqë përmbajtje mbi aplikacione të tjera."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Shiko dhe kryej veprimet"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Mund të monitorojë ndërveprimet me një aplikacion ose një sensor hardueri dhe të ndërveprojë me aplikacionet në emrin tënd."</string>
-    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Shtypja e "<annotation id="action_key_icon">"ikonës"</annotation>" së <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> aktivizon <xliff:g id="ID_4">^4</xliff:g>, një veçori të qasshmërisë. Kjo të lejon ta kontrollosh pajisjen tënde pa përdorur duart."</string>
+    <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Shtypja e "<annotation id="action_key_icon">"ikonës"</annotation>" së <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> aktivizon <xliff:g id="ID_4">^4</xliff:g>, një veçori qasshmërie. Kjo të lejon ta kontrollosh pajisjen tënde pa përdorur duart."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Qasshmëria"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"U krye"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekrani i kyçjes"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Rrëshqit shpejt nga lart majtas për të hapur njoftimet"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Rrëshqit shpejt nga lart djathtas për të hapur \"Cilësimet e shpejta\""</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Prapa"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Identifikohu"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Qasshmëria"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Prapa"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Para"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigo në faqen tjetër"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"plotëso automatikisht"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"zgjero"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

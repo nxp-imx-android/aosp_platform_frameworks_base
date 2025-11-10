@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"កំពុងរក្សាទុករូបថត​អេក្រង់ទៅក្នុងកម្រងព័ត៌មានឯកជន"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"បានរក្សាទុក​រូបថតអេក្រង់"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"មិន​អាច​រក្សាទុក​រូបថត​អេក្រង់បានទេ"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ផ្ទាំង​អេក្រង់​ខាង​ក្រៅ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ត្រូវតែ​ដោះសោ​ឧបករណ៍​ជាមុនសិន ទើបអាច​រក្សាទុក​រូបថតអេក្រង់​បាន"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"សាកល្បង​ថតរូបថត​អេក្រង់​ម្តងទៀត"</string>
@@ -171,12 +175,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ស្ដាប់សំឡេងរួមគ្នា"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"បង្ហាញវិនដូកម្មវិធី"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ចែករំលែកផ្ទាំង"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"បង្ហាញអេក្រង់​ទាំង​មូល"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ពេលអ្នកបង្ហាញកម្មវិធីណាមួយ [APP NAME] មើលឃើញអ្វីៗដែលបង្ហាញ ឬចាក់លើកម្មវិធីនោះ។ ដូច្នេះ សូមប្រុងប្រយ័ត្នចំពោះអ្វីៗ ដូចជាពាក្យសម្ងាត់ ព័ត៌មានទូទាត់ប្រាក់ សារ រូបថត ព្រមទាំងសំឡេង និងវីដេអូ។"</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"ពេលអ្នកបង្ហាញអេក្រង់ទាំងមូលរបស់អ្នក [APP NAME] មើលឃើញអ្វីៗនៅលើអេក្រង់របស់អ្នក។ ដូច្នេះ សូមប្រុងប្រយ័ត្នចំពោះអ្វីៗ ដូចជាពាក្យសម្ងាត់ ព័ត៌មានទូទាត់ប្រាក់ សារ រូបថត ព្រមទាំងសំឡេង និងវីដេអូ។"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ថតរូបអេក្រង់វិនដូ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ថត​វិនដូ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ថតរូបអេក្រង់នៃតំបន់ដែលបានជ្រើសរើស"</string>
@@ -727,7 +728,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"កម្រិតសំឡេង និងការជូនដំណឹងនៅលើឧបករណ៍របស់អ្នកត្រូវបានកាត់បន្ថយដោយស្វ័យប្រវត្តិរហូតដល់ 2 នាទី នៅពេលអ្នកទទួលបានការជូនដំណឹងច្រើនពេកក្នុងពេលតែមួយ។"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"បិទ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ដោះសោដើម្បីមើលការជូនដំណឹងចាស់ៗ"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"ឧបករណ៍​នេះ​ស្ថិត​ក្រោម​ការ​គ្រប់គ្រង​របស់មាតាបិតាអ្នក"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ការកំណត់ឧបករណ៍មួយចំនួនត្រូវបានការពារដោយកូដ PIN។"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ស្ថាប័ន​របស់អ្នក​ជាម្ចាស់​ឧបករណ៍​នេះ ហើយ​អាចនឹង​តាមដាន​ចរាចរណ៍បណ្តាញ"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> ជាម្ចាស់​ឧបករណ៍​នេះ ហើយ​អាចនឹង​តាមដាន​ចរាចរណ៍​បណ្តាញ"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"មិនអាច​កែប្រែ​ការជូនដំណឹងអំពីការហៅទូរសព្ទបានទេ។"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"មិនអាច​កំណត់​រចនាសម្ព័ន្ធ​ក្រុមការជូនដំណឹងនេះ​នៅទីនេះ​បានទេ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ការជូនដំណឹង​ជា​ប្រូកស៊ី"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"បានសង្ខេបដោយ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"ការជូន​ដំណឹងទាំងអស់​ពី​<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"មើលច្រើនទៀត"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ការជូនដំណឹងនេះ​ត្រូវបាន&lt;b&gt;ដំឡើង​ទៅលំនាំដើម&lt;/b&gt;ដោយប្រព័ន្ធ​ដោយស្វ័យប្រវត្តិ។"</string>
@@ -1736,12 +1739,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"អូសពីខាងឆ្វេងផ្នែកខាងលើដើម្បីបើកការជូនដំណឹង"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"អូសពីខាងស្ដាំផ្នែកខាងលើដើម្បីបើកការកំណត់រហ័ស"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ថយក្រោយ"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"ចូលគណនី"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"ភាពងាយស្រួល"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"មុន"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"បន្ទាប់"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"រុក​រក​ទៅ​ទំព័រ​បន្ទាប់"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"បំពេញស្វ័យប្រវត្តិ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ពង្រីក"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

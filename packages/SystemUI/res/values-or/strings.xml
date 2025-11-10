@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"ପ୍ରାଇଭେଟରେ ସ୍କ୍ରିନସଟକୁ ସେଭ କରାଯାଉଛି"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"ସ୍କ୍ରୀନଶଟ୍ ସେଭ୍ ହୋଇଛି"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"ସ୍କ୍ରୀନ୍‍ଶଟ୍ ସେଭ୍ କରିହେବ ନାହିଁ"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ଏକ୍ସଟର୍ନଲ ଡିସପ୍ଲେ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ସ୍କ୍ରିନସଟ୍ ସେଭ୍ କରିବା ପୂର୍ବରୁ ଡିଭାଇସକୁ ଅନଲକ୍ କରାଯିବା ଆବଶ୍ୟକ"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ପୁଣିଥରେ ସ୍କ୍ରୀନ୍‌ଶଟ୍ ନେବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ"</string>
@@ -727,7 +731,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ଆପଣ ଥରକେ ଏକାଧିକ ବିଜ୍ଞପ୍ତି ପ୍ରାପ୍ତ କଲେ ଆପଣଙ୍କ ଡିଭାଇସର ଭଲ୍ୟୁମ ଓ ଆଲର୍ଟ ସ୍ୱତଃ 2 ମିନିଟ ପର୍ଯ୍ୟନ୍ତ କମ ହୁଏ।"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ପୁରୁଣା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଦେଖିବାକୁ ଅନଲକ କରନ୍ତୁ"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"ଏହି ଡିଭାଇସ୍ ଆପଣଙ୍କ ବାପାମାଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"କିଛି ଡିଭାଇସ ସେଟିଂସ PIN ଦ୍ୱାରା ସୁରକ୍ଷିତ ଅଟେ।"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ଏହି ଡିଭାଇସର ମାଲିକାନା ଆପଣଙ୍କ ସଂସ୍ଥା ପାଖରେ ଅଛି ଏବଂ ଏହା ନେଟୱାର୍କ ଟ୍ରାଫିକର ନିରୀକ୍ଷଣ କରିପାରେ"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"ଏହି ଡିଭାଇସଟି <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>ର ଅଟେ ଏବଂ ଏହା ନେଟୱାର୍କ ଟ୍ରାଫିକକୁ ନିରୀକ୍ଷଣ କରିପାରେ"</string>
@@ -1736,12 +1743,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ଖୋଲିବା ପାଇଁ ଉପର ବାମ ପଟରୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"କୁଇକ ସେଟିଂସ ଖୋଲିବାକୁ ଉପର ଡାହାଣ ପଟରୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ପଛକୁ ଫେରନ୍ତୁ"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"ସାଇନ ଇନ କରନ୍ତୁ"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"ଆକ୍ସେସିବିଲିଟୀ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ପୂର୍ବବର୍ତ୍ତୀ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ପରବର୍ତ୍ତୀ"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ପରବର୍ତ୍ତୀ ପୃଷ୍ଠାକୁ ନାଭିଗେଟ କରନ୍ତୁ"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ଅଟୋଫିଲ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ବିସ୍ତାର କରନ୍ତୁ"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Сохранение скриншота в частный профиль…"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Скриншот сохранен"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Не удалось сохранить скриншот"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Внешний дисплей"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Чтобы сохранить скриншот, разблокируйте устройство."</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Попробуйте сделать скриншот снова."</string>
@@ -171,12 +175,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Доступ к аудио"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Показ окна приложения"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Поделиться вкладкой"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Показать весь экран"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"При показе приложения все, что в нем происходит, видно в приложении \"[APP NAME]\". Поэтому будьте осторожны с паролями, сведениями о способах оплаты, сообщениями, фотографиями, аудио- и видеозаписями."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"При показе экрана целиком все, что на нем происходит, будет видно в приложении \"[APP NAME]\". Поэтому будьте осторожны с паролями, сведениями о способах оплаты, сообщениями, фотографиями, аудио- и видеозаписями."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Сделать скриншот окна"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Записать видео окна"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Сделать скриншот выбранной области"</string>
@@ -727,7 +728,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Если придет слишком много уведомлений, на две минуты громкость и количество оповещений уменьшатся."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Отключить"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Разблокируйте, чтобы увидеть уведомления"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Устройством управляет один из родителей."</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Некоторые настройки устройства защищены PIN-кодом."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Ваша организация управляет этим устройством и может отслеживать сетевой трафик"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Организация \"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>\" управляет этим устройством и может отслеживать сетевой трафик"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Уведомления о звонках нельзя изменить."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Эту группу уведомлений нельзя настроить здесь."</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Уведомление отправлено через прокси-сервер."</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"Пересказ от <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g>: все уведомления"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Ещё"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Уровень важности этого уведомления был автоматически &lt;b&gt;повышен до \"По умолчанию\"&lt;/b&gt;."</string>
@@ -1736,12 +1739,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Чтобы открыть уведомления, проведите вниз от левого верхнего угла экрана"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Чтобы открыть быстрые настройки, проведите вниз от правого верхнего угла экрана"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Войти"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Специальные возможности"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Назад"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Далее"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"перейти к следующей странице"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"автозаполнение"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"развернуть"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>

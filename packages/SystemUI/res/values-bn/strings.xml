@@ -81,6 +81,10 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"ব্যক্তিগত প্রোফাইলে স্ক্রিনশট সেভ করা হয়েছে"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"স্ক্রিনশট সেভ করা হয়েছে"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"স্ক্রিনশট সেভ করা যায়নি"</string>
+    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
+    <skip />
+    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"এক্সটার্নাল ডিসপ্লে"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"স্ক্রিনশট সেভ করার আগে ডিভাইসটি অবশ্যই আনলক করতে হবে"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"আবার স্ক্রিনশট নেওয়ার চেষ্টা করুন"</string>
@@ -171,12 +175,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"অডিও শেয়ার করুন"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"অ্যাপ উইন্ডো শেয়ার করুন"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ট্যাব শেয়ার করুন"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"সম্পূর্ণ স্ক্রিন শেয়ার করুন"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"আপনি কোনও অ্যাপ শেয়ার করার সময়, সেই অ্যাপে দেখা ও চালানো যেকোনও কিছু [APP NAME] দেখতে পাবে। তাই পাসওয়ার্ড, পেমেন্টের বিবরণ, মেসেজ, ফটো এবং অডিও ও ভিডিওর মতো বিষয়ের ক্ষেত্রে সতর্ক থাকুন।"</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"আপনি সম্পূর্ণ স্ক্রিন শেয়ার করার সময়, স্ক্রিনে থাকা যেকোনও কিছু [APP NAME] দেখতে পাবে। তাই পাসওয়ার্ড, পেমেন্টের বিবরণ, মেসেজ, ফটো এবং অডিও ও ভিডিওর মতো বিষয়ের ক্ষেত্রে সতর্ক থাকুন।"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"উইন্ডোর স্ক্রিনশট নিন"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"উইন্ডো রেকর্ড করুন"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"বেছে নেওয়া অংশের স্ক্রিনশট নিন"</string>
@@ -727,7 +728,10 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"আপনি একসঙ্গে খুব বেশি বিজ্ঞপ্তি পেলে আপনার ডিভাইসের ভলিউম এবং সতর্কবার্তা সর্বাধিক ২ মিনিটের জন্য অটোমেটিক কমে যায়।"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"বন্ধ করুন"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"পুরনো বিজ্ঞপ্তি দেখতে আনলক করুন"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"আপনার অভিভাবক এই ডিভাইস ম্যানেজ করেন"</string>
+    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
+    <skip />
+    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
+    <skip />
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"কিছু ডিভাইস সেটিংস পিন দিয়ে সুরক্ষিত করা আছে।"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"এই ডিভাইসটি আপনার প্রতিষ্ঠানের এবং এরা ডিভাইসের নেটওয়ার্ক ট্রাফিক মনিটর করতে পারে"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> এই ডিভাইসের মালিক এবং এটির নেটওয়ার্ক ট্রাফিক মনিটর করতে পারে"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"কল বিজ্ঞপ্তি পরিবর্তন করা যাবে না।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"এই সমস্ত বিজ্ঞপ্তিকে এখানে কনফিগার করা যাবে না"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"প্রক্সি করা বিজ্ঞপ্তি"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> সারসংক্ষেপ করেছে"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g> সংক্রান্ত সমস্ত বিজ্ঞপ্তি"</string>
     <string name="see_more_title" msgid="7409317011708185729">"আরও দেখুন"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"সিস্টেম অটোমেটিক এই বিজ্ঞপ্তির &lt;b&gt;লেভেল বাড়িয়ে ডিফল্ট&lt;/b&gt; হিসেবে সেট করেছে।"</string>
@@ -1736,12 +1739,19 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"বিজ্ঞপ্তি খুলতে উপরের বাঁদিক থেকে সোয়াইপ করুন"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"দ্রুত সেটিংস খুলতে উপরের ডানদিক থেকে সোয়াইপ করুন"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ফিরে যান"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"সাইন-ইন করুন"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"অ্যাক্সেসিবিলিটি"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"পূর্ববর্তী"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"পরবর্তী"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"পরের পৃষ্ঠায় যান"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"অটোফিল"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"বড় করুন"</string>
+    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
+    <skip />
+    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
+    <skip />
+    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
+    <skip />
+    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
+    <skip />
 </resources>
