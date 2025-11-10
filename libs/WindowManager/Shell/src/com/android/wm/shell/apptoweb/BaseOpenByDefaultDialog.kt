@@ -48,9 +48,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-/**
- * Base window manager for the open by default settings dialog
- */
+/** Base window manager for the open by default settings dialog */
 internal abstract class BaseOpenByDefaultDialog<T>(
     protected val context: Context,
     private val userContext: Context,
@@ -70,9 +68,8 @@ internal abstract class BaseOpenByDefaultDialog<T>(
         checkNotNull(userContext.getSystemService(DomainVerificationManager::class.java)) {
             "Expected non-null DomainVerificationManager"
         }
-    protected val packageName = checkNotNull(taskInfo.baseActivity) {
-        "Expected non-null base activity"
-    }.packageName
+    protected val packageName =
+        checkNotNull(taskInfo.baseActivity) { "Expected non-null base activity" }.packageName
 
     private var loadAppInfoJob: Job? = null
 
@@ -87,45 +84,47 @@ internal abstract class BaseOpenByDefaultDialog<T>(
         if (Flags.useInputReportedFocusForAccessibility()) {
             viewHost.requestInputFocus(true)
         }
-        loadAppInfoJob = mainScope.launch {
-            if (!isActive) return@launch
-            val (name, icon) = taskResourceLoader.getNameAndHeaderIcon(taskInfo)
-            bindAppInfo(icon, name)
-        }
+        loadAppInfoJob =
+            mainScope.launch {
+                if (!isActive) return@launch
+                val (name, icon) = taskResourceLoader.getNameAndHeaderIcon(taskInfo)
+                bindAppInfo(icon, name)
+            }
     }
 
     protected fun showDialogWindow() {
         val display = displayController.getDisplay(taskInfo.displayId)
         val taskBounds = taskInfo.configuration.windowConfiguration.bounds
-        val lp = LayoutParams(
-            taskBounds.width(),
-            taskBounds.height(),
-            TYPE_APPLICATION_PANEL,
-            FLAG_NOT_TOUCH_MODAL,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            token = Binder()
-            title = "$dialogName of task=${taskInfo.taskId}"
-            setTrustedOverlay()
-        }
+        val lp =
+            LayoutParams(
+                    taskBounds.width(),
+                    taskBounds.height(),
+                    TYPE_APPLICATION_PANEL,
+                    FLAG_NOT_TOUCH_MODAL,
+                    PixelFormat.TRANSLUCENT,
+                )
+                .apply {
+                    token = Binder()
+                    title = "$dialogName of task=${taskInfo.taskId}"
+                    setTrustedOverlay()
+                }
 
         dialogWindowManager = DialogWindowManager(taskInfo.configuration)
-        viewHost = SurfaceControlViewHost(context, display, dialogWindowManager, "Dialog").apply {
-            setView(dialog, lp)
-        }
+        viewHost =
+            SurfaceControlViewHost(context, display, dialogWindowManager, "Dialog").apply {
+                setView(dialog, lp)
+            }
 
         animationController.startEnterAnimation(dialog, this::onAnimationEnded)
     }
 
     protected fun setDefaultLinkHandlingSetting(allowed: Boolean) {
         try {
-            domainVerificationManager.setDomainVerificationLinkHandlingAllowed(
-                packageName, allowed
-            )
+            domainVerificationManager.setDomainVerificationLinkHandlingAllowed(packageName, allowed)
         } catch (e: NameNotFoundException) {
             Slog.e(
                 TAG,
-                "Failed to change link handling policy due to the package name is not found: $e"
+                "Failed to change link handling policy due to the package name is not found: $e",
             )
         }
     }
@@ -143,9 +142,7 @@ internal abstract class BaseOpenByDefaultDialog<T>(
         }
     }
 
-    /**
-     * Relayout the dialog to the new task bounds.
-     */
+    /** Relayout the dialog to the new task bounds. */
     fun relayout(taskInfo: RunningTaskInfo) {
         if (!::dialogWindowManager.isInitialized) return
         val taskBounds = taskInfo.configuration.windowConfiguration.bounds
@@ -153,9 +150,7 @@ internal abstract class BaseOpenByDefaultDialog<T>(
         viewHost.relayout(taskBounds.width(), taskBounds.height())
     }
 
-    /**
-     * Dismiss dialog and set it to null, so it that it will be re-created on the next opening.
-     */
+    /** Dismiss dialog and set it to null, so it that it will be re-created on the next opening. */
     fun dismiss() = closeMenu()
 
     protected abstract fun createDialog()
@@ -164,21 +159,19 @@ internal abstract class BaseOpenByDefaultDialog<T>(
 
     protected abstract fun bindAppInfo(appIconBitmap: Bitmap, appName: CharSequence)
 
-    /**
-     * Handles showing, positioning and tearing down the dialog surface
-     */
-    private inner class DialogWindowManager(config: Configuration) : WindowlessWindowManager(
-        config,
-        /* rootSurface= */ null,
-        /* hostInputTransferToken= */ null
-    ) {
+    /** Handles showing, positioning and tearing down the dialog surface */
+    private inner class DialogWindowManager(config: Configuration) :
+        WindowlessWindowManager(
+            config,
+            /* rootSurface= */ null,
+            /* hostInputTransferToken= */ null,
+        ) {
 
         private var leash: SurfaceControl? = null
 
-        override fun getParentSurface(
-            window: IWindow, attrs: LayoutParams
-        ): SurfaceControl {
-            val newLeash = SurfaceControl.Builder()
+        override fun getParentSurface(window: IWindow, attrs: LayoutParams): SurfaceControl {
+            val newLeash =
+                SurfaceControl.Builder()
                     .setContainerLayer()
                     .setName("${dialogName}Leash")
                     .setParent(taskSurface)
@@ -199,7 +192,8 @@ internal abstract class BaseOpenByDefaultDialog<T>(
 
         fun relayout(taskBounds: Rect) {
             leash?.let {
-                surfaceControlTransactionSupplier.get()
+                surfaceControlTransactionSupplier
+                    .get()
                     .setWindowCrop(it, taskBounds.width(), taskBounds.height())
                     .apply()
             }

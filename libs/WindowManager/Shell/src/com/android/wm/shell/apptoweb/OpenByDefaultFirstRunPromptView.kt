@@ -29,11 +29,14 @@ import com.android.wm.shell.R
 import com.android.wm.shell.compatui.DialogContainerSupplier
 import com.android.wm.shell.shared.TypefaceUtils
 
-/**
- * View for open by default first-run prompt.
- */
-class OpenByDefaultFirstRunPromptView @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0, defStyleRes: Int = 0
+/** View for open by default first-run prompt. */
+class OpenByDefaultFirstRunPromptView
+@JvmOverloads
+constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+    defStyleRes: Int = 0,
 ) : ConstraintLayout(context, attrs, defStyleAttr, defStyleRes), DialogContainerSupplier {
 
     private lateinit var dialogContainer: View
@@ -48,7 +51,7 @@ class OpenByDefaultFirstRunPromptView @JvmOverloads constructor(
         setOnClickListener(callback)
         // We add a no-op on-click listener to the dialog container so that clicks on it won't
         // propagate to the listener of the layout (which represents the background dim).
-        dialogContainer.setOnClickListener { }
+        dialogContainer.setOnClickListener {}
     }
 
     fun setOpenInBrowserButtonClickListener(callback: (View) -> Unit) {
@@ -90,7 +93,7 @@ class OpenByDefaultFirstRunPromptView @JvmOverloads constructor(
             Html.fromHtml(
                 context.resources.getString(
                     R.string.open_by_default_splash_dialog_title_text,
-                    Html.escapeHtml(appName)
+                    Html.escapeHtml(appName),
                 )
             )
     }
