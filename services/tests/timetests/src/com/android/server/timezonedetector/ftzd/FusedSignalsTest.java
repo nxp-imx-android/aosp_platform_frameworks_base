@@ -20,6 +20,7 @@ import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGI
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import androidx.test.runner.AndroidJUnit4;
@@ -59,6 +60,26 @@ public class FusedSignalsTest {
         FusedSignals fusedSignals = new FusedSignals(TZ_LA, null);
         assertEquals(TZ_LA, fusedSignals.getTimeZoneId());
         assertTrue(fusedSignals.getOrigins().isEmpty());
+    }
+
+    @Test
+    public void testConstructor_multipleZoneIds_noOrigin() {
+        // Verifies constructor with multiple zone IDs and no origin.
+        List<String> zones = List.of(TZ_NY, TZ_LA);
+        FusedSignals fusedSignals = new FusedSignals(zones, null);
+
+        // The first zone ID in the list should be the primary one.
+        assertEquals(TZ_NY, fusedSignals.getTimeZoneId());
+        // No origin should be recorded.
+        assertTrue(fusedSignals.getOrigins().isEmpty());
+        // All provided zones should be in the candidate set.
+        assertEquals(Set.of(TZ_NY, TZ_LA), fusedSignals.getZoneIdCandidates());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_emptyZoneIdCandidates_throwsException() {
+        // Verifies that the constructor throws an exception when the candidate list is empty.
+        new FusedSignals(Collections.emptyList(), ORIGIN_TELEPHONY);
     }
 
     @Test
@@ -105,6 +126,14 @@ public class FusedSignalsTest {
         assertEquals(2, fusedSignals.getZoneIdCandidates().size());
         assertTrue(fusedSignals.getZoneIdCandidates().contains(TZ_LA));
         assertTrue(fusedSignals.getZoneIdCandidates().contains(TZ_NY));
+    }
+
+    @Test
+    public void testUpdate_returnsSameInstance() {
+        // Verifies that update() returns the same instance for chaining.
+        FusedSignals fusedSignals = new FusedSignals(TZ_LA, ORIGIN_TELEPHONY);
+        FusedSignals returned = fusedSignals.update(ORIGIN_LOCATION, List.of(TZ_NY));
+        assertSame(fusedSignals, returned);
     }
 
     @Test
@@ -165,6 +194,14 @@ public class FusedSignalsTest {
     }
 
     @Test
+    public void testClearOrigins_returnsSameInstance() {
+        // Verifies that clearOrigins() returns the same instance for chaining.
+        FusedSignals fusedSignals = new FusedSignals(TZ_LA, ORIGIN_TELEPHONY);
+        FusedSignals returned = fusedSignals.clearOrigins();
+        assertSame(fusedSignals, returned);
+    }
+
+    @Test
     public void testRemoveOrigin() {
         FusedSignals fusedSignals = new FusedSignals(TZ_LA, ORIGIN_TELEPHONY);
         fusedSignals.update(ORIGIN_LOCATION, Collections.singletonList(TZ_NY));
@@ -174,6 +211,14 @@ public class FusedSignalsTest {
         assertEquals(1, fusedSignals.getOrigins().size());
         assertTrue(fusedSignals.getOrigins().contains(ORIGIN_LOCATION));
         assertFalse(fusedSignals.getOrigins().contains(ORIGIN_TELEPHONY));
+    }
+
+    @Test
+    public void testRemoveOrigin_returnsSameInstance() {
+        // Verifies that removeOrigin() returns the same instance for chaining.
+        FusedSignals fusedSignals = new FusedSignals(TZ_LA, ORIGIN_TELEPHONY);
+        FusedSignals returned = fusedSignals.removeOrigin(ORIGIN_TELEPHONY);
+        assertSame(fusedSignals, returned);
     }
 
     @Test
