@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * This class provides common fields and methods for managing service-related properties
  * that influence process importance and OOM adjustment.
  */
-public abstract class ProcessServiceRecordInternal {
+public class ProcessServiceRecordInternal {
     /** Controls whether argument validation checks are performed. */
     private static final boolean DEBUG_FGS_ARGS = false;
 
@@ -87,6 +87,8 @@ public abstract class ProcessServiceRecordInternal {
 
     /** All ServiceRecord running in this process. */
     final ArraySet<ServiceRecordInternal> mServices = new ArraySet<>();
+    /** Services that are currently executing code (need to remain foreground). */
+    private final ArraySet<ServiceRecordInternal> mExecutingServices = new ArraySet<>();
     /** All outgoing connections from this process. */
     private final ArraySet<ConnectionRecordInternal> mConnections = new ArraySet<>();
     /** All ConnectionRecord this process holds indirectly to SDK sandbox processes. */
@@ -309,6 +311,36 @@ public abstract class ProcessServiceRecordInternal {
         mServices.clear();
     }
 
+    /** Checks if there are any services currently executing in this process. */
+    public boolean hasExecutingServices() {
+        return !mExecutingServices.isEmpty();
+    }
+
+    /** Returns the number of services that are currently executing code in this process. */
+    public int numberOfExecutingServices() {
+        return mExecutingServices.size();
+    }
+
+    /** Retrieves the executing service at the specified index. */
+    protected ServiceRecordInternal getExecutingServiceInternalAt(int index) {
+        return mExecutingServices.valueAt(index);
+    }
+
+    /** Adds a service to the set of services that are currently executing code. */
+    public void startExecutingService(ServiceRecordInternal service) {
+        mExecutingServices.add(service);
+    }
+
+    /** Removes a service from the set of services that are currently executing code. */
+    public void stopExecutingService(ServiceRecordInternal service) {
+        mExecutingServices.remove(service);
+    }
+
+    /** Clears the set of all executing services. */
+    public void stopAllExecutingServices() {
+        mExecutingServices.clear();
+    }
+
     /** Returns the number of active connections to services in this process. */
     public int numberOfConnections() {
         return mConnections.size();
@@ -397,9 +429,6 @@ public abstract class ProcessServiceRecordInternal {
             mSdkSandboxConnections.clear();
         }
     }
-
-    /** Checks if there are any services currently executing in this process. */
-    public abstract boolean hasExecutingServices();
 
     protected static boolean isAlmostPerceptible(ServiceRecordInternal record) {
         if (record.getLastTopAlmostPerceptibleBindRequestUptimeMs() <= 0) {
