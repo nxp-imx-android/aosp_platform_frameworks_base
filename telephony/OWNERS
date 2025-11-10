@@ -1,14 +1,17 @@
 set noparent
 
+# go/keep-sorted start
+amruthr@google.com
+arunrajms@google.com
 breadley@google.com
 fionaxu@google.com
-jackyu@google.com
-rgreenwalt@google.com
-tgunn@google.com
 huiwang@google.com
+jackyu@google.com
 jayachandranc@google.com
-amruthr@google.com
+rgreenwalt@google.com
 sasindran@google.com
+tgunn@google.com
+# go/keep-sorted end
 
 # Requiring TL ownership for new carrier config keys.
 per-file CarrierConfigManager.java=set noparent
