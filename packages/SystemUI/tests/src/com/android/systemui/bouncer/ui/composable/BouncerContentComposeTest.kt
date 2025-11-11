@@ -16,7 +16,6 @@
 
 package com.android.systemui.bouncer.ui.composable
 
-import android.app.AlertDialog
 import android.content.testableContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -36,16 +35,20 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModelFactory
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
@@ -61,12 +64,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
 
     @get:Rule val composeTestRule = createComposeRule()
 
-    private val bouncerDialogFactory =
-        object : BouncerDialogFactory {
-            override fun invoke(): AlertDialog {
-                throw AssertionError()
-            }
-        }
+    @Mock private lateinit var bouncerDialogFactory: SystemUIDialog.Factory
 
     @Composable
     private fun BouncerContentUnderTest() {
@@ -84,6 +82,12 @@ class BouncerContentComposeTest : SysuiTestCase() {
                 )
             }
         }
+    }
+
+    @Before
+    fun setup() {
+        MockitoAnnotations.openMocks(this)
+        whenever(bouncerDialogFactory.create()).thenThrow(AssertionError())
     }
 
     @Test

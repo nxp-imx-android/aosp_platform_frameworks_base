@@ -16,7 +16,6 @@
 
 package com.android.systemui.bouncer.ui.composable
 
-import android.app.AlertDialog
 import android.content.testableContext
 import android.platform.test.annotations.MotionTest
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,7 +32,6 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModelFactory
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
@@ -41,6 +39,7 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.testKosmos
 import kotlin.time.Duration.Companion.seconds
 import org.junit.After
@@ -48,6 +47,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.whenever
 import platform.test.motion.compose.ComposeFeatureCaptures.alpha
 import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeRecordingSpec
@@ -68,15 +70,14 @@ class BouncerContentTest : SysuiTestCase() {
 
     @get:Rule val motionTestRule = createSysUiComposeMotionTestRule(kosmos, deviceSpec)
 
-    private val bouncerDialogFactory =
-        object : BouncerDialogFactory {
-            override fun invoke(): AlertDialog {
-                throw AssertionError()
-            }
-        }
+    @Mock private lateinit var bouncerDialogFactory: SystemUIDialog.Factory
 
     @Before
     fun setUp() {
+        MockitoAnnotations.openMocks(this)
+
+        whenever(bouncerDialogFactory.create()).thenThrow(AssertionError())
+
         kosmos.sceneContainerStartable.start()
         kosmos.fakeFeatureFlagsClassic.set(Flags.FULL_SCREEN_USER_SWITCHER, true)
         kosmos.fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)

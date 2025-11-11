@@ -115,7 +115,6 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.Flags
-import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.BouncerMessageViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.MessageViewModel
@@ -130,6 +129,7 @@ import com.android.systemui.fold.ui.helper.FoldPosture
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.transitions.BOUNCER_INITIAL_TRANSLATION
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -141,7 +141,7 @@ import platform.test.motion.compose.values.motionTestValues
 @Composable
 fun ContentScope.BouncerContent(
     viewModel: BouncerOverlayContentViewModel,
-    dialogFactory: BouncerDialogFactory,
+    dialogFactory: SystemUIDialog.Factory,
     modifier: Modifier = Modifier,
 ) {
     val isOneHandedModeSupported by viewModel.isOneHandedModeSupported.collectAsStateWithLifecycle()
@@ -263,7 +263,7 @@ fun ContentScope.BouncerContent(
 fun ContentScope.BouncerContentLayout(
     layout: BouncerOverlayLayout,
     viewModel: BouncerOverlayContentViewModel,
-    dialogFactory: BouncerDialogFactory,
+    dialogFactory: SystemUIDialog.Factory,
     modifier: Modifier,
     alphaOnEntry: () -> Float,
 ) {
@@ -920,14 +920,14 @@ private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modi
 @Composable
 private fun Dialog(
     bouncerViewModel: BouncerOverlayContentViewModel,
-    dialogFactory: BouncerDialogFactory,
+    dialogFactory: SystemUIDialog.Factory,
 ) {
     val dialogViewModel by bouncerViewModel.dialogViewModel.collectAsStateWithLifecycle()
     var dialog: AlertDialog? by remember { mutableStateOf(null) }
 
     dialogViewModel?.let { viewModel ->
         if (dialog == null) {
-            dialog = dialogFactory()
+            dialog = dialogFactory.create()
         }
         dialog?.apply {
             setMessage(viewModel.text)
