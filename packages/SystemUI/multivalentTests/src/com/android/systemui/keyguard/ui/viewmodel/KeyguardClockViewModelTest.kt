@@ -407,6 +407,7 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
     fun dateWeatherBelowSmallClock_hasNextAlarm_false() =
         kosmos.runTest {
             enableSplitShade()
