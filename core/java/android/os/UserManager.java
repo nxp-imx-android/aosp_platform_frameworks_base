@@ -1360,6 +1360,26 @@ public class UserManager {
     public static final String DISALLOW_FUN = "no_fun";
 
     /**
+     * Specifies if the user is not allowed to handoff tasks to other devices.
+     *
+     * <p> This policy may be set by a device owner or a profile owner. When set by a device owner,
+     * no applications will be able to send data to other devices for Handoff, nor will the current
+     * device exchange task metadata for other devices. When it is set by a profile owner of an
+     * organization-owned managed profile or the parent profile, applications running in the
+     * personal user will be disallowed from performing Handoff and excluded from appearing in
+     * Handoff metadata exchanges
+     *
+     * <p>The default value is <code>false</code>.
+     *
+     * <p>Key for user restrictions.
+     * <p>Type: Boolean
+     * @see DevicePolicyManager#addUserRestriction(ComponentName, String)
+     * @see DevicePolicyManager#clearUserRestriction(ComponentName, String)
+     */
+    @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
+    public static final String DISALLOW_HANDOFF = "no_handoff";
+
+    /**
      * Specifies that windows besides app windows should not be
      * created. This will block the creation of the following types of windows.
      * <li>{@link LayoutParams#TYPE_TOAST}</li>
@@ -2139,6 +2159,7 @@ public class UserManager {
             DISALLOW_FACTORY_RESET,
             DISALLOW_FUN,
             DISALLOW_GRANT_ADMIN,
+            DISALLOW_HANDOFF,
             DISALLOW_INSTALL_APPS,
             DISALLOW_INSTALL_UNKNOWN_SOURCES,
             DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY,
