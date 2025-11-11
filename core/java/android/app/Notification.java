@@ -10446,9 +10446,7 @@ public class Notification implements Parcelable
         public RemoteViews makeCompactHeadsUpContentView() {
             final boolean isConversationLayout = mConversationType != CONVERSATION_TYPE_LEGACY;
             Icon conversationIcon = null;
-            Notification.Action remoteInputAction = null;
             if (isConversationLayout) {
-
                 conversationIcon = mShortcutIcon;
 
                 // conversation icon is m
@@ -10461,19 +10459,6 @@ public class Notification implements Parcelable
                         final Person sender = message.mSender;
                         if (sender != null) {
                             conversationIcon = sender.getIcon();
-                        }
-                    }
-                }
-
-                if (Flags.compactHeadsUpNotificationReply()) {
-                    // Get the first non-contextual inline reply action.
-                    final List<Notification.Action> nonContextualActions =
-                            mBuilder.getNonContextualActions();
-                    for (int i = 0; i < nonContextualActions.size(); i++) {
-                        final Notification.Action action = nonContextualActions.get(i);
-                        if (mBuilder.hasValidRemoteInput(action)) {
-                            remoteInputAction = action;
-                            break;
                         }
                     }
                 }
@@ -10494,6 +10479,7 @@ public class Notification implements Parcelable
                     mBuilder.getMessagingCompactHeadsUpLayoutResource(), p, bindResult);
             contentView.setViewVisibility(R.id.header_text_secondary_divider, View.GONE);
             contentView.setViewVisibility(R.id.header_text_divider, View.GONE);
+            contentView.setViewVisibility(R.id.reply_action_container, View.GONE);
             if (conversationIcon != null) {
                 contentView.setViewVisibility(R.id.icon, View.GONE);
                 contentView.setViewVisibility(R.id.conversation_face_pile, View.GONE);
@@ -10512,19 +10498,6 @@ public class Notification implements Parcelable
                         mBuilder.mN.extras);
             }
 
-            if (remoteInputAction != null) {
-                contentView.setViewVisibility(R.id.reply_action_container, View.VISIBLE);
-
-                final RemoteViews inlineReplyButton =
-                        mBuilder.generateActionButton(remoteInputAction, false, p);
-                // Clear the drawable
-                inlineReplyButton.setInt(R.id.action0, "setBackgroundResource", 0);
-                inlineReplyButton.setTextViewText(R.id.action0,
-                        mBuilder.mContext.getString(R.string.notification_compact_heads_up_reply));
-                contentView.addView(R.id.reply_action_container, inlineReplyButton);
-            } else {
-                contentView.setViewVisibility(R.id.reply_action_container, View.GONE);
-            }
             return contentView;
         }
 
