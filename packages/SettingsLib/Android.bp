@@ -152,4 +152,5 @@ java_aconfig_library {
     aconfig_declarations: "settingslib_catalyst_flags",
     defaults: ["SettingsLibApexDefaults"],
     min_sdk_version: "30",
+    sdk_version: "system_current",
 }
