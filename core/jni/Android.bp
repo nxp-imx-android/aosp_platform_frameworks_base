@@ -370,6 +370,7 @@ cc_defaults_for_libandroid_runtime {
                 "libicu",
                 "libcamera_client",
                 "libcamera_metadata",
+                "libcore_jni_flags_c",
                 "libprocinfo",
                 "libsqlite",
                 "libEGL",
@@ -621,4 +622,16 @@ cc_library_shared {
         "-Wunused",
         "-Wunreachable-code",
     ],
+}
+
+aconfig_declarations {
+    name: "core_jni_flags",
+    package: "com.android.base.core.jni.flags",
+    container: "system",
+    srcs: ["flags.aconfig"],
+}
+
+cc_aconfig_library {
+    name: "libcore_jni_flags_c",
+    aconfig_declarations: "core_jni_flags",
 }
