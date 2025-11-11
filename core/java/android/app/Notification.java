@@ -7149,22 +7149,29 @@ public class Notification implements Parcelable
         }
 
         /**
-         * Returns the actions that are not contextual.
+         * Returns the subset of actions to be shown in the actions "row" of a notification.
+         * <ul>
+         *     <li>Excludes actions with RemoteInput in live-ongoing notifications.
+         *     <li>Excludes contextual actions, which are shown separately.
+         *     <li>Limits the number of actions to 3.
+         * </ul>
          */
-        private @NonNull List<Notification.Action> getNonContextualActions() {
+        private @NonNull List<Action> getEffectiveActions() {
             if (mActions == null) return Collections.emptyList();
-            List<Notification.Action> standardActions = new ArrayList<>();
+            List<Notification.Action> effectiveActions = new ArrayList<>();
             for (Notification.Action action : mActions) {
-                // Actions with RemoteInput are ignored for RONs.
-                if (mN.isPromotedOngoing()
-                        && hasValidRemoteInput(action)) {
+                if (mN.isPromotedOngoing() && hasValidRemoteInput(action)) {
                     continue;
                 }
-                if (!action.isContextual()) {
-                    standardActions.add(action);
+                if (action.isContextual()) {
+                    continue;
+                }
+                effectiveActions.add(action);
+                if (effectiveActions.size() >= MAX_ACTION_BUTTONS) {
+                    break;
                 }
             }
-            return standardActions;
+            return effectiveActions;
         }
 
         private RemoteViews applyStandardTemplateWithActions(int layoutId,
@@ -7172,17 +7179,14 @@ public class Notification implements Parcelable
             RemoteViews contentView = applyStandardTemplate(layoutId, p, result);
 
             resetStandardTemplateWithActions(contentView);
-            boolean snoozeEnabled = bindSnoozeAction(contentView, p);
+            bindSnoozeAction(contentView, p);
             // color the snooze and bubble actions with the theme color
             ColorStateList actionColor = ColorStateList.valueOf(getStandardActionColor(p));
             contentView.setColorStateList(R.id.snooze_button, "setImageTintList", actionColor);
             contentView.setColorStateList(R.id.bubble_button, "setImageTintList", actionColor);
 
-            // In the UI, contextual actions appear separately from the standard actions, so we
-            // filter them out here.
-            List<Notification.Action> nonContextualActions = getNonContextualActions();
+            List<Notification.Action> effectiveActions = getEffectiveActions();
 
-            int numActions = Math.min(nonContextualActions.size(), MAX_ACTION_BUTTONS);
             boolean emphasizedMode = mN.fullScreenIntent != null
                     || p.mCallStyleActions
                     || ((mN.flags & FLAG_FSI_REQUESTED_BUT_DENIED) != 0);
@@ -7212,12 +7216,12 @@ public class Notification implements Parcelable
             // when there are no actions. We're making its child GONE instead.
             int actionsContainerForVisibilityChange = notificationsRedesignTemplates()
                     ? R.id.actions_container_layout : R.id.actions_container;
-            if (numActions > 0 && !p.mHideActions) {
+            if (!effectiveActions.isEmpty() && !p.mHideActions) {
                 contentView.setViewVisibility(actionsContainerForVisibilityChange, View.VISIBLE);
                 contentView.setViewVisibility(R.id.actions, View.VISIBLE);
                 updateMarginsForActions(contentView, emphasizedMode);
-                validRemoteInput = populateActionsContainer(contentView, p, nonContextualActions,
-                        numActions, emphasizedMode);
+                validRemoteInput = populateActionsContainer(contentView, p, effectiveActions,
+                        emphasizedMode);
             } else {
                 contentView.setViewVisibility(actionsContainerForVisibilityChange, View.GONE);
             }
@@ -7290,11 +7294,9 @@ public class Notification implements Parcelable
         }
 
         private boolean populateActionsContainer(RemoteViews contentView, StandardTemplateParams p,
-                List<Action> nonContextualActions, int numActions, boolean emphasizedMode) {
+                List<Action> effectiveActions, boolean emphasizedMode) {
             boolean validRemoteInput = false;
-            for (int i = 0; i < numActions; i++) {
-                Action action = nonContextualActions.get(i);
-
+            for (Action action : effectiveActions) {
                 boolean actionHasValidInput = hasValidRemoteInput(action);
                 validRemoteInput |= actionHasValidInput;
 
@@ -7303,7 +7305,7 @@ public class Notification implements Parcelable
                     // Clear the drawable
                     button.setInt(R.id.action0, "setBackgroundResource", 0);
                 }
-                if (emphasizedMode && i > 0) {
+                if (emphasizedMode && effectiveActions.indexOf(action) > 0) {
                     // Clear start margin from non-first buttons to reduce the gap between them.
                     //  (8dp remaining gap is from all buttons' standard 4dp inset).
                     button.setViewLayoutMarginDimen(R.id.action0, RemoteViews.MARGIN_START, 0);
