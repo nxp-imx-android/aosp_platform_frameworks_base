@@ -23,13 +23,6 @@ flag {
 }
 
 flag {
-    name: "maximize_usb_audio_volume_when_connecting"
-    namespace: "usb"
-    description: "This flag maximizes the usb audio volume when it is connected"
-    bug: "245041322"
-}
-
-flag {
     name: "wait_for_alsa_scan_results_if_has_audio_interface"
     namespace: "usb"
     description: "This flag waits for alsa scan results for audio device"
