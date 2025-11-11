@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package com.android.server.am;
+package com.android.server.am.psc;
+
+import com.android.server.am.ProcessStateController;
 
 import java.lang.ref.WeakReference;
 import java.util.function.BiConsumer;
 
 /**
- * An subclass of {@link BinderSession} on top of a {@link ConnectionRecord} to signify a bound
- * service connection, where the host of the bound service is eligible to get frozen by
+ * An subclass of {@link BinderSession} on top of a {@link ConnectionRecordInternal} to signify a
+ * bound service connection, where the host of the bound service is eligible to get frozen by
  * {@link ProcessStateController}.
  */
-public final class BoundServiceSession extends BinderSession<ConnectionRecord> {
+public final class BoundServiceSession extends BinderSession<ConnectionRecordInternal> {
     private static final String TRACE_TRACK = "bound_service_calls";
 
-    BoundServiceSession(BiConsumer<ConnectionRecord, Boolean> processStateUpdater,
-                        ConnectionRecord connectionRecord) {
+    public BoundServiceSession(BiConsumer<ConnectionRecordInternal, Boolean> processStateUpdater,
+                        ConnectionRecordInternal connectionRecord) {
         super(processStateUpdater, new WeakReference<>(connectionRecord),
                 connectionRecord.toShortString());
     }

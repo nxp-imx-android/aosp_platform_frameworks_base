@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.am;
+package com.android.server.am.psc;
 
 import android.app.IBinderSession;
 import android.os.IBinder;
@@ -28,6 +28,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.IntPair;
+import com.android.server.am.ProcessStateController;
 
 import java.lang.ref.WeakReference;
 import java.util.function.BiConsumer;
@@ -204,7 +205,8 @@ public abstract class BinderSession<T> implements IBinderSession {
         }
     }
 
-    void dump(IndentingPrintWriter ipw) {
+    /** Dumps the internal state of this session for debugging purposes. */
+    public void dump(IndentingPrintWriter ipw) {
         ipw.println("BinderSession: " + mDebugName);
 
         synchronized (this) {

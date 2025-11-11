@@ -217,7 +217,6 @@ android_ravenwood_test {
     ],
     srcs: [
         "src/com/android/server/am/psc/**/*.java",
-        "src/com/android/server/am/BinderSessionTests.java",
     ],
 }
 
