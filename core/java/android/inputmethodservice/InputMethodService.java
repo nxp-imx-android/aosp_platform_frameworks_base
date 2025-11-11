@@ -98,6 +98,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.InputType;
 import android.text.Layout;
@@ -4500,7 +4501,7 @@ public class InputMethodService extends AbstractInputMethodService {
     private ImeTracker.Token createStatsToken(boolean show, @SoftInputShowHideReason int reason,
             boolean isFromUser) {
         return ImeTracker.forLogging().onStart(show ? ImeTracker.TYPE_SHOW : ImeTracker.TYPE_HIDE,
-                ImeTracker.ORIGIN_IME, reason, isFromUser);
+                ImeTracker.ORIGIN_IME, reason, isFromUser, UserHandle.myUserId(), getDisplayId());
     }
 
     /**

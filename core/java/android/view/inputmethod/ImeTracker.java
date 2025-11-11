@@ -29,12 +29,14 @@ import static com.android.internal.util.LatencyTracker.ACTION_REQUEST_IME_SHOWN;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.InsetsController.AnimationType;
@@ -469,12 +471,14 @@ public interface ImeTracker {
      * @param origin the origin of the request.
      * @param reason the reason for starting the request.
      * @param fromUser whether this request was created directly from user interaction.
-     *
+     * @param userId the ID of the user that started the request.
+     * @param displayId the ID of the display where the IME would show.
      * @return An IME request tracking token.
      */
     @NonNull
     Token onStart(@NonNull String component, int uid, @Type int type, @Origin int origin,
-            @SoftInputShowHideReason int reason, boolean fromUser);
+            @SoftInputShowHideReason int reason, boolean fromUser, @UserIdInt int userId,
+            int displayId);
 
     /**
      * Called when an IME request is started for the current process.
@@ -483,13 +487,15 @@ public interface ImeTracker {
      * @param origin the origin of the request.
      * @param reason the reason for starting the request.
      * @param fromUser whether this request was created directly from user interaction.
-     *
+     * @param userId the ID of the user that started the request.
+     * @param displayId the ID of the display where the IME would show.
      * @return An IME request tracking token.
      */
     @NonNull
     default Token onStart(@Type int type, @Origin int origin, @SoftInputShowHideReason int reason,
-            boolean fromUser) {
-        return onStart(Process.myProcessName(), Process.myUid(), type, origin, reason, fromUser);
+            boolean fromUser, @UserIdInt int userId, int displayId) {
+        return onStart(Process.myProcessName(), Process.myUid(), type, origin, reason, fromUser,
+                userId, displayId);
     }
 
     /**
@@ -630,16 +636,19 @@ public interface ImeTracker {
         @NonNull
         @Override
         public Token onStart(@NonNull String component, int uid, @Type int type, @Origin int origin,
-                @SoftInputShowHideReason int reason, boolean fromUser) {
+                @SoftInputShowHideReason int reason, boolean fromUser, @UserIdInt int userId,
+                int displayId) {
             final var token = Token.createToken(component);
             final long startWallTimeMs = System.currentTimeMillis();
             final long startTimestampMs = SystemClock.elapsedRealtime();
-            IInputMethodManagerGlobalInvoker.onStart(token, uid, type,
-                    origin, reason, fromUser, startWallTimeMs, startTimestampMs);
+            IInputMethodManagerGlobalInvoker.onStart(token, uid, type, origin, reason, fromUser,
+                    userId, displayId, startWallTimeMs, startTimestampMs);
 
-            log("%s: %s at %s reason %s fromUser %s%s", token.mTag,
+            log("%s: %s at %s reason %s fromUser %s%s displayId %s%s", token.mTag,
                     getOnStartPrefix(type), Debug.originToString(origin),
                     InputMethodDebug.softInputDisplayReasonToString(reason), fromUser,
+                    userId != UserHandle.USER_NULL ? " userId " + userId : "",
+                    displayId,
                     mLogStackTrace ? " Stack trace=" + Log.getStackTraceString(new Throwable()) : ""
             );
             return token;

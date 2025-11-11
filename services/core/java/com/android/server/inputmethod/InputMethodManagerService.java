@@ -1235,7 +1235,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             mImePlatformCompatUtils = new ImePlatformCompatUtils();
             mInputMethodDeviceConfigs = new InputMethodDeviceConfigs();
             mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
-
             mSlotIme = mContext.getString(com.android.internal.R.string.status_bar_ime);
 
             ProtoLog.init(ImeProtoLogGroup.values());
@@ -6434,16 +6433,15 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     ImeTracker.Token createStatsTokenForFocusedClient(boolean show,
             @SoftInputShowHideReason int reason, @UserIdInt int userId) {
         final var userData = getUserData(userId);
-        final int uid = userData.mImeBindingState.mFocusedWindowClient != null
-                ? userData.mImeBindingState.mFocusedWindowClient.mUid
-                : -1;
+        final var client = userData.mImeBindingState.mFocusedWindowClient;
+        final int uid = client != null ? client.mUid : -1;
         final var packageName = userData.mImeBindingState.mFocusedWindowEditorInfo != null
                 ? userData.mImeBindingState.mFocusedWindowEditorInfo.packageName
                 : "uid(" + uid + ")";
-
         return ImeTracker.forLogging().onStart(packageName, uid,
                 show ? ImeTracker.TYPE_SHOW : ImeTracker.TYPE_HIDE, ImeTracker.ORIGIN_SERVER,
-                reason, false /* fromUser */);
+                reason, false /* fromUser */, userId,
+                client != null ? client.mSelfReportedDisplayId : INVALID_DISPLAY);
     }
 
     private static final class InputMethodPrivilegedOperationsImpl

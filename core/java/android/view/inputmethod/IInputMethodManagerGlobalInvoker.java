@@ -710,15 +710,15 @@ final class IInputMethodManagerGlobalInvoker {
     @AnyThread
     static void onStart(@NonNull ImeTracker.Token statsToken, int uid, @ImeTracker.Type int type,
             @ImeTracker.Origin int origin, @SoftInputShowHideReason int reason, boolean fromUser,
-            @CurrentTimeMillisLong long startWallTimeMs,
+            @UserIdInt int userId, int displayId, @CurrentTimeMillisLong long startWallTimeMs,
             @ElapsedRealtimeLong long startTimestampMs) {
         final var service = getImeTrackerService();
         if (service == null) {
             return;
         }
         try {
-            service.onStart(statsToken, uid, type, origin, reason, fromUser, startWallTimeMs,
-                    startTimestampMs);
+            service.onStart(statsToken, uid, type, origin, reason, fromUser, userId, displayId,
+                    startWallTimeMs, startTimestampMs);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
