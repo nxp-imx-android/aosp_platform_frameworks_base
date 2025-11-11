@@ -1031,7 +1031,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
             // While listening, going from the bouncer scene to the gone scene, does dismiss the
             // keyguard.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()

@@ -20,7 +20,7 @@ import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 
 import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_NONE;
-import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
+import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -234,7 +234,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         verify(mKeyguardViewMediator).onWakeAndUnlocking(false);
         assertThat(mBiometricUnlockController.getMode())
-                .isEqualTo(BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING);
+                .isEqualTo(BiometricUnlockController.MODE_WAKE_AND_DISMISS_PULSING);
     }
 
     @Test
@@ -252,7 +252,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         verify(mKeyguardViewMediator).onWakeAndUnlocking(false);
         assertThat(mBiometricUnlockController.getMode())
-                .isEqualTo(MODE_WAKE_AND_UNLOCK);
+                .isEqualTo(MODE_WAKE_AND_DISMISS);
     }
 
     @Test
@@ -267,7 +267,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
                 eq("BiometricUnlockController#MODE_SHOW_BOUNCER"));
         verify(mStatusBarKeyguardViewManager).notifyKeyguardAuthenticated(eq(false));
         assertThat(mBiometricUnlockController.getMode())
-                .isEqualTo(BiometricUnlockController.MODE_UNLOCK_COLLAPSING);
+                .isEqualTo(BiometricUnlockController.MODE_DISMISS);
     }
 
     @Test
@@ -310,7 +310,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         verify(mStatusBarKeyguardViewManager).notifyKeyguardAuthenticated(eq(false));
         assertThat(mBiometricUnlockController.getMode())
-                .isEqualTo(BiometricUnlockController.MODE_UNLOCK_COLLAPSING);
+                .isEqualTo(BiometricUnlockController.MODE_DISMISS);
     }
 
     @Test
@@ -327,7 +327,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         verify(mStatusBarKeyguardViewManager).notifyKeyguardAuthenticated(eq(false));
         assertThat(mBiometricUnlockController.getMode())
-            .isEqualTo(BiometricUnlockController.MODE_UNLOCK_COLLAPSING);
+                .isEqualTo(BiometricUnlockController.MODE_DISMISS);
     }
 
     @Test
@@ -378,7 +378,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         verify(mStatusBarKeyguardViewManager, never()).notifyKeyguardAuthenticated(anyBoolean());
         assertThat(mBiometricUnlockController.getMode())
-                .isEqualTo(BiometricUnlockController.MODE_WAKE_AND_UNLOCK_FROM_DREAM);
+                .isEqualTo(BiometricUnlockController.MODE_WAKE_AND_DISMISS_FROM_DREAM);
     }
 
     @Test
@@ -388,7 +388,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         // WHEN we want to unlock collapse
         mBiometricUnlockController.startWakeAndUnlock(
-                BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                BiometricUnlockController.MODE_DISMISS,
                 BiometricUnlockSource.FINGERPRINT_SENSOR
         );
 
@@ -512,7 +512,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
                 BiometricSourceType.FACE, true /* isStrongBiometric */);
 
         assertThat(mBiometricUnlockController.getMode())
-                .isEqualTo(BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING);
+                .isEqualTo(BiometricUnlockController.MODE_WAKE_AND_DISMISS_PULSING);
     }
 
     @Test

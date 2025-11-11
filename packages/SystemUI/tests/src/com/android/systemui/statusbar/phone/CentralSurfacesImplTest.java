@@ -769,7 +769,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     public void testFingerprintUnlock_UpdatesScrims() {
         // Simulate unlocking from AoD with fingerprint.
         when(mBiometricUnlockController.getMode())
-                .thenReturn(BiometricUnlockController.MODE_WAKE_AND_UNLOCK);
+                .thenReturn(BiometricUnlockController.MODE_WAKE_AND_DISMISS);
         mCentralSurfaces.updateScrimController();
         verify(mScrimController).legacyTransitionTo(eq(ScrimState.UNLOCKED), any());
     }

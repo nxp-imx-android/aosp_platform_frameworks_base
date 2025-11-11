@@ -51,7 +51,7 @@ import com.android.systemui.shared.system.smartspace.SmartspaceState
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.phone.BiometricUnlockController
-import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK_FROM_DREAM
+import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS_FROM_DREAM
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.wm.shell.shared.compat.AnimatedSurface
 import dagger.Lazy
@@ -663,7 +663,7 @@ constructor(
         // Notify if waking from AOD only
         val isWakeAndUnlockNotFromDream =
             biometricUnlockControllerLazy.get().isWakeAndUnlock &&
-                biometricUnlockControllerLazy.get().mode != MODE_WAKE_AND_UNLOCK_FROM_DREAM
+                biometricUnlockControllerLazy.get().mode != MODE_WAKE_AND_DISMISS_FROM_DREAM
 
         listeners.forEach {
             it.onUnlockAnimationStarted(

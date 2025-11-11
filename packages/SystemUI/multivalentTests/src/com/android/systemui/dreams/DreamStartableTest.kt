@@ -80,7 +80,7 @@ class DreamStartableTest : SysuiTestCase() {
 
             // Authenticate and unlock
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
