@@ -52,6 +52,7 @@ import com.android.systemui.statusbar.notification.TransformState;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
+import com.android.systemui.statusbar.notification.shared.NotificationXButtonClipFix;
 
 import java.util.Stack;
 
@@ -116,9 +117,13 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
                 },
                 TRANSFORMING_VIEW_TITLE);
         resolveHeaderViews();
-        addDismissButtonOnClickListener(row);
 
-        if (NotificationAddXOnHoverToDismiss.isEnabled()) {
+        if (!NotificationXButtonClipFix.isEnabled()) {
+            addDismissButtonOnClickListener(row);
+        }
+
+        if (NotificationAddXOnHoverToDismiss.isEnabled()
+                && !NotificationXButtonClipFix.isEnabled()) {
             mRow.addDismissButtonTargetStateListener(mHoverListener);
         }
     }
@@ -158,7 +163,10 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
         mNotificationHeader = mView.findViewById(com.android.internal.R.id.notification_header);
         mNotificationTopLine = mView.findViewById(com.android.internal.R.id.notification_top_line);
         mAudiblyAlertedIcon = mView.findViewById(com.android.internal.R.id.alerted_icon);
-        mCloseButton = mView.findViewById(com.android.internal.R.id.close_button);
+
+        if (!NotificationXButtonClipFix.isEnabled()) {
+            mCloseButton = mView.findViewById(com.android.internal.R.id.close_button);
+        }
     }
 
     private ExpandableNotificationRow.DismissButtonTargetVisibilityListener mHoverListener = new
@@ -166,6 +174,7 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
                 @Override
                 public void onTargetVisibilityChanged(boolean targetVisible) {
                     NotificationAddXOnHoverToDismiss.isUnexpectedlyInLegacyMode();
+                    NotificationXButtonClipFix.assertInLegacyMode();
 
                     if (mCloseButton != null) {
                         mCloseButton.setVisibility(targetVisible ? VISIBLE : GONE);
@@ -177,12 +186,15 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
     public void setRemoved() {
         super.setRemoved();
 
-        if (NotificationAddXOnHoverToDismiss.isEnabled()) {
+        if (NotificationAddXOnHoverToDismiss.isEnabled()
+                && !NotificationXButtonClipFix.isEnabled()) {
             mRow.removeDismissButtonTargetStateListener(mHoverListener);
         }
     }
 
     private void addDismissButtonOnClickListener(ExpandableNotificationRow row) {
+        NotificationXButtonClipFix.assertInLegacyMode();
+
         View.OnClickListener listener = row.getDismissButtonOnClickListener();
         if (mCloseButton != null && listener != null) {
             mCloseButton.setOnClickListener(listener);

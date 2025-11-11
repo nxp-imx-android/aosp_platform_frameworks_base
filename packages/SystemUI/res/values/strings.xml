@@ -1750,6 +1750,9 @@
     <!-- The text for the notification history link. [CHAR LIMIT=40] -->
     <string name="manage_notifications_history_text">History</string>
 
+    <!-- The text for the notification close button -->
+    <string name="notification_dismiss_button_text">Close</string>
+
     <!-- The accessibility description for the notification settings button in the notification shade. -->
     <string name="notification_settings_button_description">Notification settings</string>
 
