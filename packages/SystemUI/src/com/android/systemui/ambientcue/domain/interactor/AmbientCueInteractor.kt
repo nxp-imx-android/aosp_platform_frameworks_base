@@ -16,15 +16,29 @@
 
 package com.android.systemui.ambientcue.domain.interactor
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Rect
+import androidx.core.content.edit
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepository
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.domain.interactor.SharedPreferencesInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.plugins.cuebar.ActionModel
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.util.kotlin.SharedPreferencesExt.observeBoolean
+import com.android.systemui.util.kotlin.SharedPreferencesExt.observeLong
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 class AmbientCueInteractor
@@ -33,6 +47,8 @@ constructor(
     private val repository: AmbientCueRepository,
     shadeInteractor: ShadeInteractor,
     keyguardInteractor: KeyguardInteractor,
+    sharedPreferencesInteractor: SharedPreferencesInteractor,
+    @Application scope: CoroutineScope,
 ) {
     val isRootViewAttached: StateFlow<Boolean> = repository.isRootViewAttached
     val actions: StateFlow<List<ActionModel>> = repository.actions
@@ -49,11 +65,46 @@ constructor(
     val isAmbientCueEnabled: StateFlow<Boolean> = repository.isAmbientCueEnabled
     val ambientCueTimeoutMs: StateFlow<Int> = repository.ambientCueTimeoutMs
 
+    private val sharedPreferences: StateFlow<SharedPreferences?> =
+        sharedPreferencesInteractor
+            .sharedPreferences(SHARED_PREFERENCES_FILE_NAME, Context.MODE_PRIVATE)
+            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+
+    val firstTimeEducationShownAt: Flow<Long?> =
+        sharedPreferences
+            .flatMapLatestConflated { prefs ->
+                // If the shared preference is not initialized, set the default value to 0L to avoid
+                // showing the first time education.
+                prefs?.observeLong(KEY_FIRST_TIME_ONBOARDING_SHOWN_AT, -1L) ?: flowOf(0L)
+            }
+            .map { if (it == -1L) null else it }
+            .distinctUntilChanged()
+    val shouldShowLongPressEducation: Flow<Boolean> =
+        sharedPreferences
+            .flatMapLatestConflated { prefs ->
+                prefs?.observeBoolean(KEY_SHOW_LONG_PRESS_ONBOARDING, true) ?: flowOf(false)
+            }
+            .distinctUntilChanged()
+
     fun setDeactivated(isDeactivated: Boolean) {
         repository.isDeactivated.update { isDeactivated }
     }
 
     fun setImeVisible(isVisible: Boolean) {
         repository.isImeVisible.update { isVisible }
+    }
+
+    fun putSharedPrefsLong(key: String, value: Long) {
+        sharedPreferences.value?.edit { putLong(key, value) }
+    }
+
+    fun putSharedPrefsBoolean(key: String, value: Boolean) {
+        sharedPreferences.value?.edit { putBoolean(key, value) }
+    }
+
+    companion object {
+        const val SHARED_PREFERENCES_FILE_NAME = "ambientcue_pref"
+        const val KEY_FIRST_TIME_ONBOARDING_SHOWN_AT = "show_first_time_onboarding"
+        const val KEY_SHOW_LONG_PRESS_ONBOARDING = "show_long_press_onboarding"
     }
 }

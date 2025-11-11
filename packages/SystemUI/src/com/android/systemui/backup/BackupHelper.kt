@@ -30,6 +30,7 @@ import android.os.UserHandle
 import android.util.Log
 import com.android.app.tracing.traceSection
 import com.android.systemui.Flags
+import com.android.systemui.ambientcue.domain.backup.AmbientCuePrefsBackupHelper
 import com.android.systemui.backup.BackupHelper.Companion.ACTION_RESTORE_FINISHED
 import com.android.systemui.communal.data.backup.CommunalBackupHelper
 import com.android.systemui.communal.data.backup.CommunalBackupUtils
@@ -70,6 +71,7 @@ open class BackupHelper : BackupAgentHelper() {
         private const val QS_PREFERENCES_BACKUP_KEY = "systemui.qs.shared_preferences"
         private const val INPUT_DEVICE_TUTORIAL_SCHEDULER_BACKUP_KEY =
             "systemui.inputdevice.tutorial_data_store"
+        private const val AMBIENT_CUE_BACKUP_KEY = "systemui.ambientcue.shared_preferences"
         val controlsDataLock = Any()
         const val ACTION_RESTORE_FINISHED = "com.android.systemui.backup.RESTORE_FINISHED"
         const val PERMISSION_SELF = "com.android.systemui.permission.SELF"
@@ -111,13 +113,19 @@ open class BackupHelper : BackupAgentHelper() {
             KEY_SHOW_BUNDLE_ONBOARDING,
             SharedPreferencesBackupHelper(
                 this,
-                UserFileManagerImpl.createFile(userId = userId, fileName = FILE_NAME).path),
+                UserFileManagerImpl.createFile(userId = userId, fileName = FILE_NAME).path,
+            ),
         )
         addHelper(
             KEY_SHOW_SUMMARIZATION_ONBOARDING,
             SharedPreferencesBackupHelper(
                 this,
-                UserFileManagerImpl.createFile(userId = userId, fileName = FILE_NAME).path),
+                UserFileManagerImpl.createFile(userId = userId, fileName = FILE_NAME).path,
+            ),
+        )
+        addHelper(
+            AMBIENT_CUE_BACKUP_KEY,
+            AmbientCuePrefsBackupHelper(context = this, userId = userHandle.identifier),
         )
     }
 
