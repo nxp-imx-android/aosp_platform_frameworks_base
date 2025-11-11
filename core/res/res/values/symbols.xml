@@ -6214,6 +6214,8 @@
   <!-- For PowerManagerService to determine whether to use auto-suspend mode -->
   <java-symbol type="bool" name="config_useAutoSuspend" />
 
+  <java-symbol type="array" name="config_computerControlKnownSuperAgents" />
+
   <!-- Biometric dangling notification strings -->
   <java-symbol type="string" name="fingerprint_dangling_notification_title" />
   <java-symbol type="string" name="fingerprint_dangling_notification_msg_1" />

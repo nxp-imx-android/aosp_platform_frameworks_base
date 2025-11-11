@@ -7473,6 +7473,12 @@
     <string-array name="config_accessComputerControlKnownSigners">
     </string-array>
 
+    <!-- Package names for trusted apps that will be allowed to automate any app using
+         computer control on debuggable builds. They still need to hold the ACCESS_COMPUTER_CONTROL
+         permission. This must be empty in non-debuggable (i.e., user) builds. -->
+    <string-array name="config_computerControlKnownSuperAgents" translatable="false">
+    </string-array>
+
     <!-- Certificate digests for trusted apps that will be allowed to obtain the knownSigner
          permission for staging HealthConnect's remote data. The digest should be computed over the
          DER encoding of the trusted certificate using the SHA-256 digest algorithm. -->
