@@ -1649,6 +1649,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     private void handleNewPackageInstalled(String packageName, int userHandle) {
+        mDevicePolicyEngine.reapplyPoliciesForPackage(packageName, userHandle);
+
         // If personal apps were suspended by the admin, suspend the newly installed one.
         if (!getUserData(userHandle).mAppsSuspended) {
             return;
