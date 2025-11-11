@@ -95,15 +95,6 @@ flag {
     description: "Holdback study for jank_perceptible_narrow"
     bug: "304837972"
 }
-flag {
-     namespace: "system_performance"
-     name: "early_render_thread_priority_boost"
-     description: "Boost the render thread priority during preload."
-     bug: "417909658"
-     metadata {
-         purpose: PURPOSE_BUGFIX
-     }
-}
 
 flag {
     namespace: "telecom"
