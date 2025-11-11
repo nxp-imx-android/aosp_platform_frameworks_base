@@ -1827,16 +1827,6 @@ flag {
 }
 
 flag {
-    name: "dialog_anim_end_state_update"
-    namespace: "systemui"
-    description: "Continuously updating the endState of DialogTransitionAnimation to keep it in sync with tileShape if it gets changed during animation"
-    bug: "429189355"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "dream_suppression"
     namespace: "systemui"
     description: "Suppress dream when device is in a vehicle."
