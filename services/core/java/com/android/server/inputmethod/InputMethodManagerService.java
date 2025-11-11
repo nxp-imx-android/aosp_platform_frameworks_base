@@ -5358,13 +5358,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
-    void sendOnNavButtonFlagsChangedToAllImesLocked() {
-        for (int userId : mUserManagerInternal.getUserIds()) {
-            sendOnNavButtonFlagsChangedLocked(getUserData(userId));
-        }
-    }
-
-    @GuardedBy("ImfLock.class")
     void sendOnNavButtonFlagsChangedLocked(@NonNull UserData userData) {
         final var bindingController = userData.mBindingController;
         final IInputMethodInvoker curMethod = bindingController.getCurMethod();
