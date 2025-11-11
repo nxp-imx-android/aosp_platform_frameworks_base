@@ -96,6 +96,7 @@ public final class DisplayInsight extends ContextInsight {
     }
 
     /** Builder for {@link DisplayInsight}. */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final InsightDisplayDetails mDisplayDetails;

@@ -131,6 +131,7 @@ public final class ActionableInsight extends ContextInsight {
     }
 
     /** Builder for {@link ActionableInsight}. */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final InsightActionDetails mActionDetails;
