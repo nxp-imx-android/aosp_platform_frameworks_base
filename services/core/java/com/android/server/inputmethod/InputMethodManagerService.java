@@ -2030,11 +2030,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         // Compute the final shown display ID with validated cs.selfReportedDisplayId for this
         // session & other conditions.
-        final ImeTargetWindowState targetWindowState = visibilityStateComputer.getWindowStateOrNull(
-                userData.mImeBindingState.mFocusedWindow);
-        if (targetWindowState == null) {
-            return InputBindResult.NOT_IME_TARGET_WINDOW;
-        }
         final int imeDisplayId =
                 visibilityStateComputer.computeImeDisplayId(cs.mSelfReportedDisplayId);
         bindingController.setSelectedDisplayId(imeDisplayId);
