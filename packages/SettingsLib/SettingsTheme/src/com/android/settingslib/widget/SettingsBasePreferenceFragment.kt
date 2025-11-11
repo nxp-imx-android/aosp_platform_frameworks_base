@@ -22,7 +22,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
-import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import androidx.recyclerview.widget.RecyclerView
@@ -50,32 +49,12 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
                 listView?.addItemDecoration(MarginItemDecoration())
             }
         }
-
-        for (i in 0 until preferenceScreen.preferenceCount) {
-            val preference = preferenceScreen.getPreference(i)
-            // SettingsBasePreferenceFragment only knows about FragmentAttachablePreference
-            if (preference is FragmentAttachablePreference) {
-                // Now ListDialogSwitcherPreference will execute its initialization logic
-                preference.onFragmentViewCreated(viewLifecycleOwner)
-            }
-        }
     }
 
     override fun onCreateAdapter(preferenceScreen: PreferenceScreen): RecyclerView.Adapter<*> {
         if (SettingsThemeHelper.isExpressiveTheme(requireContext()))
             return SettingsPreferenceGroupAdapter(preferenceScreen)
         return super.onCreateAdapter(preferenceScreen)
-    }
-
-    /** Handles the display of custom dialogs for preferences. */
-    override fun onDisplayPreferenceDialog(preference: Preference) {
-        // Check if the preference implements the generic interface
-        if (preference is FragmentAttachablePreference) {
-            // Now ListDialogSwitcherPreference will execute its dialog-showing logic
-            preference.displayCustomDialog(this, preference.key)
-        } else {
-            super.onDisplayPreferenceDialog(preference)
-        }
     }
 
     internal class MarginItemDecoration() : RecyclerView.ItemDecoration() {
