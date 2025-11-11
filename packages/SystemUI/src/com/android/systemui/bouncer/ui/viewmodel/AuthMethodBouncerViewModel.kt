@@ -22,7 +22,7 @@ import com.android.systemui.authentication.domain.interactor.AuthenticationResul
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.HydratedActivatable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +45,7 @@ sealed class AuthMethodBouncerViewModel(
     /** Name to use for performance tracing purposes. */
     val traceName: String,
     protected val bouncerHapticPlayer: BouncerHapticPlayer? = null,
-) : ExclusiveActivatable() {
+) : HydratedActivatable() {
 
     private val _animateFailure = MutableStateFlow(false)
     /**
