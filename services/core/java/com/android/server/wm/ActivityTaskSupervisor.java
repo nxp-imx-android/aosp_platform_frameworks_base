@@ -3244,16 +3244,16 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
         @Override
         public void accept(ActivityRecord r) {
-            if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()
-                    && mInfo.capturedLink == null) {
-                setCapturedLink(r);
-            }
             if (r.mLaunchCookie != null && (!com.android.window.flags.Flags.enableBubbleRootTask()
                     || !mCreatedByOrganizer)) {
                 mInfo.addLaunchCookie(r.mLaunchCookie);
             }
             if (r.finishing) {
                 return;
+            }
+            if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()
+                    && mInfo.capturedLink == null) {
+                setCapturedLink(r);
             }
             mInfo.numActivities++;
             mInfo.baseActivity = r.mActivityComponent;
