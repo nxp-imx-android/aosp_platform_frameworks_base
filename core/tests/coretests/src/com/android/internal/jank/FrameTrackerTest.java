@@ -735,6 +735,83 @@ public class FrameTrackerTest {
                 eq(3.0f) /* appWeightedJank */);
     }
 
+    @Test
+    public void testInvalidFrameInterval() {
+        FrameTracker tracker = spyFrameTracker(/* surfaceOnly= */ true);
+
+        when(mChoreographer.getVsyncId()).thenReturn(100L);
+        tracker.begin();
+        mRunnableArgumentCaptor.getValue().run();
+
+        // Send a janky frame with an invalid (zero) frame interval.
+        // It should be treated as a 120Hz frame.
+        sendSurfaceOnlyFrameWithCustomInterval(tracker, JANK_APPLICATION, 101L, 0,
+                FRAME_TIME_120Hz);
+
+        when(mChoreographer.getVsyncId()).thenReturn(102L);
+        tracker.end(FrameTracker.REASON_END_NORMAL);
+
+        // an extra frame to trigger finish
+        sendSurfaceOnlyFrame(tracker, JANK_NONE, 103L);
+
+        verify(mTrackerListener).triggerPerfetto(any());
+
+        // The refresh rate should be unknown because of the invalid interval.
+        // The jank should be computed as if it was a 120Hz frame.
+        verify(mStatsLog).write(eq(UI_INTERACTION_FRAME_INFO_REPORTED),
+                eq(42), /* displayId */
+                eq(DisplayRefreshRate.UNKNOWN_REFRESH_RATE),
+                eq(Cuj.getStatsdInteractionType(CUJ_WALLPAPER_TRANSITION)),
+                eq(1L) /* totalFrames */,
+                eq(1L) /* missedFrames */,
+                eq(0L) /* maxFrameTimeNanos */,
+                eq(0L) /* missedSfFramesCount */,
+                eq(1L) /* missedAppFramesCount */,
+                eq(1L) /* maxSuccessiveMissedFramesCount */,
+                eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(0.0f) /* sfWeightedJank */,
+                eq(1.0f) /* appWeightedJank */);
+    }
+
+    @Test
+    public void testEarlyFrame() {
+        FrameTracker tracker = spyFrameTracker(/* surfaceOnly= */ true);
+
+        when(mChoreographer.getVsyncId()).thenReturn(100L);
+        tracker.begin();
+        mRunnableArgumentCaptor.getValue().run();
+
+        // Send an "early" frame. It should be treated as janky, but the negative present delay
+        // should not be subtracted from the total animation time.
+        long negativePresentDelay = -FRAME_TIME_120Hz;
+        sendSurfaceOnlyFrameWithCustomInterval(tracker, JANK_APPLICATION, 101L, FRAME_TIME_120Hz,
+                negativePresentDelay);
+
+        when(mChoreographer.getVsyncId()).thenReturn(102L);
+        tracker.end(FrameTracker.REASON_END_NORMAL);
+
+        // an extra frame to trigger finish
+        sendSurfaceOnlyFrame(tracker, JANK_NONE, 103L);
+
+        verify(mTrackerListener).triggerPerfetto(any());
+
+        // The jank should be computed as if the frame was late by the same amount.
+        // The total animation time should ignore the negative present delay.
+        verify(mStatsLog).write(eq(UI_INTERACTION_FRAME_INFO_REPORTED),
+                eq(42), /* displayId */
+                eq(DisplayRefreshRate.REFRESH_RATE_120_HZ),
+                eq(Cuj.getStatsdInteractionType(CUJ_WALLPAPER_TRANSITION)),
+                eq(1L) /* totalFrames */,
+                eq(1L) /* missedFrames */,
+                eq(0L) /* maxFrameTimeNanos */,
+                eq(0L) /* missedSfFramesCount */,
+                eq(1L) /* missedAppFramesCount */,
+                eq(1L) /* maxSuccessiveMissedFramesCount */,
+                eq(FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(0.0f) /* sfWeightedJank */,
+                eq(1.0f) /* appWeightedJank */);
+    }
+
     private void sendJankyFirstWindowFrame(FrameTracker tracker, long vsyncId) {
         sendFrame(tracker, JANK_APPLICATION, JANK_FT, FRAME_TIME_120Hz, vsyncId, true);
     }
@@ -761,12 +838,27 @@ public class FrameTrackerTest {
         sendFrame(tracker, jankType, /* durationNs */ -1, delay, vsyncId, /* first= */ false);
     }
 
+    private void sendSurfaceOnlyFrameWithCustomInterval(FrameTracker tracker, @JankType int jankType,
+            long vsyncId, long frameInterval, long presentDelay) {
+        assertThat(tracker.mSurfaceOnly).isTrue();
+        sendFrameWithCustomInterval(tracker, jankType, /* durationNs */ -1, presentDelay, vsyncId,
+                /* first= */ false, frameInterval);
+    }
+
     private void sendFrame(FrameTracker tracker, @JankType int jankType, long durationNs,
             long delayNs, long vsyncId, boolean first) {
         if (!tracker.mSurfaceOnly) {
             sendHwuiFrame(tracker, durationNs, vsyncId, first);
         }
         sendSfFrame(tracker, durationNs, delayNs, vsyncId, jankType, true);
+    }
+
+    private void sendFrameWithCustomInterval(FrameTracker tracker, @JankType int jankType,
+            long durationNs, long delayNs, long vsyncId, boolean first, long frameInterval) {
+        if (!tracker.mSurfaceOnly) {
+            sendHwuiFrame(tracker, durationNs, vsyncId, first);
+        }
+        sendSfFrame(tracker, durationNs, delayNs, vsyncId, jankType, frameInterval);
     }
 
     private void send60HzFrame(FrameTracker tracker, long vsyncId, boolean janky) {
@@ -791,11 +883,17 @@ public class FrameTrackerTest {
 
     private void sendSfFrame(FrameTracker tracker, long durationNs, long delayNs, long vsyncId,
             @JankType int jankType, boolean is120Hz) {
+        long frameInterval = is120Hz ? FRAME_TIME_120Hz : FRAME_TIME_60Hz;
+        sendSfFrame(tracker, durationNs, delayNs, vsyncId, jankType, frameInterval);
+    }
+
+    private void sendSfFrame(FrameTracker tracker, long durationNs, long delayNs, long vsyncId,
+            @JankType int jankType, long frameIntervalNanos) {
         final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
         doNothing().when(tracker).postCallback(captor.capture());
-        long frameTime = is120Hz ? FRAME_TIME_120Hz : FRAME_TIME_60Hz;
         mListenerCapture.getValue().onJankDataAvailable(Arrays.asList(
-            new JankData(vsyncId, jankType, frameTime, frameTime, durationNs, delayNs)));
+            new JankData(vsyncId, jankType, frameIntervalNanos, frameIntervalNanos, durationNs,
+                    delayNs)));
         captor.getValue().run();
     }
 }
