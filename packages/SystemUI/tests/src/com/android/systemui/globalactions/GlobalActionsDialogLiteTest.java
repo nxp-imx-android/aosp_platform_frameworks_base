@@ -1117,6 +1117,17 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 GlobalActionsDialogLite.LockAction.class);
     }
 
+    @Test
+    public void testLockActionOnPress_doesNotChangeStrongAuth() {
+        GlobalActionsDialogLite.LockAction lockAction =
+                mGlobalActionsDialogLite.new LockAction();
+
+        lockAction.onPress();
+
+        // Verify that requireStrongAuth is never called with any arguments during the lock action.
+        verify(mLockPatternUtils, never()).requireStrongAuth(anyInt(), anyInt());
+    }
+
     private UserInfo mockCurrentUser(int flags) {
         return new UserInfo(10, "A User", flags);
     }
