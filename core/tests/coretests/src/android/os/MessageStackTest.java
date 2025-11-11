@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.CountDownLatch;
 
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.DisabledOnRavenwood(bug = 452987782)
 public final class MessageStackTest {
     private static final String TAG = "MessageStackTest";
 
@@ -247,7 +246,6 @@ public final class MessageStackTest {
      * Peek and remove messages and verify stack and heap sizes.
      */
     @Test
-    @org.junit.Ignore("b/458068359")
     public void testPeekAndRemove() {
         MessageStack stack = new MessageStack();
         for (int i = 0; i < 10; i++) {
@@ -268,7 +266,6 @@ public final class MessageStackTest {
      * Peek messages from a stack with only removed messages and verify that the return is null.
      */
     @Test
-    @org.junit.Ignore("b/458068359")
     public void testPeekOnlyRemovedMessages() {
         MessageStack stack = new MessageStack();
         Handler h = new Handler(Looper.getMainLooper());
@@ -288,7 +285,6 @@ public final class MessageStackTest {
      * Peek messages from a stack with only removed messages and verify stack and heap sizes.
      */
     @Test
-    @org.junit.Ignore("b/458068359")
     public void testPeekRemovedMessagesAndDrainFreelist() {
         MessageStack stack = new MessageStack();
         Handler h = new Handler(Looper.getMainLooper());
@@ -322,7 +318,6 @@ public final class MessageStackTest {
      * from the heap.
      */
     @Test
-    @org.junit.Ignore("b/458068359")
     public void testPeekSkipsRemovedMessages() {
         MessageStack stack = new MessageStack();
         Handler h = new Handler(Looper.getMainLooper());
