@@ -67,7 +67,8 @@ public class InputMethodBindingControllerTest extends InputMethodManagerServiceT
     private Instrumentation mInstrumentation;
     private final int mImeConnectionBindFlags =
             InputMethodBindingController.IME_CONNECTION_BIND_FLAGS
-                    & ~Context.BIND_SCHEDULE_LIKE_TOP_APP;
+                    & ~Context.BIND_SCHEDULE_LIKE_TOP_APP
+                    & ~Context.BIND_ALMOST_PERCEPTIBLE;
     private CountDownLatch mCountDownLatch;
 
     public static class EmptyInputMethodService extends InputMethodService {}
