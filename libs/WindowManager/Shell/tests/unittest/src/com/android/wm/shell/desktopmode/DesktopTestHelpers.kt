@@ -89,9 +89,16 @@ object DesktopTestHelpers {
      * Create a task that has windowing mode set to [WINDOWING_MODE_FULLSCREEN] with a base
      * activity.
      */
-    fun createFullscreenTaskWithBaseActivity(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo =
+    fun createFullscreenTaskWithBaseActivity(
+        displayId: Int = DEFAULT_DISPLAY,
+        componentName: ComponentName = ComponentName("com.test.dummypackage", "TestClass"),
+    ): RunningTaskInfo =
+        createFullscreenTaskBuilder(displayId).build().apply { baseActivity = componentName }
+
+    /** Create a task with the desktop wallpaper activity in it. */
+    fun createDesktopWallpaperActivityTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo =
         createFullscreenTaskBuilder(displayId).build().apply {
-            baseActivity = ComponentName("com.test.dummypackage", "TestClass")
+            baseActivity = DesktopWallpaperActivity.wallpaperActivityComponent
         }
 
     fun createRecentTaskInfo(taskId: Int, displayId: Int = DEFAULT_DISPLAY): RecentTaskInfo =
