@@ -717,16 +717,20 @@ final class HotwordDetectionConnection {
         private final IHotwordRecognitionStatusCallback mExternalCallback;
         private final Identity mVoiceInteractorIdentity;
         private final Context mContext;
+        private Runnable mHotwordDetectedListener;
 
         SoundTriggerCallback(
                 Context context,
                 IHotwordRecognitionStatusCallback callback,
                 HotwordDetectionConnection connection,
-                Identity voiceInteractorIdentity) {
+                Identity voiceInteractorIdentity,
+                Runnable hotwordDetectedListener
+        ) {
             mContext = context;
             mHotwordDetectionConnection = connection;
             mExternalCallback = callback;
             mVoiceInteractorIdentity = voiceInteractorIdentity;
+            mHotwordDetectedListener = hotwordDetectedListener;
         }
 
         @Override
@@ -769,6 +773,8 @@ final class HotwordDetectionConnection {
                     mExternalCallback.onKeyphraseDetected(recognitionEvent, null);
                 }
             }
+
+            mHotwordDetectedListener.run();
         }
 
         @Override
