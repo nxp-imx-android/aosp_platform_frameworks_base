@@ -286,6 +286,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private String mAppName;
     private NotificationRebindingTracker mRebindingTracker;
     private FalsingManager mFalsingManager;
+    private ImageView mDismissButton;
 
     /**
      * Whether or not the notification is using the heads up view and should peek from the top.
@@ -853,10 +854,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
 
         final Boolean targetVisible = getDismissButtonTargetVisibilityIfAny(event);
-        if (targetVisible != null && !NotificationXButtonClipFix.isEnabled()) {
-            for (DismissButtonTargetVisibilityListener listener :
-                    mDismissButtonTargetVisibilityListeners) {
-                listener.onTargetVisibilityChanged(targetVisible);
+        if (targetVisible != null) {
+            if (NotificationXButtonClipFix.isEnabled()) {
+                mDismissButton.setVisibility(targetVisible ? VISIBLE : GONE);
+            } else {
+                for (DismissButtonTargetVisibilityListener listener :
+                        mDismissButtonTargetVisibilityListeners) {
+                    listener.onTargetVisibilityChanged(targetVisible);
+                }
             }
         }
 
@@ -2535,6 +2540,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mTranslateableViews.remove(mGutsStub);
         // We don't handle focus highlight in this view, it's done in background drawable instead
         setDefaultFocusHighlightEnabled(false);
+
+        if (NotificationXButtonClipFix.isEnabled()) {
+            mDismissButton = findViewById(R.id.dismiss_button);
+
+            View.OnClickListener listener = getDismissButtonOnClickListener();
+            if (listener != null) {
+                mDismissButton.setOnClickListener(listener);
+            }
+        }
 
         // The background cutout should not show when NotificationXButtonClipFix is enabled.
         if (NotificationAddXOnHoverToDismiss.isEnabled()
