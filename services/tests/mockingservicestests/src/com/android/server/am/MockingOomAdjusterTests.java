@@ -816,7 +816,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setStartRequested(s, true);
         s.setIsForeground(true);
         s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
-        mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis());
+        s.setShortFgsInfo(SystemClock.uptimeMillis());
 
         // SHORT_SERVICE FGS will get IMP_FG and a slightly different recent-adjustment.
         {
@@ -861,7 +861,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setStartRequested(s, true);
         s.setIsForeground(true);
         s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
-        mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis()
+        s.setShortFgsInfo(SystemClock.uptimeMillis()
                 - mOomConstants.mShortFgsTimeoutDuration
                 - mOomConstants.mShortFgsProcStateExtraWaitDuration);
         {
@@ -1971,7 +1971,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setStartRequested(s, true);
         mProcessStateController.setIsForegroundService(s, true);
         mProcessStateController.setForegroundServiceType(s, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
-        mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis());
+        s.setShortFgsInfo(SystemClock.uptimeMillis());
         client.mServices.startService(s);
         client.setLastTopTime(SystemClock.uptimeMillis());
 
@@ -2002,7 +2002,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setStartRequested(s, true);
         mProcessStateController.setIsForegroundService(s, true);
         mProcessStateController.setForegroundServiceType(s, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
-        mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis());
+        s.setShortFgsInfo(SystemClock.uptimeMillis());
         app2.mServices.startService(s);
         app2.setLastTopTime(SystemClock.uptimeMillis());
 
@@ -2324,7 +2324,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setStartRequested(s, true);
         s.setIsForeground(true);
         s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
-        mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis());
+        s.setShortFgsInfo(SystemClock.uptimeMillis());
         client.mServices.startService(s);
         client.setLastTopTime(SystemClock.uptimeMillis());
 

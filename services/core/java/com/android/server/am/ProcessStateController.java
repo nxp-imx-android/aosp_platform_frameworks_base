@@ -1013,16 +1013,16 @@ public class ProcessStateController {
      * Note the start time of a short foreground service.
      */
     @GuardedBy("mLock")
-    public void setShortFgsInfo(@NonNull ServiceRecord sr, long uptimeNow) {
-        sr.setShortFgsInfo(uptimeNow);
+    public void setShortFgsStartTime(@NonNull ServiceRecordInternal sr, long uptimeNow) {
+        sr.setShortFgsStartTime(uptimeNow);
     }
 
     /**
      * Note that a short foreground service has stopped.
      */
     @GuardedBy("mLock")
-    public void clearShortFgsInfo(@NonNull ServiceRecord sr) {
-        sr.clearShortFgsInfo();
+    public void clearShortFgsStartTime(@NonNull ServiceRecordInternal sr) {
+        sr.clearShortFgsStartTime();
     }
 
     /**

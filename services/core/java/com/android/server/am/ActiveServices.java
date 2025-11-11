@@ -3634,7 +3634,7 @@ public final class ActiveServices {
     private void maybeUpdateShortFgsTrackingLocked(ServiceRecord sr,
             boolean extendTimeout) {
         if (!sr.isShortFgs()) {
-            mAm.mProcessStateController.clearShortFgsInfo(sr); // Just in case we have it.
+            sr.clearShortFgsInfo(); // Just in case we have it.
             unscheduleShortFgsTimeoutLocked(sr);
             return;
         }
@@ -3650,7 +3650,7 @@ public final class ActiveServices {
                 }
             }
             traceInstantFgs("short FGS start/extend: ", sr);
-            mAm.mProcessStateController.setShortFgsInfo(sr, SystemClock.uptimeMillis());
+            sr.setShortFgsInfo(SystemClock.uptimeMillis());
 
             // We'll restart the timeout.
             unscheduleShortFgsTimeoutLocked(sr);
@@ -3674,7 +3674,7 @@ public final class ActiveServices {
      * Stop the timeout for a ServiceRecord, if it's of a short-FGS.
      */
     private void maybeStopShortFgsTimeoutLocked(ServiceRecord sr) {
-        mAm.mProcessStateController.clearShortFgsInfo(sr); // Always clear, just in case.
+        sr.clearShortFgsInfo(); // Always clear, just in case.
         if (!sr.isShortFgs()) {
             return;
         }

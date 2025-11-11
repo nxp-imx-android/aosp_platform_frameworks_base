@@ -1819,7 +1819,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
      * Call it when a short FGS starts.
      */
     public void setShortFgsInfo(long uptimeNow) {
-        setShortFgsStartTime(uptimeNow);
+        ams.mProcessStateController.setShortFgsStartTime(this, uptimeNow);
         this.mShortFgsInfo = new ShortFgsInfo();
     }
 
@@ -1832,7 +1832,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
      * Call it when a short FGS stops.
      */
     public void clearShortFgsInfo() {
-        clearShortFgsStartTime();
+        ams.mProcessStateController.clearShortFgsStartTime(this);
         this.mShortFgsInfo = null;
     }
 

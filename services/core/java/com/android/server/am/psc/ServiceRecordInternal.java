@@ -125,12 +125,12 @@ public abstract class ServiceRecordInternal extends Binder {
         return mShortFgsStartTime;
     }
 
-    protected void setShortFgsStartTime(long uptimeNow) {
+    public void setShortFgsStartTime(long uptimeNow) {
         mShortFgsStartTime = uptimeNow;
     }
 
     /** Resets the start time for the short foreground service. */
-    protected void clearShortFgsStartTime() {
+    public void clearShortFgsStartTime() {
         mShortFgsStartTime = NO_SHORT_FGS_START_TIME;
     }
 
