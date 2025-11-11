@@ -114,7 +114,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -449,8 +448,22 @@ class MediaRouter2ServiceImpl {
                 routeListingPreference != null
                         ? routeListingPreference.getLinkedItemComponentName()
                         : null;
-        verifyActivityComponentName(
-                linkedItemLandingComponent, RouteListingPreference.ACTION_TRANSFER_MEDIA);
+        if (linkedItemLandingComponent != null) {
+            int callingUid = Binder.getCallingUid();
+            MediaServerUtils.enforcePackageName(
+                    mContext, linkedItemLandingComponent.getPackageName(), callingUid);
+            if (!MediaServerUtils.isValidActivityComponentName(
+                    mContext,
+                    linkedItemLandingComponent,
+                    RouteListingPreference.ACTION_TRANSFER_MEDIA,
+                    Binder.getCallingUserHandle())) {
+                throw new IllegalArgumentException(
+                        "Unable to resolve "
+                                + linkedItemLandingComponent
+                                + " to a valid activity for "
+                                + RouteListingPreference.ACTION_TRANSFER_MEDIA);
+            }
+        }
 
         final long token = Binder.clearCallingIdentity();
         try {
@@ -1116,19 +1129,6 @@ class MediaRouter2ServiceImpl {
                         /* message */ "Checking permissions for registering manager in"
                                 + " MediaRouter2ServiceImpl.")
                 == PermissionChecker.PERMISSION_GRANTED;
-    }
-
-    private void verifyActivityComponentName(@Nullable ComponentName componentName, String action) {
-        if (componentName == null) {
-            return;
-        }
-        int callingUid = Binder.getCallingUid();
-        MediaServerUtils.enforcePackageName(mContext, componentName.getPackageName(), callingUid);
-        if (!MediaServerUtils.isValidActivityComponentName(
-                mContext, componentName, action, Binder.getCallingUserHandle())) {
-            throw new IllegalArgumentException(
-                    "Unable to resolve " + componentName + " to a valid activity for " + action);
-        }
     }
 
     @RequiresPermission(value = Manifest.permission.INTERACT_ACROSS_USERS)
@@ -2522,64 +2522,6 @@ class MediaRouter2ServiceImpl {
         sInstance.set(this);
     }
 
-    /**
-     * @return whether this RouterRecord has the required permissions to see the given route.
-     */
-    private boolean hasRequiredPermissions(MediaRoute2Info route, int uid, String packageName,
-            Predicate<String> permissionChecker) {
-        if (!Flags.enableRouteVisibilityControlApi()) {
-            return true;
-        }
-        if (Flags.enableRouteVisibilityControlCompatFixes()
-                && route.getTemporaryVisibilityPackages().contains(packageName)) {
-            return true;
-        }
-        List<Set<String>> permissionSets = route.getRequiredPermissions();
-        if (permissionSets.isEmpty()) {
-            return true;
-        }
-        for (Set<String> permissionSet : permissionSets) {
-            boolean hasAllInSet = true;
-            for (String permission : permissionSet) {
-                if (!permissionChecker.test(permission)
-                        && !permissionAllowedForAppCompat(permission, uid, permissionChecker)) {
-                    hasAllInSet = false;
-                    break;
-                }
-            }
-            if (hasAllInSet) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns whether the given permission should be considered to be satisfied because of the
-     * app compatibility setting for local networking restrictions.
-     *
-     * TODO(b/386260596): This is a temporary workaround, which we hope to remove in the next
-     * release.
-     */
-    private boolean permissionAllowedForAppCompat(String permission, int uid,
-            Predicate<String> permissionChecker) {
-        if (!Flags.enableRouteVisibilityControlCompatFixes()) {
-            return false;
-        }
-        // TODO(b/386260596) - replace this string with a Manifest.permission constant once
-        // one is available.
-        if (TextUtils.equals(permission, "android.permission.ACCESS_LOCAL_NETWORK")) {
-            // TODO(b/386260596) - this id is defined as RESTRICT_LOCAL_NETWORK in the
-            //  connectivity module's ConnectivityCompatChanges.java - see if we can move it to
-            //  a shared location so we can avoid duplicating it here.
-            if (!CompatChanges.isChangeEnabled(365139289L, uid)) {
-                return true;
-            }
-            return permissionChecker.test(Manifest.permission.NEARBY_WIFI_DEVICES);
-        }
-        return false;
-    }
-
     final class UserRecord {
         public final UserHandle mUserHandle;
         //TODO: make records private for thread-safety
@@ -3013,10 +2955,32 @@ class MediaRouter2ServiceImpl {
          * @return whether this RouterRecord has the required permissions to see the given route.
          */
         private boolean hasPermissionsToSeeRoute(MediaRoute2Info route) {
-            return MediaRouter2ServiceImpl.this.hasRequiredPermissions(route,
-                    mUid, mPackageName,
-                    permission -> mContext.checkPermission(permission, mPid, mUid)
-                            != PackageManager.PERMISSION_GRANTED);
+            if (!Flags.enableRouteVisibilityControlApi()) {
+                return true;
+            }
+            if (Flags.enableRouteVisibilityControlCompatFixes()
+                    && route.getTemporaryVisibilityPackages().contains(mPackageName)) {
+                return true;
+            }
+            List<Set<String>> permissionSets = route.getRequiredPermissions();
+            if (permissionSets.isEmpty()) {
+                return true;
+            }
+            for (Set<String> permissionSet : permissionSets) {
+                boolean hasAllInSet = true;
+                for (String permission : permissionSet) {
+                    if (mContext.checkPermission(permission, mPid, mUid)
+                            != PackageManager.PERMISSION_GRANTED
+                            && !permissionAllowedForAppCompat(permission)) {
+                        hasAllInSet = false;
+                        break;
+                    }
+                }
+                if (hasAllInSet) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /** Logs a {@link RemoteException} occurred during the execution of {@code operation}. */
@@ -3033,6 +2997,32 @@ class MediaRouter2ServiceImpl {
             return TextUtils.formatSimple(
                     "Router %s (id=%d,pid=%d,userId=%d,uid=%d)",
                     mPackageName, mRouterId, mPid, mUserRecord.mUserHandle.getIdentifier(), mUid);
+        }
+
+        /**
+         * Returns whether the given permission should be considered to be satisfied because of the
+         * app compatibility setting for local networking restrictions.
+         *
+         * TODO(b/386260596): This is a temporary workaround, which we hope to remove in the next
+         * release.
+         */
+        private boolean permissionAllowedForAppCompat(String permission) {
+            if (!Flags.enableRouteVisibilityControlCompatFixes()) {
+                return false;
+            }
+            // TODO(b/386260596) - replace this string with a Manifest.permission constant once
+            // one is available.
+            if (TextUtils.equals(permission, "android.permission.ACCESS_LOCAL_NETWORK")) {
+                // TODO(b/386260596) - this id is defined as RESTRICT_LOCAL_NETWORK in the
+                //  connectivity module's ConnectivityCompatChanges.java - see if we can move it to
+                //  a shared location so we can avoid duplicating it here.
+                if (!CompatChanges.isChangeEnabled(365139289L, mUid)) {
+                    return true;
+                }
+                return mContext.checkPermission(Manifest.permission.NEARBY_WIFI_DEVICES, mPid, mUid)
+                        == PackageManager.PERMISSION_GRANTED;
+            }
+            return false;
         }
     }
 
