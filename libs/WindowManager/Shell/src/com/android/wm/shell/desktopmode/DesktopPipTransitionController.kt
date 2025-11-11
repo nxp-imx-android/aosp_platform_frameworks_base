@@ -29,7 +29,6 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.pip.PipDesktopState
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
-import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 
@@ -330,35 +329,6 @@ class DesktopPipTransitionController(
                 )
             runOnTransitStart?.invoke(transition)
         }
-
-        val isLastTask =
-            desktopRepository.isOnlyVisibleNonClosingTaskInDesk(
-                taskId = taskId,
-                deskId = deskId,
-                displayId = displayId,
-            )
-        if (!isLastTask) {
-            logD("handlePipTransition: PiP task is not last visible task in Desk")
-            return
-        }
-
-        logD(
-            "handlePipTransition: performDesktopExitCleanUp, taskId=%d deskId=%d displayId=%d",
-            taskInfo.taskId,
-            deskId,
-            displayId,
-        )
-        val desktopExitRunnable =
-            desktopTasksController.performDesktopExitCleanUp(
-                wct = wct,
-                deskId = deskId,
-                displayId = displayId,
-                userId = taskInfo.userId,
-                willExitDesktop = true,
-                removingLastTaskId = taskId,
-                exitReason = ExitReason.ENTER_PIP,
-            )
-        desktopExitRunnable?.invoke(transition)
     }
 
     private fun getDeskId(repository: DesktopRepository, displayId: Int): Int =

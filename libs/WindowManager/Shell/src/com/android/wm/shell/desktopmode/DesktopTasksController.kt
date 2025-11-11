@@ -1894,24 +1894,8 @@ class DesktopTasksController(
                 minimizeMultiActivityRunnable =
                     minimizeMultiActivityPipTask(wct = wct, deskId = deskId, task = taskInfo)
             }
-
-            // If the task minimizing to PiP is the last task, modify wct to perform Desktop cleanup
-            var desktopExitRunnable: RunOnTransitStart? = null
-            if (isLastTask) {
-                desktopExitRunnable =
-                    performDesktopExitCleanUp(
-                        wct = wct,
-                        deskId = deskId,
-                        displayId = displayId,
-                        userId = userId,
-                        willExitDesktop = true,
-                        removingLastTaskId = null,
-                        exitReason = ExitReason.TASK_MINIMIZED,
-                    )
-            }
             val transition = freeformTaskTransitionStarter.startPipTransition(wct)
             minimizeMultiActivityRunnable?.invoke(transition)
-            desktopExitRunnable?.invoke(transition)
         } else {
             val willExitDesktop =
                 if (

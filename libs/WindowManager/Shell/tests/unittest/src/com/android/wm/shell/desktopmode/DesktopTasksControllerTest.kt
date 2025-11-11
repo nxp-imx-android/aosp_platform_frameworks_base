@@ -5328,61 +5328,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
-    fun onPipTaskMinimize_isLastTask_deactivatesDesk() {
-        val deskId = DEFAULT_DISPLAY
-        val task = setUpPipTask(autoEnterEnabled = true, deskId = deskId)
-        val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startPipTransition(any())).thenReturn(transition)
-
-        minimizePipTask(task)
-
-        verify(desksOrganizer).deactivateDesk(any(), eq(deskId), skipReorder = eq(false))
-        verify(desksTransitionsObserver)
-            .addPendingTransition(
-                DeskTransition.DeactivateDesk(
-                    transition,
-                    userId = taskRepository.userId,
-                    deskId = deskId,
-                    displayId = DEFAULT_DISPLAY,
-                    switchingUser = false,
-                    exitReason = ExitReason.TASK_MINIMIZED,
-                )
-            )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
-        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
-    )
-    fun onPipTaskMinimize_isLastTask_removesWallpaper() {
-        val task = setUpPipTask(autoEnterEnabled = true)
-
-        minimizePipTask(task)
-
-        val arg = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
-        // Wallpaper is moved to the back
-        arg.lastValue.assertReorder(wallpaperToken, /* toTop= */ false)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
-    fun onPipTaskMinimize_isLastTask_launchesHome() {
-        val task = setUpPipTask(autoEnterEnabled = true)
-
-        minimizePipTask(task)
-
-        val arg = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
-        arg.lastValue.assertPendingIntent(launchHomeIntent(DEFAULT_DISPLAY))
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onPipTaskMinimize_multiActivity_reordersParentToBack() {
