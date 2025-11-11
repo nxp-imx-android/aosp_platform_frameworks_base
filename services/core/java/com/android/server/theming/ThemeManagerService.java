@@ -356,9 +356,6 @@ public class ThemeManagerService extends SystemService {
                         }
                         ThemeSettings userSettings = mInternal.getThemeSettingsOrDefault(userId);
 
-                        // notifies other listeners of the Theme Settings
-                        mInternal.notifySettingsChange(userId, mInternal.getThemeSettings(userId));
-
                         // we now check the source of the color is "preset", case in which we fork
                         // the event
 
