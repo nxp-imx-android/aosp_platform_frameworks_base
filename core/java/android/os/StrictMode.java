@@ -39,6 +39,7 @@ import android.app.IUnsafeIntentStrictModeCallback;
 import android.app.PendingIntent;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.BroadcastReceiver;
@@ -372,6 +373,15 @@ public final class StrictMode {
     @ChangeId
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     static final long DETECT_EXPLICIT_GC = 3400644L;
+
+    /**
+     * Enables reporting of instance count violations when a custom listener is set.
+     * Prior to this, instance count violations were not reported when a custom listener was
+     * set, but no penalty bits.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    static final long DETECT_INSTANCE_COUNT_VIOLATIONS_WHEN_LISTENER_SET = 333566037L;
 
     // TODO: wrap in some ImmutableHashMap thing.
     // Note: must be before static initialization of sVmPolicy.
@@ -2159,6 +2169,18 @@ public final class StrictMode {
                 }
             };
 
+    private static boolean shouldCheckInstanceCountViolations(final VmPolicy policy) {
+        // New behavior: run if there are limits set, and either a penalty bit or penalty
+        // listener set.
+        if (CompatChanges.isChangeEnabled(DETECT_INSTANCE_COUNT_VIOLATIONS_WHEN_LISTENER_SET)) {
+            return policy.classInstanceLimit.size() != 0 &&
+                ((policy.mask & PENALTY_ALL) != 0 || policy.mListener != null);
+        } else {
+            // Old behavior: run if there are limits set, and a penalty bit set.
+            return policy.classInstanceLimit.size() != 0 && (policy.mask & PENALTY_ALL) != 0;
+        }
+    }
+
     /**
      * Sets the policy for what actions in the VM process (on any thread) should be detected, as
      * well as the penalty if such actions occur.
@@ -2173,8 +2195,7 @@ public final class StrictMode {
             Looper looper = Looper.getMainLooper();
             if (looper != null) {
                 MessageQueue mq = looper.mQueue;
-                if (policy.classInstanceLimit.size() == 0
-                        || (sVmPolicy.mask & PENALTY_ALL) == 0) {
+                if (!shouldCheckInstanceCountViolations(policy)) {
                     mq.removeIdleHandler(sProcessIdleHandler);
                     sIsIdlerRegistered = false;
                 } else if (!sIsIdlerRegistered) {
