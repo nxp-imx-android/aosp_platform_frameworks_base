@@ -98,6 +98,7 @@ import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppeara
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
+import kotlinx.coroutines.launch
 
 /**
  * Default window decoration implementation that controls both the app handle and the app header
@@ -985,6 +986,14 @@ constructor(
                     }
                 },
                 { appToWebRepository.onFirstRunPromptAcked(taskInfo) },
+                {
+                    mainScope.launch {
+                        val intent =
+                            appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp = false)
+                                ?: return@launch
+                        windowDecorationActions.onSwitchToBrowser(taskInfo, intent)
+                    }
+                },
             )
     }
 

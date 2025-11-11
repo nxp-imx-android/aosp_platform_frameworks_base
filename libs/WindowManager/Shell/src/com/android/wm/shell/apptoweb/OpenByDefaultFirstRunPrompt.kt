@@ -45,6 +45,7 @@ internal class OpenByDefaultFirstRunPrompt(
     @ShellMainThread mainScope: CoroutineScope,
     listener: DialogLifecycleListener,
     private val onAckedCallback: () -> Unit,
+    private val onSwitchToWeb: () -> Unit,
 ) :
     BaseOpenByDefaultDialog<OpenByDefaultFirstRunPromptView>(
         context,
@@ -83,6 +84,7 @@ internal class OpenByDefaultFirstRunPrompt(
             setDefaultLinkHandlingSetting(allowed = false)
             onAckedCallback()
             closeMenu()
+            onSwitchToWeb()
         }
         dialog.setAskMeLaterButtonClickListener { closeMenu() }
     }

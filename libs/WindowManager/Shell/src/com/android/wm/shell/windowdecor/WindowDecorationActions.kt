@@ -68,6 +68,13 @@ interface WindowDecorationActions {
     fun onOpenInBrowser(taskId: Int, intent: Intent)
 
     /**
+     * Opens app content in browser and close the task.
+     *
+     * @param intent to be used to launch browser application.
+     */
+    fun onSwitchToBrowser(taskInfo: RunningTaskInfo, intent: Intent)
+
+    /**
      * Opens existing instance.
      *
      * @param taskInfo the task requesting to open the instance.
