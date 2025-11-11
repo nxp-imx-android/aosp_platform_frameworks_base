@@ -67,7 +67,7 @@ class DreamStartableTest : SysuiTestCase() {
 
             // Unlocked and dreaming
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 

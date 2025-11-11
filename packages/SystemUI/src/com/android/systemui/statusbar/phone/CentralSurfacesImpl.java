@@ -1490,9 +1490,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     @Override
                     public void onModeChanged(int mode) {
                         switch (mode) {
-                            case BiometricUnlockController.MODE_WAKE_AND_DISMISS_FROM_DREAM:
-                            case BiometricUnlockController.MODE_WAKE_AND_DISMISS_PULSING:
-                            case BiometricUnlockController.MODE_WAKE_AND_DISMISS:
+                            case BiometricUnlockController.MODE_WAKE_AND_UNLOCK_FROM_DREAM:
+                            case BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING:
+                            case BiometricUnlockController.MODE_WAKE_AND_UNLOCK:
                                 setWakeAndUnlocking(true);
                         }
                         notifyBiometricAuthModeChanged();
@@ -2036,7 +2036,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     private void updatePanelExpansionForKeyguard() {
         if (mState == StatusBarState.KEYGUARD && mBiometricUnlockController.getMode()
-                != BiometricUnlockController.MODE_WAKE_AND_DISMISS && !mBouncerShowing) {
+                != BiometricUnlockController.MODE_WAKE_AND_UNLOCK && !mBouncerShowing) {
             mShadeController.instantExpandShade();
         }
     }
@@ -3079,7 +3079,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     private boolean shouldAnimateDozeWakeup() {
         return mDozeServiceHost.shouldAnimateWakeup()
                 && mBiometricUnlockController.getMode()
-                != BiometricUnlockController.MODE_WAKE_AND_DISMISS;
+                != BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
     }
 
     @Override

@@ -282,7 +282,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(deviceUnlockStatus!!.isUnlocked).isTrue()
@@ -378,7 +378,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -424,7 +424,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -554,7 +554,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
             // unlock device
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(deviceUnlockStatus!!.isUnlocked).isTrue()

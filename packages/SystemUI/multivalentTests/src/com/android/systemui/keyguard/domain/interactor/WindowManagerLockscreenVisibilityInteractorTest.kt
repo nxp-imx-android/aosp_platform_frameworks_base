@@ -217,7 +217,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             // Unlocked with fingerprint.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -309,7 +309,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             // Unlocked with fingerprint.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -369,7 +369,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             // Unlocked with fingerprint.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             setSceneTransition(ObservableTransitionState.Idle(Scenes.Gone))

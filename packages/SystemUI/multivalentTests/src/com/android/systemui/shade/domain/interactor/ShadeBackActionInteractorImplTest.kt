@@ -116,7 +116,7 @@ class ShadeBackActionInteractorImplTest : SysuiTestCase() {
         // configure device unlocked state
         fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
         kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
             biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         setScene(Scenes.Gone)

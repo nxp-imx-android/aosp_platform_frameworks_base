@@ -50,7 +50,7 @@ import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.BiometricUnlockController
-import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS
+import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK
 import com.android.systemui.statusbar.phone.DozeParameters
 import com.android.systemui.statusbar.phone.ScrimController
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -392,7 +392,7 @@ constructor(
             override fun onKeyguardFadingAwayChanged() {
                 if (
                     !keyguardStateController.isKeyguardFadingAway ||
-                        biometricUnlockController.mode != MODE_WAKE_AND_DISMISS
+                        biometricUnlockController.mode != MODE_WAKE_AND_UNLOCK
                 ) {
                     return
                 }

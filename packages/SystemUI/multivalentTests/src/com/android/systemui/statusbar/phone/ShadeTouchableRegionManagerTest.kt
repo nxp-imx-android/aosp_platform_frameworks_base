@@ -206,7 +206,7 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
 
     private fun Kosmos.unlockDevice() {
         kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
             biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         sceneInteractor.changeScene(Scenes.Gone, "unlock")

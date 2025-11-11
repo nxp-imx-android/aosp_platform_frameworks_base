@@ -725,7 +725,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
 
             kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "reason")
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -1197,7 +1197,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
 
             kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "reason")
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 

@@ -83,7 +83,7 @@ object HomeStatusBarHelper {
 
     private fun Kosmos.setDeviceEntered() {
         biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
             biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
 

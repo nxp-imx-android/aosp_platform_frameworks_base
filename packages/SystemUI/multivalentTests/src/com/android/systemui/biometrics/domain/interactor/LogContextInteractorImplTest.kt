@@ -179,7 +179,7 @@ class LogContextInteractorImplTest : SysuiTestCase() {
                     kosmos.deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked }
                 )
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()

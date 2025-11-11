@@ -58,6 +58,7 @@ import com.android.systemui.keyguard.data.repository.keyguardTransitionRepositor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
+import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.util.KeyguardTransitionRepositorySpySubject.Companion.assertThat
@@ -212,7 +213,7 @@ class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestC
     fun testWakeAndUnlock_transitionsToGone_evenIfBouncerShows() =
         testScope.runTest {
             kosmos.fakeKeyguardRepository.setBiometricUnlockState(
-                BiometricUnlockMode.WAKE_AND_DISMISS
+                BiometricUnlockMode.WAKE_AND_UNLOCK
             )
             runCurrent()
             bouncerRepository.setPrimaryShow(true)

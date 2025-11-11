@@ -384,8 +384,8 @@ public class LightBarControllerImpl implements
 
     private boolean animateChange() {
         int unlockMode = mBiometricUnlockController.getMode();
-        return unlockMode != BiometricUnlockController.MODE_WAKE_AND_DISMISS_PULSING
-                && unlockMode != BiometricUnlockController.MODE_WAKE_AND_DISMISS;
+        return unlockMode != BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING
+                && unlockMode != BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
     }
 
     private void updateStatus(AppearanceRegion[] appearanceRegions) {
