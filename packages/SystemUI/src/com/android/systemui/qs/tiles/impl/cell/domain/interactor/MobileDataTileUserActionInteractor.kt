@@ -26,10 +26,13 @@ import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHa
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUserAction
+import com.android.systemui.qs.tiles.dialog.InternetDialogManager
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.connectivity.AccessPointController
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -44,6 +47,8 @@ constructor(
     private val systemUIDialogFactory: SystemUIDialog.Factory,
     @Main val mainDispatcher: CoroutineDispatcher,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
+    private val internetDialogManager: InternetDialogManager,
+    private val accessPointController: AccessPointController,
 ) : QSTileUserActionInteractor<MobileDataTileModel> {
     val longClickIntent = Intent(Settings.ACTION_MANAGE_ALL_SIM_PROFILES_SETTINGS)
 
@@ -55,12 +60,25 @@ constructor(
             is QSTileUserAction.LongClick -> {
                 qsTileIntentUserActionHandler.handle(input.action.expandable, longClickIntent)
             }
-            else -> {}
+            is QSTileUserAction.ToggleClick -> {
+                handleSecondaryClick(input.action.expandable)
+            }
         }
     }
 
     suspend fun handleClick(expandable: Expandable?) {
-        val activeRepo = mobileConnectionsRepository.activeMobileDataRepository.value ?: return
+        withContext(mainDispatcher) {
+            internetDialogManager.create(
+                aboveStatusBar = true,
+                accessPointController.canConfigMobileData(),
+                accessPointController.canConfigWifi(),
+                expandable,
+            )
+        }
+    }
+
+    suspend fun handleSecondaryClick(expandable: Expandable?) {
+        val activeRepo = getDataRepo() ?: return
         // If mobile data is disabled, show a confirmation dialog to turn it on.
         if (!activeRepo.dataEnabled.value) {
             withContext(mainDispatcher) { showEnableConfirmationDialog(expandable) }
@@ -76,7 +94,7 @@ constructor(
         dialog.setMessage(context.getString(R.string.mobile_data_enable_message))
 
         dialog.setPositiveButton(R.string.mobile_data_enable_turn_on) { _, _ ->
-            mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(true)
+            getDataRepo()?.setDataEnabled(true)
         }
 
         dialog.setNegativeButton(android.R.string.cancel) { _, _ -> /* Do nothing */ }
@@ -89,5 +107,12 @@ constructor(
             // Otherwise, show the dialog without the custom animation.
             dialog.show()
         }
+    }
+
+    private fun getDataRepo(): MobileConnectionRepository? {
+        return mobileConnectionsRepository.activeMobileDataRepository.value
+            ?: mobileConnectionsRepository.defaultDataSubId.value?.let {
+                mobileConnectionsRepository.getRepoForSubId(it)
+            }
     }
 }

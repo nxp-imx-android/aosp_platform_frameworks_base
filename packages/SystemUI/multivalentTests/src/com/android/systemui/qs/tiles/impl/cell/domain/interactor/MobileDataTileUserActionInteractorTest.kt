@@ -18,6 +18,7 @@ package com.android.systemui.qs.tiles.impl.cell.domain.interactor
 
 import android.content.DialogInterface
 import android.provider.Settings
+import android.telephony.SubscriptionManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -27,25 +28,31 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandlerSubject
 import com.android.systemui.qs.tiles.base.domain.actions.qsTileIntentUserInputHandler
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
+import com.android.systemui.qs.tiles.dialog.InternetDialogManager
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
+import com.android.systemui.statusbar.connectivity.AccessPointController
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
@@ -61,6 +68,9 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
         whenever(mock.create()).thenReturn(dialog)
     }
 
+    private val internetDialogManager: InternetDialogManager = mock()
+    private val accessPointController: AccessPointController = mock()
+
     private val underTest =
         MobileDataTileUserActionInteractor(
             context,
@@ -69,6 +79,8 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
             dialogFactory,
             kosmos.testDispatcher,
             dialogTransitionAnimator,
+            internetDialogManager,
+            accessPointController,
         )
 
     @Before
@@ -77,6 +89,16 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
         mobileConnectionsRepository.setActiveMobileDataSubscriptionId(subId)
         mobileConnectionsRepository.getRepoForSubId(subId).setDataEnabled(false)
     }
+
+    @Test
+    fun handleClick_showsDialog() =
+        testScope.runTest {
+            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
+            underTest.handleInput(QSTileInputTestKtx.click(testData))
+
+            verify(internetDialogManager)
+                .create(anyBoolean(), anyBoolean(), anyBoolean(), anyOrNull())
+        }
 
     @Test
     fun handleLongClick_opensSimSettings() =
@@ -91,24 +113,47 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun handleClick_whenDataIsEnabled_setsEnabledFalse() =
+    fun handleToggleClick_whenDataIsEnabled_setsEnabledFalse() =
         testScope.runTest {
             mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(true)
-
-            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
-            underTest.handleInput(QSTileInputTestKtx.click(testData))
             runCurrent()
 
-            assertThat(mobileConnectionsRepository.mobileIsDefault.value).isFalse()
+            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
+            underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
+            runCurrent()
+
+            assertThat(
+                    mobileConnectionsRepository.activeMobileDataRepository.value?.dataEnabled?.value
+                )
+                .isFalse()
         }
 
     @Test
-    fun handleClick_whenDataIsDisabled_showsDialog() =
+    fun handleToggleClick_whenDataIsEnabled_noActive_setsDefaultEnabledFalse() =
+        testScope.runTest {
+            mobileConnectionsRepository.setActiveMobileDataSubscriptionId(
+                SubscriptionManager.INVALID_SUBSCRIPTION_ID
+            )
+            val defaultRepository =
+                mobileConnectionsRepository.getRepoForSubId(
+                    mobileConnectionsRepository.defaultDataSubId.value
+                )
+            defaultRepository.setDataEnabled(true)
+
+            val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
+            underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
+            runCurrent()
+
+            assertThat(defaultRepository.dataEnabled.value).isFalse()
+        }
+
+    @Test
+    fun handleToggleClick_whenDataIsDisabled_showsDialog() =
         testScope.runTest {
             mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(false)
 
             val testData = MobileDataTileModel(true, false, MobileDataTileIcon.SignalIcon(1))
-            underTest.handleInput(QSTileInputTestKtx.click(testData))
+            underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
 
             verify(dialogFactory).create()
             verify(dialog).show()
@@ -120,7 +165,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
             mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(false)
             val captor = argumentCaptor<DialogInterface.OnClickListener>()
             val testData = MobileDataTileModel(true, true, MobileDataTileIcon.SignalIcon(1))
-            underTest.handleInput(QSTileInputTestKtx.click(testData))
+            underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
 
             verify(dialog).setPositiveButton(any(), captor.capture())
             captor.firstValue.onClick(mock(), 0)
