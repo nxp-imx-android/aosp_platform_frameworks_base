@@ -62,6 +62,7 @@ constructor(
     private val shadeDialogContextInteractor: Lazy<ShadeDialogContextInteractor>,
     private val displayPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
     private val addUserDialogDelegateFactory: AddUserDialogDelegate.Factory,
+    private val exitGuestDialogDelegateFactory: ExitGuestDialogDelegate.Factory,
 ) : CoreStartable {
 
     private var currentDialog: Dialog? = null
@@ -101,16 +102,15 @@ constructor(
                             Pair(UserCreatingDialog(context, request.isGuest), null)
                         is ShowDialogRequestModel.ShowExitGuestDialog ->
                             Pair(
-                                ExitGuestDialog(
-                                    context = context,
-                                    guestUserId = request.guestUserId,
-                                    isGuestEphemeral = request.isGuestEphemeral,
-                                    targetUserId = request.targetUserId,
-                                    isKeyguardShowing = request.isKeyguardShowing,
-                                    falsingManager = falsingManager.get(),
-                                    dialogTransitionAnimator = dialogTransitionAnimator.get(),
-                                    onExitGuestUserListener = request.onExitGuestUser,
-                                ),
+                                exitGuestDialogDelegateFactory
+                                    .create(
+                                        request.guestUserId,
+                                        request.isGuestEphemeral,
+                                        request.targetUserId,
+                                        request.isKeyguardShowing,
+                                        request.onExitGuestUser,
+                                    )
+                                    .createDialog(),
                                 DialogCuj(
                                     InteractionJankMonitor.CUJ_USER_DIALOG_OPEN,
                                     INTERACTION_JANK_EXIT_GUEST_MODE_TAG,
