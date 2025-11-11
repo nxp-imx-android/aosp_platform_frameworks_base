@@ -87,9 +87,6 @@ public enum DesktopExperienceFlags {
     ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS(
             Flags::enableBackupAndRestoreDisplayWindowSettings, false,
             Flags.FLAG_ENABLE_BACKUP_AND_RESTORE_DISPLAY_WINDOW_SETTINGS),
-    ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX(
-            Flags::enableBlockNonDesktopDisplayWindowDragBugfix, false,
-            Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX),
     ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT(Flags::enableBoundsRestoringOnDragExit, false,
             Flags.FLAG_ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT),
     ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY(Flags::enableBugFixesForSecondaryDisplay, true,

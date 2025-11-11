@@ -58,13 +58,7 @@ class MultiDisplayDragMoveIndicatorController(
         val startDisplayDpi =
             displayController.getDisplayLayout(startDisplayId)?.densityDpi() ?: return
         for (displayId in displayIds) {
-            val allowDropToDisplay =
-                if (
-                    DesktopExperienceFlags.ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX
-                        .isTrue
-                )
-                    shellDesktopState.isEligibleWindowDropTarget(displayId)
-                else shellDesktopState.isDesktopModeSupportedOnDisplay(displayId)
+            val allowDropToDisplay = shellDesktopState.isEligibleWindowDropTarget(displayId)
             if (
                 (displayId == startDisplayId &&
                     !DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) ||
