@@ -692,7 +692,26 @@ public class WindowlessWindowManager implements IWindowSession {
     }
 
     @Override
-    public void setOnBackInvokedCallbackInfo(IWindow iWindow,
+    public void setOnBackInvokedCallbackInfo(IWindow window,
+            OnBackInvokedCallbackInfo callbackInfo) throws RemoteException {
+        final State state;
+        synchronized (this) {
+            state = mStateForWindow.get(window.asBinder());
+        }
+        if (state == null) {
+            throw new IllegalArgumentException(
+                    "Invalid window token (never added or removed already)");
+        }
+        try {
+            mRealWm.setOnBackInvokedCallbackInfoToEmbedded(state.mInputTransferToken,
+                    callbackInfo);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to register onBackInvokedCallback on embedded window", e);
+        }
+    }
+
+    @Override
+    public void setOnBackInvokedCallbackInfoToEmbedded(InputTransferToken token,
             OnBackInvokedCallbackInfo callbackInfo) throws RemoteException { }
 
     @Override

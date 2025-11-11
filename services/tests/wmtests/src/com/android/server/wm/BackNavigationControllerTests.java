@@ -54,17 +54,20 @@ import android.content.ContextWrapper;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.view.InputChannel;
 import android.view.WindowManager;
 import android.window.BackAnimationAdapter;
 import android.window.BackMotionEvent;
 import android.window.BackNavigationInfo;
 import android.window.IBackAnimationHandoffHandler;
 import android.window.IOnBackInvokedCallback;
+import android.window.InputTransferToken;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedCallbackInfo;
 import android.window.OnBackInvokedDispatcher;
@@ -702,6 +705,51 @@ public class BackNavigationControllerTests extends WindowTestsBase {
 
         BackNavigationInfo backNavigationInfo = startBackNavigation();
         assertThat(backNavigationInfo).isNull();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BACK_CALLBACK_FOR_FOCUSED_SURFACE_CONTROL_VIEW_HOST)
+    public void registerCallbackFromEmbeddedWindow() {
+        final WindowState window = newWindowBuilder("TestWindow", TYPE_APPLICATION).build();
+        addToWindowMap(window, true);
+        makeWindowVisibleAndDrawn(window);
+
+        final IOnBackInvokedCallback windowCallback = createOnBackInvokedCallback();
+        window.setOnBackInvokedCallbackInfo(
+                new OnBackInvokedCallbackInfo(
+                        windowCallback,
+                        OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                        /* isAnimationCallback = */ false, OVERRIDE_UNDEFINED));
+
+        final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
+        final Session mockSession = mock(Session.class);
+        final EmbeddedWindowController.EmbeddedWindow embeddedWindow =
+                new EmbeddedWindowController.EmbeddedWindow(mockSession, mWm, mock(IBinder.class),
+                        null /* hostWindow */, 0 /* callingUid */,
+                        0 /* callingPid */, TYPE_APPLICATION_OVERLAY, 0 /* displayId */,
+                        inputTransferToken, "inputHandleName", true /* isFocusable */);
+        embeddedWindow.openInputChannel(new InputChannel());
+        mWm.mEmbeddedWindowController.add(mock(IBinder.class), embeddedWindow);
+
+        final IOnBackInvokedCallback embedCallback = createOnBackInvokedCallback();
+        embeddedWindow.setOnBackInvokedCallbackInfo(
+                new OnBackInvokedCallbackInfo(
+                        embedCallback,
+                        OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                        /* isAnimationCallback = */ false, OVERRIDE_UNDEFINED));
+        // Simulate embedded window grant input focus while the focus window remain unchange.
+        mWm.grantEmbeddedWindowFocus(mockSession, inputTransferToken, true /* grantFocus */);
+        BackNavigationInfo backNavigationInfo1 = startBackNavigation();
+        assertThat(backNavigationInfo1.getOnBackInvokedCallback()).isEqualTo(embedCallback);
+
+        //Reset
+        backNavigationInfo1.onBackNavigationFinished(false);
+        mBackNavigationController.clearBackAnimations(true);
+
+        // Simulate embedded window lost input focus while the focus window remain unchange.
+        mWm.grantEmbeddedWindowFocus(mockSession, inputTransferToken, false /* grantFocus */);
+        BackNavigationInfo backNavigationInfo2 = startBackNavigation();
+        assertThat(backNavigationInfo2.getOnBackInvokedCallback()).isEqualTo(windowCallback);
     }
 
     @Test

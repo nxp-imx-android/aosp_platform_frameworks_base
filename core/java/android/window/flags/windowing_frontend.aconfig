@@ -501,3 +501,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_back_callback_for_focused_surface_control_view_host"
+    namespace: "windowing_frontend"
+    description: "Enable OnBackInvokedCallback for focused SurfaceControlViewHost"
+    bug: "390288449"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
