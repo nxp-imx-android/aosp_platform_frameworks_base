@@ -23,6 +23,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastCoerceAtLeast
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -130,13 +131,15 @@ private fun Grid(
             Constraints(
                 maxWidth =
                     if (constraints.maxWidth != Constraints.Infinity) {
-                        (constraints.maxWidth - totalHorizontalSpacingBetweenChildren) / columns
+                        (constraints.maxWidth - totalHorizontalSpacingBetweenChildren)
+                            .fastCoerceAtLeast(0) / columns
                     } else {
                         Constraints.Infinity
                     },
                 maxHeight =
                     if (constraints.maxHeight != Constraints.Infinity) {
-                        (constraints.maxHeight - totalVerticalSpacingBetweenChildren) / rows
+                        (constraints.maxHeight - totalVerticalSpacingBetweenChildren)
+                            .fastCoerceAtLeast(0) / rows
                     } else {
                         Constraints.Infinity
                     },
