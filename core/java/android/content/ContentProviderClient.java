@@ -73,7 +73,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ContentProviderClient implements ContentInterface, AutoCloseable {
     private static final String TAG = "ContentProviderClient";
 
-    @GuardedBy("ContentProviderClient.class")
+    private static final Object sLock = new Object();
+
+    @GuardedBy("sLock")
     private static Handler sAnrHandler;
 
     private final ContentResolver mContentResolver;
@@ -127,7 +129,7 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
     @SystemApi
     @RequiresPermission(android.Manifest.permission.REMOVE_TASKS)
     public void setDetectNotResponding(@DurationMillisLong long timeoutMillis) {
-        synchronized (ContentProviderClient.class) {
+        synchronized (sLock) {
             mAnrTimeout = timeoutMillis;
 
             if (timeoutMillis > 0) {
