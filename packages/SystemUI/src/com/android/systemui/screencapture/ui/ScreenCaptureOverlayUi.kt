@@ -43,11 +43,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.IntSize
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCaptureScope
-import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureCameraViewModel
+import com.android.systemui.screencapture.record.camera.ui.viewmodel.ScreenCaptureCameraViewModel
 import com.android.systemui.statusbar.phone.EdgeToEdgeDialogDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
@@ -119,7 +120,10 @@ constructor(
         Box(modifier = modifier.fillMaxSize().transformable(state = state)) {
             // TODO(b/441486122): Wire the surface to the ViewModel for the actual output from the
             // service
+            val surfaceSize =
+                viewModel.surfaceSize?.let { IntSize(width = it.width, height = it.height) }
             AndroidEmbeddedExternalSurface(
+                surfaceSize = surfaceSize ?: IntSize.Zero,
                 modifier =
                     Modifier.align(Alignment.BottomCenter)
                         .fillMaxWidth()
@@ -131,7 +135,7 @@ constructor(
                             rotationZ = rotation
                         }
                         .clickable { viewModel.onSurfaceClicked() }
-                        .aspectRatio(2f)
+                        .aspectRatio(surfaceSize?.let { it.width.toFloat() / it.height } ?: 1f),
             ) {
                 onSurface { surface, width, height ->
                     viewModel.onSurfaceReady(surface)
