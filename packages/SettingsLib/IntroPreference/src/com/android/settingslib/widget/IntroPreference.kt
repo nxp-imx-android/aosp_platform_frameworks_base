@@ -25,6 +25,7 @@ import android.view.View
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.content.withStyledAttributes
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.preference.intro.R
@@ -45,13 +46,28 @@ constructor(
     private var hyperlinkListener: View.OnClickListener? = null
     private var learnMoreListener: View.OnClickListener? = null
     private var learnMoreText: CharSequence? = null
-    private var iconType: IconType = IconType.EXPRESSIVE_ICON
+    private var iconType: IconType = IconType.APP_ICON
     private var isInitialized = false
+    private var useExpressiveIconFromXml: Boolean = false
 
     init {
         layoutResource = R.layout.settingslib_expressive_preference_intro
         isSelectable = false
         isInitialized = true
+
+        if (attrs != null) {
+            context.withStyledAttributes(attrs, R.styleable.IntroPreference) {
+                useExpressiveIconFromXml = getBoolean(
+                    R.styleable.IntroPreference_useExpressiveIcon, false
+                )
+            }
+
+            this.iconType = if (useExpressiveIconFromXml) {
+                IconType.EXPRESSIVE_ICON
+            } else {
+                IconType.APP_ICON
+            }
+        }
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
@@ -209,7 +225,7 @@ constructor(
     /** @suppress */
     @Deprecated("Use setAppIcon or setExpressiveIcon instead.", ReplaceWith(""))
     override fun setIcon(icon: Drawable?) {
-        val newIconType = if (isInitialized) IconType.APP_ICON else IconType.EXPRESSIVE_ICON
+        val newIconType = IconType.APP_ICON
         if (icon != getIcon()) {
             this.iconType = newIconType
             super.setIcon(icon)
