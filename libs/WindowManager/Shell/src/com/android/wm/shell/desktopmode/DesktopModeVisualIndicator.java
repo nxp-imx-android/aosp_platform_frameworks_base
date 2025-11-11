@@ -41,7 +41,6 @@ import android.util.Pair;
 import android.view.Display;
 import android.view.SurfaceControl;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -175,8 +174,7 @@ public class DesktopModeVisualIndicator {
             taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);
         }
         mVisualIndicatorViewContainer = new VisualIndicatorViewContainer(
-                DesktopModeFlags.ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX.isTrue()
-                        ? desktopExecutor : mainExecutor,
+                desktopExecutor,
                 mainExecutor, builder, syncQueue, bubbleBoundsProvider, snapEventHandler);
         mTaskInfo = taskInfo;
         mDisplayController = displayController;

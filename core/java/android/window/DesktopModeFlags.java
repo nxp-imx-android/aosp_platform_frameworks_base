@@ -51,8 +51,6 @@ public enum DesktopModeFlags {
             Flags::enableCaptionCompatInsetForceConsumptionAlways, true),
     ENABLE_DESKTOP_APP_HANDLE_ANIMATION(Flags::enableDesktopAppHandleAnimation, true),
     ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX(Flags::enableDesktopImmersiveDragBugfix, true),
-    ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX(
-            Flags::enableDesktopIndicatorInSeparateThreadBugfix, true),
     ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX(
             Flags::enableDesktopTabTearingMinimizeAnimationBugfix, true),
     ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER(
