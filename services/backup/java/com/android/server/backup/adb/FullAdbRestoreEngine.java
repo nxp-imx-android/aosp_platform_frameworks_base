@@ -62,18 +62,14 @@ import com.android.server.backup.OperationStorage;
 import com.android.server.backup.OperationStorage.OpType;
 import com.android.server.backup.UserBackupManagerService;
 import com.android.server.backup.crossplatform.CrossPlatformManifest;
-import com.android.server.backup.adb.FullAdbBackupObbConnection;
 import com.android.server.backup.restore.RestoreEngine;
+import com.android.server.backup.restore.RestoreFileRunnable;
 import com.android.server.backup.restore.RestoreDeleteObserver;
 import com.android.server.backup.restore.RestorePolicy;
-import com.android.server.backup.restore.RestoreFileRunnable;
-import com.android.server.backup.restore.AdbRestoreFinishedRunnable;
-import com.android.server.backup.restore.AdbRestoreFinishedLatch;
 import com.android.server.backup.utils.BackupEligibilityRules;
 import com.android.server.backup.utils.BackupManagerMonitorEventSender;
 import com.android.server.backup.utils.BytesReadListener;
 import com.android.server.backup.utils.FullBackupRestoreObserverUtils;
-import com.android.server.backup.utils.RestoreUtils;
 import com.android.server.backup.utils.TarBackupReader;
 
 import java.io.File;
@@ -373,7 +369,7 @@ public class FullAdbRestoreEngine extends RestoreEngine {
                                 // Try to install the app.
                                 String installerPackageName = mPackageInstallers.get(pkg);
                                 boolean isSuccessfullyInstalled =
-                                        RestoreUtils.installApk(
+                                        AdbRestoreUtils.installApk(
                                                 instream,
                                                 mBackupManagerService.getContext(),
                                                 mDeleteObserver,

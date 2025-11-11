@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.android.server.backup.restore;
+package com.android.server.backup.adb;
 
 import static com.google.common.truth.Truth.assertThat;
 

@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.android.server.backup.utils;
+package com.android.server.backup.adb;
 
 import static com.android.server.backup.BackupManagerService.TAG;
 
@@ -42,6 +42,8 @@ import com.android.server.backup.FileMetadata;
 import com.android.server.backup.Flags;
 import com.android.server.backup.restore.RestoreDeleteObserver;
 import com.android.server.backup.restore.RestorePolicy;
+import com.android.server.backup.utils.BackupEligibilityRules;
+import com.android.server.backup.utils.BytesReadListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,10 +51,10 @@ import java.io.OutputStream;
 import java.util.HashMap;
 
 /**
- * Utility methods used by {@link com.android.server.backup.restore.PerformAdbRestoreTask} and
- * {@link com.android.server.backup.restore.FullRestoreEngine}.
+ * Utility methods used by {@link com.android.server.backup.adb.PerformAdbRestoreTask} and
+ * {@link com.android.server.backup.adb.FullAdbRestoreEngine}.
  */
-public class RestoreUtils {
+public class AdbRestoreUtils {
     /**
      * Reads apk contents from input stream and installs the apk.
      *
