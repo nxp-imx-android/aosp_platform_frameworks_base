@@ -40,7 +40,7 @@ object QuickSettings {
 
         object SquishinessValues {
             val Default = 1f
-            val LockscreenSceneStarting = 0f
+            val LockscreenSceneStarting = 0.3f
             val GoneSceneStarting = 0.3f
             val OccludedSceneStarting = 0.3f
         }
