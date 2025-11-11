@@ -17,3 +17,11 @@ flag {
     description: "This flags the Dynamic App Functions Feature."
     bug: "445901741"
 }
+
+flag {
+    name: "enable_app_interaction_api"
+    is_exported: true
+    namespace: "app_function"
+    description: "This flags the App Interaction Feature."
+    bug: "452916227"
+}
