@@ -232,6 +232,10 @@ class AppToWebRepositoryImpl(
             // No captured link, so no prompt.
             return false
         }
+        if (isFirstRunPromptShown(taskInfo)) {
+            // The prompt is already shown on the task.
+            return false
+        }
         if (isBrowserApp(context, packageName, taskInfo.userId)) {
             // Browser apps are not the target.
             return false
