@@ -16,15 +16,12 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.policy.IKeyguardDismissCallback
 import com.android.internal.policy.IKeyguardStateCallback
-import com.android.keyguard.trustManager
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -39,18 +36,12 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito
-import org.mockito.Mockito.anyBoolean
-import org.mockito.Mockito.anyInt
-import org.mockito.kotlin.atLeast
-import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
 class KeyguardStateCallbackInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
@@ -72,18 +63,7 @@ class KeyguardStateCallbackInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableSceneContainer
-    fun test_addCallback_passesInitialValues() =
-        testScope.runTest {
-            underTest.addCallback(callback)
-
-            verify(callback).onShowingStateChanged(anyBoolean(), anyInt())
-            verify(callback).onInputRestrictedStateChanged(anyBoolean())
-            verify(callback).onTrustedChanged(anyBoolean())
-            verify(callback).onSimSecureStateChanged(anyBoolean())
-        }
-
-    @Test
+    @EnableSceneContainer
     fun test_lockscreenVisibility_notifyDismissSucceeded_ifNotVisible() =
         testScope.runTest {
             underTest.addCallback(callback)
@@ -108,34 +88,5 @@ class KeyguardStateCallbackInteractorTest : SysuiTestCase() {
             )
 
             Mockito.verifyNoMoreInteractions(dismissCallback)
-        }
-
-    @Test
-    @DisableSceneContainer
-    fun test_lockscreenVisibility_reportsKeyguardShowingChanged() =
-        testScope.runTest {
-            underTest.addCallback(callback)
-
-            Mockito.clearInvocations(callback)
-            Mockito.clearInvocations(kosmos.trustManager)
-
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.GONE,
-                testScope = testScope,
-            )
-            runCurrent()
-
-            verify(callback, atLeastOnce()).onShowingStateChanged(eq(false), anyInt())
-            verify(kosmos.trustManager, atLeastOnce()).reportKeyguardShowingChanged()
-
-            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.GONE,
-                to = KeyguardState.LOCKSCREEN,
-                testScope = testScope,
-            )
-
-            verify(callback, atLeastOnce()).onShowingStateChanged(eq(true), anyInt())
-            verify(kosmos.trustManager, atLeast(2)).reportKeyguardShowingChanged()
         }
 }
