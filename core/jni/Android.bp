@@ -552,6 +552,7 @@ cc_library_shared {
             },
         },
     },
+    afdo: true,
 }
 
 cc_library_host_shared {
