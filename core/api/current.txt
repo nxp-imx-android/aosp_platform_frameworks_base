@@ -13768,6 +13768,7 @@ package android.content.pm {
     method @Nullable public abstract android.graphics.drawable.Drawable getActivityLogo(@NonNull android.content.ComponentName) throws android.content.pm.PackageManager.NameNotFoundException;
     method @Nullable public abstract android.graphics.drawable.Drawable getActivityLogo(@NonNull android.content.Intent) throws android.content.pm.PackageManager.NameNotFoundException;
     method @NonNull public abstract java.util.List<android.content.pm.PermissionGroupInfo> getAllPermissionGroups(int);
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public int getAppUidForPccUid(int);
     method @Nullable public abstract android.graphics.drawable.Drawable getApplicationBanner(@NonNull android.content.pm.ApplicationInfo);
     method @Nullable public abstract android.graphics.drawable.Drawable getApplicationBanner(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
     method public abstract int getApplicationEnabledSetting(@NonNull String);
