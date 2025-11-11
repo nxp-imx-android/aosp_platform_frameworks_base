@@ -66,8 +66,7 @@ fun ContentScope.QuickQuickSettings(
                     iconOnly = sizedTile.isIcon,
                     squishiness = { squishiness },
                     coroutineScope = scope,
-                    tileHapticsViewModelFactoryProvider =
-                        viewModel.tileHapticsViewModelFactoryProvider,
+                    tileHapticsViewModelFactory = viewModel.tileHapticsViewModelFactory,
                     // There should be no QuickQuickSettings when the details
                     // view is enabled.
                     detailsViewModel = null,
@@ -104,8 +103,7 @@ fun ContentScope.QuickQuickSettings(
                                 isFirstInRow = isFirstInColumn,
                                 isLastInRow = isLastInColumn,
                             ),
-                        tileHapticsViewModelFactoryProvider =
-                            viewModel.tileHapticsViewModelFactoryProvider,
+                        tileHapticsViewModelFactory = viewModel.tileHapticsViewModelFactory,
                         // There should be no QuickQuickSettings when the details view is enabled.
                         detailsViewModel = null,
                         isVisible = listening,

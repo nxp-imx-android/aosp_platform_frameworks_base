@@ -88,7 +88,6 @@ import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
-import com.android.systemui.haptics.msdl.qs.TileHapticsViewModelFactoryProvider
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.BounceableInfo
@@ -144,8 +143,8 @@ private val TileViewModel.traceName
  * @param squishiness The float value representing the current squishiness factor of the tile, used
  *   for animations.
  * @param coroutineScope The [CoroutineScope] to launch coroutines for animations.
- * @param tileHapticsViewModelFactoryProvider A provider for creating a [TileHapticsViewModel]
- *   instance, used for haptic feedback.
+ * @param tileHapticsViewModelFactory A factory for creating a [TileHapticsViewModel] instance, used
+ *   for haptic feedback.
  * @param interactionSourceFromParent An optional [MutableInteractionSource] to track user
  *   interactions with the tile, used by the parent composable to animate a bounce effect. Tiles may
  *   or may not use this interaction source to control whether they should bounce or not.
@@ -164,7 +163,7 @@ fun ContentScope.Tile(
     squishiness: () -> Float,
     coroutineScope: CoroutineScope,
     bounceableInfo: BounceableInfo?,
-    tileHapticsViewModelFactoryProvider: TileHapticsViewModelFactoryProvider,
+    tileHapticsViewModelFactory: TileHapticsViewModel.Factory,
     modifier: Modifier = Modifier,
     interactionSourceFromParent: MutableInteractionSource? = null,
     isVisible: () -> Boolean = { true },
@@ -193,9 +192,9 @@ fun ContentScope.Tile(
             }
 
         val colors = TileDefaults.getColorForState(uiState, iconOnly)
-        val hapticsViewModel: TileHapticsViewModel? =
+        val hapticsViewModel: TileHapticsViewModel =
             rememberViewModel(traceName = "TileHapticsViewModel") {
-                tileHapticsViewModelFactoryProvider.getHapticsViewModelFactory()?.create(tile)
+                tileHapticsViewModelFactory.create(tile)
             }
 
         // TODO(b/361789146): Draw the shapes instead of clipping
@@ -260,7 +259,7 @@ fun ContentScope.Tile(
             val useLongClickToSettings = !(iconOnly && isDualTarget && isClickable)
             val longClick: (() -> Unit)? =
                 {
-                        hapticsViewModel?.setTileInteractionState(
+                        hapticsViewModel.setTileInteractionState(
                             TileHapticsViewModel.TileInteractionState.LONG_CLICKED
                         )
 
@@ -298,7 +297,7 @@ fun ContentScope.Tile(
                         }
 
                         // Side effects of the click
-                        hapticsViewModel?.setTileInteractionState(
+                        hapticsViewModel.setTileInteractionState(
                             TileHapticsViewModel.TileInteractionState.CLICKED
                         )
 
@@ -333,7 +332,7 @@ fun ContentScope.Tile(
                     val iconShape by TileDefaults.animateIconShapeAsState(uiState)
                     val secondaryClick: (() -> Unit)? =
                         {
-                                hapticsViewModel?.setTileInteractionState(
+                                hapticsViewModel.setTileInteractionState(
                                     TileHapticsViewModel.TileInteractionState.CLICKED
                                 )
                                 tile.toggleClick()

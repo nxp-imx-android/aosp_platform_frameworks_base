@@ -17,10 +17,7 @@
 package com.android.systemui.haptics.msdl.qs
 
 import android.service.quicksettings.Tile
-import androidx.compose.runtime.Stable
-import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
-import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.qs.panels.ui.viewmodel.TileViewModel
 import com.android.systemui.util.kotlin.pairwise
@@ -29,7 +26,6 @@ import com.google.android.msdl.domain.MSDLPlayer
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import javax.inject.Inject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -170,17 +166,4 @@ constructor(
     interface Factory {
         fun create(tileViewModel: TileViewModel): TileHapticsViewModel
     }
-}
-
-@SysUISingleton
-@Stable
-class TileHapticsViewModelFactoryProvider
-@Inject
-constructor(private val tileHapticsViewModelFactory: TileHapticsViewModel.Factory) {
-    fun getHapticsViewModelFactory(): TileHapticsViewModel.Factory? =
-        if (Flags.msdlFeedback()) {
-            tileHapticsViewModelFactory
-        } else {
-            null
-        }
 }
