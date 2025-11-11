@@ -76,6 +76,9 @@ import android.os.strictmode.UntaggedSocketViolation;
 import android.os.strictmode.Violation;
 import android.os.strictmode.WebViewMethodCalledOnWrongThreadViolation;
 import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Printer;
@@ -166,7 +169,7 @@ import java.util.function.Consumer;
  * android.os.Binder} calls, it's still ultimately a best effort mechanism. Notably, disk or network
  * access from JNI calls won't necessarily trigger it.
  */
-@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@RavenwoodKeepPartialClass
 public final class StrictMode {
     private static final String TAG = "StrictMode";
     private static final boolean LOG_V = Log.isLoggable(TAG, Log.VERBOSE);
@@ -1422,7 +1425,7 @@ public final class StrictMode {
     }
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static @ThreadPolicyMask int allowThreadDiskWritesMask() {
         int oldPolicyMask = getThreadPolicyMask();
         int newPolicyMask = oldPolicyMask & ~(DETECT_THREAD_DISK_WRITE | DETECT_THREAD_DISK_READ);
@@ -1448,7 +1451,7 @@ public final class StrictMode {
     }
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static @ThreadPolicyMask int allowThreadDiskReadsMask() {
         int oldPolicyMask = getThreadPolicyMask();
         int newPolicyMask = oldPolicyMask & ~(DETECT_THREAD_DISK_READ);
@@ -2319,6 +2322,7 @@ public final class StrictMode {
      * policy which can be changed by other threads.
      * @hide
      */
+    @RavenwoodIgnore
     public static boolean vmRegistrationLeaksEnabled() {
         return (sVmPolicy.mask & DETECT_VM_REGISTRATION_LEAKS) != 0;
     }
@@ -2400,6 +2404,7 @@ public final class StrictMode {
      * policy which can be changed by other threads.
      * @hide
      */
+    @RavenwoodIgnore
     public static boolean vmUnsafeIntentLaunchEnabled() {
         return (sVmPolicy.mask & DETECT_VM_UNSAFE_INTENT_LAUNCH) != 0;
     }
@@ -2518,6 +2523,7 @@ public final class StrictMode {
      *
      * @hide
      */
+    @RavenwoodIgnore
     public static void assertConfigurationContext(@NonNull Context context,
             @NonNull String methodName) {
         if (vmIncorrectContextUseEnabled() && !context.isConfigurationContext()) {
@@ -3032,6 +3038,7 @@ public final class StrictMode {
      *
      * @hide
      */
+    @RavenwoodKeep
     public static Object trackActivity(Object instance) {
         return new InstanceTracker(instance);
     }
@@ -3392,6 +3399,7 @@ public final class StrictMode {
                 };
     }
 
+    @RavenwoodKeepWholeClass
     private static final class InstanceTracker {
         private static final HashMap<Class<?>, Integer> sInstanceCounts =
                 new HashMap<Class<?>, Integer>();
