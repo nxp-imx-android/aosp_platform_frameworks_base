@@ -19,7 +19,12 @@ package com.android.systemui.bouncer.ui.viewmodel
 import android.content.Context
 import android.util.TypedValue
 import android.view.View
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationPatternCoordinate
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
@@ -48,6 +53,7 @@ constructor(
     @Assisted bouncerHapticPlayer: BouncerHapticPlayer,
     @Assisted isInputEnabled: StateFlow<Boolean>,
     @Assisted private val onIntentionalUserInput: () -> Unit,
+    a11yInteractor: AccessibilityInteractor,
 ) :
     AuthMethodBouncerViewModel(
         interactor = interactor,
@@ -73,6 +79,14 @@ constructor(
     val currentDot: StateFlow<PatternDotViewModel?> = _currentDot.asStateFlow()
 
     private val _dots = MutableStateFlow(defaultDots())
+
+    val isTouchExplorationEnabled by a11yInteractor.isTouchExplorationEnabled.hydratedStateOf(false)
+
+    var inputPosition by mutableStateOf<Offset?>(null)
+        private set
+
+    var patternAreaContentDescription by mutableStateOf("")
+        private set
 
     /** All dots on the grid. */
     val dots: StateFlow<List<PatternDotViewModel>> = _dots.asStateFlow()
@@ -103,8 +117,14 @@ constructor(
     }
 
     /** Notifies that the user has started a drag gesture across the dot grid. */
-    fun onDragStart() {
+    fun onDragStart(startOffset: Offset) {
+        onDown()
         onIntentionalUserInput()
+        inputPosition = startOffset
+        patternAreaContentDescription =
+            applicationContext
+                .getText(com.android.internal.R.string.lockscreen_access_pattern_area)
+                .toString()
     }
 
     /**
@@ -116,6 +136,7 @@ constructor(
      *   that the dot grid is perfectly square such that width and height are equal.
      */
     fun onDrag(xPx: Float, yPx: Float, containerSizePx: Int) {
+        inputPosition = Offset(xPx, yPx)
         val cellWidthPx = containerSizePx / columnCount
         val cellHeightPx = containerSizePx / rowCount
 
@@ -172,12 +193,18 @@ constructor(
                     addAll(skippedOverDots)
                     add(hitDot)
                 }
+            patternAreaContentDescription =
+                applicationContext.resources.getString(
+                    com.android.internal.R.string.lockscreen_access_pattern_cell_added_verbose,
+                    dotRow * columnCount + (dotColumn + 1),
+                )
             _currentDot.value = hitDot
         }
     }
 
     /** Notifies that the user has ended the drag gesture across the dot grid. */
     fun onDragEnd() {
+        inputPosition = null
         val pattern = getInput()
         if (pattern.size == 1) {
             // Single dot patterns are treated as erroneous/false taps:
