@@ -85,8 +85,6 @@ public enum DesktopModeFlags {
             Flags::enableRestoreToPreviousSizeFromDesktopImmersive, true),
     ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX(
             Flags::enableShellInitialBoundsRegressionBugFix, true),
-    ENABLE_START_LAUNCH_TRANSITION_FROM_TASKBAR_BUGFIX(
-            Flags::enableStartLaunchTransitionFromTaskbarBugfix, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
     ENABLE_TASKBAR_RECENTS_LAYOUT_TRANSITION(Flags::enableTaskbarRecentsLayoutTransition, false),
     ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS(Flags::enableTaskResizingKeyboardShortcuts, true),
