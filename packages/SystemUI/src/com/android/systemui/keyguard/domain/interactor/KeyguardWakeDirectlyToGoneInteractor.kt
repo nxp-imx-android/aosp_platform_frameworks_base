@@ -153,7 +153,7 @@ constructor(
                 val currentState = values[4] as KeyguardState
                 val startedStep = values[5] as TransitionStep
                 (!keyguardEnabled || shouldSuppressKeyguard) ||
-                    BiometricUnlockMode.isWakeAndUnlock(biometricUnlockState.mode) ||
+                    BiometricUnlockMode.isWakeAndDismiss(biometricUnlockState.mode) ||
                     canIgnoreAuthAndReturnToGone ||
                     (currentState == KeyguardState.DREAMING &&
                         keyguardInteractor.isKeyguardDismissible.value) ||

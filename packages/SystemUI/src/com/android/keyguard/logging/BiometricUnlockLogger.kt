@@ -23,16 +23,16 @@ import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.LogLevel.DEBUG
 import com.android.systemui.log.core.LogLevel.INFO
 import com.android.systemui.log.dagger.BiometricLog
+import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_DISMISS
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_DISMISS_BOUNCER
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_NONE
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_NONE_UNLOCKED
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_ONLY_WAKE
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_ONLY_WAKE_UNLOCKED
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_SHOW_BOUNCER
-import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_UNLOCK_COLLAPSING
-import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK
-import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK_FROM_DREAM
-import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING
+import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS
+import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS_FROM_DREAM
+import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS_PULSING
 import com.google.errorprone.annotations.CompileTimeConstant
 import javax.inject.Inject
 
@@ -197,12 +197,12 @@ class BiometricUnlockLogger @Inject constructor(@BiometricLog private val logBuf
 private fun wakeAndUnlockModeToString(mode: Int): String {
     return when (mode) {
         MODE_NONE -> "MODE_NONE"
-        MODE_WAKE_AND_UNLOCK -> "MODE_WAKE_AND_UNLOCK"
-        MODE_WAKE_AND_UNLOCK_PULSING -> "MODE_WAKE_AND_UNLOCK_PULSING"
+        MODE_WAKE_AND_DISMISS -> "MODE_WAKE_AND_UNLOCK"
+        MODE_WAKE_AND_DISMISS_PULSING -> "MODE_WAKE_AND_UNLOCK_PULSING"
         MODE_SHOW_BOUNCER -> "MODE_SHOW_BOUNCER"
         MODE_ONLY_WAKE -> "MODE_ONLY_WAKE"
-        MODE_UNLOCK_COLLAPSING -> "MODE_UNLOCK_COLLAPSING"
-        MODE_WAKE_AND_UNLOCK_FROM_DREAM -> "MODE_WAKE_AND_UNLOCK_FROM_DREAM"
+        MODE_DISMISS -> "MODE_UNLOCK_COLLAPSING"
+        MODE_WAKE_AND_DISMISS_FROM_DREAM -> "MODE_WAKE_AND_UNLOCK_FROM_DREAM"
         MODE_DISMISS_BOUNCER -> "MODE_DISMISS_BOUNCER"
         MODE_NONE_UNLOCKED -> "MODE_NONE_UNLOCKED"
         MODE_ONLY_WAKE_UNLOCKED -> "MODE_ONLY_WAKE_UNLOCKED"

@@ -226,7 +226,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun canChangeScene_toGone_whenUnlocked_returnsTrue() =
         kosmos.runTest {
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(currentValue(deviceUnlockedInteractor.deviceUnlockStatus).isUnlocked)

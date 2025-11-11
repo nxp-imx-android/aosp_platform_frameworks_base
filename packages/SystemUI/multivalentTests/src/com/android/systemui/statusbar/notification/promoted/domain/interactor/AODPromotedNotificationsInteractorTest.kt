@@ -155,9 +155,7 @@ class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
 
             setKeyguardLocked(true)
             setScreenSharingProtectionActive(false)
-            kosmos.fakeKeyguardRepository.setBiometricUnlockState(
-                BiometricUnlockMode.UNLOCK_COLLAPSING
-            )
+            kosmos.fakeKeyguardRepository.setBiometricUnlockState(BiometricUnlockMode.DISMISS)
 
             renderNotificationListInteractor.setRenderedList(listOf(ronEntry))
 

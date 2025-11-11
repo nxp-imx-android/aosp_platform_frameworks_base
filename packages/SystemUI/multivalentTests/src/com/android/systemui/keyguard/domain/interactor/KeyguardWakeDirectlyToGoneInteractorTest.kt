@@ -238,7 +238,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 canWake,
             )
 
-            repository.setBiometricUnlockState(BiometricUnlockMode.WAKE_AND_UNLOCK)
+            repository.setBiometricUnlockState(BiometricUnlockMode.WAKE_AND_DISMISS)
             runCurrent()
 
             assertEquals(listOf(false, true), canWake)
