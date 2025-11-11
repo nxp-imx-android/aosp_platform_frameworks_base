@@ -106,7 +106,7 @@ constructor(
                     }
             }
         val viewController =
-            remember(view) {
+            remember(context) {
                 val provider =
                     object : ShadeViewStateProvider {
                         override val lockscreenShadeDragProgress: Float = 0f
