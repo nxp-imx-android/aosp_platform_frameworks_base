@@ -72,7 +72,7 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
                 set(Flags.FULL_SCREEN_USER_SWITCHER, false)
             }
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             underTest = shadeControllerSceneImpl
@@ -168,7 +168,7 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
             enableSingleShade()
             val testRunnable = mock<Runnable>()
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             setCollapsed()
@@ -240,7 +240,7 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
         if (isEntered) {
             // Unlock the device marking the device has entered.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
         }

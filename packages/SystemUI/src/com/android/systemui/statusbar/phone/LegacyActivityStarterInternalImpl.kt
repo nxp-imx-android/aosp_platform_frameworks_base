@@ -609,7 +609,7 @@ constructor(
             // TODO (b/338578036): Factor this transition out of BiometricUnlockController.
             biometricUnlockControllerLazy
                 .get()
-                .startWakeAndUnlock(BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING, null)
+                .startWakeAndUnlock(BiometricUnlockController.MODE_WAKE_AND_DISMISS_PULSING, null)
         }
         if (keyguardStateController.isShowing) {
             statusBarKeyguardViewManagerLazy

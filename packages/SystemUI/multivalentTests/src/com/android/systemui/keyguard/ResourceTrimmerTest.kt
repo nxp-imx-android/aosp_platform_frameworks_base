@@ -81,7 +81,7 @@ class ResourceTrimmerTest : SysuiTestCase() {
         testScope.runTest {
             kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "reason")
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
