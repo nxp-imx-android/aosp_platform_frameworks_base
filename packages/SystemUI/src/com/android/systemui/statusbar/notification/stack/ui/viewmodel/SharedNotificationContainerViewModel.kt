@@ -577,15 +577,16 @@ constructor(
                                         flowOf(1f)
                                     } else {
                                         combineTransform(
-                                                shadeInteractor.shadeExpansion,
-                                                shadeInteractor.qsExpansion,
-                                            ) { shadeExpansion, qsExpansion ->
-                                                // Fade as QS shade expands
-                                                if (shadeExpansion > 0 || qsExpansion > 0) {
-                                                    emit(1f - qsExpansion)
-                                                }
+                                            shadeInteractor.shadeExpansion
+                                                .map { it > 0f }
+                                                .distinctUntilChanged(),
+                                            shadeInteractor.qsExpansion,
+                                        ) { shadeExpanding, qsExpansion ->
+                                            // Fade as QS shade expands
+                                            if (shadeExpanding || qsExpansion > 0) {
+                                                emit(1f - qsExpansion)
                                             }
-                                            .distinctUntilChanged()
+                                        }
                                     }
                                 }
 
