@@ -824,8 +824,9 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public boolean startService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
-        return psr.startService(sr);
+    public boolean addRunningService(@NonNull ProcessServiceRecordInternal psr,
+            ServiceRecordInternal sr) {
+        return psr.addRunningService(sr);
     }
 
     /**
@@ -833,8 +834,9 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public boolean stopService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
-        return psr.stopService(sr);
+    public boolean removeRunningService(@NonNull ProcessServiceRecordInternal psr,
+            ServiceRecordInternal sr) {
+        return psr.removeRunningService(sr);
     }
 
     /**
@@ -842,7 +844,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void stopAllServices(@NonNull ProcessServiceRecord psr) {
+    public void stopAllServices(@NonNull ProcessServiceRecordInternal psr) {
         psr.stopAllServices();
     }
 

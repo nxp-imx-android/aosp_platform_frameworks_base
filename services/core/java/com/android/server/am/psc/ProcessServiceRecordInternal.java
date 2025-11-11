@@ -313,9 +313,10 @@ public class ProcessServiceRecordInternal {
         return mServices.remove(service);
     }
 
-    /** Removes all services from the set of running services for this process. */
-    public void clearRunningServices() {
+    /** Stops all services running in this process. */
+    public void stopAllServices() {
         mServices.clear();
+        updateHasTopStartedAlmostPerceptibleServices();
     }
 
     /** Checks if there are any services currently executing in this process. */

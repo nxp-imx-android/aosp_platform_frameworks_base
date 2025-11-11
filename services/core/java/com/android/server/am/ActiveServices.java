@@ -4057,7 +4057,7 @@ public final class ActiveServices {
     private void stopServiceAndUpdateAllowlistManagerLocked(ServiceRecord service) {
         maybeStopShortFgsTimeoutLocked(service);
         final ProcessServiceRecord psr = service.app.mServices;
-        mAm.mProcessStateController.stopService(psr, service);
+        psr.stopService(service);
         psr.updateBoundClientUids();
         if (service.allowlistManager) {
             updateAllowlistManagerLocked(psr);
@@ -6334,7 +6334,7 @@ public final class ActiveServices {
             final boolean skipOomAdj = (serviceBindingOomAdjPolicy
                     & SERVICE_BIND_OOMADJ_POLICY_SKIP_OOM_UPDATE_ON_CREATE) != 0;
             final ProcessServiceRecord psr = app.mServices;
-            final boolean newService = mAm.mProcessStateController.startService(psr, r);
+            final boolean newService = psr.startService(r);
             final boolean skipTimeout = skipOomAdj;
             bumpServiceExecutingLocked(r, execInFg, "create",
                     OOM_ADJ_REASON_NONE /* use "none" to avoid extra oom adj */,
@@ -6399,7 +6399,7 @@ public final class ActiveServices {
 
                     // Cleanup.
                     if (newService) {
-                        mAm.mProcessStateController.stopService(psr, r);
+                        psr.stopService(r);
                         r.setProcess(null, null, 0, null);
                     }
 
@@ -7655,7 +7655,7 @@ public final class ActiveServices {
                         sr.name.getPackageName(),
                         sr.name.getClassName());
                 if (sr.app != app && sr.app != null && !sr.app.isPersistent()) {
-                    mAm.mProcessStateController.stopService(sr.app.mServices, sr);
+                    sr.app.mServices.stopService(sr);
                     sr.app.mServices.updateBoundClientUids();
                 }
                 sr.setProcess(null, null, 0, null);
@@ -7727,7 +7727,7 @@ public final class ActiveServices {
                 // Unless the process is persistent, this process record is going away,
                 // so make sure the service is cleaned out of it.
                 if (!app.isPersistent()) {
-                    mAm.mProcessStateController.stopService(psr, sr);
+                    psr.stopService(sr);
                     psr.updateBoundClientUids();
                 }
 
@@ -9697,7 +9697,7 @@ public final class ActiveServices {
         setFgsRestrictionLocked(callingPackage, callingPid, callingUid, intent, r,
                 BackgroundStartPrivileges.NONE,  false /* isBindService */);
         final ProcessServiceRecord psr = callerApp.mServices;
-        final boolean newService = mAm.mProcessStateController.startService(psr, r);
+        final boolean newService = psr.startService(r);
         // updateOomAdj.
         updateServiceForegroundLocked(psr, /* oomAdj= */ true);
 
