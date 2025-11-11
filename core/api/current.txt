@@ -14130,8 +14130,8 @@ package android.content.pm {
     field public static final int PERMISSION_GRANTED = 0; // 0x0
     field public static final String PROPERTY_COMPAT_OVERRIDE_LANDSCAPE_TO_PORTRAIT = "android.camera.PROPERTY_COMPAT_OVERRIDE_LANDSCAPE_TO_PORTRAIT";
     field public static final String PROPERTY_MEDIA_CAPABILITIES = "android.media.PROPERTY_MEDIA_CAPABILITIES";
-    field @FlaggedApi("android.os.native_framework_prototype") public static final String PROPERTY_NATIVE_SERVICE_FUNC_NAME = "android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME";
-    field @FlaggedApi("android.os.native_framework_prototype") public static final String PROPERTY_NATIVE_SERVICE_LIB_NAME = "android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME";
+    field @FlaggedApi("android.os.native_framework_prototype") public static final String PROPERTY_NATIVE_SERVICE_FUNCTION_NAME = "android.app.PROPERTY_NATIVE_SERVICE_FUNCTION_NAME";
+    field @FlaggedApi("android.os.native_framework_prototype") public static final String PROPERTY_NATIVE_SERVICE_LIBRARY_NAME = "android.app.PROPERTY_NATIVE_SERVICE_LIBRARY_NAME";
     field public static final String PROPERTY_SELF_CERTIFIED_NETWORK_CAPABILITIES = "android.net.PROPERTY_SELF_CERTIFIED_NETWORK_CAPABILITIES";
     field public static final String PROPERTY_SPECIAL_USE_FGS_SUBTYPE = "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE";
     field @FlaggedApi("com.android.server.backup.enable_restricted_mode_changes") public static final String PROPERTY_USE_RESTRICTED_BACKUP_MODE = "android.app.backup.PROPERTY_USE_RESTRICTED_BACKUP_MODE";

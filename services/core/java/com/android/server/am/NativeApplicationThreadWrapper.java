@@ -155,7 +155,7 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
         PackageManager.Property libNameProperty =
                 mMgr.getPackageManager()
                         .getPropertyAsUser(
-                                PackageManager.PROPERTY_NATIVE_SERVICE_LIB_NAME,
+                                PackageManager.PROPERTY_NATIVE_SERVICE_LIBRARY_NAME,
                                 info.packageName,
                                 info.getComponentName().getClassName(),
                                 userId);
@@ -164,7 +164,7 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
         PackageManager.Property funcNameProperty =
                 mMgr.getPackageManager()
                         .getPropertyAsUser(
-                                PackageManager.PROPERTY_NATIVE_SERVICE_FUNC_NAME,
+                                PackageManager.PROPERTY_NATIVE_SERVICE_FUNCTION_NAME,
                                 info.packageName,
                                 info.getComponentName().getClassName(),
                                 userId);
