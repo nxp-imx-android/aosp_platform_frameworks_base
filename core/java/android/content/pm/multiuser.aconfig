@@ -512,3 +512,10 @@ flag {
      description: "Flag to enable the OneTimeInitializer package singleton refactoring"
      bug: "453792165"
 }
+
+flag {
+     name: "credential_capture"
+     namespace: "multiuser"
+     description: "Perform authentication in the login app on desktop before switching to a user"
+     bug: "448603243"
+}

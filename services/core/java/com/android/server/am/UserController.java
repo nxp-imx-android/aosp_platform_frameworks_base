@@ -296,6 +296,15 @@ class UserController implements Handler.Callback {
      */
     private int mBackgroundUserConsideredDispensableTimeSecs = -1;
 
+    /**
+     * When enabled, keyguard isn't shown when switching into or starting a new user whose CE
+     * storage has already been unlocked before and doesn't require strong auth. As security
+     * requirement, we also require strong auth when switching away from a secure user with this
+     * config enabled. Set by config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers.
+     */
+    @GuardedBy("mLock")
+    private boolean mSkipKeyguardWhenSwitchingToUnlockedUsers = false;
+
     // Lock for internal state.
     private final Object mLock = new Object();
 
@@ -447,7 +456,7 @@ class UserController implements Handler.Callback {
     private final SparseIntArray mCompletedEventTypes = new SparseIntArray();
 
     /**
-     * Sets on {@link #setInitialConfig(boolean, int, boolean, int)}, which is called by
+     * Sets on {@link #setInitialConfig(boolean, int, boolean, int, boolean)}, which is called by
      * {@code ActivityManager} when the system is started.
      *
      * <p>It's useful to ignore external operations (i.e., originated outside {@code system_server},
@@ -513,7 +522,8 @@ class UserController implements Handler.Callback {
     }
 
     void setInitialConfig(boolean userSwitchUiEnabled, int maxRunningUsers,
-            boolean delayUserDataLocking, int backgroundUserConsideredDispensableTimeSecs) {
+            boolean delayUserDataLocking, int backgroundUserConsideredDispensableTimeSecs,
+            boolean skipKeyguardWhenSwitchingToUnlockedUsers) {
         synchronized (mLock) {
             mUserSwitchUiEnabled = userSwitchUiEnabled;
             mMaxRunningUsers = maxRunningUsers;
@@ -522,6 +532,11 @@ class UserController implements Handler.Callback {
                 // If flag is off, the default value of -1 applies, disabling the feature.
                 mBackgroundUserConsideredDispensableTimeSecs
                         = backgroundUserConsideredDispensableTimeSecs;
+            }
+            if (android.multiuser.Flags.credentialCapture()) {
+                // If flag is off, the default value of false applies, disabling the feature.
+                mSkipKeyguardWhenSwitchingToUnlockedUsers =
+                        skipKeyguardWhenSwitchingToUnlockedUsers;
             }
             mInitialized = true;
         }
@@ -2256,8 +2271,11 @@ class UserController implements Handler.Callback {
         t.traceBegin("updateConfigurationAndProfileIds");
         if (foreground) {
             boolean userSwitchUiEnabled;
+            boolean skipKeyguardWhenSwitchingToUnlockedUsers;
             synchronized (mLock) {
                 userSwitchUiEnabled = mUserSwitchUiEnabled;
+                skipKeyguardWhenSwitchingToUnlockedUsers =
+                        mSkipKeyguardWhenSwitchingToUnlockedUsers;
             }
             mInjector.updateUserConfiguration();
             // NOTE: updateProfileRelatedCaches() is called on both if and else parts, ideally
@@ -2272,8 +2290,15 @@ class UserController implements Handler.Callback {
                 mInjector.getWindowManager().setSwitchingUser(true);
                 // Only lock if the user has a secure keyguard PIN/Pattern/Pwd
                 if (mInjector.getKeyguardManager().isDeviceSecure(userId)) {
-                    Slogf.d(TAG, "Locking the device before moving on with the user switch");
-                    mInjector.lockDeviceNowAndWaitForKeyguardShown();
+                    if (skipKeyguardWhenSwitchingToUnlockedUsers
+                            && mInjector.isCeStorageUnlocked(userId)
+                            && mLockPatternUtils.isTrustAllowedForUser(userId)) {
+                        Slogf.i(TAG, "Skipping keyguard due to "
+                                + "skipKeyguardWhenSwitchingToUnlockedUsers");
+                    } else {
+                        Slogf.i(TAG, "Locking the device before moving on with the user switch");
+                        mInjector.lockDeviceNowAndWaitForKeyguardShown();
+                    }
                 }
             }
 
@@ -3178,8 +3203,14 @@ class UserController implements Handler.Callback {
         t.traceBegin("sendContinueUserSwitchLU-" + oldUserId + "-to-" + newUserId);
         mCurWaitingUserSwitchCallbacks = null;
         mHandler.removeMessages(USER_SWITCH_TIMEOUT_MSG);
-        mHandler.sendMessage(mHandler.obtainMessage(CONTINUE_USER_SWITCH_MSG,
-                oldUserId, newUserId, uss));
+
+        final Runnable onComplete = () -> mHandler.sendMessage(
+                mHandler.obtainMessage(CONTINUE_USER_SWITCH_MSG, oldUserId, newUserId, uss));
+        if (mSkipKeyguardWhenSwitchingToUnlockedUsers) {
+            mInjector.requireStrongAuth(oldUserId, onComplete);
+        } else {
+            onComplete.run();
+        }
         t.traceEnd();
     }
 
@@ -4453,6 +4484,7 @@ class UserController implements Handler.Callback {
         private final Object mUserSwitchingDialogLock = new Object();
         @GuardedBy("mUserSwitchingDialogLock")
         private UserSwitchingDialog mUserSwitchingDialog;
+        private LockPatternUtils mLockPatternUtils;
 
         Injector(ActivityManagerService service) {
             mService = service;
@@ -4460,6 +4492,10 @@ class UserController implements Handler.Callback {
 
         protected Handler getHandler(Handler.Callback callback) {
             return mHandler = new Handler(mService.mHandlerThread.getLooper(), callback);
+        }
+
+        protected Handler getHandler() {
+            return mHandler;
         }
 
         protected Handler getUiHandler(Handler.Callback callback) {
@@ -4475,7 +4511,10 @@ class UserController implements Handler.Callback {
         }
 
         protected LockPatternUtils getLockPatternUtils() {
-            return new LockPatternUtils(getContext());
+            if(mLockPatternUtils == null) {
+                mLockPatternUtils = new LockPatternUtils(getContext());
+            }
+            return mLockPatternUtils;
         }
 
         protected int broadcastIntent(Intent intent, String resolvedType,
@@ -4757,6 +4796,49 @@ class UserController implements Handler.Callback {
             } finally {
                 t.traceEnd();
             }
+        }
+
+        void requireStrongAuth(int userId, Runnable onComplete) {
+            LockPatternUtils lockPatternUtils = getLockPatternUtils();
+            // Do not skip based on lockPatternUtils.isTrustAllowedForUser(userId)'s result because
+            // it might return a stale value that is about to be updated.
+            // Always call lockPatternUtils.requireCredentialEntry(oldUserId) and wait for
+            // onStrongAuthRequiredChanged callback to check, if the user has credentials.
+            if (!getKeyguardManager().isDeviceSecure(userId)) {
+                onComplete.run();
+                return;
+            }
+
+            // Requiring strong auth is an async operation. We wait for the operation to complete or
+            // a timeout of 20 seconds.
+            asyncTraceBegin("requireStrongAuth", userId);
+
+            // Start timeout
+            final AtomicBoolean isFirst = new AtomicBoolean(true);
+            getHandler().postDelayed(() -> {
+                if (isFirst.getAndSet(false)) {
+                    throw new RuntimeException(
+                            "UserController.requireStrongAuth timed out after 20 seconds.");
+                }
+            }, 20_000);
+
+            // Register strong auth change listener
+            lockPatternUtils.registerStrongAuthTracker(
+                    new LockPatternUtils.StrongAuthTracker(getContext(), getHandler().getLooper()) {
+                        @Override
+                        public void onStrongAuthRequiredChanged(int userId2) {
+                            if (userId2 == userId
+                                    && !this.isTrustAllowedForUser(userId)
+                                    && isFirst.getAndSet(false)) {
+                                asyncTraceEnd("requireStrongAuth", userId);
+                                lockPatternUtils.unregisterStrongAuthTracker(this);
+                                onComplete.run();
+                            }
+                        }
+                    });
+
+            // Require strong auth (async)
+            lockPatternUtils.requireCredentialEntry(userId);
         }
 
         /**
