@@ -28,10 +28,12 @@ import android.view.WindowManagerGlobal
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By.desc
 import androidx.test.uiautomator.By.text
+import androidx.test.uiautomator.Condition
 import androidx.test.uiautomator.UiDevice
 import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObject
 import com.android.window.flags.Flags
 import com.google.common.truth.Truth.assertThat
+import junit.framework.Assert.fail
 import org.junit.After
 import org.junit.Ignore
 import org.junit.Rule
@@ -76,9 +78,12 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
         waitFindObject(text(externalDisplaySettings)).click()
         waitFindObject(text(displayName)).click()
         waitFindObject(desc(increaseDensityDescription)).click()
-        device.waitForWindowUpdate(SETTINGS_PACKAGE_NAME, SETTINGS_UPDATE_TIME_OUT)
-        device.waitForIdle()
-        val currentDensity = wm.getBaseDisplayDensity(connectedDisplayId)
+        val currentDensity =
+            waitForDensityCondition(
+                connectedDisplayId,
+                "Density Increased",
+                predicate = { it > initialDensity },
+            )
 
         assertThat(initialDensity).isLessThan(currentDensity)
     }
@@ -99,9 +104,12 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
         waitFindObject(text(externalDisplaySettings)).click()
         waitFindObject(text(displayName)).click()
         waitFindObject(desc(decreaseDensityDescription)).click()
-        device.waitForWindowUpdate(SETTINGS_PACKAGE_NAME, SETTINGS_UPDATE_TIME_OUT)
-        device.waitForIdle()
-        val currentDensity = wm.getBaseDisplayDensity(connectedDisplayId)
+        val currentDensity =
+            waitForDensityCondition(
+                connectedDisplayId,
+                "Density Decreased",
+                predicate = { it < initialDensity },
+            )
 
         assertThat(initialDensity).isGreaterThan(currentDensity)
     }
@@ -112,6 +120,7 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
         val displayName = displayManager.getDisplay(connectedDisplayId).name
         device.waitForIdle()
         wm.clearForcedDisplayDensityForUser(connectedDisplayId, UserHandle.myUserId())
+        val initialDensity = wm.getBaseDisplayDensity(connectedDisplayId)
 
         instrumentation.context.startActivity(
             Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
@@ -122,8 +131,13 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
         waitFindObject(text(externalDisplaySettings)).click()
         waitFindObject(text(displayName)).click()
         waitFindObject(desc(increaseDensityDescription)).click()
-        device.waitForWindowUpdate(SETTINGS_PACKAGE_NAME, SETTINGS_UPDATE_TIME_OUT)
-        val lastDensity = wm.getBaseDisplayDensity(connectedDisplayId)
+
+        val lastDensity =
+            waitForDensityCondition(
+                connectedDisplayId,
+                "Density Increased before disconnect",
+                predicate = { it > initialDensity },
+            )
 
         var idAfterReconnection = connectedDisplayRule.setupTestDisplay()
         device.waitForIdle()
@@ -142,11 +156,51 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
         return settingsResources.getString(identifier)
     }
 
+    /**
+     * Waits for the base display density of the given displayId to meet a predicate.
+     *
+     * @param displayId The ID of the display to check.
+     * @param conditionName A descriptive name for the condition being waited for.
+     * @param timeoutMs The maximum time to wait in milliseconds.
+     * @param predicate A function that takes the current density and returns true if the condition
+     *   is met.
+     * @return The density value that met the condition.
+     */
+    private fun waitForDensityCondition(
+        displayId: Int,
+        conditionName: String,
+        timeoutMs: Long = WAIT_FOR_DENSITY_TIMEOUT,
+        predicate: (currentDensity: Int) -> Boolean,
+    ): Int {
+        var lastDensity = -1
+        val densityCondition =
+            object : Condition<UiDevice, Boolean> {
+                override fun apply(device: UiDevice): Boolean {
+                    try {
+                        val currentDensity = wm.getBaseDisplayDensity(displayId)
+                        lastDensity = currentDensity
+                        return predicate(currentDensity)
+                    } catch (e: Exception) {
+                        return false
+                    }
+                }
+            }
+
+        val fulfilled = device.wait(densityCondition, timeoutMs)
+        if (!fulfilled) {
+            fail(
+                "Condition '$conditionName' not met within $timeoutMs ms for display $displayId. " +
+                    "Last density: $lastDensity"
+            )
+        }
+        return lastDensity
+    }
+
     private companion object {
         const val SETTINGS_PACKAGE_NAME = "com.android.settings"
         const val EXTERNAL_DISPLAY_SETTING_RES = "external_display_settings_title"
         const val INCREASE_DENSITY_DESCRIPTION_RES = "screen_zoom_make_larger_desc"
         const val DECREASE_DENSITY_DESCRIPTION_RES = "screen_zoom_make_smaller_desc"
-        const val SETTINGS_UPDATE_TIME_OUT: Long = 2000
+        const val WAIT_FOR_DENSITY_TIMEOUT: Long = 3000
     }
 }
