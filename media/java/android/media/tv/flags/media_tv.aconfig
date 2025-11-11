@@ -172,3 +172,10 @@ flag {
     description: "Continue efforts for standardizing PQ/AQ Interfaces for Media Quality Framework in Android 17"
     bug: "443329020"
 }
+
+flag {
+    name: "tv_audio_routing_improvements"
+    namespace: "tv_os"
+    description: "Improve the audio routing mechanism for assistant TVs"
+    bug: "457774675"
+}
