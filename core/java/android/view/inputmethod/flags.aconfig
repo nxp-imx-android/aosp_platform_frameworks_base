@@ -138,6 +138,13 @@ flag {
 }
 
 flag {
+  name: "back_disposition_controls_back_interception"
+  namespace: "input_method"
+  description: "Setting ADJUST_NOTHING as back disposition causes back events to bypass IME"
+  bug: "454542168"
+}
+
+flag {
   name: "fallback_display_for_secondary_user_on_secondary_display"
   namespace: "input_method"
   description: "Feature flag to fix the fallback display bug for visible background users"
