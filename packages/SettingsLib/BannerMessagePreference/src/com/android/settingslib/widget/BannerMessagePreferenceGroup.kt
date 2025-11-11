@@ -56,8 +56,19 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     private var collapseKey: String? = null
     private var collapseTitle: CharSequence? = null
     private var collapseIcon: Drawable? = null
+
+    /**
+     * Number of preferences to always show at the top, even when collapsed.
+     * Defaults to [DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED].
+     */
+    var visiblePreferencesWhenCollapsedCount: Int = DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED
+        set(value) {
+            field = max(1, value)
+            updateVisibilities()
+            updateCollapsedItemCount()
+        }
     private val collapsiblePreferenceCount
-        get() = max(childPreferences.size - 1, 0) + subsectionPreferenceCount
+        get() = max(childPreferences.size - visiblePreferencesWhenCollapsedCount, 0) + subsectionPreferenceCount
     private val subsectionPreferenceCount
         get() = subsectionCategory?.preferenceCount ?: 0
 
@@ -236,8 +247,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
     private fun updateVisibilities() {
         childPreferences.forEachIndexed { i, childBanner ->
-            // The first BannerMessagePref is always visible.
-            childBanner.isVisible = i == 0 || isExpanded
+            childBanner.isVisible = i < visiblePreferencesWhenCollapsedCount || isExpanded
         }
 
         expandPreference?.isVisible = !isExpanded && collapsiblePreferenceCount > 0
@@ -272,6 +282,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
 
     companion object {
         private const val SUBSECTION_KEY = "banner_message_preference_group_subsection"
+        private const val DEFAULT_VISIBLE_PREFERENCES_WHEN_COLLAPSED = 1
 
         // Arbitrary large order numbers for the three preferences
         // needed to make sure any Banners are added above them
