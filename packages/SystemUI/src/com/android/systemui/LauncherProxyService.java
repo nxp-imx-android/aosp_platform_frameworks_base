@@ -39,6 +39,7 @@ import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_S
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_VOICE_INTERACTION_WINDOW_SHOWING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_WAKEFULNESS_TRANSITION;
 import static com.android.systemui.shared.system.QuickStepContract.addInterface;
+import static com.android.window.flags.Flags.betterDeskDeactivationInRecentsTransition;
 
 import android.annotation.FloatRange;
 import android.annotation.Nullable;
@@ -396,11 +397,31 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         }
 
         @Override
-        public void onOverviewShown(boolean fromHome) {
+        public void onOverviewShownDeprecated(boolean fromHome) {
+            if (betterDeskDeactivationInRecentsTransition()) return;
+            verifyCallerAndClearCallingIdentityPostMain("onOverviewShownDeprecated", () -> {
+                for (int i = mConnectionCallbacks.size() - 1; i >= 0; --i) {
+                    mConnectionCallbacks.get(i).onOverviewShown();
+                }
+            });
+        }
+
+        @Override
+        public void onOverviewShown(int displayId) {
+            if (!betterDeskDeactivationInRecentsTransition()) return;
             verifyCallerAndClearCallingIdentityPostMain("onOverviewShown", () -> {
                 for (int i = mConnectionCallbacks.size() - 1; i >= 0; --i) {
-                    mConnectionCallbacks.get(i).onOverviewShown(fromHome);
+                    mConnectionCallbacks.get(i).onOverviewShown();
                 }
+                mShellInterface.onOverviewShown(displayId);
+            });
+        }
+
+        @Override
+        public void onOverviewHidden(int displayId) {
+            if (!betterDeskDeactivationInRecentsTransition()) return;
+            verifyCallerAndClearCallingIdentityPostMain("onOverviewHidden", () -> {
+                mShellInterface.onOverviewHidden(displayId);
             });
         }
 
@@ -1332,7 +1353,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     public interface LauncherProxyListener {
         default void onConnectionChanged(boolean isConnected) {}
         default void onPrioritizedRotation(@Surface.Rotation int rotation) {}
-        default void onOverviewShown(boolean fromHome) {}
+        default void onOverviewShown() {}
         /** Notify the recents app (overview) is started by 3-button navigation. */
         default void onToggleRecentApps() {}
         default void onHomeRotationEnabled(boolean enabled) {}
