@@ -37,6 +37,7 @@ import android.util.Log;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.app.AppLockActivity;
 import com.android.internal.pm.pkg.component.ParsedActivity;
 import com.android.server.LocalServices;
 import com.android.server.SystemConfig;
@@ -215,16 +216,12 @@ public final class AppLockPackageHelper {
             return null;
         }
 
-        // TODO(b/436380342): Make the intent to launch AppLockActivity an explicit intent.
+        Intent intent = AppLockActivity.createAppLockActivityIntent(packageName, enabled);
         // We use {@link Intent#setIdentifier(String)} to ensure that the Intents within the created
         // {@link PendingIntent} are unique. This is needed because {@link Intent#filterEquals
         // (Intent)} doesn't compare Intent extras, so two PendingIntents that only differ in their
         // extras would be considered the same, leading to unexpected overwrites.
-        Intent intent = new Intent(PackageManager.ACTION_SET_APP_LOCK)
-                .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
-                .putExtra(PackageManager.EXTRA_APP_LOCK_NEW_STATE, enabled)
-                .setIdentifier("unique:" + System.currentTimeMillis())
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setIdentifier("unique:" + System.currentTimeMillis());
 
         final long token = Binder.clearCallingIdentity();
         try {

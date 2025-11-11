@@ -3675,6 +3675,14 @@
   <java-symbol type="string" name="app_suspended_unsuspend_message" />
   <java-symbol type="string" name="app_suspended_default_message" />
 
+  <java-symbol type="string" name="enable_app_lock_dialog_title" />
+  <java-symbol type="string" name="enable_app_lock_dialog_enable_button_text" />
+  <java-symbol type="string" name="disable_app_lock_dialog_title" />
+  <java-symbol type="string" name="disable_app_lock_dialog_disable_button_text" />
+  <java-symbol type="string" name="enable_app_lock_success_toast_message" />
+  <java-symbol type="string" name="enable_app_lock_failure_toast_message" />
+  <java-symbol type="string" name="disable_app_lock_success_toast_message" />
+
   <java-symbol type="string" name="app_blocked_title" />
   <java-symbol type="string" name="app_blocked_message" />
 
