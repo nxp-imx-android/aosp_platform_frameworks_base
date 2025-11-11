@@ -135,6 +135,7 @@ import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompa
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
+import com.android.systemui.statusbar.notification.shared.NotificationXButtonClipFix;
 import com.android.systemui.statusbar.notification.shared.TransparentHeaderFix;
 import com.android.systemui.statusbar.notification.stack.AmbientState;
 import com.android.systemui.statusbar.notification.stack.AnimationProperties;
@@ -852,7 +853,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
 
         final Boolean targetVisible = getDismissButtonTargetVisibilityIfAny(event);
-        if (targetVisible != null) {
+        if (targetVisible != null && !NotificationXButtonClipFix.isEnabled()) {
             for (DismissButtonTargetVisibilityListener listener :
                     mDismissButtonTargetVisibilityListeners) {
                 listener.onTargetVisibilityChanged(targetVisible);
@@ -2535,7 +2536,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         // We don't handle focus highlight in this view, it's done in background drawable instead
         setDefaultFocusHighlightEnabled(false);
 
-        if (NotificationAddXOnHoverToDismiss.isEnabled()) {
+        // The background cutout should not show when NotificationXButtonClipFix is enabled.
+        if (NotificationAddXOnHoverToDismiss.isEnabled()
+                && !NotificationXButtonClipFix.isEnabled()) {
             addDismissButtonTargetStateListener(findViewById(R.id.backgroundNormal));
         }
     }
