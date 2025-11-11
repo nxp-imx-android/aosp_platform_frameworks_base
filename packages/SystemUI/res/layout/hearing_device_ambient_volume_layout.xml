@@ -32,10 +32,9 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="12dp"
-            android:contentDescription="@string/hearing_devices_ambient_unmute"
             android:src="@drawable/ic_ambient_volume"
             android:tint="@androidprv:color/materialColorOnSurface"
-            android:background="@drawable/hearing_device_ambient_icon_background"/>
+            android:importantForAccessibility="no" />
         <TextView
             android:id="@+id/ambient_title"
             android:layout_width="0dp"
