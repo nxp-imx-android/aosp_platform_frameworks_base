@@ -106,8 +106,8 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
         setHasAboveClient(false);
         for (int i = numberOfConnections() - 1; i >= 0; i--) {
             final ConnectionRecord cr = getConnectionAt(i);
-            final boolean isSameProcess = cr.binding.service.app != null
-                    && cr.binding.service.app.mServices == this;
+            final boolean isSameProcess = cr.binding.service.getHostProcess() != null
+                    && cr.binding.service.getHostProcess().mServices == this;
             if (!isSameProcess && cr.hasFlag(Context.BIND_ABOVE_CLIENT)) {
                 setHasAboveClient(true);
                 break;

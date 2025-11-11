@@ -988,8 +988,9 @@ public class ProcessStateController {
      * Set which process is hosting a service.
      */
     @GuardedBy("mLock")
-    public void setHostProcess(@NonNull ServiceRecord sr, @Nullable ProcessRecord host) {
-        sr.app = host;
+    public void setHostProcess(@NonNull ServiceRecordInternal sr,
+            @Nullable ProcessRecordInternal host) {
+        sr.setHostProcess(host);
     }
 
     /**

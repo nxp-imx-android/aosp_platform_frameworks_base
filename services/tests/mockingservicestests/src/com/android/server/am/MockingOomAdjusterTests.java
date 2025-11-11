@@ -98,6 +98,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
@@ -4621,6 +4622,8 @@ public class MockingOomAdjusterTests {
         doCallRealMethod().when(record).getForegroundServiceType();
         doCallRealMethod().when(record).setForegroundServiceType(any(int.class));
         doCallRealMethod().when(record).getHostProcess();
+        doCallRealMethod().when(record).getHostProcessInternal();
+        doCallRealMethod().when(record).setHostProcess(nullable(ProcessRecordInternal.class));
         doCallRealMethod().when(record).getIsolationHostProcess();
         doCallRealMethod().when(record).getLastTopAlmostPerceptibleBindRequestUptimeMs();
         doCallRealMethod().when(record).setLastTopAlmostPerceptibleBindRequestUptimeMs(

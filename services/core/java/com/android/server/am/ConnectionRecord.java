@@ -171,19 +171,21 @@ final class ConnectionRecord extends ConnectionRecordInternal {
         // If we don't already have an active association, create one...  but only if this
         // is an association between two different processes.
         if (ActivityManagerService.TRACK_PROCSTATS_ASSOCIATIONS
-                && association == null && binding.service.app != null
+                && association == null && binding.service.getHostProcess() != null
                 && (binding.service.appInfo.uid != clientUid
                         || !binding.service.processName.equals(clientProcessName))) {
-            ProcessStats.ProcessStateHolder holder = binding.service.app.getPkgList().get(
-                    binding.service.instanceName.getPackageName());
+            ProcessStats.ProcessStateHolder holder = binding.service.getHostProcess().getPkgList()
+                    .get(binding.service.instanceName.getPackageName());
             if (holder == null) {
                 Slog.wtf(TAG_AM, "No package in referenced service "
-                        + binding.service.shortInstanceName + ": proc=" + binding.service.app);
+                        + binding.service.shortInstanceName + ": proc="
+                        + binding.service.getHostProcess());
             } else if (holder.pkg == null) {
                 Slog.wtf(TAG_AM, "Inactive holder in referenced service "
-                        + binding.service.shortInstanceName + ": proc=" + binding.service.app);
+                        + binding.service.shortInstanceName + ": proc="
+                        + binding.service.getHostProcess());
             } else {
-                mProcStatsLock = binding.service.app.mService.mProcessStats.mLock;
+                mProcStatsLock = binding.service.getHostProcess().mService.mProcessStats.mLock;
                 synchronized (mProcStatsLock) {
                     association = holder.pkg.getAssociationStateLocked(holder.state,
                             binding.service.instanceName.getClassName()).startSource(clientUid,
