@@ -89,6 +89,7 @@ public class ThemeStateManager {
     private UserManagerInternal mUserManager;
     private OverlayManagerInternal mOverlayManager;
     private KeyguardManager mKeyguardManager;
+    private ThemeOverlayHelper mThemeOverlayHelper;
 
     ThemeStateManager(Context context) {
         this(context, Executors.newSingleThreadScheduledExecutor());
@@ -111,7 +112,16 @@ public class ThemeStateManager {
         mKeyguardManager = mContext.getSystemService(KeyguardManager.class);
         mOverlayManager = LocalServices.getService(OverlayManagerInternal.class);
 
+        if (mThemeOverlayHelper == null) {
+            mThemeOverlayHelper = new ThemeOverlayHelper(mOverlayManager);
+        }
+
         mCurrentUserId = LocalServices.getService(ActivityManagerInternal.class).getCurrentUserId();
+    }
+
+    @VisibleForTesting
+    void setThemeOverlayHelper(ThemeOverlayHelper themeOverlayHelper) {
+        mThemeOverlayHelper = themeOverlayHelper;
     }
 
     /**
@@ -367,8 +377,7 @@ public class ThemeStateManager {
                     currentUserId = mCurrentUserId;
                 }
 
-                ThemeOverlayHelper.applyCurrentStateOverlays(
-                        /*overlayManager*/ mOverlayManager,
+                mThemeOverlayHelper.applyCurrentStateOverlays(
                         /*statePair     */ overlaySnapshot,
                         /*applyToSystem */ overlaySnapshot.userId() == currentUserId);
 

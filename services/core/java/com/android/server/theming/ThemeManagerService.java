@@ -47,6 +47,7 @@ import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.UiModeManagerInternal;
+import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
@@ -103,6 +104,7 @@ public class ThemeManagerService extends SystemService {
     private final Context mContext;
     private final ThemeSettingsManager mThemeSettingsManager;
     private final ThemeStateManager mStateManager;
+    private final ThemeOverlayHelper mOverlayHelper;
 
     private final ThemeWallpaperManager mThemeWallpaperManager;
     private UiModeManagerInternal mUiModeManagerInternal;
@@ -112,23 +114,26 @@ public class ThemeManagerService extends SystemService {
 
     public ThemeManagerService(@NonNull Context context) {
         this(context, SystemProperties::get, new ThemeStateManager(context),
-                LocalServices.getService(WallpaperManagerInternal.class));
+                LocalServices.getService(WallpaperManagerInternal.class),
+                LocalServices.getService(OverlayManagerInternal.class));
     }
 
     @VisibleForTesting
     ThemeManagerService(@NonNull Context context,
             @NonNull SystemPropertiesReader systemPropertiesReader,
             ThemeStateManager themeStateManager,
-            @Nullable WallpaperManagerInternal wallpaperManagerInternal) {
+            @Nullable WallpaperManagerInternal wallpaperManagerInternal,
+            OverlayManagerInternal overlayManagerInternal) {
         super(context);
         mContext = context;
         mStateManager = themeStateManager;
         mThemeWallpaperManager = new ThemeWallpaperManager(wallpaperManagerInternal);
         mThemeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager);
         mSystemPropertiesReader = systemPropertiesReader;
+        mOverlayHelper = new ThemeOverlayHelper(overlayManagerInternal);
 
         mInternal = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mSystemPropertiesReader, mStateManager);
+                mSystemPropertiesReader, mStateManager, mOverlayHelper);
         mPublic = new ThemeBinderService(mContext, mInternal);
     }
 

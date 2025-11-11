@@ -16,8 +16,6 @@
 
 package com.android.server.theming;
 
-import static com.android.server.theming.ThemeOverlayHelper.createDynamicOverlay;
-
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
@@ -57,6 +55,7 @@ public class ThemeManagerInternal {
     private final ThemeStateManager mStateManager;
     private final ThemeSettingsManager mThemeSettingsManager;
     private final SystemPropertiesReader mSystemPropertiesReader;
+    private final ThemeOverlayHelper mOverlayHelper;
 
     private final Object mLock = new Object();
 
@@ -69,11 +68,13 @@ public class ThemeManagerInternal {
             new SparseArray<>();
 
     ThemeManagerInternal(Context context, ThemeSettingsManager themeSettingsManager,
-            SystemPropertiesReader systemPropertiesReader, ThemeStateManager stateManager) {
+            SystemPropertiesReader systemPropertiesReader, ThemeStateManager stateManager,
+            ThemeOverlayHelper overlayHelper) {
         mContext = context;
         mStateManager = stateManager;
         mThemeSettingsManager = themeSettingsManager;
         mSystemPropertiesReader = systemPropertiesReader;
+        mOverlayHelper = overlayHelper;
     }
 
     /**
@@ -124,7 +125,7 @@ public class ThemeManagerInternal {
         ColorScheme newDarkScheme = new ColorScheme(newSeed, true, newStyle, newContrast);
         ColorScheme newLightScheme = new ColorScheme(newSeed, false, newStyle, newContrast);
 
-        return createDynamicOverlay(newLightScheme, newDarkScheme).getInternal();
+        return mOverlayHelper.createDynamicOverlay(newLightScheme, newDarkScheme).getInternal();
     }
 
     /**
