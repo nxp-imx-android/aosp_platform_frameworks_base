@@ -7312,7 +7312,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 return packageName.equals(mRequiredSdkSandboxPackage);
             }
             Computer snapshot = snapshot();
-            int uid = snapshot.getPackageUid(packageName, flags, userId);
+            int uid = snapshot.getPackageUid(packageName, flags, userId,
+                    Process.isPccUid(callingUid));
             return UserHandle.isSameApp(uid, callingUid);
         }
 
