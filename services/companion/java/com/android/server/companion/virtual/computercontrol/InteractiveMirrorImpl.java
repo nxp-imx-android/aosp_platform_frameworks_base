@@ -50,11 +50,12 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private final SurfaceControl mMirrorLeash;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final InputManagerInternal mInputManagerInternal;
-    private final Consumer<InteractiveMirrorImpl> mOnCloseListener;
+    private final Consumer<InteractiveMirrorImpl> mRemoveInteractiveMirror;
 
     InteractiveMirrorImpl(WindowManagerInternal.DisplayMirror mirror,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
-            InputManagerInternal inputManagerInternal, Consumer<InteractiveMirrorImpl> onClose) {
+            InputManagerInternal inputManagerInternal,
+            Consumer<InteractiveMirrorImpl> removeInteractiveMirror) {
         mMirror = mirror;
         mTransactionSupplier = transactionSupplier;
         mDisplayInfo = displayInfo;
@@ -63,7 +64,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
                 .setName("InteractiveMirrorImpl#mMirrorLeash$" + mMirror.hashCode())
                 .setContainerLayer()
                 .build();
-        mOnCloseListener = onClose;
+        mRemoveInteractiveMirror = removeInteractiveMirror;
 
         Slog.v(TAG, "Creating interactive mirror with SurfaceControl: " + mMirrorLeash);
         initialize();
@@ -80,7 +81,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     }
 
     /** Return the mirror leash that can be safely sent to the client app. */
-    public SurfaceControl getMirrorLeash() {
+    SurfaceControl getMirrorLeash() {
         return mMirrorLeash;
     }
 
@@ -117,12 +118,13 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     @RequiresNoPermission
     @Override
     public void close() {
-        try (var transaction = mTransactionSupplier.get()) {
-            closeWithTransaction(transaction);
-            transaction.apply();
-        }
+        mRemoveInteractiveMirror.accept(this);
     }
 
+    /**
+     * Closes this InteractiveMirrorImpl. The owner is responsible for ensuring that this method is
+     * only called once.
+     */
     void closeWithTransaction(SurfaceControl.Transaction transaction) {
         Slog.v(TAG, "Closing interactive mirror with SurfaceControl: " + mMirrorLeash);
         transaction.remove(mMirrorLeash);
@@ -131,6 +133,5 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         } catch (Exception e) {
             Slog.e(TAG, "Failed to close DisplayMirror", e);
         }
-        mOnCloseListener.accept(this);
     }
 }
