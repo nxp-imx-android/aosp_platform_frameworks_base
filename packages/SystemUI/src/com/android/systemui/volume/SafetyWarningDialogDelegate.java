@@ -29,64 +29,108 @@ import android.view.WindowManager;
 
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 
-abstract public class SafetyWarningDialog extends SystemUIDialog
-        implements DialogInterface.OnDismissListener, DialogInterface.OnClickListener {
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedFactory;
+import dagger.assisted.AssistedInject;
 
-    private static final String TAG = Util.logTag(SafetyWarningDialog.class);
+import java.util.HashSet;
+import java.util.Set;
+
+public class SafetyWarningDialogDelegate implements
+        SystemUIDialog.Delegate,
+        DialogInterface.OnKeyListener,
+        DialogInterface.OnDismissListener,
+        DialogInterface.OnClickListener {
+
+    private static final String TAG = Util.logTag(SafetyWarningDialogDelegate.class);
 
     private static final int KEY_CONFIRM_ALLOWED_AFTER = 1000; // milliseconds
 
     private final Context mContext;
     private final AudioManager mAudioManager;
+    private final SystemUIDialog.Factory mSystemUIDialogFactory;
+    private final Cleanup mCleanup;
+    private final Set<SystemUIDialog> mDialogs = new HashSet<>();
 
     private long mShowTime;
     private boolean mNewVolumeUp;
     private boolean mDisableOnVolumeUp;
 
-    public SafetyWarningDialog(Context context, AudioManager audioManager) {
-        super(context);
+    @AssistedFactory
+    public interface Factory {
+        /** Create a SafetyWarningDialogDelegate */
+        SafetyWarningDialogDelegate create(Cleanup cleanup);
+    }
+
+    @AssistedInject
+    public SafetyWarningDialogDelegate(
+            Context context,
+            AudioManager audioManager,
+            SystemUIDialog.Factory systemUIDialogFactory,
+            @Assisted Cleanup cleanup) {
+
         mContext = context;
         mAudioManager = audioManager;
+        mSystemUIDialogFactory = systemUIDialogFactory;
+        mCleanup = cleanup;
         try {
             mDisableOnVolumeUp = mContext.getResources().getBoolean(
-                  com.android.internal.R.bool.config_safe_media_disable_on_volume_up);
+                    com.android.internal.R.bool.config_safe_media_disable_on_volume_up);
         } catch (NotFoundException e) {
             mDisableOnVolumeUp = true;
         }
-        getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
-        setShowForAllUsers(true);
-        setMessage(mContext.getString(com.android.internal.R.string.safe_media_volume_warning));
-        setButton(DialogInterface.BUTTON_POSITIVE,
-                mContext.getString(com.android.internal.R.string.yes), this);
-        setButton(DialogInterface.BUTTON_NEGATIVE,
-                mContext.getString(com.android.internal.R.string.no), (OnClickListener) null);
-        setOnDismissListener(this);
 
         final IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         context.registerReceiver(mReceiver, filter,
                 Context.RECEIVER_EXPORTED_UNAUDITED);
     }
 
-    abstract protected void cleanUp();
-
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (mDisableOnVolumeUp && keyCode == KeyEvent.KEYCODE_VOLUME_UP
-            && event.getRepeatCount() == 0) {
-            mNewVolumeUp = true;
-        }
-        return super.onKeyDown(keyCode, event);
+    public SystemUIDialog createDialog() {
+        SystemUIDialog dialog = mSystemUIDialogFactory.create(this);
+        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
+        dialog.setShowForAllUsers(true);
+        dialog.setMessage(mContext.getString(
+                com.android.internal.R.string.safe_media_volume_warning));
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE,
+                mContext.getString(com.android.internal.R.string.yes), this);
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+                mContext.getString(com.android.internal.R.string.no),
+                (DialogInterface.OnClickListener) null);
+        dialog.setOnDismissListener(this);
+
+        mDialogs.add(dialog);
+
+        return dialog;
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
+    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            return onKeyDown(keyCode, event);
+        } else if (event.getAction() == KeyEvent.ACTION_UP) {
+            return onKeyUp(dialog, keyCode, event);
+        }
+
+        return false;
+    }
+
+    private boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (mDisableOnVolumeUp && keyCode == KeyEvent.KEYCODE_VOLUME_UP
+                && event.getRepeatCount() == 0) {
+            mNewVolumeUp = true;
+        }
+        return false;
+    }
+
+    private boolean onKeyUp(DialogInterface dialog, int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && mNewVolumeUp
                 && (System.currentTimeMillis() - mShowTime) > KEY_CONFIRM_ALLOWED_AFTER) {
             if (D.BUG) Log.d(TAG, "Confirmed warning via VOLUME_UP");
             mAudioManager.disableSafeMediaVolume();
-            dismiss();
+            dialog.dismiss();
         }
-        return super.onKeyUp(keyCode, event);
+        return false;
     }
 
     @Override
@@ -95,7 +139,7 @@ abstract public class SafetyWarningDialog extends SystemUIDialog
     }
 
     @Override
-    protected void start() {
+    public void onStart(SystemUIDialog dialog) {
         mShowTime = System.currentTimeMillis();
     }
 
@@ -107,7 +151,7 @@ abstract public class SafetyWarningDialog extends SystemUIDialog
             // Don't crash if the receiver has already been unregistered.
             e.printStackTrace();
         }
-        cleanUp();
+        mCleanup.cleanup();
     }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -115,8 +159,14 @@ abstract public class SafetyWarningDialog extends SystemUIDialog
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(intent.getAction())) {
                 if (D.BUG) Log.d(TAG, "Received ACTION_CLOSE_SYSTEM_DIALOGS");
-                cancel();
+                mDialogs.forEach(SystemUIDialog::cancel);
+                mDialogs.clear();
             }
         }
     };
+
+    public interface Cleanup {
+        /** Called after the Dialog is dismissed. */
+        void cleanup();
+    }
 }
