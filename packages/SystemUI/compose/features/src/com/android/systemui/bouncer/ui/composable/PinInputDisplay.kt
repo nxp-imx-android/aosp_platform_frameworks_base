@@ -23,6 +23,7 @@ import android.app.Dialog
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.TextView
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
@@ -38,6 +39,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -72,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.animation.Easings
+import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.thenIf
 import com.android.keyguard.PinShapeAdapter
 import com.android.systemui.bouncer.shared.constants.PinBouncerConstants
@@ -89,7 +92,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
 @Composable
-fun PinInputDisplay(viewModel: PinBouncerViewModel, modifier: Modifier = Modifier) {
+fun ContentScope.PinInputDisplay(viewModel: PinBouncerViewModel, modifier: Modifier = Modifier) {
     val hintedPinLength: Int? by viewModel.hintedPinLength.collectAsStateWithLifecycle()
     val shapeAnimations = rememberShapeAnimations(viewModel.pinShapes)
 
@@ -195,22 +198,26 @@ private fun HintingPinInputDisplay(
         horizontalArrangement = Arrangement.Center,
         modifier = modifier.height(shapeAnimations.shapeSize),
     ) {
-        pinEntryDrawable.forEachIndexed { index, drawable ->
-            // Key the loop by [index] and [drawable], so that updating a shape drawable at the same
+        pinEntryDrawable.forEachIndexed { index, loadableAnimation ->
+            // Key the loop by [index] and [loadableAnimation], so that updating a shape drawable at
             // index will play the new animation (by remembering a new [atEnd]).
-            key(index, drawable) {
+            key(index, loadableAnimation) {
                 // [rememberAnimatedVectorPainter] requires a `atEnd` boolean to switch from `false`
                 // to `true` for the animation to play. This animation is suppressed when
                 // playAnimation is false, always rendering the end-state of the animation.
                 var atEnd by remember { mutableStateOf(!playAnimation) }
                 LaunchedEffect(Unit) { atEnd = true }
 
-                Image(
-                    painter = rememberAnimatedVectorPainter(drawable, atEnd),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    colorFilter = ColorFilter.tint(dotColor),
-                )
+                if (loadableAnimation is LoadableAnimation.Loaded) {
+                    Image(
+                        painter = rememberAnimatedVectorPainter(loadableAnimation.animation, atEnd),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        colorFilter = ColorFilter.tint(dotColor),
+                    )
+                } else {
+                    Box(Modifier.size(shapeAnimations.shapeSize))
+                }
             }
         }
     }
@@ -507,25 +514,36 @@ private class PinInputEntry(val digit: Digit, val shapeAnimations: ShapeAnimatio
         val shapeHeight = shapeAnimations.shapeSize
         var atEnd by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { atEnd = true }
-        Image(
-            painter = rememberAnimatedVectorPainter(shape, atEnd),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            colorFilter = ColorFilter.tint(dotColor),
-            modifier =
-                Modifier.layout { measurable, _ ->
-                    val shapeSizePx = animatedShapeSize.roundToPx()
-                    val placeable = measurable.measure(Constraints.fixed(shapeSizePx, shapeSizePx))
+        if (shape is LoadableAnimation.Loaded) {
+            Image(
+                painter = rememberAnimatedVectorPainter(shape.animation, atEnd),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                colorFilter = ColorFilter.tint(dotColor),
+                modifier =
+                    Modifier.layout { measurable, _ ->
+                        val shapeSizePx = animatedShapeSize.roundToPx()
+                        val placeable =
+                            measurable.measure(Constraints.fixed(shapeSizePx, shapeSizePx))
 
-                    layout(animatedEntryWidth.roundToPx(), shapeHeight.roundToPx()) {
-                        placeable.place(
-                            ((animatedEntryWidth - animatedShapeSize) / 2f).roundToPx(),
-                            ((shapeHeight - animatedShapeSize) / 2f).roundToPx(),
-                        )
-                    }
-                },
-        )
+                        layout(animatedEntryWidth.roundToPx(), shapeHeight.roundToPx()) {
+                            placeable.place(
+                                ((animatedEntryWidth - animatedShapeSize) / 2f).roundToPx(),
+                                ((shapeHeight - animatedShapeSize) / 2f).roundToPx(),
+                            )
+                        }
+                    },
+            )
+        } else {
+            Box(Modifier.size(shapeAnimations.shapeSize))
+        }
     }
+}
+
+private sealed interface LoadableAnimation {
+    data object NotLoaded : LoadableAnimation
+
+    data class Loaded(val animation: AnimatedImageVector) : LoadableAnimation
 }
 
 /** Animated Vector Drawables used to render the pin input. */
@@ -533,14 +551,14 @@ private class ShapeAnimations(
     /** Width and height for all the animation images listed here. */
     val shapeSize: Dp,
     /** Transitions from the dot (●) to the circle (◦). Used for the hinting pin input only. */
-    val dotToCircle: AnimatedImageVector,
+    val dotToCircle: LoadableAnimation,
     /** Each of the animations transition from nothing via a shape to the dot (●). */
-    private val shapesToDot: List<AnimatedImageVector>,
+    private val shapesToDot: List<LoadableAnimation>,
 ) {
     /**
      * Returns a transition from nothing via shape to the dot (●)., specific to the input position.
      */
-    fun getShapeToDot(position: Int): AnimatedImageVector {
+    fun getShapeToDot(position: Int): LoadableAnimation {
         return shapesToDot[position.mod(shapesToDot.size)]
     }
 
@@ -550,7 +568,7 @@ private class ShapeAnimations(
      *
      * `false` if the shape's end state is the circle (◦).
      */
-    fun isDotShape(shapeAnimation: AnimatedImageVector): Boolean {
+    fun isDotShape(shapeAnimation: LoadableAnimation): Boolean {
         return shapeAnimation != dotToCircle
     }
 
@@ -563,13 +581,37 @@ private class ShapeAnimations(
 }
 
 @Composable
-private fun rememberShapeAnimations(pinShapes: PinShapeAdapter): ShapeAnimations {
-    // NOTE: `animatedVectorResource` does remember the returned AnimatedImageVector.
-    val dotToCircle = AnimatedImageVector.animatedVectorResource(PinBouncerConstants.pinDotAvd)
-    val shapesToDot = pinShapes.shapes.map { AnimatedImageVector.animatedVectorResource(it) }
+private fun ContentScope.rememberShapeAnimations(pinShapes: PinShapeAdapter): ShapeAnimations {
+    val dotToCircle: LoadableAnimation = rememberShapeAnimation(PinBouncerConstants.pinDotAvd)
+    val shapesToDot: List<LoadableAnimation> = pinShapes.shapes.map { rememberShapeAnimation(it) }
     val shapeSize = dimensionResource(R.dimen.password_shape_size)
 
     return remember(dotToCircle, shapesToDot, shapeSize) {
         ShapeAnimations(shapeSize, dotToCircle, shapesToDot)
     }
+}
+
+/**
+ * Returns a [LoadableAnimation] for the given [resourceId].
+ *
+ * The returned animation will either be loaded or not loaded, depending on the current transition
+ * state. If the transition into the bouncer has ended and the scene is idle, it will load the
+ * animation (which is an expensive operation) and remember it until the resource ID changes or the
+ * function leaves the composition.
+ *
+ * If the transition isn't idle yet (still transitioning), either a previously-loaded animation or
+ * the [LoadableAnimation.NotLoaded] will be returned. Once the animation is loaded, it will
+ * continue to be returned, even if a transition (to leave the bouncer) starts.
+ */
+@Composable
+private fun ContentScope.rememberShapeAnimation(@DrawableRes resourceId: Int): LoadableAnimation {
+    var loadableAnimation: LoadableAnimation by
+        remember(resourceId) { mutableStateOf(LoadableAnimation.NotLoaded) }
+
+    if (loadableAnimation is LoadableAnimation.NotLoaded && layoutState.isIdle()) {
+        loadableAnimation =
+            LoadableAnimation.Loaded(AnimatedImageVector.animatedVectorResource(resourceId))
+    }
+
+    return loadableAnimation
 }
