@@ -401,16 +401,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_close_task_animation_in_dtc_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Enables bugfix to handle close task animation within DesktopTasksController."
-    bug: "403345083"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_first_based_default_to_desktop_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to make default-to-desktop triggered by desktop-first state."

@@ -236,7 +236,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
     fun onTransitionReady_noTransitionInHandler_addPendingMixedTransition() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val topTransparentTask = createTaskInfo(1)
@@ -261,7 +260,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
     fun onTransitionReady_closingTaskAndExitDesktop_notAddPendingMixedTransition() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
@@ -279,7 +277,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
     fun onTransitionReady_closingTaskNotFreeform_notAddPendingMixedTransition() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
@@ -297,7 +294,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
     fun onTransitionReady_notClosingTask_notAddPendingMixedTransition() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
@@ -315,7 +311,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
     fun closingTask_startsTransitionToRemoveFully() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val freeformTask = createTaskInfo(1)
@@ -338,7 +333,6 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
     fun onTransitionReady_handlerHasTransition_notAddPendingMixedTransition() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val topTransparentTask = createTaskInfo(1)
