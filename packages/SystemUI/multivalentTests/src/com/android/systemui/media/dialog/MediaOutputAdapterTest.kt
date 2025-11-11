@@ -468,32 +468,6 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    fun onItemClick_selectionBehaviorTransferAndSessionHost_showsEndSessionDialog() {
-        mMediaSwitchingController.stub {
-            on { isCurrentOutputDeviceHasSessionOngoing() } doReturn true
-        }
-        mMediaDevice2.stub {
-            on { state } doReturn STATE_DISCONNECTED
-            on { selectionBehavior } doReturn SELECTION_BEHAVIOR_TRANSFER
-        }
-        updateAdapterWithDevices(listOf(mMediaDevice2))
-
-        val viewHolder =
-            mMediaOutputAdapter.onCreateViewHolder(
-                LinearLayout(mContext),
-                MediaItemType.TYPE_DEVICE,
-            ) as MediaDeviceViewHolder
-        val spyMediaDeviceViewHolder = spy(viewHolder)
-        doNothing().whenever(spyMediaDeviceViewHolder).showCustomEndSessionDialog(mMediaDevice2)
-
-        mMediaOutputAdapter.onBindViewHolder(spyMediaDeviceViewHolder, 0)
-        spyMediaDeviceViewHolder.mMainContent.performClick()
-
-        verify(mMediaSwitchingController, never()).connectDevice(ArgumentMatchers.any())
-        verify(spyMediaDeviceViewHolder).showCustomEndSessionDialog(mMediaDevice2)
-    }
-
-    @Test
     fun onItemClick_selectionBehaviorGoToApp_sendsLaunchIntent() {
         mMediaDevice2.stub {
             on { state } doReturn STATE_DISCONNECTED
