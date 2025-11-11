@@ -17,7 +17,9 @@ package android.platform.test.ravenwood;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
 
@@ -28,6 +30,7 @@ import java.util.WeakHashMap;
  * Keeps track of stacktraces where a message is posted.
  */
 public final class RavenwoodMessageTracker {
+    private static final String TAG = RavenwoodDriver.TAG;
     public static final RavenwoodMessageTracker sInstance = new RavenwoodMessageTracker();
 
     public static RavenwoodMessageTracker getInstance() {
@@ -51,7 +54,7 @@ public final class RavenwoodMessageTracker {
     }
 
     /** Start tracking {@code msg} and remember the current stacktrace. */
-    public void trackMessagePoster(@NonNull Message msg) {
+    public void trackMessage(@NonNull Message msg) {
         var here = new MessageWasPostedHereStackTrace();
         synchronized (mLock) {
             mMessagePosters.put(Objects.requireNonNull(msg), here);
@@ -72,6 +75,39 @@ public final class RavenwoodMessageTracker {
         var poster = getPoster(msg);
         if (poster != null) {
             poster.injectAsCause(th);
+        }
+    }
+
+    /**
+     * Print all pending messages in logcat.
+     */
+    void logPendingMessages() {
+        var showPendingMessagePosters = RavenwoodEnvironment.getInstance().getBoolEnvVar(
+                        "RAVENWOOD_SHOW_PENDING_MESSAGE_POSTERS");
+        var max = RavenwoodEnvironment.getInstance().getIntEnvVar(
+                "RAVENWOOD_SHOW_PENDING_MESSAGE_MAX", 10);
+        synchronized (mLock) {
+            var size = mMessagePosters.size();
+            if (size == 0) {
+                return;
+            }
+            Log.w(TAG, "Test finished, but there are still " + size + " message(s) in the queue");
+            var i = 0;
+            for (var entry : mMessagePosters.entrySet()) {
+                if (i >= max) {
+                    Log.w(TAG, "    (Omitting more messages)");
+                    break;
+                }
+                var m = entry.getKey();
+                var poster = showPendingMessagePosters ? entry.getValue() : null;
+
+                String thread = "(n/a)";
+                if (m.getTarget() != null) {
+                    thread = m.getTarget().getLooper().getThread().getName();
+                }
+
+                Log.w(TAG, "    #" + (i++) + ": Thread=" + thread + ", " + m, poster);
+            }
         }
     }
 }

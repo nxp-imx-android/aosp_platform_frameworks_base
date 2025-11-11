@@ -447,6 +447,7 @@ public final class Message implements Parcelable {
         // with the sentinel handler.
         target = (target != null) ? NULL_HANDLER : null;
         callback = NULL_RUNNABLE;
+        this.onClear();
     }
 
     /**
