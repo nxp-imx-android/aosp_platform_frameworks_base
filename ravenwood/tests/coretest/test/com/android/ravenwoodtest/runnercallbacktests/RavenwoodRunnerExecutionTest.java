@@ -17,12 +17,15 @@ package com.android.ravenwoodtest.runnercallbacktests;
 
 import static com.android.ravenwoodtest.coretest.RavenwoodMainThreadTest.assertHasMessageWasPostedHereStackTraceAsCause;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.fail;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodErrorHandler;
+import android.platform.test.ravenwood.RavenwoodUnsupportedApiException;
 import android.platform.test.ravenwood.RavenwoodUtils;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -107,6 +110,80 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
             });
             RavenwoodUtils.waitForMainLooperDone();
             RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtException();
+        }
+    }
+
+    /**
+     * Assertion failure on a worker thread.
+     */
+    @RunWith(AndroidJUnit4.class)
+    // CHECKSTYLE:OFF
+    @Expected("""
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$BgThreadFailureTest
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$BgThreadFailureTest)
+    testFailure: Uncaught exception detected on thread Thread-1. *** Continue running remaining tests ***
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$BgThreadFailureTest)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$BgThreadFailureTest
+    testSuiteFinished: classes
+    testRunFinished: 1,1,0,0
+    """)
+    // CHECKSTYLE:ON
+    public static class BgThreadFailureTest {
+        @Test
+        public void test1() throws Exception {
+            var t = new Thread(() -> {
+                fail("Expected Exception");
+            });
+            t.start();
+            t.join();
+
+            try {
+                var e = RavenwoodErrorHandler.getPendingRecoverableUncaughtException();
+                assertThat(e).isNotNull();
+                assertThat(e.getCause()).isNotNull();
+                assertThat(e.getCause().getMessage()).isEqualTo("Expected Exception");
+            } catch (Throwable th) {
+                setError(th);
+            }
+        }
+    }
+
+    /**
+     * RavenwoodUnsupportedApiException on a worker thread.
+     */
+    @RunWith(AndroidJUnit4.class)
+    // CHECKSTYLE:OFF
+    @Expected("""
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$BgThreadUnsupportedApiTest
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$BgThreadUnsupportedApiTest)
+    testFailure: Uncaught exception detected on thread Thread-0. *** Continue running remaining tests ***
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$BgThreadUnsupportedApiTest)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$BgThreadUnsupportedApiTest
+    testSuiteFinished: classes
+    testRunFinished: 1,1,0,0
+    """)
+    // CHECKSTYLE:ON
+    public static class BgThreadUnsupportedApiTest {
+        @Test
+        public void test1() throws Exception {
+            var t = new Thread(() -> {
+                throw new RavenwoodUnsupportedApiException("[test] ");
+            });
+            t.start();
+            t.join();
+
+            try {
+                var e = RavenwoodErrorHandler.getPendingRecoverableUncaughtException();
+                assertThat(e).isNotNull();
+                assertThat(e.getCause()).isNotNull();
+                assertThat(e.getCause()).isInstanceOf(RavenwoodUnsupportedApiException.class);
+            } catch (Throwable th) {
+                setError(th);
+            }
         }
     }
 }
