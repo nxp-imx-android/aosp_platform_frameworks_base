@@ -46,11 +46,8 @@ import android.os.IRemoteCallback;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.test.TestLooper;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.dreams.DreamService;
-import android.service.dreams.Flags;
 import android.service.dreams.IDreamService;
 
 import androidx.test.filters.SmallTest;
@@ -144,9 +141,8 @@ public class DreamControllerTest {
                 eq(false) /*preview*/, any());
     }
 
-    @EnableFlags(Flags.FLAG_ALLOW_DREAM_ATTACH_FAILURE)
     @Test
-    public void startDream_flagEnabled_dreamListenerNotified() throws RemoteException {
+    public void startDream_dreamListenerNotified() throws RemoteException {
         // Call dream controller to start dreaming.
         mDreamController.startDream(mToken, mDreamName, false /*isPreview*/, false /*doze*/,
                 0 /*userId*/, null /*wakeLock*/, mOverlayName, "test" /*reason*/);
@@ -163,22 +159,6 @@ public class DreamControllerTest {
         mLooper.dispatchAll();
 
         // Verify that dream listener is notified.
-        verify(mListener).onDreamStarted(any());
-    }
-
-    @DisableFlags(Flags.FLAG_ALLOW_DREAM_ATTACH_FAILURE)
-    @Test
-    public void startDream_flagDisabled_dreamListenerNotified() {
-        // Call dream controller to start dreaming.
-        mDreamController.startDream(mToken, mDreamName, false /*isPreview*/, false /*doze*/,
-                0 /*userId*/, null /*wakeLock*/, mOverlayName, "test" /*reason*/);
-
-        // Mock service connected.
-        final ServiceConnection serviceConnection = captureServiceConnection();
-        serviceConnection.onServiceConnected(mDreamName, mIBinder);
-        mLooper.dispatchAll();
-
-        // Verify that dream service is called to attach.
         verify(mListener).onDreamStarted(any());
     }
 
@@ -347,7 +327,6 @@ public class DreamControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ALLOW_DREAM_ATTACH_FAILURE)
     public void startDream_attachReturnsError_stopsDream() throws RemoteException {
         // Call dream controller to start dreaming.
         mDreamController.startDream(mToken, mDreamName, false /*isPreview*/, false /*doze*/,

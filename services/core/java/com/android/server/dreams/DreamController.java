@@ -19,7 +19,6 @@ package com.android.server.dreams;
 import static android.content.Intent.FLAG_RECEIVER_FOREGROUND;
 import static android.os.PowerManager.USER_ACTIVITY_EVENT_OTHER;
 import static android.os.PowerManager.USER_ACTIVITY_FLAG_NO_CHANGE_LIGHTS;
-import static android.service.dreams.Flags.allowDreamAttachFailure;
 
 import android.app.ActivityTaskManager;
 import android.app.BroadcastOptions;
@@ -411,20 +410,12 @@ final class DreamController {
     private void attach(IDreamService service) {
         try {
             service.asBinder().linkToDeath(mCurrentDream, 0);
-            if (allowDreamAttachFailure()) {
-                mCurrentDream.mService = service;
-            }
+            mCurrentDream.mService = service;
             service.attach(mCurrentDream.mToken, mCurrentDream.mCanDoze,
                     mCurrentDream.mIsPreviewMode, mCurrentDream.mDreamingStartedCallback);
         } catch (RemoteException ex) {
             Slog.e(TAG, "The dream service died unexpectedly.", ex);
             stopDream(true /*immediate*/, "attach failed");
-            return;
-        }
-
-        if (!allowDreamAttachFailure()) {
-            mCurrentDream.mService = service;
-            onDreamStarted();
         }
     }
 
@@ -484,10 +475,6 @@ final class DreamController {
             public void sendResult(Bundle data) {
                 mHandler.post(mStopPreviousDreamsIfNeeded);
                 mHandler.post(mReleaseWakeLockIfNeeded);
-
-                if (!allowDreamAttachFailure()) {
-                    return;
-                }
 
                 mHandler.post(() -> {
                     // If the dream has been stopped already, don't do anything.
