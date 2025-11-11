@@ -55,7 +55,9 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 import com.android.systemui.util.time.fakeSystemClock
+import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInteractor
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -74,7 +76,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
     private val kosmos =
         testKosmos().apply {
@@ -445,6 +447,7 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
                 systemClock = kosmos.fakeSystemClock,
                 pointerDeviceRepository = kosmos.pointerDeviceRepository,
                 secureLockDeviceInteractor = { kosmos.secureLockDeviceInteractor },
+                wallpaperFocalAreaInteractor = kosmos.wallpaperFocalAreaInteractor,
             )
         setUpState()
     }

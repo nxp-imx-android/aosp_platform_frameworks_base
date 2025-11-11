@@ -71,7 +71,7 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
 
     // Initialized in each test since certain flows rely on mocked data that isn't
     // modifiable after start, like wallpaperManager.isWallpaperSupported
-    private lateinit var underTest: WallpaperRepositoryImpl
+    private lateinit var underTest: WallpaperRepository
 
     lateinit var focalAreaTarget: String
 
