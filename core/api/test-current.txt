@@ -3566,6 +3566,14 @@ package android.service.personalcontext.insight {
 
 }
 
+package android.service.personalcontext.refiner {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
+    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getInterestedHintClusters(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature>, @NonNull java.util.Set<java.util.UUID>);
+  }
+
+}
+
 package android.service.quickaccesswallet {
 
   public interface QuickAccessWalletClient extends java.io.Closeable {

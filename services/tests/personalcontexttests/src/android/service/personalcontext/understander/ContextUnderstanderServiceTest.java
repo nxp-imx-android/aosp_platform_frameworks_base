@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.service.personalcontext;
+package android.service.personalcontext.understander;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -28,7 +28,6 @@ import android.service.personalcontext.hint.ContextHintTestUtils;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
-import android.service.personalcontext.understander.ContextUnderstanderService;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -68,12 +67,10 @@ public class ContextUnderstanderServiceTest {
     public void testOnUnderstandList() throws RemoteException, GeneralSecurityException {
         final ContextHintWithSignature hint1 =
                 new ContextHintWithSignature.Builder(
-                        new BundleHint.Builder().build(),
-                        ContextHintTestUtils.generateSignedHintKey()).build();
+                        new BundleHint(), ContextHintTestUtils.generateSignedHintKey()).build();
         final ContextHintWithSignature hint2 =
                 new ContextHintWithSignature.Builder(
-                        new BundleHint.Builder().build(),
-                        ContextHintTestUtils.generateSignedHintKey()).build();
+                        new BundleHint(), ContextHintTestUtils.generateSignedHintKey()).build();
 
         final List<ContextHintWithSignature> hints = Arrays.asList(hint1, hint2);
         IRefineCallback callback = mock(IRefineCallback.Stub.class);
