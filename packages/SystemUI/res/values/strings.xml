@@ -2282,7 +2282,10 @@
     <!-- Dialog asking if the tuner should really be removed from settings [CHAR LIMIT=NONE]-->
     <string name="remove_from_settings_prompt">Remove System UI Tuner from Settings and stop using all of its features?"</string>
 
-    <string name="qs_customize_remove" translatable="false">Remove</string>
+    <string name="tuner_remove" translatable="false">Remove</string>
+
+    <!-- Button in QS edit mode to remove the selected tile [CHAR LIMIT=12] -->
+    <string name="qs_customize_remove">Remove</string>
 
     <!-- Dialog title asking if Bluetooth should be enabled [CHAR LIMIT=NONE] -->
     <string name="enable_bluetooth_title">Turn on Bluetooth?</string>
