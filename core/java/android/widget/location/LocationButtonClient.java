@@ -70,7 +70,7 @@ public interface LocationButtonClient {
      * @param isGranted {@code true} if the permission is granted.
      *                  {@code false} if the permission can't be granted.
      */
-    void onPermissionsResult(boolean isGranted);
+    void onPermissionResult(boolean isGranted);
 
     /**
      * Called when an error occurs either during the creation of the location button session

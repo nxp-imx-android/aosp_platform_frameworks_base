@@ -62988,7 +62988,7 @@ package android.widget.inline {
 package android.widget.location {
 
   @FlaggedApi("android.widget.flags.location_button_enabled") public interface LocationButtonClient {
-    method public void onPermissionsResult(boolean);
+    method public void onPermissionResult(boolean);
     method public void onSessionError(@NonNull Throwable);
     method public void onSessionOpened(@NonNull android.widget.location.LocationButtonSession);
   }
