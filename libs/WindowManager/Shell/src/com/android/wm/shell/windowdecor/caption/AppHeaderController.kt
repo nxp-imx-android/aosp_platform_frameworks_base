@@ -143,8 +143,6 @@ class AppHeaderController(
         windowDecorViewHostSupplier,
         taskOrganizer,
         bgScope,
-        surfaceControlBuilderSupplier,
-        surfaceControlViewHostFactory,
     ),
     MaximizeMenuController,
     HandleMenuController,

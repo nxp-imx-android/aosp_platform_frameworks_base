@@ -128,8 +128,6 @@ class AppHandleController(
         windowDecorViewHostSupplier,
         taskOrganizer,
         bgScope,
-        surfaceControlBuilderSupplier,
-        surfaceControlViewHostFactory,
     ),
     HandleMenuController,
     ManageWindowsMenuController {
