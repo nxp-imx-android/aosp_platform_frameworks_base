@@ -1722,13 +1722,14 @@ public abstract class WMShellModule {
             @NonNull DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             @NonNull @ShellMainThread CoroutineScope mainScope,
             DesktopState desktopState,
-            @NonNull DesktopModeEventLogger desktopModeEventLogger
+            @NonNull DesktopModeEventLogger desktopModeEventLogger,
+            @NonNull ShellController shellController
     ) {
         if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.of(
                     new DesksTransitionObserver(desktopUserRepositories, desksOrganizer,
                             transitions, desktopWallpaperActivityTokenProvider, mainScope,
-                            desktopModeEventLogger));
+                            desktopModeEventLogger, shellController));
         }
         return Optional.empty();
     }
