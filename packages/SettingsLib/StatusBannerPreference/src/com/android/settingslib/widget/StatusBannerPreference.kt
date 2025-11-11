@@ -123,7 +123,6 @@ constructor(
 
         // If a custom icon is being used, its tint color must always match the status level.
         if (!isDefaultIcon) {
-            newIcon?.setTintList(ColorStateList.valueOf(getBackgroundColor(level)))
             updateIconTint(newIcon, level)
         }
 
@@ -728,5 +727,4 @@ constructor(
      * Helper data class that stores icon and iconLevel
      */
     private data class IconState(val icon: Drawable?, val level: BannerStatus)
-
 }
