@@ -9191,6 +9191,7 @@ package android.app.appfunctions {
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @NonNull public android.app.appfunctions.AppFunctionRegistration registerAppFunction(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.app.appfunctions.AppFunction);
     method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public void revokeSelfAccess(@NonNull String);
+    method @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void searchAppFunctions(@NonNull android.app.appfunctions.AppFunctionSearchSpec, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.List<android.app.appfunctions.AppFunctionMetadata>,java.lang.Exception>);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_DENIED = 1; // 0x1
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_GRANTED = 0; // 0x0
@@ -9249,6 +9250,27 @@ package android.app.appfunctions {
     method public long getVersion();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionSchemaMetadata> CREATOR;
+  }
+
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public final class AppFunctionSearchSpec implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public java.util.List<android.app.appfunctions.AppFunctionName> getFunctionNames();
+    method public long getMinSchemaVersion();
+    method @Nullable public java.util.List<java.lang.String> getPackageNames();
+    method @Nullable public String getSchemaCategory();
+    method @Nullable public String getSchemaName();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionSearchSpec> CREATOR;
+  }
+
+  public static final class AppFunctionSearchSpec.Builder {
+    ctor public AppFunctionSearchSpec.Builder();
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec build();
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setFunctionNames(@Nullable java.util.List<android.app.appfunctions.AppFunctionName>);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setMinSchemaVersion(long);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setPackageNames(@Nullable java.util.List<java.lang.String>);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaCategory(@Nullable String);
+    method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setSchemaName(@Nullable String);
   }
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public abstract class AppFunctionService extends android.app.Service {

@@ -16,6 +16,7 @@
 
 package com.android.server.appfunctions;
 
+import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
 import static android.app.appfunctions.AppFunctionManager.ACTION_REQUEST_APP_FUNCTION_ACCESS;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB;
@@ -37,7 +38,9 @@ import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.AppFunctionManagerHelper;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
+import android.app.appfunctions.AppFunctionMetadata;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
+import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
@@ -49,6 +52,7 @@ import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
+import android.app.appfunctions.ISearchAppFunctionsCallback;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
 import android.app.appsearch.AppSearchBatchResult;
 import android.app.appsearch.AppSearchManager;
@@ -153,6 +157,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final Object mAgentAllowlistLock = new Object();
 
+    private final AppFunctionMetadataReader mAppFunctionMetadataReader;
+
     // Any agents hardcoded by the system
     private static final List<SignedPackage> sSystemAllowlist =
             List.of(new SignedPackage(SHELL_PKG, null));
@@ -215,7 +221,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 agentAllowlistStorage,
                 multiUserAppFunctionAccessHistory,
                 dynamicAppFunctionRegistry,
-                backgroundExecutor);
+                backgroundExecutor,
+                new AppFunctionMetadataReader());
     }
 
     private AppFunctionManagerServiceImpl(
@@ -233,7 +240,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             AppFunctionAgentAllowlistStorage agentAllowlistStorage,
             MultiUserAppFunctionAccessHistory multiUserAppFunctionAccessHistory,
             MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
-            Executor backgroundExecutor) {
+            Executor backgroundExecutor,
+            AppFunctionMetadataReader appFunctionMetadataReader) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -253,6 +261,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 Objects.requireNonNull(multiUserAppFunctionAccessHistory);
         mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
+        mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
     }
 
     /** Called when the user is unlocked. */
@@ -519,8 +528,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (serviceIntent == null) {
             safeExecuteAppFunctionCallback.onError(
                     new AppFunctionException(
-                            AppFunctionException.ERROR_SYSTEM_ERROR,
-                            "Cannot find the target service."));
+                            ERROR_SYSTEM_ERROR, "Cannot find the target service."));
             return;
         }
         // Grant target app implicit visibility to the caller
@@ -548,6 +556,49 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 bindFlags,
                 callerBinder,
                 callingUid);
+    }
+
+    @Override
+    public void searchAppFunctions(
+            @NonNull AppFunctionSearchSpec searchSpec,
+            @NonNull UserHandle userHandle,
+            @NonNull ISearchAppFunctionsCallback searchAppFunctionsCallback)
+            throws RemoteException {
+        Objects.requireNonNull(searchSpec);
+        Objects.requireNonNull(userHandle);
+        Objects.requireNonNull(searchAppFunctionsCallback);
+
+        // TODO(b/438413081): Ensure caller has EXECUTE_APP_FUNCTIONS_PERMISSION.
+        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(userHandle);
+
+        if (perUserAppSearchManager == null) {
+            throw new IllegalStateException(
+                    "AppSearchManager not found for user:" + userHandle.getIdentifier());
+        }
+        // TODO(b/438413081): Use future chaining without posting to executor here.
+        THREAD_POOL_EXECUTOR.execute(
+                () -> {
+                    try {
+                        FutureGlobalSearchSession futureGlobalSearchSession =
+                                new FutureGlobalSearchSession(
+                                        perUserAppSearchManager, THREAD_POOL_EXECUTOR);
+
+                        List<AppFunctionMetadata> resultMetadataList =
+                                mAppFunctionMetadataReader.searchAppFunctions(
+                                        futureGlobalSearchSession, searchSpec);
+                        try {
+                            searchAppFunctionsCallback.onSuccess(resultMetadataList);
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Failed to execute callback#onSuccess.", e);
+                        }
+                    } catch (Exception e) {
+                        try {
+                            searchAppFunctionsCallback.onError(new ParcelableException(e));
+                        } catch (RemoteException ex) {
+                            Slog.e(TAG, "Failed to execute callback#onError.", e);
+                        }
+                    }
+                });
     }
 
     private AndroidFuture<Boolean> isAppFunctionEnabled(
@@ -748,8 +799,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public void addOnAccessChangedListener(@NonNull IOnAppFunctionAccessChangeListener listener,
-            int userId) {
+    public void addOnAccessChangedListener(
+            @NonNull IOnAppFunctionAccessChangeListener listener, int userId) {
         mAppFunctionAccessService.addOnAccessChangedListener(listener, userId);
     }
 
@@ -1052,8 +1103,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             Slog.e(TAG, "Failed to bind to the AppFunctionService");
             safeExecuteAppFunctionCallback.onError(
                     new AppFunctionException(
-                            AppFunctionException.ERROR_SYSTEM_ERROR,
-                            "Failed to bind the AppFunctionService."));
+                            ERROR_SYSTEM_ERROR, "Failed to bind the AppFunctionService."));
         }
     }
 
@@ -1087,7 +1137,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (e instanceof CompletionException) {
             e = e.getCause();
         }
-        int resultCode = AppFunctionException.ERROR_SYSTEM_ERROR;
+        int resultCode = ERROR_SYSTEM_ERROR;
         if (e instanceof AppFunctionNotFoundException) {
             resultCode = AppFunctionException.ERROR_FUNCTION_NOT_FOUND;
         } else if (e instanceof AppSearchException appSearchException) {
@@ -1116,7 +1166,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             case AppSearchResult.RESULT_SECURITY_ERROR:
                 // fall-through
         }
-        return AppFunctionException.ERROR_SYSTEM_ERROR;
+        return ERROR_SYSTEM_ERROR;
     }
 
     private void registerAppSearchObserver(@NonNull TargetUser user) {

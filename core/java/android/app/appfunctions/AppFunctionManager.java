@@ -441,12 +441,12 @@ public final class AppFunctionManager {
             prefix = {"ACCESS_FLAG_"},
             flag = true,
             value = {
-                    ACCESS_FLAG_PREGRANTED,
-                    ACCESS_FLAG_UPGRADE_GRANTED,
-                    ACCESS_FLAG_OTHER_GRANTED,
-                    ACCESS_FLAG_OTHER_DENIED,
-                    ACCESS_FLAG_USER_GRANTED,
-                    ACCESS_FLAG_USER_DENIED
+                ACCESS_FLAG_PREGRANTED,
+                ACCESS_FLAG_UPGRADE_GRANTED,
+                ACCESS_FLAG_OTHER_GRANTED,
+                ACCESS_FLAG_OTHER_DENIED,
+                ACCESS_FLAG_USER_GRANTED,
+                ACCESS_FLAG_USER_DENIED
             })
     @Retention(RetentionPolicy.SOURCE)
     @interface AppFunctionAccessFlags {}
@@ -454,8 +454,9 @@ public final class AppFunctionManager {
     private final IAppFunctionManager mService;
     private final Context mContext;
 
-    private final ArrayMap<OnAppFunctionAccessChangedListener,
-            OnAppFunctionAccessChangeListenerDelegate> mListeners = new ArrayMap<>();
+    private final ArrayMap<
+                    OnAppFunctionAccessChangedListener, OnAppFunctionAccessChangeListenerDelegate>
+            mListeners = new ArrayMap<>();
 
     /**
      * The enabled state of the app function.
@@ -558,6 +559,64 @@ public final class AppFunctionManager {
             if (cancellationTransport != null) {
                 cancellationSignal.setRemote(cancellationTransport);
             }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Performs a one-time search for AppFunctionMetadata with the given searchSpec and notifies the
+     * given callback of the result.
+     *
+     * <p>Note that the state is not guaranteed to be the latest, as metadata can change between
+     * request and execute times.
+     *
+     * <p>The calling app can search for:
+     * <li>Functions in its own package (no permission required).
+     * <li>When holding the `android.permission.EXECUTE_APP_FUNCTIONS` permission - functions in
+     *     other packages that it is allowed to query via {@link
+     *     android.content.pm.PackageManager#canPackageQuery}.
+     *
+     * @param searchSpec The spec of app functions to search for.
+     * @param executor The executor to run the callback.
+     * @param callback The callback to receive the search results.
+     */
+    @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+    @RequiresPermission(value = Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)
+    @UserHandleAware
+    public void searchAppFunctions(
+            @NonNull AppFunctionSearchSpec searchSpec,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull OutcomeReceiver<List<AppFunctionMetadata>, Exception> callback) {
+        Objects.requireNonNull(searchSpec);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+
+        try {
+            mService.searchAppFunctions(
+                    searchSpec,
+                    mContext.getUser(),
+                    new ISearchAppFunctionsCallback.Stub() {
+                        @Override
+                        public void onSuccess(List<AppFunctionMetadata> result) {
+                            executor.execute(() -> callback.onResult(result));
+                        }
+
+                        @Override
+                        public void onError(ParcelableException exception) {
+                            executor.execute(
+                                    () -> {
+                                        if (exception.getCause() == null) {
+                                            callback.onError(
+                                                    new RuntimeException(
+                                                            "Unknown remote failure."));
+                                        } else {
+                                            callback.onError(
+                                                    new RuntimeException(exception.getCause()));
+                                        }
+                                    });
+                        }
+                    });
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -988,30 +1047,30 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Register an {@link OnAppFunctionAccessChangedListener} for changes to app function access.
-     * If the listener is already registered, this method is a no-op. If the Context user is
-     * different from the calling user, this method requires the
-     * {@link INTERACT_ACROSS_USERS_FULL} permission.
+     * Register an {@link OnAppFunctionAccessChangedListener} for changes to app function access. If
+     * the listener is already registered, this method is a no-op. If the Context user is different
+     * from the calling user, this method requires the {@link INTERACT_ACROSS_USERS_FULL}
+     * permission.
      *
      * @param executor The executor to run the listener callbacks on
      * @param listener The listener to add
-     *
      * @hide
      */
     @SystemApi
     @UserHandleAware
-    @RequiresPermission(allOf = { MANAGE_APP_FUNCTION_ACCESS, INTERACT_ACROSS_USERS_FULL },
+    @RequiresPermission(
+            allOf = {MANAGE_APP_FUNCTION_ACCESS, INTERACT_ACROSS_USERS_FULL},
             conditional = true)
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    public void addAccessChangedListener(@NonNull Executor executor,
-            @NonNull OnAppFunctionAccessChangedListener listener) {
+    public void addAccessChangedListener(
+            @NonNull Executor executor, @NonNull OnAppFunctionAccessChangedListener listener) {
         synchronized (mListeners) {
             if (mListeners.containsKey(listener)) {
                 return;
             }
             final OnAppFunctionAccessChangeListenerDelegate delegate =
-                    new OnAppFunctionAccessChangeListenerDelegate(listener, executor,
-                            mContext.getUserId());
+                    new OnAppFunctionAccessChangeListenerDelegate(
+                            listener, executor, mContext.getUserId());
             try {
                 mService.addOnAccessChangedListener(delegate, mContext.getUserId());
             } catch (RemoteException e) {
@@ -1023,16 +1082,15 @@ public final class AppFunctionManager {
 
     /**
      * Remove an {@link OnAppFunctionAccessChangedListener}. If the Context user is different from
-     * the calling user, this method requires the
-     * {@link INTERACT_ACROSS_USERS_FULL} permission.
+     * the calling user, this method requires the {@link INTERACT_ACROSS_USERS_FULL} permission.
      *
      * @param listener The listener to remove
-     *
      * @hide
      */
     @SystemApi
     @UserHandleAware
-    @RequiresPermission(allOf = { MANAGE_APP_FUNCTION_ACCESS, INTERACT_ACROSS_USERS_FULL },
+    @RequiresPermission(
+            allOf = {MANAGE_APP_FUNCTION_ACCESS, INTERACT_ACROSS_USERS_FULL},
             conditional = true)
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     public void removeAccessChangedListener(@NonNull OnAppFunctionAccessChangedListener listener) {
@@ -1041,8 +1099,7 @@ public final class AppFunctionManager {
                 return;
             }
             try {
-                final OnAppFunctionAccessChangeListenerDelegate delegate =
-                        mListeners.get(listener);
+                final OnAppFunctionAccessChangeListenerDelegate delegate = mListeners.get(listener);
                 mService.removeOnAccessChangedListener(delegate, delegate.mUserId);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
@@ -1052,8 +1109,8 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Gets the {@code content://} style URI for the AppFunction access history table for the
-     * user from the context used to obtain the instance of this class.
+     * Gets the {@code content://} style URI for the AppFunction access history table for the user
+     * from the context used to obtain the instance of this class.
      *
      * <p>To query the content provider using the returned URI, the calling application must hold
      * the {@link android.Manifest.permission#MANAGE_APP_FUNCTION_ACCESS} permission.
@@ -1106,10 +1163,7 @@ public final class AppFunctionManager {
         private final int mUserId;
 
         private OnAppFunctionAccessChangeListenerDelegate(
-                OnAppFunctionAccessChangedListener listener,
-                Executor executor,
-                int userId
-        ) {
+                OnAppFunctionAccessChangedListener listener, Executor executor, int userId) {
             mListener = listener;
             mExecutor = executor;
             mUserId = userId;
@@ -1246,9 +1300,7 @@ public final class AppFunctionManager {
                         } catch (Exception ex) {
                             safeCallback.onError(
                                     new AppFunctionException(
-                                            executionExceptionToErrorCode(ex), ex.getMessage()
-                                    )
-                            );
+                                            executionExceptionToErrorCode(ex), ex.getMessage()));
                         }
                     });
         }
