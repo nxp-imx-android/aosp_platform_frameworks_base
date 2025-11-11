@@ -24,6 +24,6 @@ import android.view.SurfaceControlViewHost;
 interface IEmbeddedInsightSurfaceVisualizer {
     oneway void createVisualizationForClient(
         in List<ContextInsightWrapper> insights, in InsightSurfaceClientInfo clientInfo);
-    void onClientConnected(in InsightSurfaceClientInfo clientInfo);
-    void onClientDisconnected(in InsightSurfaceClientInfo clientInfo);
+    oneway void onClientConnected(in InsightSurfaceClientInfo clientInfo);
+    oneway void onClientDisconnected(in InsightSurfaceClientInfo clientInfo);
 }
