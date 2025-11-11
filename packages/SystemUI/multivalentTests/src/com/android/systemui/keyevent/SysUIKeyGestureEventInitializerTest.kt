@@ -40,6 +40,7 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboar
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shared.recents.ILauncherProxy
 import com.android.systemui.statusbar.CommandQueue
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -76,11 +77,13 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     private lateinit var keyGestureEventHandlerCaptor: ArgumentCaptor<KeyGestureEventHandler>
     @Captor
     private lateinit var keyGestureEventListenerCaptor: ArgumentCaptor<KeyGestureEventListener>
+    private val desktopState = FakeDesktopState()
 
     private lateinit var underTest: SysUIKeyGestureEventInitializer
 
     @Before
     fun setup() {
+        desktopState.canEnterDesktopMode = true
         whenever(launcherProxyService.proxy).thenReturn(launcherProxy)
         underTest =
             SysUIKeyGestureEventInitializer(
@@ -88,6 +91,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                 resources,
                 inputManager,
                 commandQueue,
+                desktopState,
                 shadeExpansionTargetDisplayInteractor,
                 screenCaptureKeyboardShortcutInteractor,
                 launcherProxyService,
@@ -148,6 +152,25 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    fun handleKeyGestureEvent_eventTypeToggleNotificationPanel_shadeNotMoved() {
+        desktopState.canEnterDesktopMode = false
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(shadeExpansionTargetDisplayInteractor, never()).onNotificationPanelKeyboardShortcut()
+        verify(commandQueue).toggleNotificationsPanel()
+    }
+
+    @Test
     @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT)
     fun handleKeyGestureEvent_eventTypeToggleQuickSettingsPanel_toggleQuickSettingsPanel() {
         underTest.start()
@@ -162,6 +185,25 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
         )
 
         verify(shadeExpansionTargetDisplayInteractor).onQSPanelKeyboardShortcut()
+        verify(commandQueue).toggleQuickSettingsPanel()
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT)
+    fun handleKeyGestureEvent_eventTypeToggleQuickSettingsPanel_shadeNotMoved() {
+        desktopState.canEnterDesktopMode = false
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(shadeExpansionTargetDisplayInteractor, never()).onQSPanelKeyboardShortcut()
         verify(commandQueue).toggleQuickSettingsPanel()
     }
 
