@@ -16210,6 +16210,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         private List<OnCrossProfileWidgetProvidersChangeListener> mWidgetProviderListeners;
 
         @Override
+        public boolean isUsbDataSignalingEnabled() {
+            Boolean resolvedPolicy = mDevicePolicyEngine.getResolvedPolicy(
+                    PolicyDefinition.USB_DATA_SIGNALING, UserHandle.USER_ALL);
+            return resolvedPolicy == null || resolvedPolicy;
+        }
+
+        @Override
         public List<String> getCrossProfileWidgetProviders(int profileId) {
             synchronized (getLockObject()) {
                 if (Flags.crossProfileWidgetProviderBulkApis()) {
