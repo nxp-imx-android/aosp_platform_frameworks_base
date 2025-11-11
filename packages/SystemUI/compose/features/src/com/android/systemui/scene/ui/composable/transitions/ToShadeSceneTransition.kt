@@ -39,8 +39,6 @@ fun TransitionBuilder.toShadeSceneTransition(durationScale: Double = 1.0) {
 
     fade(Shade.Elements.BackgroundScrim)
 
-    val qsTranslation = -ShadeHeader.Dimensions.CollapsedHeightForTransitions * 0.66f
-    translate(QuickSettings.Elements.QuickQuickSettingsAndMedia, y = qsTranslation)
     translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
 }
 
