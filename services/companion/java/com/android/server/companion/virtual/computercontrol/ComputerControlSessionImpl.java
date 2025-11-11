@@ -73,6 +73,7 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -129,7 +130,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @VisibleForTesting
     static final float LONG_PRESS_TIMEOUT_MULTIPLIER = 1.5f;
     @VisibleForTesting
-    static final long KEY_EVENT_DELAY_MS = 10L;
+    static final long KEY_EVENT_DELAY_MS = 50L;
     // The session will be closed whenever the display remains empty for this timeout period.
     // This timeout is used to avoid closing the session immediately upon the display being empty
     // to allow for transient cases of emptiness, like when an Activity is launched in a new task
@@ -562,7 +563,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         cancelOngoingKeyGestures();
 
-        IRemoteComputerControlInputConnection ic = getInputConnection(mVirtualDisplayId);
+        InputMethodManagerInternal.ComputerControlInputConnectionData data = getInputConnectionData(
+                mVirtualDisplayId);
+        if (data == null) {
+            Slog.e(TAG, "Unable to insert text: No input connection data found!");
+            return;
+        }
+        final IRemoteComputerControlInputConnection ic = data.inputConnection();
         if (ic == null) {
             Slog.e(TAG, "Unable to insert text: No input connection found!");
             return;
@@ -580,12 +587,30 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 ic.commitText(new InputConnectionCommandHeader(0), text,
                         1 /* newCursorPosition */);
             }
-            // TODO(b/422134565): Use right editor action to commit text instead key enter
             if (commit) {
-                ic.sendKeyEvent(new InputConnectionCommandHeader(0),
-                        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-                ic.sendKeyEvent(new InputConnectionCommandHeader(0),
-                        new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+                // Use the saved editor info of the current client on CC display to perform the
+                // default editor action (if any). Otherwise fallback to pressing enter key.
+                // Introduced a delay for performing editor action/pressing enter key to let the
+                // text be committed to text field first. Some apps might be processing input
+                // connection actions differently causing race conditions between "insertion of
+                // text" and "committing the text" actions. Introducing a small delay (50 ms),
+                // would ensure things happen in order.
+                final EditorInfo editorInfo = data.editorInfo();
+                mInsertTextFuture = mScheduler.schedule(() -> {
+                    try {
+                        if (!performDefaultEditorAction(editorInfo, ic)) {
+                            Slog.w(TAG,
+                                    "Unable to perform editor action to commit text: defaulting "
+                                            + "to pressing enter key");
+                            ic.sendKeyEvent(new InputConnectionCommandHeader(0),
+                                    new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                            ic.sendKeyEvent(new InputConnectionCommandHeader(0),
+                                    new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+                        }
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Unable to commit text through InputConnection", e);
+                    }
+                }, KEY_EVENT_DELAY_MS, TimeUnit.MILLISECONDS);
             }
         } catch (RemoteException e) {
             Slog.e(TAG, "Unable to insert text through InputConnection", e);
@@ -685,6 +710,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mGlobalSessionTimeoutDurationMs, TimeUnit.MILLISECONDS);
     }
 
+    private boolean performDefaultEditorAction(@Nullable EditorInfo editorInfo,
+            @NonNull IRemoteComputerControlInputConnection ic) throws RemoteException {
+        // Check if currently active input connection on CC display has a valid editor action
+        // provided by the client view
+        if (editorInfo != null && editorInfo.imeOptions != EditorInfo.IME_ACTION_UNSPECIFIED
+                && (editorInfo.imeOptions & EditorInfo.IME_MASK_ACTION)
+                != EditorInfo.IME_ACTION_NONE) {
+            ic.performEditorAction(new InputConnectionCommandHeader(0),
+                    editorInfo.imeOptions & EditorInfo.IME_MASK_ACTION);
+            return true;
+        }
+        return false;
+    }
+
     private void cancelOngoingKeyGestures() {
         if (mInsertTextFuture != null) {
             mInsertTextFuture.cancel(false);
@@ -740,11 +779,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
-    private IRemoteComputerControlInputConnection getInputConnection(int displayId) {
+    private InputMethodManagerInternal.ComputerControlInputConnectionData getInputConnectionData(
+            int displayId) {
         // getUserAssignedToDisplay returns the main userId, if we want to support cross
         // profile CC interactions and typing on CC display, we need to find the right user
         // profile here for the CC input connection
-        return mInputMethodManagerInternal.getComputerControlInputConnection(
+        return mInputMethodManagerInternal.getComputerControlInputConnectionData(
                 mUserManagerInternal.getUserAssignedToDisplay(displayId), displayId);
     }
 
