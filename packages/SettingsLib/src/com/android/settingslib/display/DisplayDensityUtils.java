@@ -30,6 +30,7 @@ import android.util.MathUtils;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.IWindowManager;
+import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.window.ConfigurationChangeSetting;
 
@@ -124,7 +125,7 @@ public class DisplayDensityUtils {
     private final int mCurrentIndex;
 
     public DisplayDensityUtils(@NonNull Context context) {
-        this(context, INTERNAL_ONLY);
+        this(context, INTERNAL_ONLY, (info) -> false);
     }
 
     /**
@@ -132,13 +133,29 @@ public class DisplayDensityUtils {
      * the predicate. It is enough to store the values for one display because the same density
      * should be set to all the displays that satisfy the predicate.
      *
-     * @param context   The context
-     * @param predicate Determines what displays the density should be set for. The default display
-     *                  must satisfy this predicate.
+     * @param context                The context
+     * @param targetDisplayPredicate Determines what displays the density should be set for. The
+     *                               default display must satisfy this predicate.
      */
     public DisplayDensityUtils(@NonNull Context context,
-            @NonNull Predicate<DisplayInfo> predicate) {
-        mPredicate = predicate;
+            @NonNull Predicate<DisplayInfo> targetDisplayPredicate) {
+        this(context, targetDisplayPredicate, (info) -> false);
+    }
+
+    /**
+     * Creates an instance that stores the density values for the smallest display that satisfies
+     * the predicate. It is enough to store the values for one display because the same density
+     * should be set to all the displays that satisfy the predicate.
+     *
+     * @param context                     The context
+     * @param targetDisplayPredicate      Determines what displays the density should be set for.
+     *                                    The default display must satisfy this predicate.
+     * @param isLargeScreenPredicate Predicate to determine if given display is a large screen.
+     */
+    public DisplayDensityUtils(@NonNull Context context,
+            @NonNull Predicate<DisplayInfo> targetDisplayPredicate,
+            @NonNull Predicate<DisplayInfo> isLargeScreenPredicate) {
+        mPredicate = targetDisplayPredicate;
         mDisplayManager = context.getSystemService(DisplayManager.class);
 
         Display defaultDisplay = mDisplayManager.getDisplay(Display.DEFAULT_DISPLAY);
@@ -216,6 +233,10 @@ public class DisplayDensityUtils {
         final int[] summariesSmaller;
         final int[] summariesLarger;
 
+        boolean isDesktopSupported = isLargeScreenPredicate.test(currentDisplayInfo);
+        final int minDimensionDp = isDesktopSupported
+                ? WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP : MIN_DIMENSION_DP;
+
         if (currentDisplayInfo.type == Display.TYPE_INTERNAL) {
             maxScaleFraction = R.fraction.display_density_max_scale;
             minScaleFraction = R.fraction.display_density_min_scale;
@@ -231,7 +252,7 @@ public class DisplayDensityUtils {
 
         // Compute number of "larger" and "smaller" scales for this display.
         final int maxDensity =
-                DisplayMetrics.DENSITY_MEDIUM * minDimensionPx / MIN_DIMENSION_DP;
+                DisplayMetrics.DENSITY_MEDIUM * minDimensionPx / minDimensionDp;
         final float maxScaleDimen = context.getResources().getFraction(
                 maxScaleFraction, 1, 1);
         final float maxScale = Math.min(maxScaleDimen, maxDensity / (float) defaultDensity);
