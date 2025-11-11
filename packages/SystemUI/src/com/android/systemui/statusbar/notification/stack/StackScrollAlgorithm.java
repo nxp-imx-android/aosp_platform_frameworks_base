@@ -293,6 +293,12 @@ public class StackScrollAlgorithm {
         android.util.Log.i(TAG, s);
     }
 
+    public static void debugRow(View view, String s) {
+        if (view instanceof ExpandableNotificationRow row) {
+            debugLog(row.getKey() + " " + s);
+        }
+    }
+
     public static void debugLogView(View view, String s) {
         String viewString = "";
         if (view instanceof ExpandableNotificationRow row) {
