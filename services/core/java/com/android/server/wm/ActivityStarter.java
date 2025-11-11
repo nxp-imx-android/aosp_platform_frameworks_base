@@ -854,9 +854,7 @@ class ActivityStarter {
                     res = executeRequest(mRequest);
                 } finally {
                     Binder.restoreCallingIdentity(origId);
-                    mRequest.logMessage.append(" result code=").append(res);
-                    Slog.i(TAG, mRequest.logMessage.toString());
-                    mRequest.logMessage.setLength(0);
+                    logResult(res);
                 }
 
                 if (globalConfigWillChange) {
@@ -917,6 +915,13 @@ class ActivityStarter {
                     launchingRecord != null && launchingRecord.resultTo != null);
             onExecutionComplete();
         }
+    }
+
+    private void logResult(int res) {
+        mSupervisor.getLaunchParamsController().flushLog();
+        mRequest.logMessage.append(" result code=").append(res);
+        Slog.i(TAG, mRequest.logMessage.toString());
+        mRequest.logMessage.setLength(0);
     }
 
     /**
