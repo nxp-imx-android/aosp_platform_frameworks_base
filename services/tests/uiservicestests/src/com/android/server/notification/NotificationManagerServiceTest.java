@@ -2974,7 +2974,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testAggregateGroups_RemoveAppSummary() throws Exception {
         final String originalGroupName = "originalGroup";
         final NotificationRecord r =
@@ -3096,7 +3095,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testCancelGroupChildrenForCanceledSummary_singletonGroup() throws Exception {
         final String originalGroupName = "originalGroup";
         final int summaryId = Integer.MAX_VALUE;
@@ -3151,7 +3149,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testUpdateOverrideGroupKey_childUpdatedAfterUnAutogroupped() throws Exception {
         final String originalGroupName = "originalGroup";
 
