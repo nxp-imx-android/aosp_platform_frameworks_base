@@ -37,9 +37,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class LskfResetManagerService extends SystemService {
     private static final String TAG = "LskfResetManagerSvc";
+
+    private ScheduledExecutorService mExecutor;
 
     private LskfResetKeyManager mLskfResetKeyManager;
     private LskfResetManagerImpl mBinder;
@@ -48,8 +54,21 @@ public class LskfResetManagerService extends SystemService {
     private final Map<IBinder, LskfResetSessionImpl> mActiveSessions =
             Collections.synchronizedMap(new HashMap<>());
 
+    /** Class for injecting dependencies for testing. */
+    @VisibleForTesting
+    static class Injector {
+        ScheduledExecutorService getExecutor() {
+            return Executors.newSingleThreadScheduledExecutor();
+        }
+    }
+
     public LskfResetManagerService(Context context) {
+        this(context, new Injector());
+    }
+
+    LskfResetManagerService(Context context, Injector injector) {
         super(context);
+        mExecutor = injector.getExecutor();
     }
 
     @VisibleForTesting
@@ -66,6 +85,8 @@ public class LskfResetManagerService extends SystemService {
      * Forcibly terminate the given session. This is intended to simulate what would happen if the
      * remote client holding the session died and the linkToDeath operation was triggered. This will
      * fail if the session is not currently alive and open.
+     *
+     * @param session The session to terminate.
      */
     @VisibleForTesting
     void killSession(ILskfResetSession session) {
@@ -127,6 +148,7 @@ public class LskfResetManagerService extends SystemService {
     private class LskfResetSessionImpl extends ILskfResetSession.Stub
             implements IBinder.DeathRecipient {
         private static final String SESSION_TAG = "LskfResetSessionImpl";
+        private static final long SESSION_TIMEOUT_MS = TimeUnit.MINUTES.toMillis(1);
 
         private final UserHandle mUser;
         private final String mSessionId;
@@ -135,6 +157,9 @@ public class LskfResetManagerService extends SystemService {
 
         @GuardedBy("mOpenSession")
         private boolean mClosed;
+
+        @GuardedBy("mOpenSession")
+        private ScheduledFuture<?> mScheduledTimeout;
 
         /**
          * Implements the actual underlying session operations with the assumption that the session
@@ -153,6 +178,13 @@ public class LskfResetManagerService extends SystemService {
             mSessionId = UUID.randomUUID().toString();
             mOpenSession = new OpenSession();
             mClosed = false;
+            mScheduledTimeout =
+                    mExecutor.schedule(
+                            () -> {
+                                closeSession(null);
+                            },
+                            SESSION_TIMEOUT_MS,
+                            TimeUnit.MILLISECONDS);
         }
 
         String getSessionId() {
@@ -160,12 +192,18 @@ public class LskfResetManagerService extends SystemService {
         }
 
         /**
-         * Close the underlying session if it is not closed already. Accepts an optional runnable
-         * that will be executed if the caller is trying to close an already-closed session. This is
-         * used to treat a double-close as a failure in certain contexts.
+         * Close the underlying session if it is not closed already.
+         *
+         * @param runOnAlreadyClosed An optional runnable that will be executed if the caller is
+         *     trying to close an already-closed session. This is used to treat a double-close as a
+         *     failure in certain contexts.
          */
         private void closeSession(Runnable runOnAlreadyClosed) {
             synchronized (mOpenSession) {
+                if (mScheduledTimeout != null) {
+                    mScheduledTimeout.cancel(false);
+                    mScheduledTimeout = null;
+                }
                 if (mClosed) {
                     if (runOnAlreadyClosed != null) runOnAlreadyClosed.run();
                     return;
