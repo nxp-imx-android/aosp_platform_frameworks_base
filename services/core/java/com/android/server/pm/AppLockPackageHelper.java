@@ -288,7 +288,8 @@ public final class AppLockPackageHelper {
      */
     public boolean setPackageAppLockEnabled(@NonNull Supplier<Computer> snapshotSupplier,
             String packageName, int userId, boolean enabled, int callingUid) {
-        if (callingUid != Process.SYSTEM_UID && callingUid != Process.ROOT_UID) {
+        if (!UserHandle.isSameApp(callingUid, Process.SYSTEM_UID)
+                && !UserHandle.isSameApp(callingUid, Process.ROOT_UID)) {
             throw new SecurityException(
                     "setPackageAppLockEnabled can only be called by the system");
         }
