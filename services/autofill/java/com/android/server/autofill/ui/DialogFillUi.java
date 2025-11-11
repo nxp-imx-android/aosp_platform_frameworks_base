@@ -19,8 +19,10 @@ package com.android.server.autofill.ui;
 import static com.android.server.autofill.Helper.sDebug;
 import static com.android.server.autofill.Helper.sVerbose;
 
+import android.annotation.LayoutRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.StyleRes;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -28,6 +30,7 @@ import android.content.IntentSender;
 import android.graphics.drawable.Drawable;
 import android.service.autofill.Dataset;
 import android.service.autofill.FillResponse;
+import android.service.autofill.Flags;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.PluralsMessageFormatter;
@@ -79,6 +82,10 @@ final class DialogFillUi {
             R.style.Theme_DeviceDefault_Light_Autofill_Save;
     private static final int THEME_ID_DARK =
             R.style.Theme_DeviceDefault_Autofill_Save;
+    private static final int THEME_ID_EXPRESSIVE_LIGHT =
+            R.style.Theme_DeviceDefault_Light_Autofill_Dialog;
+    private static final int THEME_ID_EXPRESSIVE_DARK =
+            R.style.Theme_DeviceDefault_Autofill_Dialog;
 
     interface UiCallback {
         void onResponsePicked(@NonNull FillResponse response);
@@ -97,7 +104,7 @@ final class DialogFillUi {
     private final @NonNull Context mContext;
     private final @NonNull Context mUserContext;
     private final @NonNull UiCallback mCallback;
-    private final @NonNull ListView mListView;
+    private final @Nullable ListView mListView;
     private final @Nullable ItemsAdapter mAdapter;
     private final int mVisibleDatasetsMaxCount;
 
@@ -113,7 +120,7 @@ final class DialogFillUi {
             @Nullable ComponentName componentName, @NonNull OverlayControl overlayControl,
             boolean nightMode, @NonNull UiCallback callback) {
         if (sVerbose) Slog.v(TAG, "nightMode: " + nightMode);
-        mThemeId = nightMode ? THEME_ID_DARK : THEME_ID_LIGHT;
+        mThemeId = getThemeId(nightMode);
         mCallback = callback;
         mOverlayControl = overlayControl;
         mServicePackageName = servicePackageName;
@@ -122,7 +129,14 @@ final class DialogFillUi {
         mContext = new ContextThemeWrapper(context, mThemeId);
         mUserContext = Helper.getUserContext(mContext);
         final LayoutInflater inflater = LayoutInflater.from(mContext);
-        final View decor = inflater.inflate(R.layout.autofill_fill_dialog, null);
+        final View decor = inflater.inflate(getLayoutResId(), null);
+        mListView = decor.findViewById(R.id.autofill_dialog_list);
+        if (Flags.expressiveFillDialog()) {
+            final View headerContainer = inflater.inflate(R.layout.autofill_fill_dialog_header,
+                    null);
+            mListView.addHeaderView(headerContainer, null, false);
+            decor.setOnClickListener(v -> mCallback.onCanceled());
+        }
 
         if (response.getShowFillDialogIcon()) {
             setServiceIcon(decor, serviceIcon);
@@ -132,10 +146,14 @@ final class DialogFillUi {
         mVisibleDatasetsMaxCount = getVisibleDatasetsMaxCount();
 
         if (response.getAuthentication() != null) {
-            mListView = null;
             mAdapter = null;
             try {
                 initialAuthenticationLayout(decor, response);
+                if (Flags.expressiveFillDialog()) {
+                    // In this case, only the header view will be shown. Setting a null adapter will
+                    // preserve the header.
+                    mListView.setAdapter(null);
+                }
             } catch (RuntimeException e) {
                 callback.onCanceled();
                 Slog.e(TAG, "Error inflating remote views", e);
@@ -145,7 +163,6 @@ final class DialogFillUi {
         } else {
             final List<ViewItem> items = createDatasetItems(response, focusedViewId);
             mAdapter = new ItemsAdapter(items);
-            mListView = decor.findViewById(R.id.autofill_dialog_list);
             initialDatasetLayout(decor, filterText);
         }
 
@@ -185,12 +202,15 @@ final class DialogFillUi {
         window.setCloseOnTouchOutside(true);
         final WindowManager.LayoutParams params = window.getAttributes();
 
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        window.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        final int screenWidth = displayMetrics.widthPixels;
-        final int maxWidth =
-                mContext.getResources().getDimensionPixelSize(R.dimen.autofill_dialog_max_width);
-        params.width = Math.min(screenWidth, maxWidth);
+        if (!Flags.expressiveFillDialog()) {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            window.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            final int screenWidth = displayMetrics.widthPixels;
+            final int maxWidth =
+                    mContext.getResources().getDimensionPixelSize(
+                            R.dimen.autofill_dialog_max_width);
+            params.width = Math.min(screenWidth, maxWidth);
+        }
 
         params.accessibilityTitle =
                 mContext.getString(R.string.autofill_picker_accessibility_title);
@@ -236,8 +256,13 @@ final class DialogFillUi {
 
     private void setDismissButton(View decor) {
         final TextView noButton = decor.findViewById(R.id.autofill_dialog_no);
-        // set "No thinks" by default
-        noButton.setText(R.string.autofill_save_no);
+        if (Flags.expressiveFillDialog()) {
+            // set "Cancel" as dismiss button text
+            noButton.setText(R.string.cancel);
+        } else {
+            // set "No thanks" by default
+            noButton.setText(R.string.autofill_save_no);
+        }
         noButton.setOnClickListener((v) -> mCallback.onDismissed());
     }
 
@@ -346,8 +371,16 @@ final class DialogFillUi {
     private void initialDatasetLayout(View decor, String filterText) {
         final AdapterView.OnItemClickListener onItemClickListener =
                 (adapter, view, position, id) -> {
-                    final ViewItem vi = mAdapter.getItem(position);
-                    mCallback.onDatasetPicked(vi.dataset);
+                    if (Flags.expressiveFillDialog()) {
+                        final int headerViewsCount = mListView.getHeaderViewsCount();
+                        if (position >= headerViewsCount) {
+                            final ViewItem vi = mAdapter.getItem(position - headerViewsCount);
+                            mCallback.onDatasetPicked(vi.dataset);
+                        }
+                    } else {
+                        final ViewItem vi = mAdapter.getItem(position);
+                        mCallback.onDatasetPicked(vi.dataset);
+                    }
                 };
 
         mListView.setAdapter(mAdapter);
@@ -435,6 +468,20 @@ final class DialogFillUi {
         return "NO TITLE";
     }
 
+    @LayoutRes
+    private int getLayoutResId() {
+        return Flags.expressiveFillDialog() ? R.layout.autofill_fill_dialog_expressive
+                : R.layout.autofill_fill_dialog;
+    }
+
+    @StyleRes
+    private int getThemeId(boolean nightMode) {
+        if (Flags.expressiveFillDialog()) {
+            return nightMode ? THEME_ID_EXPRESSIVE_DARK : THEME_ID_EXPRESSIVE_LIGHT;
+        }
+        return nightMode ? THEME_ID_DARK : THEME_ID_LIGHT;
+    }
+
     void dump(PrintWriter pw, String prefix) {
 
         pw.print(prefix); pw.print("service: "); pw.println(mServicePackageName);
@@ -446,6 +493,12 @@ final class DialogFillUi {
                 break;
             case THEME_ID_LIGHT:
                 pw.println(" (light)");
+                break;
+            case THEME_ID_EXPRESSIVE_DARK:
+                pw.println(" (expressive dark)");
+                break;
+            case THEME_ID_EXPRESSIVE_LIGHT:
+                pw.println(" (expressive light)");
                 break;
             default:
                 pw.println("(UNKNOWN_MODE)");
@@ -476,12 +529,8 @@ final class DialogFillUi {
         private static final int SEARCH_RESULT_ANNOUNCEMENT_DELAY = 1000; // 1 sec
 
         public void post() {
-            remove();
-            mListView.postDelayed(this, SEARCH_RESULT_ANNOUNCEMENT_DELAY);
-        }
-
-        public void remove() {
             mListView.removeCallbacks(this);
+            mListView.postDelayed(this, SEARCH_RESULT_ANNOUNCEMENT_DELAY);
         }
 
         @Override
@@ -585,13 +634,14 @@ final class DialogFillUi {
         /**
          * Default constructor.
          *
-         * @param dataset dataset associated with the item
-         * @param filter optional filter set by the service to determine how the item should be
-         * filtered
+         * @param dataset    dataset associated with the item
+         * @param filter     optional filter set by the service to determine how the item should be
+         *                   filtered
          * @param filterable optional flag set by the service to indicate this item should not be
-         * filtered (typically used when the dataset has value but it's sensitive, like a password)
-         * @param value dataset value
-         * @param view dataset presentation.
+         *                   filtered (typically used when the dataset has value but it's sensitive,
+         *                   like a password)
+         * @param value      dataset value
+         * @param view       dataset presentation.
          */
         ViewItem(@NonNull Dataset dataset, @Nullable Pattern filter, boolean filterable,
                 @Nullable String value, @NonNull View view) {
