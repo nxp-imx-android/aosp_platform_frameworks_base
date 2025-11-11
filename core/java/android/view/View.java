@@ -34286,7 +34286,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @param isCredential Whether the view is a credential.
      *
      * @attr ref android.R.styleable#View_isCredential
+     *
+     * @deprecated The {@link #isCredential} is no longer needed.
      */
+    @FlaggedApi(android.view.flags.Flags.FLAG_DEPRECATE_IS_CREDENTIAL_API)
+    @Deprecated
     public void setIsCredential(boolean isCredential) {
         if (isCredential) {
             mPrivateFlags4 |= PFLAG4_IMPORTANT_FOR_CREDENTIAL_MANAGER;
@@ -34303,7 +34307,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @return false by default, or value passed to {@link #setIsCredential(boolean)}.
      *
      * @attr ref android.R.styleable#View_isCredential
+     *
+     * @deprecated The {@link #isCredential} is no longer needed.
      */
+    @FlaggedApi(android.view.flags.Flags.FLAG_DEPRECATE_IS_CREDENTIAL_API)
+    @Deprecated
     public boolean isCredential() {
         return ((mPrivateFlags4 & PFLAG4_IMPORTANT_FOR_CREDENTIAL_MANAGER)
                 == PFLAG4_IMPORTANT_FOR_CREDENTIAL_MANAGER);
