@@ -563,7 +563,7 @@ public class AuthController implements
     }
 
     @Override
-    public void handleShowGlobalActionsMenu() {
+    public void handleShowOrHideGlobalActionsMenu() {
         closeDialog("PowerMenu shown");
     }
 

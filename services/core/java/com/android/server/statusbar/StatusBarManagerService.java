@@ -1048,7 +1048,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             IStatusBar bar = mBar;
             if (bar != null) {
                 try {
-                    bar.showGlobalActionsMenu();
+                    bar.showOrHideGlobalActionsMenu();
                 } catch (RemoteException ex) {}
             }
         }

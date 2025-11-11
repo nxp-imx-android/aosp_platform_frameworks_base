@@ -138,7 +138,7 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final int MSG_APP_TRANSITION_FINISHED           = 31 << MSG_SHIFT;
     private static final int MSG_DISMISS_KEYBOARD_SHORTCUTS        = 32 << MSG_SHIFT;
     private static final int MSG_HANDLE_SYSTEM_KEY                 = 33 << MSG_SHIFT;
-    private static final int MSG_SHOW_GLOBAL_ACTIONS               = 34 << MSG_SHIFT;
+    private static final int MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS       = 34 << MSG_SHIFT;
     private static final int MSG_TOGGLE_NOTIFICATION_PANEL         = 35 << MSG_SHIFT;
     private static final int MSG_SHOW_SHUTDOWN_UI                  = 36 << MSG_SHIFT;
     private static final int MSG_SET_TOP_APP_HIDES_STATUS_BAR      = 37 << MSG_SHIFT;
@@ -377,7 +377,7 @@ public class CommandQueue extends IStatusBar.Stub implements
         default void handleSystemKey(KeyEvent arg1) { }
         default void showPinningEnterExitToast(boolean entering) { }
         default void showPinningEscapeToast() { }
-        default void handleShowGlobalActionsMenu() { }
+        default void handleShowOrHideGlobalActionsMenu() { }
         default void handleShowShutdownUi(boolean isReboot, String reason) { }
 
         default void showWirelessChargingAnimation(int batteryLevel) {  }
@@ -1080,10 +1080,10 @@ public class CommandQueue extends IStatusBar.Stub implements
 
 
     @Override
-    public void showGlobalActionsMenu() {
+    public void showOrHideGlobalActionsMenu() {
         synchronized (mLock) {
-            mHandler.removeMessages(MSG_SHOW_GLOBAL_ACTIONS);
-            mHandler.obtainMessage(MSG_SHOW_GLOBAL_ACTIONS).sendToTarget();
+            mHandler.removeMessages(MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS);
+            mHandler.obtainMessage(MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS).sendToTarget();
         }
     }
 
@@ -1764,9 +1764,9 @@ public class CommandQueue extends IStatusBar.Stub implements
                         callback.handleSystemKey((KeyEvent) msg.obj);
                     }
                     break;
-                case MSG_SHOW_GLOBAL_ACTIONS:
+                case MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS:
                     for (Callbacks callback : mCallbacks) {
-                        callback.handleShowGlobalActionsMenu();
+                        callback.handleShowOrHideGlobalActionsMenu();
                     }
                     break;
                 case MSG_SHOW_SHUTDOWN_UI:

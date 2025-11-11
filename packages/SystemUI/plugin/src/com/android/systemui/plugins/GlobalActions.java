@@ -25,7 +25,7 @@ public interface GlobalActions extends Plugin {
     String ACTION = "com.android.systemui.action.PLUGIN_GLOBAL_ACTIONS";
     int VERSION = 1;
 
-    void showGlobalActions(GlobalActionsManager manager);
+    void showOrHideGlobalActions(GlobalActionsManager manager);
     default void showShutdownUi(boolean isReboot, String reason) {
     }
 
