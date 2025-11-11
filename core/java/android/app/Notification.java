@@ -8465,6 +8465,10 @@ public class Notification implements Parcelable
             }
         }
 
+        private int getPromotedProgressLayoutResource() {
+            return R.layout.notification_2025_template_promoted_progress;
+        }
+
         private int getActionLayoutResource() {
             return R.layout.notification_material_action;
         }
@@ -13897,8 +13901,15 @@ public class Notification implements Parcelable
                 p.useMinimalHeader();
             }
 
+            final int progressLayoutResId;
+            if (Flags.apiNotificationActionCustom() && mBuilder.mN.isPromotedOngoing()) {
+                progressLayoutResId = mBuilder.getPromotedProgressLayoutResource();
+            } else {
+                progressLayoutResId = mBuilder.getProgressLayoutResource();
+            }
+
             // Replace the text with the big text, but only if the big text is not empty.
-            RemoteViews contentView = getStandardView(mBuilder.getProgressLayoutResource(), p,
+            RemoteViews contentView = getStandardView(progressLayoutResId, p,
                     null /* result */);
 
             // Bind progress start and end icons.

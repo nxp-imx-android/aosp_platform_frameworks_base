@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.promoted
 
 import android.annotation.WorkerThread
+import android.app.Flags.apiNotificationActionCustom
 import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.app.Notification.BigPictureStyle
@@ -310,7 +311,10 @@ constructor(
                 Style.BigText -> R.layout.notification_2025_template_expanded_big_text
                 Style.Call -> R.layout.notification_2025_template_expanded_call
                 Style.CollapsedCall -> R.layout.notification_2025_template_collapsed_call
-                Style.Progress -> R.layout.notification_2025_template_expanded_progress
+                Style.Progress ->
+                    if (apiNotificationActionCustom())
+                        R.layout.notification_2025_template_promoted_progress
+                    else R.layout.notification_2025_template_expanded_progress
                 Style.Metric -> R.layout.notification_2025_template_expanded_metric
                 Style.MetricSingle -> R.layout.notification_2025_template_promoted_single_metric
                 Style.Ineligible -> null

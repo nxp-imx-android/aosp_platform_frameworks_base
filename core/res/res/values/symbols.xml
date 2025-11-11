@@ -2508,6 +2508,7 @@
   <java-symbol type="layout" name="notification_2025_template_expanded_big_text" />
   <java-symbol type="layout" name="notification_2025_template_expanded_messaging" />
   <java-symbol type="layout" name="notification_2025_template_expanded_progress" />
+  <java-symbol type="layout" name="notification_2025_template_promoted_progress" />
   <java-symbol type="layout" name="notification_template_material_base" />
   <java-symbol type="layout" name="notification_template_material_heads_up_base" />
   <java-symbol type="layout" name="notification_template_material_compact_heads_up_base" />
