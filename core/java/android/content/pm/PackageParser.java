@@ -228,7 +228,11 @@ public class PackageParser {
      * @hide
      */
     private static final int RECREATE_ON_CONFIG_CHANGES_MASK =
-            ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC;
+            com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange() ?
+                    ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC | ActivityInfo.CONFIG_KEYBOARD
+                            | ActivityInfo.CONFIG_KEYBOARD_HIDDEN | ActivityInfo.CONFIG_NAVIGATION
+                            | ActivityInfo.CONFIG_TOUCHSCREEN | ActivityInfo.CONFIG_COLOR_MODE
+                    : ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC;
 
     // These are the tags supported by child packages
     public static final Set<String> CHILD_PACKAGE_TAGS = new ArraySet<>();
