@@ -34,6 +34,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,6 +47,7 @@ import android.app.UiAutomation;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetManagerInternal;
+import android.content.pm.PackageManager;
 import android.appwidget.AppWidgetProviderInfo;
 import android.appwidget.PendingHostUpdate;
 import android.appwidget.flags.Flags;
@@ -74,9 +76,11 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.frameworks.servicestests.R;
 import com.android.internal.appwidget.IAppWidgetHost;
+import com.android.internal.content.PackageMonitor;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
+import com.android.server.ServiceThread;
 
 import org.junit.After;
 import org.junit.Before;
@@ -97,7 +101,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests for {@link AppWidgetManager} and {@link AppWidgetServiceImpl}.
@@ -115,6 +121,7 @@ public class AppWidgetServiceImplTest {
     private TestContext mTestContext;
     private String mPkgName;
     private AppWidgetServiceImpl mService;
+    private PackageManager mSpiedPackageManager;
     private AppWidgetManager mManager;
 
     private ShortcutServiceInternal mMockShortcutService;
@@ -133,6 +140,12 @@ public class AppWidgetServiceImplTest {
 
         mTestContext = new TestContext();
         mPkgName = mTestContext.getOpPackageName();
+
+        // Spy the package manager to allow mocking specific methods like isPackageAppLockEnabled
+        PackageManager realPackageManager = mTestContext.getBaseContext().getPackageManager();
+        mSpiedPackageManager = spy(realPackageManager);
+        mTestContext.setPackageManager(mSpiedPackageManager);
+
         mService = new AppWidgetServiceImpl(mTestContext);
         mManager = new AppWidgetManager(mTestContext, mService);
 
@@ -161,6 +174,57 @@ public class AppWidgetServiceImplTest {
         AppWidgetProviderInfo info =
                 mManager.getInstalledProvidersForPackage(mPkgName, null).get(0);
         assertEquals(info.loadDescription(mTestContext), "widget description string");
+    }
+
+    @Test
+    public void testAppLockEnabledProvidersIsNull() throws Exception {
+        final int userId = mTestContext.getUserId();
+
+        // Get the PackageMonitor and its handler via reflection for triggering and synchronization.
+        final PackageMonitor packageMonitor = mService.mPackageMonitor;
+
+        final ServiceThread serviceThread = mService.mServiceThread;
+        final Handler handler = serviceThread.getThreadHandler();
+
+        // Set the changing user ID via reflection, as it's not set when calling
+        // onPackageAppLockEnabled directly.
+        Field userIdField = PackageMonitor.class.getDeclaredField("mChangeUserId");
+        userIdField.setAccessible(true);
+        userIdField.set(packageMonitor, userId);
+
+        // 1. Initial State: Provider should be available.
+        doReturn(false).when(mSpiedPackageManager).isPackageAppLockEnabled(eq(mPkgName));
+        List<AppWidgetProviderInfo> providers = mManager.getInstalledProvidersForPackage(
+                mPkgName, null);
+        assertFalse("Providers should be available initially", providers.isEmpty());
+
+        // 2. Simulate App Lock
+        doReturn(true).when(mSpiedPackageManager).isPackageAppLockEnabled(eq(mPkgName));
+        final CountDownLatch lockLatch = new CountDownLatch(1);
+        handler.post(() -> {
+            packageMonitor.onPackageAppLockEnabled(mPkgName);
+            lockLatch.countDown();
+        });
+        assertTrue("Timed out waiting for onPackageAppLockEnabled",
+                lockLatch.await(5, TimeUnit.SECONDS));
+
+        // 3. Verify provider is gone
+        providers = mManager.getInstalledProvidersForPackage(mPkgName, null);
+        assertTrue("Providers should be gone when app is locked", providers.isEmpty());
+
+        // 4. Simulate App Unlock
+        doReturn(false).when(mSpiedPackageManager).isPackageAppLockEnabled(eq(mPkgName));
+        final CountDownLatch unlockLatch = new CountDownLatch(1);
+        handler.post(() -> {
+            packageMonitor.onPackageAppLockDisabled(mPkgName);
+            unlockLatch.countDown();
+        });
+        assertTrue("Timed out waiting for onPackageAppLockDisabled",
+                unlockLatch.await(5, TimeUnit.SECONDS));
+
+        // 5. Verify provider is back
+        providers = mManager.getInstalledProvidersForPackage(mPkgName, null);
+        assertFalse("Providers should be back when app is unlocked", providers.isEmpty());
     }
 
     @Test
@@ -751,9 +815,20 @@ public class AppWidgetServiceImplTest {
     }
 
     private class TestContext extends ContextWrapper {
+        private PackageManager mPackageManager;
 
         public TestContext() {
             super(InstrumentationRegistry.getInstrumentation().getTargetContext());
+            mPackageManager = super.getPackageManager();
+        }
+
+        void setPackageManager(PackageManager pm) {
+            mPackageManager = pm;
+        }
+
+        @Override
+        public PackageManager getPackageManager() {
+            return mPackageManager;
         }
 
         @Override

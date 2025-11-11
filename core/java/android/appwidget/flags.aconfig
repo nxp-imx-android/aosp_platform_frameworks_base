@@ -110,3 +110,10 @@ flag {
   description: "Remote document features in Q4 2025 release"
   bug: "412684851"
 }
+
+flag {
+  name: "app_lock_widget_removal"
+  namespace: "app_widgets"
+  description: "Remove app widgets from app-locked packages"
+  bug: "447547850"
+}
