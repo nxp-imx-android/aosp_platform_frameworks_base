@@ -257,6 +257,9 @@ constructor(
             .distinctUntilChanged()
             .dumpWhileCollecting("expandFraction")
 
+    val animationsEnabled
+        get() = shadeInteractor.isShadeTouchable.dumpWhileCollecting("animationsEnabled")
+
     val isOccluded: Flow<Boolean> =
         bouncerInteractor.bouncerExpansion
             .map { it == 1f }

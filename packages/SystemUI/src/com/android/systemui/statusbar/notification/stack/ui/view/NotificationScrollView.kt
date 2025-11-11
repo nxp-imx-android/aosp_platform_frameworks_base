@@ -165,4 +165,7 @@ interface NotificationScrollView {
 
     /** Sets whether height updates to the stack are suppressed. */
     fun suppressHeightUpdates(suppress: HeightSuppressionState)
+
+    /** Sets whether touch and animations on the stack are enabled. */
+    fun setAnimationsEnabled(enabled: Boolean)
 }
