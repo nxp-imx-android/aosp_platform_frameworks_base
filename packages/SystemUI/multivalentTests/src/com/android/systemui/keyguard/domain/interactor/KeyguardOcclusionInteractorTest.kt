@@ -263,7 +263,7 @@ class KeyguardOcclusionInteractorTest : SysuiTestCase() {
 
             // Unlock device:
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(occludingActivityWillDismissKeyguard).isTrue()
@@ -311,7 +311,7 @@ class KeyguardOcclusionInteractorTest : SysuiTestCase() {
 
             // Make sure to unlock the device so it can be considered "Entered"
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             testScope.runCurrent()

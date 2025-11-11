@@ -192,7 +192,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
     fun onWakeAndUnlock_notifiesListenerWithTrue() {
         whenever(biometricUnlockController.isWakeAndUnlock).thenReturn(true)
         whenever(biometricUnlockController.mode)
-            .thenReturn(BiometricUnlockController.MODE_WAKE_AND_DISMISS)
+            .thenReturn(BiometricUnlockController.MODE_WAKE_AND_UNLOCK)
 
         val listener =
             mock(KeyguardUnlockAnimationController.KeyguardUnlockAnimationListener::class.java)
@@ -213,7 +213,7 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
     fun onWakeAndUnlockFromDream_notifiesListenerWithFalse() {
         whenever(biometricUnlockController.isWakeAndUnlock).thenReturn(true)
         whenever(biometricUnlockController.mode)
-            .thenReturn(BiometricUnlockController.MODE_WAKE_AND_DISMISS_FROM_DREAM)
+            .thenReturn(BiometricUnlockController.MODE_WAKE_AND_UNLOCK_FROM_DREAM)
 
         val listener =
             mock(KeyguardUnlockAnimationController.KeyguardUnlockAnimationListener::class.java)

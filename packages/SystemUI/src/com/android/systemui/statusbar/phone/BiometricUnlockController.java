@@ -97,14 +97,14 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
     @IntDef(prefix = { "MODE_" }, value = {
             MODE_NONE,
             MODE_NONE_UNLOCKED,
-            MODE_WAKE_AND_DISMISS,
-            MODE_WAKE_AND_DISMISS_PULSING,
+            MODE_WAKE_AND_UNLOCK,
+            MODE_WAKE_AND_UNLOCK_PULSING,
             MODE_SHOW_BOUNCER,
             MODE_ONLY_WAKE,
             MODE_ONLY_WAKE_UNLOCKED,
-            MODE_DISMISS,
+            MODE_UNLOCK_COLLAPSING,
             MODE_DISMISS_BOUNCER,
-            MODE_WAKE_AND_DISMISS_FROM_DREAM
+            MODE_WAKE_AND_UNLOCK_FROM_DREAM
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface WakeAndUnlockMode {}
@@ -119,13 +119,13 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
      * Mode in which we wake up the device, and directly dismiss Keyguard. Active when we acquire
      * a fingerprint while the screen is off and the device was sleeping.
      */
-    public static final int MODE_WAKE_AND_DISMISS = 1;
+    public static final int MODE_WAKE_AND_UNLOCK = 1;
 
     /**
      * Mode in which we wake the device up, and fade out the Keyguard contents because they were
      * already visible while pulsing in doze mode.
      */
-    public static final int MODE_WAKE_AND_DISMISS_PULSING = 2;
+    public static final int MODE_WAKE_AND_UNLOCK_PULSING = 2;
 
     /**
      * Mode in which we wake up the device, but play the normal dismiss animation. Active when we
@@ -143,12 +143,12 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
      * Mode in which fingerprint unlocks the device or passive auth (ie face auth) unlocks the
      * device while being requested when keyguard is occluded or showing.
      */
-    public static final int MODE_DISMISS = 5;
+    public static final int MODE_UNLOCK_COLLAPSING = 5;
 
     /**
      * Mode in which fingerprint wakes and unlocks the device from a dream.
      */
-    public static final int MODE_WAKE_AND_DISMISS_FROM_DREAM = 6;
+    public static final int MODE_WAKE_AND_UNLOCK_FROM_DREAM = 6;
 
     /**
      * When bouncer is visible and will be dismissed.
@@ -493,9 +493,9 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
     public void startWakeAndUnlock(BiometricSourceType biometricSourceType,
                                    boolean isStrongBiometric) {
         int mode = calculateMode(biometricSourceType, isStrongBiometric);
-        if (mode == MODE_WAKE_AND_DISMISS
-                || mode == MODE_WAKE_AND_DISMISS_PULSING || mode == MODE_DISMISS
-                || mode == MODE_WAKE_AND_DISMISS_FROM_DREAM || mode == MODE_DISMISS_BOUNCER) {
+        if (mode == MODE_WAKE_AND_UNLOCK
+                || mode == MODE_WAKE_AND_UNLOCK_PULSING || mode == MODE_UNLOCK_COLLAPSING
+                || mode == MODE_WAKE_AND_UNLOCK_FROM_DREAM || mode == MODE_DISMISS_BOUNCER) {
             onBiometricUnlockedWithKeyguardDismissal(biometricSourceType);
         }
         startWakeAndUnlock(
@@ -516,7 +516,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
         boolean wasDeviceInteractive = mUpdateMonitor.isDeviceInteractive();
         mMode = mode;
         mHasScreenTurnedOnSinceAuthenticating = false;
-        if (mMode == MODE_WAKE_AND_DISMISS_PULSING) {
+        if (mMode == MODE_WAKE_AND_UNLOCK_PULSING) {
             // If we are waking the device up while we are pulsing the clock and the
             // notifications would light up first, creating an unpleasant animation.
             // Defer changing the screen brightness by forcing doze brightness on our window
@@ -537,7 +537,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
             releaseBiometricWakeLock();
         };
 
-        final boolean wakeInKeyguard = mMode == MODE_WAKE_AND_DISMISS_FROM_DREAM
+        final boolean wakeInKeyguard = mMode == MODE_WAKE_AND_UNLOCK_FROM_DREAM
                 && mPowerManager.isInteractive() && mOrderUnlockAndWake;
 
         switch (mMode) {
@@ -547,7 +547,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                         false /* primaryAuth */);
                 Trace.endSection();
                 break;
-            case MODE_DISMISS:
+            case MODE_UNLOCK_COLLAPSING:
                 Trace.beginSection("MODE_UNLOCK_COLLAPSING");
                 mKeyguardViewController.notifyKeyguardAuthenticated(
                         false /* primaryAuth */);
@@ -559,12 +559,12 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                         "BiometricUnlockController#MODE_SHOW_BOUNCER");
                 Trace.endSection();
                 break;
-            case MODE_WAKE_AND_DISMISS_FROM_DREAM:
-            case MODE_WAKE_AND_DISMISS_PULSING:
-            case MODE_WAKE_AND_DISMISS:
-                if (mMode == MODE_WAKE_AND_DISMISS_PULSING) {
+            case MODE_WAKE_AND_UNLOCK_FROM_DREAM:
+            case MODE_WAKE_AND_UNLOCK_PULSING:
+            case MODE_WAKE_AND_UNLOCK:
+                if (mMode == MODE_WAKE_AND_UNLOCK_PULSING) {
                     Trace.beginSection("MODE_WAKE_AND_UNLOCK_PULSING");
-                } else if (mMode == MODE_WAKE_AND_DISMISS) {
+                } else if (mMode == MODE_WAKE_AND_UNLOCK){
                     Trace.beginSection("MODE_WAKE_AND_UNLOCK");
                 } else {
                     Trace.beginSection("MODE_WAKE_AND_UNLOCK_FROM_DREAM");
@@ -643,25 +643,25 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
         if (!deviceInteractive) {
             if (!keyguardShowing && !mScreenOffAnimationController.isKeyguardShowDelayed()) {
                 if (mKeyguardStateController.isUnlocked()) {
-                    return MODE_WAKE_AND_DISMISS;
+                    return MODE_WAKE_AND_UNLOCK;
                 }
                 return MODE_ONLY_WAKE;
             } else if (mDozeScrimController.isPulsing() && unlockingAllowed) {
-                return MODE_WAKE_AND_DISMISS_PULSING;
+                return MODE_WAKE_AND_UNLOCK_PULSING;
             } else if (unlockingAllowed || !mKeyguardStateController.isMethodSecure()) {
-                return MODE_WAKE_AND_DISMISS;
+                return MODE_WAKE_AND_UNLOCK;
             } else {
                 return MODE_SHOW_BOUNCER;
             }
         }
         if (unlockingAllowed && deviceDreaming) {
-            return MODE_WAKE_AND_DISMISS_FROM_DREAM;
+            return MODE_WAKE_AND_UNLOCK_FROM_DREAM;
         }
         if (keyguardShowing) {
             if (mKeyguardViewController.primaryBouncerIsOrWillBeShowing() && unlockingAllowed) {
                 return MODE_DISMISS_BOUNCER;
             } else if (unlockingAllowed) {
-                return MODE_DISMISS;
+                return MODE_UNLOCK_COLLAPSING;
             } else if (!mKeyguardViewController.isBouncerShowing()) {
                 return MODE_SHOW_BOUNCER;
             }
@@ -709,13 +709,13 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
             if (!unlockingAllowed) {
                 return bypass ? MODE_SHOW_BOUNCER : MODE_NONE;
             } else if (!isKeyguardShowing) {
-                return bypass ? MODE_WAKE_AND_DISMISS : MODE_ONLY_WAKE_UNLOCKED;
+                return bypass ? MODE_WAKE_AND_UNLOCK : MODE_ONLY_WAKE_UNLOCKED;
             } else if (mDozeScrimController.isPulsing()) {
-                return MODE_WAKE_AND_DISMISS_PULSING; // always unlock from the pulsing state
+                return MODE_WAKE_AND_UNLOCK_PULSING; // always unlock from the pulsing state
             } else {
                 if (bypass) {
                     // Wake-up fading out nicely
-                    return MODE_WAKE_AND_DISMISS_PULSING;
+                    return MODE_WAKE_AND_UNLOCK_PULSING;
                 } else {
                     // We could theoretically return MODE_NONE_UNLOCKED, but this means that the
                     // device would be not interactive, unlocked, and the user would not see the
@@ -726,17 +726,17 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
         }
         if (unlockingAllowed && deviceDreaming) {
             final boolean wakeAndUnlock = bypass || (dreamsV2() && isBouncerShowing);
-            return wakeAndUnlock ? MODE_WAKE_AND_DISMISS_FROM_DREAM : MODE_ONLY_WAKE_UNLOCKED;
+            return wakeAndUnlock ? MODE_WAKE_AND_UNLOCK_FROM_DREAM : MODE_ONLY_WAKE_UNLOCKED;
         }
         if (unlockingAllowed && mKeyguardStateController.isOccluded()) {
-            return MODE_DISMISS;
+            return MODE_UNLOCK_COLLAPSING;
         }
         if (isKeyguardShowing) {
             if (unlockingAllowed) {
                 if (isBouncerShowing) {
                     return MODE_DISMISS_BOUNCER;
                 } else if (bypass) {
-                    return MODE_DISMISS;
+                    return MODE_UNLOCK_COLLAPSING;
                 } else {
                     return MODE_NONE_UNLOCKED;
                 }
@@ -924,9 +924,9 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
      * Successful authentication with fingerprint, face, or iris that wakes up the device.
      */
     public boolean isWakeAndUnlock() {
-        return mMode == MODE_WAKE_AND_DISMISS
-                || mMode == MODE_WAKE_AND_DISMISS_PULSING
-                || mMode == MODE_WAKE_AND_DISMISS_FROM_DREAM;
+        return mMode == MODE_WAKE_AND_UNLOCK
+                || mMode == MODE_WAKE_AND_UNLOCK_PULSING
+                || mMode == MODE_WAKE_AND_UNLOCK_FROM_DREAM;
     }
 
     /**
@@ -942,7 +942,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
      * on or off.
      */
     public boolean isBiometricUnlock() {
-        return isWakeAndUnlock() || mMode == MODE_DISMISS;
+        return isWakeAndUnlock() || mMode == MODE_UNLOCK_COLLAPSING;
     }
 
     /**

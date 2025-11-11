@@ -71,7 +71,7 @@ class AuthRippleInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val showUnlockRipple by collectLastValue(underTest.showUnlockRipple)
             keyguardRepository.setBiometricUnlockState(
-                BiometricUnlockMode.WAKE_AND_DISMISS,
+                BiometricUnlockMode.WAKE_AND_UNLOCK,
                 BiometricUnlockSource.FACE_SENSOR,
             )
             assertThat(showUnlockRipple).isEqualTo(BiometricUnlockSource.FACE_SENSOR)
@@ -82,7 +82,7 @@ class AuthRippleInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val showUnlockRippleFromBiometricUnlock by collectLastValue(underTest.showUnlockRipple)
             keyguardRepository.setBiometricUnlockState(
-                BiometricUnlockMode.WAKE_AND_DISMISS,
+                BiometricUnlockMode.WAKE_AND_UNLOCK,
                 BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(showUnlockRippleFromBiometricUnlock)

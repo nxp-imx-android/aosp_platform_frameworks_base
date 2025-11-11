@@ -167,7 +167,7 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
         val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
 
         kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
             biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         assertThat(deviceUnlockStatus?.isUnlocked).isTrue()

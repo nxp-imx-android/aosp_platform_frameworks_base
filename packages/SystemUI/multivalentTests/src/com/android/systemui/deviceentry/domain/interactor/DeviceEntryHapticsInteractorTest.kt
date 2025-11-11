@@ -169,7 +169,7 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
         kosmos.fakeKeyguardRepository.setBiometricUnlockSource(
             BiometricUnlockSource.FINGERPRINT_SENSOR
         )
-        kosmos.fakeKeyguardRepository.setBiometricUnlockState(BiometricUnlockMode.WAKE_AND_DISMISS)
+        kosmos.fakeKeyguardRepository.setBiometricUnlockState(BiometricUnlockMode.WAKE_AND_UNLOCK)
     }
 
     private fun fingerprintFailure() {

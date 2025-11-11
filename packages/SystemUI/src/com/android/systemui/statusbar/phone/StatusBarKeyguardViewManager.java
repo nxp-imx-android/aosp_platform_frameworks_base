@@ -21,8 +21,8 @@ import static android.view.WindowInsets.Type.navigationBars;
 
 import static com.android.systemui.bouncer.shared.constants.KeyguardBouncerConstants.EXPANSION_HIDDEN;
 import static com.android.systemui.plugins.ActivityStarter.OnDismissAction;
-import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS;
-import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_DISMISS_PULSING;
+import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
+import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -1001,7 +1001,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
 
     private boolean isWakeAndUnlocking() {
         int mode = mBiometricUnlockController.getMode();
-        return mode == MODE_WAKE_AND_DISMISS || mode == MODE_WAKE_AND_DISMISS_PULSING;
+        return mode == MODE_WAKE_AND_UNLOCK || mode == MODE_WAKE_AND_UNLOCK_PULSING;
     }
 
     /**
@@ -1590,7 +1590,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
      */
     public boolean isNavBarVisible() {
         boolean isWakeAndUnlockPulsing = mBiometricUnlockController != null
-                && mBiometricUnlockController.getMode() == MODE_WAKE_AND_DISMISS_PULSING;
+                && mBiometricUnlockController.getMode() == MODE_WAKE_AND_UNLOCK_PULSING;
         boolean keyguardVisible = mKeyguardStateController.isVisible();
         boolean hideWhileDozing = mDozing && !isWakeAndUnlockPulsing;
         boolean keyguardWithGestureNav = (keyguardVisible && !mDozing
@@ -1607,8 +1607,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
      */
     protected boolean getLastNavBarVisible() {
         boolean keyguardShowing = mLastShowing && !mLastOccluded;
-        boolean hideWhileDozing = mLastDozing
-                && mLastBiometricMode != MODE_WAKE_AND_DISMISS_PULSING;
+        boolean hideWhileDozing = mLastDozing && mLastBiometricMode != MODE_WAKE_AND_UNLOCK_PULSING;
         boolean keyguardWithGestureNav = (keyguardShowing && !mLastDozing
                 && !mLastScreenOffAnimationPlaying || mLastPulsing && !mLastIsDocked)
                 && mLastGesturalNav;

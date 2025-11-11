@@ -82,7 +82,7 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
             editModeViewModel.stopEditing()
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
             biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -193,7 +193,7 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
             editModeViewModel.stopEditing()
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
             biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 

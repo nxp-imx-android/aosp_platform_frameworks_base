@@ -293,7 +293,7 @@ public final class DozeServiceHost implements DozeHost {
         // When in wake-and-unlock we may not have received a change to StatusBarState
         // but we still should not be dozing, manually set to false.
         if (mBiometricUnlockControllerLazy.get().getMode()
-                == BiometricUnlockController.MODE_WAKE_AND_DISMISS) {
+                == BiometricUnlockController.MODE_WAKE_AND_UNLOCK) {
             dozing = false;
         }
 
@@ -402,7 +402,7 @@ public final class DozeServiceHost implements DozeHost {
     @Override
     public boolean isPulsingBlocked() {
         return mBiometricUnlockControllerLazy.get().getMode()
-                == BiometricUnlockController.MODE_WAKE_AND_DISMISS;
+                == BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
     }
 
     @Override

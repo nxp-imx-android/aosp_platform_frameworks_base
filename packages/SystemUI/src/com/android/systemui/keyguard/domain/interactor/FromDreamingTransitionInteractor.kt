@@ -213,7 +213,7 @@ constructor(
         scope.launch {
             keyguardInteractor.biometricUnlockState
                 .filterRelevantKeyguardStateAnd { biometricUnlockState ->
-                    biometricUnlockState.mode == BiometricUnlockMode.WAKE_AND_DISMISS_FROM_DREAM
+                    biometricUnlockState.mode == BiometricUnlockMode.WAKE_AND_UNLOCK_FROM_DREAM
                 }
                 .collect { startTransitionTo(KeyguardState.GONE) }
         }

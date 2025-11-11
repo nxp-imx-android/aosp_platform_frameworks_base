@@ -252,7 +252,7 @@ class StatusBarStartableTest : SysuiTestCase() {
     private fun TestScope.setUpWith(preconditions: Preconditions) {
         if (!preconditions.isKeyguardShowing) {
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
         }

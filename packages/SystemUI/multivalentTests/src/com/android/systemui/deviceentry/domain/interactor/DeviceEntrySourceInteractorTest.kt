@@ -70,7 +70,7 @@ class DeviceEntrySourceInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.deviceEntryFromBiometricSource)
 
             fakeKeyguardRepository.setBiometricUnlockState(
-                BiometricUnlockMode.WAKE_AND_DISMISS,
+                BiometricUnlockMode.WAKE_AND_UNLOCK,
                 BiometricUnlockSource.FACE_SENSOR,
             )
             runCurrent()
@@ -86,7 +86,7 @@ class DeviceEntrySourceInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.deviceEntryFromBiometricSource)
 
             fakeKeyguardRepository.setBiometricUnlockState(
-                BiometricUnlockMode.WAKE_AND_DISMISS,
+                BiometricUnlockMode.WAKE_AND_UNLOCK,
                 BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()

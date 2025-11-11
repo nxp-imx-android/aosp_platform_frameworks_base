@@ -449,7 +449,7 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
         if (isEntered) {
             // Unlock the device marking the device has entered.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
         }
