@@ -343,3 +343,10 @@ flag {
     is_exported: true
     bug: "452585730"
 }
+
+flag {
+    name: "app_lock_shortcut_removal"
+    namespace: "security"
+    description: "Flag for the removal of shortcuts when app lock is enabled."
+    bug: "447547850"
+}
