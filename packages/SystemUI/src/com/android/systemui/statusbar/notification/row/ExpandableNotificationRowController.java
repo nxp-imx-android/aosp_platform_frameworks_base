@@ -50,7 +50,6 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
-import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -111,7 +110,6 @@ public class ExpandableNotificationRowController implements NotifViewController 
     private final StatusBarStateController mStatusBarStateController;
     private final MetricsLogger mMetricsLogger;
     private final NotificationChildrenContainerLogger mChildrenContainerLogger;
-    private final ExpandableNotificationRow.CoordinateOnClickListener mOnFeedbackClickListener;
     private final NotificationGutsManager mNotificationGutsManager;
     private final OnUserInteractionCallback mOnUserInteractionCallback;
     private final FalsingManager mFalsingManager;
@@ -318,7 +316,6 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mOnUserInteractionCallback = onUserInteractionCallback;
         mFalsingManager = falsingManager;
         mNotificationRebindingTracker = notificationRebindingTracker;
-        mOnFeedbackClickListener = mNotificationGutsManager::openGuts;
         mAllowLongPress = allowLongPress;
         mFeatureFlags = featureFlags;
         mPeopleNotificationIdentifier = peopleNotificationIdentifier;
@@ -388,7 +385,6 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 mHeadsUpManager,
                 mRowContentBindStage,
                 mOnExpandClickListener,
-                mOnFeedbackClickListener,
                 mFalsingManager,
                 mStatusBarStateController,
                 mPeopleNotificationIdentifier,
@@ -568,11 +564,6 @@ public class ExpandableNotificationRowController implements NotifViewController 
     @Override
     public void setLastAudibleMs(long lastAudibleMs) {
         mView.setLastAudiblyAlertedMs(lastAudibleMs);
-    }
-
-    @Override
-    public void setFeedbackIcon(@Nullable FeedbackIcon icon) {
-        mView.setFeedbackIcon(icon);
     }
 
     @Override

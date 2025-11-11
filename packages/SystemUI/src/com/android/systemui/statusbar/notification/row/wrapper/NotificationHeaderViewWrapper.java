@@ -45,7 +45,6 @@ import com.android.systemui.res.R;
 import com.android.systemui.statusbar.TransformableView;
 import com.android.systemui.statusbar.ViewTransformationHelper;
 import com.android.systemui.statusbar.notification.CustomInterpolatorTransformation;
-import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.ImageTransformState;
 import com.android.systemui.statusbar.notification.Roundable;
 import com.android.systemui.statusbar.notification.RoundableState;
@@ -76,7 +75,6 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
     private TextView mAppNameText;
     private ImageView mWorkProfileImage;
     private View mAudiblyAlertedIcon;
-    private View mFeedbackIcon;
     private boolean mIsLowPriority;
     private boolean mTransformLowPriorityTitle;
     private RoundnessChangedListener mRoundnessChangedListener;
@@ -118,7 +116,6 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
                 },
                 TRANSFORMING_VIEW_TITLE);
         resolveHeaderViews();
-        addFeedbackOnClickListener(row);
         addDismissButtonOnClickListener(row);
 
         if (NotificationAddXOnHoverToDismiss.isEnabled()) {
@@ -161,18 +158,7 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
         mNotificationHeader = mView.findViewById(com.android.internal.R.id.notification_header);
         mNotificationTopLine = mView.findViewById(com.android.internal.R.id.notification_top_line);
         mAudiblyAlertedIcon = mView.findViewById(com.android.internal.R.id.alerted_icon);
-        mFeedbackIcon = mView.findViewById(com.android.internal.R.id.feedback);
         mCloseButton = mView.findViewById(com.android.internal.R.id.close_button);
-    }
-
-    private void addFeedbackOnClickListener(ExpandableNotificationRow row) {
-        View.OnClickListener listener = row.getFeedbackOnClickListener();
-        if (mNotificationTopLine != null) {
-            mNotificationTopLine.setFeedbackOnClickListener(listener);
-        }
-        if (mFeedbackIcon != null) {
-            mFeedbackIcon.setOnClickListener(listener);
-        }
     }
 
     private ExpandableNotificationRow.DismissButtonTargetVisibilityListener mHoverListener = new
@@ -193,23 +179,6 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
 
         if (NotificationAddXOnHoverToDismiss.isEnabled()) {
             mRow.removeDismissButtonTargetStateListener(mHoverListener);
-        }
-    }
-
-    /**
-     * Shows the given feedback icon, or hides the icon if null.
-     */
-    @Override
-    public void setFeedbackIcon(@Nullable FeedbackIcon icon) {
-        if (mFeedbackIcon != null) {
-            mFeedbackIcon.setVisibility(icon != null ? VISIBLE : GONE);
-            if (icon != null) {
-                if (mFeedbackIcon instanceof ImageButton) {
-                    ((ImageButton) mFeedbackIcon).setImageResource(icon.getIconRes());
-                }
-                mFeedbackIcon.setContentDescription(
-                        mView.getContext().getString(icon.getContentDescRes()));
-            }
         }
     }
 
@@ -292,7 +261,7 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
             mTransformationHelper.addTransformedView(TransformableView.TRANSFORMING_VIEW_TITLE,
                     mHeaderText);
         }
-        addViewsTransformingToSimilar(mWorkProfileImage, mAudiblyAlertedIcon, mFeedbackIcon);
+        addViewsTransformingToSimilar(mWorkProfileImage, mAudiblyAlertedIcon);
     }
 
     @Override

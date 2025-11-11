@@ -42,7 +42,6 @@ import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.widget.CachingIconView;
 import com.android.systemui.statusbar.CrossFadeHelper;
 import com.android.systemui.statusbar.TransformableView;
-import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.TransformState;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
@@ -115,10 +114,6 @@ public abstract class NotificationViewWrapper implements TransformableView {
      * @param row the row this wrapper is attached to
      */
     public void onContentUpdated(ExpandableNotificationRow row) {
-    }
-
-    /** Shows the given feedback icon, or hides the icon if null. */
-    public void setFeedbackIcon(@Nullable FeedbackIcon icon) {
     }
 
     public void onReinflated() {

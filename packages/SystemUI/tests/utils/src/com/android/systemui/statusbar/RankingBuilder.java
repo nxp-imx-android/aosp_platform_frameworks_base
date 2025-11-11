@@ -44,20 +44,17 @@ public class RankingBuilder {
     private CharSequence mExplanation = "test_explanation";
     private String mOverrideGroupKey = null;
     private NotificationChannel mChannel = null;
-    private ArrayList<String> mAdditionalPeople = null;
     private ArrayList<SnoozeCriterion> mSnoozeCriteria = null;
     private boolean mCanShowBadge = false;
     private int mUserSentiment = 0;
     private boolean mIsSuspended = false;
     private long mLastAudiblyAlertedMs = 0;
-    private boolean mNoisy = false;
     private ArrayList<Notification.Action> mSmartActions = new ArrayList<>();
     private ArrayList<CharSequence> mSmartReplies = new ArrayList<>();
     private boolean mCanBubble = false;
     private boolean mIsTextChanged = false;
     private boolean mIsConversation = false;
     private ShortcutInfo mShortcutInfo = null;
-    private int mRankingAdjustment = 0;
     private boolean mIsBubble = false;
     private int mProposedImportance = IMPORTANCE_UNSPECIFIED;
     private boolean mSensitiveContent = false;
@@ -76,20 +73,17 @@ public class RankingBuilder {
         mExplanation = ranking.getImportanceExplanation();
         mOverrideGroupKey = ranking.getOverrideGroupKey();
         mChannel = ranking.getChannel();
-        mAdditionalPeople = copyList(ranking.getAdditionalPeople());
         mSnoozeCriteria = copyList(ranking.getSnoozeCriteria());
         mCanShowBadge = ranking.canShowBadge();
         mUserSentiment = ranking.getUserSentiment();
         mIsSuspended = ranking.isSuspended();
         mLastAudiblyAlertedMs = ranking.getLastAudiblyAlertedMillis();
-        mNoisy = ranking.isNoisy();
         mSmartActions = copyList(ranking.getSmartActions());
         mSmartReplies = copyList(ranking.getSmartReplies());
         mCanBubble = ranking.canBubble();
         mIsTextChanged = ranking.isTextChanged();
         mIsConversation = ranking.isConversation();
         mShortcutInfo = ranking.getConversationShortcutInfo();
-        mRankingAdjustment = ranking.getRankingAdjustment();
         mIsBubble = ranking.isBubble();
         mProposedImportance = ranking.getProposedImportance();
         mSensitiveContent = ranking.hasSensitiveContent();
@@ -108,20 +102,17 @@ public class RankingBuilder {
                 mExplanation,
                 mOverrideGroupKey,
                 mChannel,
-                mAdditionalPeople,
                 mSnoozeCriteria,
                 mCanShowBadge,
                 mUserSentiment,
                 mIsSuspended,
                 mLastAudiblyAlertedMs,
-                mNoisy,
                 mSmartActions,
                 mSmartReplies,
                 mCanBubble,
                 mIsTextChanged,
                 mIsConversation,
                 mShortcutInfo,
-                mRankingAdjustment,
                 mIsBubble,
                 mProposedImportance,
                 mSensitiveContent,
@@ -164,11 +155,6 @@ public class RankingBuilder {
         return this;
     }
 
-    public RankingBuilder setAdditionalPeople(ArrayList<String> additionalPeople) {
-        mAdditionalPeople = additionalPeople;
-        return this;
-    }
-
     public RankingBuilder setSnoozeCriteria(
             ArrayList<SnoozeCriterion> snoozeCriteria) {
         mSnoozeCriteria = snoozeCriteria;
@@ -187,11 +173,6 @@ public class RankingBuilder {
 
     public RankingBuilder setLastAudiblyAlertedMs(long lastAudiblyAlertedMs) {
         mLastAudiblyAlertedMs = lastAudiblyAlertedMs;
-        return this;
-    }
-
-    public RankingBuilder setNoisy(boolean noisy) {
-        mNoisy = noisy;
         return this;
     }
 
@@ -215,11 +196,6 @@ public class RankingBuilder {
         return this;
     }
 
-    public RankingBuilder setRankingAdjustment(int rankingAdjustment) {
-        mRankingAdjustment = rankingAdjustment;
-        return this;
-    }
-
     public RankingBuilder setImportance(@Importance int importance) {
         mImportance = importance;
         return this;
@@ -232,11 +208,6 @@ public class RankingBuilder {
 
     public RankingBuilder setSensitiveContent(boolean sensitiveContent) {
         mSensitiveContent = sensitiveContent;
-        return this;
-    }
-
-    public RankingBuilder setUserSentiment(int userSentiment) {
-        mUserSentiment = userSentiment;
         return this;
     }
 

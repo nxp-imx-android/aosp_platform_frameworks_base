@@ -36,7 +36,6 @@ import com.android.internal.R
 import com.android.internal.widget.NotificationActionListLayout
 import com.android.internal.widget.NotificationExpandButton
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.statusbar.notification.FeedbackIcon
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -277,25 +276,6 @@ class NotificationContentViewTest : SysuiTestCase() {
         verify(view.expandedWrapper).setVisible(false)
         verify(view.contractedWrapper, times(1)).onContentShown(true)
         verify(view.contractedWrapper).setVisible(true)
-    }
-
-    @Test
-    fun testSetFeedbackIcon() {
-        // Given: contractedChild, enpandedChild, and headsUpChild being set
-        val view = createContentView(isSystemExpanded = false)
-
-        // When: FeedBackIcon is set
-        val icon =
-            FeedbackIcon(
-                R.drawable.ic_feedback_alerted,
-                R.string.notification_feedback_indicator_alerted,
-            )
-        view.setFeedbackIcon(icon)
-
-        // Then: contractedChild, enpandedChild, and headsUpChild is updated with the feedbackIcon
-        verify(view.contractedWrapper).setFeedbackIcon(icon)
-        verify(view.expandedWrapper).setFeedbackIcon(icon)
-        verify(view.headsUpWrapper).setFeedbackIcon(icon)
     }
 
     @Test

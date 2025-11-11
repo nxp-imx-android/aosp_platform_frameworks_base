@@ -291,11 +291,6 @@ public class NotificationEntryBuilder {
         return this;
     }
 
-    public NotificationEntryBuilder setAdditionalPeople(ArrayList<String> additionalPeople) {
-        mRankingBuilder.setAdditionalPeople(additionalPeople);
-        return this;
-    }
-
     public NotificationEntryBuilder setSnoozeCriteria(
             ArrayList<SnoozeCriterion> snoozeCriteria) {
         mRankingBuilder.setSnoozeCriteria(snoozeCriteria);
@@ -317,11 +312,6 @@ public class NotificationEntryBuilder {
         return this;
     }
 
-    public NotificationEntryBuilder setNoisy(boolean noisy) {
-        mRankingBuilder.setNoisy(noisy);
-        return this;
-    }
-
     public NotificationEntryBuilder setCanBubble(boolean canBubble) {
         mRankingBuilder.setCanBubble(canBubble);
         return this;
@@ -329,11 +319,6 @@ public class NotificationEntryBuilder {
 
     public NotificationEntryBuilder setImportance(@NotificationManager.Importance int importance) {
         mRankingBuilder.setImportance(importance);
-        return this;
-    }
-
-    public NotificationEntryBuilder setUserSentiment(int userSentiment) {
-        mRankingBuilder.setUserSentiment(userSentiment);
         return this;
     }
 
@@ -365,11 +350,6 @@ public class NotificationEntryBuilder {
 
     public NotificationEntryBuilder setShortcutInfo(ShortcutInfo shortcutInfo) {
         mRankingBuilder.setShortcutInfo(shortcutInfo);
-        return this;
-    }
-
-    public NotificationEntryBuilder setRankingAdjustment(int rankingAdjustment) {
-        mRankingBuilder.setRankingAdjustment(rankingAdjustment);
         return this;
     }
 }

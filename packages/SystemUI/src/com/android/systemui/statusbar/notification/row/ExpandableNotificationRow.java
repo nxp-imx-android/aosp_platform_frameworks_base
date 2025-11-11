@@ -109,7 +109,6 @@ import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
-import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
@@ -320,7 +319,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private boolean mShowNoBackground;
     private ExpandableNotificationRow mNotificationParent;
     private OnExpandClickListener mOnExpandClickListener;
-    private View.OnClickListener mOnFeedbackClickListener;
     private Path mExpandingClipPath;
 
     private static boolean shouldSimulateSlowMeasure() {
@@ -2260,7 +2258,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             HeadsUpManager headsUpManager,
             RowContentBindStage rowContentBindStage,
             OnExpandClickListener onExpandClickListener,
-            CoordinateOnClickListener onFeedbackClickListener,
             FalsingManager falsingManager,
             StatusBarStateController statusBarStateController,
             PeopleNotificationIdentifier peopleNotificationIdentifier,
@@ -2309,7 +2306,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mHeadsUpManager = headsUpManager;
         mRowContentBindStage = rowContentBindStage;
         mOnExpandClickListener = onExpandClickListener;
-        setOnFeedbackClickListener(onFeedbackClickListener);
         mFalsingManager = falsingManager;
         mStatusBarStateController = statusBarStateController;
         mPeopleNotificationIdentifier = peopleNotificationIdentifier;
@@ -2406,17 +2402,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     /**
-     * Shows the given feedback icon, or hides the icon if null.
-     */
-    public void setFeedbackIcon(@Nullable FeedbackIcon icon) {
-        if (mIsSummaryWithChildren) {
-            mChildrenContainer.setFeedbackIcon(icon);
-        }
-        mPrivateLayout.setFeedbackIcon(icon);
-        mPublicLayout.setFeedbackIcon(icon);
-    }
-
-    /**
      * Sets the last time the notification being displayed audibly alerted the user.
      */
     public void setLastAudiblyAlertedMs(long lastAudiblyAlertedMs) {
@@ -2452,24 +2437,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         mPrivateLayout.setRecentlyAudiblyAlerted(audiblyAlertedRecently);
         mPublicLayout.setRecentlyAudiblyAlerted(audiblyAlertedRecently);
-    }
-
-    public View.OnClickListener getFeedbackOnClickListener() {
-        return mOnFeedbackClickListener;
-    }
-
-    void setOnFeedbackClickListener(CoordinateOnClickListener l) {
-        mOnFeedbackClickListener = v -> {
-            createMenu();
-            NotificationMenuRowPlugin provider = getProvider();
-            if (provider == null) {
-                return;
-            }
-            MenuItem menuItem = provider.getFeedbackMenuItem(mContext);
-            if (menuItem != null) {
-                l.onClick(this, v.getWidth() / 2, v.getHeight() / 2, menuItem);
-            }
-        };
     }
 
     /**

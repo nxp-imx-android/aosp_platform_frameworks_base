@@ -77,7 +77,6 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.systemui.Dependency;
 import com.android.systemui.res.R;
-import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
@@ -98,7 +97,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
 
     private TextView mPriorityDescriptionView;
     private TextView mSilentDescriptionView;
-    private TextView mAutomaticDescriptionView;
 
     protected INotificationManager mINotificationManager;
     private AppIconProvider mAppIconProvider;
@@ -107,7 +105,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private PackageManager mPm;
     private MetricsLogger mMetricsLogger;
     private ChannelEditorDialogController mChannelEditorDialogController;
-    private AssistantFeedbackController mAssistantFeedbackController;
 
     private String mPackageName;
     protected String mAppName;
@@ -118,7 +115,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private boolean mWasShownHighPriority;
     private boolean mPressedApply;
     private boolean mPresentingChannelEditorDialog = false;
-    private boolean mShowAutomaticSetting;
 
     /**
      * The last importance level chosen by the user.  Null if the user has not chosen an importance
@@ -126,7 +122,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
      */
     @Nullable
     private Integer mChosenImportance;
-    private boolean mIsAutomaticChosen;
     private boolean mIsSingleDefaultChannel;
     private boolean mIsNonblockable;
     protected boolean mIsDismissable;
@@ -148,22 +143,14 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     boolean mSkipPost = false;
 
     // used by standard ui
-    private final OnClickListener mOnAutomatic = v -> {
-        mIsAutomaticChosen = true;
-        applyAlertingBehavior(BEHAVIOR_AUTOMATIC, true /* userTriggered */);
-    };
-
-    // used by standard ui
     private final OnClickListener mOnAlert = v -> {
         mChosenImportance = IMPORTANCE_DEFAULT;
-        mIsAutomaticChosen = false;
         applyAlertingBehavior(BEHAVIOR_ALERTING, true /* userTriggered */);
     };
 
     // used by standard ui
     private final OnClickListener mOnSilent = v -> {
         mChosenImportance = IMPORTANCE_LOW;
-        mIsAutomaticChosen = false;
         applyAlertingBehavior(BEHAVIOR_SILENT, true /* userTriggered */);
     };
 
@@ -184,7 +171,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
 
         mPriorityDescriptionView = findViewById(R.id.alert_summary);
         mSilentDescriptionView = findViewById(R.id.silence_summary);
-        mAutomaticDescriptionView = findViewById(R.id.automatic_summary);
     }
 
     public interface OnSettingsClickListener {
@@ -220,7 +206,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             boolean isNonblockable,
             boolean isDismissable,
             boolean wasShownHighPriority,
-            AssistantFeedbackController assistantFeedbackController,
             MetricsLogger metricsLogger,
             OnClickListener onCloseClick)
             throws RemoteException {
@@ -230,7 +215,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         mMetricsLogger = metricsLogger;
         mOnUserInteractionCallback = onUserInteractionCallback;
         mChannelEditorDialogController = channelEditorDialogController;
-        mAssistantFeedbackController = assistantFeedbackController;
         mPackageName = pkg;
         mSbn = sbn;
         mRanking = ranking;
@@ -249,7 +233,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         mAppUid = mSbn.getUid();
         mDelegatePkg = mSbn.getOpPkg();
         mIsDeviceProvisioned = isDeviceProvisioned;
-        mShowAutomaticSetting = mAssistantFeedbackController.isFeedbackEnabled();
         mUiEventLogger = uiEventLogger;
         mOnCloseClickListener = onCloseClick;
 
@@ -260,7 +243,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
                 pkg, mAppUid, false /* includeDeleted */);
         mIsSingleDefaultChannel = mSingleNotificationChannel.getId().equals(
                 NotificationChannel.DEFAULT_CHANNEL_ID) && numTotalChannels == 1;
-        mIsAutomaticChosen = getAlertingBehavior() == BEHAVIOR_AUTOMATIC;
 
         bindHeader();
         bindChannelDetails();
@@ -312,17 +294,6 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         View alert = findViewById(R.id.alert);
         silent.setOnClickListener(mOnSilent);
         alert.setOnClickListener(mOnAlert);
-
-        View automatic = findViewById(R.id.automatic);
-        if (mShowAutomaticSetting) {
-            mAutomaticDescriptionView.setText(Html.fromHtml(mContext.getText(
-                            mAssistantFeedbackController.getInlineDescriptionResource(mRanking))
-                    .toString()));
-            automatic.setVisibility(VISIBLE);
-            automatic.setOnClickListener(mOnAutomatic);
-        } else {
-            automatic.setVisibility(GONE);
-        }
 
         int behavior = getAlertingBehavior();
         applyAlertingBehavior(behavior, false /* userTriggered */);
@@ -616,7 +587,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             bgHandler.post(
                     new UpdateImportanceRunnable(mINotificationManager, mPackageName, mAppUid,
                             mSingleNotificationChannel,
-                            mStartingChannelImportance, newImportance, mIsAutomaticChosen));
+                            mStartingChannelImportance, newImportance));
             if (NotificationBundleUi.isEnabled()) {
                 mEntryAdapter.onImportanceChanged();
             } else {
@@ -653,39 +624,23 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
 
         View alert = findViewById(R.id.alert);
         View silence = findViewById(R.id.silence);
-        View automatic = findViewById(R.id.automatic);
 
         switch (behavior) {
             case BEHAVIOR_ALERTING:
                 mPriorityDescriptionView.setVisibility(VISIBLE);
                 mSilentDescriptionView.setVisibility(GONE);
-                mAutomaticDescriptionView.setVisibility(GONE);
                 post(() -> {
                     alert.setSelected(true);
                     silence.setSelected(false);
-                    automatic.setSelected(false);
                 });
                 break;
 
             case BEHAVIOR_SILENT:
                 mSilentDescriptionView.setVisibility(VISIBLE);
                 mPriorityDescriptionView.setVisibility(GONE);
-                mAutomaticDescriptionView.setVisibility(GONE);
                 post(() -> {
                     alert.setSelected(false);
                     silence.setSelected(true);
-                    automatic.setSelected(false);
-                });
-                break;
-
-            case BEHAVIOR_AUTOMATIC:
-                mAutomaticDescriptionView.setVisibility(VISIBLE);
-                mPriorityDescriptionView.setVisibility(GONE);
-                mSilentDescriptionView.setVisibility(GONE);
-                post(() -> {
-                    automatic.setSelected(true);
-                    alert.setSelected(false);
-                    silence.setSelected(false);
                 });
                 break;
 
@@ -822,34 +777,27 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         private final @Nullable NotificationChannel mChannelToUpdate;
         private final int mCurrentImportance;
         private final int mNewImportance;
-        private final boolean mUnlockImportance;
 
 
         public UpdateImportanceRunnable(INotificationManager notificationManager,
                 String packageName, int appUid, @Nullable NotificationChannel channelToUpdate,
-                int currentImportance, int newImportance, boolean unlockImportance) {
+                int currentImportance, int newImportance) {
             mINotificationManager = notificationManager;
             mPackageName = packageName;
             mAppUid = appUid;
             mChannelToUpdate = channelToUpdate;
             mCurrentImportance = currentImportance;
             mNewImportance = newImportance;
-            mUnlockImportance = unlockImportance;
         }
 
         @Override
         public void run() {
             try {
                 if (mChannelToUpdate != null) {
-                    if (mUnlockImportance) {
-                        mINotificationManager.unlockNotificationChannel(
-                                mPackageName, mAppUid, mChannelToUpdate.getId());
-                    } else {
-                        mChannelToUpdate.setImportance(mNewImportance);
-                        mChannelToUpdate.lockFields(NotificationChannel.USER_LOCKED_IMPORTANCE);
-                        mINotificationManager.updateNotificationChannelForPackage(
-                                mPackageName, mAppUid, mChannelToUpdate);
-                    }
+                    mChannelToUpdate.setImportance(mNewImportance);
+                    mChannelToUpdate.lockFields(NotificationChannel.USER_LOCKED_IMPORTANCE);
+                    mINotificationManager.updateNotificationChannelForPackage(
+                            mPackageName, mAppUid, mChannelToUpdate);
                 } else {
                     // For notifications with more than one channel, update notification enabled
                     // state. If the importance was lowered, we disable notifications.
@@ -908,18 +856,14 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     }
 
     private @AlertingBehavior int getAlertingBehavior() {
-        if (mShowAutomaticSetting && !mSingleNotificationChannel.hasUserSetImportance()) {
-            return BEHAVIOR_AUTOMATIC;
-        }
         return mWasShownHighPriority ? BEHAVIOR_ALERTING : BEHAVIOR_SILENT;
     }
 
     @Retention(SOURCE)
-    @IntDef({BEHAVIOR_ALERTING, BEHAVIOR_SILENT, BEHAVIOR_AUTOMATIC})
+    @IntDef({BEHAVIOR_ALERTING, BEHAVIOR_SILENT})
     private @interface AlertingBehavior {
     }
 
     private static final int BEHAVIOR_ALERTING = 0;
     private static final int BEHAVIOR_SILENT = 1;
-    private static final int BEHAVIOR_AUTOMATIC = 2;
 }

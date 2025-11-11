@@ -61,7 +61,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.RankingBuilder
-import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
@@ -115,7 +114,6 @@ class NotificationInfoTest : SysuiTestCase() {
     private val mockINotificationManager = mock<INotificationManager>()
     private val channelEditorDialogController = mock<ChannelEditorDialogController>()
     private val packageDemotionInteractor = mock<PackageDemotionInteractor>()
-    private val assistantFeedbackController = mock<AssistantFeedbackController>()
 
     @Before
     fun setUp() {
@@ -199,9 +197,6 @@ class NotificationInfoTest : SysuiTestCase() {
                 .updateRanking { it.setChannel(notificationChannel) }
                 .build()
         entryAdapter = kosmos.entryAdapterFactory.create(entry)
-        whenever(assistantFeedbackController.isFeedbackEnabled).thenReturn(false)
-        whenever(assistantFeedbackController.getInlineDescriptionResource(any()))
-            .thenReturn(R.string.notification_channel_summary_automatic)
     }
 
     @Test
@@ -486,30 +481,6 @@ class NotificationInfoTest : SysuiTestCase() {
     }
 
     @Test
-    fun testBindNotification_automaticIsVisible() {
-        whenever(assistantFeedbackController.isFeedbackEnabled).thenReturn(true)
-        bindNotification()
-        assertThat(underTest.findViewById<View>(R.id.automatic).visibility).isEqualTo(VISIBLE)
-        assertThat(underTest.findViewById<View>(R.id.automatic_summary).visibility)
-            .isEqualTo(VISIBLE)
-    }
-
-    @Test
-    fun testBindNotification_automaticIsGone() {
-        bindNotification()
-        assertThat(underTest.findViewById<View>(R.id.automatic).visibility).isEqualTo(GONE)
-        assertThat(underTest.findViewById<View>(R.id.automatic_summary).visibility).isEqualTo(GONE)
-    }
-
-    @Test
-    fun testBindNotification_automaticIsSelected() {
-        whenever(assistantFeedbackController.isFeedbackEnabled).thenReturn(true)
-        notificationChannel.unlockFields(NotificationChannel.USER_LOCKED_IMPORTANCE)
-        bindNotification()
-        assertThat(underTest.findViewById<View>(R.id.automatic).isSelected).isTrue()
-    }
-
-    @Test
     fun testBindNotification_alertIsSelected() {
         bindNotification()
         assertThat(underTest.findViewById<View>(R.id.alert).isSelected).isTrue()
@@ -568,17 +539,6 @@ class NotificationInfoTest : SysuiTestCase() {
         testableLooper.processAllMessages()
         verify(mockINotificationManager, never())
             .updateNotificationChannelForPackage(anyString(), eq(TEST_UID), any())
-    }
-
-    @Test
-    fun testHandleCloseControls_persistAutomatic() {
-        whenever(assistantFeedbackController.isFeedbackEnabled).thenReturn(true)
-        notificationChannel.unlockFields(NotificationChannel.USER_LOCKED_IMPORTANCE)
-        bindNotification()
-
-        underTest.handleCloseControls(true, false)
-        testableLooper.processAllMessages()
-        verify(mockINotificationManager).unlockNotificationChannel(anyString(), eq(TEST_UID), any())
     }
 
     @Test
@@ -659,23 +619,6 @@ class NotificationInfoTest : SysuiTestCase() {
             )
             .isNotEqualTo(0)
         assertThat(updated.firstValue.importance).isEqualTo(NotificationManager.IMPORTANCE_DEFAULT)
-        assertThat(underTest.shouldBeSavedOnClose()).isFalse()
-    }
-
-    @Test
-    fun testAutomaticUnlocksUserImportance() {
-        whenever(assistantFeedbackController.isFeedbackEnabled).thenReturn(true)
-        notificationChannel.importance = NotificationManager.IMPORTANCE_DEFAULT
-        notificationChannel.lockFields(NotificationChannel.USER_LOCKED_IMPORTANCE)
-        bindNotification()
-
-        underTest.findViewById<View>(R.id.automatic).performClick()
-        underTest.findViewById<View>(R.id.done).performClick()
-        underTest.handleCloseControls(true, false)
-
-        testableLooper.processAllMessages()
-        verify(mockINotificationManager).unlockNotificationChannel(anyString(), eq(TEST_UID), any())
-        assertThat(notificationChannel.importance).isEqualTo(NotificationManager.IMPORTANCE_DEFAULT)
         assertThat(underTest.shouldBeSavedOnClose()).isFalse()
     }
 
@@ -958,7 +901,6 @@ class NotificationInfoTest : SysuiTestCase() {
         isNonblockable: Boolean = false,
         isDismissable: Boolean = true,
         wasShownHighPriority: Boolean = true,
-        assistantFeedbackController: AssistantFeedbackController = this.assistantFeedbackController,
         metricsLogger: MetricsLogger = kosmos.metricsLogger,
         onCloseClick: View.OnClickListener? = null,
     ) {
@@ -983,7 +925,6 @@ class NotificationInfoTest : SysuiTestCase() {
             isNonblockable,
             isDismissable,
             wasShownHighPriority,
-            assistantFeedbackController,
             metricsLogger,
             onCloseClick,
         )
