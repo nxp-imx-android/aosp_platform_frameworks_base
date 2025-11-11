@@ -362,8 +362,13 @@ public class PersistentDataBlockService extends SystemService {
         }
     }
 
+    @VisibleForTesting
+    protected int getCallingUserId() {
+        return UserHandle.getCallingUserId();
+    }
+
     private void enforceIsAdminOrSystem() {
-        final int userId = UserHandle.getCallingUserId();
+        final int userId = getCallingUserId();
         final boolean isAdminOrSystem =
                 (android.multiuser.Flags.hsuNotAdmin() && userId == UserHandle.USER_SYSTEM)
                         || UserManager.get(mContext).isUserAdmin(userId);
