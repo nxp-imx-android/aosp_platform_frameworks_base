@@ -71,13 +71,8 @@ internal fun ContentScope.PasswordBouncer(
     modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
-    val isTextFieldFocusRequested by
-        viewModel.isTextFieldFocusRequested.collectAsStateWithLifecycle()
-    LaunchedEffect(isTextFieldFocusRequested) {
-        if (isTextFieldFocusRequested) {
-            focusRequester.requestFocus()
-        }
-    }
+
+    RequestFocus(focusRequester = focusRequester, viewModel = viewModel)
 
     val isInputEnabled: Boolean by viewModel.isInputEnabled.collectAsStateWithLifecycle()
     val animateFailure: Boolean by viewModel.animateFailure.collectAsStateWithLifecycle()
@@ -204,4 +199,19 @@ private fun ImeSwitcherButton(viewModel: PasswordBouncerViewModel, color: Color)
                 containerColor = Color.Transparent,
             ),
     )
+}
+
+/**
+ * (Re)requests focus as needed. Done as a separate `@Composable` function to make sure that the
+ * caller doesn't need to recompose every time the state in the view-model is changed.
+ */
+@Composable
+private fun RequestFocus(focusRequester: FocusRequester, viewModel: PasswordBouncerViewModel) {
+    val isTextFieldFocusRequested by
+        viewModel.isTextFieldFocusRequested.collectAsStateWithLifecycle()
+    LaunchedEffect(isTextFieldFocusRequested) {
+        if (isTextFieldFocusRequested) {
+            focusRequester.requestFocus()
+        }
+    }
 }
