@@ -7127,11 +7127,9 @@ public final class ActivityThread extends ClientTransactionHandler
             return true;
         }
 
-        if (android.content.res.Flags.handleAllConfigChanges()) {
-            if ((handledConfigChanges & CONFIG_RESOURCES_UNUSED) != 0) {
-                // Report the change if activities claim they do not use resources at all.
-                return true;
-            }
+        if ((handledConfigChanges & CONFIG_RESOURCES_UNUSED) != 0) {
+            // Report the change if activities claim they do not use resources at all.
+            return true;
         }
 
         final int diffWithBucket = SizeConfigurationBuckets.filterDiff(publicDiff, currentConfig,
