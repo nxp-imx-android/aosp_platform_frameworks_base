@@ -18,6 +18,7 @@ package android.os;
 
 import static java.util.Objects.requireNonNull;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -1034,7 +1035,8 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
      * @param key a String, or null
      * @param value a byte array object, or null
      */
-    void putByteArray(@Nullable String key, @Nullable byte[] value) {
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void putByteArray(@Nullable String key, @Nullable byte[] value) {
         unparcel();
         mMap.put(key, value);
     }
@@ -1638,7 +1640,8 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
      * @return a byte[] value, or null
      */
     @Nullable
-    byte[] getByteArray(@Nullable String key) {
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public byte[] getByteArray(@Nullable String key) {
         unparcel();
         Object o = mMap.get(key);
         if (o == null) {
