@@ -1584,47 +1584,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
     }
 
-    @BinderThread
-    @NonNull
-    @Override
-    public List<InputMethodInfo> getInputMethodListLegacy(@UserIdInt int userId,
-            @DirectBootAwareness int directBootAwareness) {
-        if (UserHandle.getCallingUserId() != userId) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
-        }
-        if (!mUserManagerInternal.exists(userId)) {
-            return Collections.emptyList();
-        }
-        final int callingUid = Binder.getCallingUid();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return getInputMethodListInternal(userId, directBootAwareness, callingUid);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @BinderThread
-    @NonNull
-    @Override
-    public List<InputMethodInfo> getEnabledInputMethodListLegacy(@UserIdInt int userId) {
-        if (UserHandle.getCallingUserId() != userId) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
-        }
-        if (!mUserManagerInternal.exists(userId)) {
-            return Collections.emptyList();
-        }
-        final int callingUid = Binder.getCallingUid();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return getEnabledInputMethodListInternal(userId, callingUid);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
     @Override
     public boolean isStylusHandwritingAvailableAsUser(
             @UserIdInt int userId, boolean connectionless) {
