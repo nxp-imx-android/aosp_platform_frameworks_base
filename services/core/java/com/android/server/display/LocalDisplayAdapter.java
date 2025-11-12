@@ -323,8 +323,6 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             int activeSfDisplayModeId = dynamicInfo.activeDisplayModeId;
             float renderFrameRate = dynamicInfo.renderFrameRate;
             boolean hasArrSupport = dynamicInfo.hasArrSupport;
-            boolean sizeOverrideEnabled =
-                    getFeatureFlags().isSizeOverrideForExternalDisplaysEnabled() && !isInternal;
 
             mSfDisplayModes = Arrays.copyOf(displayModes, displayModes.length);
             mActiveSfDisplayMode = getModeById(displayModes, activeSfDisplayModeId);
@@ -377,7 +375,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         alternativeRates[j] = alternativeRefreshRates.get(j);
                     }
                     Display.Mode displayMode = DisplayModeFactory.createMode(mode, alternativeRates,
-                            hasArrSupport, sizeOverrideEnabled);
+                            hasArrSupport, !isInternal);
                     record = new DisplayModeRecord(displayMode);
                     modesAdded = true;
                 }

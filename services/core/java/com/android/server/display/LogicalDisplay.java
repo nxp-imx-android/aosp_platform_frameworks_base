@@ -230,18 +230,16 @@ final class LogicalDisplay {
 
     private final boolean mSyncedResolutionSwitchEnabled;
 
-    private final boolean mSizeOverrideEnabled;
-
     private boolean mCanHostTasks;
     private final CopyOnWriteSparseArray<CachedDisplayInfo> mDisplayInfoCache;
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
             CopyOnWriteSparseArray<CachedDisplayInfo> displayInfoCache) {
-        this(displayId, layerStack, primaryDisplayDevice, false, false, displayInfoCache);
+        this(displayId, layerStack, primaryDisplayDevice, false, displayInfoCache);
     }
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
-            boolean isSyncedResolutionSwitchEnabled, boolean sizeOverrideEnabled,
+            boolean isSyncedResolutionSwitchEnabled,
             CopyOnWriteSparseArray<CachedDisplayInfo> displayInfoCache) {
         mDisplayId = displayId;
         mLayerStack = layerStack;
@@ -254,7 +252,6 @@ final class LogicalDisplay {
         mPowerThrottlingDataId = DisplayDeviceConfig.DEFAULT_ID;
         mBaseDisplayInfo.thermalBrightnessThrottlingDataId = mThermalBrightnessThrottlingDataId;
         mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
-        mSizeOverrideEnabled = sizeOverrideEnabled;
         mDisplayInfoCache = displayInfoCache;
 
         // No need to initialize mCanHostTasks here; it's handled in
@@ -535,7 +532,7 @@ final class LogicalDisplay {
             float currentYDpi = deviceInfo.yDpi;
 
             Display.Mode sizeOverrideMode = getUserPreferredModeForSizeOverrideLocked(deviceInfo);
-            if (sizeOverrideMode != null && mSizeOverrideEnabled) {
+            if (sizeOverrideMode != null) {
                 currentWidth = sizeOverrideMode.getPhysicalWidth();
                 currentHeight = sizeOverrideMode.getPhysicalHeight();
                 currentXDpi = currentXDpi * (currentWidth / (float) deviceInfo.width);
