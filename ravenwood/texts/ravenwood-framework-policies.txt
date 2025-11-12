@@ -125,13 +125,6 @@ class android.os.VibrationEffect exp
 class android.os.UserManager exp
 class android.os.UserManagerCache exp
 class android.os.GraphicsEnvironment exp
-class android.os.StrictMode
-    method trackActivity exp
-    method assertConfigurationContext exp
-    method vmRegistrationLeaksEnabled ignore
-    method vmUnsafeIntentLaunchEnabled ignore
-
-class android.os.StrictMode$InstanceTracker exp
 
 class android.content.res.AssetManager
     method getLoaders exp # let it return an empty loader
