@@ -18,6 +18,7 @@ package com.android.systemui.media.remedia.ui.viewmodel.factory
 
 import android.content.Context
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.media.controls.shared.mediaLogger
 import com.android.systemui.media.remedia.domain.interactor.mediaInteractor
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
@@ -34,6 +35,7 @@ val Kosmos.mediaViewModelFactory by
                 return MediaViewModel(
                     interactor = mediaInteractor,
                     falsingSystem = mediaFalsingSystem,
+                    mediaLogger = mediaLogger,
                     visualStabilityProvider = visualStabilityProvider,
                     context = context,
                     carouselVisibility = carouselVisibility,

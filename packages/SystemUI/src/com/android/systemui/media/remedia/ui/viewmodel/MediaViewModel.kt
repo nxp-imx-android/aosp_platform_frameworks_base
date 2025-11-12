@@ -32,6 +32,7 @@ import com.android.systemui.classifier.Classifier
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.media.controls.shared.MediaLogger
 import com.android.systemui.media.remedia.domain.interactor.MediaInteractor
 import com.android.systemui.media.remedia.domain.model.MediaActionModel
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
@@ -55,6 +56,7 @@ class MediaViewModel
 constructor(
     private val interactor: MediaInteractor,
     private val falsingSystem: MediaFalsingSystem,
+    val mediaLogger: MediaLogger,
     val visualStabilityProvider: VisualStabilityProvider,
     @Assisted private val context: Context,
     @Assisted private val carouselVisibility: MediaCarouselVisibility,
@@ -305,6 +307,9 @@ constructor(
             }
             .let {
                 if (isVisible()) {
+                    if (latestVersion.size != it.size) {
+                        mediaLogger.logMediaCarouselSize(it.size)
+                    }
                     latestVersion = it
                 }
                 latestVersion
