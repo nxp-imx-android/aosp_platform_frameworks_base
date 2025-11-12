@@ -180,6 +180,9 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             invalidate()
         }
 
+    val isDozing: Boolean
+        get() = dozeFraction > 0.5f
+
     private var measuredBaseline = 0
 
     var lockscreenColor = Color.WHITE
@@ -195,6 +198,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
     override fun onTouchEvent(evt: MotionEvent): Boolean {
         if (super.onTouchEvent(evt)) return true
+        if (isDozing) return false
 
         if (clockFidgetAnimation() && evt.action == MotionEvent.ACTION_DOWN) {
             val pt = VPointF(evt.x, evt.y)
@@ -240,7 +244,6 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
         updateTextBounds()
 
-        val isDozing = dozeFraction > 0.5f
         textAnimator.setTextStyle(
             TextAnimator.Style(fVar = fontVariations.getStandard(isDozing)),
             TextAnimator.Animation(
@@ -457,7 +460,6 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             }
         }
 
-        val isDozing = dozeFraction > 0.5f
         logger.animateFidget(pt, isSuppressed = false)
         clockCtx.vibrator?.vibrate(FIDGET_HAPTICS)
 
@@ -663,7 +665,6 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             return
         }
 
-        val isDozing = dozeFraction > 0.5f
         setInterpolatorPaint(
             isDozing,
             TextAnimator.Style(
