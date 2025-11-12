@@ -23,12 +23,18 @@ import android.app.jank.StateTracker;
 import android.os.Process;
 import android.util.Log;
 
+import com.android.compatibility.common.util.SystemUtil;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class JankUtils {
     private static final int APP_ID = Process.myUid();
+
+    private static final String OVERRIDE_CONFIG_SHELL_CMD = "device_config override %s %s %s";
+    private static final String CLEAR_OVERRIDE_CONFIG_SHELL_CMD =
+            "device_config clear_override %s %s";
 
     /**
      * Returns a mock AppJankStats object to be used in tests.
@@ -120,5 +126,30 @@ public class JankUtils {
     public static Map<String, Integer> aggregateCountsByState(
             List<StateTracker.StateData> stateData) {
         return aggregateCountsByState(stateData, false);
+    }
+
+    /** Overrides the device config key in the specified namespace with the passed in value. */
+    public static void overrideDeviceConfig(String nameSpace, String key, String value) {
+        SystemUtil.runShellCommand(String.format(OVERRIDE_CONFIG_SHELL_CMD, nameSpace, key, value));
+    }
+
+    /** Removes any device config overrides for namespace and key */
+    public static void removeDeviceConfigOverride(String nameSpace, String key) {
+        SystemUtil.runShellCommand(String.format(CLEAR_OVERRIDE_CONFIG_SHELL_CMD, nameSpace, key));
+    }
+
+    /** Forces jank tracking to be enabled by overriding the current config */
+    public static void forceEnableJankTrackingConfig() {
+        overrideDeviceConfig(
+                JankTracker.NAMESPACE_SYSTEM_PERFORMANCE,
+                JankTracker.KEY_JANK_METRIC_COLLECTION_ENABLED,
+                "true");
+    }
+
+    /** Removes the current config override enabling jank tracking */
+    public static void resetJankTrackingConfigDefaults() {
+        removeDeviceConfigOverride(
+                JankTracker.NAMESPACE_SYSTEM_PERFORMANCE,
+                JankTracker.KEY_JANK_METRIC_COLLECTION_ENABLED);
     }
 }

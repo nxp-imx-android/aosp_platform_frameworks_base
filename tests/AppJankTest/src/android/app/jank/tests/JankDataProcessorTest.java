@@ -58,11 +58,13 @@ public class JankDataProcessorTest {
     public static void classSetup() {
         sEmptyActivityActivityScenario = ActivityScenario.launch(EmptyActivity.class);
         sActivityName = sEmptyActivityActivityScenario.toString();
+        JankUtils.forceEnableJankTrackingConfig();
     }
 
     @AfterClass
     public static void classTearDown() {
         sEmptyActivityActivityScenario.close();
+        JankUtils.resetJankTrackingConfigDefaults();
     }
 
     @Rule

@@ -47,7 +47,9 @@ import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,6 +86,15 @@ public class IntegrationTests {
     private ActivityTestRule<EmptyActivity> mEmptyActivityRule =
             new ActivityTestRule<>(EmptyActivity.class, false , true);
 
+    @BeforeClass
+    public static void classSetup() {
+        JankUtils.forceEnableJankTrackingConfig();
+    }
+
+    @AfterClass
+    public static void classTearDown() {
+        JankUtils.resetJankTrackingConfigDefaults();
+    }
 
     @Before
     public void setUp() {
