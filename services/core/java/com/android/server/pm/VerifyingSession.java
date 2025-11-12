@@ -444,11 +444,15 @@ final class VerifyingSession {
                             /* receiverPermission= */ null,
                             options.toBundle());
                 }
+                // set to true for wait sufficient verifiers,do not proceed until
+                // the sufficient verifiers finish the verification.
+                mWaitForVerificationToComplete = true;
             }
         }
 
         if (requiredVerifierPackages.size() == 0) {
             Slog.e(TAG, "No required verifiers");
+            verificationState.passRequiredVerification();
             return;
         }
 
