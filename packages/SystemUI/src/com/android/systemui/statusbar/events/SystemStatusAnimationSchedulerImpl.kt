@@ -25,6 +25,7 @@ import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags.fixDotNotVisibleRace
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingIn
@@ -40,6 +41,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.io.PrintWriter
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -83,6 +85,7 @@ constructor(
     private val systemClock: SystemClock,
     @Assisted private val coroutineScope: CoroutineScope,
     private val logger: SystemStatusAnimationSchedulerLogger?,
+    @Main private val mainCoroutineContext: CoroutineContext,
 ) : SystemStatusAnimationScheduler {
 
     @AssistedFactory
@@ -134,7 +137,7 @@ constructor(
             }
         dumpManager.registerCriticalDumpable("$TAG$dumpableTagSuffix", this)
 
-        coroutineScope.launch {
+        coroutineScope.launch(context = mainCoroutineContext) {
             // Wait for animationState to become ANIMATION_QUEUED and scheduledEvent to be non null.
             // Once this combination is stable for at least DEBOUNCE_DELAY, then start a chip enter
             // animation
@@ -151,7 +154,9 @@ constructor(
                 }
         }
 
-        coroutineScope.launch { _animationState.collect { logger?.logAnimationStateUpdate(it) } }
+        coroutineScope.launch(context = mainCoroutineContext) {
+            _animationState.collect { logger?.logAnimationStateUpdate(it) }
+        }
     }
 
     override fun onStatusEvent(event: StatusEvent) {
@@ -275,7 +280,7 @@ constructor(
      */
     private fun cancelCurrentlyDisplayedEvent() {
         eventCancellationJob =
-            coroutineScope.launch {
+            coroutineScope.launch(context = mainCoroutineContext) {
                 withTimeout(APPEAR_ANIMATION_DURATION) {
                     // wait for animationState to become RUNNING_CHIP_ANIM, then cancel the running
                     // animation job and run the disappear animation immediately
@@ -306,7 +311,7 @@ constructor(
 
         chipAnimationController.prepareChipAnimation(event.viewCreator)
         currentlyRunningAnimationJob =
-            coroutineScope.launch {
+            coroutineScope.launch(context = mainCoroutineContext) {
                 runChipAppearAnimation()
                 announceForAccessibilityIfNeeded(event)
                 delay(APPEAR_ANIMATION_DURATION + DISPLAY_LENGTH)

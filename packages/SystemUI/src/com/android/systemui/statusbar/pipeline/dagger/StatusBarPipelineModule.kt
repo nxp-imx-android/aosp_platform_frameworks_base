@@ -17,11 +17,15 @@
 package com.android.systemui.statusbar.pipeline.dagger
 
 import android.net.wifi.WifiManager
+import android.view.Display
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Default
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.toColdConflatedFlow
 import com.android.systemui.kairos.util.nameTag
@@ -85,6 +89,7 @@ import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiIntera
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepositoryImpl
 import dagger.Binds
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
@@ -329,9 +334,19 @@ abstract class StatusBarPipelineModule {
         @SysUISingleton
         @Default
         fun systemStatusEventAnimationRepository(
-            @Default scheduler: SystemStatusAnimationScheduler,
+            @Default defaultSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
             factory: SystemStatusEventAnimationRepositoryImpl.Factory,
+            displaySubcomponentRepositoryLazy:
+                Lazy<PerDisplayRepository<SystemUIDisplaySubcomponent>>,
         ): SystemStatusEventAnimationRepository {
+            val scheduler =
+                if (Flags.systemStatusAnimationPerDisplay()) {
+                    displaySubcomponentRepositoryLazy
+                        .get()[Display.DEFAULT_DISPLAY]!!
+                        .systemStatusAnimationScheduler
+                } else {
+                    defaultSchedulerLazy.get()
+                }
             return factory.create(scheduler)
         }
 

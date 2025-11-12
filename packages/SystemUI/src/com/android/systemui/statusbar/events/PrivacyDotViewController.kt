@@ -31,6 +31,7 @@ import com.android.app.animation.Interpolators
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.annotations.GuardedBy
+import com.android.systemui.Flags
 import com.android.systemui.Flags.fixPrivacyIndicatorBothDotChipVisibleQs
 import com.android.systemui.ScreenDecorationsThread
 import com.android.systemui.dagger.SysUISingleton
@@ -802,12 +803,19 @@ object PrivacyDotViewControllerModule {
         @Application scope: CoroutineScope,
         configurationController: ConfigurationController,
         perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
-        @Default animationScheduler: SystemStatusAnimationScheduler,
+        @Default defaultAnimationSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
     ): PrivacyDotViewController {
+        val displaySubcomponent = perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
+        val animationScheduler =
+            if (Flags.systemStatusAnimationPerDisplay()) {
+                displaySubcomponent.systemStatusAnimationScheduler
+            } else {
+                defaultAnimationSchedulerLazy.get()
+            }
         return factory.create(
             scope,
             configurationController,
-            perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.statusBarContentInsetsProvider,
+            displaySubcomponent.statusBarContentInsetsProvider,
             Display.DEFAULT_DISPLAY,
             animationScheduler,
         )
