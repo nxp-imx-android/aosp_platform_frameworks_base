@@ -35,4 +35,7 @@ object TransitionKeys {
 
     /** Reference to a content transition that should happen instantly, i.e. without animation. */
     val Instant = TransitionKey("Instant")
+
+    /** Reference to a transition in or out of communal scene triggered by the system. */
+    val SystemCommunalTransition = TransitionKey("SystemCommunalTransition")
 }

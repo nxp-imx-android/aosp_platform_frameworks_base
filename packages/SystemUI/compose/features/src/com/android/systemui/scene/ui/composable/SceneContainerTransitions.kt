@@ -13,6 +13,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.AnimateQsTilesViewModel
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeTransition
+import com.android.systemui.scene.shared.model.TransitionKeys.SystemCommunalTransition
 import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.scene.ui.composable.transitions.bouncerToCommunalBackGestureTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransition
@@ -33,7 +34,8 @@ import com.android.systemui.scene.ui.composable.transitions.goneToQuickSettingsT
 import com.android.systemui.scene.ui.composable.transitions.goneToShadeSceneTransition
 import com.android.systemui.scene.ui.composable.transitions.goneToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToBouncerTransition
-import com.android.systemui.scene.ui.composable.transitions.lockscreenToCommunalTransition
+import com.android.systemui.scene.ui.composable.transitions.lockscreenToCommunalSystemTransition
+import com.android.systemui.scene.ui.composable.transitions.lockscreenToCommunalUserTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToDreamTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.lockscreenToGoneWithAnimationOverLockscreenTransition
@@ -134,7 +136,10 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 goneToQuickSettingsTransition(durationScale = 0.9)
             }
 
-            from(Scenes.Lockscreen, to = Scenes.Communal) { lockscreenToCommunalTransition() }
+            from(Scenes.Lockscreen, to = Scenes.Communal) { lockscreenToCommunalUserTransition() }
+            from(Scenes.Lockscreen, to = Scenes.Communal, key = SystemCommunalTransition) {
+                lockscreenToCommunalSystemTransition()
+            }
             from(Scenes.Lockscreen, to = Scenes.Dream) { lockscreenToDreamTransition() }
             from(Scenes.Lockscreen, to = Scenes.Occluded) { lockscreenToOccludedTransition() }
             from(

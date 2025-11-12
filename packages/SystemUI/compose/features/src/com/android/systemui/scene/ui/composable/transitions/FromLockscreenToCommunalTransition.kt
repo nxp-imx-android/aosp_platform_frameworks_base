@@ -27,7 +27,28 @@ import com.android.systemui.communal.ui.compose.TransitionDuration
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.scene.shared.model.Scenes
 
-fun TransitionBuilder.lockscreenToCommunalTransition() {
+/** Scene transition from lockscreen to communal when triggered by a user interaction. */
+fun TransitionBuilder.lockscreenToCommunalUserTransition() {
+    lockscreenToCommunalTransition()
+
+    // Translate the grid linearly so that it follows the finger movement
+    translate(Communal.Elements.Grid, Edge.End)
+}
+
+/** Scene transition from lockscreen to communal when triggered by the system. */
+fun TransitionBuilder.lockscreenToCommunalSystemTransition() {
+    lockscreenToCommunalTransition()
+
+    timestampRange(
+        startMillis = (TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS * 0.2f).toInt(),
+        easing = LinearOutSlowInEasing,
+    ) {
+        // Translate the grid with the same speed as the scrim fade.
+        translate(Communal.Elements.Grid, Edge.End)
+    }
+}
+
+private fun TransitionBuilder.lockscreenToCommunalTransition() {
     spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
 
     // Elevate the status bar so that it doesn't scale down during the transition.
@@ -35,7 +56,7 @@ fun TransitionBuilder.lockscreenToCommunalTransition() {
 
     timestampRange(
         endMillis = (TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS * 0.8f).toInt(),
-        easing = FastOutSlowInEasing
+        easing = FastOutSlowInEasing,
     ) {
         // Lockscreen depth push
         scaleDraw(LockscreenElementKeys.Root, scaleX = 0.9f, scaleY = 0.9f)
@@ -49,11 +70,8 @@ fun TransitionBuilder.lockscreenToCommunalTransition() {
 
     timestampRange(
         startMillis = (TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS * 0.2f).toInt(),
-        easing = LinearOutSlowInEasing
+        easing = LinearOutSlowInEasing,
     ) {
-        // Widget entry x translation
-        translate(Communal.Elements.Grid, Edge.End)
-
         // Hub background fade in
         fade(Communal.Elements.Scrim)
     }
