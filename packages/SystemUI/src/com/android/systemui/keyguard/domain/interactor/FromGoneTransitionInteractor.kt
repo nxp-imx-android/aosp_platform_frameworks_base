@@ -72,6 +72,7 @@ constructor(
     }
 
     fun showKeyguard() {
+        if (SceneContainerFlag.isEnabled) return
         scope.launch("$TAG#showKeyguard") {
             startTransitionTo(KeyguardState.LOCKSCREEN, ownerReason = "showKeyguard()")
         }

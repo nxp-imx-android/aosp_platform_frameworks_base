@@ -437,7 +437,7 @@ constructor(
 
     /** Are we on the dream without the shade/qs? */
     private val isDreamingWithoutShade: Flow<Boolean> =
-        combine(keyguardTransitionInteractor.isFinishedIn(DREAMING), isAnyExpanded) {
+        combine(keyguardTransitionInteractor.isFinishedIn(Scenes.Dream, DREAMING), isAnyExpanded) {
                 isDreaming,
                 isAnyExpanded ->
                 isDreaming && !isAnyExpanded
@@ -845,24 +845,27 @@ constructor(
      * translated as the keyguard fades out.
      */
     val translationY: Flow<Float> =
-        combine(
-                aodBurnInViewModel.movement.map { it.translationY.toFloat() }.onStart { emit(0f) },
-                isOnLockscreenWithoutShade,
-                merge(
-                    keyguardInteractor.keyguardTranslationY,
-                    occludedToLockscreenTransitionViewModel.lockscreenTranslationY,
-                ),
-            ) { burnInY, isOnLockscreenWithoutShade, translationY ->
-                // with SceneContainer, x translation is handled by views, y is handled by compose
-                SceneContainerFlag.assertInLegacyMode()
-
-                if (isOnLockscreenWithoutShade) {
-                    burnInY + translationY
-                } else {
-                    0f
+        if (SceneContainerFlag.isEnabled) {
+            // with SceneContainer, x translation is handled by views, y is handled by compose
+            flowOf(0f)
+        } else
+            combine(
+                    aodBurnInViewModel.movement
+                        .map { it.translationY.toFloat() }
+                        .onStart { emit(0f) },
+                    isOnLockscreenWithoutShade,
+                    merge(
+                        keyguardInteractor.keyguardTranslationY,
+                        occludedToLockscreenTransitionViewModel.lockscreenTranslationY,
+                    ),
+                ) { burnInY, isOnLockscreenWithoutShade, translationY ->
+                    if (isOnLockscreenWithoutShade) {
+                        burnInY + translationY
+                    } else {
+                        0f
+                    }
                 }
-            }
-            .dumpWhileCollecting("translationY")
+                .dumpWhileCollecting("translationY")
 
     /** Horizontal translation to apply to the container. */
     val translationX: Flow<Float> =

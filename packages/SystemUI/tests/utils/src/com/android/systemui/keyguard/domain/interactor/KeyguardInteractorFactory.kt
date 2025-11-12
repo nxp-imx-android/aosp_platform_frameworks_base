@@ -30,6 +30,7 @@ import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.shade.data.repository.FakeShadeRepository
 import com.android.systemui.shade.data.repository.ShadeConfigRepository
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.settings.data.repository.FakeSecureSettingsRepository
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
@@ -75,6 +76,7 @@ object KeyguardInteractorFactory {
         fromOccludedTransitionInteractor: FromOccludedTransitionInteractor = mock(),
         fromDreamingTransitionInteractor: FromDreamingTransitionInteractor = mock(),
         fromAlternateBouncerTransitionInteractor: FromAlternateBouncerTransitionInteractor = mock(),
+        shadeInteractor: ShadeInteractor = mock(),
         testScope: CoroutineScope = TestScope(),
     ): WithDependencies {
         // Mock these until they are replaced by kosmos
@@ -110,6 +112,7 @@ object KeyguardInteractorFactory {
                 applicationScope = testScope,
                 lockPatternUtils = lockPatternUtils,
                 wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
+                shadeInteractor = { shadeInteractor },
             ),
         )
     }

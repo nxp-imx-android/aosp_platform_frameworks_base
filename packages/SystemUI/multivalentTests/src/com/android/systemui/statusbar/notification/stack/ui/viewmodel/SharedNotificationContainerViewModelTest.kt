@@ -1769,12 +1769,17 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
     private suspend fun Kosmos.showDream() {
         shadeTestUtil.setQsExpansion(0f)
         shadeTestUtil.setLockscreenShadeExpansion(0f)
-        fakeKeyguardRepository.setDreaming(true)
-        keyguardTransitionRepository.sendTransitionSteps(
-            from = LOCKSCREEN,
-            to = DREAMING,
-            testScope,
+        setTransition(
+            sceneTransition = Idle(Scenes.Dream),
+            stateTransition =
+                TransitionStep(
+                    transitionState = TransitionState.FINISHED,
+                    from = LOCKSCREEN,
+                    to = DREAMING,
+                    value = 1f,
+                ),
         )
+        kosmos.sceneInteractor.changeScene(Scenes.Dream, "test show dream")
     }
 
     private suspend fun Kosmos.showLockscreenWithShadeExpanded() {
