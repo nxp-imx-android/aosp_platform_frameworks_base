@@ -18,8 +18,6 @@ package android.service.notification;
 
 import static android.text.TextUtils.formatSimple;
 
-import static com.android.window.flags.Flags.enablePerDisplayPackageContextCacheInStatusbarNotif;
-
 import android.annotation.NonNull;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -74,14 +72,6 @@ public class StatusBarNotification implements Parcelable {
     private final long postTime;
     // A small per-notification ID, used for statsd logging.
     private InstanceId mInstanceId;  // Not final, see setInstanceId()
-
-    /**
-     * @deprecated This field is only used when
-     * {@link enablePerDisplayPackageContextCacheInStatusbarNotif}
-     * is disabled.
-     */
-    @Deprecated
-    private Context mContext; // used for inflation & icon expansion
     // Maps display id to context used for remote view content inflation and status bar icon.
     private final Map<Integer, Context> mContextForDisplayId =
             Collections.synchronizedMap(new ArrayMap<>());
@@ -464,11 +454,7 @@ public class StatusBarNotification implements Parcelable {
      * @hide
      */
     public void clearPackageContext() {
-        if (enablePerDisplayPackageContextCacheInStatusbarNotif()) {
-            mContextForDisplayId.clear();
-        } else {
-            mContext = null;
-        }
+        mContextForDisplayId.clear();
     }
 
     /**
@@ -490,28 +476,9 @@ public class StatusBarNotification implements Parcelable {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public Context getPackageContext(Context context) {
-        if (enablePerDisplayPackageContextCacheInStatusbarNotif()) {
-            if (context == null) return null;
-            return mContextForDisplayId.computeIfAbsent(context.getDisplayId(),
-                    (displayId) -> createPackageContext(context));
-        } else {
-            if (mContext == null) {
-                try {
-                    ApplicationInfo ai = context.getPackageManager()
-                            .getApplicationInfoAsUser(pkg,
-                                    PackageManager.MATCH_UNINSTALLED_PACKAGES,
-                                    getNormalizedUserId());
-                    mContext = context.createApplicationContext(ai,
-                            Context.CONTEXT_RESTRICTED);
-                } catch (PackageManager.NameNotFoundException e) {
-                    mContext = null;
-                }
-            }
-            if (mContext == null) {
-                mContext = context;
-            }
-            return mContext;
-        }
+        if (context == null) return null;
+        return mContextForDisplayId.computeIfAbsent(context.getDisplayId(),
+                (displayId) -> createPackageContext(context));
     }
 
     private Context createPackageContext(Context context) {
