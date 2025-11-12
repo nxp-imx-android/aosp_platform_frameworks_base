@@ -3,6 +3,16 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes
 flag {
+    name: "better_desk_deactivation_in_recents_transition"
+    namespace: "lse_desktop_experience"
+    description: "Improves desk deactivation using real Overview state and better recents signaling"
+    bug: "410914723"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "close_fullscreen_and_splitscreen_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close fullscreen and split screen tasks"
