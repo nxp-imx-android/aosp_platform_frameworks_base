@@ -134,25 +134,15 @@ public final class HapticGeneratorSession implements AutoCloseable {
          * @hide
          */
         public void validate() {
-            if (!AudioFormat.isEncodingLinearPcm(mAudioFormat.getEncoding())) {
-                throw new IllegalArgumentException("Encoding must be a PCM format"
-                        + ", but was " + mAudioFormat.getEncoding());
-            }
+            Preconditions.checkArgumentPositive(mAudioFormat.getSampleRate(),
+                    "Sample rate must be greater than zero.");
 
-            final int mask = mAudioFormat.getChannelMask();
+            int channelMask = mAudioFormat.getChannelMask();
+            int indexMask = mAudioFormat.getChannelIndexMask();
 
-            switch (mask) {
-                case AudioFormat.CHANNEL_OUT_HAPTIC_A:
-                case AudioFormat.CHANNEL_OUT_HAPTIC_B:
-                case (AudioFormat.CHANNEL_OUT_HAPTIC_A | AudioFormat.CHANNEL_OUT_HAPTIC_B):
-                    // These are valid channel mask
-                    break;
-                default:
-                    // Any other mask is invalid
-                    throw new IllegalArgumentException("Invalid channel mask for haptic generator. "
-                            + "Must be CHANNEL_OUT_HAPTIC_A, CHANNEL_OUT_HAPTIC_B, "
-                            + "or a combination. Got: 0x" + Integer.toHexString(mask));
-            }
+            Preconditions.checkArgument((channelMask != AudioFormat.CHANNEL_INVALID) || (indexMask
+                            != AudioFormat.CHANNEL_INVALID),
+                    "Audio format must have a valid channel mask or index mask.");
         }
     }
 
