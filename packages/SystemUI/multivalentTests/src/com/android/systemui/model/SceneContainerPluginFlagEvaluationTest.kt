@@ -256,6 +256,53 @@ class SceneContainerPluginFlagEvaluationTest(private val params: Params) : Sysui
                             SYSUI_STATE_QUICK_SETTINGS_EXPANDED,
                         ),
                 ),
+                Params(
+                    currentScene = Scenes.Dream,
+                    currentOverlays = setOf(),
+                    expectedFlags = setOf(SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED),
+                ),
+                Params(
+                    currentScene = Scenes.Dream,
+                    currentOverlays = setOf(Overlays.NotificationsShade),
+                    expectedFlags =
+                        setOf(
+                            SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED,
+                            SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
+                            SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED,
+                        ),
+                ),
+                Params(
+                    currentScene = Scenes.Shade,
+                    sceneBehind = Scenes.Dream,
+                    currentOverlays = setOf(),
+                    expectedFlags =
+                        setOf(
+                            SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED,
+                            SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
+                            SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED,
+                        ),
+                ),
+                Params(
+                    currentScene = Scenes.QuickSettings,
+                    sceneBehind = Scenes.Dream,
+                    currentOverlays = setOf(),
+                    expectedFlags =
+                        setOf(
+                            SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED,
+                            SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
+                            SYSUI_STATE_QUICK_SETTINGS_EXPANDED,
+                        ),
+                ),
+                Params(
+                    currentScene = Scenes.Dream,
+                    currentOverlays = setOf(Overlays.QuickSettingsShade),
+                    expectedFlags =
+                        setOf(
+                            SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED,
+                            SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
+                            SYSUI_STATE_QUICK_SETTINGS_EXPANDED,
+                        ),
+                ),
             )
         }
     }
