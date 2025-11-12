@@ -16,9 +16,7 @@
 
 package com.android.wm.shell.splitscreen
 
-/**
- * Result of closing a task from a split screen.
- */
+/** Result of closing a task from a split screen. */
 enum class CloseTaskResult {
     // Did not close task because split screen is not active.
     NOT_ACTIVE,

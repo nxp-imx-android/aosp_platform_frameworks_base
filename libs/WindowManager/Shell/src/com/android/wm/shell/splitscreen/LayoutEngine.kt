@@ -23,8 +23,9 @@ import kotlin.math.roundToInt
 /**
  * A pure, stateless calculator for determining the bounds of all nodes in a recursive layout tree.
  *
- * This class is designed to be a testable component, separating the complex mathematical logic of layout
- * calculation from state management (e.g., StageCoordinator) and UI rendering (e.g., a custom ViewGroup).
+ * This class is designed to be a testable component, separating the complex mathematical logic of
+ * layout calculation from state management (e.g., StageCoordinator) and UI rendering (e.g., a
+ * custom ViewGroup).
  */
 class LayoutEngine {
 
@@ -37,8 +38,10 @@ class LayoutEngine {
      * and returns a [CalculatedBounds] containing the final bounds for all leaf nodes and dividers.
      *
      * @param rootNode The root of the [LayoutNode] tree that defines the entire layout.
-     * @param screenBounds The total available [Rect] (e.g., the full display area) into which the layout should be fitted.
-     * @return A [CalculatedBounds] containing the calculated bounds for all leaf nodes and dividers.
+     * @param screenBounds The total available [Rect] (e.g., the full display area) into which the
+     *   layout should be fitted.
+     * @return A [CalculatedBounds] containing the calculated bounds for all leaf nodes and
+     *   dividers.
      */
     fun calculateLayout(rootNode: LayoutNode, screenBounds: Rect): CalculatedBounds {
         Log.d(TAG, "calculateLayout: rootNode=$rootNode, screenBounds=$screenBounds")
@@ -47,32 +50,36 @@ class LayoutEngine {
 
         recursiveCalculate(rootNode, screenBounds, allNodeBounds, dividerBounds)
 
-        val leafNodeBounds = allNodeBounds.filterKeys { it is LeafNode }
-            .mapValues { it.value }
-            .mapKeys { it.key as LeafNode }
+        val leafNodeBounds =
+            allNodeBounds
+                .filterKeys { it is LeafNode }
+                .mapValues { it.value }
+                .mapKeys { it.key as LeafNode }
 
         Log.d(
             TAG,
             "calculateLayout finished: leafNodeBounds=$leafNodeBounds, " +
-                    "dividerBounds=$dividerBounds"
+                "dividerBounds=$dividerBounds",
         )
         return CalculatedBounds(leafNodeBounds, dividerBounds)
     }
 
     /**
-     * The recursive helper function that traverses the tree. For each node, it calculates the bounds
-     * for its direct children and then calls itself for each of those children.
+     * The recursive helper function that traverses the tree. For each node, it calculates the
+     * bounds for its direct children and then calls itself for each of those children.
      *
      * @param currentNode The node currently being processed.
-     * @param parentBounds The bounds allocated by the parent, within which the current node must lay out its children.
-     * @param allNodeBounds A mutable map to accumulate the bounds of every node in the tree during traversal.
+     * @param parentBounds The bounds allocated by the parent, within which the current node must
+     *   lay out its children.
+     * @param allNodeBounds A mutable map to accumulate the bounds of every node in the tree during
+     *   traversal.
      * @param dividerBounds A mutable map to accumulate the bounds of every divider.
      */
     private fun recursiveCalculate(
         currentNode: LayoutNode,
         parentBounds: Rect,
         allNodeBounds: MutableMap<LayoutNode, Rect>,
-        dividerBounds: MutableMap<Pair<LayoutNode, LayoutNode>, Rect>
+        dividerBounds: MutableMap<Pair<LayoutNode, LayoutNode>, Rect>,
     ) {
         Log.d(TAG, "recursiveCalculate: currentNode=$currentNode, parentBounds=$parentBounds")
         allNodeBounds[currentNode] = parentBounds
@@ -101,7 +108,7 @@ class LayoutEngine {
         node: BranchNode,
         bounds: Rect,
         allNodeBounds: MutableMap<LayoutNode, Rect>,
-        dividerBounds: MutableMap<Pair<LayoutNode, LayoutNode>, Rect>
+        dividerBounds: MutableMap<Pair<LayoutNode, LayoutNode>, Rect>,
     ) {
         Log.d(TAG, "calculateStandardSplit: node=$node, bounds=$bounds")
         val dividerSize = node.dividerSize
@@ -116,23 +123,25 @@ class LayoutEngine {
             for ((index, child) in node.children.withIndex()) {
                 if (index > 0) {
                     val prevChild = node.children[index - 1]
-                    val dividerRect = Rect(
-                        currentX.roundToInt(),
-                        bounds.top,
-                        (currentX + dividerSize).roundToInt(),
-                        bounds.bottom
-                    )
+                    val dividerRect =
+                        Rect(
+                            currentX.roundToInt(),
+                            bounds.top,
+                            (currentX + dividerSize).roundToInt(),
+                            bounds.bottom,
+                        )
                     dividerBounds[Pair(prevChild, child)] = dividerRect
                     currentX += dividerSize
                 }
 
                 val childWidth = (child.weight / totalWeight) * availableWidth
-                val childBounds = Rect(
-                    currentX.roundToInt(),
-                    bounds.top,
-                    (currentX + childWidth).roundToInt(),
-                    bounds.bottom
-                )
+                val childBounds =
+                    Rect(
+                        currentX.roundToInt(),
+                        bounds.top,
+                        (currentX + childWidth).roundToInt(),
+                        bounds.bottom,
+                    )
                 allNodeBounds[child] = childBounds
                 Log.d(TAG, "  - child $index bounds: $childBounds")
                 currentX += childWidth
@@ -143,23 +152,25 @@ class LayoutEngine {
             for ((index, child) in node.children.withIndex()) {
                 if (index > 0) {
                     val prevChild = node.children[index - 1]
-                    val dividerRect = Rect(
-                        bounds.left,
-                        currentY.roundToInt(),
-                        bounds.right,
-                        (currentY + dividerSize).roundToInt()
-                    )
+                    val dividerRect =
+                        Rect(
+                            bounds.left,
+                            currentY.roundToInt(),
+                            bounds.right,
+                            (currentY + dividerSize).roundToInt(),
+                        )
                     dividerBounds[Pair(prevChild, child)] = dividerRect
                     currentY += dividerSize
                 }
 
                 val childHeight = (child.weight / totalWeight) * availableHeight
-                val childBounds = Rect(
-                    bounds.left,
-                    currentY.roundToInt(),
-                    bounds.right,
-                    (currentY + childHeight).roundToInt()
-                )
+                val childBounds =
+                    Rect(
+                        bounds.left,
+                        currentY.roundToInt(),
+                        bounds.right,
+                        (currentY + childHeight).roundToInt(),
+                    )
                 allNodeBounds[child] = childBounds
                 Log.d(TAG, "  - child $index bounds: $childBounds")
                 currentY += childHeight
@@ -168,14 +179,14 @@ class LayoutEngine {
     }
 
     /**
-     * Calculates the bounds for children of a "Flexible Split" [BranchNode], where one child
-     * is primarily visible and the other is mostly laid out off-screen.
+     * Calculates the bounds for children of a "Flexible Split" [BranchNode], where one child is
+     * primarily visible and the other is mostly laid out off-screen.
      */
     private fun calculateFlexibleSplit(
         node: BranchNode,
         bounds: Rect,
         allNodeBounds: MutableMap<LayoutNode, Rect>,
-        dividerBounds: MutableMap<Pair<LayoutNode, LayoutNode>, Rect>
+        dividerBounds: MutableMap<Pair<LayoutNode, LayoutNode>, Rect>,
     ) {
         Log.d(TAG, "calculateFlexibleSplit: node=$node, bounds=$bounds")
         if (node.children.size != 2) return
@@ -193,33 +204,37 @@ class LayoutEngine {
             val child2Bounds: Rect
 
             if (node.mainChildIndex == 0) { // Child 1 is dominant
-                child1Bounds = Rect(
-                    bounds.left,
-                    bounds.top,
-                    (bounds.left + dominantWidth).roundToInt(),
-                    bounds.bottom
-                )
+                child1Bounds =
+                    Rect(
+                        bounds.left,
+                        bounds.top,
+                        (bounds.left + dominantWidth).roundToInt(),
+                        bounds.bottom,
+                    )
                 val dividerLeft = child1Bounds.right
-                child2Bounds = Rect(
-                    dividerLeft + dividerSize,
-                    bounds.top,
-                    (dividerLeft + dividerSize + dominantWidth).roundToInt(),
-                    bounds.bottom
-                )
+                child2Bounds =
+                    Rect(
+                        dividerLeft + dividerSize,
+                        bounds.top,
+                        (dividerLeft + dividerSize + dominantWidth).roundToInt(),
+                        bounds.bottom,
+                    )
             } else { // Child 2 is dominant
                 val dividerLeft = (bounds.left + nonDominantVisibleWidth).roundToInt()
-                child1Bounds = Rect(
-                    (dividerLeft - dominantWidth).roundToInt(),
-                    bounds.top,
-                    dividerLeft,
-                    bounds.bottom
-                )
-                child2Bounds = Rect(
-                    dividerLeft + dividerSize,
-                    bounds.top,
-                    (dividerLeft + dividerSize + dominantWidth).roundToInt(),
-                    bounds.bottom
-                )
+                child1Bounds =
+                    Rect(
+                        (dividerLeft - dominantWidth).roundToInt(),
+                        bounds.top,
+                        dividerLeft,
+                        bounds.bottom,
+                    )
+                child2Bounds =
+                    Rect(
+                        dividerLeft + dividerSize,
+                        bounds.top,
+                        (dividerLeft + dividerSize + dominantWidth).roundToInt(),
+                        bounds.bottom,
+                    )
             }
 
             allNodeBounds[child1] = child1Bounds
@@ -227,7 +242,6 @@ class LayoutEngine {
             dividerBounds[Pair(child1, child2)] =
                 Rect(child1Bounds.right, bounds.top, child2Bounds.left, bounds.bottom)
             Log.d(TAG, "  - child 1 bounds: $child1Bounds child 2 bounds: $child2Bounds")
-
         } else { // VERTICAL
             val availableHeight = bounds.height() - dividerSize
             val dominantHeight = availableHeight * 0.9f
@@ -237,33 +251,37 @@ class LayoutEngine {
             val child2Bounds: Rect
 
             if (node.mainChildIndex == 0) { // Child 1 is dominant
-                child1Bounds = Rect(
-                    bounds.left,
-                    bounds.top,
-                    bounds.right,
-                    (bounds.top + dominantHeight).roundToInt()
-                )
+                child1Bounds =
+                    Rect(
+                        bounds.left,
+                        bounds.top,
+                        bounds.right,
+                        (bounds.top + dominantHeight).roundToInt(),
+                    )
                 val dividerTop = child1Bounds.bottom
-                child2Bounds = Rect(
-                    bounds.left,
-                    dividerTop + dividerSize,
-                    bounds.right,
-                    (dividerTop + dividerSize + dominantHeight).roundToInt()
-                )
+                child2Bounds =
+                    Rect(
+                        bounds.left,
+                        dividerTop + dividerSize,
+                        bounds.right,
+                        (dividerTop + dividerSize + dominantHeight).roundToInt(),
+                    )
             } else { // Child 2 is dominant
                 val dividerTop = (bounds.top + nonDominantVisibleHeight).roundToInt()
-                child1Bounds = Rect(
-                    bounds.left,
-                    (dividerTop - dominantHeight).roundToInt(),
-                    bounds.right,
-                    dividerTop
-                )
-                child2Bounds = Rect(
-                    bounds.left,
-                    dividerTop + dividerSize,
-                    bounds.right,
-                    (dividerTop + dividerSize + dominantHeight).roundToInt()
-                )
+                child1Bounds =
+                    Rect(
+                        bounds.left,
+                        (dividerTop - dominantHeight).roundToInt(),
+                        bounds.right,
+                        dividerTop,
+                    )
+                child2Bounds =
+                    Rect(
+                        bounds.left,
+                        dividerTop + dividerSize,
+                        bounds.right,
+                        (dividerTop + dividerSize + dominantHeight).roundToInt(),
+                    )
             }
 
             allNodeBounds[child1] = child1Bounds

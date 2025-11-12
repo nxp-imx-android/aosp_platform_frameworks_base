@@ -27,8 +27,8 @@ package com.android.wm.shell.splitscreen
 class LayoutPolicy {
 
     /**
-     * Gets the list of available proportional snap points for a given pair of nodes.
-     * This is where all device and feature-specific rules are checked.
+     * Gets the list of available proportional snap points for a given pair of nodes. This is where
+     * all device and feature-specific rules are checked.
      *
      * @param nodeBefore The first node.
      * @param nodeAfter The second node.

@@ -43,7 +43,7 @@ class LayoutAnimator<T>(private val animatable: Animatable<T>) {
     fun createTransition(
         beforeTree: LayoutNode,
         afterTree: LayoutNode,
-        targetMap: Map<Int, T>
+        targetMap: Map<Int, T>,
     ): AnimatorSet {
         // Step 1: Flatten both trees to easily find nodes and their bounds.
         val beforeBounds = flattenTree(beforeTree)
@@ -79,10 +79,11 @@ class LayoutAnimator<T>(private val animatable: Animatable<T>) {
         return animatorSet
     }
 
-    /**
-     * Helper to recursively traverse a tree and create a map of taskId to its final bounds.
-     */
-    private fun flattenTree(node: LayoutNode, map: MutableMap<Int, Rect> = mutableMapOf()): Map<Int, Rect> {
+    /** Helper to recursively traverse a tree and create a map of taskId to its final bounds. */
+    private fun flattenTree(
+        node: LayoutNode,
+        map: MutableMap<Int, Rect> = mutableMapOf(),
+    ): Map<Int, Rect> {
         when (node) {
             is LeafNode -> map[node.taskInfo.taskId] = node.bounds
             is BranchNode -> node.children.forEach { flattenTree(it, map) }
