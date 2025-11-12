@@ -54,6 +54,8 @@ fun canShowAppLinks(display: Display, desktopState: DesktopState): Boolean {
  * Returns a boolean indicating whether a given package is a browser app.
  */
 fun isBrowserApp(context: Context, packageName: String, userId: Int): Boolean {
+    // TODO: b/460011794 - Consider caching the result for the given pair of packageName and userId
+    // as [queryIntentActivitiesAsUser] is a binder call.
     GenericBrowserIntent.setPackage(packageName)
     val list = context.packageManager.queryIntentActivitiesAsUser(
         GenericBrowserIntent, PackageManager.MATCH_ALL, userId
