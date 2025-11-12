@@ -1,5 +1,4 @@
 per-file Dump* = file:/core/java/com/android/internal/util/dump/OWNERS
-per-file FeatureFlagUtils.java = sbasi@google.com
 per-file FeatureFlagUtils.java = edgarwang@google.com
 
 per-file AttributeSet.java = file:/core/java/android/content/res/OWNERS
