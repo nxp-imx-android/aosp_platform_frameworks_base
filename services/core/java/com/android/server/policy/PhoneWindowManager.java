@@ -3564,6 +3564,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN:
                 if (complete) {
                     lockNow(null /* options */);
+                    dismissKeyboardShortcutsMenu();
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL:
