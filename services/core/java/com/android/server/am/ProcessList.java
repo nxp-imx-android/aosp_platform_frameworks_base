@@ -118,6 +118,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.content.pm.ProcessInfo;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.net.LocalSocket;
@@ -269,6 +270,11 @@ public final class ProcessList extends ProcessListInternal
     // The socket path for zygote to send unsolicited msg.
     // Must keep sync with com_android_internal_os_Zygote.cpp.
     private static final String UNSOL_ZYGOTE_MSG_SOCKET_PATH = "/data/system/unsolzygotesocket";
+
+    // The suffix of the key of mAppZygotes for Native Zygote processes
+    private static final String NATIVE_ZYGOTE_SUFFIX = "_zygote_native";
+    // The suffix of the key of mAppZygotes for Managed Zygote processes
+    private static final String MANAGED_ZYGOTE_SUFFIX = "_zygote";
 
     // Low Memory Killer Daemon command codes.
     // These must be kept in sync with lmk_cmd definitions in lmkd.h
@@ -1656,6 +1662,17 @@ public final class ProcessList extends ProcessListInternal
         return sLmkdConnection.exchange(buf, repl);
     }
 
+    /**
+     * An Application can have both Managed and Native App Zygote by declaring service entries for
+     * both variants, so construct different strings for each of them, which will be used as the key
+     * of mAppZygotes in ProcessList.
+     */
+    private static String makeAppZygoteName(ProcessRecord app) {
+        final boolean isNativeService = app.getHostingRecord().usesNativeAppZygote();
+        final String suffix = isNativeService ? NATIVE_ZYGOTE_SUFFIX : MANAGED_ZYGOTE_SUFFIX;
+        return (app.info.processName + suffix).intern();
+    }
+
     static void killProcessGroup(int uid, int pid, String reason) {
         /* static; one-time init here */
         if (sKillHandler != null) {
@@ -2256,7 +2273,7 @@ public final class ProcessList extends ProcessListInternal
         ArrayList<ProcessRecord> zygoteProcesses = mAppZygoteProcesses.get(appZygote);
         if (zygoteProcesses != null && (force || zygoteProcesses.size() == 0)) {
             // Only remove if no longer in use now, or forced kill
-            mAppZygotes.remove(appInfo.processName, appInfo.uid);
+            mAppZygotes.remove(appZygote.getProcessName(), appInfo.uid);
             mAppZygoteProcesses.remove(appZygote);
             mAppIsolatedUidRangeAllocator.freeUidRangeLocked(appInfo);
             appZygote.stopZygote();
@@ -2294,7 +2311,8 @@ public final class ProcessList extends ProcessListInternal
             appUidRange.freeIsolatedUidLocked(app.uid);
         }
 
-        final AppZygote appZygote = mAppZygotes.get(app.info.processName,
+        final String appZygoteName = makeAppZygoteName(app);
+        final AppZygote appZygote = mAppZygotes.get(appZygoteName,
                 app.getHostingRecord().getDefiningUid());
         if (appZygote != null) {
             ArrayList<ProcessRecord> zygoteProcesses = mAppZygoteProcesses.get(appZygote);
@@ -2314,12 +2332,14 @@ public final class ProcessList extends ProcessListInternal
         }
     }
 
-    private AppZygote createAppZygoteForProcessIfNeeded(final ProcessRecord app) {
+    @VisibleForTesting
+    AppZygote createAppZygoteForProcessIfNeeded(final ProcessRecord app) {
         synchronized (mService) {
             // The UID for the app zygote should be the UID of the application hosting
             // the service.
             final int uid = app.getHostingRecord().getDefiningUid();
-            AppZygote appZygote = mAppZygotes.get(app.info.processName, uid);
+            final String appZygoteName = makeAppZygoteName(app);
+            AppZygote appZygote = mAppZygotes.get(appZygoteName, uid);
             final ArrayList<ProcessRecord> zygoteProcessList;
             if (appZygote == null) {
                 if (DEBUG_PROCESSES) {
@@ -2370,9 +2390,10 @@ public final class ProcessList extends ProcessListInternal
                 // not the calling one.
                 appInfo.packageName = app.getHostingRecord().getDefiningPackageName();
                 appInfo.uid = uid;
-                appZygote = new AppZygote(appInfo, app.processInfo, uid, firstUid, lastUid,
-                                          app.getHostingRecord().usesNativeAppZygote());
-                mAppZygotes.put(app.info.processName, uid, appZygote);
+                appZygote = newAppZygote(appInfo, app.processInfo, uid, firstUid, lastUid,
+                                          app.getHostingRecord().usesNativeAppZygote(),
+                                          appZygoteName);
+                mAppZygotes.put(appZygoteName, uid, appZygote);
                 zygoteProcessList = new ArrayList<ProcessRecord>();
                 mAppZygoteProcesses.put(appZygote, zygoteProcessList);
             } else {
@@ -2390,6 +2411,13 @@ public final class ProcessList extends ProcessListInternal
 
             return appZygote;
         }
+    }
+
+    @VisibleForTesting
+    AppZygote newAppZygote(ApplicationInfo appInfo, ProcessInfo processInfo, int uid,
+            int uidGidMin, int uidGidMax, boolean isNativeService, String processName) {
+        return new AppZygote(appInfo, processInfo, uid, uidGidMin, uidGidMax, isNativeService,
+                processName);
     }
 
     private Map<String, Pair<String, Long>> getPackageAppDataInfoMap(PackageManagerInternal pmInt,

@@ -110,6 +110,8 @@ public final class HostingRecord {
     private final boolean mIsPcc;
     @Nullable private final String mAction;
     @NonNull private final String mTriggerType;
+    // This field indicates if the process should be spawned from the Native App Zygote. This is
+    // enabled only if the flag {@link android.os.Flags#nativeAppZygote} is enabled.
     private final boolean mIsNativeService;
 
     public HostingRecord(@NonNull String hostingType) {

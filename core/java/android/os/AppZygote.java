@@ -56,6 +56,9 @@ public class AppZygote {
 
     private final Object mLock = new Object();
 
+    // The name of the App Zygote process
+    private final String mProcessName;
+
     /**
      * Instance that maintains the socket connection to the zygote. This is {@code null} if the
      * zygote is not running or is not connected.
@@ -68,13 +71,14 @@ public class AppZygote {
     private final boolean mIsNativeService;
 
     public AppZygote(ApplicationInfo appInfo, ProcessInfo processInfo, int zygoteUid, int uidGidMin,
-            int uidGidMax, boolean isNativeService) {
+            int uidGidMax, boolean isNativeService, String processName) {
         mAppInfo = appInfo;
         mProcessInfo = processInfo;
         mZygoteUid = zygoteUid;
         mZygoteUidGidMin = uidGidMin;
         mZygoteUidGidMax = uidGidMax;
         mIsNativeService = isNativeService;
+        mProcessName =  processName;
     }
 
     /**
@@ -108,6 +112,13 @@ public class AppZygote {
      */
     public int getZygoteUid() {
         return mZygoteUid;
+    }
+
+    /**
+     * Returns the name of the App Zygote process.
+     */
+    public String getProcessName() {
+        return mProcessName;
     }
 
     /**
@@ -210,10 +221,9 @@ public class AppZygote {
             IZygoteProcess process =
                     mIsNativeService ? Process.NATIVE_ZYGOTE_PROCESS : Process.ZYGOTE_PROCESS;
             String seInfo = mIsNativeService ? "native_app_zygote" : "app_zygote";
-            String processSuffix = mIsNativeService ? "_zygote_native" : "_zygote";
             mZygote = process.startChildZygote(
                     "com.android.internal.os.AppZygoteInit",
-                    mAppInfo.processName + processSuffix,
+                    mProcessName,
                     mZygoteUid,
                     mZygoteUid,
                     sharedAppGid,  // Zygote gets access to shared app GID for profiles
