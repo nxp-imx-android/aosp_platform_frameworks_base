@@ -89,6 +89,7 @@ import android.os.PersistableBundle;
 import android.os.PowerExemptionManager;
 import android.os.PowerManagerInternal;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.permission.flags.Flags;
@@ -725,6 +726,13 @@ public class CompanionDeviceManagerService extends SystemService {
                 @NonNull String serviceName, int[] associationIds) {
             requestAction_enforcePermission();
 
+            android.os.Trace.asyncTraceForTrackBegin(
+                    Trace.TRACE_TAG_SYSTEM_SERVER,
+                    "CompanionDeviceManager",
+                    "requestAction",
+                    request.hashCode()
+            );
+
             mActionRequestProcessor.requestAction(request, serviceName, associationIds);
         }
         @Override
@@ -826,11 +834,24 @@ public class CompanionDeviceManagerService extends SystemService {
         public void notifyDevicePresence(int associationId, @NonNull DevicePresenceEvent event) {
             notifyDevicePresence_enforcePermission();
 
+            android.os.Trace.asyncTraceForTrackBegin(
+                    Trace.TRACE_TAG_SYSTEM_SERVER,
+                    "CompanionDeviceManager",
+                    "notifyDevicePresence",
+                    event.hashCode()
+            );
+
             mDevicePresenceProcessor.processSelfManagedDevicePresenceEvent(associationId, event);
         }
 
         @Override
         public void notifyActionResult(int associationId, @NonNull ActionResult result) {
+            android.os.Trace.asyncTraceForTrackBegin(
+                    Trace.TRACE_TAG_SYSTEM_SERVER,
+                    "CompanionDeviceManager",
+                    "notifyActionResult",
+                    result.hashCode()
+            );
             mActionRequestProcessor.processActionResult(associationId, result);
         }
 
