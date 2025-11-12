@@ -36,12 +36,11 @@ fun VariableDayDate(
         val longerPlaceable = longerMeasurable.measure(constraints)
         val shorterPlaceable = shorterMeasurable.measure(constraints)
 
-        // If width < maxWidth (and not <=), we can assume that the text fits.
         val placeable =
             when {
-                longerPlaceable.width < constraints.maxWidth &&
+                longerPlaceable.width <= constraints.maxWidth &&
                     longerPlaceable.height <= constraints.maxHeight -> longerPlaceable
-                shorterPlaceable.width < constraints.maxWidth &&
+                shorterPlaceable.width <= constraints.maxWidth &&
                     shorterPlaceable.height <= constraints.maxHeight -> shorterPlaceable
                 else -> null
             }
