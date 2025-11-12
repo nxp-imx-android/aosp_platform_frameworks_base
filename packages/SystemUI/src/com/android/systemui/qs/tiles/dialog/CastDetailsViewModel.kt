@@ -53,6 +53,8 @@ constructor(
             else ""
         )
     var deviceIcon: Drawable? by mutableStateOf(null)
+    var viewUpdateKey by mutableStateOf(false)
+        private set
 
     @AssistedFactory
     fun interface Factory {
@@ -99,7 +101,7 @@ constructor(
     }
 
     override fun dismissView() {
-        // TODO(b/378514236): Finish implementing this function.
+        viewUpdateKey = !viewUpdateKey
     }
 
     override fun showProgressBarWhenEmpty(): Boolean {
