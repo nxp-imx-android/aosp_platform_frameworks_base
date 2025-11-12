@@ -53,7 +53,6 @@ public class AppFunctionManagerService extends SystemService {
                                                 Environment.getDataSystemDirectory(),
                                                 APP_FUNCTIONS_DIR),
                                         AGENT_ALLOWLIST_FILE_NAME)),
-                        MultiUserAppFunctionAccessHistory.getInstance(context),
                         MultiUserDynamicAppFunctionRegistry.getInstance(),
                         BackgroundThread.getExecutor());
     }

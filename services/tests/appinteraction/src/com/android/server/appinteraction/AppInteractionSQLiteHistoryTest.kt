@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.server.appfunctions
+package com.android.server.appinteraction
 
-import android.app.appfunctions.AppFunctionAttribution
+import android.app.AppInteractionAttribution
 import android.app.appfunctions.AppFunctionManager
-import android.app.appfunctions.ExecuteAppFunctionAidlRequest
-import android.app.appfunctions.ExecuteAppFunctionRequest
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
@@ -31,32 +30,40 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class AppFunctionSQLiteAccessHistoryTest {
+class AppInteractionSQLiteHistoryTest {
     private lateinit var context: Context
-    private lateinit var accessHistory: AppFunctionSQLiteAccessHistory
+    private lateinit var interactionHistory: AppInteractionSQLiteHistory
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext<Context>()
-        accessHistory = AppFunctionSQLiteAccessHistory(context)
+        interactionHistory = AppInteractionSQLiteHistory(context)
     }
 
     @After
     fun tearDown() {
-        accessHistory.deleteAll()
-        accessHistory.close()
+        interactionHistory.deleteAll()
+        interactionHistory.close()
     }
 
     @Test
-    fun queryAppFunctionAccessHistory_shouldReturnInsertedHistories_withoutAttribution() {
+    fun queryAppInteractionHistoryShouldReturnInsertedHistoriesWithoutAttribution() {
+        val sourcePackage = TEST_AGENT_PACKAGE_NAME
+        val targetPackage = TEST_TARGET_PACKAGE_NAME
         val accessTime = System.currentTimeMillis()
         val duration = 100L
-        val request = createTestExecuteAppFunctionAidlRequest()
 
-        val rowId = accessHistory.insertAppFunctionAccessHistory(request, accessTime, duration)
+        val rowId =
+            interactionHistory.insertAppInteractionHistory(
+                sourcePackage,
+                targetPackage,
+                /* appInteractionAttribution= */ null,
+                accessTime,
+                duration,
+            )
 
         assertThat(rowId).isNotEqualTo(-1)
-        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        interactionHistory.queryAppInteractionHistories(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
 
@@ -101,14 +108,6 @@ class AppFunctionSQLiteAccessHistoryTest {
                 )
                 .isTrue()
             assertThat(
-                    cursor.isNull(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_THREAD_ID
-                        )
-                    )
-                )
-                .isTrue()
-            assertThat(
                     cursor.getLong(
                         cursor.getColumnIndexOrThrow(
                             AppFunctionManager.AccessHistory.COLUMN_ACCESS_TIME
@@ -128,18 +127,26 @@ class AppFunctionSQLiteAccessHistoryTest {
     }
 
     @Test
-    fun queryAppFunctionAccessHistory_shouldReturnInsertedHistories_withMinimalAttribution() {
+    fun queryAppInteractionHistoryShouldReturnInsertedHistoriesWithMinimalAttribution() {
+        val sourcePackage = TEST_AGENT_PACKAGE_NAME
+        val targetPackage = TEST_TARGET_PACKAGE_NAME
+        val attribution =
+            AppInteractionAttribution.Builder(AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY)
+                .build()
         val accessTime = System.currentTimeMillis()
         val duration = 100L
-        val attribution =
-            AppFunctionAttribution.Builder(AppFunctionAttribution.INTERACTION_TYPE_USER_QUERY)
-                .build()
-        val request = createTestExecuteAppFunctionAidlRequest(attribution = attribution)
 
-        val rowId = accessHistory.insertAppFunctionAccessHistory(request, accessTime, duration)
+        val rowId =
+            interactionHistory.insertAppInteractionHistory(
+                sourcePackage,
+                targetPackage,
+                attribution,
+                accessTime,
+                duration,
+            )
 
         assertThat(rowId).isNotEqualTo(-1)
-        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        interactionHistory.queryAppInteractionHistories(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
 
@@ -167,7 +174,7 @@ class AppFunctionSQLiteAccessHistoryTest {
                         )
                     )
                 )
-                .isEqualTo(AppFunctionAttribution.INTERACTION_TYPE_USER_QUERY)
+                .isEqualTo(AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY)
             assertThat(
                     cursor.isNull(
                         cursor.getColumnIndexOrThrow(
@@ -180,14 +187,6 @@ class AppFunctionSQLiteAccessHistoryTest {
                     cursor.isNull(
                         cursor.getColumnIndexOrThrow(
                             AppFunctionManager.AccessHistory.COLUMN_INTERACTION_URI
-                        )
-                    )
-                )
-                .isTrue()
-            assertThat(
-                    cursor.isNull(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_THREAD_ID
                         )
                     )
                 )
@@ -212,21 +211,28 @@ class AppFunctionSQLiteAccessHistoryTest {
     }
 
     @Test
-    fun queryAppFunctionAccessHistory_shouldReturnInsertedHistories_withFullAttribution() {
-        val accessTime = System.currentTimeMillis()
-        val duration = 100L
+    fun queryAppInteractionHistoryShouldReturnInsertedHistoriesWithFullAttribution() {
+        val sourcePackage = TEST_AGENT_PACKAGE_NAME
+        val targetPackage = TEST_TARGET_PACKAGE_NAME
         val attribution =
-            AppFunctionAttribution.Builder(AppFunctionAttribution.INTERACTION_TYPE_OTHER)
+            AppInteractionAttribution.Builder(AppInteractionAttribution.INTERACTION_TYPE_OTHER)
                 .setCustomInteractionType(TEST_CUSTOM_INTERACTION_TYPE)
-                .setThreadId(TEST_THREAD_ID)
                 .setInteractionUri(TEST_INTERACTION_URI)
                 .build()
-        val request = createTestExecuteAppFunctionAidlRequest(attribution = attribution)
+        val accessTime = System.currentTimeMillis()
+        val duration = 100L
 
-        val rowId = accessHistory.insertAppFunctionAccessHistory(request, accessTime, duration)
+        val rowId =
+            interactionHistory.insertAppInteractionHistory(
+                sourcePackage,
+                targetPackage,
+                attribution,
+                accessTime,
+                duration,
+            )
 
         assertThat(rowId).isNotEqualTo(-1)
-        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        interactionHistory.queryAppInteractionHistories(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
 
@@ -253,7 +259,7 @@ class AppFunctionSQLiteAccessHistoryTest {
                         )
                     )
                 )
-                .isEqualTo(AppFunctionAttribution.INTERACTION_TYPE_OTHER)
+                .isEqualTo(AppInteractionAttribution.INTERACTION_TYPE_OTHER)
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
@@ -271,14 +277,6 @@ class AppFunctionSQLiteAccessHistoryTest {
                 )
                 .isEqualTo(TEST_INTERACTION_URI.toString())
             assertThat(
-                    cursor.getString(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_THREAD_ID
-                        )
-                    )
-                )
-                .isEqualTo(TEST_THREAD_ID)
-            assertThat(
                     cursor.getLong(
                         cursor.getColumnIndexOrThrow(
                             AppFunctionManager.AccessHistory.COLUMN_ACCESS_TIME
@@ -298,26 +296,30 @@ class AppFunctionSQLiteAccessHistoryTest {
     }
 
     @Test
-    fun deleteExpiredAppFunctionAccessHistories_shouldClearExpiredHistories() {
+    fun deleteExpiredAppInteractionHistoriesShouldClearExpiredHistories() {
+        val sourcePackage = TEST_AGENT_PACKAGE_NAME
+        val targetPackage = TEST_TARGET_PACKAGE_NAME
         val retentionPeriodMillis = 2000L
         val oldAccessTime = System.currentTimeMillis() - retentionPeriodMillis - 500
         val newAccessTime = System.currentTimeMillis()
-        val oldRequest = createTestExecuteAppFunctionAidlRequest()
-        accessHistory.insertAppFunctionAccessHistory(
-            oldRequest,
+        interactionHistory.insertAppInteractionHistory(
+            sourcePackage,
+            targetPackage,
+            /* appInteractionAttribution= */ null,
             oldAccessTime,
             /* duration= */ 100L,
         )
-        val newRequest = createTestExecuteAppFunctionAidlRequest()
-        accessHistory.insertAppFunctionAccessHistory(
-            newRequest,
+        interactionHistory.insertAppInteractionHistory(
+            sourcePackage,
+            targetPackage,
+            /* appInteractionAttribution= */ null,
             newAccessTime,
             /* duration= */ 100L,
         )
 
-        accessHistory.deleteExpiredAppFunctionAccessHistories(retentionPeriodMillis)
+        interactionHistory.deleteExpiredAppInteractionHistories(retentionPeriodMillis)
 
-        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        interactionHistory.queryAppInteractionHistories(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
             assertThat(
@@ -332,43 +334,38 @@ class AppFunctionSQLiteAccessHistoryTest {
     }
 
     @Test
-    fun deleteAppFunctionAccessHistories_shouldClearAllHistoryAssociatedWithThePackage() {
+    fun deleteAppInteractionHistoriesShouldClearAllHistoryAssociatedWithThePackage() {
+        val sourcePackage = TEST_AGENT_PACKAGE_NAME
+        val targetPackage = TEST_TARGET_PACKAGE_NAME
         val accessTime = System.currentTimeMillis()
         val otherPackageName = "com.android.test.other"
-        val agentAsCallerRequest =
-            createTestExecuteAppFunctionAidlRequest(
-                callingPackage = TEST_AGENT_PACKAGE_NAME,
-                targetPackageName = TEST_TARGET_PACKAGE_NAME,
-            )
-        accessHistory.insertAppFunctionAccessHistory(
-            agentAsCallerRequest,
+        interactionHistory.insertAppInteractionHistory(
+            sourcePackage,
+            targetPackage,
+            /* appInteractionAttribution= */ null,
             accessTime,
             /* duration= */ 100L,
         )
-        val agentAsTargetRequest =
-            createTestExecuteAppFunctionAidlRequest(
-                callingPackage = TEST_TARGET_PACKAGE_NAME,
-                targetPackageName = TEST_AGENT_PACKAGE_NAME,
-            )
-        accessHistory.insertAppFunctionAccessHistory(
-            agentAsTargetRequest,
+        // Swap the target/source package
+        interactionHistory.insertAppInteractionHistory(
+            targetPackage,
+            sourcePackage,
+            /* appInteractionAttribution= */ null,
             accessTime,
             /* duration= */ 100L,
         )
-        val unrelatedRequest =
-            createTestExecuteAppFunctionAidlRequest(
-                callingPackage = TEST_TARGET_PACKAGE_NAME,
-                targetPackageName = otherPackageName,
-            )
-        accessHistory.insertAppFunctionAccessHistory(
-            unrelatedRequest,
+        // Use otherPackageName as target package
+        interactionHistory.insertAppInteractionHistory(
+            targetPackage,
+            otherPackageName,
+            /* appInteractionAttribution= */ null,
             accessTime,
             /* duration= */ 100L,
         )
 
-        accessHistory.deleteAppFunctionAccessHistories(TEST_AGENT_PACKAGE_NAME)
+        interactionHistory.deleteAppInteractionHistories(TEST_AGENT_PACKAGE_NAME)
 
-        accessHistory.queryAppFunctionAccessHistory(null, null, null, null)?.use { cursor ->
+        interactionHistory.queryAppInteractionHistories(null, null, null, null)?.use { cursor ->
             assertThat(cursor.count).isEqualTo(1)
             cursor.moveToFirst()
             assertThat(
@@ -390,31 +387,10 @@ class AppFunctionSQLiteAccessHistoryTest {
         }
     }
 
-    private fun createTestExecuteAppFunctionAidlRequest(
-        attribution: AppFunctionAttribution? = null,
-        callingPackage: String = TEST_AGENT_PACKAGE_NAME,
-        targetPackageName: String = TEST_TARGET_PACKAGE_NAME,
-    ): ExecuteAppFunctionAidlRequest {
-        val clientRequestBuilder =
-            ExecuteAppFunctionRequest.Builder(targetPackageName, TEST_FUNCTION_ID)
-        if (attribution != null) {
-            clientRequestBuilder.setAttribution(attribution)
-        }
-        return ExecuteAppFunctionAidlRequest(
-            clientRequestBuilder.build(),
-            context.user,
-            callingPackage,
-            System.currentTimeMillis(),
-            System.currentTimeMillis(),
-        )
-    }
-
     companion object {
         private const val TEST_AGENT_PACKAGE_NAME = "com.android.test.agent"
         private const val TEST_TARGET_PACKAGE_NAME = "com.android.test.target"
-        private const val TEST_FUNCTION_ID = "test_function_id"
         private const val TEST_CUSTOM_INTERACTION_TYPE = "MAINTENANCE"
-        private const val TEST_THREAD_ID = "test_thread_id"
-        private val TEST_INTERACTION_URI: Uri = Uri.parse("content://test/interaction")
+        private val TEST_INTERACTION_URI: Uri = "content://test/interaction".toUri()
     }
 }
