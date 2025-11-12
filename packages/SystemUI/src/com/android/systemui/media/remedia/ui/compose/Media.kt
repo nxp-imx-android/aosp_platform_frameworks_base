@@ -55,15 +55,15 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -78,6 +78,8 @@ import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults.colors
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
+import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -139,6 +141,7 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
+import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
@@ -149,7 +152,6 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.asImageBitmap
 import com.android.systemui.common.ui.compose.Icon
-import com.android.systemui.common.ui.compose.PagerDots
 import com.android.systemui.common.ui.compose.byLayoutId
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.common.ui.compose.singleton
@@ -257,15 +259,24 @@ private fun CardCarouselContent(
     modifier: Modifier = Modifier,
     mediaSquishiness: () -> Float,
 ) {
-    val pagerState = rememberPagerState { viewModel.cards.size }
+    val carouselState = rememberCarouselState { viewModel.cards.size }
+    var userTappedIndex by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(viewModel.currentIndex) {
-        if (viewModel.currentIndex != pagerState.currentPage) {
-            pagerState.scrollToPage(viewModel.currentIndex)
+        if (viewModel.currentIndex != carouselState.currentItem) {
+            userTappedIndex = viewModel.currentIndex
+            carouselState.animateScrollToItem(viewModel.currentIndex)
         }
     }
-    LaunchedEffect(pagerState.currentPage, viewModel.cards.size) {
-        if (pagerState.currentPage < viewModel.cards.size) {
-            viewModel.onCardSelected(pagerState.currentPage)
+    LaunchedEffect(carouselState.currentItem, viewModel.cards.size) {
+        if (carouselState.currentItem < viewModel.cards.size) {
+            // This effect is trigged from both a swipe between items in the carousel, and the user
+            // tapping on a thumbnail, which could animate more than one index away.
+            // In the second case, we need to ignore the intermediate events caused by
+            // `animateScrollToItem`, so that scrolling can fully complete.
+            if (userTappedIndex == null || carouselState.currentItem == userTappedIndex) {
+                viewModel.onCardSelected(carouselState.currentItem)
+                userTappedIndex = null
+            }
         }
     }
     var isFalseTouchDetected: Boolean by
@@ -276,7 +287,7 @@ private fun CardCarouselContent(
 
     Box(
         modifier =
-            modifier.clip(roundedCornerShape).pointerInput(behavior) {
+            modifier.pointerInput(behavior) {
                 if (behavior.isCarouselScrollFalseTouch != null) {
                     awaitEachGesture {
                         awaitFirstDown(false, PointerEventPass.Initial)
@@ -288,36 +299,37 @@ private fun CardCarouselContent(
         @Composable
         fun PagerContent(overscrollEffect: OverscrollEffect? = null) {
             Box(modifier = Modifier.sysuiResTag(MediaRes.MEDIA_CAROUSEL_SCROLLER)) {
-                HorizontalPager(
-                    state = pagerState,
+                HorizontalCenteredHeroCarousel(
+                    state = carouselState,
                     modifier = Modifier.sysuiResTag(MediaRes.MEDIA_CAROUSEL),
                     userScrollEnabled = isSwipingEnabled,
-                    pageSpacing = 8.dp,
-                    beyondViewportPageCount = 1,
-                    key = { index: Int -> viewModel.cards[index].key },
-                    overscrollEffect = overscrollEffect ?: rememberOffsetOverscrollEffect(),
+                    itemSpacing = 8.dp,
+                    minSmallItemWidth = 48.dp,
+                    maxSmallItemWidth = 48.dp,
+                    contentPadding = PaddingValues.Zero,
                 ) { pageIndex: Int ->
-                    if (Media.DEBUG) {
-                        Log.d(Media.TAG, "composing media card ${viewModel.cards[pageIndex].key}")
+                    if (behavior.isCarouselScrollingEnabled || pageIndex == 0) {
+                        if (Media.DEBUG) {
+                            Log.d(
+                                Media.TAG,
+                                "composing media card ${viewModel.cards[pageIndex].key}",
+                            )
+                        }
+                        val presentation =
+                            if (pageIndex == viewModel.currentIndex) {
+                                presentationStyle
+                            } else MediaPresentationStyle.Thumbnail
+                        Card(
+                            viewModel = viewModel.cards[pageIndex],
+                            cardStyle = presentation,
+                            carouselStyle = presentationStyle,
+                            mediaSquishiness = mediaSquishiness,
+                            modifier =
+                                Modifier.maskClip(roundedCornerShape)
+                                    .fillMaxWidth()
+                                    .sysuiResTag(MediaRes.MEDIA_CONTROLS),
+                        )
                     }
-                    Card(
-                        viewModel = viewModel.cards[pageIndex],
-                        presentationStyle = presentationStyle,
-                        modifier =
-                            Modifier.clip(roundedCornerShape).sysuiResTag(MediaRes.MEDIA_CONTROLS),
-                        mediaSquishiness = mediaSquishiness,
-                    )
-                }
-
-                if (pagerState.pageCount > 1) {
-                    PagerDots(
-                        pagerState = pagerState,
-                        activeColor = Color(0xffdee0ff),
-                        nonActiveColor = Color(0xffa7a9ca),
-                        dotSize = 6.dp,
-                        spaceSize = 6.dp,
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
-                    )
                 }
             }
         }
@@ -351,7 +363,7 @@ private fun CardCarouselContent(
 
     LaunchedEffect(viewModel.scrollToFirst) {
         if (viewModel.scrollToFirst && viewModel.cards.isNotEmpty()) {
-            pagerState.animateScrollToPage(0)
+            carouselState.animateScrollToItem(0)
             viewModel.onScrollToFirstCard()
         }
     }
@@ -361,29 +373,33 @@ private fun CardCarouselContent(
 @Composable
 private fun Card(
     viewModel: MediaCardViewModel,
-    presentationStyle: MediaPresentationStyle,
+    cardStyle: MediaPresentationStyle,
+    carouselStyle: MediaPresentationStyle,
     modifier: Modifier = Modifier,
     mediaSquishiness: () -> Float,
 ) {
     val stlState =
         rememberMutableSceneTransitionLayoutState(
-            initialScene = presentationStyle.toScene(),
+            initialScene = cardStyle.toScene(),
             transitions = Media.Transitions,
         )
 
     val colorScheme = rememberAnimatedColorScheme(viewModel.colorScheme)
 
     // Each time the presentation style changes, animate to the corresponding scene.
-    LaunchedEffect(presentationStyle) {
-        stlState.setTargetScene(targetScene = presentationStyle.toScene(), animationScope = this)
+    LaunchedEffect(cardStyle) {
+        stlState.setTargetScene(targetScene = cardStyle.toScene(), animationScope = this)
     }
 
     Box(modifier) {
-        if (stlState.currentScene != Media.Scenes.Compact) {
+        if (carouselStyle != MediaPresentationStyle.Compact) {
             CardBackground(
                 image = viewModel.background,
                 colorScheme = colorScheme,
-                modifier = Modifier.matchParentSize().sysuiResTag(MediaRes.BACKGROUND),
+                modifier =
+                    Modifier.matchParentSize()
+                        .sysuiResTag(MediaRes.BACKGROUND)
+                        .clip(RoundedCornerShape(32.dp)),
             )
         }
 
@@ -427,6 +443,30 @@ private fun Card(
 
                     scene(Media.Scenes.Compact) {
                         CompactCardForeground(expandable = it, viewModel = viewModel)
+                    }
+
+                    scene(Media.Scenes.Thumbnail) {
+                        // Thumbnail is album art only, no foreground elements
+                        val carouselHeight =
+                            when (carouselStyle) {
+                                MediaPresentationStyle.Default -> 176.dp
+                                // Large is only used for communal, which isn't scrollable
+                                MediaPresentationStyle.Large -> Dp.Unspecified
+                                MediaPresentationStyle.Compressed -> 128.dp
+                                MediaPresentationStyle.Compact -> 80.dp
+                                else ->
+                                    throw IllegalArgumentException("Invalid carousel presentation")
+                            }
+                        var thumbnailModifier =
+                            Modifier.clickable(onClick = { viewModel.onClick(it) })
+                                .height(carouselHeight)
+                        if (carouselStyle == MediaPresentationStyle.Compact) {
+                            thumbnailModifier =
+                                thumbnailModifier.then(
+                                    Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+                                )
+                        }
+                        Spacer(modifier = modifier.then(thumbnailModifier))
                     }
                 }
             }
@@ -554,79 +594,89 @@ private fun ContentScope.CardForegroundContent(
         // Always add the first/top row, regardless of presentation style.
         Box(modifier = Modifier.fillMaxWidth()) {
             // Icon.
-            Icon(
-                icon = viewModel.icon,
-                tint = colorScheme.primary,
-                modifier =
-                    Modifier.align(Alignment.TopStart)
-                        .padding(top = 16.dp, start = 16.dp)
-                        .size(24.dp)
-                        .clip(CircleShape),
-            )
+            Element(key = Media.Elements.AppIcon, modifier = modifier) {
+                Icon(
+                    icon = viewModel.icon,
+                    tint = colorScheme.primary,
+                    modifier =
+                        Modifier.align(Alignment.TopStart)
+                            .padding(top = 16.dp, start = 16.dp)
+                            .size(24.dp)
+                            .clip(CircleShape),
+                )
+            }
 
             var cardMaxWidth: Int by remember { mutableIntStateOf(0) }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier =
-                    Modifier.align(Alignment.TopEnd)
-                        // Output switcher chip must be limited to at most 40% of the maximum
-                        // width of the card.
-                        //
-                        // This saves the maximum possible width of the card so it can be
-                        // referred to by child custom layout code below.
-                        //
-                        // The assumption is that the row can be as wide as the entire card.
-                        .layout { measurable, constraints ->
-                            cardMaxWidth = constraints.maxWidth
-                            val placeable = measurable.measure(constraints)
-
-                            layout(placeable.measuredWidth, placeable.measuredHeight) {
-                                placeable.place(0, 0)
-                            }
-                        },
+            Element(
+                key = Media.Elements.OutputSwitcherButton,
+                modifier = Modifier.align(Alignment.TopEnd),
             ) {
-                AnimatedVisibility(
-                    visible = viewModel.deviceSuggestionChip != null,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    rememberLastNonNull(viewModel.deviceSuggestionChip)?.let {
-                        DeviceChip(
-                            viewModel = it,
-                            style =
-                                DeviceChipStyle(
-                                    fillColor = Color.Transparent,
-                                    contentColor = colorScheme.primary,
-                                    borderColor = colorScheme.primary,
-                                ),
-                            modifier =
-                                Modifier.fractionalMaxWidth(
-                                        containerMaxWidth = cardMaxWidth,
-                                        fraction = 0.5f,
-                                    )
-                                    .sysuiResTag(MediaRes.SUGGESTED_DEVICE_CHIP),
-                        )
-                    }
-                }
-
-                DeviceChip(
-                    viewModel = viewModel.outputSwitcherChip,
-                    style =
-                        DeviceChipStyle(
-                            fillColor = colorScheme.primary,
-                            contentColor = colorScheme.onPrimary,
-                        ),
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier =
                         Modifier
-                            // The chip must be limited to 40% of the width of the card at most.
+                            // Output switcher chip must be limited to at most 40% of the maximum
+                            // width of the card.
                             //
-                            // The underlying assumption is that there'll never be more than one
-                            // chip with text and one more icon-only chip. Only the one with
-                            // text can ever end up being too wide.
-                            .fractionalMaxWidth(containerMaxWidth = cardMaxWidth, fraction = 0.4f)
-                            .padding(end = 16.dp)
-                            .sysuiResTag(MediaRes.OUTPUT_CHIP),
-                )
+                            // This saves the maximum possible width of the card so it can be
+                            // referred to by child custom layout code below.
+                            //
+                            // The assumption is that the row can be as wide as the entire card.
+                            .layout { measurable, constraints ->
+                                cardMaxWidth = constraints.maxWidth
+                                val placeable = measurable.measure(constraints)
+
+                                layout(placeable.measuredWidth, placeable.measuredHeight) {
+                                    placeable.place(0, 0)
+                                }
+                            },
+                ) {
+                    AnimatedVisibility(
+                        visible = viewModel.deviceSuggestionChip != null,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        rememberLastNonNull(viewModel.deviceSuggestionChip)?.let {
+                            DeviceChip(
+                                viewModel = it,
+                                style =
+                                    DeviceChipStyle(
+                                        fillColor = Color.Transparent,
+                                        contentColor = colorScheme.primary,
+                                        borderColor = colorScheme.primary,
+                                    ),
+                                modifier =
+                                    Modifier.fractionalMaxWidth(
+                                            containerMaxWidth = cardMaxWidth,
+                                            fraction = 0.5f,
+                                        )
+                                        .sysuiResTag(MediaRes.SUGGESTED_DEVICE_CHIP),
+                            )
+                        }
+                    }
+
+                    DeviceChip(
+                        viewModel = viewModel.outputSwitcherChip,
+                        style =
+                            DeviceChipStyle(
+                                fillColor = colorScheme.primary,
+                                contentColor = colorScheme.onPrimary,
+                            ),
+                        modifier =
+                            Modifier
+                                // The chip must be limited to 40% of the width of the card at most.
+                                //
+                                // The underlying assumption is that there'll never be more than one
+                                // chip with text and one more icon-only chip. Only the one with
+                                // text can ever end up being too wide.
+                                .fractionalMaxWidth(
+                                    containerMaxWidth = cardMaxWidth,
+                                    fraction = 0.4f,
+                                )
+                                .padding(end = 16.dp)
+                                .sysuiResTag(MediaRes.OUTPUT_CHIP),
+                    )
+                }
             }
         }
 
@@ -674,12 +724,13 @@ private fun ContentScope.CardForegroundContent(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                 ) {
+                    val areActionsVisible =
+                        viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause
                     Navigation(
                         viewModel = viewModel.navigation,
                         isSeekBarVisible = true,
-                        areActionsVisible =
-                            viewModel.actionButtonLayout ==
-                                MediaCardActionButtonLayout.WithPlayPause,
+                        isLeftActionVisible = areActionsVisible,
+                        isRightActionVisible = areActionsVisible,
                         modifier = Modifier.weight(1f),
                     )
 
@@ -709,12 +760,13 @@ private fun ContentScope.CardForegroundContent(
                 )
 
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    val areActionsVisible =
+                        viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause
                     Navigation(
                         viewModel = viewModel.navigation,
                         isSeekBarVisible = false,
-                        areActionsVisible =
-                            viewModel.actionButtonLayout ==
-                                MediaCardActionButtonLayout.WithPlayPause,
+                        isLeftActionVisible = false,
+                        isRightActionVisible = areActionsVisible,
                         modifier = Modifier.padding(end = 8.dp),
                     )
 
@@ -795,7 +847,7 @@ private fun ContentScope.CompactCardForeground(
         )
 
         val rightAction = viewModel.navigation.right
-        if (rightAction != null) {
+        if (rightAction !is MediaSecondaryActionViewModel.None) {
             SecondaryAction(
                 viewModel = rightAction,
                 resId = MediaRes.NEXT_BTN,
@@ -872,7 +924,8 @@ private fun CardBackground(
 private fun ContentScope.Navigation(
     viewModel: MediaNavigationViewModel,
     isSeekBarVisible: Boolean,
-    areActionsVisible: Boolean,
+    isLeftActionVisible: Boolean,
+    isRightActionVisible: Boolean,
     modifier: Modifier = Modifier,
 ) {
     when (viewModel) {
@@ -882,7 +935,7 @@ private fun ContentScope.Navigation(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = modifier,
             ) {
-                if (!areActionsVisible || viewModel.left is MediaSecondaryActionViewModel.None) {
+                if (!isLeftActionVisible || viewModel.left is MediaSecondaryActionViewModel.None) {
                     Spacer(Modifier.size(width = 16.dp, height = 48.dp))
                 } else {
                     SecondaryAction(
@@ -980,7 +1033,9 @@ private fun ContentScope.Navigation(
                     }
                 }
 
-                if (!areActionsVisible || viewModel.right is MediaSecondaryActionViewModel.None) {
+                if (
+                    !isRightActionVisible || viewModel.right is MediaSecondaryActionViewModel.None
+                ) {
                     Spacer(Modifier.size(width = 16.dp, height = 48.dp))
                 } else {
                     SecondaryAction(
@@ -993,7 +1048,7 @@ private fun ContentScope.Navigation(
         }
 
         is MediaNavigationViewModel.Hidden -> {
-            if (!areActionsVisible || viewModel.left is MediaSecondaryActionViewModel.None) {
+            if (!isLeftActionVisible || viewModel.left is MediaSecondaryActionViewModel.None) {
                 Spacer(Modifier.size(width = 16.dp, height = 48.dp))
             } else {
                 SecondaryAction(
@@ -1002,7 +1057,7 @@ private fun ContentScope.Navigation(
                     element = Media.Elements.PrevButton,
                 )
             }
-            if (!areActionsVisible || viewModel.right is MediaSecondaryActionViewModel.None) {
+            if (!isRightActionVisible || viewModel.right is MediaSecondaryActionViewModel.None) {
                 Spacer(Modifier.size(width = 16.dp, height = 48.dp))
             } else {
                 SecondaryAction(
@@ -1595,10 +1650,13 @@ enum class MediaPresentationStyle {
     Compressed,
     /** A special single-row treatment that fits nicely in quick settings. */
     Compact,
+    /** A minimal, non-interactive layout. Used for secondary cards in carousel view */
+    Thumbnail,
 }
 
 data class MediaUiBehavior(
     val isCarouselDismissible: Boolean = true,
+    /** If false, carousel will not be scrollable and will only show the first item */
     val isCarouselScrollingEnabled: Boolean = true,
     val carouselVisibility: MediaCarouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
     /**
@@ -1652,6 +1710,21 @@ object Media {
         val Compressed = SceneKey("compressed")
         /** A special single-row treatment that fits nicely in quick settings. */
         val Compact = SceneKey("compact")
+        /** A minimal, non-interactive layout. Used for secondary cards in carousel view */
+        val Thumbnail = SceneKey("thumbnail")
+    }
+
+    private fun TransitionBuilder.fadeAll() {
+        fade(Elements.AppIcon)
+        fade(Elements.PlayPauseButton)
+        fade(Elements.Metadata)
+        fade(Elements.PrevButton)
+        fade(Elements.NextButton)
+        fade(Elements.SeekBarSlider)
+        fade(Elements.OutputSwitcherButton)
+        for (i in 0..5) {
+            fade(Elements.additionalActionButton(i))
+        }
     }
 
     /** Definitions of how scene changes are transition-animated. */
@@ -1660,6 +1733,10 @@ object Media {
         from(Scenes.Default, to = Scenes.Large) {}
         from(Scenes.Default, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
         from(Scenes.Compact, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
+        from(Scenes.Thumbnail, to = Scenes.Default) { fadeAll() }
+        from(Scenes.Thumbnail, to = Scenes.Compact) { fadeAll() }
+        from(Scenes.Thumbnail, to = Scenes.Large) { fadeAll() }
+        from(Scenes.Thumbnail, to = Scenes.Compressed) { fadeAll() }
     }
 
     /**
@@ -1673,6 +1750,7 @@ object Media {
      * animations even further.
      */
     object Elements {
+        val AppIcon = ElementKey("app_icon")
         val PlayPauseButton = ElementKey("play_pause")
         val Metadata = ElementKey("metadata")
         val PrevButton = ElementKey("prev")
@@ -1711,6 +1789,7 @@ private fun MediaPresentationStyle.toScene(): SceneKey {
         MediaPresentationStyle.Large -> Media.Scenes.Large
         MediaPresentationStyle.Compressed -> Media.Scenes.Compressed
         MediaPresentationStyle.Compact -> Media.Scenes.Compact
+        MediaPresentationStyle.Thumbnail -> Media.Scenes.Thumbnail
     }
 }
 
