@@ -2007,6 +2007,28 @@ public final class CameraManager {
         public void onCameraClosed(@NonNull String cameraId) {
             // default empty implementation
         }
+
+        /**
+         * A camera device has been physically removed or is no longer available to the system.
+         *
+         * <p>This callback is invoked when a previously available camera, such as a removable
+         * external camera, is disconnected. The camera ID will no longer be included in the list
+         * returned by {@link CameraManager#getCameraIdList()} and any attempt to open it will
+         * result in an {@link IllegalArgumentException}.</p>
+         *
+         * <p>If an application has an active {@link CameraDevice} instance for the removed camera
+         * that the client did not {@link CameraDevice#close() close}, then the application will
+         * receive a {@link CameraDevice.StateCallback#onDisconnected disconnection error}.</p>
+         *
+         * <p>When a camera is removed, {@link #onCameraUnavailable(String)} will be invoked
+         * for the given {@code cameraId} before this callback is triggered.</p>
+         *
+         * @param cameraId The unique identifier of the camera that has been removed.
+         */
+        @FlaggedApi(Flags.FLAG_DEVICE_REMOVED_CALLBACK)
+        public void onCameraRemoved(@NonNull String cameraId) {
+            // default empty implementation
+        }
     }
 
     /**
@@ -2987,6 +3009,18 @@ public final class CameraManager {
                                 } else {
                                     callback.onPhysicalCameraUnavailable(id, physicalId);
                                 }
+                            });
+                } finally {
+                    Binder.restoreCallingIdentity(ident);
+                }
+            }
+            if (Flags.deviceRemovedCallback() && (physicalId == null) &&
+                    (status == STATUS_NOT_PRESENT)) {
+                final long ident = Binder.clearCallingIdentity();
+                try {
+                    executor.execute(
+                            () -> {
+                                callback.onCameraRemoved(id);
                             });
                 } finally {
                     Binder.restoreCallingIdentity(ident);
