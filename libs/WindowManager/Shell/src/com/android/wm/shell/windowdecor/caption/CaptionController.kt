@@ -39,7 +39,6 @@ import com.android.wm.shell.windowdecor.ManageWindowsMenuController
 import com.android.wm.shell.windowdecor.MaximizeMenuController
 import com.android.wm.shell.windowdecor.TaskFocusStateConsumer
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
-import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.WindowDecorationInsets
 import com.android.wm.shell.windowdecor.common.CaptionRegionHelper
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
@@ -61,11 +60,6 @@ abstract class CaptionController<T>(
     private val windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
     protected val taskOrganizer: ShellTaskOrganizer,
     @field:ShellBackgroundThread protected val bgScope: CoroutineScope,
-    private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
-        SurfaceControl.Builder()
-    },
-    private val surfaceControlViewHostFactory: SurfaceControlViewHostFactory =
-        object : SurfaceControlViewHostFactory {},
 ) where T : View, T : TaskFocusStateConsumer {
 
     private var captionInsets: WindowDecorationInsets? = null
@@ -311,7 +305,7 @@ abstract class CaptionController<T>(
         setExcludeLayerJob =
             bgScope.launch {
                 synchronized(taskOrganizer) {
-                    layers[0]?.isValid?.let {
+                    if (layers[0]?.isValid == true) {
                         taskOrganizer.setExcludeLayersFromTaskSnapshot(taskInfo.token, layers)
                     }
                 }
