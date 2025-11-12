@@ -1121,6 +1121,8 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             } else {
                 assertThat(deviceEntryRestrictionReason).isEqualTo(expectedReason)
             }
+            assertThat(underTest.currentDeviceEntryRestrictionReason())
+                .isEqualTo(deviceEntryRestrictionReason)
         }
     }
 

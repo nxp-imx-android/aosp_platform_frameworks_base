@@ -97,6 +97,9 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        // Set auth method to test the initial message value
+        kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+
         kosmos.fakeUserRepository.setUserInfos(listOf(PRIMARY_USER))
         overrideResource(
             R.array.config_face_acquire_device_entry_ignorelist,
@@ -110,6 +113,13 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
             "not mainline reboot",
         )
     }
+
+    @Test
+    fun message_initialDefaultMessage_isValid() =
+        testScope.runTest {
+            val message by collectLastValue(underTest.message)
+            assertThat(message!!.text).isEqualTo("Enter PIN")
+        }
 
     @Test
     fun message_defaultMessage_basedOnAuthMethod() =

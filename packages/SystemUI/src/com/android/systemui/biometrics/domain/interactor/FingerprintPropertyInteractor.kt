@@ -17,7 +17,6 @@
 package com.android.systemui.biometrics.domain.interactor
 
 import android.content.Context
-import android.graphics.Rect
 import android.hardware.biometrics.SensorLocationInternal
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.biometrics.shared.model.FingerprintSensorInfo
@@ -92,10 +91,13 @@ constructor(
         }
 
     /** The security strength of sensor (convenience, weak, strong). */
-    val sensorInfo: Flow<FingerprintSensorInfo> =
-        combine(repository.sensorType, repository.strength) { sensorType, sensorStrength ->
-            FingerprintSensorInfo(sensorType, sensorStrength)
-        }
+    val sensorInfo: StateFlow<FingerprintSensorInfo> =
+        combine(repository.sensorType, repository.strength, ::FingerprintSensorInfo)
+            .stateIn(
+                applicationScope,
+                SharingStarted.WhileSubscribed(),
+                FingerprintSensorInfo(repository.sensorType.value, repository.strength.value),
+            )
 
     /**
      * Sensor location for the:
