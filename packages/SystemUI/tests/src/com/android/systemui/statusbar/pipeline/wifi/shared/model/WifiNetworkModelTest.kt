@@ -227,5 +227,9 @@ class WifiNetworkModelTest : SysuiTestCase() {
         override fun logChange(columnName: String, value: Boolean) {
             changes.add(Pair(columnName, value.toString()))
         }
+
+        override fun logChange(columnName: String, value: Float) {
+            changes.add(Pair(columnName, value.toString()))
+        }
     }
 }
