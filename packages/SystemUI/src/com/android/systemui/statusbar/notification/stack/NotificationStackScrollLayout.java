@@ -4099,6 +4099,17 @@ public class NotificationStackScrollLayout
                     mScrollViewFields.sendCurrentGestureExpandingNotification(false);
                     setIsBeingDragged(false);
                 }
+            } else {
+                // Ensure that the last ACTION_UP/ACTION_CANCEL gets dispatched to scene container
+                boolean isUpOrCancel = action == ACTION_UP || action == ACTION_CANCEL;
+                if (isUpOrCancel && mSendingTouchesToSceneFramework) {
+                    MotionEvent adjustedEvent = MotionEvent.obtain(ev);
+                    adjustedEvent.setLocation(ev.getRawX(), ev.getRawY());
+                    mController.sendTouchToSceneFramework(adjustedEvent);
+                    mScrollViewFields.sendCurrentGestureInGuts(isTouchInGuts);
+                    mScrollViewFields.sendCurrentGestureExpandingNotification(
+                            mExpandingNotification);
+                }
             }
         }
         // dispatch all touches to TouchHandlers, so they can decide whether they want to handle it.
@@ -6341,6 +6352,15 @@ public class NotificationStackScrollLayout
         return mExpandingNotification;
     }
 
+    @VisibleForTesting
+    void setIsExpandingNotification(boolean isExpanding) {
+        mExpandingNotification = isExpanding;
+        if (!mExpandedInThisMotion) {
+            mMaxScrollAfterExpand = getOwnScrollY();
+            mExpandedInThisMotion = true;
+        }
+    }
+
     boolean getDisallowScrollingInThisMotion() {
         return mDisallowScrollingInThisMotion;
     }
@@ -7318,11 +7338,7 @@ public class NotificationStackScrollLayout
 
         @Override
         public void expansionStateChanged(boolean isExpanding) {
-            mExpandingNotification = isExpanding;
-            if (!mExpandedInThisMotion) {
-                mMaxScrollAfterExpand = getOwnScrollY();
-                mExpandedInThisMotion = true;
-            }
+            setIsExpandingNotification(isExpanding);
         }
 
         @Override
