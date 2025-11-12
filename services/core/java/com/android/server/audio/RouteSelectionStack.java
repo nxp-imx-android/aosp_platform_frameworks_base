@@ -37,8 +37,10 @@ import com.android.server.utils.EventLogger;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -96,15 +98,16 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
      *   TODO: evaluate call-sites excluding returning the winning device
      * @return CommunicationRouteClient the client driving the communication use case routing.
      */
-    public synchronized RouteClient topClient() {
+    public synchronized Optional<RouteClient> topClient() {
         for (var client : mClients) {
             // TODO: migrate to isActive
             if (!client.isDisabled() && client.getToken().equals(mModeOwnerToken)) {
-                return client;
+                return Optional.of(client);
             }
         }
-        return mModeOwnerToken == null &&
-                !mClients.isEmpty() && mClients.getLast().isActive() ? mClients.getLast() : null;
+        return Optional.ofNullable(
+                mModeOwnerToken == null && !mClients.isEmpty() && mClients.getLast().isActive() ?
+                    mClients.getLast() : null);
     }
 
     /**
@@ -127,10 +130,13 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
     public synchronized void applyDeviceRestrictions(
             Function<AudioDeviceAttributes, AudioDeviceAttributes> pred) {
         for (var client : mClients) {
-            var newDevice = pred.apply(client.getDevice());
-            if (newDevice != null && !newDevice.equals(client.getDevice())) {
+            if (!client.getDevice().isPresent()) {
+                continue;
+            }
+            var newDevice = pred.apply(client.getDevice().get());
+            if (newDevice != null && !newDevice.equals(client.getDevice().get())) {
                 // Routing fixup
-                client.setDevice(newDevice);
+                client.setDevice(Optional.of(newDevice));
             }
             client.setDisabled(newDevice == null);
         }
@@ -205,22 +211,22 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
         }
     }
 
-    static class RouteClient {
+    static final class RouteClient {
         private final IBinder mToken;
-        @NonNull private final AttributionSource mAttributionSource;
+        private final AttributionSource mAttributionSource;
         private final boolean mIsPrivileged;
-        @NonNull private AudioDeviceAttributes mDevice;
+        private Optional<AudioDeviceAttributes> mDevice;
         private boolean mStreamActive;
 
-        // Route selection should not be considered due to client state or device invalidation
+        // Route selection should not be considered due to device invalidation
         private boolean mDisabled;
 
         RouteClient(IBinder cb, @NonNull AttributionSource attributionSource,
-                @NonNull AudioDeviceAttributes device, boolean isPrivileged) {
+                AudioDeviceAttributes device, boolean isPrivileged) {
 
             mToken = cb;
             mAttributionSource = attributionSource;
-            mDevice = device;
+            mDevice = Optional.ofNullable(device);
             mIsPrivileged = isPrivileged;
             mStreamActive = true;
             mDisabled = false;
@@ -243,8 +249,7 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
             return mIsPrivileged;
         }
 
-        @NonNull
-        AudioDeviceAttributes getDevice() {
+        Optional<AudioDeviceAttributes> getDevice() {
             return mDevice;
         }
 
@@ -256,7 +261,7 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
             return mDisabled;
         }
 
-        private void setDevice(@NonNull AudioDeviceAttributes device) {
+        private void setDevice(Optional<AudioDeviceAttributes> device) {
             mDevice = device;
         }
 
@@ -278,12 +283,13 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
         }
 
         public String toShortString() {
-            String deviceName = AudioSystem.getDeviceName(getDevice().getType());
+            var abbrevDev = mDevice.map(x -> AudioSystem.getDeviceName(x.getType()))
+                                   .map(x -> clampedSubstr(x, 0, 3))
+                                   .orElse(null);
             return String.valueOf(getUid()) + "("
                     + abbrevPackage(getAttributionSource().getPackageName()) + ")"
-                    + ":" + clampedSubstr(deviceName, 0, 3) + "_" +
-                    anonymizeBluetoothAddress(getDevice()) + ":"
-                    + (isActive() ? "a" : "") + ":" + (isDisabled() ? "d" : "");
+                    + ":" + abbrevDev + "_" + anonymizeBluetoothAddress(mDevice.orElse(null))
+                    + ":" + (isActive() ? "a" : "") + ":" + (isDisabled() ? "d" : "");
         }
     }
 

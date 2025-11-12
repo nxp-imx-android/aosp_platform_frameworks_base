@@ -447,7 +447,7 @@ public class AudioDeviceBroker {
             RouteClient client =
                     mCommunicationStack.getClientForUid(deviceInfo.mAttributionSource.getUid());
             if (client == null || (deviceInfo.mDevice != null
-                    && !deviceInfo.mDevice.equals(client.getDevice()))) {
+                    && !deviceInfo.mDevice.equals(client.getDevice().orElse(null)))) {
                 return;
             }
         }
@@ -497,7 +497,7 @@ public class AudioDeviceBroker {
         boolean prevPrivileged = false;
         client = mCommunicationStack.getClientForUid(attributionSource.getUid());
         if (client != null) {
-            prevClientDevice = client.getDevice();
+            prevClientDevice = client.getDevice().orElse(null);
             prevPrivileged = client.isPrivileged();
         }
 
@@ -716,9 +716,10 @@ public class AudioDeviceBroker {
     private boolean isDeviceRequestedForCommunication(
             @AudioDeviceInfo.AudioDeviceType int deviceType) {
         synchronized (mDeviceStateLock) {
-            var client = mCommunicationStack.topClient();
-            AudioDeviceAttributes device = client != null ? client.getDevice() : null;
-            return device != null && device.getType() == deviceType;
+            return mCommunicationStack.topClient()
+                    .flatMap(x -> x.getDevice())
+                    .map(x -> x.getType() == deviceType)
+                    .orElse(false);
         }
     }
 
@@ -783,11 +784,7 @@ public class AudioDeviceBroker {
         if (!isBluetoothScoRequested()) {
             return null;
         }
-        RouteClient crc = mCommunicationStack.topClient();
-        if (crc == null) {
-            return null;
-        }
-        return crc.getAttributionSource();
+        return mCommunicationStack.topClient().map(x -> x.getAttributionSource()).orElse(null);
     }
 
     private static int safeUidFromAttributionSource(AttributionSource attributionSource) {
@@ -2436,14 +2433,15 @@ public class AudioDeviceBroker {
     /**
      * Determines which preferred device for phone strategy should be sent to audio policy manager
      * as a function of current SCO audio activation state and active communication route requests.
-     * SCO audio state has the highest priority as it can result from external activation by
-     * telephony service.
+     * On the legacy path, SCO audio state has the highest priority as it can result from external
+     * activation by telephony service.
+     * Under AMSCO, we simply evaluate the top of the communication route preference stack
      * @return selected forced usage for communication.
      */
     @GuardedBy("mDeviceStateLock")
     @Nullable private AudioDeviceAttributes preferredCommunicationDevice() {
-        var client = mCommunicationStack.topClient();
-        AudioDeviceAttributes topDevice = client != null ? client.getDevice() : null;
+        AudioDeviceAttributes topDevice =
+                mCommunicationStack.topClient().flatMap(x -> x.getDevice()).orElse(null);
         if (isScoManagedByAudio()) {
             if (topDevice != null && topDevice.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
                 sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
@@ -2600,10 +2598,10 @@ public class AudioDeviceBroker {
     private void onUpdateCommunicationRouteClient(
             @Nullable AttributionSource previousBtScoRequesterAS, String eventSource) {
 
-        RouteClient crc = mCommunicationStack.topClient();
+        RouteClient crc = mCommunicationStack.topClient().orElse(null);
         if (crc != null) {
             setCommunicationRouteForClient(crc.getToken(), crc.getAttributionSource(),
-                    crc.getDevice(), crc.isPrivileged(), eventSource);
+                    crc.getDevice().orElse(null), crc.isPrivileged(), eventSource);
         } else {
             boolean wasScoRequested = previousBtScoRequesterAS != null;
             if (!isBluetoothScoRequested() && wasScoRequested) {
