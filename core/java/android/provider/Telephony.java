@@ -5037,6 +5037,14 @@ public final class Telephony {
                 "phone_number_source_ims";
 
         /**
+         * TelephonyProvider column name for the phone number from source TS43
+         *
+         * @hide
+         */
+        public static final String COLUMN_PHONE_NUMBER_SOURCE_TS43 =
+                "phone_number_source_ts43";
+
+        /**
          * TelephonyProvider column name for last used TP - message Reference
          *
          * @hide
@@ -5261,6 +5269,7 @@ public final class Telephony {
                 COLUMN_NR_ADVANCED_CALLING_ENABLED,
                 COLUMN_PHONE_NUMBER_SOURCE_CARRIER,
                 COLUMN_PHONE_NUMBER_SOURCE_IMS,
+                COLUMN_PHONE_NUMBER_SOURCE_TS43,
                 COLUMN_PORT_INDEX,
                 COLUMN_USAGE_SETTING,
                 COLUMN_TP_MESSAGE_REF,

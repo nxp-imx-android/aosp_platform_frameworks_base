@@ -4925,6 +4925,15 @@ public class CarrierConfigManager {
         "carrier_service_number_array";
 
     /**
+     * Determines if the carrier supports retrieving the phone number via the TS.43 protocol.
+     *
+     * Reference: GSMA TS.43-v11 section 13
+     */
+    @FlaggedApi(Flags.FLAG_GET_PHONE_NUMBER_TS43_API)
+    public static final String KEY_SUPPORT_PHONE_NUMBER_SOURCE_TS43_BOOL =
+            "support_phone_number_source_ts43_bool";
+
+    /**
      * Configs used by ImsServiceEntitlement.
      */
     public static final class ImsServiceEntitlement {
@@ -12105,6 +12114,7 @@ public class CarrierConfigManager {
                 PhoneAccount.LOW_BATTERY_ALERT_DISABLED);
         sDefaults.putInt(KEY_LOW_BATTERY_ALERT_INTERVAL_INT,
                 PhoneAccount.LOW_BATTERY_ALERT_DISABLED);
+        sDefaults.putBoolean(KEY_SUPPORT_PHONE_NUMBER_SOURCE_TS43_BOOL, false);
     }
 
     /**

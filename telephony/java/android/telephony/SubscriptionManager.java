@@ -1441,6 +1441,16 @@ public class SubscriptionManager {
      */
     public static final int PHONE_NUMBER_SOURCE_IMS = 3;
 
+    /**
+     * A source of phone number: provided by the Entitlement Server using the GSMA TS.43
+     * standard.
+     *
+     * <p>This source is used to retrieve the phone number (MSISDN) from the Entitlement
+     * Configuration Server as defined in GSMA TS.43.
+     */
+    @FlaggedApi(Flags.FLAG_GET_PHONE_NUMBER_TS43_API)
+    public static final int PHONE_NUMBER_SOURCE_TS43 = 4;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = {"PHONE_NUMBER_SOURCE"},
@@ -1448,6 +1458,7 @@ public class SubscriptionManager {
                     PHONE_NUMBER_SOURCE_UICC,
                     PHONE_NUMBER_SOURCE_CARRIER,
                     PHONE_NUMBER_SOURCE_IMS,
+                    PHONE_NUMBER_SOURCE_TS43,
             })
     public @interface PhoneNumberSource {}
 
@@ -4451,8 +4462,9 @@ public class SubscriptionManager {
      * only one phone number. The multiple sources backup each other so hopefully at least one
      * is available. For example, for a carrier that doesn't typically set phone numbers
      * on {@link #PHONE_NUMBER_SOURCE_UICC UICC}, the source {@link #PHONE_NUMBER_SOURCE_IMS IMS}
-     * may provide one. Or, a carrier may decide to provide the phone number via source
-     * {@link #PHONE_NUMBER_SOURCE_CARRIER carrier} if neither source UICC nor IMS is available.
+     * or {@link #PHONE_NUMBER_SOURCE_TS43 TS43} may provide one. Or, a carrier may decide to
+     * provide the phone number via source {@link #PHONE_NUMBER_SOURCE_CARRIER carrier} if none of
+     * the other sources are available.
      *
      * <p>The availability and correctness of the phone number depends on the underlying source
      * and the network etc. Additional verification is needed to use this number for
@@ -4473,6 +4485,7 @@ public class SubscriptionManager {
      * @see #PHONE_NUMBER_SOURCE_UICC
      * @see #PHONE_NUMBER_SOURCE_CARRIER
      * @see #PHONE_NUMBER_SOURCE_IMS
+     * @see #PHONE_NUMBER_SOURCE_TS43
      */
     @RequiresPermission(anyOf = {
             android.Manifest.permission.READ_PHONE_NUMBERS,
@@ -4486,7 +4499,8 @@ public class SubscriptionManager {
         }
         if (source != PHONE_NUMBER_SOURCE_UICC
                 && source != PHONE_NUMBER_SOURCE_CARRIER
-                && source != PHONE_NUMBER_SOURCE_IMS) {
+                && source != PHONE_NUMBER_SOURCE_IMS
+                && (!Flags.getPhoneNumberTs43Api() || source != PHONE_NUMBER_SOURCE_TS43)) {
             throw new IllegalArgumentException("invalid source " + source);
         }
         try {
@@ -4512,7 +4526,8 @@ public class SubscriptionManager {
      *
      * <p>This API is built up on {@link #getPhoneNumber(int, int)}, but picks
      * from available sources in the following order: {@link #PHONE_NUMBER_SOURCE_CARRIER}
-     * > {@link #PHONE_NUMBER_SOURCE_UICC} > {@link #PHONE_NUMBER_SOURCE_IMS}.
+     * > {@link #PHONE_NUMBER_SOURCE_UICC} > {@link #PHONE_NUMBER_SOURCE_TS43}
+     * > {@link #PHONE_NUMBER_SOURCE_IMS}.
      *
      * <p>The API provides no guarantees of what format the number is in: the format can vary
      * depending on the underlying source and the network etc. Programmatic parsing should be done
@@ -4641,6 +4656,45 @@ public class SubscriptionManager {
     }
 
     /**
+     * Sets the phone number for the given {@code subId} for source
+     * {@link #PHONE_NUMBER_SOURCE_TS43 TS43}.
+     * Sets an empty string to remove the previously set phone number.
+     *
+     * <p>It's recommended that the phone number is formatted to well-known formats,
+     * for example, by {@link PhoneNumberUtils} {@code formatNumber*} methods.
+     *
+     * @param subscriptionId the subscription ID, or {@link #DEFAULT_SUBSCRIPTION_ID}
+     *                       for the default one.
+     * @param number the phone number, or an empty string to remove the previously set number.
+     * @throws IllegalStateException if the telephony process is not currently available.
+     * @throws NullPointerException if {@code number} is {@code null}.
+     * @throws SecurityException if the caller doesn't have permissions required.
+     * @throws UnsupportedOperationException If the device does not have
+     *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    @FlaggedApi(Flags.FLAG_GET_PHONE_NUMBER_TS43_API)
+    public void setTs43PhoneNumber(int subscriptionId, @NonNull String number) {
+        if (subscriptionId == DEFAULT_SUBSCRIPTION_ID) {
+            subscriptionId = getDefaultSubscriptionId();
+        }
+        if (number == null) {
+            throw new NullPointerException("invalid number null");
+        }
+        try {
+            ISub iSub = TelephonyManager.getSubscriptionService();
+            if (iSub != null) {
+                iSub.setPhoneNumber(subscriptionId, PHONE_NUMBER_SOURCE_TS43, number,
+                        mContext.getOpPackageName(), mContext.getAttributionTag());
+            } else {
+                throw new IllegalStateException("subscription service unavailable.");
+            }
+        } catch (RemoteException ex) {
+            throw ex.rethrowAsRuntimeException();
+        }
+    }
+
+    /**
      * Set the preferred usage setting.
      *
      * The cellular usage setting is a switch which controls the mode of operation for the cellular
@@ -4683,6 +4737,7 @@ public class SubscriptionManager {
             case SubscriptionManager.PHONE_NUMBER_SOURCE_UICC: return "UICC";
             case SubscriptionManager.PHONE_NUMBER_SOURCE_CARRIER: return "CARRIER";
             case SubscriptionManager.PHONE_NUMBER_SOURCE_IMS: return "IMS";
+            case SubscriptionManager.PHONE_NUMBER_SOURCE_TS43: return "TS43";
             default:
                 return "UNKNOWN(" + source + ")";
         }
