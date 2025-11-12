@@ -146,7 +146,8 @@ public final class DisplayManagerGlobal {
             INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED,
             INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED,
             INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED,
-            INTERNAL_EVENT_FLAG_DISPLAY_REMOVED
+            INTERNAL_EVENT_FLAG_DISPLAY_REMOVED,
+            INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface InternalEventFlag {}
@@ -161,6 +162,7 @@ public final class DisplayManagerGlobal {
     public static final long INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED = 1L << 7;
     public static final long INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED = 1L << 8;
     public static final long INTERNAL_EVENT_FLAG_DISPLAY_REMOVED = 1L << 9;
+    public static final long INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT = 1L << 10;
 
     @UnsupportedAppUsage
     private static DisplayManagerGlobal sInstance;
@@ -1743,6 +1745,7 @@ public final class DisplayManagerGlobal {
                 Slog.i(TAG, "Sending Display Events: " + eventsToString(eventMask));
             }
             if (Flags.displayListenerSnapshot()
+                    && (internalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT) != 0
                     && (mIsConnectedSnapshotExpected || mIsAddedSnapshotExpected)
                     && mAddedSnapshotReceived == SnapshotReceived.NEVER
                     && mConnectedSnapshotReceived == SnapshotReceived.NEVER) {
@@ -1762,6 +1765,13 @@ public final class DisplayManagerGlobal {
         }
 
         void sendDisplaySnapshot(@Nullable int[] connected, @Nullable int[] added) {
+            if ((internalEventFlagsMask & INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT) == 0) {
+                if (DEBUG) {
+                    Slog.d(TAG, "Snapshot is not requested by the client"
+                            + " package=" + ActivityThread.currentPackageName());
+                }
+                return;
+            }
             if ((connected == null || connected.length == 0) && mIsConnectedSnapshotExpected
                     && mConnectedSnapshotReceived != SnapshotReceived.LATEST) {
                 if (DEBUG) {
@@ -2252,6 +2262,12 @@ public final class DisplayManagerGlobal {
 
         if ((eventFlags & DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS) != 0) {
             baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED;
+        }
+
+        if (Flags.displayListenerSnapshot()) {
+            if ((eventFlags & DisplayManager.EVENT_TYPE_DISPLAY_SNAPSHOT) != 0) {
+                baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT;
+            }
         }
 
         return baseEventMask;

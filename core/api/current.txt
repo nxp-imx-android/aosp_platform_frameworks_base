@@ -21379,6 +21379,7 @@ package android.hardware.display {
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_CHANGED = 4L; // 0x4L
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_REFRESH_RATE = 8L; // 0x8L
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_REMOVED = 2L; // 0x2L
+    field @FlaggedApi("com.android.server.display.feature.flags.display_listener_snapshot") public static final long EVENT_TYPE_DISPLAY_SNAPSHOT = 64L; // 0x40L
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_STATE = 16L; // 0x10L
     field public static final int MATCH_CONTENT_FRAMERATE_ALWAYS = 2; // 0x2
     field public static final int MATCH_CONTENT_FRAMERATE_NEVER = 0; // 0x0

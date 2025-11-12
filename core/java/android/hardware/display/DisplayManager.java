@@ -642,7 +642,8 @@ public final class DisplayManager {
             EVENT_TYPE_DISPLAY_REMOVED,
             EVENT_TYPE_DISPLAY_REFRESH_RATE,
             EVENT_TYPE_DISPLAY_STATE,
-            EVENT_TYPE_DISPLAY_BRIGHTNESS
+            EVENT_TYPE_DISPLAY_BRIGHTNESS,
+            EVENT_TYPE_DISPLAY_SNAPSHOT
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface EventType {}
@@ -723,6 +724,15 @@ public final class DisplayManager {
      */
     @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     public static final long EVENT_TYPE_DISPLAY_BRIGHTNESS = 1L << 5;
+
+    /**
+     * Event type to register for an initial enabled displays snapshot. This snapshot is sent
+     * through the {@link DisplayListener#onDisplayAddedSnapshot} callback method.
+     *
+     * @see #registerDisplayListener(Executor, long, DisplayListener)
+     */
+    @FlaggedApi(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+    public static final long EVENT_TYPE_DISPLAY_SNAPSHOT = 1L << 6;
 
     /**
      * Event type to register for a display's hdr/sdr ratio changes. This notification is sent

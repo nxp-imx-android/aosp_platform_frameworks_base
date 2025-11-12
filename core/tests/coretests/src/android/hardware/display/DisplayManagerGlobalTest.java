@@ -18,6 +18,7 @@ package android.hardware.display;
 
 import static android.hardware.display.DisplayManagerGlobal.EVENT_DISPLAY_STATE_CHANGED;
 import static android.hardware.display.DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_REFRESH_RATE;
+import static android.hardware.display.DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT;
 import static android.hardware.display.DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_STATE;
 
 import static org.junit.Assert.assertEquals;
@@ -120,7 +121,6 @@ public class DisplayManagerGlobalTest {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayListenerIsCalled_WhenDisplayEventOccurs() throws RemoteException {
         testDisplayListenerIsCalled_WhenDisplayEventOccursInternal(/* withSnapshot= */ false);
     }
@@ -135,16 +135,16 @@ public class DisplayManagerGlobalTest {
     private void testDisplayListenerIsCalled_WhenDisplayEventOccursInternal(boolean withSnapshot)
             throws RemoteException {
         mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
-                ALL_DISPLAY_EVENTS, /* packageName= */ null,
+                ALL_DISPLAY_EVENTS
+                        | (withSnapshot ? INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT : 0),
+                /* packageName= */ null,
                 /* isEventFilterExplicit */ true);
         Mockito.verify(mDisplayManager)
                 .registerCallbackWithEventMask(mCallbackCaptor.capture(), anyLong());
         IDisplayManagerCallback callback = mCallbackCaptor.getValue();
 
-        if (withSnapshot) {
-            var defaultDisplaySnapshot = new int[] { Display.DEFAULT_DISPLAY };
-            callback.onDisplaySnapshot(defaultDisplaySnapshot, defaultDisplaySnapshot);
-        }
+        var defaultDisplaySnapshot = new int[] { Display.DEFAULT_DISPLAY };
+        callback.onDisplaySnapshot(defaultDisplaySnapshot, defaultDisplaySnapshot);
 
         int displayId = 1;
         callback.onDisplayEvent(displayId, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
@@ -206,7 +206,6 @@ public class DisplayManagerGlobalTest {
             Flags.FLAG_DISPLAY_LISTENER_PERFORMANCE_IMPROVEMENTS,
             Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT
     })
-    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
     public void testDisplayEventsAreHandledInCorrectOrder() throws RemoteException {
         testDisplayEventsAreHandledInCorrectOrderInternal(/* withSnapshot= */ false);
     }
@@ -234,7 +233,8 @@ public class DisplayManagerGlobalTest {
                         | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_COMMITTED_STATE_CHANGED
                         | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED
                         | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED
-                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_REMOVED;
+                        | DisplayManagerGlobal.INTERNAL_EVENT_FLAG_DISPLAY_REMOVED
+                        | (withSnapshot ? INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT : 0);
 
         mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
                 allInternalEvents, /* packageName= */ null,
@@ -265,6 +265,7 @@ public class DisplayManagerGlobalTest {
             var defaultDisplaySnapshot = new int[] { Display.DEFAULT_DISPLAY };
             callback.onDisplaySnapshot(defaultDisplaySnapshot, defaultDisplaySnapshot);
         }
+
         // Trigger the event.
         callback.onDisplayEvent(displayId, allEventsMask);
         waitForHandler();
@@ -567,6 +568,26 @@ public class DisplayManagerGlobalTest {
                         .mapFiltersToInternalEventFlag(
                                 DisplayManager.EVENT_TYPE_DISPLAY_REFRESH_RATE,
                                 DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+    public void testMapFiltersToInternalEventFlag_snapshotOn() {
+        // Test snapshot event filter.
+        assertEquals(INTERNAL_EVENT_FLAG_DISPLAY_SNAPSHOT,
+                mDisplayManagerGlobal
+                        .mapFiltersToInternalEventFlag(DisplayManager.EVENT_TYPE_DISPLAY_SNAPSHOT,
+                                0));
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_DISPLAY_LISTENER_SNAPSHOT)
+    public void testMapFiltersToInternalEventFlag_snapshotOff() {
+        // Test snapshot event filter.
+        assertEquals(0,
+                mDisplayManagerGlobal
+                        .mapFiltersToInternalEventFlag(DisplayManager.EVENT_TYPE_DISPLAY_SNAPSHOT,
+                                0));
     }
 
     @Test
