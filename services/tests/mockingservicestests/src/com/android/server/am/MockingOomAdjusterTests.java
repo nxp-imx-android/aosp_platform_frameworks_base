@@ -49,7 +49,6 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
-import static com.android.server.am.ActivityManagerService.FOLLOW_UP_OOMADJUSTER_UPDATE_MSG;
 import static com.android.server.am.MockingOomAdjusterTests.ProcessStateAssert.assertThatProcess;
 import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_OTHER;
 import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_TRANSMITTED;
@@ -57,6 +56,7 @@ import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_TRANSMITTED_LEGA
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY;
+import static com.android.server.am.ProcessStateController.FOLLOW_UP_UPDATE_MSG;
 import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_IMPORTANCE_LEVELS;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
@@ -211,6 +211,7 @@ public class MockingOomAdjusterTests {
     private TestCachedAppOptimizer mTestCachedAppOptimizer;
     private OomAdjusterInjector mInjector = new OomAdjusterInjector();
     private ActivityManagerService.OomAdjusterCallback mCallback;
+    private final Handler mUpdateHandler = mock(Handler.class);
 
     private HandlerThread mActivityStateHandlerThread;
     private Handler mActivityStateHandler;
@@ -318,6 +319,7 @@ public class MockingOomAdjusterTests {
         mService.mProcessStateController = mProcessStateController;
         mService.mOomAdjuster = mService.mProcessStateController.getOomAdjuster();
         mService.mOomAdjuster.mAdjSeq = 10000;
+        setFieldValue(OomAdjuster.class, mService.mOomAdjuster, "mUpdateHandler", mUpdateHandler);
         mService.mWakefulness = new AtomicInteger(PowerManagerInternal.WAKEFULNESS_AWAKE);
 
         mService.mActivityTaskManager = new ActivityTaskManagerService(mContext);
@@ -1229,8 +1231,8 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).hasCapability(PROCESS_CAPABILITY_BFSL);
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(mService.mHandler).sendEmptyMessageAtTime(
-                eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
+        verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
+                followUpTimeCaptor.capture());
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         mProcessStateController.runFollowUpUpdate();
 
@@ -1238,7 +1240,7 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_DEFAULT, "fg-service");
         assertThatProcess(app).hasImplicitCpuTimeCapability();
         // Follow up should not have been called again.
-        verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
+        verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
                 followUpTimeCaptor.capture());
     }
 
@@ -1265,8 +1267,8 @@ public class MockingOomAdjusterTests {
             assertEquals(PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ + 2, app.getSetAdj());
 
             final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
-            verify(mService.mHandler).sendEmptyMessageAtTime(
-                    eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
+            verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
+                    followUpTimeCaptor.capture());
             mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
             mProcessStateController.runFollowUpUpdate();
 
@@ -1274,9 +1276,8 @@ public class MockingOomAdjusterTests {
             assertEquals(expectedAdj, app.getSetAdj());
             assertThatProcess(app).notHasImplicitCpuTimeCapability();
             // Follow up should not have been called again.
-            verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
+            verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
                     followUpTimeCaptor.capture());
-
         }
 
         // Out of grace period but valid binding allows the adjustment.
@@ -1414,7 +1415,7 @@ public class MockingOomAdjusterTests {
         }
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
+        verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
                 followUpTimeCaptor.capture());
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         mProcessStateController.runFollowUpUpdate();
@@ -1424,7 +1425,7 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_BACKGROUND, "previous-expired");
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
         // Follow up should not have been called again.
-        verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
+        verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
                 followUpTimeCaptor.capture());
     }
 
@@ -1490,7 +1491,7 @@ public class MockingOomAdjusterTests {
 
         for (int i = 0; i < numberOfApps; i++) {
             final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
-            verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
+            verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
                     followUpTimeCaptor.capture());
             mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         }
@@ -2393,7 +2394,7 @@ public class MockingOomAdjusterTests {
         }
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
+        verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
                 followUpTimeCaptor.capture());
 
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
@@ -2405,7 +2406,7 @@ public class MockingOomAdjusterTests {
                 "cch-empty");
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
         // Follow up should not have been called again.
-        verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
+        verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
                 followUpTimeCaptor.capture());
     }
 
@@ -4051,8 +4052,8 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).hasImplicitCpuTimeCapability();
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(mService.mHandler).sendEmptyMessageAtTime(
-                eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
+        verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
+                followUpTimeCaptor.capture());
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         mProcessStateController.runFollowUpUpdate();
 
@@ -4061,7 +4062,7 @@ public class MockingOomAdjusterTests {
                 "cch-started-services");
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
         // Follow up should not have been called again.
-        verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
+        verify(mUpdateHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
                 followUpTimeCaptor.capture());
     }
 
@@ -4199,8 +4200,8 @@ public class MockingOomAdjusterTests {
         }
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(mService.mHandler, atLeastOnce()).sendEmptyMessageAtTime(
-                eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
+        verify(mUpdateHandler, atLeastOnce()).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
+                followUpTimeCaptor.capture());
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         mProcessStateController.runFollowUpUpdate();
 
@@ -4209,8 +4210,8 @@ public class MockingOomAdjusterTests {
                 "cch-empty");
         assertThatProcess(app1).notHasImplicitCpuTimeCapability();
 
-        verify(mService.mHandler, atLeastOnce()).sendEmptyMessageAtTime(
-                eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG), followUpTimeCaptor.capture());
+        verify(mUpdateHandler, atLeastOnce()).sendEmptyMessageAtTime(eq(FOLLOW_UP_UPDATE_MSG),
+                followUpTimeCaptor.capture());
         mInjector.jumpUptimeAheadTo(followUpTimeCaptor.getValue());
         mProcessStateController.runFollowUpUpdate();
         assertProcStates(app2, PROCESS_STATE_CACHED_EMPTY, expectedAdj, SCHED_GROUP_BACKGROUND,
