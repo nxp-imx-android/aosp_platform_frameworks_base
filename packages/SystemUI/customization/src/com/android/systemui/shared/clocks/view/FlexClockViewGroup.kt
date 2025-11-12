@@ -26,7 +26,6 @@ import android.view.ViewGroup
 import androidx.core.graphics.withSave
 import androidx.core.view.children
 import com.android.app.animation.Interpolators
-import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.utils.CanvasUtils.translate
 import com.android.systemui.customization.clocks.utils.ViewUtils.measuredSize
@@ -38,12 +37,13 @@ import com.android.systemui.plugins.keyguard.VRectF
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
+import com.android.systemui.shared.clocks.FlexClockContext
 import java.util.Locale
 import kotlin.collections.map
 import kotlin.collections.max
 
 @SuppressLint("ViewConstructor")
-class FlexClockViewGroup(clockCtx: ClockContext) :
+class FlexClockViewGroup(clockCtx: FlexClockContext) :
     DigitalClockViewGroup<FlexClockTextView>(clockCtx) {
     override val children: Sequence<FlexClockTextView>
         get() = (this as ViewGroup).children.filterIsInstance<FlexClockTextView>()

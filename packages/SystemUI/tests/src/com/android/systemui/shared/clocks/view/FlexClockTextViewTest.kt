@@ -25,6 +25,7 @@ import com.android.systemui.customization.clocks.FixedTimeKeeper
 import com.android.systemui.customization.clocks.FontTextStyleImpl
 import com.android.systemui.customization.clocks.TypefaceCache
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockSettings
+import com.android.systemui.shared.clocks.FlexClockContext
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -44,10 +45,7 @@ class FlexClockTextViewTest : SysuiTestCase() {
     fun setup() {
         underTest =
             FlexClockTextView(
-                ClockContextImpl(
-                    context,
-                    context.resources,
-                    ClockSettings(),
+                FlexClockContext(
                     TypefaceCache(messageBuffer, 20) {
                         // TODO(b/364680873): Move constant to config_clockFontFamily when shipping
                         return@TypefaceCache Typeface.create(
@@ -55,10 +53,15 @@ class FlexClockTextViewTest : SysuiTestCase() {
                             Typeface.NORMAL,
                         )
                     },
-                    messageBuffer,
-                    vibrator = null,
-                    timeKeeper = FixedTimeKeeper(),
-                    isAnimationEnabled = false,
+                    ClockContextImpl(
+                        context,
+                        context.resources,
+                        ClockSettings(),
+                        messageBuffer,
+                        vibrator = null,
+                        timeKeeper = FixedTimeKeeper(),
+                        isAnimationEnabled = false,
+                    ),
                 ),
                 isLargeClock = false,
             )

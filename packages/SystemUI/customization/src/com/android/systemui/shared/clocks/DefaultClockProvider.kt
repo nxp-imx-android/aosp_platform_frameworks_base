@@ -71,19 +71,21 @@ constructor(
         val fontAxes = getDefaultAxes(settings).merge(settings.axes)
         val clockSettings = settings.copy(axes = ClockAxisStyle(fontAxes))
         val typefaceCache =
-            TypefaceCache(buffers.infraMessageBuffer, NUM_CLOCK_FONT_ANIMATION_STEPS) {
+            TypefaceCache<Unit>(buffers.infraMessageBuffer, NUM_CLOCK_FONT_ANIMATION_STEPS) {
                 FLEX_TYPEFACE
             }
         return FlexClockController(
-            ClockContextImpl(
-                ctx,
-                resources,
-                clockSettings,
+            FlexClockContext(
                 typefaceCache,
-                buffers.infraMessageBuffer,
-                vibrator,
-                timeKeeperFactory(),
-                isAnimationEnabled = true,
+                ClockContextImpl(
+                    ctx,
+                    resources,
+                    clockSettings,
+                    buffers.infraMessageBuffer,
+                    vibrator,
+                    timeKeeperFactory(),
+                    isAnimationEnabled = true,
+                ),
             ),
             buffers,
         )
