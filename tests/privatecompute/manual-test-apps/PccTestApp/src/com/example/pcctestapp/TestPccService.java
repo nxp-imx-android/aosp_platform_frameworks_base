@@ -16,25 +16,15 @@
 
 package com.example.pcctestapp;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
+import android.app.privatecompute.PccService;
 import android.util.Log;
 
-public class TestPccService extends Service {
+public class TestPccService extends PccService {
     private static final String TAG = TestPccService.class.getSimpleName();
-
-    private final IPccService.Stub mBinder = new IPccService.Stub() {
-    };
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "PCC service created.");
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
     }
 }
