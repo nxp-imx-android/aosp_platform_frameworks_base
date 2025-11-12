@@ -56,6 +56,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.accessibility.AccessibilityServiceAdvancedProtectionProvider;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.security.advancedprotection.AdvancedProtectionConfigLoader.Injector;
 import com.android.server.security.advancedprotection.features.AdvancedProtectionHook;
@@ -144,6 +145,14 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 }
             } catch (Exception e) {
                 Slog.e(TAG, "Failed to add hook for UsbDataAdvancedProtectionHook", e);
+            }
+        }
+
+        if (android.security.Flags.extendAapmToA11yServices()) {
+            try {
+                mProviders.add(new AccessibilityServiceAdvancedProtectionProvider());
+            } catch (Exception e) {
+                Slog.e(TAG, "Failed to initialize extendAapmToA11yServices", e);
             }
         }
     }

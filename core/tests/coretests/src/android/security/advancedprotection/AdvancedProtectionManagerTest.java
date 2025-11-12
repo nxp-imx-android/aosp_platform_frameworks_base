@@ -22,8 +22,8 @@ import static android.security.advancedprotection.AdvancedProtectionManager.ACTI
 import static android.security.advancedprotection.AdvancedProtectionManager.EXTRA_SUPPORT_DIALOG_FEATURE;
 import static android.security.advancedprotection.AdvancedProtectionManager.EXTRA_SUPPORT_DIALOG_TYPE;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G;
-import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_WEP;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE;
@@ -187,6 +187,9 @@ public class AdvancedProtectionManagerTest {
                 AdvancedProtectionManager.featureIdToString(FEATURE_ID_DISALLOW_WEP));
         assertEquals("ENABLE_MTE",
                 AdvancedProtectionManager.featureIdToString(FEATURE_ID_ENABLE_MTE));
+        assertEquals("DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES",
+                AdvancedProtectionManager.featureIdToString(
+                        FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES));
     }
 
     @Test
@@ -197,12 +200,29 @@ public class AdvancedProtectionManagerTest {
                         FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN));
     }
 
+
     @Test
     @DisableFlags(Flags.FLAG_AAPM_FEATURE_DISABLE_INSECURE_WIFI_AUTOJOIN)
     public void featureIdToString_insecureWifiAutojoinFlagDisabled_throwsIllegalArgument() {
         assertThrows(IllegalArgumentException.class,
                 () -> AdvancedProtectionManager.featureIdToString(
                         FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void featureIdToString_extendAAPMToA11yServicesFlagEnabled_returnsCorrectString() {
+        assertEquals("DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES",
+                AdvancedProtectionManager.featureIdToString(
+                        FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void featureIdToString_extendAAPMToA11yServicesFlagDisabled_throwsIllegalArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> AdvancedProtectionManager.featureIdToString(
+                        FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES));
     }
 
     @Test
@@ -223,6 +243,9 @@ public class AdvancedProtectionManagerTest {
                 AdvancedProtectionManager.featureStringToId("DISALLOW_WEP"));
         assertEquals(FEATURE_ID_ENABLE_MTE,
                 AdvancedProtectionManager.featureStringToId("ENABLE_MTE"));
+        assertEquals(FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES,
+                AdvancedProtectionManager.featureStringToId(
+                        "DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES"));
     }
 
     @Test
@@ -270,13 +293,13 @@ public class AdvancedProtectionManagerTest {
     public void testCreateSupportIntent_restrictA11yServicesFlagDisabled_throwsIllegalArgument() {
         assertThrows(IllegalArgumentException.class,
                 () -> AdvancedProtectionManager.createSupportIntent(
-                        FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES, SUPPORT_DIALOG_TYPE_UNKNOWN));
+                        FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES, SUPPORT_DIALOG_TYPE_INVALID));
     }
 
     @Test
     @EnableFlags(Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
     public void featureIdToString_restrictA11yServicesFlagEnabled_returnsCorrectString() {
-        assertEquals("RESTRICT_NON_TOOL_A11Y_SERVICES",
+        assertEquals("DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICES",
                 AdvancedProtectionManager.featureIdToString(
                         FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES));
     }
