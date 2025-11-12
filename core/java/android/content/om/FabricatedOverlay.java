@@ -647,7 +647,6 @@ public class FabricatedOverlay {
      * @param configuration The string representation of the config this overlay is enabled for
      */
     @NonNull
-    @FlaggedApi(android.content.res.Flags.FLAG_ASSET_FILE_DESCRIPTOR_FRRO)
     public void setResourceValue(
             @NonNull String resourceName,
             @NonNull AssetFileDescriptor value,
