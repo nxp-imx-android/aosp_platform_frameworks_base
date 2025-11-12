@@ -40,6 +40,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_90_10
 
 /**
  * Determines when to request immersive mode override for status bar based on split state.
+ *
  * Currently we only want immersive mode when the following conditions are met
  *   * device is in left/right split
  *   * device is in split screen in either 10:90 or 90:10

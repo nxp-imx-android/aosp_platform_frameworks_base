@@ -44,7 +44,8 @@ import java.util.Optional
 
 /**
  * Responsible for creating [StageTaskListener]s and maintaining their ordering on screen.
- * Must be notified whenever stages positions change via swapping or starting/ending tasks
+ *
+ * This class must be notified whenever stages positions change via swapping or starting/ending tasks.
  */
 class StageOrderOperator (
         context: Context,

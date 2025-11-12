@@ -21,6 +21,7 @@ package com.android.wm.shell.splitscreen
  * Its purpose is to answer the question, "Is this proposed layout state valid?" This includes
  * checking for constraints like the maximum number of apps, minimum window sizes, or
  * device-specific restrictions.
+ *
  * NOTE: This is a placeholder class for now, ignore.
  */
 class LayoutPolicy {

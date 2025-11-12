@@ -22,6 +22,7 @@ import android.graphics.Rect
 
 /**
  * Creates animations to transition between two LayoutNode tree states.
+ *
  * It "diffs" the before and after trees to determine which animatable objects are entering,
  * exiting, or changing bounds. This class is generic and relies on an [Animatable]
  * adapter to handle the specifics of animating different types of objects (e.g., Views, Surfaces).
