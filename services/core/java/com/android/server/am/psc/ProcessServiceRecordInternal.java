@@ -138,6 +138,20 @@ public class ProcessServiceRecordInternal {
         setHasClientActivities(false);
     }
 
+    /** Recalculates and updates the {@link #mHasAboveClient} flag. */
+    public void updateHasAboveClient() {
+        setHasAboveClient(false);
+        for (int i = numberOfConnections() - 1; i >= 0; i--) {
+            final ConnectionRecordInternal cr = getConnectionInternalAt(i);
+            final boolean isSameProcess = cr.getService().getHostProcessInternal() != null
+                    && cr.getService().getHostProcessInternal().getServices() == this;
+            if (!isSameProcess && cr.hasFlag(Context.BIND_ABOVE_CLIENT)) {
+                setHasAboveClient(true);
+                break;
+            }
+        }
+    }
+
     /**
      * Sets whether this process has any client services with activities.
      * This method also notifies the registered observer of the change.

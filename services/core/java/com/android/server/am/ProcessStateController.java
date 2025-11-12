@@ -972,8 +972,8 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     @RequiresEnclosingBatchSession
-    public void updateHasAboveClientLocked(@NonNull ProcessServiceRecord psr) {
-        psr.updateHasAboveClientLocked();
+    public void updateHasAboveClientLocked(@NonNull ProcessServiceRecordInternal psr) {
+        psr.updateHasAboveClient();
     }
 
     /**

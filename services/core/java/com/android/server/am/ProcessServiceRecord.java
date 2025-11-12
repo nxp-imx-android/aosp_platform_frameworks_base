@@ -20,7 +20,6 @@ import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BOUND_SERVIC
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
-import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -100,19 +99,6 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
             }
         }
         return count;
-    }
-
-    void updateHasAboveClientLocked() {
-        setHasAboveClient(false);
-        for (int i = numberOfConnections() - 1; i >= 0; i--) {
-            final ConnectionRecord cr = getConnectionAt(i);
-            final boolean isSameProcess = cr.binding.service.getHostProcess() != null
-                    && cr.binding.service.getHostProcess().mServices == this;
-            if (!isSameProcess && cr.hasFlag(Context.BIND_ABOVE_CLIENT)) {
-                setHasAboveClient(true);
-                break;
-            }
-        }
     }
 
     /**
