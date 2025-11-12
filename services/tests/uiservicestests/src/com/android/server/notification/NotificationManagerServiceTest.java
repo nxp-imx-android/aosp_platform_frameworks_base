@@ -72,6 +72,7 @@ import static android.app.NotificationRule.Action.PRIMARY_ACTION_LOW;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_MUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.app.StatusBarManager.ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED;
 import static android.app.StatusBarManager.EXTRA_KM_PRIVATE_NOTIFS_ALLOWED;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
@@ -1592,6 +1593,95 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     private void verifyToastShownForTestPackage(String text, int displayId) {
         verify(mStatusBar).showToast(eq(mUid), eq(PKG_P), any(), eq(text), any(),
                 eq(TOAST_DURATION), any(), eq(displayId));
+    }
+
+    public void testNoUriGrantsForBadMessagesList() throws RemoteException {
+        Uri targetUri = Uri.parse("content://com.android.contacts/display_photo/1");
+
+        // create message person
+        Person person = new Person.Builder()
+                .setName("Name")
+                .setIcon(Icon.createWithContentUri(targetUri))
+                .setKey("user_123")
+                .setBot(false)
+                .build();
+
+        // create MessagingStyle
+        Notification.MessagingStyle messagingStyle = new Notification.MessagingStyle(person)
+                .setConversationTitle("Bug discussion")
+                .setGroupConversation(true)
+                .addMessage("Hi，look my photo", System.currentTimeMillis() - 60000, person)
+                .addMessage("Oho, you used my contacts photo",
+                        System.currentTimeMillis() - 30000, "Friend");
+
+        // create Notification
+        Notification notification = new Notification.Builder(mContext, TEST_CHANNEL_ID)
+                .setSmallIcon(R.drawable.sym_def_app_icon)
+                .setContentTitle("")
+                .setContentText("")
+                .setAutoCancel(true)
+                .setStyle(messagingStyle)
+                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setFlag(Notification.FLAG_GROUP_SUMMARY, true)
+                .build();
+        notification.contentIntent = createPendingIntent("open");
+
+        notification.extras.remove(EXTRA_MESSAGING_PERSON);
+
+        // add BadClipDescription to avoid visitUri check uris in EXTRA_MESSAGES value
+        ArrayList<Parcelable> parcelableArray =
+                new ArrayList<>(List.of(notification.extras.getParcelableArray(EXTRA_MESSAGES)));
+        parcelableArray.add(new MyParceledListSlice());
+        notification.extras.putParcelableArray(
+                EXTRA_MESSAGES, parcelableArray.toArray(new Parcelable[0]));
+        try {
+            mBinderService.enqueueNotificationWithTag(mPkg, mPkg,
+                    "testNoUriGrantsForBadMessagesList",
+                    1, notification, mContext.getUserId());
+            waitForIdle();
+            fail("should have failed to parse messages");
+        } catch (java.lang.ArrayStoreException e) {
+            verify(mUgmInternal, never()).checkGrantUriPermission(
+                    anyInt(), any(), eq(ContentProvider.getUriWithoutUserId(targetUri)),
+                    anyInt(), anyInt());
+        }
+    }
+
+    private class MyParceledListSlice extends Intent {
+        @Override
+        public void writeToParcel(Parcel dest, int i) {
+            Parcel test = Parcel.obtain();
+            test.writeString(this.getClass().getName());
+            int strLength = test.dataSize();
+            test.recycle();
+            dest.setDataPosition(dest.dataPosition() - strLength);
+            dest.writeString("android.content.pm.ParceledListSlice");
+
+            dest.writeInt(1);
+            dest.writeString(UriPermission.class.getName());
+            dest.writeInt(0); // use binder
+            dest.writeStrongBinder(new Binder() {
+                private int callingPid = -1;
+                @Override
+                public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
+                        throws RemoteException {
+                    if (code == 1) {
+                        reply.writeNoException();
+                        reply.writeInt(1);
+                        if (getCallingUid() == 1000 && callingPid == -1) {
+                            reply.writeParcelable(new Rect(), 0);
+                            callingPid = getCallingPid();
+                        } else {
+                            reply.writeInt(-1);
+                            reply.writeInt(-1);
+                            reply.writeLong(0);
+                        }
+                        return true;
+                    }
+                    return super.onTransact(code, data, reply, flags);
+                }
+            });
+        }
     }
 
     @Test
