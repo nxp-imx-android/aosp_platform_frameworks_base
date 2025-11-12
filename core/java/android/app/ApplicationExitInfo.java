@@ -17,10 +17,12 @@
 package android.app;
 
 import android.annotation.CurrentTimeMillisLong;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager.RunningAppProcessInfo.Importance;
+import android.app.AnrTypes.AnrType;
 import android.icu.text.SimpleDateFormat;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
@@ -759,6 +761,12 @@ public final class ApplicationExitInfo implements Parcelable {
      */
     private boolean mHasShownUi;
 
+    /**
+     * @see #getAnrInfo
+     */
+    @Nullable
+    private AnrInfo mAnrInfo;
+
     /** @hide */
     @IntDef(prefix = { "REASON_" }, value = {
         REASON_UNKNOWN,
@@ -1090,6 +1098,13 @@ public final class ApplicationExitInfo implements Parcelable {
         return mPackageList;
     }
 
+    /** Populated only when the reason is {@link #REASON_ANR}. Otherwise Null. */
+    @FlaggedApi(Flags.FLAG_INCLUDE_ANR_INFO)
+    @Nullable
+    public AnrInfo getAnrInfo() {
+        return mAnrInfo;
+    }
+
     /**
      * @see #getPid
      *
@@ -1325,6 +1340,14 @@ public final class ApplicationExitInfo implements Parcelable {
         mHasShownUi = hasShownUi;
     }
 
+    /**
+     * @see #getAnrInfo
+     * @hide
+     */
+    public void setAnrInfo(@Nullable AnrInfo anrInfo) {
+        mAnrInfo = anrInfo;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -1360,6 +1383,8 @@ public final class ApplicationExitInfo implements Parcelable {
         } else {
             dest.writeInt(0);
         }
+
+        dest.writeTypedObject(mAnrInfo, flags);
     }
 
     /** @hide */
@@ -1392,6 +1417,7 @@ public final class ApplicationExitInfo implements Parcelable {
         mLoggedInStatsd = other.mLoggedInStatsd;
         mHasForegroundServices = other.mHasForegroundServices;
         mHasShownUi = other.mHasShownUi;
+        mAnrInfo = other.mAnrInfo;
     }
 
     private ApplicationExitInfo(@NonNull Parcel in) {
@@ -1418,6 +1444,7 @@ public final class ApplicationExitInfo implements Parcelable {
             mNativeTombstoneRetriever = IParcelFileDescriptorRetriever.Stub.asInterface(
                     in.readStrongBinder());
         }
+        mAnrInfo = in.readTypedObject(AnrInfo.CREATOR);
     }
 
     @Nullable
@@ -1476,6 +1503,7 @@ public final class ApplicationExitInfo implements Parcelable {
         }
         sb.append(" trace=").append(mTraceFile)
                 .append('\n');
+        sb.append(" anrInfo=").append(mAnrInfo);
         pw.print(sb);
     }
 
@@ -1506,6 +1534,7 @@ public final class ApplicationExitInfo implements Parcelable {
             sb.append(mState.length).append(" bytes");
         }
         sb.append(" trace=").append(mTraceFile);
+        sb.append(" anrInfo=").append(mAnrInfo);
 
         return sb.toString();
     }
@@ -1687,6 +1716,11 @@ public final class ApplicationExitInfo implements Parcelable {
         proto.write(ApplicationExitInfoProto.STATE, mState);
         proto.write(ApplicationExitInfoProto.TRACE_FILE,
                 mTraceFile == null ? null : mTraceFile.getAbsolutePath());
+
+        if (mAnrInfo != null) {
+            mAnrInfo.writeToProto(proto, ApplicationExitInfoProto.ANR_INFO, mAnrInfo);
+        }
+
         proto.end(token);
     }
 
@@ -1754,6 +1788,9 @@ public final class ApplicationExitInfo implements Parcelable {
                         mTraceFile = new File(path);
                     }
                     break;
+                case (int) ApplicationExitInfoProto.ANR_INFO:
+                    mAnrInfo = AnrInfo.readFromProto(proto, ApplicationExitInfoProto.ANR_INFO);
+                    break;
             }
         }
         proto.end(token);
@@ -1771,7 +1808,8 @@ public final class ApplicationExitInfo implements Parcelable {
                 && mStatus == o.mStatus && mTimestamp == o.mTimestamp
                 && mPss == o.mPss && mRss == o.mRss
                 && TextUtils.equals(mProcessName, o.mProcessName)
-                && TextUtils.equals(mDescription, o.mDescription);
+                && TextUtils.equals(mDescription, o.mDescription)
+                && Objects.equals(mAnrInfo, o.mAnrInfo);
     }
 
     @Override
@@ -1790,6 +1828,165 @@ public final class ApplicationExitInfo implements Parcelable {
         result = 31 * result + Long.hashCode(mTimestamp);
         result = 31 * result + Objects.hashCode(mProcessName);
         result = 31 * result + Objects.hashCode(mDescription);
+        result = 31 * result + Objects.hashCode(mAnrInfo);
         return result;
+    }
+
+    @FlaggedApi(Flags.FLAG_INCLUDE_ANR_INFO)
+    public static final class AnrInfo implements Parcelable {
+        private final int mAnrId;
+        @AnrType
+        private final int mAnrType;
+        private final long mTimeoutMillis;
+        private final boolean mIsUserPerceptible;
+
+        /** Implement the parcelable interface. */
+        @NonNull
+        public static final Creator<AnrInfo> CREATOR =
+                new Creator<>() {
+                    @Override
+                    public AnrInfo createFromParcel(Parcel in) {
+                        return new AnrInfo(in);
+                    }
+
+                    @Override
+                    public AnrInfo[] newArray(int size) {
+                        return new AnrInfo[size];
+                    }
+                };
+
+        /**
+         * @hide
+         */
+        public AnrInfo(int anrId, @AnrType int anrType, long timeoutMillis,
+                boolean isUserPerceptible) {
+            this.mAnrId = anrId;
+            this.mAnrType = anrType;
+            this.mTimeoutMillis = timeoutMillis;
+            this.mIsUserPerceptible = isUserPerceptible;
+        }
+
+        /**
+         * The id for the ANR event.
+         *
+         * <p>For each {@code mAnrType}, {@code mAnrId} is unique.
+         */
+        public int getAnrId() {
+            return mAnrId;
+        }
+
+        /** The type of the ANR event. */
+        @AnrType
+        public int getAnrType() {
+            return mAnrType;
+        }
+
+        /** The total duration in milliseconds the system waited for this ANR to occur. */
+        public long getTimeoutMillis() {
+            return mTimeoutMillis;
+        }
+
+        /** Whether or not ANR is user perceptible i.e. ANR dialog is shown to the user. */
+        public boolean isUserPerceptible() {
+            return mIsUserPerceptible;
+        }
+
+        private AnrInfo(Parcel in) {
+            this(in.readInt(), in.readInt(), in.readLong(), in.readBoolean());
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(mAnrId);
+            dest.writeInt(mAnrType);
+            dest.writeLong(mTimeoutMillis);
+            dest.writeBoolean(mIsUserPerceptible);
+        }
+
+        @Override
+        public String toString() {
+            return TextUtils.formatSimple(
+                    "AnrInfo(anrId=%d, anrType=%d, timeoutMillis=%d, isUserPerceptible=%b)",
+                    mAnrId, mAnrType, mTimeoutMillis, mIsUserPerceptible);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof AnrInfo o)) {
+                return false;
+            }
+
+            return mAnrId == o.mAnrId && mAnrType == o.mAnrType
+                    && mIsUserPerceptible == o.mIsUserPerceptible
+                    && mTimeoutMillis == o.mTimeoutMillis;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mAnrId, mAnrType, mTimeoutMillis, mIsUserPerceptible);
+        }
+
+        private void writeToProto(
+                @NonNull ProtoOutputStream proto, long fieldId, @NonNull AnrInfo anrInfo) {
+
+            final long token = proto.start(fieldId);
+
+            proto.write(ApplicationExitInfoProto.AnrInfo.ANR_ID, anrInfo.mAnrId);
+            proto.write(ApplicationExitInfoProto.AnrInfo.ANR_TYPE, anrInfo.mAnrType);
+            proto.write(ApplicationExitInfoProto.AnrInfo.TIMEOUT_MILLIS, anrInfo.mTimeoutMillis);
+            proto.write(
+                    ApplicationExitInfoProto.AnrInfo.IS_USER_PERCEPTIBLE,
+                    anrInfo.mIsUserPerceptible);
+
+            proto.end(token);
+        }
+
+        @Nullable
+        private static AnrInfo readFromProto(@NonNull ProtoInputStream proto, long fieldId)
+                throws IOException, WireTypeMismatchException {
+
+            final long anrToken = proto.start(fieldId);
+
+            int anrId = 0;
+            int anrType = 0;
+            long timeoutMillis = 0;
+            boolean isUserPerceptible = false;
+
+            boolean dataFound = false;
+
+            while (proto.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
+                dataFound = true;
+
+                switch (proto.getFieldNumber()) {
+                    case (int) ApplicationExitInfoProto.AnrInfo.ANR_ID:
+                        anrId = proto.readInt(ApplicationExitInfoProto.AnrInfo.ANR_ID);
+                        break;
+                    case (int) ApplicationExitInfoProto.AnrInfo.ANR_TYPE:
+                        anrType = proto.readInt(ApplicationExitInfoProto.AnrInfo.ANR_TYPE);
+                        break;
+                    case (int) ApplicationExitInfoProto.AnrInfo.TIMEOUT_MILLIS:
+                        timeoutMillis =
+                                proto.readLong(ApplicationExitInfoProto.AnrInfo.TIMEOUT_MILLIS);
+                        break;
+                    case (int) ApplicationExitInfoProto.AnrInfo.IS_USER_PERCEPTIBLE:
+                        isUserPerceptible =
+                                proto.readBoolean(
+                                        ApplicationExitInfoProto.AnrInfo.IS_USER_PERCEPTIBLE);
+                        break;
+                }
+            }
+            proto.end(anrToken);
+
+            if (!dataFound) {
+                return null;
+            }
+
+            return new AnrInfo(anrId, anrType, timeoutMillis, isUserPerceptible);
+        }
     }
 }
