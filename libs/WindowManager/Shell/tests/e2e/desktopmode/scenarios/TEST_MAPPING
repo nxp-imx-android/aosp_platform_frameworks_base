@@ -586,6 +586,12 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-overview-CloseAppsViaOverviewThumbnailTest",
+      "keywords": [
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-overview-SwitchBetweenDesktopAndSplitScreenTest",
       "keywords": [
         "device",
