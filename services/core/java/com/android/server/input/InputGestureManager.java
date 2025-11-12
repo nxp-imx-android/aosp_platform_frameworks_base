@@ -24,7 +24,6 @@ import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGest
 import static com.android.hardware.input.Flags.enableSelectToSpeakKeyGestures;
 import static com.android.hardware.input.Flags.enableTalkbackKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
-import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
 import static com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut;
 import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 
@@ -275,36 +274,34 @@ final class InputGestureManager {
                             /* allowCaptureByFocusedWindow = */false
                     ));
         }
-        if (keyboardA11yShortcutControl()) {
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_3,
-                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS,
-                            /* allowCaptureByFocusedWindow = */true
-                    ));
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_4,
-                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS,
-                            /* allowCaptureByFocusedWindow = */true
-                    ));
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_5,
-                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS,
-                            /* allowCaptureByFocusedWindow = */true
-                    ));
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_6,
-                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS,
-                            /* allowCaptureByFocusedWindow = */true
-                    ));
-        }
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_3,
+                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS,
+                        /* allowCaptureByFocusedWindow = */true
+                ));
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_4,
+                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS,
+                        /* allowCaptureByFocusedWindow = */true
+                ));
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_5,
+                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS,
+                        /* allowCaptureByFocusedWindow = */true
+                ));
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_6,
+                        KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS,
+                        /* allowCaptureByFocusedWindow = */true
+                ));
         if (DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue()) {
             systemShortcuts.add(
                     createKeyGesture(
