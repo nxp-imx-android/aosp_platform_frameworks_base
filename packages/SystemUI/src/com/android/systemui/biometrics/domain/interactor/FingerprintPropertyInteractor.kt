@@ -17,7 +17,6 @@
 package com.android.systemui.biometrics.domain.interactor
 
 import android.content.Context
-import android.graphics.Rect
 import android.hardware.biometrics.SensorLocationInternal
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.biometrics.shared.model.FingerprintSensorInfo
@@ -116,6 +115,9 @@ constructor(
                 scale = scale,
             )
         }
+
+    val scaleFactor: Float
+        get() = configurationInteractor.getScaleForResolution()
 
     companion object {
 
