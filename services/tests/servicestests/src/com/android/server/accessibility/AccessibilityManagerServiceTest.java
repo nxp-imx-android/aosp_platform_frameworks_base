@@ -25,6 +25,7 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_NONE;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW;
 import static android.provider.Settings.Secure.NAVIGATION_MODE;
+import static android.security.advancedprotection.AdvancedProtectionManager.ADVANCED_PROTECTION_SYSTEM_ENTITY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.Flags.FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API;
@@ -58,6 +59,7 @@ import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -112,6 +114,8 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
+import android.security.advancedprotection.AdvancedProtectionManager;
+import android.security.advancedprotection.IAdvancedProtectionService;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
@@ -271,6 +275,9 @@ public class AccessibilityManagerServiceTest {
     private HearingDevicePhoneCallNotificationController
             mMockHearingDevicePhoneCallNotificationController;
     @Mock
+    private IAdvancedProtectionService mMockAdvancedProtectionServiceBinder;
+
+    @Mock
     private IInputManager mMockInputManagerService;
     private InputManagerGlobal.TestSession mInputManagerTestSession;
     @Spy
@@ -293,6 +300,14 @@ public class AccessibilityManagerServiceTest {
         mTestableLooper = TestableLooper.get(this);
         mHandler = new Handler(mTestableLooper.getLooper());
         mFakePermissionEnforcer = new FakePermissionEnforcer();
+        mFakePermissionEnforcer.grant(Manifest.permission.QUERY_ADVANCED_PROTECTION_MODE);
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_USERS);
+        AdvancedProtectionManager advancedProtectionManager =
+                new AdvancedProtectionManager(
+                        mMockAdvancedProtectionServiceBinder); // Assuming constructor signature
+        mTestableContext.addMockSystemService(AdvancedProtectionManager.class,
+                advancedProtectionManager);
+
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
         LocalServices.removeServiceForTest(ActivityTaskManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
@@ -355,8 +370,9 @@ public class AccessibilityManagerServiceTest {
                 mProxyManager,
                 mFakePermissionEnforcer,
                 mMockHearingDevicePhoneCallNotificationController);
-        switchUser(mTestableContext.getUserId());
 
+        switchUser(mTestableContext.getUserId());
+        mA11yms.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
         FieldSetter.setField(mA11yms,
                 AccessibilityManagerService.class.getDeclaredField("mHasInputFilter"), true);
         FieldSetter.setField(mA11yms,
@@ -2658,15 +2674,19 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
+    @EnableFlags({Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE,
+            android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES})
     public void getAccessibilityShortcutTargets_userCurrent_getsCurrentTargets() {
         mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+        mFakePermissionEnforcer.grant(Manifest.permission.QUERY_ADMIN_POLICY);
         final String setting_a = "Foo";
         final String setting_b = "Bar";
-        mockUserStateWithInstalledShortcuts(0, List.of(setting_a));
-        mockUserStateWithInstalledShortcuts(1, List.of(setting_b));
+        List<Integer> users = List.of(0, 1);
+        mockUserStateWithInstalledShortcuts(0, List.of(setting_a), users);
+        mockUserStateWithInstalledShortcuts(1, List.of(setting_b), users);
         clearAllShortcuts(0);
         clearAllShortcuts(1);
+
         mA11yms.enableShortcutsForTargets(true, SOFTWARE, List.of(setting_a), 0);
         mA11yms.enableShortcutsForTargets(true, SOFTWARE, List.of(setting_b), 1);
         mA11yms.mCurrentUserId = 1;
@@ -2739,6 +2759,36 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testApmOff_clearsRestrictionAndDoesNotChangeUserState() {
+        AccessibilityManagerService spyAms = spy(mA11yms);
+        doNothing().when(spyAms).onUserStateChangedLocked(any(AccessibilityUserState.class));
+
+        spyAms.handleAdvancedProtectionModeStateChanged(false);
+
+        verify(mDevicePolicyManager).clearUserRestrictionGlobally(
+                eq(ADVANCED_PROTECTION_SYSTEM_ENTITY),
+                eq(UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE)
+        );
+        verify(spyAms, never()).onUserStateChangedLocked(any(AccessibilityUserState.class));
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testApmOn_addsRestrictionAndChangesUserState() {
+        AccessibilityManagerService spyAms = spy(mA11yms);
+        doNothing().when(spyAms).onUserStateChangedLocked(any(AccessibilityUserState.class));
+
+        spyAms.handleAdvancedProtectionModeStateChanged(true);
+
+        verify(mDevicePolicyManager).addUserRestrictionGlobally(
+                eq(ADVANCED_PROTECTION_SYSTEM_ENTITY),
+                eq(UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE)
+        );
+        verify(spyAms).onUserStateChangedLocked(any(AccessibilityUserState.class));
+    }
+
+    @Test
     @DisableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
     public void testGetPermittedA11yServices_withPolicy_apmOn_returnAdminAllowedWithSystemApp() {
         final int userId = mA11yms.mCurrentUserId;
@@ -2762,6 +2812,7 @@ public class AccessibilityManagerServiceTest {
 
         assertThat(permitted).containsExactly("com.admin.allowed", "com.system.app");
     }
+
 
     @Test
     @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
@@ -3188,11 +3239,14 @@ public class AccessibilityManagerServiceTest {
                 userId);
     }
 
-    // Replaces a given userState with a spy that treats the given targets as being installed
-    private void mockUserStateWithInstalledShortcuts(int userId, List<String> targets) {
+    private void mockUserStateWithInstalledShortcuts(int userId, List<String> targets,
+            List<Integer> users) {
         AccessibilityUserState userState = spy(mA11yms.getUserStateLocked(userId));
         for (String target : targets) {
-            when(userState.isShortcutTargetInstalledLocked(target)).thenReturn(true);
+            doReturn(true).when(userState).isShortcutTargetInstalledLocked(target);
+            for (Integer user : users) {
+                doReturn(true).when(userState).isShortcutTargetPermittedLocked(target, user);
+            }
         }
         mA11yms.mUserStates.put(userId, userState);
     }
