@@ -209,7 +209,10 @@ constructor(
                                     state.toContent == Scenes.Gone)
                         ) {
                             HeightSuppressionState.All
-                        } else if (state.isTransitioningFromOrTo(Scenes.QuickSettings)) {
+                        } else if (
+                            state.isTransitioningFromOrTo(Scenes.QuickSettings) &&
+                                !state.isTransitioning(to = Scenes.Shade)
+                        ) {
                             HeightSuppressionState.EndHeightOnly
                         } else HeightSuppressionState.None
                     }

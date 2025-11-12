@@ -392,7 +392,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun suppressHeightUpdates_transitionQuickSettingsToShade_EndHeightOnly() {
+    fun suppressHeightUpdates_transitionQuickSettingsToShade_None() {
         kosmos.runTest {
             val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
 
@@ -402,6 +402,32 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                     Transition(
                         fromScene = Scenes.QuickSettings,
                         toScene = Scenes.Shade,
+                        currentScene = flowOf(Scenes.QuickSettings),
+                        progress = MutableStateFlow(0.5f),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(true),
+                    )
+                )
+            )
+            runCurrent()
+
+            // THEN suppressHeightUpdates is None
+            assertThat(suppressHeightUpdates)
+                .isEqualTo(NotificationScrollViewModel.HeightSuppressionState.None)
+        }
+    }
+
+    @Test
+    fun suppressHeightUpdates_transitionQuickSettingsToLockscreen_EndHeightOnly() {
+        kosmos.runTest {
+            val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
+
+            // GIVEN a transition from QuickSettings to Lockscreen scene
+            sceneContainerRepository.setTransitionState(
+                flowOf(
+                    Transition(
+                        fromScene = Scenes.QuickSettings,
+                        toScene = Scenes.Lockscreen,
                         currentScene = flowOf(Scenes.QuickSettings),
                         progress = MutableStateFlow(0.5f),
                         isInitiatedByUserInput = true,
