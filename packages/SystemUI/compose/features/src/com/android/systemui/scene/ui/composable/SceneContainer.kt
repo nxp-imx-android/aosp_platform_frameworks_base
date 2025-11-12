@@ -41,6 +41,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.OverlayKey
@@ -54,7 +56,6 @@ import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
-import com.android.compose.rememberSystemUiController
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
 import com.android.systemui.keyguard.ui.composable.rememberBurnIn
 import com.android.systemui.lifecycle.rememberActivated
@@ -176,7 +177,7 @@ fun SceneContainer(
         remember {
             mutableStateMapOf()
         }
-    val systemUiController = rememberSystemUiController()
+    val windowInsetsController = view.windowInsetsController
     LaunchedEffect(actionableContentKey) {
         try {
             val actionableContent: ActionableContent =
@@ -190,8 +191,16 @@ fun SceneContainer(
                     viewModel.resolveSceneFamilies(userActions)
 
                 val isNavigationBarVisible = userActions.containsKey(Back)
-                if (systemUiController.isNavigationBarVisible != isNavigationBarVisible) {
-                    systemUiController.isNavigationBarVisible = isNavigationBarVisible
+                if (
+                    isNavigationBarVisible !=
+                        ViewCompat.getRootWindowInsets(view)
+                            ?.isVisible(WindowInsetsCompat.Type.navigationBars())
+                ) {
+                    if (isNavigationBarVisible) {
+                        windowInsetsController?.show(WindowInsetsCompat.Type.navigationBars())
+                    } else {
+                        windowInsetsController?.hide(WindowInsetsCompat.Type.navigationBars())
+                    }
                 }
             }
         } finally {
