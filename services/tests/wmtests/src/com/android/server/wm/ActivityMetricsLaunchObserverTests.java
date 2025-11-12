@@ -288,6 +288,17 @@ public class ActivityMetricsLaunchObserverTests extends WindowTestsBase {
     }
 
     @Test
+    public void testDrawnWhileSleeping() {
+        onActivityLaunched(mTopActivity);
+        mTopActivity.setVisibleRequested(false);
+        mDisplayContent.setIsSleeping(true);
+
+        assertNull(notifyWindowsDrawn(mTopActivity));
+        verifyAsync(mLaunchObserver).onActivityLaunchCancelled(eqLastStartedId(mTopActivity));
+        verifyNoMoreInteractions(mLaunchObserver);
+    }
+
+    @Test
     public void testOnActivityLaunchWhileSleeping() {
         notifyActivityLaunching(mTrampolineActivity.intent);
         notifyAndVerifyActivityLaunched(mTrampolineActivity);
