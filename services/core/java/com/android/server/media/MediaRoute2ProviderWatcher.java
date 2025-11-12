@@ -92,9 +92,6 @@ final class MediaRoute2ProviderWatcher {
             filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
             filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
             filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
-            if (!Flags.enablePreventionOfKeepAliveRouteProviders()) {
-                filter.addAction(Intent.ACTION_PACKAGE_RESTARTED);
-            }
             filter.addDataScheme("package");
             mContext.registerReceiverAsUser(mScanPackagesReceiver,
                     new UserHandle(mUserId), filter, null, mHandler);
@@ -180,9 +177,7 @@ final class MediaRoute2ProviderWatcher {
                     mCallback.onAddProviderService(proxy);
                 } else if (sourceIndex >= targetIndex) {
                     MediaRoute2ProviderServiceProxy proxy = mProxies.get(sourceIndex);
-                    proxy.start(
-                            /* rebindIfDisconnected= */
-                                    !Flags.enablePreventionOfKeepAliveRouteProviders());
+                    proxy.start(/* rebindIfDisconnected= */ false);
                     Collections.swap(mProxies, sourceIndex, targetIndex++);
                 }
             }
