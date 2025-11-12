@@ -280,12 +280,14 @@ class DragDropController {
 
                 final SurfaceControl surfaceControl = mDragState.mSurfaceControl;
                 mDragState.broadcastDragStartedLocked(touchX, touchY);
-                if ((touchSource & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
-                    InputManagerGlobal.getInstance().setPointerIcon(
-                            PointerIcon.getSystemIcon(
-                                    mService.mContext, PointerIcon.TYPE_GRABBING),
-                            mDragState.mCurrentDisplayContent.getDisplayId(), touchDeviceId,
-                            touchPointerId, mDragState.getInputToken());
+                if ((mDragState.mFlags & View.DRAG_FLAG_DISABLE_DEFAULT_POINTER_ICON) == 0) {
+                    if ((touchSource & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
+                        InputManagerGlobal.getInstance().setPointerIcon(
+                                PointerIcon.getSystemIcon(
+                                        mService.mContext, PointerIcon.TYPE_GRABBING),
+                                mDragState.mCurrentDisplayContent.getDisplayId(), touchDeviceId,
+                                touchPointerId, mDragState.getInputToken());
+                    }
                 }
                 // remember the thumb offsets for later
                 mDragState.mThumbOffsetX = thumbCenterX;

@@ -41,11 +41,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -57,6 +57,7 @@ import android.content.Intent;
 import android.content.pm.ShortcutServiceInternal;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.hardware.input.InputManagerGlobal;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -69,6 +70,8 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DragEvent;
 import android.view.InputChannel;
+import android.view.InputDevice;
+import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.SurfaceSession;
 import android.view.View;
@@ -715,6 +718,13 @@ public class DragDropControllerTests extends WindowTestsBase {
     public void testValidateFlags() {
         final Session session = getTestSession();
         try {
+            session.validateDragFlags(View.DRAG_FLAG_DISABLE_DEFAULT_POINTER_ICON,
+                    0 /* callingUid */);
+            fail("Expected failure without permission");
+        } catch (SecurityException e) {
+            // Expected failure
+        }
+        try {
             session.validateDragFlags(View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION,
                     0 /* callingUid */);
             fail("Expected failure without permission");
@@ -729,6 +739,8 @@ public class DragDropControllerTests extends WindowTestsBase {
                 eq(START_TASKS_FROM_RECENTS));
         final Session session = createTestSession(mAtm);
         try {
+            session.validateDragFlags(View.DRAG_FLAG_DISABLE_DEFAULT_POINTER_ICON,
+                    0 /* callingUid */);
             session.validateDragFlags(View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION,
                     0 /* callingUid */);
             // Expected pass
@@ -913,6 +925,27 @@ public class DragDropControllerTests extends WindowTestsBase {
                 });
     }
 
+    @Test
+    public void testDisablesGrabbingPointerIcon() {
+        final InputManagerGlobal inputManager = InputManagerGlobal.getInstance();
+        spyOn(inputManager);
+        doDragAndDrop(View.DRAG_FLAG_DISABLE_DEFAULT_POINTER_ICON,
+                ClipData.newPlainText("label", "Test"), 0, 0);
+        verify(inputManager, times(0)).setPointerIcon(any(), anyInt(), anyInt(), anyInt(), any());
+        reset(inputManager);
+    }
+
+    @Test
+    public void testEnablesGrabbingPointerIcon() {
+        final InputManagerGlobal inputManager = InputManagerGlobal.getInstance();
+        spyOn(inputManager);
+        doDragAndDrop(0, ClipData.newPlainText("label", "Test"), 0, 0);
+        verify(inputManager).setPointerIcon(
+                eq(PointerIcon.getSystemIcon(mWm.mContext, PointerIcon.TYPE_GRABBING)), anyInt(),
+                anyInt(), anyInt(), any());
+        reset(inputManager);
+    }
+
     private void doDragAndDrop(int flags, ClipData data, float dropX, float dropY) {
         startDrag(flags, data, (unused) -> {
             mTarget.reportDropWindow(mWindow.mInputChannelToken, dropX, dropY);
@@ -940,8 +973,8 @@ public class DragDropControllerTests extends WindowTestsBase {
                     "drag surface").setBufferSize(100, 100).setFormat(
                     PixelFormat.TRANSLUCENT).build();
             assertTrue(mWm.mInputManager.startDragAndDrop(new Binder(), new Binder()));
-            mToken = mTarget.performDrag(TEST_PID, 0, mWindow.mClient, flag, surface, 0, 0, 0,
-                    startInWindowX, startInWindowY, 0, 0, data);
+            mToken = mTarget.performDrag(TEST_PID, 0, mWindow.mClient, flag, surface,
+                    InputDevice.SOURCE_MOUSE, 0, 0, startInWindowX, startInWindowY, 0, 0, data);
             assertNotNull(mToken);
 
             c.accept(surface);
