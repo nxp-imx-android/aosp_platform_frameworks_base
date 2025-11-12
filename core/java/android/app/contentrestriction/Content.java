@@ -54,9 +54,7 @@ public final class Content implements Parcelable {
      */
     private final @Nullable ParcelFileDescriptor mData;
 
-    // TODO(b/458079181): Add a builder for this class.
-    // TODO(b/458080360): Add javadoc for the public methods.
-    public Content(LocusId locusId, String mimeType, @Nullable Uri uri,
+    private Content(LocusId locusId, String mimeType, @Nullable Uri uri,
             @Nullable ParcelFileDescriptor data) {
         mLocusId = locusId;
         mMimeType = mimeType;
@@ -64,26 +62,52 @@ public final class Content implements Parcelable {
         mData = data;
     }
 
-    public Content(@NonNull Parcel in) {
+    /**
+     * Creates a new instance from a Parcel.
+     *
+     * @param in the Parcel to read from
+     */
+    private Content(@NonNull Parcel in) {
         mMimeType = in.readString8();
         mLocusId = in.readTypedObject(LocusId.CREATOR);
         mUri = in.readTypedObject(Uri.CREATOR);
         mData = in.readTypedObject(ParcelFileDescriptor.CREATOR);
     }
 
+    /**
+     * Returns the {@link LocusId} associated with this content.
+     *
+     * @return the {@link LocusId} of the content
+     */
     public LocusId getId() {
         return mLocusId;
     }
 
+    /**
+     * Returns the MIME type of the content.
+     *
+     * @return the MIME type
+     */
     public String getMimeType() {
         return mMimeType;
     }
 
+    /**
+     * Returns the {@link Uri} that can be used to refer to this content.
+     *
+     * @return the content {@link Uri}, or {@code null} if this content is not referred to by a Uri
+     */
     @Nullable
     public Uri getUri() {
         return mUri;
     }
 
+    /**
+     * Returns a {@link ParcelFileDescriptor} containing the raw data of this content.
+     *
+     * @return the {@link ParcelFileDescriptor} containing the content data, or {@code null} if the
+     *         raw content isn't provided
+     */
     @Nullable
     public ParcelFileDescriptor getData() {
         return mData;
@@ -113,5 +137,60 @@ public final class Content implements Parcelable {
         parcel.writeTypedObject(mLocusId, flags);
         parcel.writeTypedObject(mUri, flags);
         parcel.writeTypedObject(mData, flags);
+    }
+
+    /**
+     * Builder for {@link Content}.
+     */
+    public static final class Builder {
+        private LocusId mLocusId;
+        private String mMimeType;
+        private Uri mUri;
+        private ParcelFileDescriptor mData;
+
+        /**
+         * Creates a new builder.
+         *
+         * @param locusId the {@link LocusId} to set
+         * @param mimeType the MIME type of the content
+         */
+        public Builder(@NonNull LocusId locusId, @NonNull String mimeType) {
+            mLocusId = locusId;
+            mMimeType = mimeType;
+        }
+
+        /**
+         * Sets the {@link Uri} of the content.
+         *
+         * @param uri the {@link Uri} to set
+         * @return this builder
+         */
+        @NonNull
+        public Builder setUri(@NonNull Uri uri) {
+            mUri = uri;
+            return this;
+        }
+
+        /**
+         * Sets the {@link ParcelFileDescriptor} containing the raw data of this content.
+         *
+         * @param data the {@link ParcelFileDescriptor} to set
+         * @return this builder
+         */
+        @NonNull
+        public Builder setData(@NonNull ParcelFileDescriptor data) {
+            mData = data;
+            return this;
+        }
+
+        /**
+         * Builds the {@link Content} object.
+         *
+         * @return the built {@link Content}
+         */
+        @NonNull
+        public Content build() {
+            return new Content(mLocusId, mMimeType, mUri, mData);
+        }
     }
 }
