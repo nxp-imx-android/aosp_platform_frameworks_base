@@ -2114,7 +2114,7 @@ public abstract class WMShellModule {
             return Optional.of(
                     new NormalAppLayerController(
                             shellInit, transitions, desktopUserRepositoriesOptional.get(),
-                            desktopTasksController.get(), pinnedLayerController.get(),
+                            desktopTasksController.orElse(null), pinnedLayerController.get(),
                             desktopState));
         }
         return Optional.empty();
