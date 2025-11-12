@@ -65,7 +65,7 @@ public class ProcessProviderRecordInternal {
     }
 
     /** Checks if this process publishes a content provider with the given name. */
-    public boolean hasProvider(String name) {
+    boolean hasProvider(String name) {
         return mPubProviders.containsKey(name);
     }
 
@@ -80,7 +80,7 @@ public class ProcessProviderRecordInternal {
     }
 
     /** Removes a published content provider from this process. */
-    public void removeProvider(String name) {
+    void removeProvider(String name) {
         mPubProviders.remove(name);
     }
 
@@ -111,7 +111,7 @@ public class ProcessProviderRecordInternal {
     }
 
     /** Adds a content provider connection to this process's list of connections. */
-    public void addProviderConnection(ContentProviderConnectionInternal connection) {
+    void addProviderConnection(ContentProviderConnectionInternal connection) {
         mConProviders.add(connection);
     }
 

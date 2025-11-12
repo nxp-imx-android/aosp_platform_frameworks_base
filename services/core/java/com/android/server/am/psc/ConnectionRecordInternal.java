@@ -119,7 +119,7 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
     }
 
     /** Sets the ongoing calls status for this connection. Returns true if the status is changed. */
-    public boolean setOngoingCalls(boolean ongoingCalls) {
+    boolean setOngoingCalls(boolean ongoingCalls) {
         if (mOngoingCalls != ongoingCalls) {
             mOngoingCalls = ongoingCalls;
             return true;
@@ -131,7 +131,7 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
         return mBoundServiceSession;
     }
 
-    public void setBoundServiceSession(BoundServiceSession boundServiceSession) {
+    void setBoundServiceSession(BoundServiceSession boundServiceSession) {
         mBoundServiceSession = boundServiceSession;
     }
 

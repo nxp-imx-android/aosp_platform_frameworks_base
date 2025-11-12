@@ -43,12 +43,12 @@ public abstract class ProcessReceiverRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setIsReceivingBroadcast(boolean receivingBroadcast) {
+    void setIsReceivingBroadcast(boolean receivingBroadcast) {
         mIsReceivingBroadcast = receivingBroadcast;
     }
 
     @GuardedBy("mServiceLock")
-    public void setBroadcastReceiverSchedGroup(int priority) {
+    void setBroadcastReceiverSchedGroup(int priority) {
         mBroadcastReceiverSchedGroup = priority;
     }
 

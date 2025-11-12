@@ -141,7 +141,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets whether an active instrumentation is running in this process. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setHasActiveInstrumentation(boolean value) {
+    void setHasActiveInstrumentation(boolean value) {
         mHasActiveInstrumentation = value;
     }
 
@@ -1297,7 +1297,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setHasActivities(boolean hasActivities) {
+    void setHasActivities(boolean hasActivities) {
         mHasActivities = hasActivities;
     }
 
@@ -1307,7 +1307,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setActivityStateFlags(int flags) {
+    void setActivityStateFlags(int flags) {
         mActivityStateFlags = flags;
     }
 
@@ -1317,12 +1317,12 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setPerceptibleTaskStoppedTimeMillis(long uptimeMs) {
+    void setPerceptibleTaskStoppedTimeMillis(long uptimeMs) {
         mPerceptibleTaskStoppedTimeMillis = uptimeMs;
     }
 
     @GuardedBy("mServiceLock")
-    public void setHasRecentTask(boolean hasRecentTask) {
+    void setHasRecentTask(boolean hasRecentTask) {
         mHasRecentTask = hasRecentTask;
     }
 
@@ -1441,7 +1441,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public void setPendingFinishAttach(boolean pendingFinishAttach) {
+    void setPendingFinishAttach(boolean pendingFinishAttach) {
         mPendingFinishAttach = pendingFinishAttach;
     }
 

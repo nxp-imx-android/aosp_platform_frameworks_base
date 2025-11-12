@@ -37,6 +37,7 @@ import androidx.test.filters.FlakyTest;
 
 import com.android.internal.os.TimeoutRecord;
 import com.android.server.LocalServices;
+import com.android.server.am.psc.ProcessStateController;
 import com.android.server.wm.ActivityTaskManagerService;
 
 import org.junit.AfterClass;

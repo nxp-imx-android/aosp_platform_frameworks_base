@@ -16,8 +16,6 @@
 
 package com.android.server.am.psc;
 
-import com.android.server.am.ProcessStateController;
-
 import java.lang.ref.WeakReference;
 import java.util.function.BiConsumer;
 
