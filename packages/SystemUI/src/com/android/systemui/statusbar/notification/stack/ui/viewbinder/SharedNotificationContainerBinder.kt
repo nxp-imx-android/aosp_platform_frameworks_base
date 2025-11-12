@@ -22,6 +22,7 @@ import com.android.systemui.Flags
 import com.android.systemui.common.ui.view.onLayoutChanged
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.AndroidUi
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
@@ -34,6 +35,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificat
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SharedNotificationContainerViewModel
 import com.android.systemui.util.kotlin.DisposableHandles
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.combine
@@ -49,6 +51,7 @@ constructor(
     private val notificationStackSizeCalculator: NotificationStackSizeCalculator,
     private val notificationScrollViewBinder: NotificationScrollViewBinder,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
+    @AndroidUi private val androidUiDispatcher: CoroutineContext,
     @Main private val mainImmediateDispatcher: CoroutineDispatcher,
     val keyguardInteractor: KeyguardInteractor,
 ) {
@@ -96,7 +99,9 @@ constructor(
          * instead of doing a post() to the main thread. This extra delay can cause visible jitter.
          */
         disposables +=
-            view.repeatWhenAttached(mainImmediateDispatcher) {
+            view.repeatWhenAttached(
+                if (SceneContainerFlag.isEnabled) androidUiDispatcher else mainImmediateDispatcher
+            ) {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
                     if (!SceneContainerFlag.isEnabled) {
                         launch {
