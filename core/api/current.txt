@@ -37558,6 +37558,7 @@ package android.provider {
     field public static final int FEATURES_RTT = 32; // 0x20
     field public static final int FEATURES_VIDEO = 1; // 0x1
     field public static final int FEATURES_VOLTE = 64; // 0x40
+    field @FlaggedApi("com.android.server.telecom.flags.hd_plus_call") public static final int FEATURES_VONR = 256; // 0x100
     field public static final int FEATURES_WIFI = 8; // 0x8
     field public static final String GEOCODED_LOCATION = "geocoded_location";
     field @FlaggedApi("com.android.server.telecom.flags.filter_voip_call_logs") @NonNull public static final String INCLUDE_VOIP_CALLS_PARAM_KEY = "include_voip_calls";

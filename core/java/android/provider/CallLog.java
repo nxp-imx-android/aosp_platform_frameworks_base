@@ -603,6 +603,14 @@ public class CallLog {
          */
         @FlaggedApi(Flags.FLAG_HD_PLUS_CALL)
         public static final int FEATURES_HD_PLUS_CALL = 1 << 7;
+
+        /**
+         * Call used VoNR (Voice Over New Radio; aka 5G)
+         * (ie {@link android.telephony.TelephonyManager#NETWORK_TYPE_NR}).
+         */
+        @FlaggedApi(Flags.FLAG_HD_PLUS_CALL)
+        public static final int FEATURES_VONR = 1 << 8;
+
         /**
          * The phone number as the user entered it.
          * <P>Type: TEXT</P>
