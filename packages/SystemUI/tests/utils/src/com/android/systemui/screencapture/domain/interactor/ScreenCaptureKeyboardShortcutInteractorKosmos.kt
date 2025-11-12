@@ -20,6 +20,7 @@ import com.android.internal.logging.uiEventLogger
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.largeScreenCaptureFeaturesInteractor
 import com.android.systemui.user.data.repository.userRepository
 import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 
@@ -32,5 +33,6 @@ val Kosmos.screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcu
             keyguardInteractor = keyguardInteractor,
             userRepository = userRepository,
             hsum = fakeHeadlessSystemUserMode,
+            featuresInteractor = largeScreenCaptureFeaturesInteractor,
         )
     }

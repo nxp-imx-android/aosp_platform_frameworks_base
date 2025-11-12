@@ -24,6 +24,7 @@ import android.hardware.input.InputManager.KeyGestureEventListener
 import android.hardware.input.KeyGestureEvent
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
@@ -111,6 +112,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                     KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                     KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
                     KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                    KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT,
                     KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
                 )
         }
@@ -180,6 +182,23 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
         )
 
         verify(screenCaptureKeyboardShortcutInteractor).attemptPartialRegionScreenshot()
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
+    fun handleKeyGestureEvent_eventTypeTakeAppWindowScreenshot_callsScreenCaptureInteractor() {
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(screenCaptureKeyboardShortcutInteractor).attemptAppWindowScreenshot()
     }
 
     @Test
