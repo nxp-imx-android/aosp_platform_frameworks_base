@@ -239,6 +239,14 @@ public class ExternalDisplayPolicyTest {
     }
 
     @Test
+    public void testOnExternalDisplayAvailableAfterBoot() {
+        mExternalDisplayPolicy.onBootCompleted();
+        mExternalDisplayPolicy.handleExternalDisplayConnectedLocked(mMockedLogicalDisplay);
+        assertAskedUserIfDisplayShouldBeEnabled();
+        verify(mMockedExternalDisplayStatsService).onDisplayConnected(eq(mMockedLogicalDisplay));
+    }
+
+    @Test
     public void testOnExternalDisplayUnpluggedBeforeBootCompletes() {
         mExternalDisplayPolicy.handleExternalDisplayConnectedLocked(mMockedLogicalDisplay);
         mExternalDisplayPolicy.handleLogicalDisplayDisconnectedLocked(mMockedLogicalDisplay);

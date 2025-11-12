@@ -3168,6 +3168,8 @@ public class DisplayManagerServiceTest {
         LogicalDisplay display =
                 logicalDisplayMapper.getDisplayLocked(displayDevice, /* includeDisabled= */ true);
         assertThat(display.isEnabledLocked()).isTrue();
+        assertThat(callback.receivedEvents()).containsExactly(DISPLAY_GROUP_EVENT_ADDED,
+                EVENT_DISPLAY_CONNECTED, EVENT_DISPLAY_ADDED).inOrder();
         callback.clear();
 
         callback.expectsEvent(FakeDisplayDevice.COMMITTED_DISPLAY_STATE_CHANGED);
@@ -3186,8 +3188,7 @@ public class DisplayManagerServiceTest {
         assertThat(displayDevice.getDisplayDeviceInfoLocked().committedState)
                 .isEqualTo(Display.STATE_OFF);
         assertThat(display.isEnabledLocked()).isFalse();
-        assertThat(callback.receivedEvents()).containsExactly(EVENT_DISPLAY_CONNECTED,
-                EVENT_DISPLAY_REMOVED).inOrder();
+        assertThat(callback.receivedEvents()).containsExactly(EVENT_DISPLAY_REMOVED).inOrder();
 
         int displayId = display.getDisplayIdLocked();
         boolean enabled = display.isEnabledLocked();
