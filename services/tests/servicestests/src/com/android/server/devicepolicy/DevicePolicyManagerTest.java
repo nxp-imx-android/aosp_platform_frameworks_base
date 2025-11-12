@@ -180,6 +180,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.internal.util.collections.Sets;
 import org.mockito.stubbing.Answer;
@@ -192,6 +193,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9070,6 +9072,57 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(enforcingAdmins.getFirst().getComponentName()).isEqualTo(admin1);
     }
 
+    @Test
+    public void testGetPermittedA11yServices_withPolicy_returnPolicy() throws Exception {
+        mServiceContext.permissions.add(permission.MANAGE_USERS);
+        mServiceContext.permissions.add(permission.QUERY_ADMIN_POLICY);
+        final int userId = CALLER_USER_HANDLE;
+        List<String> adminAllowedList = Arrays.asList(
+                "com.system.tool", "com.user.tool", "com.user.test"
+        );
+        setupAdminPermittedA11yServices(userId, admin1, adminAllowedList);
+        setupMockAccessibilityManager(new HashSet<>(adminAllowedList));
+
+        List<String> permitted = dpms.getPermittedAccessibilityServicesForUser(userId);
+
+        assertThat(permitted).containsExactlyElementsIn(adminAllowedList);
+    }
+
+    @Test
+    public void testGetPermittedA11yServices_withPolicy_rightPolicyPassed() throws Exception {
+        mServiceContext.permissions.add(permission.MANAGE_USERS);
+        mServiceContext.permissions.add(permission.QUERY_ADMIN_POLICY);
+        final int userId = CALLER_USER_HANDLE;
+        List<String> adminAllowedList = Arrays.asList(
+                "com.system.tool", "com.user.tool", "com.user.test"
+        );
+        setupAdminPermittedA11yServices(userId, admin1, adminAllowedList);
+        setupMockAccessibilityManager(new HashSet<>(adminAllowedList));
+
+        dpms.getPermittedAccessibilityServicesForUser(userId);
+
+        ArgumentCaptor<List<String>> packagesCaptor = ArgumentCaptor.forClass(List.class);
+        verify(getServices().accessibilityManagerInternal).getPermittedAccessibilityServicePackages(
+                packagesCaptor.capture(),
+                eq(userId) // The user ID
+        );
+        assertThat(packagesCaptor.getValue())
+                .containsExactlyElementsIn(adminAllowedList);
+    }
+
+    @Test
+    public void testGetPermittedA11yServices_noPolicy_returnNull() throws Exception {
+        mServiceContext.permissions.add(permission.MANAGE_USERS);
+        mServiceContext.permissions.add(permission.QUERY_ADMIN_POLICY);
+        final int userId = CALLER_USER_HANDLE;
+        setupAdminPermittedA11yServices(userId, admin1, null);
+        setupMockAccessibilityManager(null);
+
+        List<String> permitted = dpms.getPermittedAccessibilityServicesForUser(userId);
+
+        assertThat(permitted).isNull();
+    }
+
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {
         final AppOpsManager.PackageOps vpnOp = new AppOpsManager.PackageOps(userVpnPackage,
                 userVpnUid, List.of(new AppOpsManager.OpEntry(
@@ -9370,5 +9423,20 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
     private static PasswordMetrics metricsForPin(String pin) {
         return PasswordMetrics.computeForCredential(LockscreenCredential.createPin(pin));
+    }
+
+    private void setupMockAccessibilityManager(Set<String> services) {
+        doReturn(services).when(getServices().accessibilityManagerInternal)
+                .getPermittedAccessibilityServicePackages(any(), anyInt());
+    }
+
+    private void setupAdminPermittedA11yServices(int userId, ComponentName adminComponent,
+            List<String> services) throws Exception {
+        // Setup the admin as a profile owner for the given userId.
+        final int adminUid = UserHandle.getUid(userId, DpmMockContext.CALLER_UID);
+        setUpProfileOwnerAdmin(adminComponent, adminUid);
+
+        // Set the permitted accessibility services using the DPM API.
+        dpm.setPermittedAccessibilityServices(adminComponent, services);
     }
 }

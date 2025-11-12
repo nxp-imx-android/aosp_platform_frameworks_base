@@ -39,9 +39,9 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.QUICK_SETTINGS;
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity.EXTRA_TYPE_TO_CHOOSE;
+import static com.android.server.accessibility.AccessibilityManagerService.ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_HEARING_DEVICES_DIALOG;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG;
-import static com.android.server.accessibility.AccessibilityManagerService.ACTION_DISMISS_KEY_GESTURE_CONFIRM_DIALOG;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -58,6 +58,7 @@ import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -104,6 +105,7 @@ import android.os.LocaleList;
 import android.os.PermissionEnforcer;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.os.test.FakePermissionEnforcer;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -174,6 +176,7 @@ import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -2735,6 +2738,161 @@ public class AccessibilityManagerServiceTest {
         assertThat(enabledServices).isEmpty();
     }
 
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testGetPermittedA11yServices_withPolicy_apmOn_returnAdminAllowedWithSystemApp() {
+        final int userId = mA11yms.mCurrentUserId;
+        setupApmUserRestriction(userId, true);
+        List<String> adminPermittedServices = List.of("com.admin.allowed");
+
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.admin.allowed", "ServiceA"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ false));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.app", "ServiceB"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ false));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.other.app", "ServiceC"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ false));
+        setUpMockInstalledServices(installedServices);
+
+        Set<String> permitted = mA11yms.getPermittedAccessibilityServicePackages(
+                adminPermittedServices, userId);
+
+        assertThat(permitted).containsExactly("com.admin.allowed", "com.system.app");
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testGetPermittedA11yServices_noPolicy_apmOn_returnPackageWithAllToolService() {
+        final int userId = mA11yms.mCurrentUserId;
+        setupApmUserRestriction(userId, true);
+
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.tool", "ST"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.nontool", "SNT"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ false));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.user.tool", "UT"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.user.test", "testS1tool"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(
+                mockAccessibilityServiceInfo(new ComponentName("com.user.test", "testS2nonTool"),
+                        /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */
+                        false));
+        setUpMockInstalledServices(installedServices);
+
+        Set<String> permitted = mA11yms.getPermittedAccessibilityServicePackages(null, userId);
+
+        assertThat(permitted).containsExactly("com.system.tool", "com.user.tool");
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testGetPermittedA11yServices_withPolicy_apmOn_systemAppOrTool() {
+        final int userId = mA11yms.mCurrentUserId;
+        setupApmUserRestriction(userId, true);
+        List<String> adminPermittedServices = Arrays.asList(
+                "com.system.tool", "com.user.tool", "com.user.test"
+        );
+
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.tool", "ST"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.nontool", "SNT"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ false));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.user.tool", "UT"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.user.test", "testS1tool"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(
+                mockAccessibilityServiceInfo(new ComponentName("com.user.test", "testS2nonTool"),
+                        /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */
+                        false));
+        setUpMockInstalledServices(installedServices);
+
+        Set<String> permitted = mA11yms.getPermittedAccessibilityServicePackages(
+                adminPermittedServices, userId);
+
+        // Expected: Intersection of admin policy and APM rules
+        assertThat(permitted).containsExactly("com.system.tool", "com.user.tool");
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testGetPermittedA11yServices_noPolicy_apmOff_returnNull() {
+        final int userId = mA11yms.mCurrentUserId;
+        setupApmUserRestriction(userId, false);
+
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.tool", "ST"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.nontool", "SNT"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ false));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.user.tool", "UT"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.user.test", "testS1tool"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(
+                mockAccessibilityServiceInfo(new ComponentName("com.user.test", "testS2nonTool"),
+                        /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */
+                        false));
+        setUpMockInstalledServices(installedServices);
+
+        Set<String> permitted = mA11yms.getPermittedAccessibilityServicePackages(null, userId);
+
+        assertThat(permitted).isNull();
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
+    public void testGetPermittedA11yServices_withPolicy_apmOff_returnAdminAllowedWithSystemApp() {
+        final int userId = mA11yms.mCurrentUserId;
+        setupApmUserRestriction(userId, false);
+        List<String> adminPermittedServices = Arrays.asList(
+                "com.system.tool", "com.user.tool", "com.user.test"
+        );
+
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.tool", "ST"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.system.nontool", "SNT"),
+                /* isSystemApp= */ true, /* isAlwaysOnService= */ false, /* isTool= */ false));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.user.tool", "UT"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(mockAccessibilityServiceInfo(
+                new ComponentName("com.user.test", "testS1tool"),
+                /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */ true));
+        installedServices.add(
+                mockAccessibilityServiceInfo(new ComponentName("com.user.test", "testS2nonTool"),
+                        /* isSystemApp= */ false, /* isAlwaysOnService= */ false, /* isTool= */
+                        false));
+        setUpMockInstalledServices(installedServices);
+
+        Set<String> permitted = mA11yms.getPermittedAccessibilityServicePackages(
+                adminPermittedServices, userId);
+
+        assertThat(permitted).containsExactly("com.system.tool", "com.user.tool", "com.user.test",
+                "com.system.nontool");
+    }
+
     private AccessibilityServiceInfo getServiceInfoForEnableTrustedServiceTest(
             boolean preinstalled, boolean onAllowlist, boolean samePackage) {
         final AccessibilityServiceInfo info = mockAccessibilityServiceInfo(
@@ -2802,6 +2960,13 @@ public class AccessibilityManagerServiceTest {
     private static AccessibilityServiceInfo mockAccessibilityServiceInfo(
             ComponentName componentName,
             boolean isSystemApp, boolean isAlwaysOnService) {
+        return mockAccessibilityServiceInfo(componentName, isSystemApp,
+                isAlwaysOnService, /*isTool*/ false);
+    }
+
+    private static AccessibilityServiceInfo mockAccessibilityServiceInfo(
+            ComponentName componentName,
+            boolean isSystemApp, boolean isAlwaysOnService, boolean isTool) {
         AccessibilityServiceInfo accessibilityServiceInfo =
                 spy(new AccessibilityServiceInfo());
         accessibilityServiceInfo.setComponentName(componentName);
@@ -2812,6 +2977,10 @@ public class AccessibilityManagerServiceTest {
         mockResolveInfo.serviceInfo.packageName = componentName.getPackageName();
         mockResolveInfo.serviceInfo.name = componentName.getClassName();
         when(mockResolveInfo.serviceInfo.applicationInfo.isSystemApp()).thenReturn(isSystemApp);
+        if (isSystemApp) {
+            mockResolveInfo.serviceInfo.applicationInfo.flags = ApplicationInfo.FLAG_SYSTEM;
+        }
+        doReturn(isTool).when(accessibilityServiceInfo).isAccessibilityTool();
         if (isAlwaysOnService) {
             accessibilityServiceInfo.flags |=
                     FLAG_REQUEST_ACCESSIBILITY_BUTTON;
@@ -2819,6 +2988,17 @@ public class AccessibilityManagerServiceTest {
                     Build.VERSION_CODES.R;
         }
         return accessibilityServiceInfo;
+    }
+
+    private void setUpMockInstalledServices(List<AccessibilityServiceInfo> installedServices) {
+        AccessibilityUserState userState = mA11yms.getCurrentUserState();
+        userState.buildInstalledServicesMapLocked(installedServices);
+    }
+
+    private void setupApmUserRestriction(int userId, boolean enabled) {
+        when(mMockUserManagerInternal.hasUserRestriction(
+                eq(UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE),
+                eq(userId))).thenReturn(enabled);
     }
 
     // Single package intents can trigger multiple PackageMonitor callbacks.

@@ -493,7 +493,6 @@ import android.util.SparseArray;
 import android.util.StatsEvent;
 import android.util.Xml;
 import android.view.IWindowManager;
-import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
 import android.view.inputmethod.InputMethodInfo;
 
@@ -522,6 +521,7 @@ import com.android.internal.widget.PasswordValidationError;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.net.module.util.ProxyUtils;
+import com.android.server.AccessibilityManagerInternal;
 import com.android.server.AlarmManagerInternal;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
@@ -1805,6 +1805,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return LocalServices.getService(PackageManagerInternal.class);
         }
 
+        IAccessibilityManager getIAccessibilityManager() {
+            final IBinder iBinder = ServiceManager.getService(Context.ACCESSIBILITY_SERVICE);
+            return iBinder == null ? null : IAccessibilityManager.Stub.asInterface(iBinder);
+        }
+
         PackageManagerLocal getPackageManagerLocal() {
             return LocalManagerRegistry.getManager(PackageManagerLocal.class);
         }
@@ -1922,6 +1927,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         IBackupManager getIBackupManager() {
             return IBackupManager.Stub.asInterface(
                     ServiceManager.getService(Context.BACKUP_SERVICE));
+        }
+
+        AccessibilityManagerInternal getAccessibilityManagerInternal() {
+            return LocalServices.getService(AccessibilityManagerInternal.class);
         }
 
         PersistentDataBlockManagerInternal getPersistentDataBlockManagerInternal() {
@@ -12758,25 +12767,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return true;
     }
 
-    /**
-     * Invoke a method in AccessibilityManager ensuring the client is removed.
-     */
-    private <T> T withAccessibilityManager(
-            int userId, Function<AccessibilityManager, T> function) {
-        // Not using AccessibilityManager.getInstance because that guesses
-        // at the user you require based on callingUid and caches for a given
-        // process.
-        final IBinder iBinder = ServiceManager.getService(Context.ACCESSIBILITY_SERVICE);
-        final IAccessibilityManager service = iBinder == null
-                ? null : IAccessibilityManager.Stub.asInterface(iBinder);
-        final AccessibilityManager am = new AccessibilityManager(mContext, service, userId);
-        try {
-            return function.apply(am);
-        } finally {
-            am.removeClient();
-        }
-    }
-
     @Override
     public boolean setPermittedAccessibilityServices(ComponentName who, List<String> packageList) {
         if (!mHasFeature) {
@@ -12793,15 +12783,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
 
             int userId = caller.getUserId();
-            final List<AccessibilityServiceInfo> enabledServices;
+            List<AccessibilityServiceInfo> enabledServices = null;
             long id = mInjector.binderClearCallingIdentity();
             try {
                 UserInfo user = getUserInfo(userId);
                 if (user.isManagedProfile()) {
                     userId = user.profileGroupId;
                 }
-                enabledServices = withAccessibilityManager(userId,
-                        am -> am.getEnabledAccessibilityServiceList(FEEDBACK_ALL_MASK));
+                IAccessibilityManager a11yManager = mInjector.getIAccessibilityManager();
+                enabledServices = a11yManager.getEnabledAccessibilityServiceList(FEEDBACK_ALL_MASK,
+                        userId);
+
+            } catch (RemoteException e) {
+                Slog.e(LOG_TAG, e.getMessage());
             } finally {
                 mInjector.binderRestoreCallingIdentity(id);
             }
@@ -12856,10 +12850,27 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         if (!mHasFeature) {
             return null;
         }
+
         final CallerIdentity caller = getCallerIdentity();
         Preconditions.checkCallAuthorization(canManageUsers(caller) || canQueryAdminPolicy(caller));
 
-        List<String> result = null;
+        Set<String> adminPermittedSet = getPermittedAccessibilityServicesFromAllowlist(userId);
+
+        // If no admin has set a policy, adminPermittedSet will be null.
+        List<String> adminPermittedList =
+                adminPermittedSet != null ? new ArrayList<>(adminPermittedSet) : null;
+
+        // Delegate ALL final filtering (Admin Policy + APM + System Services) to AMS
+        AccessibilityManagerInternal a11yManager = mInjector.getAccessibilityManagerInternal();
+        Set<String> finalAllowedPackages =
+                a11yManager.getPermittedAccessibilityServicePackages(
+                        adminPermittedList, userId);
+
+        return finalAllowedPackages != null ? new ArrayList<>(finalAllowedPackages) : null;
+    }
+
+    private Set<String> getPermittedAccessibilityServicesFromAllowlist(int userId) {
+        Set<String> resultSet = null;
 
         synchronized (getLockObject()) {
             // If we have multiple profiles we return the intersection of the
@@ -12875,45 +12886,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     ActiveAdmin admin = policy.mAdminList.get(j);
                     List<String> fromAdmin = admin.mPermittedAccessibilityServices;
                     if (fromAdmin != null) {
-                        if (result == null) {
-                            result = new ArrayList<>(fromAdmin);
+                        if (resultSet == null) {
+                            resultSet = new HashSet<>(fromAdmin);
                         } else {
-                            result.retainAll(fromAdmin);
+                            resultSet.retainAll(fromAdmin);
                         }
                     }
                 }
             }
         }
-
-        // If we have a permitted list add all system accessibility services.
-        if (result != null) {
-            long id = mInjector.binderClearCallingIdentity();
-            try {
-                UserInfo user = getUserInfo(userId);
-                if (user.isManagedProfile()) {
-                    userId = user.profileGroupId;
-                }
-                // Move AccessibilityManager out of {@link getLockObject} to prevent potential
-                // deadlock.
-                final List<AccessibilityServiceInfo> installedServices =
-                        withAccessibilityManager(userId,
-                                AccessibilityManager::getInstalledAccessibilityServiceList);
-
-                if (installedServices != null) {
-                    for (AccessibilityServiceInfo service : installedServices) {
-                        ServiceInfo serviceInfo = service.getResolveInfo().serviceInfo;
-                        ApplicationInfo applicationInfo = serviceInfo.applicationInfo;
-                        if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
-                            result.add(serviceInfo.packageName);
-                        }
-                    }
-                }
-            } finally {
-                mInjector.binderRestoreCallingIdentity(id);
-            }
-        }
-
-        return result;
+        return resultSet;
     }
 
     @Override

@@ -105,6 +105,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ParceledListSlice;
@@ -510,6 +511,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             synchronized (mService.mLock) {
                 return mService.getUserStateLocked(userId).isTouchExplorationEnabledLocked();
             }
+        }
+
+        @Override
+        public Set<String> getPermittedAccessibilityServicePackages(
+                @Nullable List<String> adminPermittedServices, int userId) {
+            return mService.getPermittedAccessibilityServicePackages(adminPermittedServices,
+                    userId);
         }
     }
 
@@ -7232,5 +7240,112 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
         }
         return getMagnificationConnectionManager().isConnected();
+    }
+
+    Set<String> getPermittedAccessibilityServicePackages(
+            @Nullable List<String> adminPermittedServices, int userId) {
+
+        if (!android.security.Flags.extendAapmToA11yServices()) {
+            return getPermittedServicesLegacy(adminPermittedServices, userId);
+        }
+
+        final boolean apmOn = mUmi.hasUserRestriction(
+                UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE, userId);
+
+        if (!apmOn) {
+            return getPermittedServicesLegacy(adminPermittedServices, userId);
+        }
+
+        return getPermittedServicesStrictApm(adminPermittedServices, userId);
+    }
+
+    private Set<String> getPermittedServicesLegacy(
+            @Nullable List<String> adminPermittedServices, int userId) {
+
+        // If adminPermittedServices is null, it means no admin policy is set.
+        if (adminPermittedServices == null) {
+            return null;
+        }
+        Set<String> resultSet = new HashSet<>(adminPermittedServices);
+
+        // Find all installed system services
+        List<AccessibilityServiceInfo> installedServices = getInstalledAccessibilityServiceList(
+                userId).getList();
+        if (installedServices != null) {
+            for (AccessibilityServiceInfo service : installedServices) {
+                ServiceInfo serviceInfo = service.getResolveInfo().serviceInfo;
+                if (serviceInfo != null
+                        && (serviceInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
+                    resultSet.add(serviceInfo.packageName);
+                }
+            }
+        }
+        return resultSet;
+    }
+
+    private Set<String> getPermittedServicesStrictApm(
+            @Nullable List<String> adminPermittedServices, int userId) {
+
+        List<AccessibilityServiceInfo> installedServices = getInstalledAccessibilityServiceList(
+                userId).getList();
+
+        if (installedServices == null || installedServices.isEmpty()) {
+            return (adminPermittedServices != null) ? new HashSet<>(adminPermittedServices)
+                    : new HashSet<>();
+        }
+
+        Set<String> basePermittedSet = (adminPermittedServices != null)
+                ? new HashSet<>(adminPermittedServices) : null;
+
+        // Find all packages that contain at least one non-tool service
+        Set<String> packagesWithNonTools = new HashSet<>();
+        for (AccessibilityServiceInfo service : installedServices) {
+            if (!service.isAccessibilityTool()) {
+                ServiceInfo serviceInfo = service.getResolveInfo().serviceInfo;
+                if (serviceInfo != null) {
+                    if (DEBUG) {
+                        Slog.d(LOG_TAG, "non tool package name: " + serviceInfo.packageName);
+                    }
+                    packagesWithNonTools.add(serviceInfo.packageName);
+                }
+            }
+        }
+
+        /*
+         * Filters installed accessibility services to determine which packages are permitted
+         * to run, particularly when Advanced Protection Mode (APM) is active.
+         * * Packages must satisfy these conditions:
+         * 1. Be a system app OR an explicitly marked accessibility tool (isSystem || isTool).
+         * 2. If a Device Admin policy is set, the package must be explicitly permitted by the
+         * admin policy.
+         * 3. The package must NOT contain any non-tool accessibility service (enforcing the
+         * policy that one non-tool service blocks the entire package).
+         */
+        Set<String> finalAllowedPackageNames = new HashSet<>();
+        for (AccessibilityServiceInfo service : installedServices) {
+            ServiceInfo serviceInfo = service.getResolveInfo().serviceInfo;
+            if (serviceInfo == null || serviceInfo.applicationInfo == null) continue;
+
+            String packageName = serviceInfo.packageName;
+            boolean isSystem =
+                    (serviceInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+            boolean isTool = service.isAccessibilityTool();
+
+            // Must be System OR Tool
+            if (isSystem || isTool) {
+                // Must be Admin Allowed (if admin policy exists)
+                boolean adminAllowed = basePermittedSet == null || basePermittedSet.contains(
+                        packageName);
+
+                // Must NOT contain any non-tool service
+                boolean packageContainsNonToolService = packagesWithNonTools.contains(packageName);
+
+                if (adminAllowed && !packageContainsNonToolService) {
+                    finalAllowedPackageNames.add(packageName);
+                }
+            }
+        }
+
+        return finalAllowedPackageNames;
     }
 }
