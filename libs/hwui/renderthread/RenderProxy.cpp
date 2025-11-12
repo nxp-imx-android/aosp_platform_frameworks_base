@@ -46,7 +46,7 @@ namespace uirenderer {
 namespace renderthread {
 
 RenderProxy::RenderProxy(bool translucent, RenderNode* rootRenderNode,
-                         IContextFactory* contextFactory)
+                         IContextFactory* contextFactory, bool useIpcCanvas)
         : mRenderThread(RenderThread::getInstance()), mContext(nullptr) {
 #ifdef __ANDROID__
     pid_t uiThreadId = pthread_gettid_np(pthread_self());
@@ -55,8 +55,9 @@ RenderProxy::RenderProxy(bool translucent, RenderNode* rootRenderNode,
 #endif
     pid_t renderThreadId = getRenderThreadTid();
     mContext = mRenderThread.queue().runSync([=, this]() -> CanvasContext* {
-        CanvasContext* context = CanvasContext::create(mRenderThread, translucent, rootRenderNode,
-                                                       contextFactory, uiThreadId, renderThreadId);
+        CanvasContext* context =
+                CanvasContext::create(mRenderThread, translucent, rootRenderNode, contextFactory,
+                                      uiThreadId, renderThreadId, useIpcCanvas);
         if (context != nullptr) {
             mRenderThread.queue().post([=] { context->startHintSession(); });
         }

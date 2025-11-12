@@ -171,10 +171,12 @@ static jlong android_view_ThreadedRenderer_createRootRenderNode(JNIEnv* env, job
 }
 
 static jlong android_view_ThreadedRenderer_createProxy(JNIEnv* env, jobject clazz,
-        jboolean translucent, jlong rootRenderNodePtr) {
+                                                       jboolean translucent,
+                                                       jlong rootRenderNodePtr,
+                                                       jboolean useIpcCanvas) {
     RootRenderNode* rootRenderNode = reinterpret_cast<RootRenderNode*>(rootRenderNodePtr);
     ContextFactoryImpl factory(rootRenderNode);
-    RenderProxy* proxy = new RenderProxy(translucent, rootRenderNode, &factory);
+    RenderProxy* proxy = new RenderProxy(translucent, rootRenderNode, &factory, useIpcCanvas);
     return (jlong) proxy;
 }
 
@@ -986,7 +988,7 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_setProcessStatsBuffer},
         {"nGetRenderThreadTid", "(J)I", (void*)android_view_ThreadedRenderer_getRenderThreadTid},
         {"nCreateRootRenderNode", "()J", (void*)android_view_ThreadedRenderer_createRootRenderNode},
-        {"nCreateProxy", "(ZJ)J", (void*)android_view_ThreadedRenderer_createProxy},
+        {"nCreateProxy", "(ZJZ)J", (void*)android_view_ThreadedRenderer_createProxy},
         {"nDeleteProxy", "(J)V", (void*)android_view_ThreadedRenderer_deleteProxy},
         {"nLoadSystemProperties", "(J)Z",
          (void*)android_view_ThreadedRenderer_loadSystemProperties},
@@ -1087,8 +1089,7 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_notifyCallbackPending},
         {"nNotifyExpensiveFrame", "(J)V",
          (void*)android_view_ThreadedRenderer_notifyExpensiveFrame},
-        {"nNotifyGpuLoadUp", "(J)V",
-         (void*)android_view_ThreadedRenderer_notifyGpuLoadUp},
+        {"nNotifyGpuLoadUp", "(J)V", (void*)android_view_ThreadedRenderer_notifyGpuLoadUp},
         {"nTrimCaches", "(I)V", (void*)android_view_ThreadedRenderer_trimCaches},
 };
 

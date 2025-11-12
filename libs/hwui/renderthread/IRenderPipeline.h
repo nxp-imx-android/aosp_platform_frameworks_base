@@ -19,6 +19,9 @@
 #include <SkColorSpace.h>
 #include <SkRect.h>
 #include <android-base/unique_fd.h>
+#ifdef __ANDROID__
+#include <gui/SurfaceControl.h>
+#endif
 #include <utils/RefBase.h>
 
 #include "ColorMode.h"
@@ -76,6 +79,9 @@ public:
     virtual void setHardwareBuffer(AHardwareBuffer* hardwareBuffer) = 0;
     virtual bool hasHardwareBuffer() = 0;
     virtual bool setSurface(ANativeWindow* window, SwapBehavior swapBehavior) = 0;
+#ifdef __ANDROID__
+    virtual void setSurfaceControl(const sp<SurfaceControl>&) {}
+#endif
     virtual void onStop() = 0;
     virtual bool isSurfaceReady() = 0;
     virtual bool isContextReady() = 0;

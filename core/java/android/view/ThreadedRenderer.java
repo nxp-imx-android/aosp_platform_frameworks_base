@@ -233,7 +233,11 @@ public final class ThreadedRenderer extends HardwareRenderer {
      * @return A threaded renderer backed by OpenGL.
      */
     public static ThreadedRenderer create(Context context, boolean translucent, String name) {
-        return new ThreadedRenderer(context, translucent, name);
+        return new ThreadedRenderer(context, translucent, name, false);
+    }
+
+   public static ThreadedRenderer create(Context context, boolean translucent, String name, boolean useIpcRendering) {
+       return new ThreadedRenderer(context, translucent, name, useIpcRendering);
     }
 
     private static final String[] VISUALIZERS = {
@@ -338,7 +342,11 @@ public final class ThreadedRenderer extends HardwareRenderer {
     private ArrayList<FrameDrawingCallback> mNextRtFrameCallbacks;
 
     ThreadedRenderer(Context context, boolean translucent, String name) {
-        super();
+        this(context, translucent, name, false);
+    }
+
+    ThreadedRenderer(Context context, boolean translucent, String name, boolean useIpcRendering) {
+        super(useIpcRendering);
         setName(name);
         setOpaque(!translucent);
 

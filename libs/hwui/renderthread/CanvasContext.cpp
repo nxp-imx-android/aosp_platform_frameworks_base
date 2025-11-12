@@ -46,6 +46,9 @@
 #include "hwui/Canvas.h"
 #include "pipeline/skia/SkiaCpuPipeline.h"
 #include "pipeline/skia/SkiaGpuPipeline.h"
+#ifdef __ANDROID__
+#include "pipeline/skia/SkiaIpcPipeline.h"
+#endif
 #include "pipeline/skia/SkiaOpenGLPipeline.h"
 #include "pipeline/skia/SkiaVulkanPipeline.h"
 #include "thread/CommonPool.h"
@@ -82,8 +85,16 @@ CanvasContext* ScopedActiveContext::sActiveContext = nullptr;
 
 CanvasContext* CanvasContext::create(RenderThread& thread, bool translucent,
                                      RenderNode* rootRenderNode, IContextFactory* contextFactory,
-                                     pid_t uiThreadId, pid_t renderThreadId) {
+                                     pid_t uiThreadId, pid_t renderThreadId, bool useIpcCanvas) {
     auto renderType = Properties::getRenderPipelineType();
+
+#ifdef __ANDROID__
+    if (useIpcCanvas) {
+        return new CanvasContext(thread, translucent, rootRenderNode, contextFactory,
+                                 std::make_unique<skiapipeline::SkiaIpcPipeline>(thread),
+                                 uiThreadId, renderThreadId);
+    }
+#endif
 
     switch (renderType) {
         case RenderPipelineType::SkiaGL:
@@ -263,6 +274,8 @@ void CanvasContext::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
         TransactionCompletedListener::getInstance()->addSurfaceStatsListener(
                 this, reinterpret_cast<void*>(onSurfaceStatsAvailable), mSurfaceControl, callback);
     }
+
+    mRenderPipeline->setSurfaceControl(mSurfaceControl);
 #endif
 }
 
