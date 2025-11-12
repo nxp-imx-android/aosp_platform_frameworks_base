@@ -539,11 +539,36 @@ public class GraphicsEnvironment {
                 }
             }
             if (android.os.Flags.enableAngleForGames()
-                    && applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME
-                    && !ActivityManager.isLowRamDeviceStatic()
-                    && SystemProperties.getInt("ro.vendor.api_level", 0) >= 202604) {
-                Log.v(TAG, packageName + " is in GAME category, enabling ANGLE");
-                return ANGLE_GL_DRIVER_CHOICE_ANGLE;
+                    && applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME) {
+                final boolean shouldRunAngleForGame;
+                if (SystemProperties.getInt("debug.graphics.angle.force_enable_angle_for_games", 0)
+                        == 1) {
+                    shouldRunAngleForGame = true;
+                    if (DEBUG) {
+                        Log.v(TAG, "Force enabling ANGLE for game " + packageName
+                                + " on debug.graphics.angle.force_enable_angle_for_games = 1");
+                    }
+                } else {
+                    if (ActivityManager.isLowRamDeviceStatic()) {
+                        shouldRunAngleForGame = false;
+                        if (DEBUG) {
+                            Log.v(TAG, "Skip enabling ANGLE for game " + packageName
+                                    + " on low ram device");
+                        }
+                    } else if (SystemProperties.getInt("ro.vendor.api_level", 0) < 202604) {
+                        shouldRunAngleForGame = false;
+                        if (DEBUG) {
+                            Log.v(TAG,
+                                    "Skip enabling ANGLE for game " + packageName
+                                            + " on device where ro.vendor.api_level < 202604");
+                        }
+                    } else {
+                        shouldRunAngleForGame = true;
+                    }
+                }
+                if (shouldRunAngleForGame) {
+                    return ANGLE_GL_DRIVER_CHOICE_ANGLE;
+                }
             }
         }
 
