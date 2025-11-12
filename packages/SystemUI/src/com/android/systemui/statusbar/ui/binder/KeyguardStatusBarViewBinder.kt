@@ -20,7 +20,6 @@ import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.viewModel
 import com.android.systemui.statusbar.phone.KeyguardStatusBarView
@@ -44,15 +43,6 @@ object KeyguardStatusBarViewBinder {
                         view.setKeyguardUserSwitcherEnabled(it)
                     }
                 }
-            }
-        }
-        view.repeatWhenAttached {
-            view.viewModel(
-                traceName = "KeyguardStatusBarViewBinderViewModel",
-                minWindowLifecycleState = WindowLifecycleState.ATTACHED,
-                factory = { viewModel },
-            ) {
-                // no-op - currently used to activate viewModel
             }
         }
     }

@@ -22,18 +22,19 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.statusbar.domain.interactor.keyguardStatusBarInteractor
-import com.android.systemui.statusbar.policy.batteryController
 import com.android.systemui.user.domain.interactor.userLogoutInteractor
 
-val Kosmos.keyguardStatusBarViewModel: KeyguardStatusBarViewModel by
+val Kosmos.keyguardStatusBarViewModelFactory by
     Kosmos.Fixture {
-        KeyguardStatusBarViewModel(
-            applicationCoroutineScope,
-            desktopInteractor,
-            sceneInteractor,
-            keyguardInteractor,
-            keyguardStatusBarInteractor,
-            userLogoutInteractor,
-            batteryController,
-        )
+        object : KeyguardStatusBarViewModel.Factory {
+            override fun create() =
+                KeyguardStatusBarViewModel(
+                    applicationCoroutineScope,
+                    desktopInteractor,
+                    sceneInteractor,
+                    keyguardInteractor,
+                    keyguardStatusBarInteractor,
+                    userLogoutInteractor,
+                )
+        }
     }

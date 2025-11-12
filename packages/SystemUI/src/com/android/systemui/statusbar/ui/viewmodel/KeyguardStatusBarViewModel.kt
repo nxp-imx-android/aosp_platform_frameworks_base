@@ -25,9 +25,9 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.domain.interactor.KeyguardStatusBarInteractor
-import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor
-import javax.inject.Inject
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.stateIn
  * [com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel].
  */
 class KeyguardStatusBarViewModel
-@Inject
+@AssistedInject
 constructor(
     @Application scope: CoroutineScope,
     desktopInteractor: DesktopInteractor,
@@ -52,7 +52,6 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
     private val userLogoutInteractor: UserLogoutInteractor,
-    batteryController: BatteryController,
 ) : HydratedActivatable(enableEnqueuedActivations = true) {
     /** True if this view should be visible and false otherwise. */
     val isVisible: StateFlow<Boolean> =
@@ -85,5 +84,10 @@ constructor(
 
     fun onSignOut() {
         enqueueOnActivatedScope { userLogoutInteractor.logOutToSystemUser() }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): KeyguardStatusBarViewModel
     }
 }
