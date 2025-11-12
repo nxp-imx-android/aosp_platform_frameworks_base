@@ -23,7 +23,6 @@ import com.android.systemui.KairosActivatable
 import com.android.systemui.KairosBuilder
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.buildSpec
 import com.android.systemui.kairos.combine
@@ -58,7 +57,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.stateIn
 
-@ExperimentalKairosApi
 @SysUISingleton
 class MobileIconsInteractorKairosAdapter
 @Inject

@@ -30,7 +30,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.demomode.DemoMode.COMMAND_NETWORK
 import com.android.systemui.demomode.DemoModeController
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairosBuilder
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
@@ -49,12 +48,10 @@ import kotlinx.coroutines.flow.map
  * Data source that can map from demo mode commands to inputs into the
  * [DemoMobileConnectionsRepositoryKairos]
  */
-@ExperimentalKairosApi
 interface DemoModeMobileConnectionDataSourceKairos {
     val mobileEvents: Events<FakeNetworkEventModel?>
 }
 
-@ExperimentalKairosApi
 @SysUISingleton
 class DemoModeMobileConnectionDataSourceKairosImpl
 @Inject

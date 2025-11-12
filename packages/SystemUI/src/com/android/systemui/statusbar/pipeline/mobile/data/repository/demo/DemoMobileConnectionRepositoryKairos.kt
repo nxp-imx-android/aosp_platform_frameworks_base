@@ -21,7 +21,6 @@ import android.telephony.TelephonyManager
 import com.android.settingslib.SignalIcon
 import com.android.systemui.KairosBuilder
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.TransactionScope
 import com.android.systemui.kairos.map
@@ -65,7 +64,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * [MutableStateFlow] while still logging all of the inputs in the same manor as the production
  * repos.
  */
-@ExperimentalKairosApi
 class DemoMobileConnectionRepositoryKairos(
     override val subId: Int,
     override val tableLogBuffer: TableLogBuffer,

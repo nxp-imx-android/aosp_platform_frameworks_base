@@ -21,7 +21,6 @@ import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State as KairosState
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.combine
@@ -41,7 +40,6 @@ import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 
 /** Common interface for all of the location-based mobile icon view models. */
-@ExperimentalKairosApi
 interface MobileIconViewModelKairosCommon {
     val subscriptionId: Int
     val iconInteractor: MobileIconInteractorKairos
@@ -67,7 +65,6 @@ interface MobileIconViewModelKairosCommon {
  * There will be exactly one [MobileIconViewModelKairos] per filtered subscription offered from
  * [MobileIconsInteractorKairos.filteredSubscriptions].
  */
-@ExperimentalKairosApi
 class MobileIconViewModelKairos(
     override val subscriptionId: Int,
     override val iconInteractor: MobileIconInteractorKairos,
@@ -134,7 +131,6 @@ class MobileIconViewModelKairos(
 }
 
 /** Representation of this network when it is non-terrestrial (e.g., satellite) */
-@ExperimentalKairosApi
 private class CarrierBasedSatelliteViewModelKairosImpl(
     override val subscriptionId: Int,
     override val iconInteractor: MobileIconInteractorKairos,
@@ -156,7 +152,6 @@ private class CarrierBasedSatelliteViewModelKairosImpl(
 }
 
 /** Terrestrial (cellular) icon. */
-@ExperimentalKairosApi
 private class CellularIconViewModelKairos(
     override val subscriptionId: Int,
     override val iconInteractor: MobileIconInteractorKairos,

@@ -31,7 +31,6 @@ import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecut
 import com.android.app.concurrent.benchmark.util.ExecutorServiceThreadWithExecutorCoroutineDispatcherBuilder
 import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.app.concurrent.benchmark.util.times
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State as KairosState
 import java.util.concurrent.Executor
 import kotlinx.coroutines.CoroutineScope
@@ -135,7 +134,6 @@ class FlowChainedEventBenchmark(
     }
 }
 
-@OptIn(ExperimentalKairosApi::class)
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class KairosChainedEventBenchmark(

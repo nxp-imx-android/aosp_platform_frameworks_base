@@ -57,7 +57,6 @@ import kotlin.reflect.KProperty
  *
  * @sample com.android.systemui.kairos.KairosSamples.states
  */
-@ExperimentalKairosApi
 sealed class State<out A> {
     internal abstract val init: Init<StateImpl<A>>
 }
@@ -66,7 +65,6 @@ sealed class State<out A> {
  * Returns a constant [State] that never changes. [changes] is equivalent to [emptyEvents] and
  * [TransactionScope.sample] will always produce [value].
  */
-@ExperimentalKairosApi
 fun <A> stateOf(value: A): State<A> = stateOf(nameTag("stateOf").toNameData("stateOf"), value)
 
 internal fun <A> stateOf(nameData: NameData, value: A): State<A> =
@@ -84,7 +82,7 @@ internal fun <A> stateOf(nameData: NameData, value: A): State<A> =
  *   fun <A> Lazy<State<A>>.defer() = deferredState { value }
  * ```
  */
-@ExperimentalKairosApi fun <A> Lazy<State<A>>.defer(): State<A> = deferInline { value }
+fun <A> Lazy<State<A>>.defer(): State<A> = deferInline { value }
 
 /**
  * Returns a [State] that acts as a deferred-reference to the [State] produced by this
@@ -99,7 +97,6 @@ internal fun <A> stateOf(nameData: NameData, value: A): State<A> =
  *   fun <A> DeferredValue<State<A>>.defer() = deferredState { get() }
  * ```
  */
-@ExperimentalKairosApi
 fun <A> DeferredValue<State<A>>.defer(): State<A> = deferInline { unwrapped.value }
 
 /**
@@ -110,7 +107,6 @@ fun <A> DeferredValue<State<A>>.defer(): State<A> = deferInline { unwrapped.valu
  *
  * Useful for recursive definitions.
  */
-@ExperimentalKairosApi
 fun <A> deferredState(block: KairosScope.() -> State<A>): State<A> = deferInline { NoScope.block() }
 
 /**
@@ -119,7 +115,6 @@ fun <A> deferredState(block: KairosScope.() -> State<A>): State<A> = deferInline
  *
  * @sample com.android.systemui.kairos.KairosSamples.mapState
  */
-@ExperimentalKairosApi
 fun <A, B> State<A>.map(transform: KairosScope.(A) -> B): State<B> =
     map(nameTag("State.map").toNameData("State.map"), transform)
 
@@ -139,7 +134,6 @@ internal fun <A, B> State<A>.map(nameData: NameData, transform: KairosScope.(A) 
  *
  * @see State.map
  */
-@ExperimentalKairosApi
 fun <A, B> State<A>.mapCheapUnsafe(transform: KairosScope.(A) -> B): State<B> =
     mapCheapUnsafe(nameTag("State.mapCheapUnsafe").toNameData("State.mapCheapUnsafe"), transform)
 
@@ -161,7 +155,6 @@ internal fun <A, B> State<A>.mapCheapUnsafe(
  *   }
  * ```
  */
-@ExperimentalKairosApi
 fun <A, B> State<Pair<A, B>>.unzip(): Pair<State<A>, State<B>> =
     unzip(nameTag("State.unzip").toNameData("State.unzip"))
 
@@ -176,7 +169,6 @@ internal fun <A, B> State<Pair<A, B>>.unzip(nameData: NameData): Pair<State<A>, 
  *
  * @sample com.android.systemui.kairos.KairosSamples.flatMap
  */
-@ExperimentalKairosApi
 fun <A, B> State<A>.flatMap(transform: KairosScope.(A) -> State<B>): State<B> =
     flatMap(nameTag("State.flatMap").toNameData("State.flatMap"), transform)
 
@@ -201,7 +193,6 @@ internal fun <A, B> State<A>.flatMap(
  *
  * @see flatMap
  */
-@ExperimentalKairosApi
 fun <A> State<State<A>>.flatten() = flatten(nameTag("State.flatten").toNameData("State.flatten"))
 
 internal fun <A> State<State<A>>.flatten(nameData: NameData) = flatMap(nameData) { it }
@@ -217,7 +208,6 @@ internal fun <A> State<State<A>>.flatten(nameData: NameData) = flatMap(nameData)
  *     ConflatedMutableEvents(kairosNetwork).holdState(initialValue)
  * ```
  */
-@ExperimentalKairosApi
 class MutableState<T>
 internal constructor(
     internal val nameData: NameData,
@@ -316,7 +306,6 @@ internal constructor(
  *
  * @sample com.android.systemui.kairos.KairosSamples.stateLoop
  */
-@ExperimentalKairosApi
 class StateLoop<A> : State<A>() {
 
     private val nameData: NameData = NameTaggingDisabled
@@ -364,7 +353,6 @@ private inline fun <A> deferInline(crossinline block: InitScope.() -> State<A>):
  *     stateChanges.map { WithPrev(previousValue = sample(), newValue = it) }
  * ```
  */
-@ExperimentalKairosApi
 val <A> State<A>.transitions: Events<WithPrev<A, A>>
     get() = transitions(nameTag("State.transitions").toNameData("State.transitions"))
 
@@ -378,7 +366,6 @@ internal fun <A> State<A>.transitions(nameData: NameData) =
  *
  * @sample com.android.systemui.kairos.KairosSamples.changes
  */
-@ExperimentalKairosApi
 val <A> State<A>.changes: Events<A>
     get() = changes(nameTag("State.changes").toNameData("State.changes"))
 

@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalKairosApi::class)
-
 package com.android.systemui.shade.ui.viewmodel
 
 import com.android.systemui.battery.batteryMeterViewControllerFactory
 import com.android.systemui.clock.domain.interactor.clockInteractor
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.kairos
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter

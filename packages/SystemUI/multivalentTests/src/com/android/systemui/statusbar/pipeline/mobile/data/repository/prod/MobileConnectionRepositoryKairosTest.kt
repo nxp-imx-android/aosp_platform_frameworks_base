@@ -78,7 +78,6 @@ import com.android.systemui.flags.Flags.ROAMING_INDICATOR_VIA_DISPLAY_INFO
 import com.android.systemui.flags.fake
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kairos.ActivatedKairosFixture
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.MutableState
 import com.android.systemui.kairos.kairos
@@ -120,7 +119,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileConnectionRepositoryKairosTest : SysuiTestCase() {

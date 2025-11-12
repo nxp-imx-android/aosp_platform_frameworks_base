@@ -20,7 +20,6 @@ import android.util.IndentingPrintWriter
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.KairosBuilder
 import com.android.systemui.kairos.BuildSpec
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatMap
@@ -46,7 +45,6 @@ import java.io.PrintWriter
  * switches between the two types of connections based on whether the connection is currently
  * carrier merged.
  */
-@ExperimentalKairosApi
 class FullMobileConnectionRepositoryKairos
 @AssistedInject
 constructor(

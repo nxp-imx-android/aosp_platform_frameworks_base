@@ -33,7 +33,6 @@ import com.android.systemui.kairos.util.toNameData
  *
  * @sample com.android.systemui.kairos.KairosSamples.combineState
  */
-@ExperimentalKairosApi
 @JvmName(name = "stateCombine")
 fun <A, B, C> State<A>.combine(other: State<B>, transform: KairosScope.(A, B) -> C): State<C> =
     combine(nameTag("State.combine").toNameData("State.combine"), other, transform)
@@ -49,7 +48,6 @@ internal fun <A, B, C> State<A>.combine(
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A> Iterable<State<A>>.combine(): State<List<A>> =
     combine(nameTag("Iterable<State>.combineToList").toNameData("Iterable<State>.combineToList"))
 
@@ -66,7 +64,6 @@ internal fun <A> Iterable<State<A>>.combine(nameData: NameData): State<List<A>> 
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <K, A> Map<K, State<A>>.combine(): State<Map<K, A>> =
     combine(nameTag("Map<K, State>.combine").toNameData("Map<K, State>.combine"))
 
@@ -87,7 +84,6 @@ internal fun <K, A> Map<K, State<A>>.combine(nameData: NameData): State<Map<K, A
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A, B> Iterable<State<A>>.combine(transform: KairosScope.(List<A>) -> B): State<B> =
     combine(nameTag("Iterable<State>.combine").toNameData("Iterable<State>.combine"), transform)
 
@@ -101,7 +97,6 @@ internal fun <A, B> Iterable<State<A>>.combine(
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A> combine(vararg states: State<A>): State<List<A>> =
     combine(nameTag("combineVarArgToList").toNameData("combineVarArgToList"), *states)
 
@@ -114,7 +109,6 @@ internal fun <A> combine(nameData: NameData, vararg states: State<A>): State<Lis
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A, B> combine(vararg states: State<A>, transform: KairosScope.(List<A>) -> B): State<B> =
     combine(nameTag("combineVarArg").toNameData("combineVarArg"), *states, transform = transform)
 
@@ -130,7 +124,6 @@ internal fun <A, B> combine(
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A, B, Z> combine(
     stateA: State<A>,
     stateB: State<B>,
@@ -155,7 +148,6 @@ internal fun <A, B, Z> combine(
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A, B, C, Z> combine(
     stateA: State<A>,
     stateB: State<B>,
@@ -184,7 +176,6 @@ internal fun <A, B, C, Z> combine(
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A, B, C, D, Z> combine(
     stateA: State<A>,
     stateB: State<B>,
@@ -216,7 +207,6 @@ internal fun <A, B, C, D, Z> combine(
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A, B, C, D, E, Z> combine(
     stateA: State<A>,
     stateB: State<B>,
@@ -263,7 +253,6 @@ internal fun <A, B, C, D, E, Z> combine(
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A, B, C, D, E, F, Z> combine(
     stateA: State<A>,
     stateB: State<B>,
@@ -316,7 +305,6 @@ internal fun <A, B, C, D, E, F, Z> combine(
  *
  * @see State.combine
  */
-@ExperimentalKairosApi
 fun <A, B, C, D, E, F, G, Z> combine(
     stateA: State<A>,
     stateB: State<B>,

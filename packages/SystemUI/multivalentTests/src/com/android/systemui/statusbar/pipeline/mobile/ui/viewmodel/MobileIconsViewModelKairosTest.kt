@@ -25,7 +25,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fake
 import com.android.systemui.flags.featureFlagsClassic
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.runKairosTest
 import com.android.systemui.kosmos.Kosmos
@@ -42,7 +41,6 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileIconsViewModelKairosTest : SysuiTestCase() {

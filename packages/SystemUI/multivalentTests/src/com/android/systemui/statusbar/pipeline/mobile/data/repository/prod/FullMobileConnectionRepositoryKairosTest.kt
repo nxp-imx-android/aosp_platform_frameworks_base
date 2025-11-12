@@ -31,7 +31,6 @@ import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kairos.ActivatedKairosFixture
 import com.android.systemui.kairos.BuildSpec
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.MutableState
 import com.android.systemui.kairos.buildSpec
@@ -72,7 +71,6 @@ import org.mockito.kotlin.mock
  * repository interface it's switching on. These tests just need to verify that the entire interface
  * properly switches over when the value of `isCarrierMerged` changes.
  */
-@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class FullMobileConnectionRepositoryKairosTest : SysuiTestCase() {

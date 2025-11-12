@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -40,7 +39,6 @@ import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStat
 import com.android.systemui.util.composable.kairos.rememberKairosActivatable
 
 object StackedMobileIconBinder {
-    @OptIn(ExperimentalKairosApi::class)
     fun bind(
         view: SingleBindableStatusBarComposeIconView,
         mobileIconsViewModel: MobileIconsViewModel,

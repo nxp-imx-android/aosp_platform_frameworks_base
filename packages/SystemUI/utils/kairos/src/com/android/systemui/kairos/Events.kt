@@ -55,7 +55,6 @@ import kotlinx.coroutines.launch
  * 3. [Events] emissions are *ephemeral* and do not last beyond the transaction they are emitted,
  *    unless explicitly [observed][BuildScope.observe] or [held][StateScope.holdState] as a [State].
  */
-@ExperimentalKairosApi
 sealed class Events<out A> {
     companion object {
         /** An [Events] with no values. */
@@ -64,7 +63,7 @@ sealed class Events<out A> {
 }
 
 /** An [Events] with no values. */
-@ExperimentalKairosApi val emptyEvents: Events<Nothing> = Events.empty
+val emptyEvents: Events<Nothing> = Events.empty
 
 /**
  * A forward-reference to an [Events]. Useful for recursive definitions.
@@ -74,7 +73,6 @@ sealed class Events<out A> {
  *
  * @sample com.android.systemui.kairos.KairosSamples.eventsLoop
  */
-@ExperimentalKairosApi
 class EventsLoop<A> : Events<A>() {
 
     private val nameData: NameData = NameTaggingDisabled
@@ -120,7 +118,7 @@ class EventsLoop<A> : Events<A>() {
  *
  * @see deferredEvents
  */
-@ExperimentalKairosApi fun <A> Lazy<Events<A>>.defer(): Events<A> = deferInline { value }
+fun <A> Lazy<Events<A>>.defer(): Events<A> = deferInline { value }
 
 /**
  * Returns an [Events] that acts as a deferred-reference to the [Events] produced by this
@@ -137,7 +135,6 @@ class EventsLoop<A> : Events<A>() {
  *
  * @see deferredEvents
  */
-@ExperimentalKairosApi
 fun <A> DeferredValue<Events<A>>.defer(): Events<A> = deferInline { unwrapped.value }
 
 /**
@@ -148,7 +145,6 @@ fun <A> DeferredValue<Events<A>>.defer(): Events<A> = deferInline { unwrapped.va
  *
  * Useful for recursive definitions.
  */
-@ExperimentalKairosApi
 fun <A> deferredEvents(block: KairosScope.() -> Events<A>): Events<A> = deferInline {
     NoScope.block()
 }
@@ -161,7 +157,6 @@ fun <A> deferredEvents(block: KairosScope.() -> Events<A>): Events<A> = deferInl
  * @sample com.android.systemui.kairos.KairosSamples.mapMaybe
  * @see mapNotNull
  */
-@ExperimentalKairosApi
 fun <A, B> Events<A>.mapMaybe(transform: TransactionScope.(A) -> Maybe<B>): Events<B> =
     mapMaybe(nameTag("Events.mapMaybe").toNameData("Events.mapMaybe"), transform)
 
@@ -181,7 +176,6 @@ internal fun <A, B> Events<A>.mapMaybe(
  *
  * @see mapMaybe
  */
-@ExperimentalKairosApi
 fun <A, B> Events<A>.mapNotNull(transform: TransactionScope.(A) -> B?): Events<B> =
     mapNotNull(nameTag("Events.mapNotNull").toNameData("Events.mapNotNull"), transform)
 
@@ -196,7 +190,6 @@ internal fun <A, B> Events<A>.mapNotNull(
  *
  * @sample com.android.systemui.kairos.KairosSamples.mapEvents
  */
-@ExperimentalKairosApi
 fun <A, B> Events<A>.map(transform: TransactionScope.(A) -> B): Events<B> {
     return map(nameTag("Events.map").toNameData("Events.map"), transform)
 }
@@ -217,7 +210,6 @@ internal fun <A, B> Events<A>.map(
  * @sample com.android.systemui.kairos.KairosSamples.mapCheap
  * @see map
  */
-@ExperimentalKairosApi
 fun <A, B> Events<A>.mapCheap(transform: TransactionScope.(A) -> B): Events<B> =
     mapCheap(nameTag("Events.mapCheap").toNameData("Events.mapCheap"), transform)
 
@@ -246,7 +238,6 @@ internal fun <A, B> Events<A>.mapCheap(
  * in response to an [Events], use the output combinators available in [BuildScope], such as
  * [BuildScope.toSharedFlow] or [BuildScope.observe].
  */
-@ExperimentalKairosApi
 fun <A> Events<A>.onEach(action: TransactionScope.(A) -> Unit): Events<A> =
     onEach(nameTag("Events.onEach").toNameData("Events.onEach"), action)
 
@@ -267,7 +258,6 @@ internal fun <A> Events<A>.onEach(
  *   }
  * ```
  */
-@ExperimentalKairosApi
 fun <A, B> Events<Pair<A, B>>.unzip(): Pair<Events<A>, Events<B>> =
     unzip(nameTag("Events.unzip").toNameData("Events.unzip"))
 
@@ -283,7 +273,6 @@ internal fun <A, B> Events<Pair<A, B>>.unzip(nameData: NameData): Pair<Events<A>
  *
  * @see KairosNetwork.coalescingMutableEvents
  */
-@ExperimentalKairosApi
 class CoalescingMutableEvents<in In, Out>
 internal constructor(
     internal val nameData: NameData,
@@ -328,7 +317,6 @@ internal constructor(
  *
  * @see KairosNetwork.coalescingMutableEvents
  */
-@ExperimentalKairosApi
 class MutableEvents<T>
 internal constructor(
     internal val network: Network,

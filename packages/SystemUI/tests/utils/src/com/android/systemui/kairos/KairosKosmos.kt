@@ -27,24 +27,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 
-@ExperimentalKairosApi
 val Kosmos.kairos: KairosNetwork by Fixture { applicationCoroutineScope.launchKairosNetwork() }
 
-@ExperimentalKairosApi
 fun Kosmos.activateKairosActivatable(activatable: KairosActivatable) {
     applicationCoroutineScope.launch { kairos.activateSpec { activatable.run { activate() } } }
 }
 
-@ExperimentalKairosApi
 fun <T : KairosActivatable> ActivatedKairosFixture(block: Kosmos.() -> T) = Fixture {
     block().also { activateKairosActivatable(it) }
 }
 
-@ExperimentalKairosApi
 fun Kosmos.runKairosTest(timeout: Duration = 5.seconds, block: suspend KairosTestScope.() -> Unit) =
     testScope.runTest(timeout) { KairosTestScopeImpl(this@runKairosTest, this, kairos).block() }
 
-@ExperimentalKairosApi
 interface KairosTestScope : Kosmos {
     fun <T> State<T>.collectLastValue(): KairosValue<T?>
 
@@ -53,7 +48,6 @@ interface KairosTestScope : Kosmos {
     fun <T : KairosActivatable> T.activated(): T
 }
 
-@ExperimentalKairosApi
 private class KairosTestScopeImpl(
     kosmos: Kosmos,
     val testScope: TestScope,

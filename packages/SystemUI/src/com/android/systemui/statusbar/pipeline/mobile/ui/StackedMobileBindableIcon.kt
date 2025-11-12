@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.pipeline.mobile.ui
 import android.content.Context
 import com.android.settingslib.flags.Flags
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.statusbar.pipeline.icons.shared.model.BindableIcon
 import com.android.systemui.statusbar.pipeline.icons.shared.model.ModernStatusBarViewCreator
@@ -30,7 +29,6 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobile
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView
 import javax.inject.Inject
 
-@OptIn(ExperimentalKairosApi::class)
 @SysUISingleton
 class StackedMobileBindableIcon
 @Inject

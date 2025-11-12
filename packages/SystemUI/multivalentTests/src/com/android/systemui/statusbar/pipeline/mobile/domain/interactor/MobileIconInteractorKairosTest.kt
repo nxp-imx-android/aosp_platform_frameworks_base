@@ -28,7 +28,6 @@ import com.android.systemui.flags.Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTION
 import com.android.systemui.flags.fake
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kairos.ActivatedKairosFixture
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.MutableState
 import com.android.systemui.kairos.kairos
@@ -60,7 +59,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
-@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileIconInteractorKairosTest : SysuiTestCase() {

@@ -22,7 +22,6 @@ import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Default
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.toColdConflatedFlow
 import com.android.systemui.kairos.util.nameTag
@@ -94,7 +93,6 @@ import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
-@OptIn(ExperimentalKairosApi::class)
 @Module(
     includes =
         [
