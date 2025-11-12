@@ -178,19 +178,23 @@ internal class MuxPromptNode<W, K, V, R>(
         }
     }
 
-    override fun doDeactivate() {
+    override fun doDeactivate(evalScope: EvalScope) {
         // Update lifecycle
         if (lifecycle.lifecycleState !is MuxLifecycleState.Active) return
         lifecycle.lifecycleState = MuxLifecycleState.Inactive(spec)
         // Process branch nodes
         switchedIn.forEach { _, branchNode ->
             branchNode.upstream.removeDownstreamAndDeactivateIfNeeded(
-                downstream = branchNode.schedulable
+                downstream = branchNode.schedulable,
+                evalScope = evalScope,
             )
         }
         // Process patch node
         patches?.let { patches ->
-            patches.upstream.removeDownstreamAndDeactivateIfNeeded(downstream = patches.schedulable)
+            patches.upstream.removeDownstreamAndDeactivateIfNeeded(
+                downstream = patches.schedulable,
+                evalScope = evalScope,
+            )
         }
     }
 

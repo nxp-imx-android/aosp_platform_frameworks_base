@@ -32,6 +32,7 @@ import com.android.systemui.kairos.internal.neverImpl
 import com.android.systemui.kairos.internal.util.hashString
 import com.android.systemui.kairos.util.Maybe
 import com.android.systemui.kairos.util.NameData
+import com.android.systemui.kairos.util.NameTag
 import com.android.systemui.kairos.util.NameTaggingDisabled
 import com.android.systemui.kairos.util.forceInit
 import com.android.systemui.kairos.util.nameTag
@@ -274,12 +275,12 @@ internal fun <A, B> Events<Pair<A, B>>.unzip(nameData: NameData): Pair<Events<A>
  * @see KairosNetwork.coalescingMutableEvents
  */
 class CoalescingMutableEvents<in In, Out>
-internal constructor(
+private constructor(
     internal val nameData: NameData,
     internal val coalesce: (old: Lazy<Out>, new: In) -> Out,
-    internal val network: Network,
     private val getInitialValue: () -> Out,
-    internal val impl: InputNode<Out> = InputNode(nameData),
+    internal val networkRef: AtomicReference<Network?>,
+    internal val impl: InputNode<Out>,
 ) : Events<Out>() {
 
     init {
@@ -287,6 +288,44 @@ internal constructor(
     }
 
     private val storage = AtomicReference(false to lazy { getInitialValue() })
+
+    private constructor(
+        nameData: NameData,
+        coalesce: (old: Lazy<Out>, new: In) -> Out,
+        getInitialValue: () -> Out,
+        networkRef: AtomicReference<Network?>,
+    ) : this(
+        nameData,
+        coalesce,
+        getInitialValue,
+        networkRef,
+        InputNode(
+            nameData,
+            activate = { check(networkRef.compareAndSet(null, network)) { "Network mismatch" } },
+            deactivate = { check(networkRef.compareAndSet(network, null)) { "Network mismatch" } },
+        ),
+    )
+
+    internal constructor(
+        nameData: NameData,
+        coalesce: (old: Lazy<Out>, new: In) -> Out,
+        getInitialValue: () -> Out,
+        network: Network,
+    ) : this(nameData, coalesce, network, getInitialValue, InputNode(nameData))
+
+    internal constructor(
+        nameData: NameData,
+        coalesce: (old: Lazy<Out>, new: In) -> Out,
+        getInitialValue: () -> Out,
+    ) : this(nameData, coalesce, getInitialValue, AtomicReference(null))
+
+    internal constructor(
+        nameData: NameData,
+        coalesce: (old: Lazy<Out>, new: In) -> Out,
+        network: Network,
+        getInitialValue: () -> Out,
+        inputNode: InputNode<Out>,
+    ) : this(nameData, coalesce, getInitialValue, AtomicReference(network), inputNode)
 
     override fun toString(): String = "${this::class.simpleName}@$hashString[$nameData]"
 
@@ -299,6 +338,7 @@ internal constructor(
      * that is then processed when the network is ready.
      */
     fun emit(value: In) {
+        val network = networkRef.get() ?: return
         val (scheduled, _) =
             storage.getAndUpdate { (_, batch) -> true to lazyOf(coalesce(batch, value)) }
         if (!scheduled) {
@@ -318,10 +358,10 @@ internal constructor(
  * @see KairosNetwork.coalescingMutableEvents
  */
 class MutableEvents<T>
-internal constructor(
-    internal val network: Network,
+private constructor(
     internal val nameData: NameData,
-    internal val impl: InputNode<T> = InputNode(nameData),
+    private val networkRef: AtomicReference<Network?>,
+    internal val impl: InputNode<T>,
 ) : Events<T>() {
 
     init {
@@ -330,6 +370,27 @@ internal constructor(
 
     private val storage = AtomicReference<Job?>(null)
 
+    private constructor(
+        nameData: NameData,
+        networkRef: AtomicReference<Network?>,
+    ) : this(
+        nameData,
+        networkRef,
+        InputNode(
+            nameData,
+            activate = { check(networkRef.compareAndSet(null, network)) { "Network mismatch" } },
+            deactivate = { check(networkRef.compareAndSet(network, null)) { "Network mismatch" } },
+        ),
+    )
+
+    internal constructor(nameData: NameData) : this(nameData, AtomicReference(null))
+
+    internal constructor(
+        nameData: NameData,
+        network: Network,
+        inputNode: InputNode<T>,
+    ) : this(nameData, AtomicReference(network), inputNode)
+
     override fun toString(): String = "${this::class.simpleName}@$hashString[$nameData]"
 
     /**
@@ -337,6 +398,7 @@ internal constructor(
      * containing the emission has completed.
      */
     suspend fun emit(value: T) {
+        val network = networkRef.get() ?: return
         coroutineScope {
             var jobOrNull: Job? = null
             val newEmit =
@@ -347,10 +409,46 @@ internal constructor(
                 }
             jobOrNull = storage.getAndSet(newEmit)
             newEmit.join()
-            storage.compareAndExchange(newEmit, null)
+            storage.compareAndSet(newEmit, null)
         }
     }
 }
+
+/** Returns a [CoalescingMutableEvents] that can emit values into this [KairosNetwork]. */
+fun <T> ConflatedMutableEvents(name: NameTag? = null): CoalescingMutableEvents<T, T> =
+    CoalescingMutableEvents(
+        name.toNameData("CoalescingMutableEvents"),
+        coalesce = { _, new -> new },
+        { error("WTF: init value accessed for conflatedMutableEvents") },
+    )
+
+/** Returns a [CoalescingMutableEvents] that can emit values into this [KairosNetwork]. */
+fun <In, Out> CoalescingMutableEvents(
+    initialValue: Out,
+    name: NameTag? = null,
+    coalesce: KairosScope.(old: Out, new: In) -> Out,
+): CoalescingMutableEvents<In, Out> =
+    CoalescingMutableEvents(
+        name.toNameData("CoalescingMutableEvents"),
+        coalesce = { old, new -> NoScope.coalesce(old.value, new) },
+        { initialValue },
+    )
+
+/** Returns a [CoalescingMutableEvents] that can emit values into this [KairosNetwork]. */
+fun <In, Out> CoalescingMutableEvents(
+    getInitialValue: KairosScope.() -> Out,
+    name: NameTag? = null,
+    coalesce: KairosScope.(old: Out, new: In) -> Out,
+): CoalescingMutableEvents<In, Out> =
+    CoalescingMutableEvents(
+        name.toNameData("CoalescingMutableEvents"),
+        coalesce = { old, new -> NoScope.coalesce(old.value, new) },
+        { NoScope.getInitialValue() },
+    )
+
+/** Returns a [MutableEvents] that can emit values into this [KairosNetwork]. */
+fun <T> MutableEvents(name: NameTag? = null): MutableEvents<T> =
+    MutableEvents(name.toNameData("MutableEvents"))
 
 private data object EmptyEvents : Events<Nothing>()
 

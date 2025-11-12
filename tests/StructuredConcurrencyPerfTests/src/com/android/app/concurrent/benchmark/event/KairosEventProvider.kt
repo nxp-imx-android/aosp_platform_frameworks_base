@@ -65,7 +65,7 @@ class KairosWritableEventBuilder(val scope: CoroutineScope) :
     val kairosNetwork = scope.launchKairosNetwork()
 
     override fun <T> createWritableEvent(value: T): EventBox<T, KairosMutableState<T>> {
-        return KairosStateBoxImpl(KairosMutableState(kairosNetwork, value))
+        return KairosStateBoxImpl(KairosMutableState(value))
     }
 
     override fun <T1, T2, T3> combineEvents(

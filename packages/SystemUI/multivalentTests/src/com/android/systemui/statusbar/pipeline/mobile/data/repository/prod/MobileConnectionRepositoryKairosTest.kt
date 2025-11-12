@@ -156,12 +156,11 @@ class MobileConnectionRepositoryKairosTest : SysuiTestCase() {
 
     private val Kosmos.subscriptionModel: MutableState<SubscriptionModel?> by Fixture {
         MutableState(
-            kairos,
             SubscriptionModel(
                 subscriptionId = SUB_1_ID,
                 carrierName = DEFAULT_NAME,
                 profileClass = PROFILE_CLASS_UNSET,
-            ),
+            )
         )
     }
 

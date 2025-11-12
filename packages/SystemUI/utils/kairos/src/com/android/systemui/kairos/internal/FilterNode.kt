@@ -140,15 +140,21 @@ internal class FilterNode<A>(
         downstreamSet.remove(downstream)
     }
 
-    override fun removeDownstreamAndDeactivateIfNeeded(downstream: Schedulable) {
+    override fun removeDownstreamAndDeactivateIfNeeded(
+        downstream: Schedulable,
+        evalScope: EvalScope,
+    ) {
         removeDownstream(downstream)
-        deactivateIfNeeded()
+        deactivateIfNeeded(evalScope)
     }
 
-    override fun deactivateIfNeeded() {
+    override fun deactivateIfNeeded(evalScope: EvalScope) {
         if (downstreamSet.isEmpty()) {
             lifecycle.lifecycleState = FilterLifecycleState.Inactive(spec)
-            upstreamConnection.removeDownstreamAndDeactivateIfNeeded(downstream = schedulable)
+            upstreamConnection.removeDownstreamAndDeactivateIfNeeded(
+                downstream = schedulable,
+                evalScope = evalScope,
+            )
         }
     }
 

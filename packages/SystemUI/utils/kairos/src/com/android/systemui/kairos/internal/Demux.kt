@@ -140,12 +140,15 @@ internal class DemuxNode<W, K, A>(
         }
     }
 
-    fun removeDownstreamAndDeactivateIfNeeded(key: K) {
+    fun removeDownstreamAndDeactivateIfNeeded(key: K, evalScope: EvalScope) {
         branchNodeByKey.remove(key)
         val deactivate = branchNodeByKey.isEmpty()
         if (deactivate) {
             lifecycle.lifecycleState = DemuxLifecycleState.Inactive(spec)
-            upstreamConnection.removeDownstreamAndDeactivateIfNeeded(downstream = schedulable)
+            upstreamConnection.removeDownstreamAndDeactivateIfNeeded(
+                downstream = schedulable,
+                evalScope = evalScope,
+            )
         }
     }
 
@@ -190,17 +193,20 @@ internal class DemuxNode<W, K, A>(
             downstreamSet.remove(downstream)
         }
 
-        override fun removeDownstreamAndDeactivateIfNeeded(downstream: Schedulable) {
+        override fun removeDownstreamAndDeactivateIfNeeded(
+            downstream: Schedulable,
+            evalScope: EvalScope,
+        ) {
             downstreamSet.remove(downstream)
             val canDeactivate = downstreamSet.isEmpty()
             if (canDeactivate) {
-                removeDownstreamAndDeactivateIfNeeded(key)
+                removeDownstreamAndDeactivateIfNeeded(key, evalScope)
             }
         }
 
-        override fun deactivateIfNeeded() {
+        override fun deactivateIfNeeded(evalScope: EvalScope) {
             if (downstreamSet.isEmpty()) {
-                removeDownstreamAndDeactivateIfNeeded(key)
+                removeDownstreamAndDeactivateIfNeeded(key, evalScope)
             }
         }
 

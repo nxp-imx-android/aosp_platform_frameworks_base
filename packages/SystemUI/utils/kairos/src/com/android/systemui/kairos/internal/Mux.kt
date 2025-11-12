@@ -73,17 +73,20 @@ internal sealed class MuxNode<W, K, V, R>(
         downstreamSet.remove(downstream)
     }
 
-    final override fun removeDownstreamAndDeactivateIfNeeded(downstream: Schedulable) {
+    final override fun removeDownstreamAndDeactivateIfNeeded(
+        downstream: Schedulable,
+        evalScope: EvalScope,
+    ) {
         downstreamSet.remove(downstream)
         val deactivate = downstreamSet.isEmpty()
         if (deactivate) {
-            doDeactivate()
+            doDeactivate(evalScope)
         }
     }
 
-    final override fun deactivateIfNeeded() {
+    final override fun deactivateIfNeeded(evalScope: EvalScope) {
         if (downstreamSet.isEmpty()) {
-            doDeactivate()
+            doDeactivate(evalScope)
         }
     }
 
@@ -91,7 +94,7 @@ internal sealed class MuxNode<W, K, V, R>(
     abstract fun visit(logIndent: Int, evalScope: EvalScope)
 
     /** perform deactivation logic, propagating to all upstream nodes. */
-    protected abstract fun doDeactivate()
+    protected abstract fun doDeactivate(evalScope: EvalScope)
 
     final override fun scheduleDeactivationIfNeeded(evalScope: EvalScope) {
         if (downstreamSet.isEmpty()) {

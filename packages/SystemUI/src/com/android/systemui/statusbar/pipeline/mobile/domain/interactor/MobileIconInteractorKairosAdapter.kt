@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.mobile.domain.interactor
 
 import com.android.systemui.kairos.BuildScope
-import com.android.systemui.kairos.toColdConflatedFlow
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
@@ -35,16 +34,18 @@ fun BuildScope.MobileIconInteractorKairosAdapter(
             subscriptionId = subscriptionId,
             tableLogBuffer = tableLogBuffer,
             activity =
-                activity.toColdConflatedFlow(
-                    kairosNetwork,
-                    nameTag { "MobileIconInteractorKairosAdapter(subId=$subscriptionId).activity" },
+                activity.toSharedFlow(
+                    name =
+                        nameTag {
+                            "MobileIconInteractorKairosAdapter(subId=$subscriptionId).activity"
+                        }
                 ),
             mobileIsDefault =
-                mobileIsDefault.toColdConflatedFlow(
-                    kairosNetwork,
-                    nameTag {
-                        "MobileIconInteractorKairosAdapter(subId=$subscriptionId).mobileIsDefault"
-                    },
+                mobileIsDefault.toSharedFlow(
+                    name =
+                        nameTag {
+                            "MobileIconInteractorKairosAdapter(subId=$subscriptionId).mobileIsDefault"
+                        }
                 ),
             isDataConnected =
                 isDataConnected.toStateFlow(
@@ -123,11 +124,11 @@ fun BuildScope.MobileIconInteractorKairosAdapter(
                     nameTag { "MobileIconInteractorKairosAdapter(subId=$subscriptionId).isRoaming" }
                 ),
             isForceHidden =
-                isForceHidden.toColdConflatedFlow(
-                    kairosNetwork,
-                    nameTag {
-                        "MobileIconInteractorKairosAdapter(subId=$subscriptionId).isForceHidden"
-                    },
+                isForceHidden.toSharedFlow(
+                    name =
+                        nameTag {
+                            "MobileIconInteractorKairosAdapter(subId=$subscriptionId).isForceHidden"
+                        }
                 ),
             isAllowedDuringAirplaneMode =
                 isAllowedDuringAirplaneMode.toStateFlow(

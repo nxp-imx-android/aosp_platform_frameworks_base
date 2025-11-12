@@ -90,7 +90,7 @@ internal class BuildScopeImpl(
         return buildEvents(
             fullTag,
             constructEvents = { inputNode ->
-                val events = MutableEvents(network, fullTag, inputNode)
+                val events = MutableEvents(fullTag, network, inputNode)
                 events to EventProducerScope { value -> events.emit(value) }
             },
             builder = builder,
@@ -99,7 +99,7 @@ internal class BuildScopeImpl(
 
     override fun <In, Out> coalescingEvents(
         getInitialValue: KairosScope.() -> Out,
-        coalesce: (old: Out, new: In) -> Out,
+        coalesce: KairosScope.(old: Out, new: In) -> Out,
         name: NameTag?,
         builder: suspend CoalescingEventProducerScope<In>.() -> Unit,
     ): Events<Out> {
@@ -109,11 +109,11 @@ internal class BuildScopeImpl(
             constructEvents = { inputNode ->
                 val events =
                     CoalescingMutableEvents(
-                        nameData,
-                        coalesce = { old, new: In -> coalesce(old.value, new) },
+                        nameData = nameData,
+                        coalesce = { old: Lazy<Out>, new: In -> NoScope.coalesce(old.value, new) },
                         network = network,
                         getInitialValue = { NoScope.getInitialValue() },
-                        impl = inputNode,
+                        inputNode = inputNode,
                     )
                 events to CoalescingEventProducerScope { value -> events.emit(value) }
             },
@@ -377,7 +377,7 @@ internal class BuildScopeImpl(
 
     private fun newStopEmitter(nameData: NameData): CoalescingMutableEvents<Unit, Unit> =
         CoalescingMutableEvents(
-            nameData,
+            nameData = nameData,
             coalesce = { _, _: Unit -> },
             network = network,
             getInitialValue = {},
