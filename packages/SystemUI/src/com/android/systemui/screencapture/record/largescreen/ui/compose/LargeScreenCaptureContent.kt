@@ -21,22 +21,36 @@ import androidx.compose.ui.platform.LocalContext
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
+import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.LargeScreenStopRecordingPopupViewModel
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 import javax.inject.Inject
 
 @ScreenCaptureUiScope
 class LargeScreenCaptureContent
 @Inject
-constructor(private val viewModelFactory: PreCaptureViewModel.Factory) : ScreenCaptureContent {
+constructor(
+    private val preCaptureViewModelFactory: PreCaptureViewModel.Factory,
+    private val largeScreenStopRecordingPopupViewModelFactory:
+        LargeScreenStopRecordingPopupViewModel.Factory,
+) : ScreenCaptureContent {
 
     @Composable
     override fun Content() {
         val displayId = LocalContext.current.displayId
-        val viewModel: PreCaptureViewModel =
-            rememberViewModel("PreCaptureViewModel") { viewModelFactory.create(displayId) }
+        val preCaptureViewModel: PreCaptureViewModel =
+            rememberViewModel("PreCaptureViewModel") {
+                preCaptureViewModelFactory.create(displayId)
+            }
+        val largeScreenStopRecordingPopupViewModel: LargeScreenStopRecordingPopupViewModel =
+            rememberViewModel("LargeScreenStopRecordingPopupViewModel") {
+                largeScreenStopRecordingPopupViewModelFactory.create()
+            }
 
-        if (viewModel.isShowingUi) {
-            PreCaptureUI(viewModel = viewModel)
+        when {
+            largeScreenStopRecordingPopupViewModel.isShowingUi ->
+                LargeScreenStopRecordingPopupUI(largeScreenStopRecordingPopupViewModel)
+            preCaptureViewModel.isShowingUi -> PreCaptureUI(viewModel = preCaptureViewModel)
+            else -> {}
         }
     }
 }
