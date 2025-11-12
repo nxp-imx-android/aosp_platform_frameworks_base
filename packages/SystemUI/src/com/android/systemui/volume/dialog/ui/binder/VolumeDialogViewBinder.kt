@@ -82,10 +82,18 @@ constructor(
     private val mainSliderVerticalMargin: Int by lazy {
         context.resources.getDimensionPixelSize(R.dimen.volume_dialog_slider_vertical_margin)
     }
+    private val mainSliderHorizontalMargin: Int by lazy {
+        context.resources.getDimensionPixelSize(R.dimen.volume_dialog_slider_horizontal_margin)
+    }
 
     private val mainSliderWithCaptionsToggleVerticalMargin: Int by lazy {
         context.resources.getDimensionPixelSize(
             R.dimen.volume_dialog_slider_vertical_margin_with_captions_toggle
+        )
+    }
+    private val mainSliderWithCaptionsToggleHorizontalMargin: Int by lazy {
+        context.resources.getDimensionPixelSize(
+            R.dimen.volume_dialog_slider_horizontal_margin_with_captions_toggle
         )
     }
 
@@ -146,8 +154,8 @@ constructor(
                         )
                     } else {
                         mainSliderContainer?.updateMargin(
-                            left = getSliderVerticalMargin() - view.paddingLeft,
-                            right = getSliderVerticalMargin() - view.paddingRight,
+                            left = getSliderHorizontalMargin() - view.paddingLeft,
+                            right = getSliderHorizontalMargin() - view.paddingRight,
                         )
                     }
                     WindowInsets.CONSUMED
@@ -228,6 +236,13 @@ constructor(
             mainSliderWithCaptionsToggleVerticalMargin
         } else {
             mainSliderVerticalMargin
+        }
+
+    private fun getSliderHorizontalMargin(): Int =
+        if (Flags.captionsToggleInVolumeDialogV1() && captionsButtonViewModel.isVisible.value) {
+            mainSliderWithCaptionsToggleHorizontalMargin
+        } else {
+            mainSliderHorizontalMargin
         }
 
     private class Accessibility(private val viewModel: VolumeDialogViewModel) :
