@@ -8146,6 +8146,17 @@ public class CarrierConfigManager {
                 KEY_PREFIX + "emergency_requires_volte_enabled_bool";
 
         /**
+         * Specifies if emergency call shall be attempted on IMS over NR network only when VoNR
+         * setting is enabled.
+         *
+         * The default value for this key is {@code false}.
+         * @hide
+         */
+        @FlaggedApi(Flags.FLAG_EMERGENCY_OVER_NR_REQUIRES_VONR_ENABLED)
+        public static final String KEY_EMERGENCY_REQUIRES_VONR_ENABLED_BOOL =
+                KEY_PREFIX + "emergency_requires_vonr_enabled_bool";
+
+        /**
          * This values indicates that the cross SIM redialing timer and maximum celluar search
          * timer shall be disabled.
          *
@@ -8295,6 +8306,7 @@ public class CarrierConfigManager {
             defaults.putBoolean(KEY_EMERGENCY_REQUIRES_IMS_REGISTRATION_BOOL, false);
             defaults.putBoolean(KEY_EMERGENCY_LTE_PREFERRED_AFTER_NR_FAILED_BOOL, false);
             defaults.putBoolean(KEY_EMERGENCY_REQUIRES_VOLTE_ENABLED_BOOL, false);
+            defaults.putBoolean(KEY_EMERGENCY_REQUIRES_VONR_ENABLED_BOOL, false);
             defaults.putStringArray(KEY_EMERGENCY_CDMA_PREFERRED_NUMBERS_STRING_ARRAY,
                     new String[0]);
             defaults.putInt(KEY_CROSS_STACK_REDIAL_TIMER_SEC_INT, 120);
