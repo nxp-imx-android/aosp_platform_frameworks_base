@@ -264,8 +264,7 @@ public class NotificationStackScrollLayout
     private final ArrayList<View> mSwipedOutViews = new ArrayList<>();
     private NotificationStackSizeCalculator mNotificationStackSizeCalculator;
     private final StackStateAnimator mStateAnimator;
-    // TODO(b/332732878): call setAnimationsEnabled with scene container enabled, then remove this
-    private boolean mAnimationsEnabled = SceneContainerFlag.isEnabled();
+    private boolean mAnimationsEnabled;
     private boolean mChangePositionInProgress;
     private boolean mChildTransferInProgress;
 
@@ -3525,8 +3524,8 @@ public class NotificationStackScrollLayout
         onViewAddedInternal(row);
     }
 
+    @Override
     public void setAnimationsEnabled(boolean animationsEnabled) {
-        // TODO(b/332732878): remove the initial value of this field once the setter is called
         mAnimationsEnabled = animationsEnabled;
         updateNotificationAnimationStates();
         if (!animationsEnabled) {

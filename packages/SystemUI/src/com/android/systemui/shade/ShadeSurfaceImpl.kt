@@ -46,7 +46,7 @@ class ShadeSurfaceImpl @Inject constructor() : ShadeSurface, ShadeViewController
     }
 
     override fun setTouchAndAnimationDisabled(disabled: Boolean) {
-        // TODO(b/332732878): determine if still needed
+        // Do nothing
     }
 
     override fun setDozing(dozing: Boolean, animate: Boolean) {

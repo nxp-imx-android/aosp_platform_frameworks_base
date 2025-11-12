@@ -73,7 +73,6 @@ import com.android.keyguard.BouncerPanelExpansionCalculator;
 import com.android.systemui.ExpandHelper;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.dump.DumpManager;
-import com.android.systemui.flags.BrokenWithSceneContainer;
 import com.android.systemui.flags.DisableSceneContainer;
 import com.android.systemui.flags.EnableSceneContainer;
 import com.android.systemui.flags.FakeFeatureFlags;
@@ -1499,7 +1498,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationThrottleHun.FLAG_NAME)
-    @BrokenWithSceneContainer(bugId = 332732878) // because NSSL#mAnimationsEnabled is always true
     public void testGenerateHeadsUpAnimation_isSeenInShade_noAnimation() {
         // GIVEN NSSL is ready for HUN animations
         Consumer<Boolean> headsUpAnimatingAwayListener = mock(BooleanConsumer.class);
