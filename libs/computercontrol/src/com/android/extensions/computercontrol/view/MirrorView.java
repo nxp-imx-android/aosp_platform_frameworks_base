@@ -114,7 +114,7 @@ public class MirrorView extends FrameLayout {
             final SurfaceControl mirrorSurface;
             final Size size;
             if (computerControlSession != null && interactiveMirror != null) {
-                mirrorSurface = interactiveMirror.getMirrorSurface();
+                mirrorSurface = interactiveMirror.getMirrorSurfaceControl();
                 size = computerControlSession.getDisplaySize();
                 if (isInteractive != InteractiveMirror.DEFAULT_INTERACTIVE) {
                     interactiveMirror.setInteractive(mIsInteractive);
@@ -221,37 +221,25 @@ public class MirrorView extends FrameLayout {
     @MainThread
     private static final class MirrorSurface extends SurfaceView {
 
+        // This SurfaceControl is owned by this MirrorSurface.
         @Nullable
         private SurfaceControl mRequestedMirrorSurface = null;
         @Nullable
         private Size mDisplaySize = null;
+        // This SurfaceControl is owned by this MirrorSurface.
         @Nullable
         private SurfaceControl mCurrentMirrorSurface = null;
         @Nullable
         private Transformation mCurrentTransformation = null;
+        // Un-owned SurfaceControl that the current mirror surface was last reparented to. This
+        // is a reference to the super class SurfaceView's mSurfaceControl, and must only be used
+        // for detecting when the parent surface changes.
+        @Nullable
+        private SurfaceControl mPreviousParentSurface = null;
 
         MirrorSurface(Context context) {
             super(context);
             setCompositionOrder(0);
-            // Force the mirror surface to be updated.
-            SurfaceHolder.Callback callback = new SurfaceHolder.Callback() {
-
-                @Override
-                public void surfaceCreated(@NonNull SurfaceHolder holder) {
-                }
-
-                @Override
-                public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width,
-                        int height) {
-                    // Force the mirror surface to be updated.
-                    mCurrentMirrorSurface = null;
-                }
-
-                @Override
-                public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-                }
-            };
-            getHolder().addCallback(callback);
         }
 
         @Override
@@ -302,38 +290,49 @@ public class MirrorView extends FrameLayout {
             updateMirrorSurface();
         }
 
+        /**
+         * Set the SurfaceControl of the content to show inside this MirrorView. If a non-null
+         * mirrorSurfaceControl is provided, it must be a valid SurfaceControl (not yet released),
+         * and this MirrorSurface will take ownership over its lifecycle. If a null
+         * mirrorSurfaceControl is provided, mirroring will be stopped.
+         */
         void setMirrorSurfaceControl(@Nullable SurfaceControl mirrorSurfaceControl,
                 @Nullable Size displaySize) {
+            if (mRequestedMirrorSurface != null) {
+                mRequestedMirrorSurface.release();
+            }
             mRequestedMirrorSurface = mirrorSurfaceControl;
             mDisplaySize = displaySize;
             invalidate();
         }
 
         private void updateMirrorSurface() {
-            if (getSurfaceControl() == null) {
-                return;
-            }
+            final var parentSurface = getSurfaceControl();
+            final boolean parentChanged = !isSame(parentSurface, mPreviousParentSurface);
 
             final Transformation requestedTransformation = computeTransformation();
 
-            final boolean mirrorChanged = mCurrentMirrorSurface != mRequestedMirrorSurface;
+            final boolean mirrorChanged = !isSame(mCurrentMirrorSurface, mRequestedMirrorSurface);
             final boolean transformationChanged =
                     !Objects.equals(mCurrentTransformation, requestedTransformation);
-            if (!mirrorChanged && !transformationChanged) {
+            if (!(parentChanged || mirrorChanged || transformationChanged)) {
                 return;
             }
 
             try (var transaction = new SurfaceControl.Transaction()) {
                 if (mirrorChanged) {
                     if (mCurrentMirrorSurface != null) {
-                        transaction.reparent(mCurrentMirrorSurface, null);
                         transaction.remove(mCurrentMirrorSurface);
-                        mCurrentMirrorSurface.release();
                     }
-                    if (mRequestedMirrorSurface != null) {
-                        transaction.reparent(mRequestedMirrorSurface, getSurfaceControl());
-                    }
-                    mCurrentMirrorSurface = mRequestedMirrorSurface;
+                    mCurrentMirrorSurface = mRequestedMirrorSurface != null
+                            ? new SurfaceControl(mRequestedMirrorSurface,
+                            "MirrorView#updateMirrorSurface")
+                            : null;
+                }
+
+                if (mCurrentMirrorSurface != null && (mirrorChanged || parentChanged)) {
+                    transaction.reparent(mCurrentMirrorSurface, parentSurface);
+                    mPreviousParentSurface = parentSurface;
                 }
 
                 if (requestedTransformation != null && mCurrentMirrorSurface != null) {
@@ -348,6 +347,12 @@ public class MirrorView extends FrameLayout {
 
                 applyTransactionOnVriDraw(transaction);
             }
+        }
+
+        private static boolean isSame(@Nullable SurfaceControl lhs,
+                @Nullable SurfaceControl rhs) {
+            return lhs == rhs
+                    || (lhs != null && rhs != null && lhs.isSameSurface(rhs));
         }
 
         private Transformation computeTransformation() {
