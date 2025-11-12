@@ -1111,8 +1111,8 @@ package android.location {
   public static final class IonexAssistance.TecMapSnapshot implements android.os.Parcelable {
     method public int describeContents();
     method @IntRange(from=0) public long getEpochTimeSeconds();
-    method @NonNull public java.util.List<java.lang.Float> getRmsMap();
-    method @NonNull public java.util.List<java.lang.Float> getTecMap();
+    method @NonNull public float[] getRmsMap();
+    method @NonNull public float[] getTecMap();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.location.IonexAssistance.TecMapSnapshot> CREATOR;
   }
@@ -1121,8 +1121,8 @@ package android.location {
     ctor public IonexAssistance.TecMapSnapshot.Builder();
     method @NonNull public android.location.IonexAssistance.TecMapSnapshot build();
     method @IntRange(from=0) @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setEpochTimeSeconds(@IntRange(from=0) long);
-    method @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setRmsMap(@NonNull java.util.List<java.lang.Float>);
-    method @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setTecMap(@NonNull java.util.List<java.lang.Float>);
+    method @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setRmsMap(@NonNull float[]);
+    method @NonNull public android.location.IonexAssistance.TecMapSnapshot.Builder setTecMap(@NonNull float[]);
   }
 
   @FlaggedApi("android.location.flags.gnss_assistance_interface") public final class IonosphericCorrection implements android.os.Parcelable {
