@@ -12139,10 +12139,11 @@ public class Notification implements Parcelable
                     .fillTextsFrom(mBuilder).text(null)
                     .hideProgress(true)
                     .hideRightIcon(true);
-            final TemplateBindResult result = new TemplateBindResult();
-            final RemoteViews contentView = getStandardView(
-                    mBuilder.getCollapsedMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */ false);
+            return buildMetricView(
+                    mBuilder.getCollapsedMetricLayoutResource(),
+                    p,
+                    /* isExpandedView = */ false,
+                    mMetrics);
         }
 
         /** @hide */
@@ -12156,11 +12157,11 @@ public class Notification implements Parcelable
                     .hideProgress(true)
                     .hideRightIcon(true)
                     .needsExtraTextMargin(false);
-            final TemplateBindResult result = new TemplateBindResult();
-            final RemoteViews contentView = getStandardView(
-                    mBuilder.getCompactHeadsUpMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, p,
-                    getCompactHeadsUpMetrics(), /* isExpandedView = */false);
+            return buildMetricView(
+                    mBuilder.getCompactHeadsUpMetricLayoutResource(),
+                    p,
+                    /* isExpandedView = */ false,
+                    getCompactHeadsUpMetrics());
         }
 
         private List<Metric> getCompactHeadsUpMetrics() {
@@ -12175,13 +12176,11 @@ public class Notification implements Parcelable
                     .fillTextsFrom(mBuilder).text(null)
                     .hideProgress(true)
                     .hideRightIcon(true);
-            final TemplateBindResult result = new TemplateBindResult();
-            final RemoteViews contentView = getStandardView(
-                    mBuilder.getHeadsUpMetricLayoutResource(), p, result);
-            // notification_main_column needs to have expander space.
-            // Otherwise,metric content and expander will overlap
-            result.mHeadingFullMarginSet.applyToView(contentView, R.id.notification_main_column);
-            return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */false);
+            return buildMetricView(
+                    mBuilder.getHeadsUpMetricLayoutResource(),
+                    p,
+                    /* isExpandedView = */ false,
+                    mMetrics);
         }
 
         /** @hide */
@@ -12200,11 +12199,11 @@ public class Notification implements Parcelable
                 // (even if it may be cramped).
                 p.useMinimalHeader().subTextViewId(R.id.header_text);
             }
-            final TemplateBindResult result = new TemplateBindResult();
+
             final int expandedLayoutRes;
             if (mMetrics.size() == 1) {
                 if (mBuilder.mN.isPromotedOngoing()) {
-                    expandedLayoutRes =  mBuilder.getPromotedSingleMetricLayoutResource();
+                    expandedLayoutRes = mBuilder.getPromotedSingleMetricLayoutResource();
                 } else {
                     expandedLayoutRes = mBuilder.getExpandedSingleMetricLayoutResource();
                 }
@@ -12212,9 +12211,51 @@ public class Notification implements Parcelable
                 expandedLayoutRes = mBuilder.getExpandedMetricLayoutResource();
             }
 
-            final RemoteViews contentView = getStandardView(expandedLayoutRes, p, result);
+            return buildMetricView(
+                    expandedLayoutRes,
+                    p,
+                    /* isExpandedView = */ true,
+                    mMetrics);
+        }
 
-            return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */true);
+        private RemoteViews buildMetricView(
+                int layoutRes,
+                StandardTemplateParams p,
+                boolean isExpandedView,
+                List<Metric> metricsToBind) {
+
+            final boolean singleMetricWithoutTitle = mMetrics.size() == 1
+                    && TextUtils.isEmpty(p.mTitle);
+            final boolean useLabelAsTitle = singleMetricWithoutTitle && !isExpandedView;
+            final boolean useAppNameAsTitle = singleMetricWithoutTitle && isExpandedView;
+
+            if (useLabelAsTitle) {
+                p.title(getMetricLabel(metricsToBind.getFirst(),
+                        isExpandedView, /* isForSingleMetric = */true));
+            }
+
+            if (useAppNameAsTitle) {
+                p.hideAppName(false);
+            }
+
+            final TemplateBindResult result = new TemplateBindResult();
+            final RemoteViews contentView = getStandardView(layoutRes, p, result);
+
+            if (p.mViewType == StandardTemplateParams.VIEW_TYPE_HEADS_UP
+                    && layoutRes == mBuilder.getHeadsUpMetricLayoutResource()) {
+                // notification_main_column needs to have expander space.
+                // Otherwise,metric content and expander will overlap
+                result.mHeadingFullMarginSet.applyToView(contentView,
+                        R.id.notification_main_column);
+            }
+
+            bindMetricStyleMetrics(contentView, p, metricsToBind, isExpandedView);
+
+            if (useLabelAsTitle) {
+                contentView.setTextViewText(MetricView.VIEWS.getFirst().labelId(), "");
+            }
+
+            return contentView;
         }
 
         private RemoteViews bindMetricStyleMetrics(
@@ -12229,21 +12270,7 @@ public class Notification implements Parcelable
                     final Metric.MetricValue.ValueString valueString = metricValue.toValueString(
                             mBuilder.mContext);
 
-                    final CharSequence metricLabel;
-                    if (isExpandedView) {
-                        if (!TextUtils.isEmpty(valueString.subtext())) {
-                            metricLabel = mBuilder.mContext.getString(
-                                    R.string.notification_metric_label_unit,
-                                    metric.getLabel(), valueString.subtext());
-                        } else {
-                            metricLabel = metric.getLabel();
-                        }
-                    } else {
-                        // No unit shown in collapsed view.
-                        metricLabel = mBuilder.mContext.getString(
-                                R.string.notification_metric_label_separator,
-                                metric.getLabel());
-                    }
+                    final CharSequence metricLabel = getMetricLabel(metric, isExpandedView);
 
                     mBuilder.setTextViewColorSecondary(contentView, metricView.labelId(), p);
                     contentView.setTextViewText(metricView.labelId(), metricLabel);
@@ -12299,6 +12326,36 @@ public class Notification implements Parcelable
                 }
             }
             return contentView;
+        }
+
+        private CharSequence getMetricLabel(Metric metric, boolean isExpandedView) {
+            return getMetricLabel(metric, isExpandedView, /* isForSingleMetric =*/ false);
+        }
+
+        private CharSequence getMetricLabel(
+                Metric metric,
+                boolean isExpandedView,
+                boolean isForSingleMetric) {
+            final Metric.MetricValue metricValue = metric.getValue();
+            final Metric.MetricValue.ValueString valueString = metricValue.toValueString(
+                    mBuilder.mContext);
+
+            final CharSequence metricLabel;
+            if (isExpandedView || isForSingleMetric) {
+                if (!TextUtils.isEmpty(valueString.subtext())) {
+                    metricLabel = mBuilder.mContext.getString(
+                            R.string.notification_metric_label_unit,
+                            metric.getLabel(), valueString.subtext());
+                } else {
+                    metricLabel = metric.getLabel();
+                }
+            } else {
+                // No unit shown in collapsed view.
+                metricLabel = mBuilder.mContext.getString(
+                        R.string.notification_metric_label_separator,
+                        metric.getLabel());
+            }
+            return metricLabel;
         }
 
         private record MetricView(int containerId,
