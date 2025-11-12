@@ -7,8 +7,6 @@ import android.os.Looper
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.service.quicksettings.Tile
 import android.testing.TestableLooper
@@ -22,7 +20,6 @@ import com.android.settingslib.bluetooth.BatteryLevelsInfo
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.flags.Flags.FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY
 import com.android.settingslib.satellite.SatelliteDialogUtils
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsContentViewModel
 import com.android.systemui.classifier.FalsingManagerFake
@@ -133,20 +130,7 @@ class BluetoothTileTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ICON_REFRESH_2025)
-    fun testIcon_whenDisconnected_isOffState_iconRefreshDisabled() {
-        val state = QSTile.BooleanState()
-        enableBluetooth()
-        setBluetoothDisconnected()
-
-        tile.handleUpdateState(state, /* arg= */ null)
-
-        assertThat(state.icon).isEqualTo(createExpectedIcon(R.drawable.qs_bluetooth_icon_off))
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ICON_REFRESH_2025)
-    fun testIcon_whenDisconnected_isOffState_iconRefreshEnabled() {
+    fun testIcon_whenDisconnected_isOffState() {
         val state = QSTile.BooleanState()
         enableBluetooth()
         setBluetoothDisconnected()
