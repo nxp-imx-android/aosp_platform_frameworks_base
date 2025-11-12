@@ -6774,7 +6774,10 @@ package android.app {
     field public static final int SEMANTIC_ACTION_MARK_AS_UNREAD = 3; // 0x3
     field public static final int SEMANTIC_ACTION_MUTE = 6; // 0x6
     field public static final int SEMANTIC_ACTION_NONE = 0; // 0x0
+    field @FlaggedApi("android.app.notification_semantic_actions_for_playback") public static final int SEMANTIC_ACTION_PAUSE = 14; // 0xe
+    field @FlaggedApi("android.app.notification_semantic_actions_for_playback") public static final int SEMANTIC_ACTION_PLAY = 13; // 0xd
     field public static final int SEMANTIC_ACTION_REPLY = 1; // 0x1
+    field @FlaggedApi("android.app.notification_semantic_actions_for_playback") public static final int SEMANTIC_ACTION_STOP = 15; // 0xf
     field public static final int SEMANTIC_ACTION_THUMBS_DOWN = 9; // 0x9
     field public static final int SEMANTIC_ACTION_THUMBS_UP = 8; // 0x8
     field public static final int SEMANTIC_ACTION_UNMUTE = 7; // 0x7

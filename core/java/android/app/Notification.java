@@ -2125,6 +2125,29 @@ public class Notification implements Parcelable
         public static final int SEMANTIC_ACTION_CONVERSATION_IS_PHISHING = 12;
 
         /**
+         * {@code SemanticAction}: Start (or continue previously paused) content associated with the
+         * notification. This could mean starting media playback, resuming a paused timer, etc.
+         */
+        @FlaggedApi(Flags.FLAG_NOTIFICATION_SEMANTIC_ACTIONS_FOR_PLAYBACK)
+        public static final int SEMANTIC_ACTION_PLAY = 13;
+
+        /**
+         * {@code SemanticAction}: Pause the content associated with the notification. This could
+         * mean pausing media playback, pausing a running timer, etc.
+         */
+        @FlaggedApi(Flags.FLAG_NOTIFICATION_SEMANTIC_ACTIONS_FOR_PLAYBACK)
+        public static final int SEMANTIC_ACTION_PAUSE = 14;
+
+        /**
+         * {@code SemanticAction}: Stop the content associated with the notification. This could
+         * mean stopping media playback, resetting a timer, etc. It is implied that a follow-up
+         * {@link #SEMANTIC_ACTION_PLAY} would restart from the beginning, or may not be offered at
+         * all.
+         */
+        @FlaggedApi(Flags.FLAG_NOTIFICATION_SEMANTIC_ACTIONS_FOR_PLAYBACK)
+        public static final int SEMANTIC_ACTION_STOP = 15;
+
+        /**
          * {@link #extras} key to a boolean defining if this action requires special visual
          * treatment.
          * @hide
@@ -3004,7 +3027,10 @@ public class Notification implements Parcelable
                 SEMANTIC_ACTION_THUMBS_DOWN,
                 SEMANTIC_ACTION_CALL,
                 SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY,
-                SEMANTIC_ACTION_CONVERSATION_IS_PHISHING
+                SEMANTIC_ACTION_CONVERSATION_IS_PHISHING,
+                SEMANTIC_ACTION_PLAY,
+                SEMANTIC_ACTION_PAUSE,
+                SEMANTIC_ACTION_STOP
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface SemanticAction {}
