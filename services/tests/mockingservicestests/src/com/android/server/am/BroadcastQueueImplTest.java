@@ -475,7 +475,7 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
 
         // Bumping past barrier makes us now runnable
         airplaneRecord.setDeliveryState(0, BroadcastRecord.DELIVERY_DELIVERED,
-                "testRunnableAt_Ordered");
+                "testRunnableAt_Ordered", queue.runningIndex);
         queue.invalidateRunnableAt();
         assertTrue(queue.isRunnable());
         assertNotEquals(BroadcastProcessQueue.REASON_BLOCKED, queue.getRunnableAtReason());
@@ -753,7 +753,8 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
 
         // To maximize test coverage, dump current state; we're not worried
         // about the actual output, just that we don't crash
-        queue.getActive().setDeliveryState(0, BroadcastRecord.DELIVERY_SCHEDULED, "Test-driven");
+        queue.getActive().setDeliveryState(0, BroadcastRecord.DELIVERY_SCHEDULED, "Test-driven",
+                queue.runningIndex);
         queue.dumpLocked(SystemClock.uptimeMillis(),
                 new IndentingPrintWriter(new PrintWriter(Writer.nullWriter())));
 
@@ -1158,7 +1159,7 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
         final BroadcastRecord screenOffRecord = makeBroadcastRecord(screenOff, screenOnOffOptions,
                 List.of(greenReceiver, redReceiver, blueReceiver), resultTo, false);
         screenOffRecord.setDeliveryState(2, BroadcastRecord.DELIVERY_DEFERRED,
-                "testDeliveryGroupPolicy_resultTo_diffReceivers");
+                "testDeliveryGroupPolicy_resultTo_diffReceivers", blueQueue.runningIndex);
         mImpl.enqueueBroadcastLocked(screenOffRecord);
         mImpl.enqueueBroadcastLocked(makeBroadcastRecord(screenOn, screenOnOffOptions,
                 List.of(greenReceiver, blueReceiver), resultTo, false));
@@ -1212,7 +1213,7 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
         final BroadcastRecord screenOffRecord = makeBroadcastRecord(screenOff, screenOnOffOptions,
                 List.of(greenReceiver, redReceiver, blueReceiver), false);
         screenOffRecord.setDeliveryState(2, BroadcastRecord.DELIVERY_DEFERRED,
-                "testDeliveryGroupPolicy_prioritized_diffReceivers");
+                "testDeliveryGroupPolicy_prioritized_diffReceivers", blueQueue.runningIndex);
         mImpl.enqueueBroadcastLocked(screenOffRecord);
         mImpl.enqueueBroadcastLocked(makeBroadcastRecord(screenOn, screenOnOffOptions,
                 List.of(greenReceiver, blueReceiver), false));
@@ -1270,7 +1271,7 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
         final BroadcastRecord screenOffRecord = makeBroadcastRecord(screenOff, screenOnOffOptions,
                 List.of(greenReceiver, redReceiver, blueReceiver), false);
         screenOffRecord.setDeliveryState(2, BroadcastRecord.DELIVERY_DEFERRED,
-                "testDeliveryGroupPolicy_prioritized_diffReceivers");
+                "testDeliveryGroupPolicy_prioritized_diffReceivers", blueQueue.runningIndex);
         mImpl.enqueueBroadcastLocked(screenOffRecord);
         mImpl.enqueueBroadcastLocked(makeBroadcastRecord(screenOn, screenOnOffOptions,
                 List.of(greenReceiver, blueReceiver), false));

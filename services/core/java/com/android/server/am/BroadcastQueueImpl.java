@@ -38,6 +38,7 @@ import static com.android.server.am.BroadcastProcessQueue.insertIntoRunnableList
 import static com.android.server.am.BroadcastProcessQueue.reasonToString;
 import static com.android.server.am.BroadcastProcessQueue.removeFromRunnableList;
 import static com.android.server.am.BroadcastRecord.DELIVERY_DEFERRED;
+import static com.android.server.am.BroadcastRecord.UNSPECIFIED_QUEUE_INDEX;
 import static com.android.server.am.BroadcastRecord.deliveryStateToString;
 import static com.android.server.am.BroadcastRecord.getReceiverClassName;
 import static com.android.server.am.BroadcastRecord.getReceiverPackageName;
@@ -1497,6 +1498,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
         // Emit all trace events for this process into a consistent track
         queue.runningTraceTrackName = TAG + ".mRunning[" + queueIndex + "]";
+        queue.runningIndex = queueIndex;
         queue.runningOomAdjusted = queue.isPendingManifest()
                 || queue.isPendingOrdered()
                 || queue.isPendingResultTo();
@@ -1541,6 +1543,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         }
         queue.makeActiveIdle();
         queue.traceProcessEnd();
+        queue.runningIndex = UNSPECIFIED_QUEUE_INDEX;
 
         final int queueIndex = getRunningIndexOf(queue);
         mRunning[queueIndex] = null;
@@ -1566,7 +1569,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
         // Remember the old state and apply the new state
         final int oldDeliveryState = getDeliveryState(r, index);
-        final boolean beyondCountChanged = r.setDeliveryState(index, newDeliveryState, reason);
+        final boolean beyondCountChanged = r.setDeliveryState(index, newDeliveryState, reason,
+                queue == null ? UNSPECIFIED_QUEUE_INDEX : queue.runningIndex);
 
         // Emit any relevant tracing results when we're changing the delivery
         // state as part of running from a queue
