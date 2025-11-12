@@ -965,6 +965,44 @@ public final class UserVisibilityMediator implements Dumpable {
     }
 
     /**
+     * Gets the ids of the visible users in the given display.
+     */
+    public IntArray getVisibleUsers(int displayId) {
+        // Optimize for default display on devices that don't support visible background users,
+        // which is the most common case (only current users and its running profiles are visible)
+        if (displayId == DEFAULT_DISPLAY && !mVisibleBackgroundUsersEnabled
+                && !mVisibleBackgroundUserOnDefaultDisplayEnabled) {
+            int numberProfiles = mStartedVisibleProfileGroupIds.size();
+            IntArray visibleUsers = new IntArray(numberProfiles);
+            synchronized (mLock) {
+                for (int i = 0; i < numberProfiles; i++) {
+                    int profileGroupId = mStartedVisibleProfileGroupIds.valueAt(i);
+                    if (profileGroupId == mCurrentUserId
+                            || profileGroupId == ALWAYS_VISIBLE_PROFILE_GROUP_ID) {
+                        int userId = mStartedVisibleProfileGroupIds.keyAt(i);
+                        visibleUsers.add(userId);
+                    }
+                }
+            }
+            return visibleUsers;
+        }
+
+        // TODO(b/258054362): logic below was mimicked by getVisibleUsers() (only the check in
+        // the inner if statement is different), hence it's not concerned about performance
+        // (see comment on that method).
+        IntArray visibleUsers = new IntArray();
+        synchronized (mLock) {
+            for (int i = 0; i < mStartedVisibleProfileGroupIds.size(); i++) {
+                int userId = mStartedVisibleProfileGroupIds.keyAt(i);
+                if (isUserVisible(userId, displayId)) {
+                    visibleUsers.add(userId);
+                }
+            }
+        }
+        return visibleUsers;
+    }
+
+    /**
      * Adds a {@link UserVisibilityListener listener}.
      */
     public void addListener(UserVisibilityListener listener) {

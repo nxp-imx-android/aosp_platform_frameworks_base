@@ -60,6 +60,7 @@ abstract class UserVisibilityMediatorVisibleBackgroundUserTestCase
         expectUserIsNotVisibleOnDisplay(USER_ID, INVALID_DISPLAY);
         expectUserIsNotVisibleOnDisplay(USER_ID, SECONDARY_DISPLAY_ID);
         expectVisibleUsers(USER_ID);
+        expectVisibleUsersOnDisplay(DEFAULT_DISPLAY, USER_ID);
 
         expectDisplayAssignedToUser(USER_ID, DEFAULT_DISPLAY);
         expectUserAssignedToDisplay(DEFAULT_DISPLAY, USER_ID);
@@ -94,6 +95,7 @@ abstract class UserVisibilityMediatorVisibleBackgroundUserTestCase
         expectUserIsNotVisibleOnDisplay(currentUserId, INVALID_DISPLAY);
         expectUserIsNotVisibleOnDisplay(currentUserId, SECONDARY_DISPLAY_ID);
         expectVisibleUsers(currentUserId);
+        expectVisibleUsersOnDisplay(DEFAULT_DISPLAY, currentUserId);
 
         expectDisplayAssignedToUser(currentUserId, DEFAULT_DISPLAY);
         expectUserAssignedToDisplay(DEFAULT_DISPLAY, currentUserId);
@@ -155,6 +157,8 @@ abstract class UserVisibilityMediatorVisibleBackgroundUserTestCase
         expectUserIsNotVisibleOnDisplay(USER_ID, INVALID_DISPLAY);
         expectUserIsNotVisibleOnDisplay(USER_ID, DEFAULT_DISPLAY);
         expectVisibleUsers(INITIAL_CURRENT_USER_ID, USER_ID);
+        expectVisibleUsersOnDisplay(DEFAULT_DISPLAY, INITIAL_CURRENT_USER_ID);
+        expectVisibleUsersOnDisplay(SECONDARY_DISPLAY_ID, USER_ID);
 
         expectDisplayAssignedToUser(USER_ID, SECONDARY_DISPLAY_ID);
         expectUserAssignedToDisplay(SECONDARY_DISPLAY_ID, USER_ID);
@@ -220,6 +224,8 @@ abstract class UserVisibilityMediatorVisibleBackgroundUserTestCase
         expectUserIsNotVisibleOnDisplay(USER_ID, INVALID_DISPLAY);
         expectUserIsNotVisibleOnDisplay(USER_ID, DEFAULT_DISPLAY);
         expectVisibleUsers(INITIAL_CURRENT_USER_ID, USER_ID);
+        expectVisibleUsersOnDisplay(DEFAULT_DISPLAY, INITIAL_CURRENT_USER_ID);
+        expectVisibleUsersOnDisplay(SECONDARY_DISPLAY_ID, USER_ID);
         expectDisplayAssignedToUser(USER_ID, SECONDARY_DISPLAY_ID);
         expectUserAssignedToDisplay(SECONDARY_DISPLAY_ID, USER_ID);
         assertUserCanBeAssignedExtraDisplay(USER_ID, OTHER_SECONDARY_DISPLAY_ID);
@@ -233,7 +239,8 @@ abstract class UserVisibilityMediatorVisibleBackgroundUserTestCase
         expectUserIsVisibleOnDisplay(USER_ID, SECONDARY_DISPLAY_ID);
         expectUserIsNotVisibleOnDisplay(USER_ID, INVALID_DISPLAY);
         expectUserIsNotVisibleOnDisplay(USER_ID, DEFAULT_DISPLAY);
-        expectVisibleUsers(INITIAL_CURRENT_USER_ID, USER_ID);
+        expectVisibleUsersOnDisplay(DEFAULT_DISPLAY, INITIAL_CURRENT_USER_ID);
+        expectVisibleUsersOnDisplay(SECONDARY_DISPLAY_ID, USER_ID);
         expectDisplayAssignedToUser(USER_ID, SECONDARY_DISPLAY_ID);
         expectUserAssignedToDisplay(SECONDARY_DISPLAY_ID, USER_ID);
         assertUserCanBeAssignedExtraDisplay(USER_ID, OTHER_SECONDARY_DISPLAY_ID);
@@ -257,6 +264,9 @@ abstract class UserVisibilityMediatorVisibleBackgroundUserTestCase
         expectUserIsNotVisibleOnDisplay(USER_ID, INVALID_DISPLAY);
         expectUserIsNotVisibleOnDisplay(USER_ID, DEFAULT_DISPLAY);
         expectVisibleUsers(INITIAL_CURRENT_USER_ID, USER_ID);
+        expectVisibleUsersOnDisplay(DEFAULT_DISPLAY, INITIAL_CURRENT_USER_ID);
+        expectVisibleUsersOnDisplay(OTHER_SECONDARY_DISPLAY_ID, USER_ID);
+        expectVisibleUsersOnDisplay(SECONDARY_DISPLAY_ID);
 
         expectDisplayAssignedToUser(USER_ID, OTHER_SECONDARY_DISPLAY_ID);
         expectUserAssignedToDisplay(OTHER_SECONDARY_DISPLAY_ID, USER_ID);
@@ -294,6 +304,7 @@ abstract class UserVisibilityMediatorVisibleBackgroundUserTestCase
         expectUserIsNotVisibleOnDisplay(PROFILE_USER_ID, SECONDARY_DISPLAY_ID);
         expectUserIsVisibleOnDisplay(PROFILE_USER_ID, DEFAULT_DISPLAY);
         expectVisibleUsers(PARENT_USER_ID, PROFILE_USER_ID);
+        expectVisibleUsersOnDisplay(DEFAULT_DISPLAY, PARENT_USER_ID, PROFILE_USER_ID);
 
         expectDisplayAssignedToUser(PROFILE_USER_ID, DEFAULT_DISPLAY);
         expectUserAssignedToDisplay(DEFAULT_DISPLAY, PARENT_USER_ID);
