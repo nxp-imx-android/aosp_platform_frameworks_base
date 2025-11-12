@@ -281,6 +281,10 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         position = findPositionForRootTask(position, task, true /* adding */);
 
         super.addChild(task, position);
+        if (task.mReparenting) {
+            addRootTaskReferenceIfNeeded(task);
+        }
+
         if (mPreferredTopFocusableRootTask != null
                 && task.isFocusable()
                 && mPreferredTopFocusableRootTask.compareTo(task) < 0) {
