@@ -55,7 +55,6 @@ import com.android.systemui.statusbar.notification.row.NotifInflationErrorManage
 import com.android.systemui.statusbar.notification.row.NotifInflationErrorManager.NotifInflationErrorListener;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
-import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.lang.annotation.Retention;
@@ -369,7 +368,7 @@ public class PreparationCoordinator implements Coordinator {
 
     private void inflateRequiredGroupViews(GroupEntry groupEntry) {
         NotificationEntry summary = groupEntry.getSummary();
-        if (summary != null && AsyncGroupHeaderViewInflation.isEnabled()) {
+        if (summary != null) {
             summary.markAsGroupSummary();
         }
         List<NotificationEntry> children = groupEntry.getChildren();

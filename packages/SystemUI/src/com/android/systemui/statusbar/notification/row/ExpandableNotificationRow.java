@@ -128,7 +128,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.logging.NotificationCounters;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
-import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactMessagingTemplateViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
@@ -696,12 +695,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             mMenuRow.setAppName(mAppName);
         }
         if (mIsSummaryWithChildren) {
-            if (AsyncGroupHeaderViewInflation.isEnabled()) {
-                mChildrenContainer.updateGroupHeaderExpandState();
-            } else {
-                // We create the header from the background thread instead
-                mChildrenContainer.recreateNotificationHeader(mExpandClickListener);
-            }
+            mChildrenContainer.updateGroupHeaderExpandState();
             mChildrenContainer.onNotificationUpdated();
         }
         if (mAnimationRunning) {
@@ -778,11 +772,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public int getOriginalIconColor() {
-        if (mIsSummaryWithChildren && !shouldShowPublic()) {
-            if (!AsyncGroupHeaderViewInflation.isEnabled()) {
-                return mChildrenContainer.getVisibleWrapper().getOriginalIconColor();
-            }
-        }
         int color = getShowingLayout().getOriginalIconColor();
         if (color != Notification.COLOR_INVALID) {
             return color;
@@ -1671,7 +1660,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         // Let's update our childrencontainer. This is intentionally not guarded with
         // mIsSummaryWithChildren since we might have had children but not anymore.
         if (mChildrenContainer != null) {
-            mChildrenContainer.reInflateViews(mExpandClickListener);
+            mChildrenContainer.reInflateViews();
         }
         if (mGuts != null) {
             NotificationGuts oldGuts = mGuts;
@@ -2006,7 +1995,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public View getShelfTransformationTarget() {
         if (mIsSummaryWithChildren && !shouldShowPublic()) {
             NotificationViewWrapper viewWrapper = mChildrenContainer.getVisibleWrapper();
-            if (AsyncGroupHeaderViewInflation.isEnabled() && viewWrapper == null) {
+            if (viewWrapper == null) {
                 return null;
             }
             return viewWrapper.getShelfTransformationTarget();
@@ -3396,12 +3385,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 && mChildrenContainer.getNotificationChildCount() > 0;
         if (mIsSummaryWithChildren) {
             Trace.beginSection("ExpNotRow#onChildCountChanged (summary)");
-            if (!AsyncGroupHeaderViewInflation.isEnabled()) {
-                NotificationViewWrapper wrapper = mChildrenContainer.getNotificationViewWrapper();
-                if (wrapper == null || wrapper.getNotificationHeader() == null) {
-                    mChildrenContainer.recreateNotificationHeader(mExpandClickListener);
-                }
-            }
         }
         if (!mIsSummaryWithChildren && wasSummary) {
             // Reset the 'when' once the row stops being a summary

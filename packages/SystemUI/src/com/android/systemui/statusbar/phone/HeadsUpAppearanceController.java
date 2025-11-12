@@ -30,7 +30,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.stack.NotificationRoundnessManager;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarScope;
@@ -175,13 +174,6 @@ public class HeadsUpAppearanceController extends ViewController<PhoneStatusBarVi
 
     public void updateHeader(ExpandableNotificationRow row) {
         float headerVisibleAmount = 1.0f;
-        // To fix the invisible HUN group header issue
-        if (!AsyncGroupHeaderViewInflation.isEnabled()) {
-            if (row.isPinned() || row.isHeadsUpAnimatingAway() || row == mTrackedChild
-                    || row.showingPulsing()) {
-                headerVisibleAmount = mAppearFraction;
-            }
-        }
         row.setHeaderVisibleAmount(headerVisibleAmount);
     }
 

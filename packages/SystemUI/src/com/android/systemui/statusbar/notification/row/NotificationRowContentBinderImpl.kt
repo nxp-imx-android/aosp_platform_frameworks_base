@@ -72,7 +72,6 @@ import com.android.systemui.statusbar.notification.row.NotificationRowContentBin
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationCallback
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
-import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation
 import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarModel
 import com.android.systemui.statusbar.notification.row.shared.NewRemoteViews
 import com.android.systemui.statusbar.notification.row.shared.NotificationContentModel
@@ -868,8 +867,7 @@ constructor(
                     } else null
                 val normalGroupHeader =
                     if (
-                        AsyncGroupHeaderViewInflation.isEnabled &&
-                            reInflateFlags and FLAG_GROUP_SUMMARY_HEADER != 0
+                        reInflateFlags and FLAG_GROUP_SUMMARY_HEADER != 0
                     ) {
                         logger.logAsyncTaskProgress(
                             row.loggingKey,
@@ -879,8 +877,7 @@ constructor(
                     } else null
                 val minimizedGroupHeader =
                     if (
-                        AsyncGroupHeaderViewInflation.isEnabled &&
-                            reInflateFlags and FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER != 0
+                        reInflateFlags and FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER != 0
                     ) {
                         logger.logAsyncTaskProgress(
                             row.loggingKey,
@@ -1094,100 +1091,98 @@ constructor(
                     logger = logger,
                 )
             }
-            if (AsyncGroupHeaderViewInflation.isEnabled) {
-                val childrenContainer: NotificationChildrenContainer =
-                    row.getChildrenContainerNonNull()
-                if (reInflateFlags and FLAG_GROUP_SUMMARY_HEADER != 0) {
-                    val isNewView =
-                        !canReapplyRemoteView(
-                            newView = result.remoteViews.normalGroupHeader,
-                            oldView =
-                                remoteViewCache.getCachedView(entry, FLAG_GROUP_SUMMARY_HEADER),
-                        )
-                    val applyCallback: ApplyCallback =
-                        object : ApplyCallback() {
-                            override fun setResultView(v: View) {
-                                logger.logAsyncTaskProgress(
-                                    entry.logKey,
-                                    "group header view applied",
-                                )
-                                result.inflatedGroupHeaderView = v as NotificationHeaderView?
-                            }
-
-                            override val remoteView: RemoteViews
-                                get() = result.remoteViews.normalGroupHeader!!
+            val childrenContainer: NotificationChildrenContainer =
+                row.getChildrenContainerNonNull()
+            if (reInflateFlags and FLAG_GROUP_SUMMARY_HEADER != 0) {
+                val isNewView =
+                    !canReapplyRemoteView(
+                        newView = result.remoteViews.normalGroupHeader,
+                        oldView =
+                            remoteViewCache.getCachedView(entry, FLAG_GROUP_SUMMARY_HEADER),
+                    )
+                val applyCallback: ApplyCallback =
+                    object : ApplyCallback() {
+                        override fun setResultView(v: View) {
+                            logger.logAsyncTaskProgress(
+                                entry.logKey,
+                                "group header view applied",
+                            )
+                            result.inflatedGroupHeaderView = v as NotificationHeaderView?
                         }
-                    logger.logAsyncTaskProgress(entry.logKey, "applying group header view")
-                    applyRemoteView(
-                        inflationExecutor = inflationExecutor,
-                        inflateSynchronously = inflateSynchronously,
-                        isMinimized = isMinimized,
-                        result = result,
-                        reInflateFlags = reInflateFlags,
-                        inflationId = FLAG_GROUP_SUMMARY_HEADER,
-                        remoteViewCache = remoteViewCache,
-                        entry = entry,
-                        row = row,
-                        isNewView = isNewView,
-                        remoteViewClickHandler = remoteViewClickHandler,
-                        callback = callback,
-                        parentLayout = childrenContainer,
-                        existingView = childrenContainer.groupHeader,
-                        existingWrapper = childrenContainer.notificationHeaderWrapper,
-                        runningInflations = runningInflations,
-                        applyCallback = applyCallback,
-                        logger = logger,
-                    )
-                }
-                if (reInflateFlags and FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER != 0) {
-                    val isNewView =
-                        !canReapplyRemoteView(
-                            newView = result.remoteViews.minimizedGroupHeader,
-                            oldView =
-                                remoteViewCache.getCachedView(
-                                    entry,
-                                    FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER,
-                                ),
-                        )
-                    val applyCallback: ApplyCallback =
-                        object : ApplyCallback() {
-                            override fun setResultView(v: View) {
-                                logger.logAsyncTaskProgress(
-                                    entry.logKey,
-                                    "low-priority group header view applied",
-                                )
-                                result.inflatedMinimizedGroupHeaderView =
-                                    v as NotificationHeaderView?
-                            }
 
-                            override val remoteView: RemoteViews
-                                get() = result.remoteViews.minimizedGroupHeader!!
+                        override val remoteView: RemoteViews
+                            get() = result.remoteViews.normalGroupHeader!!
+                    }
+                logger.logAsyncTaskProgress(entry.logKey, "applying group header view")
+                applyRemoteView(
+                    inflationExecutor = inflationExecutor,
+                    inflateSynchronously = inflateSynchronously,
+                    isMinimized = isMinimized,
+                    result = result,
+                    reInflateFlags = reInflateFlags,
+                    inflationId = FLAG_GROUP_SUMMARY_HEADER,
+                    remoteViewCache = remoteViewCache,
+                    entry = entry,
+                    row = row,
+                    isNewView = isNewView,
+                    remoteViewClickHandler = remoteViewClickHandler,
+                    callback = callback,
+                    parentLayout = childrenContainer,
+                    existingView = childrenContainer.groupHeader,
+                    existingWrapper = childrenContainer.notificationHeaderWrapper,
+                    runningInflations = runningInflations,
+                    applyCallback = applyCallback,
+                    logger = logger,
+                )
+            }
+            if (reInflateFlags and FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER != 0) {
+                val isNewView =
+                    !canReapplyRemoteView(
+                        newView = result.remoteViews.minimizedGroupHeader,
+                        oldView =
+                            remoteViewCache.getCachedView(
+                                entry,
+                                FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER,
+                            ),
+                    )
+                val applyCallback: ApplyCallback =
+                    object : ApplyCallback() {
+                        override fun setResultView(v: View) {
+                            logger.logAsyncTaskProgress(
+                                entry.logKey,
+                                "low-priority group header view applied",
+                            )
+                            result.inflatedMinimizedGroupHeaderView =
+                                v as NotificationHeaderView?
                         }
-                    logger.logAsyncTaskProgress(
-                        entry.logKey,
-                        "applying low priority group header view",
-                    )
-                    applyRemoteView(
-                        inflationExecutor = inflationExecutor,
-                        inflateSynchronously = inflateSynchronously,
-                        isMinimized = isMinimized,
-                        result = result,
-                        reInflateFlags = reInflateFlags,
-                        inflationId = FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER,
-                        remoteViewCache = remoteViewCache,
-                        entry = entry,
-                        row = row,
-                        isNewView = isNewView,
-                        remoteViewClickHandler = remoteViewClickHandler,
-                        callback = callback,
-                        parentLayout = childrenContainer,
-                        existingView = childrenContainer.minimizedNotificationHeader,
-                        existingWrapper = childrenContainer.minimizedGroupHeaderWrapper,
-                        runningInflations = runningInflations,
-                        applyCallback = applyCallback,
-                        logger = logger,
-                    )
-                }
+
+                        override val remoteView: RemoteViews
+                            get() = result.remoteViews.minimizedGroupHeader!!
+                    }
+                logger.logAsyncTaskProgress(
+                    entry.logKey,
+                    "applying low priority group header view",
+                )
+                applyRemoteView(
+                    inflationExecutor = inflationExecutor,
+                    inflateSynchronously = inflateSynchronously,
+                    isMinimized = isMinimized,
+                    result = result,
+                    reInflateFlags = reInflateFlags,
+                    inflationId = FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER,
+                    remoteViewCache = remoteViewCache,
+                    entry = entry,
+                    row = row,
+                    isNewView = isNewView,
+                    remoteViewClickHandler = remoteViewClickHandler,
+                    callback = callback,
+                    parentLayout = childrenContainer,
+                    existingView = childrenContainer.minimizedNotificationHeader,
+                    existingWrapper = childrenContainer.minimizedGroupHeaderWrapper,
+                    runningInflations = runningInflations,
+                    applyCallback = applyCallback,
+                    logger = logger,
+                )
             }
 
             // Let's try to finish, maybe nobody is even inflating anything
@@ -1616,23 +1611,21 @@ constructor(
                 result.inflatedPublicView,
                 publicLayout::setContractedChild,
             )
-            if (AsyncGroupHeaderViewInflation.isEnabled) {
-                remoteViewsUpdater.setContentView(
-                    FLAG_GROUP_SUMMARY_HEADER,
-                    result.remoteViews.normalGroupHeader,
-                    result.inflatedGroupHeaderView,
-                ) { views ->
-                    row.setIsMinimized(isMinimized)
-                    row.setGroupHeader(views)
-                }
-                remoteViewsUpdater.setContentView(
-                    FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER,
-                    result.remoteViews.minimizedGroupHeader,
-                    result.inflatedMinimizedGroupHeaderView,
-                ) { views ->
-                    row.setIsMinimized(isMinimized)
-                    row.setMinimizedGroupHeader(views)
-                }
+            remoteViewsUpdater.setContentView(
+                FLAG_GROUP_SUMMARY_HEADER,
+                result.remoteViews.normalGroupHeader,
+                result.inflatedGroupHeaderView,
+            ) { views ->
+                row.setIsMinimized(isMinimized)
+                row.setGroupHeader(views)
+            }
+            remoteViewsUpdater.setContentView(
+                FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER,
+                result.remoteViews.minimizedGroupHeader,
+                result.inflatedMinimizedGroupHeaderView,
+            ) { views ->
+                row.setIsMinimized(isMinimized)
+                row.setMinimizedGroupHeader(views)
             }
         }
 
