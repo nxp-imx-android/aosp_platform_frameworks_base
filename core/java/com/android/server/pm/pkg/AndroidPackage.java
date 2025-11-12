@@ -49,6 +49,7 @@ import android.util.SparseIntArray;
 
 import com.android.internal.R;
 import com.android.internal.pm.pkg.component.ParsedActivity;
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy;
 import com.android.internal.pm.pkg.component.ParsedApexSystemService;
 import com.android.internal.pm.pkg.component.ParsedAttribution;
 import com.android.internal.pm.pkg.component.ParsedInstrumentation;
@@ -1566,4 +1567,15 @@ public interface AndroidPackage {
      * @hide
      */
     boolean hasPccComponents();
+
+    /**
+     * Returns the complete policy declaring which other components this application is
+     * allowed to associate with, as parsed from the manifest.
+     *
+     * @return The parsed {@link ParsedAllowComponentAccessPolicy} object, or null if the
+     * {@code <allow-component-access>} tag was not declared.
+     * @hide
+     */
+    ParsedAllowComponentAccessPolicy getParsedAllowComponentAccessPolicy();
+
 }

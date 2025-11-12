@@ -84,6 +84,7 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.ActivityInfo;
+import android.content.pm.AllowComponentAccessPolicyInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ArchivedPackageParcel;
 import android.content.pm.AuxiliaryResolveInfo;
@@ -193,6 +194,7 @@ import com.android.internal.os.ApplicationSharedMemory;
 import com.android.internal.pm.parsing.PackageParser2;
 import com.android.internal.pm.parsing.pkg.AndroidPackageInternal;
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy;
 import com.android.internal.pm.pkg.component.ParsedInstrumentation;
 import com.android.internal.pm.pkg.component.ParsedMainComponent;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
@@ -7499,6 +7501,27 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
             final Computer snapshot = snapshotComputer();
             return mAppLockPackageHelper.isPackageAppLockEnabled(snapshot, packageName, userId);
+        }
+
+        @Nullable
+        @Override
+        public AllowComponentAccessPolicyInfo getAllowComponentAccessPolicyInfo(
+                @NonNull String packageName, @UserIdInt int userId) {
+            final Computer snapshot = snapshotComputer();
+            final PackageStateInternal ps = snapshot.getPackageStateInternal(packageName);
+            if (ps == null || ps.getPkg() == null || !ps.getUserStateOrDefault(
+                    userId).isInstalled()) {
+                Slog.w(TAG, "Package named '" + packageName + "' doesn't exist.");
+                return null;
+            }
+
+            ParsedAllowComponentAccessPolicy parsedPolicy =
+                    ps.getPkg().getParsedAllowComponentAccessPolicy();
+            if (parsedPolicy == null) {
+                return null;
+            }
+
+            return PackageInfoUtils.generateAllowComponentAccessPolicyInfo(parsedPolicy);
         }
     }
 

@@ -22,6 +22,7 @@ import android.content.pm.ConfigurationInfo
 import android.content.pm.FeatureGroupInfo
 import android.content.pm.FeatureInfo
 import android.content.pm.PackageManager
+import android.content.pm.SignedPackageParcel
 import android.content.pm.SigningDetails
 import android.net.Uri
 import android.os.Bundle
@@ -35,6 +36,7 @@ import com.android.internal.R
 import com.android.internal.pm.parsing.pkg.AndroidPackageLegacyUtils
 import com.android.internal.pm.parsing.pkg.PackageImpl
 import com.android.internal.pm.pkg.component.ParsedActivityImpl
+import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicyImpl
 import com.android.internal.pm.pkg.component.ParsedApexSystemServiceImpl
 import com.android.internal.pm.pkg.component.ParsedAttributionImpl
 import com.android.internal.pm.pkg.component.ParsedComponentImpl
@@ -358,6 +360,26 @@ class AndroidPackageTest : ParcelableComponentTest(AndroidPackage::class, Packag
                 )
             } }
         ),
+        getSetByValue(
+            AndroidPackage::getParsedAllowComponentAccessPolicy,
+            PackageImpl::setParsedAllowComponentAccessPolicy,
+            ParsedAllowComponentAccessPolicyImpl(
+                listOf(
+                    SignedPackageParcel().apply {
+                        packageName = "com.test.package"
+                        certificateDigest = "TEST_CERT_DIGEST".toByteArray()
+                    })
+            ),
+            compare = { first, second ->
+                equalBy(
+                    first, second,
+                    { it.parsedAllowlistedSignedPackages.size },
+                    { it.parsedAllowlistedSignedPackages.get(0)?.packageName },
+                    {
+                        val digest = it.parsedAllowlistedSignedPackages.get(0)?.certificateDigest
+                        digest.contentToString()
+                    })
+            }),
         getSetByValue2(
             AndroidPackage::getKeySetMapping,
             PackageImpl::addKeySet,

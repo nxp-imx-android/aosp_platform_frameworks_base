@@ -1473,4 +1473,18 @@ public abstract class PackageManagerInternal {
      */
     public abstract boolean isUpgradingFromLowerThanBySdkVersionFull(
             @Build.SdkIntFull int sdkVersionFull);
+
+    /**
+     * Returns the component access policy for a given package, which declares the set of
+     * other components the app is allowed to associate with.
+     *
+     * @param packageName The package for which to retrieve the policy.
+     * @param userId The user ID for which to check the package's installation state.
+     * @return The final {@link AllowComponentAccessPolicyInfo} object, or null if the
+     * package has not declared such a policy in its manifest.
+     * @hide
+     */
+    @Nullable
+    public abstract AllowComponentAccessPolicyInfo getAllowComponentAccessPolicyInfo(
+            @NonNull String packageName, @UserIdInt int userId);
 }
