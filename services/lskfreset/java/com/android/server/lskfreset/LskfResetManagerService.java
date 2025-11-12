@@ -151,7 +151,7 @@ public class LskfResetManagerService extends SystemService {
         private static final long SESSION_TIMEOUT_MS = TimeUnit.MINUTES.toMillis(1);
 
         private final UserHandle mUser;
-        private final String mSessionId;
+        private final UUID mSessionId;
 
         private final OpenSession mOpenSession;
 
@@ -175,7 +175,7 @@ public class LskfResetManagerService extends SystemService {
 
         LskfResetSessionImpl(UserHandle user) {
             mUser = user;
-            mSessionId = UUID.randomUUID().toString();
+            mSessionId = UUID.randomUUID();
             mOpenSession = new OpenSession();
             mClosed = false;
             mScheduledTimeout =
@@ -187,7 +187,7 @@ public class LskfResetManagerService extends SystemService {
                             TimeUnit.MILLISECONDS);
         }
 
-        String getSessionId() {
+        UUID getSessionId() {
             return mSessionId;
         }
 
