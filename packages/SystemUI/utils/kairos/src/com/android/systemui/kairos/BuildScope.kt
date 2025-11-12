@@ -20,6 +20,7 @@ import com.android.systemui.kairos.util.Maybe
 import com.android.systemui.kairos.util.NameData
 import com.android.systemui.kairos.util.NameTag
 import com.android.systemui.kairos.util.map
+import com.android.systemui.kairos.util.maybeOf
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairos.util.plus
 import com.android.systemui.kairos.util.toNameData
@@ -809,6 +810,49 @@ internal fun <A> BuildScope.asyncEvent(
             emit(block())
         }
         .apply { observeSync(nameData + "observeNoop") }
+
+/**
+ * Returns a [State] that contains the [Maybe.present] result of [block] once it completes, and
+ * [Maybe.absent] before then.
+ *
+ * [block] is evaluated outside of the current Kairos transaction; when it completes, the returned
+ * [State] updates in a new transaction.
+ *
+ * ```
+ *   fun <A> BuildScope.asyncState(block: suspend KairosScope.() -> A): State<Maybe<A>> =
+ *       asyncState(maybeOf()) { maybeOf(block()) }
+ * ```
+ */
+@ExperimentalKairosApi
+fun <A> BuildScope.asyncState(
+    name: NameTag? = null,
+    block: suspend KairosScope.() -> A,
+): State<Maybe<A>> = asyncState(maybeOf(), name) { maybeOf(block()) }
+
+/**
+ * Returns a [State] that contains the result of [block] once it completes, and [initialValue]
+ * before then.
+ *
+ * [block] is evaluated outside of the current Kairos transaction; when it completes, the returned
+ * [State] updates in a new transaction.
+ *
+ * ```
+ *   fun <A> BuildScope.asyncState(initialValue: A, block: suspend () -> A): State<A> =
+ *       asyncEvents(block).holdState(initialValue)
+ * ```
+ */
+@ExperimentalKairosApi
+fun <A> BuildScope.asyncState(
+    initialValue: A,
+    name: NameTag? = null,
+    block: suspend KairosScope.() -> A,
+): State<A> = asyncState(name.toNameData("BuildScope.asyncState"), initialValue, block)
+
+internal fun <A> BuildScope.asyncState(
+    nameData: NameData,
+    initialValue: A,
+    block: suspend KairosScope.() -> A,
+): State<A> = holdState(nameData, asyncEvent(nameData + "asyncEvent", block), initialValue)
 
 /**
  * Performs a side-effect in a safe manner w/r/t the current Kairos transaction.
