@@ -94,7 +94,7 @@ public class ProcessStateController {
      */
     private final ConcurrentLinkedQueue<Runnable> mStagingQueue = new ConcurrentLinkedQueue<>();
 
-    private ProcessStateController(ActivityManagerService ams, ProcessListInternal processList,
+    private ProcessStateController(ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread handlerThread,
             Object lock, Object procLock, Consumer<ProcessRecordInternal> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
@@ -118,14 +118,14 @@ public class ProcessStateController {
             }
         };
         mOomConstants = oomConstants;
-        mOomAdjuster = new OomAdjusterImpl(ams, ams.mProcLock, processList, activeUids,
+        mOomAdjuster = new OomAdjusterImpl(mLock, mProcLock, processList, activeUids,
                 handlerThread, mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter,
                 updateHandler);
         mTopChangeCallback = topChangeCallback;
         mProcessLruUpdater = lruUpdater;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
         mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> serviceHandler.post(() -> {
-            synchronized (ams) {
+            synchronized (mLock) {
                 if (cr.setOngoingCalls(hasOngoingCalls)) {
                     runUpdate(cr.getClient(), OOM_ADJ_REASON_SERVICE_BINDER_CALL);
                 }
@@ -621,7 +621,7 @@ public class ProcessStateController {
     /**
      * Initialize a process that is being attached.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mLock", "mProcLock"})
     public void setAttachingProcessStatesLSP(@NonNull ProcessRecordInternal proc) {
         mOomAdjuster.setAttachingProcessStatesLSP(proc);
     }
@@ -1271,7 +1271,6 @@ public class ProcessStateController {
      * Builder for ProcessStateController.
      */
     public static class Builder {
-        private final ActivityManagerService mAms;
         private final ProcessListInternal mProcessList;
         private final ActiveUidsInternal mActiveUids;
         private final OomAdjuster.Constants mOomConstants;
@@ -1280,14 +1279,14 @@ public class ProcessStateController {
 
         private ServiceThread mHandlerThread = null;
         private Object mLock = null;
+        private Object mProcLock = null;
         private Consumer<ProcessRecordInternal> mTopChangeCallback = null;
         private ProcessLruUpdater mProcessLruUpdater = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
 
-        public Builder(ActivityManagerService ams, ProcessListInternal processList,
+        public Builder(ProcessListInternal processList,
                 ActiveUidsInternal activeUids, OomAdjuster.Constants oomConstants,
                 OomAdjuster.Callback oomAdjCallback, OomAdjuster.StateGetter oomAdjStateGetter) {
-            mAms = ams;
             mProcessList = processList;
             mActiveUids = activeUids;
             mOomConstants = oomConstants;
@@ -1305,6 +1304,9 @@ public class ProcessStateController {
             if (mLock == null) {
                 mLock = new Object();
             }
+            if (mProcLock == null) {
+                mProcLock = new Object();
+            }
             if (mTopChangeCallback == null) {
                 mTopChangeCallback = proc -> {};
             }
@@ -1319,8 +1321,8 @@ public class ProcessStateController {
             if (mOomAdjInjector == null) {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
-            return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
-                    mLock, mAms.mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector,
+            return new ProcessStateController(mProcessList, mActiveUids, mHandlerThread,
+                    mLock, mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector,
                     mOomConstants, mOomAdjCallback, mOomAdjStateGetter);
         }
 
@@ -1347,6 +1349,14 @@ public class ProcessStateController {
          */
         public Builder setLockObject(Object lock) {
             mLock = lock;
+            return this;
+        }
+
+        /**
+         * Sets the lock object used for synchronizing access to process-related data structures.
+         */
+        public Builder setProcLockObject(Object lock) {
+            mProcLock = lock;
             return this;
         }
 
