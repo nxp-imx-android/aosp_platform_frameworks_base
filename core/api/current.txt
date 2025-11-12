@@ -6603,6 +6603,7 @@ package android.app {
     method public boolean hasPromotableCharacteristics();
     method @FlaggedApi("android.app.nm_summarization") public boolean hasSummarizedContent();
     method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean isRequestPromotedOngoing();
+    method @FlaggedApi("android.app.api_notification_chip") @NonNull public android.app.Notification.ResolvedCompactContent resolveCompactContent(@NonNull android.content.Context);
     method public void writeToParcel(android.os.Parcel, int);
     field public static final android.media.AudioAttributes AUDIO_ATTRIBUTES_DEFAULT;
     field public static final int BADGE_ICON_LARGE = 2; // 0x2
@@ -6833,6 +6834,14 @@ package android.app {
     method @Deprecated public android.app.Notification.Action.WearableExtender setInProgressLabel(CharSequence);
   }
 
+  @FlaggedApi("android.app.api_notification_chip") public static final class Notification.BasicCompactContent extends android.app.Notification.CompactContent implements android.os.Parcelable {
+    ctor public Notification.BasicCompactContent(@NonNull android.app.Notification.CompactIcon, @NonNull android.app.Notification.CompactText);
+    ctor public Notification.BasicCompactContent(@NonNull android.app.Notification.CompactText);
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.BasicCompactContent> CREATOR;
+  }
+
   public static class Notification.BigPictureStyle extends android.app.Notification.Style {
     ctor public Notification.BigPictureStyle();
     ctor @Deprecated public Notification.BigPictureStyle(android.app.Notification.Builder);
@@ -6928,6 +6937,7 @@ package android.app {
     method @NonNull public android.app.Notification.Builder setChronometerCountDown(boolean);
     method @NonNull public android.app.Notification.Builder setColor(@ColorInt int);
     method @NonNull public android.app.Notification.Builder setColorized(boolean);
+    method @FlaggedApi("android.app.api_notification_chip") @NonNull public android.app.Notification.Builder setCompactContent(@Nullable android.app.Notification.CompactContent);
     method @Deprecated public android.app.Notification.Builder setContent(android.widget.RemoteViews);
     method @Deprecated public android.app.Notification.Builder setContentInfo(CharSequence);
     method @NonNull public android.app.Notification.Builder setContentIntent(android.app.PendingIntent);
@@ -7026,6 +7036,30 @@ package android.app {
     method public android.app.PendingIntent getReadPendingIntent();
     method public android.app.RemoteInput getRemoteInput();
     method public android.app.PendingIntent getReplyPendingIntent();
+  }
+
+  @FlaggedApi("android.app.api_notification_chip") public abstract static class Notification.CompactContent {
+  }
+
+  @FlaggedApi("android.app.api_notification_chip") public static final class Notification.CompactIcon implements android.os.Parcelable {
+    method @NonNull public static android.app.Notification.CompactIcon auto();
+    method public int describeContents();
+    method @NonNull public static android.app.Notification.CompactIcon useSmallIcon();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.CompactIcon> CREATOR;
+  }
+
+  @FlaggedApi("android.app.api_notification_chip") public static final class Notification.CompactText implements android.os.Parcelable {
+    method public int describeContents();
+    method @FlaggedApi("android.app.api_metric_style") @NonNull public static android.app.Notification.CompactText fromMetricValue(@NonNull android.app.Notification.Metric.MetricValue);
+    method @NonNull public static android.app.Notification.CompactText none();
+    method @FlaggedApi("android.app.api_notification_semantic_style") @NonNull public android.app.Notification.CompactText setSemanticStyle(int);
+    method @NonNull public static android.app.Notification.CompactText useShortCriticalText();
+    method @FlaggedApi("android.app.api_metric_style") @NonNull public static android.app.Notification.CompactText useStyleMetric(int);
+    method @NonNull public static android.app.Notification.CompactText useWhenAsChronometer(boolean);
+    method @NonNull public static android.app.Notification.CompactText useWhenAsTimeRemaining();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.CompactText> CREATOR;
   }
 
   public static class Notification.DecoratedCustomViewStyle extends android.app.Notification.Style {
@@ -7213,6 +7247,23 @@ package android.app {
     method @NonNull public android.app.Notification.Builder extend(@NonNull android.app.Notification.Builder);
     method @Nullable public android.app.PendingIntent getContentIntent();
     method @NonNull public android.app.Notification.ProjectedExtender setContentIntent(@Nullable android.app.PendingIntent);
+  }
+
+  @FlaggedApi("android.app.api_notification_chip") public static final class Notification.ResolvedBasicCompactContent extends android.app.Notification.ResolvedCompactContent {
+    method @NonNull public android.app.Notification.ResolvedCompactIcon getIcon();
+    method @FlaggedApi("android.app.api_notification_semantic_style") public int getSemanticStyle();
+    method @FlaggedApi("android.app.api_metric_style") @Nullable public android.app.Notification.Metric.MetricValue getText();
+  }
+
+  @FlaggedApi("android.app.api_notification_chip") public abstract static class Notification.ResolvedCompactContent {
+  }
+
+  @FlaggedApi("android.app.api_notification_chip") public static class Notification.ResolvedCompactIcon {
+    method @Nullable public android.graphics.drawable.Icon getIcon();
+    method public int getSource();
+    field public static final int SOURCE_PACKAGE_APP_ICON = 2; // 0x2
+    field public static final int SOURCE_SMALL_ICON = 1; // 0x1
+    field public static final int SOURCE_UNKNOWN = 0; // 0x0
   }
 
   public abstract static class Notification.Style {
