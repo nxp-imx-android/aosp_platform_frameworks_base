@@ -88,7 +88,7 @@ Result<XmlParser> OpenXmlParser(const std::string& entry_path, const ZipAssetsPr
     return Error("failed to read entire %s", entry_path.c_str());
   }
 
-  return XmlParser::Create(buffer.unsafe_ptr(), size, true /* copyData */);
+  return XmlParser::Create(std::move(manifest));
 }
 
 Result<XmlParser> OpenXmlParser(ResourceId id, const ZipAssetsProvider* zip,
