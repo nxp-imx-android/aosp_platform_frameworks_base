@@ -76,6 +76,7 @@ import android.view.Surface;
 
 import com.android.internal.camera.flags.Flags;
 
+import java.lang.ref.WeakReference;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,6 +165,9 @@ public class CameraDeviceImpl extends CameraDevice
     private SimpleEntry<Integer, InputConfiguration> mConfiguredInput =
             new SimpleEntry<>(REQUEST_ID_NONE, null);
     private final SparseArray<OutputConfiguration> mConfiguredOutputs =
+            new SparseArray<>();
+
+    private final SparseArray<List<WeakReference<Surface>>> mReplacedOutputs =
             new SparseArray<>();
 
     // Cache all stream IDs capable of supporting offline mode.
@@ -704,7 +708,8 @@ public class CameraDeviceImpl extends CameraDevice
                     for (OutputConfiguration outConfig : outputs) {
                         if (addSet.contains(outConfig)) {
                             int streamId = mRemoteDevice.createStream(outConfig);
-                            mConfiguredOutputs.put(streamId, outConfig);
+                            mConfiguredOutputs.put(streamId, Flags.seamlessTransitions() ?
+                                    new OutputConfiguration(outConfig) : outConfig);
                         }
                     }
 
@@ -778,7 +783,9 @@ public class CameraDeviceImpl extends CameraDevice
                     for (OutputConfiguration outConfig : outputs) {
                         if (addSet.contains(outConfig)) {
                             mConfiguredOutputs.put(
-                                    outputAndInputStreamIds.outputStreamIds[i], outConfig);
+                                    outputAndInputStreamIds.outputStreamIds[i],
+                                    Flags.seamlessTransitions() ?
+                                            new OutputConfiguration(outConfig) : outConfig);
                             i++;
                         }
                     }
@@ -1284,9 +1291,102 @@ public class CameraDeviceImpl extends CameraDevice
             }
 
             mRemoteDevice.updateOutputConfiguration(streamId, config);
-            mConfiguredOutputs.put(streamId, config);
+            mConfiguredOutputs.put(streamId, Flags.seamlessTransitions() ?
+                    new OutputConfiguration(config) : config);
         }
     }
+
+    @FlaggedApi(Flags.FLAG_SEAMLESS_TRANSITIONS)
+    public void updateOutputConfigurations(@NonNull List<OutputConfiguration> configurations)
+            throws CameraAccessException {
+        android.os.Trace.beginSection("Seamless transition");
+        synchronized(mInterfaceLock) {
+            try {
+                checkIfCameraClosedOrInError();
+
+                // Prune any stale replaced output surfaces
+                for (int i = 0; i < mReplacedOutputs.size(); i++) {
+                    int streamId = mReplacedOutputs.keyAt(i);
+                    List<WeakReference<Surface>> replacedSurfaces = mReplacedOutputs.valueAt(i);
+                    replacedSurfaces.removeIf(l -> l.get() == null);
+                    if (replacedSurfaces.isEmpty()) {
+                        mReplacedOutputs.delete(streamId);
+                    }
+                }
+
+                if (configurations.size() != mConfiguredOutputs.size()) {
+                    throw new IllegalArgumentException("The number of configured outputs " +
+                            mConfiguredOutputs.size() + " doesn't match with the number of updated"
+                            + " outputs " + configurations.size());
+                }
+
+                // Map the new OutputConfigurations to the existing configured stream ids
+                HashMap<OutputConfiguration, Integer> deferredConfiguredMap = new HashMap<>();
+                HashMap<OutputConfiguration, Integer> configuredMap = new HashMap<>();
+                SparseArray<OutputConfiguration> replacedOutputs = new SparseArray<>(
+                        configurations.size());
+                int[] streamIds = new int[configurations.size()];
+                OutputConfiguration[] newConfigs = new OutputConfiguration[configurations.size()];
+
+                for (int i = 0; i < mConfiguredOutputs.size(); i++) {
+                    OutputConfiguration config = mConfiguredOutputs.valueAt(i);
+                    if (config.isDeferredConfiguration()) {
+                        deferredConfiguredMap.put(new OutputConfiguration(config),
+                                mConfiguredOutputs.keyAt(i));
+                    } else {
+                        configuredMap.put(new OutputConfiguration(config),
+                                mConfiguredOutputs.keyAt(i));
+                        deferredConfiguredMap.put(
+                                new OutputConfiguration(config).makeDeferredAndRemoveSurfaces(),
+                                mConfiguredOutputs.keyAt(i));
+                    }
+                }
+
+                int i = 0;
+                for (OutputConfiguration config : configurations) {
+                    OutputConfiguration deferredConfig = config.isDeferredConfiguration() ?
+                            config :
+                            new OutputConfiguration(config).makeDeferredAndRemoveSurfaces();
+
+                    if (configuredMap.containsKey(config)) {
+                        streamIds[i] = configuredMap.get(config);
+                        newConfigs[i++] = new OutputConfiguration(config);
+                        configuredMap.remove(config);
+                    } else if (deferredConfiguredMap.containsKey(deferredConfig)) {
+                        int streamId = deferredConfiguredMap.get(deferredConfig);
+                        streamIds[i] = streamId;
+                        newConfigs[i++] = new OutputConfiguration(config);
+                        deferredConfiguredMap.remove(deferredConfig);
+                        OutputConfiguration oldConfig = mConfiguredOutputs.get(streamId);
+                        if (!oldConfig.isDeferredConfiguration()) {
+                            replacedOutputs.put(streamId, oldConfig);
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Unknown OutputConfiguration!");
+                    }
+                }
+
+                mRemoteDevice.updateOutputConfigurations(streamIds, newConfigs);
+
+                for (i = 0; i < streamIds.length; i++) {
+                    mConfiguredOutputs.put(streamIds[i], newConfigs[i]);
+                }
+                for (i = 0; i < replacedOutputs.size(); i++) {
+                    int streamId = replacedOutputs.keyAt(i);
+                    List<WeakReference<Surface>> replacedSurfaces = mReplacedOutputs.get(streamId,
+                            new ArrayList<>());
+
+                    for (Surface replacedSurface : replacedOutputs.valueAt(i).getSurfaces()) {
+                        replacedSurfaces.add(new WeakReference<>(replacedSurface));
+                    }
+                    mReplacedOutputs.put(streamId, replacedSurfaces);
+                }
+            } finally {
+                android.os.Trace.endSection();
+            }
+        }
+    }
+
 
     public CameraOfflineSession switchToOffline(
             @NonNull Collection<Surface> offlineOutputs, @NonNull Executor executor,
@@ -1426,9 +1526,27 @@ public class CameraDeviceImpl extends CameraDevice
                 for (int i = 0; i < mConfiguredOutputs.size(); i++) {
                     // Have to use equal here, as createCaptureSessionByOutputConfigurations() and
                     // createReprocessableCaptureSessionByConfigurations() do a copy of the configs.
-                    if (config.equals(mConfiguredOutputs.valueAt(i))) {
-                        streamId = mConfiguredOutputs.keyAt(i);
-                        break;
+                    if (Flags.seamlessTransitions()) {
+                        // We cannot directly compare incoming non-deferred output configurations
+                        // with the internal deferred copies.
+                        OutputConfiguration deferredConfig =
+                                (new OutputConfiguration(config)).makeDeferredAndRemoveSurfaces();
+                        OutputConfiguration configuredOutput =
+                                new OutputConfiguration(mConfiguredOutputs.valueAt(i));
+                        // Shared surfaces can have several output surface already present so
+                        // comparison should be done while they are deferred too.
+                        if (configuredOutput.isShared()) {
+                            configuredOutput.makeDeferredAndRemoveSurfaces();
+                        }
+                        if (deferredConfig.equals(configuredOutput)) {
+                            streamId = mConfiguredOutputs.keyAt(i);
+                            break;
+                        }
+                    } else {
+                        if (config.equals(mConfiguredOutputs.valueAt(i))) {
+                            streamId = mConfiguredOutputs.keyAt(i);
+                            break;
+                        }
                     }
                 }
                 if (streamId == -1) {
@@ -1441,7 +1559,8 @@ public class CameraDeviceImpl extends CameraDevice
                             + " must have at least 1 surface");
                 }
                 mRemoteDevice.finalizeOutputConfigurations(streamId, config);
-                mConfiguredOutputs.put(streamId, config);
+                mConfiguredOutputs.put(streamId,
+                        Flags.seamlessTransitions() ? new OutputConfiguration(config) : config);
             }
         }
     }
@@ -2333,15 +2452,31 @@ public class CameraDeviceImpl extends CameraDevice
         if (errorCode == CameraDeviceCallbacks.ERROR_CAMERA_BUFFER) {
             // Because 1 stream id could map to multiple surfaces, we need to specify both
             // streamId and surfaceId.
-            OutputConfiguration config = mConfiguredOutputs.get(
-                    resultExtras.getErrorStreamId());
-            if (config == null) {
-                Log.v(TAG, String.format(
-                        "Stream %d has been removed. Skipping buffer lost callback",
-                        resultExtras.getErrorStreamId()));
+            int streamId = resultExtras.getErrorStreamId();
+            OutputConfiguration config = mConfiguredOutputs.get(streamId);
+            List<WeakReference<Surface>> replacedSurfaces =
+                    mReplacedOutputs.get(streamId, null);
+            if ((config == null) && (replacedSurfaces == null)) {
+                Log.v(TAG, "Stream " + streamId + " has been removed. Skipping buffer lost " +
+                        "callback");
                 return;
             }
-            for (Surface surface : config.getSurfaces()) {
+            List<Surface> surfaces = new ArrayList<>();
+            if (config != null) {
+                surfaces.addAll(config.getSurfaces());
+            }
+            if (replacedSurfaces != null) {
+                Iterator<WeakReference<Surface>> it = replacedSurfaces.iterator();
+                while (it.hasNext()) {
+                    Surface s = it.next().get();
+                    if (s != null) {
+                        surfaces.add(s);
+                    } else {
+                        it.remove();
+                    }
+                }
+            }
+            for (Surface surface : surfaces) {
                 if (!request.containsTarget(surface)) {
                     continue;
                 }

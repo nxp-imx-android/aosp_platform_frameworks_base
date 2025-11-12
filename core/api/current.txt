@@ -20150,6 +20150,7 @@ package android.hardware.camera2 {
     method public boolean supportsOfflineProcessing(@NonNull android.view.Surface);
     method @Nullable public android.hardware.camera2.CameraOfflineSession switchToOffline(@NonNull java.util.Collection<android.view.Surface>, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraOfflineSession.CameraOfflineSessionCallback) throws android.hardware.camera2.CameraAccessException;
     method public void updateOutputConfiguration(android.hardware.camera2.params.OutputConfiguration) throws android.hardware.camera2.CameraAccessException;
+    method @FlaggedApi("com.android.internal.camera.flags.seamless_transitions") public void updateOutputConfigurations(@NonNull java.util.List<android.hardware.camera2.params.OutputConfiguration>) throws android.hardware.camera2.CameraAccessException;
   }
 
   public abstract static class CameraCaptureSession.CaptureCallback {
@@ -21232,6 +21233,7 @@ package android.hardware.camera2.params {
     method @NonNull public java.util.List<android.view.Surface> getSurfaces();
     method public int getTimestampBase();
     method public boolean isReadoutTimestampEnabled();
+    method @FlaggedApi("com.android.internal.camera.flags.seamless_transitions") @NonNull public android.hardware.camera2.params.OutputConfiguration makeDeferredAndRemoveSurfaces();
     method public void removeSensorPixelModeUsed(int);
     method public void removeSurface(@NonNull android.view.Surface);
     method public void setDynamicRangeProfile(long);
