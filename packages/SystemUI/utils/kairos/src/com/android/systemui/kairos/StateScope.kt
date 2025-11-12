@@ -815,15 +815,20 @@ interface StateScope : TransactionScope {
      *
      * ```
      *   fun <A> Events<A>.distinctUntilChanged(): Events<A> {
-     *       val state: State<Any?> = holdState(Any())
-     *       return filter { it != state.sample() }
+     *       val state: State<Maybe<A>> = mapCheap { Maybe.present(it) }.holdState(Maybe.absent)
+     *       return filter { new ->
+     *           state.sample().map { old -> !areEquivalent(new, old) }.orElse(true)
+     *       }
      *   }
      * ```
      */
-    fun <A> Events<A>.distinctUntilChanged(): Events<A> =
+    fun <A> Events<A>.distinctUntilChanged(
+        areEquivalent: (new: A, old: A) -> Boolean = { new, old -> new == old }
+    ): Events<A> =
         distinctUntilChanged(
             nameTag("Events.distinctUntilChanged").toNameData("Events.distinctUntilChanged"),
             this,
+            areEquivalent,
         )
 
     /**
@@ -1487,9 +1492,18 @@ internal fun <A, B> StateScope.mapIndexed(
     return events.map(nameData) { a -> transform(index.sample(), a) }
 }
 
-internal fun <A> StateScope.distinctUntilChanged(nameData: NameData, events: Events<A>): Events<A> {
-    val state: State<Any?> = holdState(nameData + "prev", events, Any())
-    return events.filter(nameData) { it != state.sample() }
+internal fun <A> StateScope.distinctUntilChanged(
+    nameData: NameData,
+    events: Events<A>,
+    areEquivalent: (A, A) -> Boolean,
+): Events<A> {
+    val initialValue = Any()
+    val state: State<Any?> = holdState(nameData + "prev", events, initialValue)
+    return events.filter(nameData) {
+        val old = state.sample()
+        @Suppress("UNCHECKED_CAST")
+        old !== initialValue && !areEquivalent(it, old as A)
+    }
 }
 
 internal fun <A, B, C> StateScope.sample(
