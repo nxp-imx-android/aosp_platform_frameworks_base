@@ -100,7 +100,9 @@ import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimate
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
+import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernShadeCarrierGroupMobileView
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconViewModelKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairosComposeWrapper
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModelKairos
@@ -662,38 +664,19 @@ private fun ShadeCarrierGroupKairos(
             kairosNetwork = viewModel.kairosNetwork,
             name = nameTag("ShadeCarrierGroupKairos"),
         ) { iconsViewModel: MobileIconsViewModelKairosComposeWrapper ->
-            for ((subId, icon) in iconsViewModel.icons) {
-                Spacer(modifier = Modifier.width(5.dp))
-                val scope = rememberCoroutineScope()
-                AndroidView(
-                    factory = { context ->
-                        ModernShadeCarrierGroupMobileView.constructAndBindKairos(
-                                context = context,
-                                logger = iconsViewModel.logger,
-                                slot = "mobile_carrier_shade_group",
-                                viewModel =
-                                    ShadeCarrierGroupMobileIconViewModelKairos(
-                                        icon,
-                                        icon.iconInteractor,
-                                    ),
-                                scope = scope,
-                                subscriptionId = subId,
-                                location = StatusBarLocation.SHADE_CARRIER_GROUP,
-                                kairosNetwork = viewModel.kairosNetwork,
-                            )
-                            .first
-                            .also {
-                                it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() }
-                            }
-                    },
-                    update = { view ->
-                        view.setStyleAndTint(
-                            R.style.TextAppearance_QS_Status,
-                            textColor.toArgb(),
-                            inverseTextColor.toArgb(),
-                        )
-                    },
-                )
+            if (iconsViewModel.icons.isEmpty()) {
+                CarrierTextNoSubscriptionId(viewModel)
+            } else {
+                for ((subId, icon) in iconsViewModel.icons) {
+                    CarrierTextWithSubscriptionIdKairos(
+                        viewModel,
+                        subId,
+                        icon,
+                        iconsViewModel.logger,
+                        textColor,
+                        inverseTextColor,
+                    )
+                }
             }
         }
     }
@@ -738,6 +721,43 @@ private fun ContentScope.StatusIcons(
             content = movableContent,
         )
     }
+}
+
+@Composable
+private fun CarrierTextWithSubscriptionIdKairos(
+    viewModel: ShadeHeaderViewModel,
+    subId: Int,
+    icon: MobileIconViewModelKairos,
+    logger: MobileViewLogger,
+    textColor: Color,
+    inverseTextColor: Color,
+) {
+    Spacer(modifier = Modifier.width(5.dp))
+    val scope = rememberCoroutineScope()
+    AndroidView(
+        factory = { context ->
+            ModernShadeCarrierGroupMobileView.constructAndBindKairos(
+                    context = context,
+                    logger = logger,
+                    slot = "mobile_carrier_shade_group",
+                    viewModel =
+                        ShadeCarrierGroupMobileIconViewModelKairos(icon, icon.iconInteractor),
+                    scope = scope,
+                    subscriptionId = subId,
+                    location = StatusBarLocation.SHADE_CARRIER_GROUP,
+                    kairosNetwork = viewModel.kairosNetwork,
+                )
+                .first
+                .also { it.setOnClickListener { viewModel.onShadeCarrierGroupClicked() } }
+        },
+        update = { view ->
+            view.setStyleAndTint(
+                R.style.TextAppearance_QS_Status,
+                textColor.toArgb(),
+                inverseTextColor.toArgb(),
+            )
+        },
+    )
 }
 
 @Composable
