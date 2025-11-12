@@ -42,7 +42,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.flags.Flags;
-
 import dalvik.system.CloseGuard;
 import dalvik.system.VMRuntime;
 
@@ -1545,14 +1544,10 @@ public class Surface implements Parcelable {
     }
 
     private static void registerNativeMemoryUsage() {
-        if (Flags.enableSurfaceNativeAllocRegistrationRo()) {
-            VMRuntime.getRuntime().registerNativeAllocation(SURFACE_NATIVE_ALLOCATION_SIZE_BYTES);
-        }
+        VMRuntime.getRuntime().registerNativeAllocation(SURFACE_NATIVE_ALLOCATION_SIZE_BYTES);
     }
 
     private static void freeNativeMemoryUsage() {
-        if (Flags.enableSurfaceNativeAllocRegistrationRo()) {
-            VMRuntime.getRuntime().registerNativeFree(SURFACE_NATIVE_ALLOCATION_SIZE_BYTES);
-        }
+        VMRuntime.getRuntime().registerNativeFree(SURFACE_NATIVE_ALLOCATION_SIZE_BYTES);
     }
 }
