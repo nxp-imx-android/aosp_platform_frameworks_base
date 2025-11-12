@@ -160,7 +160,6 @@ public class ContextTest {
     }
 
     @Test
-    @DisabledOnRavenwood(blockedBy = Context.class)
     public void testIsUiContext_appContext_returnsFalse() {
         final Context appContext = ApplicationProvider.getApplicationContext();
 
