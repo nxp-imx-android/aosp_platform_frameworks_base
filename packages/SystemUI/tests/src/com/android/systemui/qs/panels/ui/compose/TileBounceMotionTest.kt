@@ -35,7 +35,7 @@ import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutS
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.grid.ui.compose.VerticalSpannedGrid
-import com.android.systemui.haptics.msdl.tileHapticsViewModelFactoryProvider
+import com.android.systemui.haptics.msdl.tileHapticsViewModelFactory
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.plugins.qs.QSTile
 import com.android.systemui.qs.FakeQSTile
@@ -70,7 +70,7 @@ import platform.test.screenshot.Displays.Phone
 class TileBounceMotionTest : SysuiTestCase() {
     private val deviceSpec = DeviceEmulationSpec(Phone)
     private val kosmos = testKosmos()
-    private val tileHapticsViewModelFactoryProvider = kosmos.tileHapticsViewModelFactoryProvider
+    private val tileHapticsViewModelFactory = kosmos.tileHapticsViewModelFactory
     @get:Rule val motionTestRule = createSysUiComposeMotionTestRule(kosmos, deviceSpec)
 
     @Composable
@@ -98,8 +98,7 @@ class TileBounceMotionTest : SysuiTestCase() {
                                     nextTile = bounceables.getOrNull(index + 1),
                                     bounceEnd = index != tiles.size - 1,
                                 ),
-                            tileHapticsViewModelFactoryProvider =
-                                tileHapticsViewModelFactoryProvider,
+                            tileHapticsViewModelFactory = tileHapticsViewModelFactory,
                             detailsViewModel = null,
                             interactionSourceFromParent = null,
                         )
@@ -128,8 +127,7 @@ class TileBounceMotionTest : SysuiTestCase() {
                             squishiness = { 1f },
                             coroutineScope = rememberCoroutineScope(),
                             bounceableInfo = null,
-                            tileHapticsViewModelFactoryProvider =
-                                tileHapticsViewModelFactoryProvider,
+                            tileHapticsViewModelFactory = tileHapticsViewModelFactory,
                             detailsViewModel = null,
                             interactionSourceFromParent = interactionSource,
                         )

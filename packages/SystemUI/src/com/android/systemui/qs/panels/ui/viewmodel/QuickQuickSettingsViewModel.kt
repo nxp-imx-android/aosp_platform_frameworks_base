@@ -19,7 +19,7 @@ package com.android.systemui.qs.panels.ui.viewmodel
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import com.android.systemui.haptics.msdl.qs.TileHapticsViewModelFactoryProvider
+import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QQS
@@ -45,7 +45,7 @@ constructor(
     mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
     val squishinessViewModel: TileSquishinessViewModel,
     iconTilesViewModel: IconTilesViewModel,
-    val tileHapticsViewModelFactoryProvider: TileHapticsViewModelFactoryProvider,
+    val tileHapticsViewModelFactory: TileHapticsViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("QuickQuickSettingsViewModel")

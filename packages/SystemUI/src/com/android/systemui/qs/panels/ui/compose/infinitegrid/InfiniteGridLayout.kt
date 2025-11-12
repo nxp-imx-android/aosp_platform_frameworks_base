@@ -34,7 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.grid.ui.compose.VerticalSpannedGrid
-import com.android.systemui.haptics.msdl.qs.TileHapticsViewModelFactoryProvider
+import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.flags.QSMaterialExpressiveTiles
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
@@ -65,7 +65,7 @@ constructor(
     private val iconTilesViewModel: IconTilesViewModel,
     override val viewModelFactory: InfiniteGridViewModel.Factory,
     private val textFeedbackContentViewModelFactory: TextFeedbackContentViewModel.Factory,
-    private val tileHapticsViewModelFactoryProvider: TileHapticsViewModelFactoryProvider,
+    private val tileHapticsViewModelFactory: TileHapticsViewModel.Factory,
 ) : PaginatableGridLayout {
 
     @Composable
@@ -112,7 +112,7 @@ constructor(
                     tile = sizedTile.tile,
                     iconOnly = iconTilesViewModel.isIconTile(sizedTile.tile.spec),
                     squishiness = { squishiness },
-                    tileHapticsViewModelFactoryProvider = tileHapticsViewModelFactoryProvider,
+                    tileHapticsViewModelFactory = tileHapticsViewModelFactory,
                     coroutineScope = scope,
                     detailsViewModel = detailsViewModel,
                     isVisible = listening,
@@ -141,7 +141,7 @@ constructor(
                         tile = it.tile,
                         iconOnly = iconTilesViewModel.isIconTile(it.tile.spec),
                         squishiness = { squishiness },
-                        tileHapticsViewModelFactoryProvider = tileHapticsViewModelFactoryProvider,
+                        tileHapticsViewModelFactory = tileHapticsViewModelFactory,
                         coroutineScope = scope,
                         bounceableInfo =
                             bounceables.bounceableInfo(
