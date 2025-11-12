@@ -17,7 +17,6 @@
 package com.android.systemui.bouncer.ui.composable
 
 import android.security.Flags.lockscreenTimeoutDeactivatePinPad
-import android.view.MotionEvent
 import android.view.View
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
@@ -26,11 +25,13 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -46,19 +47,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -73,10 +76,13 @@ import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.res.R
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /** Renders the PIN button pad. */
@@ -166,9 +172,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
                 ),
             isInputEnabled = isInputEnabled,
             onClicked = viewModel::onAuthenticateButtonClicked,
-            onPointerDown = {
-                viewModel.onDown()
-            },
+            onPointerDown = { viewModel.onDown() },
             appearance = confirmButtonAppearance,
             scaling = buttonScaleAnimatables[11]::value,
             elementId = "key_enter",
@@ -329,32 +333,168 @@ private fun PinPadButton(
                     )
                 }
                 .clip(CircleShape)
-                .thenIf(isEnabled) {
-                    Modifier.combinedClickable(
-                            interactionSource = interactionSource,
-                            indication = indication,
-                            onClick = onClicked,
-                            onLongClick = onLongPressed,
-                            onLongClickLabel = onLongClickLabel,
-                        )
-                        .pointerInteropFilter { motionEvent ->
-                            if (motionEvent.action == MotionEvent.ACTION_DOWN) {
-                                onPointerDown(view)
-                            }
-                            false
-                        }
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, _ ->
-                                // Consume any changes that are part of the drag to make it less
-                                // likely for accidental drags to happen while the user is trying to
-                                // tap on buttons in the pin pad.
-                                change.consume()
-                            }
-                        }
-                }
+                .pinPadButtonInput(
+                    isEnabled = isEnabled,
+                    onPointerDown = { onPointerDown(view) },
+                    onClicked = onClicked,
+                    onLongPressed = onLongPressed,
+                    onLongClickLabel = onLongClickLabel,
+                    interactionSource = interactionSource,
+                    indication = indication,
+                )
                 .thenIf(elementId != null) { Modifier.sysuiResTag(elementId!!) },
     ) {
         content(contentColor::value)
+    }
+}
+
+private fun Modifier.pinPadButtonInput(
+    isEnabled: Boolean,
+    onPointerDown: () -> Unit,
+    onClicked: () -> Unit,
+    onLongPressed: (() -> Unit)?,
+    onLongClickLabel: String?,
+    interactionSource: MutableInteractionSource,
+    indication: Indication?,
+): Modifier {
+    return this.thenIf(isEnabled) {
+        Modifier.semantics {
+                this.onClick(
+                    action = {
+                        onClicked()
+                        true
+                    },
+                    label = onLongClickLabel,
+                )
+                onLongPressed?.let {
+                    this.onLongClick(
+                        action = {
+                            it()
+                            true
+                        },
+                        label = onLongClickLabel,
+                    )
+                }
+            }
+            .indication(interactionSource, indication)
+            .pointerInput(
+                onPointerDown,
+                onClicked,
+                onLongPressed,
+                onLongClickLabel,
+                interactionSource,
+            ) {
+                coroutineScope {
+                    awaitPointerEventScope {
+                        // This becomes true when the pointer was moved so far that the
+                        // gesture can no longer be a click or a long press.
+                        var movedTooFar = false
+                        // The position of the down event from the current gesture.
+                        var downPosition = Offset.Zero
+                        // Becomes true when the button has already been long-clicked. This
+                        // is read in the "up" case to prevent reporting a normal click if
+                        // there was already a long click.
+                        var longClicked = false
+                        // The Job housing the coroutine that will trigger a long press if
+                        // the pointer was held down long enough.
+                        //
+                        // This Job will get canceled if the pointer is released before the
+                        // long click duration elapses.
+                        var longClickJob: Job? = null
+
+                        var downInteraction: PressInteraction.Press? = null
+                        var enterInteraction: HoverInteraction.Enter? = null
+
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            when (event.type) {
+                                PointerEventType.Press -> {
+                                    downPosition = event.changes[0].position
+
+                                    // Animate a ripple to show the user that their press
+                                    // has been acknowledged.
+                                    downInteraction = PressInteraction.Press(downPosition)
+                                    launch { interactionSource.emit(downInteraction) }
+
+                                    movedTooFar = false
+                                    longClicked = false
+
+                                    onLongPressed?.let {
+                                        // Start a long click "timer" such that if the user
+                                        // keeps holding down the pointer, it eventually
+                                        // triggers a long click.
+                                        longClickJob = launch {
+                                            delay(viewConfiguration.longPressTimeoutMillis)
+                                            longClicked = true
+                                            launch {
+                                                interactionSource.emit(
+                                                    PressInteraction.Release(downInteraction)
+                                                )
+                                            }
+                                            onLongPressed()
+                                        }
+                                    }
+                                    onPointerDown()
+                                }
+
+                                PointerEventType.Move -> {
+                                    event.changes.fastForEach { change ->
+                                        // Consumes all Move events that started inside the
+                                        // bounds of the button so the ancestor Composables
+                                        // won't see a drag and take over the gesture.
+                                        change.consume()
+
+                                        if (!movedTooFar) {
+                                            val distanceMoved =
+                                                (change.position - downPosition).getDistance()
+                                            if (distanceMoved >= viewConfiguration.touchSlop * 4f) {
+                                                // The held pointer has been moved enough
+                                                // such that it shouldn't become a click or
+                                                // a long click any longer.
+                                                movedTooFar = true
+                                                longClickJob?.cancel()
+                                                downInteraction?.let {
+                                                    launch {
+                                                        interactionSource.emit(
+                                                            PressInteraction.Cancel(it)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                PointerEventType.Release -> {
+                                    if (!movedTooFar && !longClicked) {
+                                        // The held pointer was released before the long click
+                                        // occurred and wasn't moved too far. This is an actual
+                                        // click.
+                                        longClickJob?.cancel()
+                                        downInteraction?.let {
+                                            launch {
+                                                interactionSource.emit(PressInteraction.Release(it))
+                                            }
+                                        }
+                                        onClicked()
+                                    }
+                                }
+
+                                PointerEventType.Enter -> {
+                                    enterInteraction = HoverInteraction.Enter()
+                                    launch { interactionSource.emit(enterInteraction) }
+                                }
+
+                                PointerEventType.Exit -> {
+                                    enterInteraction?.let {
+                                        launch { interactionSource.emit(HoverInteraction.Exit(it)) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
     }
 }
 
