@@ -313,6 +313,7 @@ package android {
     field public static final String PACKET_KEEPALIVE_OFFLOAD = "android.permission.PACKET_KEEPALIVE_OFFLOAD";
     field public static final String PEERS_MAC_ADDRESS = "android.permission.PEERS_MAC_ADDRESS";
     field public static final String PERFORM_CDMA_PROVISIONING = "android.permission.PERFORM_CDMA_PROVISIONING";
+    field @FlaggedApi("com.android.nfc.module.flags.tap_to_x") public static final String PERFORM_GESTURE_EXCHANGE = "android.permission.PERFORM_GESTURE_EXCHANGE";
     field public static final String PERFORM_IMS_SINGLE_REGISTRATION = "android.permission.PERFORM_IMS_SINGLE_REGISTRATION";
     field public static final String PERFORM_SIM_ACTIVATION = "android.permission.PERFORM_SIM_ACTIVATION";
     field @FlaggedApi("android.app.bridged_notifications_api") public static final String POST_BRIDGED_NOTIFICATIONS = "android.permission.POST_BRIDGED_NOTIFICATIONS";

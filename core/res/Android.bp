@@ -205,6 +205,7 @@ android_app {
         "npumanager_aconfig_flags",
         "telecom_flags",
         "android.multiuser.flags-aconfig",
+        "com.android.nfc.module.flags-aconfig",
     ],
 }
 
