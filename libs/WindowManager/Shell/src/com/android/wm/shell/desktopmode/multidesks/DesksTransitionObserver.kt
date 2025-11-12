@@ -502,10 +502,7 @@ class DesksTransitionObserver(
                         logD("desk=%d moved to back but nothing moved to front, skipping", deskId)
                         continue
                     }
-                    if (
-                        desksToActivate.contains(deskId) &&
-                            DesktopExperienceFlags.ENABLE_EMPTY_DESK_ON_MINIMIZE.isTrue
-                    ) {
+                    if (desksToActivate.contains(deskId)) {
                         // In cases such as back-navigating the last app, where we want to remain
                         // in an empty desk, WM core may forcefully move the desktop wallpaper to
                         // front and the desk root to back because the next focusable activity is

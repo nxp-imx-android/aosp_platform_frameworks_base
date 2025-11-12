@@ -1926,11 +1926,7 @@ class DesktopTasksController(
             minimizeMultiActivityRunnable?.invoke(transition)
         } else {
             val willExitDesktop =
-                if (
-                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
-                        DesktopExperienceFlags.ENABLE_EMPTY_DESK_ON_MINIMIZE.isTrue
-                )
-                    false
+                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) false
                 else
                     willExitDesktop(
                         triggerTaskId = taskId,
@@ -4927,10 +4923,7 @@ class DesktopTasksController(
         }
 
         // TODO(b/416014060): Check if task is really receiving a back gesture
-        if (
-            !(DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
-                DesktopExperienceFlags.ENABLE_EMPTY_DESK_ON_MINIMIZE.isTrue)
-        ) {
+        if (!(DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue)) {
             val deactivationRunnable =
                 performDesktopExitCleanupIfNeeded(
                     taskId = task.taskId,

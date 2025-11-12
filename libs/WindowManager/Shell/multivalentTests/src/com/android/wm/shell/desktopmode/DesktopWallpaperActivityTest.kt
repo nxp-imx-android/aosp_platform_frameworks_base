@@ -27,7 +27,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.window.flags.Flags
-import com.android.window.flags.Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -50,10 +49,7 @@ class DesktopWallpaperActivityTest() {
     val activityScenarioRule = ActivityScenarioRule(DesktopWallpaperActivity::class.java)
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTopResumedActivityChanged_whenTrue_setsWindowFocusable() {
         activityScenarioRule.scenario.onActivity { activity ->
             activity.onTopResumedActivityChanged(true)
@@ -64,10 +60,7 @@ class DesktopWallpaperActivityTest() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTopResumedActivityChanged_whenFalse_setsWindowNotFocusable() {
         activityScenarioRule.scenario.onActivity { activity ->
             activity.onTopResumedActivityChanged(true)
@@ -86,10 +79,7 @@ class DesktopWallpaperActivityTest() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onBackPressed_movesTaskToBack() {
         var wallpaperActivity: FragmentActivity? = null
 
