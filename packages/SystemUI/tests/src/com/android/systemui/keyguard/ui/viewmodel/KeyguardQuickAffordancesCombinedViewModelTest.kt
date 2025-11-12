@@ -809,6 +809,7 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Gone),
                 stateTransition = TransitionStep(from = AOD, to = GONE),
+                skipChangeScene = true,
             )
             intendedShadeAlphaMutableStateFlow.value = 0.5f
             val underTest = collectLastValue(underTest.transitionAlpha)

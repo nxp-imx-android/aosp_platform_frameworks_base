@@ -400,7 +400,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
             gutsManager.exposedGuts = guts
 
             // WHEN the shade is no longer visible
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
             runCurrent()
 
             // THEN the guts are closed
@@ -442,7 +442,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
             clearInvocations(notificationListContainer)
 
             // WHEN the shade is no longer visible
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
             runCurrent()
 
             // THEN the list container is reset

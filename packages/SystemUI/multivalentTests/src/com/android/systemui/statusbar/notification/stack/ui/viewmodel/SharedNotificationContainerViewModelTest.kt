@@ -617,6 +617,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
             setTransition(
                 sceneTransition = Idle(Scenes.Gone),
                 stateTransition = TransitionStep(from = LOCKSCREEN, to = GONE),
+                unlockDevice = true,
             )
             assertThat(isOnLockscreen).isFalse()
 
@@ -635,6 +636,7 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                         value = 0.8f,
                         transitionState = TransitionState.RUNNING,
                     ),
+                unlockDevice = true,
             )
             assertThat(isOnLockscreen).isTrue()
 

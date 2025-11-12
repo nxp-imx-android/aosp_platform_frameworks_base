@@ -305,7 +305,8 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             )
 
             kosmos.setSceneTransition(
-                ShowOverlay(overlay = Overlays.Bouncer, fromScene = Scenes.Gone)
+                ShowOverlay(overlay = Overlays.Bouncer, fromScene = Scenes.Gone),
+                skipChangeScene = true,
             )
 
             assertEquals(listOf(false, true, false, true), inTransition)
@@ -445,7 +446,10 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
 
             kosmos.setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
             kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
-            kosmos.setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(from = Scenes.Lockscreen, to = Scenes.Gone),
+                skipChangeScene = true,
+            )
 
             assertThat(results).isEqualTo(listOf(false, true, false))
         }
@@ -457,7 +461,10 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             val results by
                 collectValues(underTest.isInTransition(edge = Edge.create(AOD, Scenes.Gone)))
 
-            kosmos.setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(from = Scenes.Lockscreen, to = Scenes.Gone),
+                skipChangeScene = true,
+            )
 
             sendSteps(
                 TransitionStep(AOD, UNDEFINED, 0f, STARTED),
@@ -465,7 +472,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
                 TransitionStep(AOD, UNDEFINED, 1f, FINISHED),
             )
 
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
 
             assertThat(results).isEqualTo(listOf(false, true, false))
         }
@@ -738,30 +745,39 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
                     )
                 )
 
-            kosmos.setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(from = Scenes.Lockscreen, to = Scenes.Gone),
+                skipChangeScene = true,
+            )
 
             assertThat(results).isEqualTo(listOf(false))
 
             kosmos.sceneInteractor.changeScene(Scenes.Gone, "reason")
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
 
             assertThat(results).isEqualTo(listOf(false, true))
 
-            kosmos.setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
+            kosmos.setSceneTransition(
+                Transition(from = Scenes.Gone, to = Scenes.Lockscreen),
+                skipChangeScene = true,
+            )
 
             assertThat(results).isEqualTo(listOf(false, true))
 
             kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
-            kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
+            kosmos.setSceneTransition(Idle(Scenes.Lockscreen), skipChangeScene = true)
 
             assertThat(results).isEqualTo(listOf(false, true, false))
 
-            kosmos.setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(from = Scenes.Lockscreen, to = Scenes.Gone),
+                skipChangeScene = true,
+            )
 
             assertThat(results).isEqualTo(listOf(false, true, false))
 
             kosmos.sceneInteractor.changeScene(Scenes.Gone, "reason")
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
 
             assertThat(results).isEqualTo(listOf(false, true, false, true))
         }
@@ -915,15 +931,11 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun transition_conversion_with_flag_on() =
+    fun transition_conversion_to_double_undefined_throws() =
         testScope.runTest {
-            val currentStates by
+            assertThrows(IllegalStateException::class.java) {
                 collectValues(underTest.transition(Edge.create(PRIMARY_BOUNCER, GONE)))
-
-            val sendStep1 = TransitionStep(PRIMARY_BOUNCER, GONE, 0f, STARTED)
-            sendSteps(sendStep1)
-
-            assertEquals(listOf<TransitionStep>(), currentStates)
+            }
         }
 
     @Test
@@ -934,10 +946,13 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             val currentStatesConverted by
                 collectValues(underTest.transition(Edge.create(LOCKSCREEN, UNDEFINED)))
 
-            kosmos.setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(Scenes.Lockscreen, Scenes.Gone),
+                skipChangeScene = true,
+            )
             val sendStep1 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
             sendSteps(sendStep1)
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
             val sendStep2 = TransitionStep(LOCKSCREEN, UNDEFINED, 1f, FINISHED)
             val sendStep3 = TransitionStep(LOCKSCREEN, AOD, 0f, STARTED)
             sendSteps(sendStep2, sendStep3)
@@ -1006,10 +1021,13 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             val currentStates by collectValues(underTest.transition(Edge.create(null, UNDEFINED)))
             val currentStatesMapped by collectValues(underTest.transition(Edge.create(null, GONE)))
 
-            kosmos.setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(Scenes.Lockscreen, Scenes.Gone),
+                skipChangeScene = true,
+            )
             val sendStep1 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
             sendSteps(sendStep1)
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
             val sendStep2 = TransitionStep(LOCKSCREEN, UNDEFINED, 1f, FINISHED)
             val sendStep3 = TransitionStep(UNDEFINED, AOD, 0f, STARTED)
             val sendStep4 = TransitionStep(AOD, LOCKSCREEN, 0f, STARTED)
@@ -1029,7 +1047,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             val sendStep1 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
             val sendStep2 = TransitionStep(LOCKSCREEN, UNDEFINED, 1f, FINISHED)
             sendSteps(sendStep1, sendStep2)
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
             val sendStep3 = TransitionStep(UNDEFINED, AOD, 0f, STARTED)
             val sendStep4 = TransitionStep(AOD, LOCKSCREEN, 0f, STARTED)
             sendSteps(sendStep3, sendStep4)
@@ -1085,7 +1103,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             progress.emit(0.3f)
             runCurrent()
 
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
 
             assertEquals(
                 listOf(
@@ -1116,7 +1134,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             progress.emit(0.2f)
             runCurrent()
 
-            kosmos.setSceneTransition(Idle(Scenes.Gone))
+            kosmos.setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
 
             kosmos.setSceneTransition(
                 ShowOverlay(
@@ -1223,7 +1241,10 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             val currentStatesMapped by
                 collectValues(underTest.transition(Edge.create(Scenes.Gone, LOCKSCREEN)))
 
-            kosmos.setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(Scenes.Lockscreen, Scenes.Gone),
+                skipChangeScene = true,
+            )
             val sendStep1 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
             kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
             val sendStep2 = TransitionStep(LOCKSCREEN, UNDEFINED, 0.6f, CANCELED)
@@ -1242,7 +1263,10 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             val currentStatesMapped by
                 collectValues(underTest.transition(Edge.create(to = LOCKSCREEN)))
 
-            kosmos.setSceneTransition(Transition(Scenes.Lockscreen, Scenes.Gone))
+            kosmos.setSceneTransition(
+                Transition(Scenes.Lockscreen, Scenes.Gone),
+                skipChangeScene = true,
+            )
             val sendStep1 = TransitionStep(LOCKSCREEN, UNDEFINED, 0f, STARTED)
             kosmos.setSceneTransition(Idle(Scenes.Lockscreen))
             val sendStep2 = TransitionStep(LOCKSCREEN, UNDEFINED, 0.6f, CANCELED)

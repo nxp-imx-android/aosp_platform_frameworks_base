@@ -579,7 +579,7 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             val transitionValue by collectLastValue(underTest.transitionProgress(Scenes.Gone))
 
-            setSceneTransition(Idle(Scenes.Gone))
+            setSceneTransition(Idle(Scenes.Gone), skipChangeScene = true)
             assertThat(transitionValue).isEqualTo(1f)
 
             setSceneTransition(Idle(Scenes.Lockscreen))
@@ -593,7 +593,8 @@ class SceneInteractorTest : SysuiTestCase() {
             val progress = MutableStateFlow(0f)
 
             setSceneTransition(
-                Transition(from = Scenes.Lockscreen, to = Scenes.Gone, progress = progress)
+                Transition(from = Scenes.Lockscreen, to = Scenes.Gone, progress = progress),
+                skipChangeScene = true,
             )
             assertThat(transitionValue).isEqualTo(0f)
 

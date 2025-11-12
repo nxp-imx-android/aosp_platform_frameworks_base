@@ -1054,7 +1054,10 @@ class ShadeInteractorSceneContainerImplTest : SysuiTestCase() {
         assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
 
         sceneInteractor.showOverlay(overlay, "reason")
-        setSceneTransition(Idle(initialScene, checkNotNull(currentOverlays)))
+        setSceneTransition(
+            Idle(initialScene, checkNotNull(currentOverlays)),
+            skipChangeScene = true,
+        )
         assertThat(currentScene).isEqualTo(initialScene)
         assertThat(currentOverlays).contains(overlay)
         assertThat(isAnyExpanded).isTrue()
