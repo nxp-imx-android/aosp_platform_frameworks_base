@@ -41,7 +41,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ContentKey
@@ -62,6 +61,7 @@ import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.ribbon.ui.composable.BottomRightCornerRibbon
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.view.SceneJankMonitor
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneTransitionBlurViewModel
@@ -190,17 +190,12 @@ fun SceneContainer(
                 userActionsByContentKey[actionableContentKey] =
                     viewModel.resolveSceneFamilies(userActions)
 
-                val isNavigationBarVisible = userActions.containsKey(Back)
-                if (
-                    isNavigationBarVisible !=
-                        ViewCompat.getRootWindowInsets(view)
-                            ?.isVisible(WindowInsetsCompat.Type.navigationBars())
-                ) {
-                    if (isNavigationBarVisible) {
-                        windowInsetsController?.show(WindowInsetsCompat.Type.navigationBars())
-                    } else {
-                        windowInsetsController?.hide(WindowInsetsCompat.Type.navigationBars())
-                    }
+                val isNavigationBarVisible =
+                    userActions.containsKey(Back) || actionableContentKey == Scenes.Gone
+                if (isNavigationBarVisible) {
+                    windowInsetsController?.show(WindowInsetsCompat.Type.navigationBars())
+                } else {
+                    windowInsetsController?.hide(WindowInsetsCompat.Type.navigationBars())
                 }
             }
         } finally {
