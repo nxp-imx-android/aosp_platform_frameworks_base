@@ -16,9 +16,8 @@
 
 package com.android.server.supervision
 
-import android.app.supervision.PackagePolicy
+import android.app.supervision.PackageUsagePolicy
 import android.app.supervision.Policy
-import android.app.supervision.PolicyKey
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.flags.Flags
 import android.os.PersistableBundle
@@ -290,9 +289,9 @@ class SupervisionSettingsTest {
             )
 
         private val TEST_PACKAGE_POLICY =
-            PackagePolicy(1, "test.package", PackagePolicy.RESTRICTION_TYPE_BLOCKED, true)
+            PackageUsagePolicy(1, "test.package", PackageUsagePolicy.TYPE_BLOCKED)
         private val TEST_PACKAGE_POLICY_2 =
-            PackagePolicy(1, "test.package2", PackagePolicy.RESTRICTION_TYPE_BLOCKED, true)
+            PackageUsagePolicy(1, "test.package2", PackageUsagePolicy.TYPE_BLOCKED)
 
         fun SupervisionUserData.changeUserData(
             enabled: Boolean,
