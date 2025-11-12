@@ -57,7 +57,7 @@ public class RuntimeXfermode extends Xfermode {
      */
     public RuntimeXfermode(@NonNull String agsl) {
         if (agsl == null) {
-            throw new NullPointerException("RuntimeShader requires a non-null AGSL string");
+            throw new NullPointerException("RuntimeXfermode requires a non-null AGSL string");
         }
         mBuilderNativeInstance = nativeCreateBlenderBuilder(agsl);
         RuntimeXfermode.NoImagePreloadHolder.sRegistry.registerNativeAllocation(
