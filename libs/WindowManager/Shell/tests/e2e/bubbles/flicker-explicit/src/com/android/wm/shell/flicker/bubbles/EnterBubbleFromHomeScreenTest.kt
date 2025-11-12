@@ -41,6 +41,7 @@ import org.junit.runners.MethodSorters
  *     Long press [simpleApp] icon on the home screen to show [AppIconMenu].
  *     Click the bubble menu to launch [simpleApp] into bubble.
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [EnterBubbleTestCases]
@@ -52,25 +53,30 @@ import org.junit.runners.MethodSorters
 class EnterBubbleFromHomeScreenTest : BubbleFlickerTestBase(), EnterBubbleTestCases {
 
     companion object {
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper, FROM_HOME_SCREEN) },
-            tearDownAfterTransition = {
-                testApp.exit(wmHelper)
-                // Clean up the app icon that might have been added to the home screen during the
-                // test transition.
-                val testAppIcon = tapl.workspace.getWorkspaceAppIcon(testApp.appName)
-                tapl.workspace.deleteAppIcon(testAppIcon)
-            }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                transition = {
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper, FROM_HOME_SCREEN)
+                },
+                tearDownAfterTransition = {
+                    testApp.exit(wmHelper)
+                    // Clean up the app icon that might have been added to the home screen during
+                    // the
+                    // test transition.
+                    val testAppIcon = tapl.workspace.getWorkspaceAppIcon(testApp.appName)
+                    tapl.workspace.deleteAppIcon(testAppIcon)
+                },
+            )
 
         private val navBar = NavBar.MODE_GESTURAL
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

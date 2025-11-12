@@ -63,7 +63,7 @@ class SurfaceViewBubbleTaskSnapshotMatcher : IComponentMatcher {
 
     override fun check(
         layers: Collection<Layer>,
-        condition: Predicate<Collection<Layer>>
+        condition: Predicate<Collection<Layer>>,
     ): Boolean {
         return condition.test(layers.filter { layerMatchesAnyOf(it) })
     }

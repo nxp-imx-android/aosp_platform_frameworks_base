@@ -58,27 +58,27 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class CollapseBubbleAppViaTouchOutsideTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    CollapseBubbleAppTestCases {
+class CollapseBubbleAppViaTouchOutsideTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), CollapseBubbleAppTestCases {
 
     companion object {
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
-            transition = { collapseBubbleAppViaTouchOutside(testApp, wmHelper) },
-            tearDownAfterTransition = { testApp.exit(wmHelper) }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
+                transition = { collapseBubbleAppViaTouchOutside(testApp, wmHelper) },
+                tearDownAfterTransition = { testApp.exit(wmHelper) },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

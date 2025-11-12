@@ -45,11 +45,13 @@ import org.junit.runners.Parameterized.Parameters
  * ```
  *     Drag [testApp] icon to hotseat
  * ```
+ *
  * Actions:
  * ```
  *     Switch to overview to show task bar.
  *     Drag the [testApp] icon from task bar to bubble bar location.
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [EnterBubbleViaDragToBubbleBarTestCases]
@@ -59,35 +61,36 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    EnterBubbleViaDragToBubbleBarTestCases {
+class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), EnterBubbleViaDragToBubbleBarTestCases {
 
     companion object {
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, testApp.appName)
-            },
-            transition = { launchBubbleViaDragToBubbleBar(testApp, tapl, wmHelper) },
-            tearDownAfterTransition = { testApp.exit(wmHelper) }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, testApp.appName)
+                },
+                transition = { launchBubbleViaDragToBubbleBar(testApp, tapl, wmHelper) },
+                tearDownAfterTransition = { testApp.exit(wmHelper) },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { tapl.isTablet },
-        message = "Bubble and task bar are not available on phone",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { tapl.isTablet },
+            message = "Bubble and task bar are not available on phone",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule: TestRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule: TestRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

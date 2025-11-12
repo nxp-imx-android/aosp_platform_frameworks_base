@@ -43,6 +43,7 @@ import org.junit.runners.Parameterized.Parameters
  *     Long press [testApp] icon to show app icon menu.
  *     Click the bubble menu to launch [testApp] into bubble.
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [EnterBubbleTestCases]
@@ -52,26 +53,25 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    EnterBubbleTestCases {
+class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(), EnterBubbleTestCases {
 
     companion object {
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
-            tearDownAfterTransition = { testApp.exit(wmHelper) }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
+                tearDownAfterTransition = { testApp.exit(wmHelper) },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

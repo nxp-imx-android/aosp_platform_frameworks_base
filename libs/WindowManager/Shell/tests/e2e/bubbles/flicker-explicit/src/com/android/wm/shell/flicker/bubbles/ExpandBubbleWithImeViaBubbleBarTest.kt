@@ -56,6 +56,7 @@ import org.junit.runners.Parameterized.Parameters
  * ```
  *     Expand the [testApp] bubble via tapping on bubble bar and show IME
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [ExpandBubbleFromHomeTestCases]
@@ -67,61 +68,57 @@ import org.junit.runners.Parameterized.Parameters
 @Presubmit
 @FlakyTest(bugId = 421000153)
 @RunWith(Parameterized::class)
-class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    ExpandBubbleFromHomeTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
+class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) :
+    BubbleFlickerTestBase(),
+    ExpandBubbleFromHomeTestCases,
+    ImeBecomesVisibleAndBubbleIsShrunkTestCase {
 
     companion object {
         private val testApp = ImeShownOnAppStartHelper(instrumentation, Rotation.ROTATION_0)
 
-        /**
-         * The screenshot took at the end of the transition.
-         */
+        /** The screenshot took at the end of the transition. */
         private lateinit var bitmapAtEnd: Bitmap
 
-        /**
-         * The IME inset observed from [testApp]
-         */
+        /** The IME inset observed from [testApp] */
         private var imeInset: Int = -1
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                // Launch and collapse the bubble.
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                // Press back to dismiss IME window.
-                tapl.pressBack()
-                collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
-                // Checks that the IME is gone and the bubble is in collapsed state
-                wmHelper
-                    .StateSyncBuilder()
-                    .withImeGone()
-                    .waitForAndVerify()
-            },
-            transition = {
-                expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
-                testApp.waitIMEShown(wmHelper)
-                bitmapAtEnd = instrumentation.uiAutomation.takeScreenshot()
-                imeInset = testApp.retrieveImeBottomInset()
-            },
-            tearDownAfterTransition = { testApp.exit(wmHelper) }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    // Launch and collapse the bubble.
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                    // Press back to dismiss IME window.
+                    tapl.pressBack()
+                    collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
+                    // Checks that the IME is gone and the bubble is in collapsed state
+                    wmHelper.StateSyncBuilder().withImeGone().waitForAndVerify()
+                },
+                transition = {
+                    expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
+                    testApp.waitIMEShown(wmHelper)
+                    bitmapAtEnd = instrumentation.uiAutomation.takeScreenshot()
+                    imeInset = testApp.retrieveImeBottomInset()
+                },
+                tearDownAfterTransition = { testApp.exit(wmHelper) },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { tapl.isTablet },
-        message = "The bubble bar is only available on large screen devices",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { tapl.isTablet },
+            message = "The bubble bar is only available on large screen devices",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

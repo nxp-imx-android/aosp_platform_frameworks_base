@@ -67,56 +67,62 @@ class BubbleBarVisibilityTest : BubbleFlickerTestBase(), BubbleAlwaysVisibleTest
     companion object {
         private val fullscreenApp = NonResizeableAppHelper(instrumentation)
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                collapseBubbleAppViaTouchOutside(testApp, wmHelper)
-                fullscreenApp.launchViaIntent()
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                    collapseBubbleAppViaTouchOutside(testApp, wmHelper)
+                    fullscreenApp.launchViaIntent()
 
-                // Checks fullscreen app and bubble window are shown.
-                wmHelper.StateSyncBuilder()
-                    .withAppTransitionIdle()
-                    .withTopVisibleApps(fullscreenApp)
-                    .withBubbleShown()
-                    .waitForAndVerify()
+                    // Checks fullscreen app and bubble window are shown.
+                    wmHelper
+                        .StateSyncBuilder()
+                        .withAppTransitionIdle()
+                        .withTopVisibleApps(fullscreenApp)
+                        .withBubbleShown()
+                        .waitForAndVerify()
 
-                tapl.launchedAppState.assertTaskbarHidden()
-                // TODO(b/436755889): Checks why stashed Bubble bar is not visible for UI automator.
-                Root.get().verifyBubbleBarIsHidden()
-            },
-            transition = {
-                tapl.showTaskbarIfHidden()
-                // Checks the bubble bar is visible
-                Root.get().bubbleBar
+                    tapl.launchedAppState.assertTaskbarHidden()
+                    // TODO(b/436755889): Checks why stashed Bubble bar is not visible for UI
+                    // automator.
+                    Root.get().verifyBubbleBarIsHidden()
+                },
+                transition = {
+                    tapl.showTaskbarIfHidden()
+                    // Checks the bubble bar is visible
+                    Root.get().bubbleBar
 
-                // Wait until task bar hidden with timeout.
-                tapl.launchedAppState.assertTaskbarHidden()
-                // TODO(b/436755889): Checks why stashed Bubble bar is not visible for UI automator.
-                Root.get().verifyBubbleBarIsHidden()
-            },
-            tearDownAfterTransition = {
-                testApp.exit()
-                fullscreenApp.exit()
-            }
-        )
+                    // Wait until task bar hidden with timeout.
+                    tapl.launchedAppState.assertTaskbarHidden()
+                    // TODO(b/436755889): Checks why stashed Bubble bar is not visible for UI
+                    // automator.
+                    Root.get().verifyBubbleBarIsHidden()
+                },
+                tearDownAfterTransition = {
+                    testApp.exit()
+                    fullscreenApp.exit()
+                },
+            )
 
         // Don't verify 3-button because the task bar is persistent.
         private val navBar = NavBar.MODE_GESTURAL
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        // Bubble and task bar are only enabled on large screen devices.
-        // Only transient task bar can show/hide.
-        condition = { tapl.isTablet && tapl.isTransientTaskbar },
-        message = "This test is for large screen devices with transient taskbar",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            // Bubble and task bar are only enabled on large screen devices.
+            // Only transient task bar can show/hide.
+            condition = { tapl.isTablet && tapl.isTransientTaskbar },
+            message = "This test is for large screen devices with transient taskbar",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

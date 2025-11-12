@@ -47,11 +47,13 @@ import org.junit.runners.Parameterized.Parameters
  *     Swipe up to switch to overview
  *     Launch [testApp] into bubble via bubble menu
  * ```
+ *
  * Actions:
  * ```
  *     Collapse the [testApp] bubble from overview
  *     Now the task bar and bubble bar are both expanded
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [CollapseBubbleAppTestCases]
@@ -61,44 +63,45 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class CollapseBubbleAppFromOverviewTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    CollapseBubbleAppTestCases {
+class CollapseBubbleAppFromOverviewTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), CollapseBubbleAppTestCases {
 
     companion object {
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper, fromSource = FROM_TASK_BAR)
-            },
-            transition = {
-                collapseBubbleAppViaTouchOutside(testApp, wmHelper)
-                // Getting the overview will ensure the task bar is visible.
-                val overview = tapl.overview
-                // Calling the bubble bar will ensure the bubble bar is visible.
-                overview.bubbleBar
-            },
-            tearDownAfterTransition = {
-                testApp.exit()
-                tapl.goHome()
-            }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper, fromSource = FROM_TASK_BAR)
+                },
+                transition = {
+                    collapseBubbleAppViaTouchOutside(testApp, wmHelper)
+                    // Getting the overview will ensure the task bar is visible.
+                    val overview = tapl.overview
+                    // Calling the bubble bar will ensure the bubble bar is visible.
+                    overview.bubbleBar
+                },
+                tearDownAfterTransition = {
+                    testApp.exit()
+                    tapl.goHome()
+                },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { tapl.isTablet },
-        message = "Bubble bar is enabled on large screen devices",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { tapl.isTablet },
+            message = "Bubble bar is enabled on large screen devices",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

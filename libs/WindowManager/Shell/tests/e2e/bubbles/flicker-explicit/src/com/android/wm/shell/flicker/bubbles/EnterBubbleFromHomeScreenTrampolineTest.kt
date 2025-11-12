@@ -55,12 +55,15 @@ import org.junit.runners.MethodSorters
  */
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
+    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION,
+)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class EnterBubbleFromHomeScreenTrampolineTest : BubbleFlickerTrampolineTestBase(),
-    EnterBubbleTestCases, ColdLaunchTaskTrampolineTestCases,
+class EnterBubbleFromHomeScreenTrampolineTest :
+    BubbleFlickerTrampolineTestBase(),
+    EnterBubbleTestCases,
+    ColdLaunchTaskTrampolineTestCases,
     TaskTrampolineBecomesExpandedTestCases {
 
     companion object {
@@ -88,10 +91,11 @@ class EnterBubbleFromHomeScreenTrampolineTest : BubbleFlickerTrampolineTestBase(
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

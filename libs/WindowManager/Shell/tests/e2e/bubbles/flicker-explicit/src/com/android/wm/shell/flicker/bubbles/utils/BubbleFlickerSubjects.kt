@@ -26,58 +26,44 @@ import android.tools.traces.surfaceflinger.LayerTraceEntry
 import android.tools.traces.wm.WindowManagerState
 
 /**
- * The interface that contains [FlickerSubject] used in explicit flicker tests,
- * which should be inherited for test subsets or test base.
+ * The interface that contains [FlickerSubject] used in explicit flicker tests, which should be
+ * inherited for test subsets or test base.
  *
  * @see com.android.wm.shell.flicker.bubbles.BubbleFlickerTestBase
  * @see com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
  */
 interface BubbleFlickerSubjects {
 
-    /**
-     * The event log subject.
-     */
+    /** The event log subject. */
     val eventLogSubject: EventLogSubject
 
     /**
-     * The WindowManager trace subject, which is equivalent to the data shown in
-     * `Window Manager` tab in go/winscope.
+     * The WindowManager trace subject, which is equivalent to the data shown in `Window Manager`
+     * tab in go/winscope.
      */
     val wmTraceSubject: WindowManagerTraceSubject
 
     /**
-     * The Layer trace subject, which is equivalent to the data shown in
-     * `Surface Flinger` tab in go/winscope.
+     * The Layer trace subject, which is equivalent to the data shown in `Surface Flinger` tab in
+     * go/winscope.
      */
     val layersTraceSubject: LayersTraceSubject
 
-    /**
-     * The first [WindowManagerState] of the WindowManager trace.
-     */
+    /** The first [WindowManagerState] of the WindowManager trace. */
     val wmStateSubjectAtStart: WindowManagerStateSubject
 
-    /**
-     * The last [WindowManagerState] of the WindowManager trace.
-     */
+    /** The last [WindowManagerState] of the WindowManager trace. */
     val wmStateSubjectAtEnd: WindowManagerStateSubject
 
-    /**
-     * The first [LayerTraceEntry] of the Layers trace.
-     */
+    /** The first [LayerTraceEntry] of the Layers trace. */
     val layerTraceEntrySubjectAtStart: LayerTraceEntrySubject
 
-    /**
-     * The last [LayerTraceEntry] of the Layers trace.
-     */
+    /** The last [LayerTraceEntry] of the Layers trace. */
     val layerTraceEntrySubjectAtEnd: LayerTraceEntrySubject
 
-    /**
-     * Indicates whether the device uses gesture navigation bar or not.
-     */
+    /** Indicates whether the device uses gesture navigation bar or not. */
     val isGesturalNavBar: Boolean
 
-    /**
-     * The app used in flicker tests to verify with.
-     */
+    /** The app used in flicker tests to verify with. */
     val testApp: StandardAppHelper
 }

@@ -23,22 +23,18 @@ import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.isBubb
 import com.android.wm.shell.flicker.bubbles.utils.TaskLayerMatcher
 import org.junit.Test
 
-/**
- * Verifies that trampoline and running activity layers are always in Bubble when visible.
- */
+/** Verifies that trampoline and running activity layers are always in Bubble when visible. */
 interface TaskTrampolineBecomesExpandedTestCases : BubbleFlickerSubjects {
 
     /** Verifies the trampoline activity layer must be bubbled when visible. */
     @Test
     fun trampolineActivityInBubbleLayer() {
         val trampolineTaskMatcher = TaskLayerMatcher(BubbleFlickerTrampolineTestBase.trampolineApp)
-        val visibleTrampolineTaskList = layersTraceSubject.layers {
-            trampolineTaskMatcher.layerMatchesAnyOf(it)
-        }
+        val visibleTrampolineTaskList =
+            layersTraceSubject.layers { trampolineTaskMatcher.layerMatchesAnyOf(it) }
         visibleTrampolineTaskList.forEach {
             if (it.layer.hasVisibleChild()) {
-                it.check { "${it.name} must be bubbled" }
-                    .that(it.layer.isBubbled()).isEqual(true)
+                it.check { "${it.name} must be bubbled" }.that(it.layer.isBubbled()).isEqual(true)
             }
         }
     }
@@ -47,13 +43,11 @@ interface TaskTrampolineBecomesExpandedTestCases : BubbleFlickerSubjects {
     @Test
     fun runningActivityInBubbleLayer() {
         val runningTaskMatcher = TaskLayerMatcher(BubbleFlickerTrampolineTestBase.runningApp)
-        val visibleRunningTaskList = layersTraceSubject.layers {
-            runningTaskMatcher.layerMatchesAnyOf(it)
-        }
+        val visibleRunningTaskList =
+            layersTraceSubject.layers { runningTaskMatcher.layerMatchesAnyOf(it) }
         visibleRunningTaskList.forEach {
             if (it.layer.hasVisibleChild()) {
-                it.check { "${it.name} must be bubbled" }
-                    .that(it.layer.isBubbled()).isEqual(true)
+                it.check { "${it.name} must be bubbled" }.that(it.layer.isBubbled()).isEqual(true)
             }
         }
     }

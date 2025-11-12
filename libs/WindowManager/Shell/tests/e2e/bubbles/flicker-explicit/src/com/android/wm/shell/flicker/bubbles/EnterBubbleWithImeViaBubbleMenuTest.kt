@@ -43,8 +43,7 @@ import org.junit.runners.Parameterized.Parameters
 /**
  * Test entering bubble via clicking bubble menu and show IME.
  *
- * To run this test:
- *    `atest WMShellExplicitFlickerTestsBubbles:EnterBubbleWithImeViaBubbleMenuTest`
+ * To run this test: `atest WMShellExplicitFlickerTestsBubbles:EnterBubbleWithImeViaBubbleMenuTest`
  * Pre-steps:
  * ```
  *     Launch [initializeApp] to ensure IME is ready to show.
@@ -57,6 +56,7 @@ import org.junit.runners.Parameterized.Parameters
  *     Click the bubble menu to launch [ImeActivityAutoFocus] into bubble.
  *     IME will show after [ImeActivityAutoFocus] is shown.
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [EnterBubbleViaBubbleMenuTest]
@@ -67,43 +67,39 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    EnterBubbleTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
+class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), EnterBubbleTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
 
     companion object {
         private val testApp = ImeShownOnAppStartHelper(instrumentation, Rotation.ROTATION_0)
 
-        /**
-         * The screenshot took at the end of the transition.
-         */
+        /** The screenshot took at the end of the transition. */
         private lateinit var bitmapAtEnd: Bitmap
 
-        /**
-         * The IME inset observed from [testApp]
-         */
+        /** The IME inset observed from [testApp] */
         private var imeInset: Int = -1
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            transition = {
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                testApp.waitIMEShown(wmHelper)
-                bitmapAtEnd = instrumentation.uiAutomation.takeScreenshot()
-                imeInset = testApp.retrieveImeBottomInset()
-            },
-            tearDownAfterTransition = { testApp.exit(wmHelper) }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                transition = {
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                    testApp.waitIMEShown(wmHelper)
+                    bitmapAtEnd = instrumentation.uiAutomation.takeScreenshot()
+                    imeInset = testApp.retrieveImeBottomInset()
+                },
+                tearDownAfterTransition = { testApp.exit(wmHelper) },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

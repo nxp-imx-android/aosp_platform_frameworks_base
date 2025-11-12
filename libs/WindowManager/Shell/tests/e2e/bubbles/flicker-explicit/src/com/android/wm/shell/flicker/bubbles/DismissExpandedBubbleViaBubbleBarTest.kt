@@ -44,8 +44,8 @@ import org.junit.runners.Parameterized.Parameters
 /**
  * Test dismissing one of bubble apps by dragging a bubble item from bubble bar to dismiss view.
  *
- * To run this test:
- *     `atest WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleViaBubbleBarTest`
+ * To run this test: `atest
+ * WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleViaBubbleBarTest`
  *
  * Pre-steps:
  * ```
@@ -69,42 +69,43 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases, BubbleAppBecomesNotExpandedTestCases {
+class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), BubbleAlwaysVisibleTestCases, BubbleAppBecomesNotExpandedTestCases {
 
     companion object {
         private val previousApp = MessagingAppHelper(instrumentation)
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                launchBubbleViaBubbleMenu(previousApp, tapl, wmHelper)
-                collapseBubbleAppViaTouchOutside(previousApp, wmHelper)
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-            },
-            transition = { dismissBubbleAppViaBubbleBarItem(testApp, wmHelper, previousApp) },
-            tearDownAfterTransition = {
-                testApp.exit(wmHelper)
-                previousApp.exit(wmHelper)
-            }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    launchBubbleViaBubbleMenu(previousApp, tapl, wmHelper)
+                    collapseBubbleAppViaTouchOutside(previousApp, wmHelper)
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                },
+                transition = { dismissBubbleAppViaBubbleBarItem(testApp, wmHelper, previousApp) },
+                tearDownAfterTransition = {
+                    testApp.exit(wmHelper)
+                    previousApp.exit(wmHelper)
+                },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { tapl.isTablet },
-        message = "The bubble bar is only available on large screen devices",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { tapl.isTablet },
+            message = "The bubble bar is only available on large screen devices",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
@@ -129,7 +130,7 @@ class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestB
             testApp.toWindowName(),
             // Launcher get focus when tapping bubble bar
             LAUNCHER.toWindowName(),
-            previousApp.toWindowName()
+            previousApp.toWindowName(),
         )
     }
 }

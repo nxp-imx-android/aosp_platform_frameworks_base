@@ -52,6 +52,7 @@ import org.junit.runners.Parameterized.Parameters
  * ```
  *     Dismiss bubble app via dragging bubble icon to the dismiss view
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [DismissSingleExpandedBubbleTestCases]
@@ -62,33 +63,31 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    DismissSingleExpandedBubbleTestCases {
+class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), DismissSingleExpandedBubbleTestCases {
 
     companion object {
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
-            transition = { dismissBubbleAppViaFloatingBubbleView(testApp, wmHelper) },
-            tearDownAfterTransition = { testApp.exit() }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
+                transition = { dismissBubbleAppViaFloatingBubbleView(testApp, wmHelper) },
+                tearDownAfterTransition = { testApp.exit() },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { !tapl.isTablet },
-        message = "This test is for compact phones",
-    )
+    val assumptionRule =
+        AssumptionRule(condition = { !tapl.isTablet }, message = "This test is for compact phones")
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

@@ -68,52 +68,49 @@ class BubbleIconMoveTest(navBar: NavBar) : BubbleFlickerTestBase(), BubbleAlways
     companion object {
         private var bubblePositionChanged = false
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
-            },
-            transition = {
-                val bubble = Root.get().selectedBubble
-                val initialPosition = bubble.visibleCenter
-                bubble.dragToTheOtherSide()
-                wmHelper
-                    .StateSyncBuilder()
-                    .withAppTransitionIdle()
-                    .waitForAndVerify()
-                val finalPosition = bubble.visibleCenter
-                bubblePositionChanged = initialPosition != finalPosition
-            },
-            tearDownAfterTransition = { testApp.exit(wmHelper) }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                    collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
+                },
+                transition = {
+                    val bubble = Root.get().selectedBubble
+                    val initialPosition = bubble.visibleCenter
+                    bubble.dragToTheOtherSide()
+                    wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+                    val finalPosition = bubble.visibleCenter
+                    bubblePositionChanged = initialPosition != finalPosition
+                },
+                tearDownAfterTransition = { testApp.exit(wmHelper) },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { !tapl.isTablet },
-        message = "The floating bubble is only available on compact phones",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { !tapl.isTablet },
+            message = "The floating bubble is only available on compact phones",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    /**
-     * Verifies that the bubble's position on screen has changed after being dragged.
-     */
+    /** Verifies that the bubble's position on screen has changed after being dragged. */
     @Test
     fun bubblePositionShouldChange() {
         assertWithMessage("Bubble stack position should change after dragging")
-            .that(bubblePositionChanged).isTrue()
+            .that(bubblePositionChanged)
+            .isTrue()
     }
 }

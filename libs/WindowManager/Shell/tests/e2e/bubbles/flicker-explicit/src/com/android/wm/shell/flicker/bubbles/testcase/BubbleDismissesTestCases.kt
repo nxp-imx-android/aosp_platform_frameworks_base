@@ -21,14 +21,12 @@ import org.junit.Test
 /**
  * Verifies a bubble and its associated app window are fully dismissed.
  *
- * This test case builds upon [BubbleExitTestCases] by adding a verification
- * to ensure the application window itself is also gone at the end of the transition.
+ * This test case builds upon [BubbleExitTestCases] by adding a verification to ensure the
+ * application window itself is also gone at the end of the transition.
  */
 interface BubbleDismissesTestCases : BubbleExitTestCases {
 
-    /**
-     * Verifies bubble app window is gone at the end of the transition.
-     */
+    /** Verifies bubble app window is gone at the end of the transition. */
     @Test
     fun appWindowIsGoneAtEnd() {
         if (com.android.wm.shell.Flags.bugDontRemoveTaskBubble()) {

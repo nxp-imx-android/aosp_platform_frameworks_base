@@ -43,11 +43,10 @@ import org.junit.runners.MethodSorters
 /**
  * Test expanding a collapsed bubble by relaunching its app from a desktop mode app.
  *
- * This test verifies that the collapsed bubble expands correctly when its activity is
- * relaunched from another app running in a freeform desktop window.
+ * This test verifies that the collapsed bubble expands correctly when its activity is relaunched
+ * from another app running in a freeform desktop window.
  *
- * To run this test:
- * `atest WMShellFlickerTestsBubbles:ExpandBubbleViaRelaunchInDesktopTest`
+ * To run this test: `atest WMShellFlickerTestsBubbles:ExpandBubbleViaRelaunchInDesktopTest`
  *
  * Pre-steps:
  * ```
@@ -69,8 +68,8 @@ import org.junit.runners.MethodSorters
 @RequiresDesktopDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class ExpandBubbleViaRelaunchInDesktopTest : BubbleFlickerTestBase(), ExpandBubbleTestCases,
-    DesktopAppAlwaysVisibleTestCases {
+class ExpandBubbleViaRelaunchInDesktopTest :
+    BubbleFlickerTestBase(), ExpandBubbleTestCases, DesktopAppAlwaysVisibleTestCases {
 
     companion object ExpandBubbleViaRelaunchInDesktopTestProperties {
         private val context = instrumentation.targetContext
@@ -78,55 +77,59 @@ class ExpandBubbleViaRelaunchInDesktopTest : BubbleFlickerTestBase(), ExpandBubb
         private val bubbleApp = testApp
         private val desktopApp = NewTasksAppHelper(instrumentation)
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                // Launch [bubbleApp] into collapsed bubble.
-                launchBubbleViaBubbleMenu(bubbleApp, tapl, wmHelper)
-                collapseBubbleAppViaTouchOutside(bubbleApp, wmHelper)
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    // Launch [bubbleApp] into collapsed bubble.
+                    launchBubbleViaBubbleMenu(bubbleApp, tapl, wmHelper)
+                    collapseBubbleAppViaTouchOutside(bubbleApp, wmHelper)
 
-                // Launch [desktopApp] into desktop mode.
-                DesktopModeAppHelper(innerHelper = desktopApp).enterDesktopMode(wmHelper, uiDevice)
-            },
-            transition = {
-                // Relaunch [bubbleApp] from [desktopApp].
-                desktopApp.openNewTaskWithRecycle(uiDevice, wmHelper) {
-                    // Reopen the collapsed bubble.
-                    withBubbleExpanded(bubbleApp)
-                }
-            },
-            tearDownAfterTransition = {
-                bubbleApp.exit(wmHelper)
-                desktopApp.exit(wmHelper)
-            },
-        )
+                    // Launch [desktopApp] into desktop mode.
+                    DesktopModeAppHelper(innerHelper = desktopApp)
+                        .enterDesktopMode(wmHelper, uiDevice)
+                },
+                transition = {
+                    // Relaunch [bubbleApp] from [desktopApp].
+                    desktopApp.openNewTaskWithRecycle(uiDevice, wmHelper) {
+                        // Reopen the collapsed bubble.
+                        withBubbleExpanded(bubbleApp)
+                    }
+                },
+                tearDownAfterTransition = {
+                    bubbleApp.exit(wmHelper)
+                    desktopApp.exit(wmHelper)
+                },
+            )
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY) },
-        message = "Skipping test on ${Build.PRODUCT} as it doesn't support desktop mode.",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY) },
+            message = "Skipping test on ${Build.PRODUCT} as it doesn't support desktop mode.",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(MODE_GESTURAL).around(recordTraceWithTransitionRule),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(MODE_GESTURAL).around(recordTraceWithTransitionRule),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
     /**
-     * The [desktopApp] that is launched into a freeform window in desktop mode.
-     * Used by [DesktopAppAlwaysVisibleTestCases] to verify that this app remains visible
-     * when the [bubbleApp] expands on top of it.
+     * The [desktopApp] that is launched into a freeform window in desktop mode. Used by
+     * [DesktopAppAlwaysVisibleTestCases] to verify that this app remains visible when the
+     * [bubbleApp] expands on top of it.
      */
     override val desktopApp = ExpandBubbleViaRelaunchInDesktopTestProperties.desktopApp
 
     /**
-     * The [desktopApp] that was previously the top app, which will be replaced by [bubbleApp]
-     * when the bubble expands. Used by [BubbleAppBecomesExpandedTestCases] to verify that
-     * [bubbleApp] becomes the new top app during the bubble expansion transition.
+     * The [desktopApp] that was previously the top app, which will be replaced by [bubbleApp] when
+     * the bubble expands. Used by [BubbleAppBecomesExpandedTestCases] to verify that [bubbleApp]
+     * becomes the new top app during the bubble expansion transition.
      */
     override val previousApp = ExpandBubbleViaRelaunchInDesktopTestProperties.desktopApp
 }
