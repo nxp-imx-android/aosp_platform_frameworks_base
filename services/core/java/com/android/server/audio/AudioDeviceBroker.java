@@ -520,10 +520,8 @@ public class AudioDeviceBroker {
         if (mScoManagedByAudio) {
             if (isBtScoRequested && (!wasBtScoRequested || !isBluetoothScoActive()
                     || !mBtHelper.isBluetoothScoRequestedInternally())) {
-                boolean scoStarted = false;
                 if (shouldStartScoForAttributionSource(btScoRequesterAS)) {
-                    scoStarted = mBtHelper.startBluetoothSco(eventSource);
-                    if (!scoStarted) {
+                    if (!mBtHelper.startBluetoothSco(eventSource)) {
                         Log.w(TAG, "setCommunicationRouteForClient: "
                                 + "failure to start BT SCO for uid: " + attributionSource.getUid());
                         // clean up or restore previous client selection
@@ -535,17 +533,11 @@ public class AudioDeviceBroker {
                         }
                         postBroadcastScoConnectionState(AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                     }
-                } else {
-                    scoStarted = true;
-                }
-                if (scoStarted) {
-                    setBluetoothScoOn(true, "setCommunicationRouteForClient");
                 }
             } else if (!isBtScoRequested && wasBtScoRequested) {
                 if (shouldStartScoForAttributionSource(previousBtScoRequesterAS)) {
                     mBtHelper.stopBluetoothSco(eventSource);
                 }
-                setBluetoothScoOn(false, "setCommunicationRouteForClient");
             }
         } else {
             if (isBtScoRequested && (!wasBtScoRequested || !isBluetoothScoActive()
@@ -1045,6 +1037,8 @@ public class AudioDeviceBroker {
     // Lock protecting state variable related to Bluetooth audio state
     private final Object mBluetoothAudioStateLock = new Object();
 
+    // The following two variables are always false under AMSCO, so they should not be relied on at
+    // all for that code path
     // Current Bluetooth SCO audio active state indicated by BtHelper via setBluetoothScoOn().
     @GuardedBy("mBluetoothAudioStateLock")
     private boolean mBluetoothScoOn;
@@ -1175,13 +1169,13 @@ public class AudioDeviceBroker {
     /*package*/ void setBluetoothScoOn(boolean on, String eventSource) {
         synchronized (mBluetoothAudioStateLock) {
             AttributionSource btScoRequesterAS = bluetoothScoRequestOwnerAttributionSource();
-            Log.i(TAG, "setBluetoothScoOn: " + on + ", mBluetoothScoOn: "
-                    + mBluetoothScoOn + ", btScoRequesterUId: "
-                    + safeUidFromAttributionSource(btScoRequesterAS)
-                    + ", from: " + eventSource);
-            mBluetoothScoOn = on;
-            updateAudioHalBluetoothState();
             if (!mScoManagedByAudio) {
+                Log.i(TAG, "setBluetoothScoOn: " + on + ", mBluetoothScoOn: "
+                        + mBluetoothScoOn + ", btScoRequesterUId: "
+                        + safeUidFromAttributionSource(btScoRequesterAS)
+                        + ", from: " + eventSource);
+                mBluetoothScoOn = on;
+                updateAudioHalBluetoothState();
                 postUpdateCommunicationRouteClient(btScoRequesterAS, eventSource);
             }
             if (on) {
@@ -2448,28 +2442,39 @@ public class AudioDeviceBroker {
      */
     @GuardedBy("mDeviceStateLock")
     @Nullable private AudioDeviceAttributes preferredCommunicationDevice() {
-        boolean btSCoOn = mBtHelper.isBluetoothScoOn();
-        synchronized (mBluetoothAudioStateLock) {
-            btSCoOn = (btSCoOn || mScoManagedByAudio) && mBluetoothScoOn;
-        }
-
-        if (btSCoOn) {
-            // Use the SCO device known to BtHelper so that it matches exactly
-            // what has been communicated to audio policy manager. The device
-            // returned by requestedCommunicationDevice() can be a placeholder SCO device if legacy
-            // APIs are used to start SCO audio.
-            AudioDeviceAttributes device = mBtHelper.getHeadsetAudioDevice();
-            if (device != null) {
-                return device;
-            }
-        }
         var client = mCommunicationStack.topClient();
-        AudioDeviceAttributes device = client != null ? client.getDevice() : null;
-        if (device == null || device.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-            // Do not indicate BT SCO selection if SCO is requested but SCO is not ON
-            return null;
+        AudioDeviceAttributes topDevice = client != null ? client.getDevice() : null;
+        if (isScoManagedByAudio()) {
+            if (topDevice != null && topDevice.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+                sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
+                        0 /*unmute*/, 0);
+                // workaround before we consistently update the route stack for active device
+                // switches
+                topDevice = mBtHelper.getHeadsetAudioDevice();
+            }
+            return topDevice;
+        } else {
+            boolean btScoOn = false;
+            synchronized (mBluetoothAudioStateLock) {
+                btScoOn = mBtHelper.isBluetoothScoOn() && mBluetoothScoOn;
+            }
+
+            if (btScoOn) {
+                // Use the SCO device known to BtHelper so that it matches exactly what has been
+                // communicated to audio policy manager. The device returned by
+                // requestedCommunicationDevice() can be a placeholder SCO device if legacy APIs are
+                // used to start SCO audio.
+                AudioDeviceAttributes device = mBtHelper.getHeadsetAudioDevice();
+                if (device != null) {
+                    return device;
+                }
+            }
+            if (topDevice == null || topDevice.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+                // Do not indicate BT SCO selection if SCO is requested but SCO is not ON
+                return null;
+            }
+            return topDevice;
         }
-        return device;
     }
 
     /**
@@ -2606,7 +2611,6 @@ public class AudioDeviceBroker {
                     if (shouldStartScoForAttributionSource(previousBtScoRequesterAS)) {
                         mBtHelper.stopBluetoothSco(eventSource);
                     }
-                    setBluetoothScoOn(false, eventSource);
                 } else {
                     mBtHelper.stopBluetoothSco(eventSource);
                 }
