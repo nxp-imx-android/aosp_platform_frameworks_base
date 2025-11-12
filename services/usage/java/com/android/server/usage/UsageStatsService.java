@@ -2437,17 +2437,24 @@ public class UsageStatsService extends SystemService implements
             return null;
         }
 
+        // TODO: add UT to verify the queryEvents API and metrics loogging.
         @Override
         public UsageEvents queryEvents(long beginTime, long endTime, String callingPackage) {
             if (!hasQueryPermission(callingPackage)) {
                 return null;
             }
-
-            return queryEventsHelper(UserHandle.getCallingUserId(), beginTime, endTime,
-                    callingPackage, /* eventTypeFilter= */ EmptyArray.INT,
+            final UsageEvents events = queryEventsHelper(UserHandle.getCallingUserId(), beginTime,
+                    endTime, callingPackage, /* eventTypeFilter= */ EmptyArray.INT,
                     /* pkgNameFilter= */ null);
+            if (events != null && Flags.addQueryEventMetrics()) {
+                FrameworkStatsLog.write(FrameworkStatsLog.APP_USAGE_QUERY_EVENT_STATS,
+                        Binder.getCallingUid(), events.getEventCount(),
+                        /* timespan= */ (endTime - beginTime));
+            }
+            return events;
         }
 
+        // TODO: add UT to verify the queryEventsWithFilter API and metrics loogging.
         @Override
         public UsageEvents queryEventsWithFilter(@NonNull UsageEventsQuery query,
                 @NonNull String callingPackage) {
@@ -2469,12 +2476,18 @@ public class UsageStatsService extends SystemService implements
                         Manifest.permission.INTERACT_ACROSS_USERS_FULL,
                         "No permission to query usage stats for user " + userId);
             }
-
-            return queryEventsHelper(userId, query.getBeginTimeMillis(),
+            final UsageEvents events = queryEventsHelper(userId, query.getBeginTimeMillis(),
                     query.getEndTimeMillis(), callingPackage, query.getEventTypes(),
                     /* pkgNameFilter= */ new ArraySet<>(query.getPackageNames()));
+            if (events != null && Flags.addQueryEventMetrics()) {
+                FrameworkStatsLog.write(FrameworkStatsLog.APP_USAGE_QUERY_EVENT_STATS,
+                        Binder.getCallingUid(), events.getEventCount(),
+                        /* timespan= */ (query.getEndTimeMillis() - query.getBeginTimeMillis()));
+            }
+            return events;
         }
 
+        // TODO: add UT to verify the queryEventsForPackage API and metrics loogging.
         @Override
         public UsageEvents queryEventsForPackage(long beginTime, long endTime,
                 String callingPackage) {
@@ -2486,8 +2499,14 @@ public class UsageStatsService extends SystemService implements
 
             final long token = Binder.clearCallingIdentity();
             try {
-                return UsageStatsService.this.queryEventsForPackage(callingUserId, beginTime,
-                        endTime, callingPackage, includeTaskRoot);
+                final UsageEvents events = UsageStatsService.this.queryEventsForPackage(
+                        callingUserId, beginTime, endTime, callingPackage, includeTaskRoot);
+                if (events != null && Flags.addQueryEventMetrics()) {
+                    FrameworkStatsLog.write(FrameworkStatsLog.APP_USAGE_QUERY_EVENT_STATS,
+                            callingUid, events.getEventCount(),
+                            /* timespan= */ (endTime - beginTime));
+                }
+                return events;
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
