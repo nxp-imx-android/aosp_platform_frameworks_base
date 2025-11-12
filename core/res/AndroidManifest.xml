@@ -9604,6 +9604,16 @@
         android:protectionLevel="signature|installer"
         android:featureFlag="android.permission.flags.app_function_access_api_enabled"/>
 
+    <!-- @SystemApi
+        @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_INTERACTION_API)
+        This permission is required to read the app interaction history.
+        <p> Protection level: signature|installer
+        @hide
+    -->
+    <permission android:name="android.permission.READ_APP_INTERACTION"
+        android:protectionLevel="signature|installer"
+        android:featureFlag="android.app.appfunctions.flags.enable_app_interaction_api"/>
+
     <!-- Allows an application to programmatically move and resize its tasks when the system is in
         a state that allows such operations, e.g. in a desktop-like environment. It is only
         extended to the {@link android.app.role.RoleManager#ROLE_BROWSER default browser} and OEM
@@ -10551,9 +10561,9 @@
         </provider>
 
         <provider
-            android:name="com.android.server.appfunctions.AppFunctionAccessHistoryProvider"
-            android:featureFlag="android.permission.flags.app_function_access_api_enabled"
-            android:authorities="com.android.appfunction.accesshistory"
+            android:name="com.android.server.appinteraction.AppInteractionHistoryProvider"
+            android:featureFlag="android.app.appfunctions.flags.enable_app_interaction_api"
+            android:authorities="com.android.appinteraction.history"
             android:singleUser="true"
             android:exported="true">
         </provider>

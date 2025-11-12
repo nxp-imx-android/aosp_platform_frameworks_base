@@ -64,6 +64,7 @@ public class AppFunctionManagerService extends SystemService {
                                                 APP_FUNCTIONS_DIR),
                                         AGENT_ALLOWLIST_FILE_NAME)),
                         MultiUserDynamicAppFunctionRegistry.getInstance(),
+                        mAppInteractionService,
                         BackgroundThread.getExecutor());
     }
 

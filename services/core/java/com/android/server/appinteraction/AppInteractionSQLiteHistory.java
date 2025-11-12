@@ -19,7 +19,7 @@ package com.android.server.appinteraction;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppInteractionAttribution;
-import android.app.appfunctions.AppFunctionManager.AccessHistory;
+import android.app.AppInteractionContract;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -44,34 +44,38 @@ public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
                 "CREATE TABLE IF NOT EXISTS "
                         + DB_TABLE
                         + " ("
-                        + AccessHistory._ID
+                        + AppInteractionContract._ID
                         + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                        + AccessHistory.COLUMN_AGENT_PACKAGE_NAME
+                        + AppInteractionContract.COLUMN_AGENT_PACKAGE_NAME
                         + " TEXT, "
-                        + AccessHistory.COLUMN_TARGET_PACKAGE_NAME
+                        + AppInteractionContract.COLUMN_TARGET_PACKAGE_NAME
                         + " TEXT, "
-                        + AccessHistory.COLUMN_INTERACTION_TYPE
+                        + AppInteractionContract.COLUMN_INTERACTION_TYPE
                         + " INTEGER, "
-                        + AccessHistory.COLUMN_CUSTOM_INTERACTION_TYPE
+                        + AppInteractionContract.COLUMN_CUSTOM_INTERACTION_TYPE
                         + " TEXT, "
-                        + AccessHistory.COLUMN_INTERACTION_URI
+                        + AppInteractionContract.COLUMN_INTERACTION_URI
                         + " TEXT, "
-                        + AccessHistory.COLUMN_ACCESS_TIME
+                        + AppInteractionContract.COLUMN_ACCESS_TIME
                         + " INTEGER, "
-                        + AccessHistory.COLUMN_DURATION
+                        + AppInteractionContract.COLUMN_DURATION
                         + " INTEGER);";
 
         static final String DELETE_TABLE_DATA_BEFORE_ACCESS_TIME =
-                "DELETE FROM " + DB_TABLE + " WHERE " + AccessHistory.COLUMN_ACCESS_TIME + " < ?";
+                "DELETE FROM "
+                        + DB_TABLE
+                        + " WHERE "
+                        + AppInteractionContract.COLUMN_ACCESS_TIME
+                        + " < ?";
 
         static final String DELETE_TABLE_DATA_FOR_PACKAGE =
                 "DELETE FROM "
                         + DB_TABLE
                         + " WHERE "
-                        + AccessHistory.COLUMN_AGENT_PACKAGE_NAME
+                        + AppInteractionContract.COLUMN_AGENT_PACKAGE_NAME
                         + " = ?"
                         + " OR "
-                        + AccessHistory.COLUMN_TARGET_PACKAGE_NAME
+                        + AppInteractionContract.COLUMN_TARGET_PACKAGE_NAME
                         + " = ?";
 
         static final String DELETE_TABLE_DATA = "DELETE FROM " + DB_TABLE;
@@ -171,23 +175,26 @@ public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
 
         final ContentValues values = new ContentValues();
 
-        values.put(AccessHistory.COLUMN_AGENT_PACKAGE_NAME, sourcePackage);
-        values.put(AccessHistory.COLUMN_TARGET_PACKAGE_NAME, targetPackage);
-        values.put(AccessHistory.COLUMN_ACCESS_TIME, accessTime);
-        values.put(AccessHistory.COLUMN_DURATION, duration);
+        values.put(AppInteractionContract.COLUMN_AGENT_PACKAGE_NAME, sourcePackage);
+        values.put(AppInteractionContract.COLUMN_TARGET_PACKAGE_NAME, targetPackage);
+        values.put(AppInteractionContract.COLUMN_ACCESS_TIME, accessTime);
+        values.put(AppInteractionContract.COLUMN_DURATION, duration);
 
         if (appInteractionAttribution != null) {
             values.put(
-                    AccessHistory.COLUMN_INTERACTION_TYPE,
+                    AppInteractionContract.COLUMN_INTERACTION_TYPE,
                     appInteractionAttribution.getInteractionType());
             final String customInteractionType =
                     appInteractionAttribution.getCustomInteractionType();
             if (customInteractionType != null) {
-                values.put(AccessHistory.COLUMN_CUSTOM_INTERACTION_TYPE, customInteractionType);
+                values.put(
+                        AppInteractionContract.COLUMN_CUSTOM_INTERACTION_TYPE,
+                        customInteractionType);
             }
             final Uri interactionUri = appInteractionAttribution.getInteractionUri();
             if (interactionUri != null) {
-                values.put(AccessHistory.COLUMN_INTERACTION_URI, interactionUri.toString());
+                values.put(
+                        AppInteractionContract.COLUMN_INTERACTION_URI, interactionUri.toString());
             }
         }
 

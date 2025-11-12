@@ -17,7 +17,7 @@
 package com.android.server.appinteraction
 
 import android.app.AppInteractionAttribution
-import android.app.appfunctions.AppFunctionManager
+import android.app.AppInteractionContract
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
@@ -70,7 +70,7 @@ class AppInteractionSQLiteHistoryTest {
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_AGENT_PACKAGE_NAME
+                            AppInteractionContract.COLUMN_AGENT_PACKAGE_NAME
                         )
                     )
                 )
@@ -78,48 +78,40 @@ class AppInteractionSQLiteHistoryTest {
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_TARGET_PACKAGE_NAME
+                            AppInteractionContract.COLUMN_TARGET_PACKAGE_NAME
                         )
                     )
                 )
                 .isEqualTo(TEST_TARGET_PACKAGE_NAME)
             assertThat(
                     cursor.isNull(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_INTERACTION_TYPE
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_INTERACTION_TYPE)
                     )
                 )
                 .isTrue()
             assertThat(
                     cursor.isNull(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_CUSTOM_INTERACTION_TYPE
+                            AppInteractionContract.COLUMN_CUSTOM_INTERACTION_TYPE
                         )
                     )
                 )
                 .isTrue()
             assertThat(
                     cursor.isNull(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_INTERACTION_URI
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_INTERACTION_URI)
                     )
                 )
                 .isTrue()
             assertThat(
                     cursor.getLong(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_ACCESS_TIME
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_ACCESS_TIME)
                     )
                 )
                 .isEqualTo(accessTime)
             assertThat(
                     cursor.getLong(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_DURATION
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_DURATION)
                     )
                 )
                 .isEqualTo(duration)
@@ -153,7 +145,7 @@ class AppInteractionSQLiteHistoryTest {
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_AGENT_PACKAGE_NAME
+                            AppInteractionContract.COLUMN_AGENT_PACKAGE_NAME
                         )
                     )
                 )
@@ -162,48 +154,40 @@ class AppInteractionSQLiteHistoryTest {
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_TARGET_PACKAGE_NAME
+                            AppInteractionContract.COLUMN_TARGET_PACKAGE_NAME
                         )
                     )
                 )
                 .isEqualTo(TEST_TARGET_PACKAGE_NAME)
             assertThat(
                     cursor.getInt(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_INTERACTION_TYPE
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_INTERACTION_TYPE)
                     )
                 )
                 .isEqualTo(AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY)
             assertThat(
                     cursor.isNull(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_CUSTOM_INTERACTION_TYPE
+                            AppInteractionContract.COLUMN_CUSTOM_INTERACTION_TYPE
                         )
                     )
                 )
                 .isTrue()
             assertThat(
                     cursor.isNull(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_INTERACTION_URI
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_INTERACTION_URI)
                     )
                 )
                 .isTrue()
             assertThat(
                     cursor.getLong(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_ACCESS_TIME
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_ACCESS_TIME)
                     )
                 )
                 .isEqualTo(accessTime)
             assertThat(
                     cursor.getLong(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_DURATION
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_DURATION)
                     )
                 )
                 .isEqualTo(duration)
@@ -239,7 +223,7 @@ class AppInteractionSQLiteHistoryTest {
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_AGENT_PACKAGE_NAME
+                            AppInteractionContract.COLUMN_AGENT_PACKAGE_NAME
                         )
                     )
                 )
@@ -247,48 +231,40 @@ class AppInteractionSQLiteHistoryTest {
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_TARGET_PACKAGE_NAME
+                            AppInteractionContract.COLUMN_TARGET_PACKAGE_NAME
                         )
                     )
                 )
                 .isEqualTo(TEST_TARGET_PACKAGE_NAME)
             assertThat(
                     cursor.getInt(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_INTERACTION_TYPE
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_INTERACTION_TYPE)
                     )
                 )
                 .isEqualTo(AppInteractionAttribution.INTERACTION_TYPE_OTHER)
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_CUSTOM_INTERACTION_TYPE
+                            AppInteractionContract.COLUMN_CUSTOM_INTERACTION_TYPE
                         )
                     )
                 )
                 .isEqualTo(TEST_CUSTOM_INTERACTION_TYPE)
             assertThat(
                     cursor.getString(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_INTERACTION_URI
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_INTERACTION_URI)
                     )
                 )
                 .isEqualTo(TEST_INTERACTION_URI.toString())
             assertThat(
                     cursor.getLong(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_ACCESS_TIME
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_ACCESS_TIME)
                     )
                 )
                 .isEqualTo(accessTime)
             assertThat(
                     cursor.getLong(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_DURATION
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_DURATION)
                     )
                 )
                 .isEqualTo(duration)
@@ -324,9 +300,7 @@ class AppInteractionSQLiteHistoryTest {
             cursor.moveToFirst()
             assertThat(
                     cursor.getLong(
-                        cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_ACCESS_TIME
-                        )
+                        cursor.getColumnIndexOrThrow(AppInteractionContract.COLUMN_ACCESS_TIME)
                     )
                 )
                 .isEqualTo(newAccessTime)
@@ -371,7 +345,7 @@ class AppInteractionSQLiteHistoryTest {
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_AGENT_PACKAGE_NAME
+                            AppInteractionContract.COLUMN_AGENT_PACKAGE_NAME
                         )
                     )
                 )
@@ -379,7 +353,7 @@ class AppInteractionSQLiteHistoryTest {
             assertThat(
                     cursor.getString(
                         cursor.getColumnIndexOrThrow(
-                            AppFunctionManager.AccessHistory.COLUMN_TARGET_PACKAGE_NAME
+                            AppInteractionContract.COLUMN_TARGET_PACKAGE_NAME
                         )
                     )
                 )
