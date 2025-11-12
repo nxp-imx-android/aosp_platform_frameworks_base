@@ -37,15 +37,16 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 
 /**
- * Verifies that the content within a bubble can be scrolled and that its UI elements can be clicked.
+ * Verifies that the content within a bubble can be scrolled and that its UI elements can be
+ * clicked.
  *
  * This test validates user interaction by launching a bubble that displays an activity with a
- * [android.widget.ScrollView]. The scrollable content is intentionally long enough to not be
- * fully visible, with a "finish" button located at the very bottom.
+ * [android.widget.ScrollView]. The scrollable content is intentionally long enough to not be fully
+ * visible, with a "finish" button located at the very bottom.
  *
- * The test succeeds if it can programmatically scroll to the button and click it, which in
- * turn dismisses the bubble app. This confirms that both scrolling and touch events are
- * processed correctly within the bubble app.
+ * The test succeeds if it can programmatically scroll to the button and click it, which in turn
+ * dismisses the bubble app. This confirms that both scrolling and touch events are processed
+ * correctly within the bubble app.
  *
  * To run this test: `atest WMShellExplicitFlickerTestsBubbles:ScrollableBubbleAppTest`
  *
@@ -59,6 +60,7 @@ import org.junit.runners.Parameterized.Parameters
  *     Scroll the [testApp] until find the finish button
  *     Click the finish button to finish the bubble app
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [DismissSingleExpandedBubbleTestCases]
@@ -69,32 +71,32 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class ScrollableBubbleAppTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    DismissSingleExpandedBubbleTestCases {
+class ScrollableBubbleAppTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), DismissSingleExpandedBubbleTestCases {
 
     companion object {
         private val testApp = ScrollToFinishHelper(instrumentation)
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
-            transition = {
-                testApp.scrollToFinish()
-                waitAndVerifyBubbleGone(wmHelper)
-            },
-            tearDownAfterTransition = { testApp.exit() }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
+                transition = {
+                    testApp.scrollToFinish()
+                    waitAndVerifyBubbleGone(wmHelper)
+                },
+                tearDownAfterTransition = { testApp.exit() },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     // This is necessary or the test will use the default testApp from BubbleFlickerTestBase.
     override val testApp = Companion.testApp

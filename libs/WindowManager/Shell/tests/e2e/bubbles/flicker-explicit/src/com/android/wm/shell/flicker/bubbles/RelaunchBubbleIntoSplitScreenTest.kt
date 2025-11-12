@@ -44,8 +44,7 @@ import org.junit.runners.MethodSorters
  * This test verifies that the existing bubble is dismissed and its app task is moved into the
  * secondary split-screen pane.
  *
- * To run this test:
- *     `atest WMShellExplicitFlickerTestsBubbles:RelaunchBubbleIntoSplitScreenTest`
+ * To run this test: `atest WMShellExplicitFlickerTestsBubbles:RelaunchBubbleIntoSplitScreenTest`
  *
  * Pre-steps:
  * ```
@@ -69,8 +68,8 @@ import org.junit.runners.MethodSorters
 @Presubmit
 // TODO: b/432604687 - Rename to ExpandBubbleByRelaunchingFromSplit once the expected behavior is
 //  unblocked and the test logic is updated to verify it.
-class RelaunchBubbleIntoSplitScreenTest : BubbleFlickerTestBase(),
-    BubbleExitTestCases, SecondarySplitEnterTestCases {
+class RelaunchBubbleIntoSplitScreenTest :
+    BubbleFlickerTestBase(), BubbleExitTestCases, SecondarySplitEnterTestCases {
 
     companion object {
         private val bubbleApp = testApp
@@ -108,10 +107,11 @@ class RelaunchBubbleIntoSplitScreenTest : BubbleFlickerTestBase(),
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

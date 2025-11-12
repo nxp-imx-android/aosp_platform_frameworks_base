@@ -37,17 +37,18 @@ import org.junit.runners.MethodSorters
 /**
  * Test entering bubble via clicking bubble menu while the app task was in split-screen.
  *
- * To run this test:
- *     `atest WMShellExplicitFlickerTestsBubbles:RelaunchSplitScreenToBubbleTest`
+ * To run this test: `atest WMShellExplicitFlickerTestsBubbles:RelaunchSplitScreenToBubbleTest`
  *
  * Pre-steps:
  * ```
  *     Put two apps to split-screen and move the splits to background.
  * ```
+ *
  * Actions:
  * ```
  *     Click the bubble menu to launch [testApp] into bubble.
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [EnterBubbleTestCases]
@@ -61,37 +62,33 @@ class RelaunchSplitScreenToBubbleTest : BubbleFlickerTestBase(), EnterBubbleTest
     companion object {
         val testApp2: StandardAppHelper = ShowWhenLockedAppHelper(instrumentation)
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                enterSplit(
-                    wmHelper,
-                    tapl,
-                    uiDevice,
-                    primaryApp = testApp,
-                    secondaryApp = testApp2,
-                    Rotation.ROTATION_0,
-                )
-                tapl.goHome()
-            },
-            transition = {
-                launchBubbleViaBubbleMenu(
-                    testApp,
-                    tapl,
-                    wmHelper,
-                )
-            },
-            tearDownAfterTransition = {
-                testApp.exit(wmHelper)
-                testApp2.exit(wmHelper)
-            }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    enterSplit(
+                        wmHelper,
+                        tapl,
+                        uiDevice,
+                        primaryApp = testApp,
+                        secondaryApp = testApp2,
+                        Rotation.ROTATION_0,
+                    )
+                    tapl.goHome()
+                },
+                transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
+                tearDownAfterTransition = {
+                    testApp.exit(wmHelper)
+                    testApp2.exit(wmHelper)
+                },
+            )
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(NavBar.MODE_GESTURAL).around(recordTraceWithTransitionRule),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

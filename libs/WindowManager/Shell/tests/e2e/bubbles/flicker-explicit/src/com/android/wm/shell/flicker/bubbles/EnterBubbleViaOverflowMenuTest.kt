@@ -65,42 +65,42 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class EnterBubbleViaOverflowMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    MultipleBubbleExpandBubbleAppTestCases {
+class EnterBubbleViaOverflowMenuTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), MultipleBubbleExpandBubbleAppTestCases {
 
     companion object {
         private val messageApp = MessagingAppHelper()
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                // Launch and dismiss a bubble app to make it show in overflow.
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                if (tapl.isTablet) {
-                    dismissBubbleAppViaBubbleBarItem(testApp, wmHelper)
-                } else {
-                    dismissBubbleAppViaFloatingBubbleView(testApp, wmHelper)
-                }
-                // Launch message app to bubble to make overflow show.
-                launchBubbleViaBubbleMenu(messageApp, tapl, wmHelper)
-            },
-            transition = { launchBubbleViaOverflow(testApp, wmHelper) },
-            tearDownAfterTransition = {
-                testApp.exit()
-                messageApp.exit()
-            }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    // Launch and dismiss a bubble app to make it show in overflow.
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                    if (tapl.isTablet) {
+                        dismissBubbleAppViaBubbleBarItem(testApp, wmHelper)
+                    } else {
+                        dismissBubbleAppViaFloatingBubbleView(testApp, wmHelper)
+                    }
+                    // Launch message app to bubble to make overflow show.
+                    launchBubbleViaBubbleMenu(messageApp, tapl, wmHelper)
+                },
+                transition = { launchBubbleViaOverflow(testApp, wmHelper) },
+                tearDownAfterTransition = {
+                    testApp.exit()
+                    messageApp.exit()
+                },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
@@ -111,7 +111,7 @@ class EnterBubbleViaOverflowMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
             // Switch to the overflow page
             BUBBLE.toWindowName(),
             // Launch the test app to bubble
-            testApp.toWindowName()
+            testApp.toWindowName(),
         )
     }
 

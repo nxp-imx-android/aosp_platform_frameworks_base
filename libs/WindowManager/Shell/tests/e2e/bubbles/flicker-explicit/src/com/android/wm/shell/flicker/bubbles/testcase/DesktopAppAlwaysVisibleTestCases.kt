@@ -26,9 +26,9 @@ import org.junit.Test
 /**
  * Test cases to verify that the desktop app remains visible throughout the transition.
  *
- * This is used in scenarios where another UI (like an expanded bubble) appears
- * on top of the desktop, but the desktop app itself should remain visible in the
- * background (i.e. not become invisible or fully occluded by other non-transient surfaces).
+ * This is used in scenarios where another UI (like an expanded bubble) appears on top of the
+ * desktop, but the desktop app itself should remain visible in the background (i.e. not become
+ * invisible or fully occluded by other non-transient surfaces).
  *
  * This interface requires [desktopApp] to be implemented, which should be set to the desktop app
  * being monitored.
@@ -38,8 +38,8 @@ interface DesktopAppAlwaysVisibleTestCases : BubbleFlickerSubjects {
     /**
      * The desktop app under test.
      *
-     * This app is expected to remain visible. In many test scenarios,
-     * this is the app that was on top before the transition began.
+     * This app is expected to remain visible. In many test scenarios, this is the app that was on
+     * top before the transition began.
      */
     val desktopApp: IComponentNameMatcher
 
@@ -76,7 +76,8 @@ interface DesktopAppAlwaysVisibleTestCases : BubbleFlickerSubjects {
      */
     @Test
     fun desktopAppWindowInsideDisplayBoundsAtEnd() {
-        wmStateSubjectAtEnd.visibleRegion(desktopApp)
+        wmStateSubjectAtEnd
+            .visibleRegion(desktopApp)
             .coversAtMost(WindowUtils.getDisplayBounds(endRotation))
     }
 }

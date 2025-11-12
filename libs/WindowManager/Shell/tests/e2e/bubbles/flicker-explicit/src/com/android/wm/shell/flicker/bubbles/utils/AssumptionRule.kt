@@ -25,29 +25,29 @@ import org.junit.runners.model.Statement
 /**
  * A [TestRule] that skips a test if the given [condition] is false.
  *
- * This rule evaluates a [condition] lambda. If the condition returns `false`, the test
- * will be skipped with an [AssumptionViolatedException] containing the provided [message].
+ * This rule evaluates a [condition] lambda. If the condition returns `false`, the test will be
+ * skipped with an [AssumptionViolatedException] containing the provided [message].
  *
- * This is primarily used to conditionally execute tests based on device state or
- * other runtime factors (e.g. "only run this test on large screen devices").
+ * This is primarily used to conditionally execute tests based on device state or other runtime
+ * factors (e.g. "only run this test on large screen devices").
  *
- * @param condition a lambda function that must return `true` for the test to proceed.
- * If it returns `false`, the test is skipped.
- * @param message the message to be reported by JUnit if the test is skipped because
- * the assumption (condition) failed.
-
+ * @param condition a lambda function that must return `true` for the test to proceed. If it returns
+ *   `false`, the test is skipped.
+ * @param message the message to be reported by JUnit if the test is skipped because the assumption
+ *   (condition) failed.
  * @see assumeTrue
  */
 class AssumptionRule(private val condition: () -> Boolean, private val message: String) : TestRule {
 
-    override fun apply(base: Statement, description: Description) = object : Statement() {
-        override fun evaluate() {
-            // If condition() is false, this throws an AssumptionViolatedException,
-            // which JUnit interprets as "skip this test".
-            assumeTrue(message, condition())
+    override fun apply(base: Statement, description: Description) =
+        object : Statement() {
+            override fun evaluate() {
+                // If condition() is false, this throws an AssumptionViolatedException,
+                // which JUnit interprets as "skip this test".
+                assumeTrue(message, condition())
 
-            // If assumeTrue passes, evaluate the actual test.
-            base.evaluate()
+                // If assumeTrue passes, evaluate the actual test.
+                base.evaluate()
+            }
         }
-    }
 }

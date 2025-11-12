@@ -65,38 +65,37 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    MultipleBubbleExpandBubbleAppTestCases
-{
+class SwitchBetweenBubblesTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), MultipleBubbleExpandBubbleAppTestCases {
     companion object {
         private val previousApp = MessagingAppHelper()
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
-                launchBubbleViaBubbleMenu(previousApp, tapl, wmHelper)
-            },
-            transition = {
-                switchBubble(appSwitchedFrom = previousApp, appSwitchTo = testApp, wmHelper)
-            },
-            tearDownAfterTransition = {
-                testApp.exit()
-                previousApp.exit()
-            }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                    collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
+                    launchBubbleViaBubbleMenu(previousApp, tapl, wmHelper)
+                },
+                transition = {
+                    switchBubble(appSwitchedFrom = previousApp, appSwitchTo = testApp, wmHelper)
+                },
+                tearDownAfterTransition = {
+                    testApp.exit()
+                    previousApp.exit()
+                },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
@@ -109,16 +108,13 @@ class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
             eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
         } else {
             if (Flags.fixBubblesImeFocusFlicker()) {
-                eventLogSubject.focusChanges(
-                    previousApp.toWindowName(),
-                    testApp.toWindowName()
-                )
+                eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
             } else {
                 eventLogSubject.focusChanges(
                     previousApp.toWindowName(),
                     // Launcher may get focus when tapping on bubble icon.
                     LAUNCHER.toWindowName(),
-                    testApp.toWindowName()
+                    testApp.toWindowName(),
                 )
             }
         }
@@ -136,9 +132,7 @@ class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
             .forAllEntries()
     }
 
-    /**
-     * Verifies the [testApp] window replaces [previousApp] as the visible app.
-     */
+    /** Verifies the [testApp] window replaces [previousApp] as the visible app. */
     @Test
     fun appWindowReplacesPreviousAppAsVisibleWindow() {
         wmTraceSubject
@@ -151,9 +145,7 @@ class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
             .forAllEntries()
     }
 
-    /**
-     * Verifies the [testApp] layer replaces [previousApp] as the visible app.
-     */
+    /** Verifies the [testApp] layer replaces [previousApp] as the visible app. */
     @Test
     fun appLayerReplacePreviousAppAsVisibleLayer() {
         layersTraceSubject
@@ -166,17 +158,13 @@ class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
             .forAllEntries()
     }
 
-    /**
-     * Verifies [previousApp] window is invisible at the end of transition.
-     */
+    /** Verifies [previousApp] window is invisible at the end of transition. */
     @Test
     fun previousAppWindowIsInvisibleAtEnd() {
         wmStateSubjectAtEnd.isAppWindowInvisible(previousApp)
     }
 
-    /**
-     * Verifies [previousApp] layer is invisible at the end of transition.
-     */
+    /** Verifies [previousApp] layer is invisible at the end of transition. */
     @Test
     fun previousAppLayerIsInvisible() {
         layerTraceEntrySubjectAtEnd.isInvisible(previousApp)

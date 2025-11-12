@@ -39,8 +39,8 @@ import org.junit.runners.Parameterized.Parameters
  * Test dismiss bubble app via dragging bubble bar handle to the dismiss view when the bubble is in
  * expanded state.
  *
- * To run this test:
- *     `atest WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleViaBubbleBarHandleTest`
+ * To run this test: `atest
+ * WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleViaBubbleBarHandleTest`
  *
  * Pre-steps:
  * ```
@@ -51,6 +51,7 @@ import org.junit.runners.Parameterized.Parameters
  * ```
  *     Dismiss bubble app via dragging bubble bar handle to the dismiss view
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [DismissSingleExpandedBubbleTestCases]
@@ -60,33 +61,34 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class DismissExpandedBubbleViaBubbleBarHandleTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    DismissSingleExpandedBubbleTestCases {
+class DismissExpandedBubbleViaBubbleBarHandleTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), DismissSingleExpandedBubbleTestCases {
 
     companion object {
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
-            transition = { dismissBubbleAppViaBubbleBarHandle(testApp, wmHelper) },
-            tearDownAfterTransition = { testApp.exit() }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
+                transition = { dismissBubbleAppViaBubbleBarHandle(testApp, wmHelper) },
+                tearDownAfterTransition = { testApp.exit() },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { tapl.isTablet },
-        message = "Bubble bar is only enabled on large screen device",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { tapl.isTablet },
+            message = "Bubble bar is only enabled on large screen device",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

@@ -54,6 +54,7 @@ import org.junit.runners.Parameterized.Parameters
  *   Launch [testApp] into bubble
  *   The oldest bubble app will be removed from the bubble stack, or bubble bar.
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [MultipleBubbleExpandBubbleAppTestCases]
@@ -63,45 +64,42 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class LaunchMultipleBubbleTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    MultipleBubbleExpandBubbleAppTestCases {
+class LaunchMultipleBubbleTest(navBar: NavBar) :
+    BubbleFlickerTestBase(), MultipleBubbleExpandBubbleAppTestCases {
 
     companion object {
         private lateinit var bubbleIconsBeforeTransition: List<Bubble>
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                bubbleIconsBeforeTransition =
-                    launchMultipleBubbleAppsViaBubbleMenuAndCollapse(
-                        tapl,
-                        wmHelper
-                    )
-            },
-            transition = {
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                val bubbleIconsAfterTransition = Root.get().expandedBubbleStack.bubbles
-                val oldestBubble = bubbleIconsBeforeTransition.first()
-                assertWithMessage("The oldest bubble must be removed.")
-                    .that(bubbleIconsAfterTransition)
-                    .doesNotContain(oldestBubble)
-            },
-            tearDownAfterTransition = {
-                testApp.exit()
-                dismissMultipleBubbles()
-            }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    bubbleIconsBeforeTransition =
+                        launchMultipleBubbleAppsViaBubbleMenuAndCollapse(tapl, wmHelper)
+                },
+                transition = {
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                    val bubbleIconsAfterTransition = Root.get().expandedBubbleStack.bubbles
+                    val oldestBubble = bubbleIconsBeforeTransition.first()
+                    assertWithMessage("The oldest bubble must be removed.")
+                        .that(bubbleIconsAfterTransition)
+                        .doesNotContain(oldestBubble)
+                },
+                tearDownAfterTransition = {
+                    testApp.exit()
+                    dismissMultipleBubbles()
+                },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val setUpRule: TestRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule: TestRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

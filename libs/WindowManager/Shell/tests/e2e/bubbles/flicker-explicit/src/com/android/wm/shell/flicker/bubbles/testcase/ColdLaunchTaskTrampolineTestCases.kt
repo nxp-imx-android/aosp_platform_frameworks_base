@@ -21,9 +21,7 @@ import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import com.android.wm.shell.flicker.bubbles.utils.SurfaceViewBubbleTaskSnapshotMatcher
 import org.junit.Test
 
-/**
- * Verifies cold launching a task trampoline app into bubble.
- */
+/** Verifies cold launching a task trampoline app into bubble. */
 interface ColdLaunchTaskTrampolineTestCases : BubbleFlickerSubjects {
 
     /** Verifies the transition from the trampoline activity to the running activity. */

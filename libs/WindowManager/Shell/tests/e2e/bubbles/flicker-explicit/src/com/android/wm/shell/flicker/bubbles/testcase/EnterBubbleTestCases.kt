@@ -27,27 +27,21 @@ import org.junit.Test
  */
 interface EnterBubbleTestCases : BubbleAppBecomesExpandedTestCases, LauncherAlwaysVisibleTestCases {
 
-// region Bubble related tests
+    // region Bubble related tests
 
-    /**
-     * Verifies the bubble window is visible at the end of transition.
-     */
+    /** Verifies the bubble window is visible at the end of transition. */
     @Test
     fun bubbleWindowIsVisibleAtEnd() {
         wmStateSubjectAtEnd.isNonAppWindowVisible(BUBBLE)
     }
 
-    /**
-     * Verifies the bubble layer is visible at the end of transition.
-     */
+    /** Verifies the bubble layer is visible at the end of transition. */
     @Test
     fun bubbleLayerIsVisibleAtEnd() {
         layerTraceEntrySubjectAtEnd.isVisible(BUBBLE)
     }
 
-    /**
-     * Verifies the bubble window becomes visible.
-     */
+    /** Verifies the bubble window becomes visible. */
     @Test
     fun bubbleWindowBecomesVisible() {
         wmTraceSubject
@@ -59,9 +53,7 @@ interface EnterBubbleTestCases : BubbleAppBecomesExpandedTestCases, LauncherAlwa
             .forAllEntries()
     }
 
-    /**
-     * Verifies the bubble layer becomes visible.
-     */
+    /** Verifies the bubble layer becomes visible. */
     @Test
     fun bubbleLayerBecomesVisible() {
         layersTraceSubject
@@ -72,5 +64,5 @@ interface EnterBubbleTestCases : BubbleAppBecomesExpandedTestCases, LauncherAlwa
             .forAllEntries()
     }
 
-// endregion
+    // endregion
 }

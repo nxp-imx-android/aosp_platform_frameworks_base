@@ -30,9 +30,7 @@ interface BubbleAppBecomesNotExpandedTestCases : BubbleFlickerSubjects {
     val previousApp: IComponentNameMatcher
         get() = LAUNCHER
 
-    /**
-     * Verifies bubble app window becomes invisible.
-     */
+    /** Verifies bubble app window becomes invisible. */
     @Test
     fun appWindowBecomesInvisible() {
         wmTraceSubject
@@ -42,54 +40,38 @@ interface BubbleAppBecomesNotExpandedTestCases : BubbleFlickerSubjects {
             .forAllEntries()
     }
 
-    /**
-     * Verifies bubble app layer becomes invisible.
-     */
+    /** Verifies bubble app layer becomes invisible. */
     @Test
     fun appLayerBecomesInvisible() {
-        layersTraceSubject
-            .isVisible(testApp)
-            .then()
-            .isInvisible(testApp)
-            .forAllEntries()
+        layersTraceSubject.isVisible(testApp).then().isInvisible(testApp).forAllEntries()
     }
 
-    /**
-     * Verifies the [testApp] window has rounded corner at the start of the transition.
-     */
+    /** Verifies the [testApp] window has rounded corner at the start of the transition. */
     @Test
     fun appWindowHasRoundedCornerAtStart() {
         layerTraceEntrySubjectAtStart.hasRoundedCorners(testApp)
     }
 
-    /**
-     * Verifies bubble app window is invisible at the end of the transition.
-     */
+    /** Verifies bubble app window is invisible at the end of the transition. */
     @Test
     fun appWindowIsInvisibleAtEnd() {
         wmStateSubjectAtEnd.isAppWindowInvisible(testApp)
     }
 
-    /**
-     * Verifies bubble app layer is invisible at the end of the transition.
-     */
+    /** Verifies bubble app layer is invisible at the end of the transition. */
     @Test
     fun appLayerIsInvisibleAtEnd() {
         // TestApp may be gone if it's in dismissed state.
         layerTraceEntrySubjectAtEnd.isInvisible(testApp)
     }
 
-    /**
-     * Verifies the focus changed from bubble app to [previousApp].
-     */
+    /** Verifies the focus changed from bubble app to [previousApp]. */
     @Test
     fun focusChanges() {
         eventLogSubject.focusChanges(testApp.toWindowName(), previousApp.toWindowName())
     }
 
-    /**
-     * Verifies the bubble app replaces [previousApp] to be the top window.
-     */
+    /** Verifies the bubble app replaces [previousApp] to be the top window. */
     @Test
     fun previousAppWindowReplacesTestAppAsTopWindow() {
         wmTraceSubject
@@ -99,17 +81,13 @@ interface BubbleAppBecomesNotExpandedTestCases : BubbleFlickerSubjects {
             .forAllEntries()
     }
 
-    /**
-     * Verifies [previousApp] is the top window at the end of transition.
-     */
+    /** Verifies [previousApp] is the top window at the end of transition. */
     @Test
     fun previousWindowAsTopWindowAtEnd() {
         wmStateSubjectAtEnd.isAppWindowOnTop(previousApp)
     }
 
-    /**
-     * Verifies the [previousApp] becomes the top window.
-     */
+    /** Verifies the [previousApp] becomes the top window. */
     @Test
     fun previousAppWindowBecomesTopWindow() {
         wmTraceSubject

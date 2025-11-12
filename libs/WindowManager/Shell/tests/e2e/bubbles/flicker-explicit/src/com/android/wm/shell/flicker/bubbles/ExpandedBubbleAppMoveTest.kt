@@ -59,62 +59,54 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class ExpandedBubbleAppMoveTest : BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases {
+class ExpandedBubbleAppMoveTest : BubbleFlickerTestBase(), BubbleAlwaysVisibleTestCases {
 
     companion object {
         private var bubblePositionChanged = false
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-            },
-            transition = {
-                val bubbleBarHandle = Root.get().expandedBubbleStack.bubbleBarHandle
-                val initialPosition = bubbleBarHandle.visibleCenter
-                bubbleBarHandle.dragToTheOtherSide()
-                wmHelper
-                    .StateSyncBuilder()
-                    .withAppTransitionIdle()
-                    .waitForAndVerify()
-                val finalPosition = bubbleBarHandle.visibleCenter
-                bubblePositionChanged = initialPosition != finalPosition
-            },
-            tearDownAfterTransition = {
-                testApp.exit(wmHelper)
-            }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
+                transition = {
+                    val bubbleBarHandle = Root.get().expandedBubbleStack.bubbleBarHandle
+                    val initialPosition = bubbleBarHandle.visibleCenter
+                    bubbleBarHandle.dragToTheOtherSide()
+                    wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+                    val finalPosition = bubbleBarHandle.visibleCenter
+                    bubblePositionChanged = initialPosition != finalPosition
+                },
+                tearDownAfterTransition = { testApp.exit(wmHelper) },
+            )
 
         private val navBar = NavBar.MODE_GESTURAL
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { tapl.isTablet },
-        message = "Bubble bar handle is only enabled on large screen devices",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { tapl.isTablet },
+            message = "Bubble bar handle is only enabled on large screen devices",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    /**
-     * Verifies whether the bubble app position is changed.
-     */
+    /** Verifies whether the bubble app position is changed. */
     @Test
     fun bubbleAppPositionShouldChange() {
         assertWithMessage("Bubble position should change after dragging")
-            .that(bubblePositionChanged).isTrue()
+            .that(bubblePositionChanged)
+            .isTrue()
     }
 
-    /**
-     * Verifies whether the bubble app window is always visible.
-     */
+    /** Verifies whether the bubble app window is always visible. */
     @Test
     fun testAppWindowIsAlwaysVisible() {
         wmTraceSubject.isAppWindowVisible(testApp).forAllEntries()

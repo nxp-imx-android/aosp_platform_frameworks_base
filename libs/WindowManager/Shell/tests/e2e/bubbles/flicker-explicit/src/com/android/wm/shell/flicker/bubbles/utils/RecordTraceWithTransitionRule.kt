@@ -33,9 +33,8 @@ import org.junit.runners.model.Statement
  * A [org.junit.ClassRule] to record trace with transition.
  *
  * @sample com.android.wm.shell.flicker.bubbles.samples.recordTraceWithTransitionRuleSample
- *
- * @property setUpBeforeTransition the operation to initialize the environment before transition
- *                                   if specified
+ * @property setUpBeforeTransition the operation to initialize the environment before transition if
+ *   specified
  * @property transition the transition to execute
  * @property tearDownAfterTransition the operation to clean up after transition if specified
  */
@@ -45,9 +44,7 @@ class RecordTraceWithTransitionRule(
     private val tearDownAfterTransition: () -> Unit = {},
 ) : TestRule {
 
-    /**
-     * The reader to read trace from.
-     */
+    /** The reader to read trace from. */
     lateinit var reader: Reader
 
     override fun apply(base: Statement, description: Description?): Statement {
@@ -70,7 +67,7 @@ class RecordTraceWithTransitionRule(
                     errors.add(e)
                 }
                 // If the tests should be skipped, don't need to throw exceptions.
-                if (!errors.any {e -> e is AssumptionViolatedException}) {
+                if (!errors.any { e -> e is AssumptionViolatedException }) {
                     MultipleFailureException.assertEmpty(errors)
                 }
             }
@@ -96,23 +93,23 @@ class RecordTraceWithTransitionRule(
      * A helper method to record the trace while [transition] is running.
      *
      * @sample com.android.wm.shell.flicker.bubbles.samples.runTransitionWithTraceSample
-     *
      * @param transition the transition to verify.
      * @return a [Reader] that can read the trace data from.
      */
     private fun runTransitionWithTrace(transition: () -> Unit): Reader =
         withTracing(
-            traceMonitors = listOf(
-                ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext),
-                PerfettoTraceMonitor.newBuilder()
-                    .enableTransitionsTrace()
-                    .enableLayersTrace()
-                    .enableWindowManagerTrace()
-                    .enableViewCaptureTrace()
-                    .build(),
-                EventLogMonitor()
-            ),
-            predicate = transition
+            traceMonitors =
+                listOf(
+                    ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext),
+                    PerfettoTraceMonitor.newBuilder()
+                        .enableTransitionsTrace()
+                        .enableLayersTrace()
+                        .enableWindowManagerTrace()
+                        .enableViewCaptureTrace()
+                        .build(),
+                    EventLogMonitor(),
+                ),
+            predicate = transition,
         )
 
     companion object {

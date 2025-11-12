@@ -55,6 +55,7 @@ import org.junit.runners.Parameterized.Parameters
  *     Drag and move the bubble bar to the other side
  *     Expand the [testApp] bubble via clicking the bubble bar
  * ```
+ *
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [ExpandBubbleFromHomeTestCases]
@@ -65,52 +66,50 @@ import org.junit.runners.Parameterized.Parameters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
-class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    ExpandBubbleFromHomeTestCases {
+class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubbleFromHomeTestCases {
 
     companion object {
         private lateinit var bubbleBarBeforeTransition: Point
         private lateinit var bubbleBarAfterTransition: Point
 
-        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
-            setUpBeforeTransition = {
-                // Launch and collapse the bubble.
-                launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                collapseBubbleAppViaTouchOutside(testApp, wmHelper)
-            },
-            transition = {
-                bubbleBarBeforeTransition = Root.get().bubbleBar.visibleCenter
-                Root.get().bubbleBar.dragToTheOtherSide()
-                bubbleBarAfterTransition = Root.get().bubbleBar.visibleCenter
-                expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
-            },
-            tearDownAfterTransition = { testApp.exit(wmHelper) }
-        )
+        private val recordTraceWithTransitionRule =
+            RecordTraceWithTransitionRule(
+                setUpBeforeTransition = {
+                    // Launch and collapse the bubble.
+                    launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
+                    collapseBubbleAppViaTouchOutside(testApp, wmHelper)
+                },
+                transition = {
+                    bubbleBarBeforeTransition = Root.get().bubbleBar.visibleCenter
+                    Root.get().bubbleBar.dragToTheOtherSide()
+                    bubbleBarAfterTransition = Root.get().bubbleBar.visibleCenter
+                    expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
+                },
+                tearDownAfterTransition = { testApp.exit(wmHelper) },
+            )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { tapl.isTablet },
-        message = "The bubble bar is only available on large screen devices",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { tapl.isTablet },
+            message = "The bubble bar is only available on large screen devices",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    /**
-     * Verifies that the bubble bar is moved to the other side.
-     */
+    /** Verifies that the bubble bar is moved to the other side. */
     @Test
     fun bubbleBarMovesToTheOtherSide() {
         assertWithMessage("The bubble bar position must be changed")
