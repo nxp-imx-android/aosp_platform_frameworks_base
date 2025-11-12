@@ -32,6 +32,8 @@ import com.android.systemui.log.dagger.NotificationSectionLog
 import com.android.systemui.log.dagger.SensitiveNotificationProtectionLog
 import com.android.systemui.log.dagger.UnseenNotificationLog
 import com.android.systemui.log.dagger.VisualStabilityLog
+import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationLog
 import com.android.systemui.util.Compile
@@ -174,6 +176,15 @@ object NotificationsLogModule {
     @VisualStabilityLog
     fun provideVisualStabilityLogBuffer(factory: LogBufferFactory): LogBuffer {
         return factory.create("VisualStabilityLog", 50, /* maxSize */ false /* systrace */)
+    }
+
+    /** Provides a table log buffer for changes to notification alpha. */
+    @JvmStatic
+    @Provides
+    @SysUISingleton
+    @NotificationAlphaTableLog
+    fun provideNotificationAlphaTableLogBuffer(factory: TableLogBufferFactory): TableLogBuffer {
+        return factory.create("NotificationAlphaTableLog", 1000)
     }
 }
 
