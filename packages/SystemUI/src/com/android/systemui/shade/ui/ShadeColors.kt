@@ -69,14 +69,19 @@ object ShadeColors {
     fun classicShadeNotificationScrimBg(
         context: Context,
         blurSupported: Boolean,
-        withScrim: Boolean,
+        composited: Boolean,
     ): Int {
         val surfaceEffect0Color =
             context.resources.getColor(
                 com.android.internal.R.color.customColorSurfaceEffect0,
                 context.theme,
             )
-        val shadePanelWithScrim = shadePanel(context, blurSupported, withScrim = withScrim)
+        if (!composited) {
+            // SplitShade (avoid adding the shade panel with scrim)
+            return surfaceEffect0Color
+        }
+        // SingleShade
+        val shadePanelWithScrim = shadePanel(context, blurSupported, withScrim = true)
         return ColorUtils.compositeColors(surfaceEffect0Color, shadePanelWithScrim)
     }
 
