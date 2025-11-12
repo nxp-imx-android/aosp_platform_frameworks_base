@@ -690,6 +690,11 @@
     <color name="system_shade_active_light">#D9E2FF</color>
     <color name="system_shade_disabled_light">#0D0E12</color>
     <color name="system_shade_inactive_light">#2F3035</color>
+    <color name="system_surface_effect_0_light">#D9E2FF</color>
+    <color name="system_surface_effect_0_fallback_light">#B3C6F9</color>
+    <color name="system_surface_effect_1_light">#FAF8FE</color>
+    <color name="system_surface_effect_2_light">#FFFFFF</color>
+    <color name="system_surface_effect_3_light">#4B5D8B</color>
     <color name="system_theme_app_light">#D9E2FF</color>
     <color name="system_theme_app_ring_light">#98AADC</color>
     <color name="system_theme_notif_light">#D5BDEC</color>
@@ -712,6 +717,11 @@
     <color name="system_shade_active_dark">#D9E2FF</color>
     <color name="system_shade_disabled_dark">#0D0E12</color>
     <color name="system_shade_inactive_dark">#2F3035</color>
+    <color name="system_surface_effect_0_dark">#223050</color>
+    <color name="system_surface_effect_0_fallback_dark">#223050</color>
+    <color name="system_surface_effect_1_dark">#121317</color>
+    <color name="system_surface_effect_2_dark">#D9E2FF</color>
+    <color name="system_surface_effect_3_dark">#D9E2FF</color>
     <color name="system_theme_app_dark">#2A3042</color>
     <color name="system_theme_app_ring_dark">#9DABD1</color>
     <color name="system_theme_notif_dark">#9E88B4</color>
@@ -755,11 +765,6 @@
     <color name="shade_panel_fg">@color/shade_panel_fg_color</color>
     <color name="shade_panel_bg">@color/shade_panel_bg_color</color>
     <color name="shade_panel_scrim">@color/shade_panel_scrim_color</color>
-    <color name="surface_effect_0">@color/surface_effect_0_color</color>
-    <color name="surface_effect_1">@color/surface_effect_1_color</color>
-    <color name="surface_effect_2">@color/surface_effect_2_color</color>
-    <color name="surface_effect_3">@color/surface_effect_3_color</color>
-    <color name="surface_effect_0_fallback">@color/surface_effect_0_color_fallback</color>
 
     <!-- Color for system bars -->
     <color name="navigation_bar_compatible">@android:color/black</color>
