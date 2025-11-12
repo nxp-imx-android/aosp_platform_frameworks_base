@@ -18,6 +18,7 @@
 
 package com.android.systemui.media.remedia.ui.compose
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
@@ -286,6 +287,9 @@ private fun CardCarouselContent(
                     key = { index: Int -> viewModel.cards[index].key },
                     overscrollEffect = overscrollEffect ?: rememberOffsetOverscrollEffect(),
                 ) { pageIndex: Int ->
+                    if (Media.DEBUG) {
+                        Log.d(Media.TAG, "composing media card ${viewModel.cards[pageIndex].key}")
+                    }
                     Card(
                         viewModel = viewModel.cards[pageIndex],
                         presentationStyle = presentationStyle,
@@ -1617,6 +1621,9 @@ object Media {
         CardGuts,
         CardRevealedContent,
     }
+
+    const val TAG = "Media"
+    val DEBUG = Log.isLoggable(TAG, Log.DEBUG)
 }
 
 private fun MediaPresentationStyle.toScene(): SceneKey {
