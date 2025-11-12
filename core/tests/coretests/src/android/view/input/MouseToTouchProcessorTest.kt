@@ -337,11 +337,12 @@ class MouseToTouchProcessorTest {
         // Process ACTION_POINTER_DOWN for pointer1
         val pointerDownEvent =
             MotionEventBuilder(
-                MotionEvent.ACTION_POINTER_DOWN or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                MotionEvent.ACTION_POINTER_DOWN,
                 InputDevice.SOURCE_MOUSE
             )
                 .pointer(pointer0)
                 .pointer(pointer1)
+                .pointerIndex(1)
                 .classification(MotionEvent.CLASSIFICATION_PINCH)
                 .build()
         val pointerDownResult = processor.processInputEventForCompatibility(pointerDownEvent)
@@ -387,11 +388,12 @@ class MouseToTouchProcessorTest {
         // Process ACTION_POINTER_UP for pointer1
         val pointerUpEvent =
             MotionEventBuilder(
-                MotionEvent.ACTION_POINTER_UP or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                MotionEvent.ACTION_POINTER_UP,
                 InputDevice.SOURCE_MOUSE
             )
                 .pointer(pointer0)
                 .pointer(pointer1)
+                .pointerIndex(1)
                 .classification(MotionEvent.CLASSIFICATION_PINCH)
                 .build()
         val pointerUpResult = processor.processInputEventForCompatibility(pointerUpEvent)
