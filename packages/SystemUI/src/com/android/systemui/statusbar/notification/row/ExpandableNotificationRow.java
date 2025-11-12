@@ -882,7 +882,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 return Boolean.FALSE;
             }
         } else if (event.getAction() == MotionEvent.ACTION_HOVER_ENTER) {
-            return Boolean.TRUE;
+            // Hide the dismiss button for a child notification if the parent group is not expanded.
+            return !isChildInGroup() || isParentGroupExpanded();
         }
 
         return null;
