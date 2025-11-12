@@ -131,6 +131,8 @@ public class CachedAppOptimizer {
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_4 = "compact_throttle_4";
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_5 = "compact_throttle_5";
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_6 = "compact_throttle_6";
+    @VisibleForTesting static final String KEY_ZRAM_WRITEBACK_WAIT_SECONDS =
+            "zram_writeback_wait_seconds";
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_MIN_OOM_ADJ =
             "compact_throttle_min_oom_adj";
     @VisibleForTesting static final String KEY_COMPACT_THROTTLE_MAX_OOM_ADJ =
@@ -297,6 +299,7 @@ public class CachedAppOptimizer {
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_4 = 10_000;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_5 = 10 * 60 * 1000;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_6 = 10 * 60 * 1000;
+    @VisibleForTesting static final long DEFAULT_ZRAM_WRITEBACK_WAIT_SECONDS = 10 * 60;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MIN_OOM_ADJ = CACHED_APP_MIN_ADJ;
     @VisibleForTesting static final long DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ = CACHED_APP_MAX_ADJ;
     // The sampling rate to push app compaction events into statsd for upload.
@@ -388,6 +391,7 @@ public class CachedAppOptimizer {
     static final int UID_FROZEN_STATE_CHANGED_MSG = 6;
     static final int DEADLOCK_WATCHDOG_MSG = 7;
     static final int BINDER_ERROR_MSG = 8;
+    static final int ZRAM_WRITEBACK_MSG = 9;
 
     // When free swap falls below this percentage threshold any full (file + anon)
     // compactions will be downgraded to file only compactions to reduce pressure
@@ -460,6 +464,8 @@ public class CachedAppOptimizer {
                                 updateMinOomAdjThrottle();
                             } else if (KEY_COMPACT_THROTTLE_MAX_OOM_ADJ.equals(name)) {
                                 updateMaxOomAdjThrottle();
+                            } else if (KEY_ZRAM_WRITEBACK_WAIT_SECONDS.equals(name)) {
+                                updateZramWritebackWait();
                             }
                         }
                     }
@@ -531,6 +537,9 @@ public class CachedAppOptimizer {
     @GuardedBy("mPhenotypeFlagLock")
     @VisibleForTesting volatile long mCompactThrottleMaxOomAdj =
             DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ;
+    @GuardedBy("mPhenotypeFlagLock")
+    @VisibleForTesting volatile long mZramWritebackWaitSeconds =
+            DEFAULT_ZRAM_WRITEBACK_WAIT_SECONDS;
     @GuardedBy("mPhenotypeFlagLock")
     private volatile boolean mUseCompaction = DEFAULT_USE_COMPACTION;
     private volatile boolean mUseFreezer = false; // set to DEFAULT in init()
@@ -662,6 +671,7 @@ public class CachedAppOptimizer {
             updateUseFreezer();
             updateMinOomAdjThrottle();
             updateMaxOomAdjThrottle();
+            updateZramWritebackWait();
         }
     }
 
@@ -1123,6 +1133,16 @@ public class CachedAppOptimizer {
         // Should only compact cached processes.
         if (mCompactThrottleMaxOomAdj > CACHED_APP_MAX_ADJ) {
             mCompactThrottleMaxOomAdj = DEFAULT_COMPACT_THROTTLE_MAX_OOM_ADJ;
+        }
+    }
+
+    @GuardedBy("mPhenotypeFlagLock")
+    private void updateZramWritebackWait() {
+        mZramWritebackWaitSeconds = DeviceConfig.getLong(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
+                KEY_ZRAM_WRITEBACK_WAIT_SECONDS, DEFAULT_ZRAM_WRITEBACK_WAIT_SECONDS);
+        // Don't allow negative values.
+        if (mZramWritebackWaitSeconds < 0) {
+            mZramWritebackWaitSeconds = DEFAULT_ZRAM_WRITEBACK_WAIT_SECONDS;
         }
     }
 
@@ -1807,6 +1827,9 @@ public class CachedAppOptimizer {
         }
     }
 
+    private record ZramWritebackData(int pid, String processName, String packageName, int uid,
+            long zramUsedDeltaKb, boolean hasActivities) {}
+
     private final class MemCompactionHandler extends Handler {
         private MemCompactionHandler() {
             super(mCachedAppOptimizerThread.getLooper());
@@ -2080,13 +2103,11 @@ public class CachedAppOptimizer {
                         long deltaFileRss = rssAfter[RSS_FILE_INDEX] - rssBefore[RSS_FILE_INDEX];
                         long deltaAnonRss = rssAfter[RSS_ANON_INDEX] - rssBefore[RSS_ANON_INDEX];
                         long deltaSwapRss = rssAfter[RSS_SWAP_INDEX] - rssBefore[RSS_SWAP_INDEX];
-                        maybeWritebackZram(
-                                pid,
-                                name,
-                                packageName,
-                                uid,
-                                rssAfter[RSS_SWAP_INDEX],
+                        final ZramWritebackData data = new ZramWritebackData(
+                                pid, name, packageName, uid, rssAfter[RSS_SWAP_INDEX],
                                 hasActivities);
+                        sendMessageDelayed(obtainMessage(ZRAM_WRITEBACK_MSG, data),
+                                mZramWritebackWaitSeconds * 1000);
                         switch (opt.getReqCompactProfile()) {
                             case SOME:
                                 mCompactStatsManager.logSomeCompactionPerformed(compactSource,
@@ -2162,6 +2183,12 @@ public class CachedAppOptimizer {
                         Slog.d(TAG_AM, "Failed compacting native pid= " + pid);
                     }
                     Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                    break;
+                }
+                case ZRAM_WRITEBACK_MSG: {
+                    final ZramWritebackData data = (ZramWritebackData) msg.obj;
+                    maybeWritebackZram(data.pid(), data.processName(), data.packageName(),
+                            data.uid(), data.zramUsedDeltaKb(), data.hasActivities());
                     break;
                 }
             }

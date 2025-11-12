@@ -840,6 +840,7 @@ public final class CachedAppOptimizerTest {
             boolean supportsZramOps, boolean shouldBeCalled) throws Exception {
         setFlag(CachedAppOptimizer.KEY_USE_COMPACTION, "true", true);
         setFlag(CachedAppOptimizer.KEY_COMPACT_FULL_DELTA_RSS_THROTTLE_KB, "12000", false);
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_WAIT_SECONDS, "0", false);
         initActivityManagerService();
         long[] rssBefore =
                 new long[]{/*totalRSS*/ 10000, /*fileRSS*/ 10000, /*anonRSS*/ 12000, /*swap*/
