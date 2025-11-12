@@ -24,6 +24,7 @@ import android.annotation.Nullable;
 import android.app.Notification;
 import android.app.Person;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -200,7 +201,8 @@ public class NotificationHelper {
         }
         if (notification.isStyle(Notification.MessagingStyle.class)
                 && notification.extras != null) {
-            final Parcelable[] messages = notification.extras.getParcelableArray(EXTRA_MESSAGES);
+            final Bundle[] messages = notification.extras.getParcelableArray(
+                    EXTRA_MESSAGES, Bundle.class);
             if (!ArrayUtils.isEmpty(messages)) {
                 List<Notification.MessagingStyle.Message> sortedMessages =
                         Notification.MessagingStyle.Message.getMessagesFromBundleArray(messages);
