@@ -1780,7 +1780,9 @@ public class AudioTrack extends PlayerBase
             AudioFormat.CHANNEL_OUT_BOTTOM_FRONT_RIGHT |
             AudioFormat.CHANNEL_OUT_LOW_FREQUENCY_2 |
             AudioFormat.CHANNEL_OUT_FRONT_WIDE_LEFT |
-            AudioFormat.CHANNEL_OUT_FRONT_WIDE_RIGHT;
+            AudioFormat.CHANNEL_OUT_FRONT_WIDE_RIGHT |
+            AudioFormat.CHANNEL_OUT_HAPTIC_B |
+            AudioFormat.CHANNEL_OUT_HAPTIC_A;
 
     // Returns a boolean whether the attributes, format, bufferSizeInBytes, mode allow
     // power saving to be automatically enabled for an AudioTrack. Returns false if
@@ -1988,6 +1990,20 @@ public class AudioTrack extends PlayerBase
         if (channelCount > channelCountLimit) {
             loge("Channel configuration contains too many channels for encoding "
                     + encoding + "(" + channelCount + " > " + channelCountLimit + ")");
+            return false;
+        }
+        // Check if a haptics channel is configured
+        if ((channelConfig & AudioFormat.CHANNEL_OUT_HAPTIC_B) != 0
+                || (channelConfig & AudioFormat.CHANNEL_OUT_HAPTIC_A) != 0) {
+            // Check that there is at least one other (non haptic) channel set
+            int nonHapticChannelCount = Integer.bitCount(channelConfig
+                    & ~(AudioFormat.CHANNEL_OUT_HAPTIC_B | AudioFormat.CHANNEL_OUT_HAPTIC_A));
+            if (nonHapticChannelCount >= 1) {
+                logd("Haptic channel configuration detected, Audio Channels: "
+                        + nonHapticChannelCount);
+                return true;
+            }
+            loge("Bad haptic channel config, nonhapticchannels: " + nonHapticChannelCount);
             return false;
         }
         // check for unsupported multichannel combinations:

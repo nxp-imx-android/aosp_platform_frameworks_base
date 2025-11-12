@@ -298,8 +298,11 @@ static jint android_media_AudioTrack_setup(JNIEnv *env, jobject thiz, jobject we
         // Invalid channel representations are caught by !audio_is_output_channel() below.
         audio_channel_mask_t nativeChannelMask = nativeChannelMaskFromJavaChannelMasks(
                 channelPositionMask, channelIndexMask);
-        if (!audio_is_output_channel(nativeChannelMask)) {
-            ALOGE("Error creating AudioTrack: invalid native channel mask %#x.", nativeChannelMask);
+        audio_channel_mask_t audioOutputChannelMask =
+                (audio_channel_mask_t)((uint32_t)nativeChannelMask & ~AUDIO_CHANNEL_HAPTIC_ALL);
+        if (!audio_is_output_channel(audioOutputChannelMask)) {
+            ALOGE("Error creating AudioTrack: invalid native output audio channel mask %#x.",
+                  audioOutputChannelMask);
             return (jint) AUDIOTRACK_ERROR_SETUP_INVALIDCHANNELMASK;
         }
 
