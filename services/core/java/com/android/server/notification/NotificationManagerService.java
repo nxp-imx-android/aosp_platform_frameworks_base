@@ -6745,7 +6745,9 @@ public class NotificationManagerService extends SystemService {
                     || isCallerSystemOrSystemUi()
                     || hasCompanionDevice(callingPkg, UserHandle.getUserId(callingUid),
                             Set.of(AssociationRequest.DEVICE_PROFILE_WATCH,
-                                    AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION));
+                                    AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,
+                                    AssociationRequest.DEVICE_PROFILE_GLASSES,
+                                    AssociationRequest.DEVICE_PROFILE_MEDICAL));
         }
 
         private void enforcePolicyAccess(String pkg, String method) {
