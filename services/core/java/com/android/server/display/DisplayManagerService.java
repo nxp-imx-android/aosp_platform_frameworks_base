@@ -1518,9 +1518,7 @@ public final class DisplayManagerService extends SystemService {
         // If there is a mode that matches the override, use that one.
         // On ARR devices, this logic is not needed as the mode doesn't change based
         // on refresh rate override.
-        boolean skipMatchingModeSearch =
-                com.android.graphics.surfaceflinger.flags.Flags.supportedRefreshRateUpdate()
-                        && info.hasArrSupport;
+        boolean skipMatchingModeSearch = info.hasArrSupport;
         if (!skipMatchingModeSearch) {
             for (Display.Mode mode : info.supportedModes) {
                 if (!mode.equalsExceptRefreshRate(currentMode)) {
