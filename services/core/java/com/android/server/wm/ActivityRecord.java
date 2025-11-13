@@ -145,7 +145,6 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
-import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
 import static android.window.DesktopExperienceFlags.ENABLE_DENSITY_RESET_ON_CROSS_DISPLAYS_PIP_LAUNCH;
 import static android.window.DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
@@ -8889,20 +8888,10 @@ final class ActivityRecord extends WindowToken {
         setState(RESTARTING_PROCESS, "restartActivityProcess");
 
         if (mTransitionController.isShellTransitionsEnabled()) {
-            if (!ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue()
-                    && killInvisibleProcessOrPrepareForRestart()) {
-                return;
-            }
             final Transition transition = new Transition(TRANSIT_RELAUNCH, 0 /* flags */,
                     mTransitionController, mWmService.mSyncEngine);
             mTransitionController.startCollectOrQueue(transition, (deferred) -> {
-                if (ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue()
-                        && killInvisibleProcessOrPrepareForRestart()) {
-                    transition.abort();
-                    return;
-                }
-                if (!ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue()
-                        && mState != RESTARTING_PROCESS) {
+                if (killInvisibleProcessOrPrepareForRestart()) {
                     transition.abort();
                     return;
                 }
@@ -8933,7 +8922,7 @@ final class ActivityRecord extends WindowToken {
      * preparation to restart the process.
      */
     private boolean killInvisibleProcessOrPrepareForRestart() {
-        if (!mVisibleRequested || (!ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue() && mHaveState)) {
+        if (!mVisibleRequested) {
             // Kill its process immediately because the activity should be in background.
             // The activity state will be update to {@link #DESTROYED} in
             // {@link ActivityStack#cleanUp} when handling process died.
