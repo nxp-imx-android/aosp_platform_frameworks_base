@@ -39,19 +39,6 @@
 
     <!-- END REQUEST COMPUTER CONTROL ACCESS DIALOG -->
 
-    <!-- START NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
-
-    <!-- Label for the title of notify computer control blocked activity [CHAR LIMIT=NONE] -->
-    <string name="notify_computer_control_blocked_activity_title">This agent has requested access to an app it isn’t allowed to open. Take over from the agent or stop the task.</string>
-
-    <!-- Label for the title of notify computer control blocked permission dialog [CHAR LIMIT=NONE] -->
-    <string name="notify_computer_control_blocked_permission_dialog_title">This agent has requested a permission it isn’t allowed to have. Take over from the agent or stop the task.</string>
-
-    <!-- Label for the OK button for notify computer control blocked activity dialog. [CHAR LIMIT=40] -->
-    <string name="notify_computer_control_blocked_activity_button_ok">OK</string>
-
-    <!-- END NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
-
     <!-- START AUTOMATED APP LAUNCH WARNING ACTIVITY DIALOG -->
 
     <!-- Label for the title of automated app launch warning dialog [CHAR LIMIT=70] -->

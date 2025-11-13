@@ -108,12 +108,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private static final long DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS =
             TimeUnit.MILLISECONDS.convert(360, TimeUnit.MINUTES);
 
-    private static final String CUSTOM_BLOCKED_APP_PACKAGE = "com.android.virtualdevicemanager";
-
-    private static final ComponentName CUSTOM_BLOCKED_APP_ACTIVITY = new ComponentName(
-            CUSTOM_BLOCKED_APP_PACKAGE,
-            CUSTOM_BLOCKED_APP_PACKAGE + ".NotifyComputerControlBlockedActivity");
-
     // Input device names are limited to 80 bytes, so keep the prefix shorter than that.
     private static final int MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH = 70;
 
@@ -145,8 +139,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private static final int VENDOR_ID = 0x0000;
     @VisibleForTesting
     static final int PRODUCT_ID_DPAD = 0xCC01;
-    @VisibleForTesting
-    static final int PRODUCT_ID_KEYBOARD = 0xCC02;
     @VisibleForTesting
     static final int PRODUCT_ID_TOUCHSCREEN = 0xCC03;
 
@@ -283,7 +275,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // launch. This is validated in {@link ComputerControlSessionProcessor} prior to
         // creating the session.
         mAllowlistedPackages.addAll(mParams.getTargetPackageNames());
-        mAllowlistedPackages.add(CUSTOM_BLOCKED_APP_PACKAGE);
 
         final VirtualDeviceParams.Builder virtualDeviceParamsBuilder =
                 new VirtualDeviceParams.Builder()
@@ -809,10 +800,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 @UserIdInt int userId) {
             Slog.v(TAG, "Top activity changed to " + topActivity + " for user " + userId);
             cancelDisplayEmptyScheduledAction();
-
-            if (topActivity.getPackageName().equals(CUSTOM_BLOCKED_APP_PACKAGE)) {
-                return;
-            }
 
             // If we have a new top activity which is allowed, then attempt a transition to the
             // active state.
