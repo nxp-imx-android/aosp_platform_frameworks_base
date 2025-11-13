@@ -3469,8 +3469,8 @@ public class Notification implements Parcelable
                 person.visitUris(visitor);
             }
 
-            final Bundle[] messages = extras.getParcelableArray(EXTRA_MESSAGES,
-                    Bundle.class);
+            final Parcelable[] messages = extras.getParcelableArray(EXTRA_MESSAGES,
+                    Parcelable.class);
             if (!ArrayUtils.isEmpty(messages)) {
                 for (MessagingStyle.Message message : MessagingStyle.Message
                         .getMessagesFromBundleArray(messages)) {
@@ -8887,7 +8887,8 @@ public class Notification implements Parcelable
      */
     public boolean hasImage() {
         if (isStyle(MessagingStyle.class) && extras != null) {
-            final Bundle[] messages = extras.getParcelableArray(EXTRA_MESSAGES, Bundle.class);
+            final Parcelable[] messages = extras.getParcelableArray(EXTRA_MESSAGES,
+                    Parcelable.class);
             if (!ArrayUtils.isEmpty(messages)) {
                 for (MessagingStyle.Message m : MessagingStyle.Message
                         .getMessagesFromBundleArray(messages)) {
@@ -10175,10 +10176,10 @@ public class Notification implements Parcelable
                 mUser = user;
             }
             mConversationTitle = extras.getCharSequence(EXTRA_CONVERSATION_TITLE);
-            Bundle[] messages = extras.getParcelableArray(EXTRA_MESSAGES, Bundle.class);
+            Parcelable[] messages = extras.getParcelableArray(EXTRA_MESSAGES, Parcelable.class);
             mMessages = Message.getMessagesFromBundleArray(messages);
-            Bundle[] histMessages = extras.getParcelableArray(EXTRA_HISTORIC_MESSAGES,
-                    Bundle.class);
+            Parcelable[] histMessages = extras.getParcelableArray(EXTRA_HISTORIC_MESSAGES,
+                    Parcelable.class);
             mHistoricMessages = Message.getMessagesFromBundleArray(histMessages);
             mIsGroupConversation = extras.getBoolean(EXTRA_IS_GROUP_CONVERSATION);
             mUnreadMessageCount = extras.getInt(EXTRA_CONVERSATION_UNREAD_MESSAGE_COUNT);
