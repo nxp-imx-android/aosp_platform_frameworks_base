@@ -8656,13 +8656,11 @@ final class ActivityRecord extends WindowToken {
      */
     private boolean shouldRelaunchLocked(int changes, Configuration changesConfig) {
         int configChanged = info.getRealConfigChanged();
-        if (android.content.res.Flags.handleAllConfigChanges()) {
-            if ((configChanged & CONFIG_RESOURCES_UNUSED) != 0) {
-                // Don't relaunch any activities that claim they do not use resources at all.
-                // If they still do, the onConfigurationChanged() callback will get called to
-                // let them know anyway.
-                return false;
-            }
+        if ((configChanged & CONFIG_RESOURCES_UNUSED) != 0) {
+            // Don't relaunch any activities that claim they do not use resources at all.
+            // If they still do, the onConfigurationChanged() callback will get called to
+            // let them know anyway.
+            return false;
         }
 
         boolean onlyVrUiModeChanged = onlyVrUiModeChanged(changes, changesConfig);
