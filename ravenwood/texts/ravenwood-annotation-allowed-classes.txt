@@ -530,6 +530,7 @@ android.util.EventLog
 android.util.FloatMath
 android.util.FloatProperty
 android.util.Half
+android.util.ImmutableIntArray
 android.util.IndentingPrintWriter
 android.util.IntArray
 android.util.IntProperty
