@@ -720,6 +720,7 @@ class NativeVendorControlRequestMonitorThread {
         std::vector<char> buf;
         buf.resize(length + 1);
         std::string accessoryControlState;
+        bool updateAccessoryStateRequired = false;
 
         if ((type & USB_TYPE_MASK) == USB_TYPE_VENDOR) {
             switch (code) {
@@ -796,8 +797,11 @@ class NativeVendorControlRequestMonitorThread {
             if (mAccessoryFields.controlState.compare(accessoryControlState) ||
                 !accessoryControlState.compare("SENDSTRING")) {
                 mAccessoryFields.controlState = accessoryControlState;
+                updateAccessoryStateRequired = true;
             }
         }
+        if (updateAccessoryStateRequired) updateAccessoryState(accessoryControlState);
+
         return;
     fail:
         // stall control endpoint by applying opposite i/o
@@ -810,6 +814,14 @@ class NativeVendorControlRequestMonitorThread {
                 ALOGE("Couldn't halt ep0 on out request");
             }
         }
+    }
+
+    void updateAccessoryState(std::string controlState) {
+        JNIEnv *env = AndroidRuntime::getJNIEnv();
+        jstring obj = env->NewStringUTF(controlState.c_str());
+        env->CallVoidMethod(mCallbackObj, gUpdateAccessoryStateMethod, obj);
+        env->DeleteLocalRef(obj);
+        obj = NULL;
     }
 
     void teardown() {
