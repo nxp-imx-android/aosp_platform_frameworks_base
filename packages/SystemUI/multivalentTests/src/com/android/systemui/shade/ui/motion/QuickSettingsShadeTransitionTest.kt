@@ -27,6 +27,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
@@ -210,15 +211,18 @@ class QuickSettingsShadeTransitionTest : SysuiTestCase() {
                         kosmos.sceneContainerViewModelFactory.create {}
                     }
 
-                SceneContainer(
-                    viewModel = vm,
-                    sceneByKey = mapOf(Scenes.Gone to goneScene),
-                    initialSceneKey = Scenes.Gone,
-                    transitionsBuilder = kosmos.sceneContainerTransitions,
-                    overlayByKey = mapOf(Overlays.QuickSettingsShade to quickSettingsShadeOverlay),
-                    dataSourceDelegator = kosmos.sceneDataSourceDelegator,
-                    sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
-                )
+                ObserveReadsRoot {
+                    SceneContainer(
+                        viewModel = vm,
+                        sceneByKey = mapOf(Scenes.Gone to goneScene),
+                        initialSceneKey = Scenes.Gone,
+                        transitionsBuilder = kosmos.sceneContainerTransitions,
+                        overlayByKey =
+                            mapOf(Overlays.QuickSettingsShade to quickSettingsShadeOverlay),
+                        dataSourceDelegator = kosmos.sceneDataSourceDelegator,
+                        sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
+                    )
+                }
             }
         }
     }
