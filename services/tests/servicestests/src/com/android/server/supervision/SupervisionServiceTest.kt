@@ -180,6 +180,7 @@ class SupervisionServiceTest {
             UserHandle.ALL,
             false,
         )
+        service.setSupervisionRecoveryInfo(null)
     }
 
     @Test
@@ -959,6 +960,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun canLaunchPinRecovery_noEmailAndAlternativeRecoveryMethods_returnsFalse() {
         injector.setRoleHoldersAsUser(
             RoleManager.ROLE_SUPERVISION,
@@ -980,6 +982,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun canLaunchPinRecovery_hasVerifiedEmailButNoAlternativeRecoveryMethods_returnsTrue() {
         injector.setRoleHoldersAsUser(
             RoleManager.ROLE_SUPERVISION,
@@ -991,6 +994,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun canLaunchPinRecovery_noEmailButHasAlternativeRecoveryMethods_returnsTrue() {
         val supervisionPackage = "com.example.supervisionapp"
         injector.setRoleHoldersAsUser(
