@@ -2277,6 +2277,18 @@ public class Resources {
     }
 
     /**
+     * Return a subset of the fields of the resource configurations, including
+     * smallestScreenWidthDp, screenWidthDp, screenHeightDp, screenLayout, uiMode, keyboard,
+     * navigation, touchscreen and colorMode.
+     * Please note that this does not return all resource configurations.
+     *
+     * @hide
+     */
+    public Configuration[] getResourceConfigurations() {
+        return mResourcesImpl.getResourceConfigurations();
+    }
+
+    /**
      * Return the compatibility mode information for the application.
      * The returned object should be treated as read-only.
      *
