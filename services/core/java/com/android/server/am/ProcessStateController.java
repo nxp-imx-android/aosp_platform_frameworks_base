@@ -227,6 +227,10 @@ public class ProcessStateController {
         mOomConstants.mFreezerCutoffAdj = value;
     }
 
+    public void setFollowUpOomadjUpdateWaitDuration(long value) {
+        mOomConstants.mFollowUpOomadjUpdateWaitDuration = value;
+    }
+
     /**
      * Start a batch session for specifically service state changes. ProcessStateController updates
      * will not be triggered until until the returned SyncBatchSession is closed.

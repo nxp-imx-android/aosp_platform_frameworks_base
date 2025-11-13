@@ -273,7 +273,6 @@ public abstract class OomAdjuster {
     }
 
     private final Handler mUpdateHandler;
-    ActivityManagerConstants mConstants;
 
     /**
      * Current sequence id for oom_adj computation traversal.
@@ -480,6 +479,9 @@ public abstract class OomAdjuster {
 
         /** Notifies when a debugging message related to OOM adjustments is reported. */
         void onReportOomAdjMessage(String msg);
+
+        /** Enqueues the pending top app if necessary. */
+        void enqueuePendingTopAppIfNecessaryLocked();
     }
 
     /**
@@ -645,6 +647,8 @@ public abstract class OomAdjuster {
          * collects them and sends them in a single batch.
          */
         public boolean mEnableBatchingOomAdj;
+        /** The minimum duration to wait before scheduling another follow-up update. */
+        public volatile long mFollowUpOomadjUpdateWaitDuration;
     }
 
     // TODO(b/346822474): hook up global state usage.
@@ -717,8 +721,6 @@ public abstract class OomAdjuster {
         mProcLock = service.mProcLock;
         mActiveUids = activeUids;
         mStateGetter = stateGetter;
-
-        mConstants = mService.mConstants;
 
         mLogger = new OomAdjusterDebugLogger(this, mOomConstants);
 
@@ -840,12 +842,12 @@ public abstract class OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     protected int enqueuePendingTopAppIfNecessaryLSP() {
         final int prevTopProcessState = getTopProcessState();
-        mService.enqueuePendingTopAppIfNecessaryLocked();
+        mCallback.enqueuePendingTopAppIfNecessaryLocked();
         final int topProcessState = getTopProcessState();
         if (prevTopProcessState != topProcessState) {
             // Unlikely but possible: WM just updated the top process state, it may have
             // enqueued the new top app to the pending top UID list. Enqueue that one here too.
-            mService.enqueuePendingTopAppIfNecessaryLocked();
+            mCallback.enqueuePendingTopAppIfNecessaryLocked();
         }
         return topProcessState;
     }
@@ -2678,15 +2680,15 @@ public abstract class OomAdjuster {
 
     @GuardedBy("mService")
     private void scheduleFollowUpOomAdjusterUpdateLocked(long updateUptimeMs, long now) {
-        if (updateUptimeMs + mConstants.FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION
+        if (updateUptimeMs + mOomConstants.mFollowUpOomadjUpdateWaitDuration
                 >= mNextFollowUpUpdateUptimeMs) {
             // Update time is too close or later than the next follow up update.
             return;
         }
-        if (updateUptimeMs < now + mConstants.FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION) {
+        if (updateUptimeMs < now + mOomConstants.mFollowUpOomadjUpdateWaitDuration) {
             // Use a minimum delay for the follow up to possibly batch multiple process
             // evaluations and avoid rapid updates.
-            updateUptimeMs = now + mConstants.FOLLOW_UP_OOMADJ_UPDATE_WAIT_DURATION;
+            updateUptimeMs = now + mOomConstants.mFollowUpOomadjUpdateWaitDuration;
         }
 
         // Schedule a follow up update. Don't bother deleting existing handler messages.

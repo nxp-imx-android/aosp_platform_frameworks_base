@@ -19785,6 +19785,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         public void onReportOomAdjMessage(String msg) {
             reportOomAdjMessageLocked(msg);
         }
+
+        @Override
+        @GuardedBy("ActivityManagerService.this")
+        public void enqueuePendingTopAppIfNecessaryLocked() {
+            mPendingStartActivityUids.enqueuePendingTopAppIfNecessaryLocked(
+                    ActivityManagerService.this);
+        }
     }
 
     @VisibleForTesting
@@ -20063,11 +20070,6 @@ public class ActivityManagerService extends IActivityManager.Stub
             app = mPidsSelfLocked.get(debugPid);
         }
         mCachedAppOptimizer.binderError(debugPid, app, code, flags, err);
-    }
-
-    @GuardedBy("this")
-    void enqueuePendingTopAppIfNecessaryLocked() {
-        mPendingStartActivityUids.enqueuePendingTopAppIfNecessaryLocked(this);
     }
 
     @GuardedBy("this")
