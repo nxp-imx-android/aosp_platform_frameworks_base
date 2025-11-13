@@ -76,7 +76,7 @@ object ShadeColors {
                 com.android.internal.R.color.customColorSurfaceEffect0,
                 context.theme,
             )
-        val shadePanelWithScrim = shadePanel(context, blurSupported, withScrim = true)
+        val shadePanelWithScrim = shadePanel(context, blurSupported, withScrim = withScrim)
         return ColorUtils.compositeColors(surfaceEffect0Color, shadePanelWithScrim)
     }
 
