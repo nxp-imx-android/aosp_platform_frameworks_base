@@ -12327,8 +12327,8 @@ public abstract class PackageManager {
      * @param pccUid The PCC UID to map.
      * @return The corresponding application UID, or {@link Process#INVALID_UID} if the
      *         provided UID is not a valid PCC UID or no mapping exists.
-     * @hide
      */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public int getAppUidForPccUid(int pccUid) {
         throw new UnsupportedOperationException(
                 "getAppUidForPccUid not implemented in subclass");
