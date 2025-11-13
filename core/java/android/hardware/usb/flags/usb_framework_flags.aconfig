@@ -40,3 +40,11 @@ flag {
     description: "Feature flag to enable stream APIs for Accessory mode"
     bug: "369356693"
 }
+
+flag {
+    name: "enable_feature_usb_device"
+    is_exported: true
+    namespace: "usb"
+    description: "Feature flag to enable PackageManager feature FEATURE_USB_DEVICE"
+    bug: "457480832"
+}

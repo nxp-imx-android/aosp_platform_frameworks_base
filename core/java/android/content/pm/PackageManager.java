@@ -4181,6 +4181,15 @@ public abstract class PackageManager {
 
     /**
      * Feature for {@link #getSystemAvailableFeatures} and
+     * {@link #hasSystemFeature}: The device supports connecting to USB hosts
+     * as the USB device.
+     */
+    @SdkConstant(SdkConstantType.FEATURE)
+    @FlaggedApi(android.hardware.usb.flags.Flags.FLAG_ENABLE_FEATURE_USB_DEVICE)
+    public static final String FEATURE_USB_DEVICE = "android.hardware.usb.device";
+
+    /**
+     * Feature for {@link #getSystemAvailableFeatures} and
      * {@link #hasSystemFeature}: The device supports connecting to USB accessories.
      */
     @SdkConstant(SdkConstantType.FEATURE)
