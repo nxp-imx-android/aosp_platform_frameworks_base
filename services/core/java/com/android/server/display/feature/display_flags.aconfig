@@ -434,6 +434,13 @@ flag {
 }
 
 flag {
+    name: "enable_work_durations"
+    namespace: "display_manager"
+    description: "Enable the propagating of work durations from config to surface flinger"
+    bug: "399396620"
+}
+
+flag {
     name: "display_info_copy_on_write_cache_enabled"
     namespace: "display_manager"
     description: "Enable copy on write cache for display info"
