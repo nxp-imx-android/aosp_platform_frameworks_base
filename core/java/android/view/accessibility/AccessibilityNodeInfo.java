@@ -23,7 +23,9 @@ import static java.util.Collections.EMPTY_LIST;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.annotation.ColorInt;
 import android.annotation.FlaggedApi;
+import android.annotation.FloatRange;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -3269,10 +3271,11 @@ public class AccessibilityNodeInfo implements Parcelable {
      *   This class is made immutable before being delivered to an AccessibilityService.
      * </p>
      *
-     * @param extraRenderingInfo The {@link ExtraRenderingInfo extra rendering info}.
-     * @hide
+     * @param extraRenderingInfo The {@link ExtraRenderingInfo extra rendering info}, or
+     *     {@code null} to remove a previously set value.
      */
-    public void setExtraRenderingInfo(@NonNull ExtraRenderingInfo extraRenderingInfo) {
+    @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+    public void setExtraRenderingInfo(@Nullable ExtraRenderingInfo extraRenderingInfo) {
         enforceNotSealed();
         mExtraRenderingInfo = extraRenderingInfo;
     }
@@ -5168,9 +5171,13 @@ public class AccessibilityNodeInfo implements Parcelable {
         }
 
         if (isBitSet(nonDefaultFields, fieldIndex++)) {
-            parcel.writeValue(mExtraRenderingInfo.getLayoutSize());
-            parcel.writeFloat(mExtraRenderingInfo.getTextSizeInPx());
-            parcel.writeInt(mExtraRenderingInfo.getTextSizeUnit());
+            if (Flags.a11yExtraRenderingInfoColorAdditions()) {
+                mExtraRenderingInfo.writeToParcel(parcel, flags);
+            } else {
+                parcel.writeValue(mExtraRenderingInfo.getLayoutSize());
+                parcel.writeFloat(mExtraRenderingInfo.getTextSizeInPx());
+                parcel.writeInt(mExtraRenderingInfo.getTextSizeUnit());
+            }
         }
 
         if (isBitSet(nonDefaultFields, fieldIndex++)) {
@@ -5308,8 +5315,12 @@ public class AccessibilityNodeInfo implements Parcelable {
             mCollectionItemInfo = builder.build();
         }
         ExtraRenderingInfo ti = other.mExtraRenderingInfo;
-        mExtraRenderingInfo = (ti == null) ? null
-                : new ExtraRenderingInfo(ti);
+        mExtraRenderingInfo =
+                (ti == null)
+                        ? null
+                        : (Flags.a11yExtraRenderingInfoColorAdditions()
+                                ? new ExtraRenderingInfo.Builder(ti).build()
+                                : new ExtraRenderingInfo(ti));
 
         if (Flags.a11ySelectionApi()) {
             if (other.getSelection() != null) {
@@ -5479,10 +5490,14 @@ public class AccessibilityNodeInfo implements Parcelable {
         }
 
         if (isBitSet(nonDefaultFields, fieldIndex++)) {
-            mExtraRenderingInfo = new ExtraRenderingInfo(null);
-            mExtraRenderingInfo.mLayoutSize = (Size) parcel.readValue(null);
-            mExtraRenderingInfo.mTextSizeInPx = parcel.readFloat();
-            mExtraRenderingInfo.mTextSizeUnit = parcel.readInt();
+            if (Flags.a11yExtraRenderingInfoColorAdditions()) {
+                mExtraRenderingInfo = ExtraRenderingInfo.CREATOR.createFromParcel(parcel);
+            } else {
+                mExtraRenderingInfo = new ExtraRenderingInfo(null);
+                mExtraRenderingInfo.mLayoutSize = (Size) parcel.readValue(null);
+                mExtraRenderingInfo.mTextSizeInPx = parcel.readFloat();
+                mExtraRenderingInfo.mTextSizeUnit = parcel.readInt();
+            }
         }
 
         if (isBitSet(nonDefaultFields, fieldIndex++)) {
@@ -8145,12 +8160,20 @@ public class AccessibilityNodeInfo implements Parcelable {
      * @see #getAvailableExtraData()
      * @see #refreshWithExtraData(String, Bundle)
      */
-    public static final class ExtraRenderingInfo {
+    public static final class ExtraRenderingInfo implements Parcelable {
         private static final int UNDEFINED_VALUE = -1;
+        // Zero (which is the same as Color.TRANSPARENT) is used for colors if they are
+        // unknown or not defined because -1 is WHITE.
+        private static final int UNDEFINED_COLOR = 0;
 
         private Size mLayoutSize;
         private float mTextSizeInPx = UNDEFINED_VALUE;
         private int mTextSizeUnit = UNDEFINED_VALUE;
+        private int mTextColor = UNDEFINED_COLOR;
+        private int mHintTextColor = UNDEFINED_COLOR;
+        private int mLinkTextColor = UNDEFINED_COLOR;
+        private int mBackgroundColor = UNDEFINED_COLOR;
+        private float mAlpha = UNDEFINED_VALUE;
 
         /**
          * Instantiates an ExtraRenderingInfo, by copying an existing one.
@@ -8196,7 +8219,7 @@ public class AccessibilityNodeInfo implements Parcelable {
 
         /**
          * Gets the size object containing the height and the width of
-         * {@link android.view.ViewGroup.LayoutParams}  if the node is a {@link ViewGroup} or
+         * {@link android.view.ViewGroup.LayoutParams} if the node is a {@link ViewGroup} or
          * a {@link TextView}, or null otherwise. Useful for some accessibility services to
          * understand whether the text is scalable and fits the view or not.
          *
@@ -8275,12 +8298,155 @@ public class AccessibilityNodeInfo implements Parcelable {
         @Deprecated
         void recycle() {}
 
+        /**
+         * Returns the current color selected for primary text if the node has visible text, or 0
+         * otherwise.
+         *
+         * @see android.widget.TextView#getCurrentTextColor()
+         */
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public @ColorInt int getTextColor() {
+            return mTextColor;
+        }
+
+        /**
+         * Returns the current color selected to paint the hint text if the node has hint text, or 0
+         * otherwise.
+         *
+         * @see android.widget.TextView#getCurrentHintTextColor()
+         */
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public @ColorInt int getHintTextColor() {
+            return mHintTextColor;
+        }
+
+        /**
+         * Returns the current color selected to paint the link text if the node has link text, or 0
+         * otherwise.
+         *
+         * @see android.widget.TextView#getLinkTextColors()
+         */
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public @ColorInt int getLinkTextColor() {
+            return mLinkTextColor;
+        }
+
+        /**
+         * Returns the background color of the node if it is a {@link
+         * android.graphics.drawable.ColorDrawable}, or 0 otherwise.
+         *
+         * @see android.view.View#getBackground()
+         */
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public @ColorInt int getBackgroundColor() {
+            return mBackgroundColor;
+        }
+
+        /**
+         * Returns the opacity of the node if it is available, otherwise -1.0f.
+         *
+         * @see android.view.View#getAlpha()
+         */
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public float getAlpha() {
+            return mAlpha;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public int describeContents() {
+            return 0;
+        }
+
+        private void initFromParcel(Parcel parcel) {
+            // Bit mask of non-default-valued field indices
+            long nonDefaultFields = parcel.readLong();
+            int fieldIndex = 0;
+
+            if (isBitSet(nonDefaultFields, fieldIndex++)) mLayoutSize = parcel.readSize();
+            if (isBitSet(nonDefaultFields, fieldIndex++)) mTextSizeInPx = parcel.readFloat();
+            if (isBitSet(nonDefaultFields, fieldIndex++)) mTextSizeUnit = parcel.readInt();
+            if (isBitSet(nonDefaultFields, fieldIndex++)) mTextColor = parcel.readInt();
+            if (isBitSet(nonDefaultFields, fieldIndex++)) mHintTextColor = parcel.readInt();
+            if (isBitSet(nonDefaultFields, fieldIndex++)) mLinkTextColor = parcel.readInt();
+            if (isBitSet(nonDefaultFields, fieldIndex++)) mBackgroundColor = parcel.readInt();
+            if (isBitSet(nonDefaultFields, fieldIndex++)) mAlpha = parcel.readFloat();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public void writeToParcel(@NonNull Parcel parcel, int flags) {
+            // Write bit set of indices of fields with values differing from default
+            long nonDefaultFields = 0;
+            int fieldIndex = 0; // index of the current field
+            if (mLayoutSize != null) nonDefaultFields |= bitAt(fieldIndex);
+            fieldIndex++;
+            if (mTextSizeInPx != UNDEFINED_VALUE) nonDefaultFields |= bitAt(fieldIndex);
+            fieldIndex++;
+            if (mTextSizeUnit != UNDEFINED_VALUE) nonDefaultFields |= bitAt(fieldIndex);
+            fieldIndex++;
+            if (mTextColor != UNDEFINED_COLOR) nonDefaultFields |= bitAt(fieldIndex);
+            fieldIndex++;
+            if (mHintTextColor != UNDEFINED_COLOR) nonDefaultFields |= bitAt(fieldIndex);
+            fieldIndex++;
+            if (mLinkTextColor != UNDEFINED_COLOR) nonDefaultFields |= bitAt(fieldIndex);
+            fieldIndex++;
+            if (mBackgroundColor != UNDEFINED_COLOR) nonDefaultFields |= bitAt(fieldIndex);
+            fieldIndex++;
+            if (mAlpha != UNDEFINED_VALUE) nonDefaultFields |= bitAt(fieldIndex);
+            fieldIndex++;
+
+            int totalFields = fieldIndex;
+            parcel.writeLong(nonDefaultFields);
+
+            fieldIndex = 0;
+            if (isBitSet(nonDefaultFields, fieldIndex++)) parcel.writeSize(mLayoutSize);
+            if (isBitSet(nonDefaultFields, fieldIndex++)) parcel.writeFloat(mTextSizeInPx);
+            if (isBitSet(nonDefaultFields, fieldIndex++)) parcel.writeInt(mTextSizeUnit);
+            if (isBitSet(nonDefaultFields, fieldIndex++)) parcel.writeInt(mTextColor);
+            if (isBitSet(nonDefaultFields, fieldIndex++)) parcel.writeInt(mHintTextColor);
+            if (isBitSet(nonDefaultFields, fieldIndex++)) parcel.writeInt(mLinkTextColor);
+            if (isBitSet(nonDefaultFields, fieldIndex++)) parcel.writeInt(mBackgroundColor);
+            if (isBitSet(nonDefaultFields, fieldIndex++)) parcel.writeFloat(mAlpha);
+
+            if (DEBUG) {
+                fieldIndex--;
+                if (totalFields != fieldIndex) {
+                    throw new IllegalStateException(
+                            "Number of fields mismatch: " + totalFields + " vs " + fieldIndex);
+                }
+            }
+        }
+
+        @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+        public static final @NonNull Parcelable.Creator<ExtraRenderingInfo> CREATOR =
+                new Parcelable.Creator<ExtraRenderingInfo>() {
+                    public ExtraRenderingInfo createFromParcel(Parcel in) {
+                        ExtraRenderingInfo info = new ExtraRenderingInfo();
+                        info.initFromParcel(in);
+                        return info;
+                    }
+
+                    public ExtraRenderingInfo[] newArray(int size) {
+                        return new ExtraRenderingInfo[size];
+                    }
+                };
+
         /** The builder for ExtraRenderingInfo. */
         @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
         public static final class Builder {
             private Size mLayoutSize;
             private float mTextSizeInPx = UNDEFINED_VALUE;
             private int mTextSizeUnit = UNDEFINED_VALUE;
+            private int mTextColor = UNDEFINED_COLOR;
+            private int mHintTextColor = UNDEFINED_COLOR;
+            private int mLinkTextColor = UNDEFINED_COLOR;
+            private int mBackgroundColor = UNDEFINED_COLOR;
+            private float mAlpha = UNDEFINED_VALUE;
 
             /** Creates a new Builder. */
             @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
@@ -8296,6 +8462,11 @@ public class AccessibilityNodeInfo implements Parcelable {
                 mLayoutSize = info.mLayoutSize;
                 mTextSizeInPx = info.mTextSizeInPx;
                 mTextSizeUnit = info.mTextSizeUnit;
+                mTextColor = info.mTextColor;
+                mHintTextColor = info.mHintTextColor;
+                mLinkTextColor = info.mLinkTextColor;
+                mBackgroundColor = info.mBackgroundColor;
+                mAlpha = info.mAlpha;
             }
 
             /**
@@ -8375,6 +8546,132 @@ public class AccessibilityNodeInfo implements Parcelable {
                 return this;
             }
 
+            /**
+             * Sets the current color selected for primary text.
+             *
+             * @param color The current text color.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setTextColor(@ColorInt int color) {
+                mTextColor = color;
+                return this;
+            }
+
+            /**
+             * Clears the current color selected for primary text.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearTextColor() {
+                mTextColor = UNDEFINED_COLOR;
+                return this;
+            }
+
+            /**
+             * Sets the current color selected to paint the hint text.
+             *
+             * @param color The current hint text color.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setHintTextColor(@ColorInt int color) {
+                mHintTextColor = color;
+                return this;
+            }
+
+            /**
+             * Clears the current color selected to paint the hint text.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearHintTextColor() {
+                mHintTextColor = UNDEFINED_COLOR;
+                return this;
+            }
+
+            /**
+             * Sets the current color selected to paint the link text.
+             *
+             * @param color The current link text color.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setLinkTextColor(@ColorInt int color) {
+                mLinkTextColor = color;
+                return this;
+            }
+
+            /**
+             * Clears the current color selected to paint the link text.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearLinkTextColor() {
+                mLinkTextColor = UNDEFINED_COLOR;
+                return this;
+            }
+
+            /**
+             * Sets the background color of the node.
+             *
+             * @param color The background color.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setBackgroundColor(@ColorInt int color) {
+                mBackgroundColor = color;
+                return this;
+            }
+
+            /**
+             * Clears the background color of the node.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearBackgroundColor() {
+                mBackgroundColor = UNDEFINED_COLOR;
+                return this;
+            }
+
+            /**
+             * Sets the opacity of the node.
+             *
+             * @param alpha The node opacity.
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder setAlpha(
+                    @FloatRange(from=0.0, to=1.0) float alpha) {
+                mAlpha = alpha;
+                return this;
+            }
+
+            /**
+             * Clears the opacity of the node.
+             *
+             * @return This builder.
+             */
+            @NonNull
+            @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+            public ExtraRenderingInfo.Builder clearAlpha() {
+                mAlpha = UNDEFINED_VALUE;
+                return this;
+            }
+
             /** Creates a new {@link ExtraRenderingInfo} instance. */
             @NonNull
             @FlaggedApi(Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
@@ -8383,7 +8680,11 @@ public class AccessibilityNodeInfo implements Parcelable {
                 extraRenderingInfo.mLayoutSize = mLayoutSize;
                 extraRenderingInfo.mTextSizeInPx = mTextSizeInPx;
                 extraRenderingInfo.mTextSizeUnit = mTextSizeUnit;
-
+                extraRenderingInfo.mTextColor = mTextColor;
+                extraRenderingInfo.mHintTextColor = mHintTextColor;
+                extraRenderingInfo.mLinkTextColor = mLinkTextColor;
+                extraRenderingInfo.mBackgroundColor = mBackgroundColor;
+                extraRenderingInfo.mAlpha = mAlpha;
                 return extraRenderingInfo;
             }
         }
