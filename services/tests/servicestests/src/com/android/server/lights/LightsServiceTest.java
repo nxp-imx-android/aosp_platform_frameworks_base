@@ -18,6 +18,7 @@ package com.android.server.lights;
 
 import static android.graphics.Color.BLUE;
 import static android.graphics.Color.GREEN;
+import static android.graphics.Color.RED;
 import static android.graphics.Color.TRANSPARENT;
 import static android.graphics.Color.WHITE;
 import static android.hardware.lights.LightsRequest.Builder;
@@ -286,5 +287,73 @@ public class LightsServiceTest {
         }
         // Then the light should turn off because there are no more sessions.
         assertThat(manager.getLightState(micLight).getColor()).isEqualTo(TRANSPARENT);
+    }
+
+    @Test
+    public void testControlLights_multipleSessionsWithDifferentPriorities() throws Exception {
+        LightsService service = new LightsService(mContext, () -> mHal, Looper.getMainLooper());
+        LightsManager manager = new SystemLightsManager(mContext, service.mManagerService);
+        List<Light> lights = manager.getLights();
+        Light micLight1 = lights.get(0);
+        Light micLight2 = lights.get(1);
+        Light micLight3 = lights.get(2);
+
+        // The lights should begin by being off.
+        assertThat(manager.getLightState(micLight1).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(micLight2).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(micLight3).getColor()).isEqualTo(TRANSPARENT);
+
+        LightsManager.LightsSession lowPrioritySession = manager.openSession(DEFAULT_PRIORITY);
+        LightsManager.LightsSession mediumPrioritySession = manager.openSession(
+                DEFAULT_PRIORITY + 100);
+        LightsManager.LightsSession highPrioritySession = manager.openSession(HIGH_PRIORITY);
+
+        // Low priority session requests two lights.
+        lowPrioritySession.requestLights(new Builder()
+                .addLight(micLight1, new LightState(BLUE))
+                .addLight(micLight2, new LightState(BLUE))
+                .build());
+        assertThat(manager.getLightState(micLight1).getColor()).isEqualTo(BLUE);
+        assertThat(manager.getLightState(micLight2).getColor()).isEqualTo(BLUE);
+        assertThat(manager.getLightState(micLight3).getColor()).isEqualTo(TRANSPARENT);
+
+        // High priority session requests one of the lights, overriding the low priority session.
+        highPrioritySession.requestLights(new Builder()
+                .addLight(micLight1, new LightState(WHITE))
+                .build());
+        assertThat(manager.getLightState(micLight1).getColor()).isEqualTo(WHITE);
+        assertThat(manager.getLightState(micLight2).getColor()).isEqualTo(BLUE);
+        assertThat(manager.getLightState(micLight3).getColor()).isEqualTo(TRANSPARENT);
+
+        // Medium priority session requests another light and a new one.
+        mediumPrioritySession.requestLights(new Builder()
+                .addLight(micLight2, new LightState(GREEN))
+                .addLight(micLight3, new LightState(GREEN))
+                .build());
+        assertThat(manager.getLightState(micLight1).getColor()).isEqualTo(WHITE);
+        assertThat(manager.getLightState(micLight2).getColor()).isEqualTo(GREEN);
+        assertThat(manager.getLightState(micLight3).getColor()).isEqualTo(GREEN);
+
+        lowPrioritySession.requestLights(new Builder()
+                .addLight(micLight1, new LightState(RED))
+                .build());
+
+        // High priority session closes, medium and low priority requests should take effect.
+        highPrioritySession.close();
+        assertThat(manager.getLightState(micLight1).getColor()).isEqualTo(RED); // low takes over
+        assertThat(manager.getLightState(micLight2).getColor()).isEqualTo(GREEN); // medium has it
+        assertThat(manager.getLightState(micLight3).getColor()).isEqualTo(GREEN); // medium has it
+
+        // Medium priority session closes, low priority requests should take effect.
+        mediumPrioritySession.close();
+        assertThat(manager.getLightState(micLight1).getColor()).isEqualTo(RED); // low has it
+        assertThat(manager.getLightState(micLight2).getColor()).isEqualTo(BLUE); // low takes over
+        assertThat(manager.getLightState(micLight3).getColor()).isEqualTo(TRANSPARENT);
+
+        // Low priority session closes, all lights should be off.
+        lowPrioritySession.close();
+        assertThat(manager.getLightState(micLight1).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(micLight2).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(micLight3).getColor()).isEqualTo(TRANSPARENT);
     }
 }
