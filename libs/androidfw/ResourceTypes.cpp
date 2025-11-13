@@ -1819,7 +1819,7 @@ static volatile int32_t gCount = 0;
 ResXMLTree::ResXMLTree(std::shared_ptr<const DynamicRefTable> dynamicRefTable)
     : ResXMLParser(*this)
     , mDynamicRefTable(std::move(dynamicRefTable))
-    , mError(NO_INIT), mOwnedData(NULL)
+    , mError(NO_INIT)
 {
     if (kDebugResXMLTree) {
         ALOGI("Creating ResXMLTree %p #%d\n", this, android_atomic_inc(&gCount)+1);
@@ -1830,7 +1830,7 @@ ResXMLTree::ResXMLTree(std::shared_ptr<const DynamicRefTable> dynamicRefTable)
 ResXMLTree::ResXMLTree()
     : ResXMLParser(*this)
     , mDynamicRefTable(nullptr)
-    , mError(NO_INIT), mOwnedData(NULL)
+    , mError(NO_INIT)
 {
     if (kDebugResXMLTree) {
         ALOGI("Creating ResXMLTree %p #%d\n", this, android_atomic_inc(&gCount)+1);
@@ -1846,31 +1846,55 @@ ResXMLTree::~ResXMLTree()
     uninit();
 }
 
-status_t ResXMLTree::setTo(const void* data, size_t size, bool copyData)
-{
+status_t ResXMLTree::preInit(const void* data, size_t size) {
+  uninit();
+  mEventCode = START_DOCUMENT;
+
+  if (!data || !size) {
+    return (mError = BAD_TYPE);
+  }
+  if (size < sizeof(ResXMLTree_header)) {
+    ALOGW("Bad XML block: total size %d is less than the header size %d\n",
+          int(size), int(sizeof(ResXMLTree_header)));
+    return (mError = BAD_TYPE);
+  }
+  return NO_ERROR;
+}
+
+status_t ResXMLTree::setTo(std::unique_ptr<uint8_t[]> data, size_t size) {
+  if (auto res = preInit(data.get(), size); res != NO_ERROR) {
+    return res;
+  }
+  mMovedInData = std::move(data);
+  return init(mMovedInData.get(), size);
+}
+
+status_t ResXMLTree::setTo(base::MappedFile&& mapping) {
+  if (auto res = preInit(mapping.data(), mapping.size()); res != NO_ERROR) {
+    return res;
+  }
+  mMapping = std::move(mapping);
+  return init(mMapping->data(), mMapping->size());
+}
+
+status_t ResXMLTree::setTo(const void* data, size_t size, bool copyData) {
+  if (auto res = preInit(data, size); res != NO_ERROR) {
+    return res;
+  }
+  if (copyData) {
+    mMovedInData.reset(new uint8_t[size]);
+    if (!mMovedInData) {
+      return (mError=NO_MEMORY);
+    }
+    memcpy(mMovedInData.get(), data, size);
+    data = mMovedInData.get();
+  }
+  return init(data, size);
+}
+
+status_t ResXMLTree::init(const void* data, size_t size) {
     const ResChunk_header* chunk = nullptr;
     const ResChunk_header* lastChunk = nullptr;
-
-    uninit();
-    mEventCode = START_DOCUMENT;
-
-    if (!data || !size) {
-        return (mError=BAD_TYPE);
-    }
-    if (size < sizeof(ResXMLTree_header)) {
-        ALOGW("Bad XML block: total size %d is less than the header size %d\n",
-              int(size), int(sizeof(ResXMLTree_header)));
-        mError = BAD_TYPE;
-        goto done;
-    }
-    if (copyData) {
-        mOwnedData = malloc(size);
-        if (mOwnedData == NULL) {
-            return (mError=NO_MEMORY);
-        }
-        memcpy(mOwnedData, data, size);
-        data = mOwnedData;
-    }
 
     mHeader = (const ResXMLTree_header*)data;
     mSize = dtohl(mHeader->header.size);
@@ -1952,12 +1976,15 @@ status_t ResXMLTree::setTo(const void* data, size_t size, bool copyData)
     mError = mStrings.getError();
 
 done:
-    if (mError) {
-        uninit();
-    } else {
-        restart();
+    {
+        const auto res = mError;
+        if (mError) {
+          uninit();
+        } else {
+          restart();
+        }
+        return res;
     }
-    return mError;
 }
 
 status_t ResXMLTree::getError() const
@@ -1969,10 +1996,8 @@ void ResXMLTree::uninit()
 {
     mError = NO_INIT;
     mStrings.uninit();
-    if (mOwnedData) {
-        free(mOwnedData);
-        mOwnedData = NULL;
-    }
+    mMapping.reset();
+    mMovedInData.reset();
     restart();
 }
 
@@ -2050,6 +2075,25 @@ status_t ResXMLTree::validateNode(const ResXMLTree_node* node) const
             (int)headerSize);
     return BAD_TYPE;
 #endif
+}
+
+std::unique_ptr<ResXMLTree> ResXMLTree::fromAsset(std::unique_ptr<Asset>&& asset,
+                                                  std::unique_ptr<ResXMLTree> tree) {
+  auto data = std::move(*asset).takeData();
+  if (std::holds_alternative<std::monostate>(data)) {
+    return nullptr;
+  }
+  if (auto map = std::get_if<0>(&data)) {
+    if (tree->setTo(std::move(*map)) != NO_ERROR) {
+      return nullptr;
+    }
+  } else {
+    auto ptr = std::get<1>(std::move(data));
+    if (tree->setTo(std::move(ptr), asset->getLength()) != NO_ERROR) {
+      return nullptr;
+    }
+  }
+  return tree;
 }
 
 // --------------------------------------------------------------------
