@@ -21,13 +21,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-CloseAllAppsWithAppHeaderExitTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-EnterDesktopViaMenuOfLiveOverviewTaskTest",
       "keywords": [
         "device",
@@ -203,20 +196,6 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsWithBackNavigationTest",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
       "name": "FunctionalTestsDesktopMode-fundamentals-DragAppWindowMultiWindowAndPipTest",
       "keywords": [
         "device",
@@ -358,6 +337,20 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-UnlockIntoDesktopFromLockScreenTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-close-CloseAllAppsWithAppHeaderExitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-close-CloseAllAppsWithBackNavigationTest",
       "keywords": [
         "device",
         "desktop"

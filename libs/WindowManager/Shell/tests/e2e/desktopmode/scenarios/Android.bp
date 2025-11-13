@@ -71,7 +71,6 @@ test_module_config {
     test_suites: ["device-tests"],
     exclude_filters: [
         "com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest",
-        "com.android.wm.shell.functional.CloseAllAppsWithAppHeaderExitTest",
         "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",
         "com.android.wm.shell.functional.EnableDisplayMirroringSwitchTest",
         "com.android.wm.shell.functional.EnterDesktopViaMenuOfLiveOverviewTaskTest",
@@ -99,8 +98,6 @@ test_module_config {
         "com.android.wm.shell.functional.externaldisplay.OpenAppWithExternalDisplayConnectedTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsToggleMirroringSwitchTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsUpdateRotationTest",
-        "com.android.wm.shell.functional.fundamentals.CloseAllAppsViaAppHeaderExitTest",
-        "com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.functional.fundamentals.DragAppWindowMultiWindowAndPipTest",
         "com.android.wm.shell.functional.fundamentals.DragAppWindowSingleWindowTest",
         "com.android.wm.shell.functional.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuTest",
@@ -122,6 +119,8 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.SwitchToOverviewFromDesktopTest",
         "com.android.wm.shell.functional.fundamentals.TaskbarInDesktopModeTest",
         "com.android.wm.shell.functional.fundamentals.UnlockIntoDesktopFromLockScreenTest",
+        "com.android.wm.shell.functional.fundamentals.close.CloseAllAppsWithAppHeaderExitTest",
+        "com.android.wm.shell.functional.fundamentals.close.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.functional.fundamentals.focus.ClickAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.CloseThenMoveFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.DragAndKeepFocusTest",
@@ -176,13 +175,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-CloseAllAppsWithAppHeaderExitTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.CloseAllAppsWithAppHeaderExitTest"],
 }
 
 test_module_config {
@@ -375,20 +367,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.CloseAllAppsViaAppHeaderExitTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsWithBackNavigationTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-fundamentals-DragAppWindowMultiWindowAndPipTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -533,6 +511,20 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.UnlockIntoDesktopFromLockScreenTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-close-CloseAllAppsWithAppHeaderExitTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.close.CloseAllAppsWithAppHeaderExitTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-close-CloseAllAppsWithBackNavigationTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.close.CloseAllAppsWithBackNavigationTest"],
 }
 
 test_module_config {
