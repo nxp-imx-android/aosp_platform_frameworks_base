@@ -16,8 +16,11 @@
 
 package com.android.systemui.statusbar.ui.viewmodel
 
+import android.app.StatusBarManager.DISABLE_NONE
+import android.app.StatusBarManager.DISABLE_SYSTEM_INFO
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
@@ -36,8 +39,13 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
+import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
+import com.android.systemui.statusbar.events.data.repository.systemStatusEventAnimationRepository
+import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
+import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
@@ -160,7 +168,9 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             val latest by collectLastValue(underTest.isVisible)
 
             // WHEN HUN displayed on the bypass lock screen
-            headsUpNotificationRepository.setNotifications(FakeHeadsUpRowRepository("key 0", isPinned = true))
+            headsUpNotificationRepository.setNotifications(
+                FakeHeadsUpRowRepository("key 0", isPinned = true)
+            )
             fakeKeyguardTransitionRepository.emitInitialStepsFromOff(
                 KeyguardState.LOCKSCREEN,
                 testSetup = true,
@@ -220,4 +230,78 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(underTest.isSignOutButtonEnabled).isFalse()
         }
     }
+
+    @Test
+    fun isSystemInfoVisible_allowedByDisableFlags_visible() =
+        kosmos.runTest {
+            // GIVEN system info is enabled
+            fakeDisableFlagsRepository.disableFlags.value =
+                DisableFlagsModel(disable1 = DISABLE_NONE, disable2 = DISABLE_NONE, animate = false)
+
+            // THEN it is visible
+            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
+                .isEqualTo(View.VISIBLE)
+        }
+
+    @Test
+    fun isSystemInfoVisible_notAllowedByDisableFlags_invisible() =
+        kosmos.runTest {
+            // GIVEN system info is disabled
+            fakeDisableFlagsRepository.disableFlags.value =
+                DisableFlagsModel(
+                    disable1 = DISABLE_SYSTEM_INFO,
+                    disable2 = DISABLE_NONE,
+                    animate = false,
+                )
+            assertThat(fakeDisableFlagsRepository.disableFlags.value.isSystemInfoEnabled)
+                .isEqualTo(false)
+            // THEN it is invisible
+            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
+                .isEqualTo(View.INVISIBLE)
+        }
+
+    @Test
+    fun systemInfoCombineVis_animationsPassThrough() =
+        kosmos.runTest {
+
+            // GIVEN normal state
+            fakeDisableFlagsRepository.disableFlags.value =
+                DisableFlagsModel(disable1 = DISABLE_NONE, disable2 = DISABLE_NONE, animate = true)
+            systemStatusEventAnimationRepository.animationState.value =
+                SystemEventAnimationState.Idle
+
+            // VERIFY initial state
+            assertThat(underTest.systemInfoCombinedVis.baseVisibility)
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = true))
+            assertThat(underTest.systemInfoCombinedVis.animationState)
+                .isEqualTo(SystemEventAnimationState.Idle)
+
+            // WHEN animating in
+            systemStatusEventAnimationRepository.animationState.value =
+                SystemEventAnimationState.AnimatingIn
+
+            // THEN visibility remains visible, but shouldAnimateChange becomes false
+            assertThat(underTest.systemInfoCombinedVis.baseVisibility)
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = false))
+            assertThat(underTest.systemInfoCombinedVis.animationState)
+                .isEqualTo(SystemEventAnimationState.AnimatingIn)
+
+            // WHEN running chip animation
+            systemStatusEventAnimationRepository.animationState.value =
+                SystemEventAnimationState.RunningChipAnim
+
+            // THEN state updates
+            assertThat(underTest.systemInfoCombinedVis.animationState)
+                .isEqualTo(SystemEventAnimationState.RunningChipAnim)
+
+            // WHEN animating out
+            systemStatusEventAnimationRepository.animationState.value =
+                SystemEventAnimationState.AnimatingOut
+
+            // THEN state updates
+            assertThat(underTest.systemInfoCombinedVis.animationState)
+                .isEqualTo(SystemEventAnimationState.AnimatingOut)
+            assertThat(underTest.systemInfoCombinedVis.baseVisibility)
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = false))
+        }
 }

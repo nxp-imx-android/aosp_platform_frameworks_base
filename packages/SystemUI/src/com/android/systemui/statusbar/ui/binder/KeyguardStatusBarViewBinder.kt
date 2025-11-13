@@ -17,12 +17,19 @@
 package com.android.systemui.statusbar.ui.binder
 
 import android.view.View
+import androidx.core.animation.Animator
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.lifecycle.viewModel
+import com.android.systemui.lifecycle.setSnapshotBinding
+import com.android.systemui.res.R
+import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState
+import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingIn
+import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingOut
+import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.RunningChipAnim
 import com.android.systemui.statusbar.phone.KeyguardStatusBarView
+import com.android.systemui.statusbar.phone.fragment.StatusBarSystemEventDefaultAnimator
 import com.android.systemui.statusbar.ui.viewmodel.KeyguardStatusBarViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -30,6 +37,21 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 object KeyguardStatusBarViewBinder {
     @JvmStatic
     fun bind(view: KeyguardStatusBarView, viewModel: KeyguardStatusBarViewModel) {
+
+        val systemInfoView = view.requireViewById<View>(R.id.system_icons_container)
+        val resources = view.resources
+        val translationXIn =
+            resources.getDimensionPixelSize(
+                R.dimen.ongoing_appops_chip_animation_in_status_bar_translation_x
+            )
+        val translationXOut =
+            resources.getDimensionPixelSize(
+                R.dimen.ongoing_appops_chip_animation_out_status_bar_translation_x
+            )
+
+        var currentAnimator: Animator? = null
+        var lastAnimState: SystemEventAnimationState? = null
+
         view.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -44,6 +66,67 @@ object KeyguardStatusBarViewBinder {
                     }
                 }
             }
+
+            view.setSnapshotBinding {
+                val (baseVis, animState) = viewModel.systemInfoCombinedVis
+
+                // Always update base visibility first
+                systemInfoView.visibility = baseVis.visibility
+
+                if (animState != lastAnimState) {
+                    currentAnimator?.cancel()
+                }
+
+                if (animState.isAnimatingChip()) {
+                    when (animState) {
+                        AnimatingIn -> {
+                            currentAnimator =
+                                StatusBarSystemEventDefaultAnimator
+                                    .getDefaultStatusBarAnimationForChipEnter(
+                                        targetTranslation = translationXIn,
+                                        setX = { systemInfoView.translationX = it },
+                                        setAlpha = { systemInfoView.alpha = it },
+                                    )
+                                    .apply { start() }
+                        }
+
+                        AnimatingOut -> {
+                            currentAnimator =
+                                StatusBarSystemEventDefaultAnimator
+                                    .getDefaultStatusBarAnimationForChipExit(
+                                        targetTranslation = translationXOut,
+                                        setX = { systemInfoView.translationX = it },
+                                        setAlpha = { systemInfoView.alpha = it },
+                                    )
+                                    .apply { start() }
+                        }
+
+                        RunningChipAnim -> {
+                            // When the chip animation is running, the system info must remain
+                            // hidden.
+                            systemInfoView.alpha = 0f
+                            currentAnimator = null
+                        }
+
+                        else -> {}
+                    }
+                } else {
+                    // Idle State (Not animating):
+                    // We must forcibly reset properties here because we might have just
+                    // transitioned from RunningChipAnim (where alpha was 0).
+                    systemInfoView.alpha = 1f
+                    systemInfoView.translationX = 0f
+                }
+                lastAnimState = animState
+            }
         }
     }
+
+    private fun SystemEventAnimationState.isAnimatingChip() =
+        when (this) {
+            AnimatingIn,
+            AnimatingOut,
+            RunningChipAnim -> true
+            else -> false
+        }
 }
