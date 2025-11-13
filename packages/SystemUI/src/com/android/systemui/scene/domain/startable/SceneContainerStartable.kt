@@ -884,14 +884,13 @@ constructor(
     private fun hydrateWindowController() {
         applicationScope.launch {
             sceneInteractor.transitionState
-                .filterIsInstance<ObservableTransitionState.Idle>()
-                .map { it.currentScene to it.currentOverlays }
-                .distinctUntilChanged()
-                .collect { (currentScene, currentOverlays) ->
-                    windowController.setNotificationShadeFocusable(
-                        currentScene != Scenes.Gone || currentOverlays.isNotEmpty()
-                    )
+                .map {
+                    !it.isIdle(Scenes.Gone) ||
+                        // We must be idle on Gone here, so we check if the overlays are empty
+                        (it is ObservableTransitionState.Idle && it.currentOverlays.isNotEmpty())
                 }
+                .distinctUntilChanged()
+                .collect { windowController.setNotificationShadeFocusable(it) }
         }
 
         applicationScope.launch {
