@@ -230,12 +230,12 @@ class AppToWebRepositoryImpl(
             return false
         }
         val packageName = taskInfo.baseActivity?.packageName ?: return false
-        if (isBrowserApp(context, packageName, taskInfo.userId)) {
-            // Browser apps are not the target.
-            return false
-        }
         if (taskInfo.capturedLink == null) {
             // No captured link, so no prompt.
+            return false
+        }
+        if (isBrowserApp(context, packageName, taskInfo.userId)) {
+            // Browser apps are not the target.
             return false
         }
         if (ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING) {
