@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"助听装置"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"无障碍功能使用情况"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"显示屏"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"家长控制"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g>正在消耗电量"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> 个应用正在消耗电量"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"点按即可详细了解电量和流量消耗情况"</string>
@@ -2278,7 +2277,7 @@
     <string name="bluetooth_airplane_mode_toast" msgid="2066399056595768554">"在飞行模式下，蓝牙将保持开启状态"</string>
     <string name="car_loading_profile" msgid="8219978381196748070">"正在加载"</string>
     <string name="file_count" msgid="3220018595056126969">"{count,plural, =1{{file_name} 以及另外 # 个文件}other{{file_name} 以及另外 # 个文件}}"</string>
-    <string name="chooser_no_direct_share_targets" msgid="1511722103987329028">"没有任何推荐的分享对象"</string>
+    <string name="chooser_no_direct_share_targets" msgid="1511722103987329028">"没有推荐的分享对象"</string>
     <string name="chooser_all_apps_button_label" msgid="3230427756238666328">"应用列表"</string>
     <string name="usb_device_resolve_prompt_warn" msgid="325871329788064199">"此应用未获得录音权限，但能通过此 USB 设备录制音频。"</string>
     <string name="accessibility_system_action_home_label" msgid="3234748160850301870">"主屏幕"</string>
@@ -2613,6 +2612,6 @@
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"资源过度使用"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"应用“<xliff:g id="APP_NAME">%1$s</xliff:g>”使用的资源过多。"</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"家长进行的更新"</string>
-    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"“<xliff:g id="APP_NAME">%1$s</xliff:g>”目前已移除"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"“<xliff:g id="APP_NAME">%1$s</xliff:g>”现已移除"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"“<xliff:g id="APP_NAME">%1$s</xliff:g>”现已可用"</string>
 </resources>

@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"Eşitmə cihazı"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"Əlçatımlılıq istifadəsi"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"Displey"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"Valideyn nəzarəti"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> batareyadan istifadə edir"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> tətbiq batareyadan istifadə edir"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Batareya və data istifadəsi haqqında ətraflı məlumat üçün klikləyin"</string>
