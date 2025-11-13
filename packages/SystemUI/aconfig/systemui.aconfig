@@ -775,13 +775,6 @@ flag {
 }
 
 flag {
-    name: "qs_tile_focus_state"
-    namespace: "systemui"
-    description: "enables new focus outline for qs tiles when focused on with physical keyboard"
-    bug: "312899524"
-}
-
-flag {
     name: "brightness_slider_focus_state"
     namespace: "systemui"
     description: "enables new focus outline for the brightness slider when focused on with physical keyboard"
