@@ -24,6 +24,7 @@ import static com.android.systemui.screenrecord.ScreenRecordingAudioSource.MIC_A
 
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -380,7 +381,8 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         ContentResolver resolver = mContext.getContentResolver();
         Uri collectionUri = MediaStore.Video.Media.getContentUri(
                 MediaStore.VOLUME_EXTERNAL_PRIMARY);
-        Uri itemUri = resolver.insert(collectionUri, values);
+        Uri itemUri = ContentProvider.maybeAddUserId(resolver.insert(collectionUri, values),
+                mContext.getUserId());
         if (onUriReady != null) {
             onUriReady.onUriReady(itemUri);
         }
