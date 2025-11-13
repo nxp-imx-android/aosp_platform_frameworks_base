@@ -45,8 +45,7 @@
     <string name="keyguard_accessibility_password" msgid="3524161948484801450">"Пароль прылады"</string>
     <string name="keyguard_accessibility_sim_pin_area" msgid="6272116591533888062">"Поле для PIN-кода SIM-карты"</string>
     <string name="keyguard_accessibility_sim_puk_area" msgid="5537294043180237374">"Поле для PUK-кода SIM-карты"</string>
-    <string name="keyguard_accessibility_pin_delete_long_click" msgid="644835965999123275">"Каб выканаць доўгае націсканне і выдаліць усё, двойчы націсніце і ўтрымлівайце"</string>
-    <string name="keyguard_accessibility_pin_delete_long_click_partial" msgid="3633252605381482572">"каб выдаліць усё, выканайце доўгае націсканне"</string>
+    <string name="keyguard_accessibility_pin_delete_long_click" msgid="1530074796041838525">"каб выдаліць усё, выканайце доўгае націсканне"</string>
     <string name="keyboardview_keycode_delete" msgid="8489719929424895174">"Выдаліць"</string>
     <string name="disable_carrier_button_text" msgid="7153361131709275746">"Адключыць eSIM-карту"</string>
     <string name="error_disable_esim_title" msgid="3802652622784813119">"Немагчыма адключыць eSIM-карту"</string>

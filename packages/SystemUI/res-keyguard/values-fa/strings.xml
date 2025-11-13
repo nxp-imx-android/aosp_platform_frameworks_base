@@ -45,8 +45,7 @@
     <string name="keyguard_accessibility_password" msgid="3524161948484801450">"گذرواژه دستگاه"</string>
     <string name="keyguard_accessibility_sim_pin_area" msgid="6272116591533888062">"قسمت پین سیم‌کارت"</string>
     <string name="keyguard_accessibility_sim_puk_area" msgid="5537294043180237374">"‏قسمت PUK سیم‌کارت"</string>
-    <string name="keyguard_accessibility_pin_delete_long_click" msgid="644835965999123275">"برای حذف کردن همه، با دو تک‌ضرب زدن و نگه داشتن، فشار طولانی دهید"</string>
-    <string name="keyguard_accessibility_pin_delete_long_click_partial" msgid="3633252605381482572">"فشار دادن طولانی برای حذف کردن همه"</string>
+    <string name="keyguard_accessibility_pin_delete_long_click" msgid="1530074796041838525">"فشار دادن طولانی برای حذف کردن همه"</string>
     <string name="keyboardview_keycode_delete" msgid="8489719929424895174">"حذف"</string>
     <string name="disable_carrier_button_text" msgid="7153361131709275746">"‏غیرفعال کردن eSIM"</string>
     <string name="error_disable_esim_title" msgid="3802652622784813119">"سیم‌کارت داخلی غیرفعال نشد"</string>
