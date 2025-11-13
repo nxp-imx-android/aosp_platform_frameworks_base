@@ -39,6 +39,8 @@ interface IMediaQualityManager {
     PictureProfile getDefaultPictureProfile();
     SoundProfile getDefaultSoundProfile();
     boolean setDefaultPictureProfile(in String id, int userId);
+    void setMutedColor(int color, int userId);
+    void setColorMuteEnabled(boolean enable, int userId);
     // TODO: use Bundle for includeParams
     PictureProfile getPictureProfile(
             in int type, in String name, in boolean includeParams, int userId);

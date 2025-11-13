@@ -803,6 +803,52 @@ public class MediaQualityService extends SystemService {
             return false;
         }
 
+        @Override
+        public void setMutedColor(int color, int userId) {
+            if (DEBUG) {
+                Slog.d(TAG, "setMutedColor");
+            }
+            int callingUid = Binder.getCallingUid();
+            int callingPid = Binder.getCallingPid();
+            if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
+                mMqManagerNotifier.notifyOnPictureProfileError(
+                        null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                Slog.e(TAG, "setMutedColor: "
+                        + "no permission to set mute color");
+                return;
+            }
+            if (mMediaQuality != null) {
+                try {
+                    mMediaQuality.setMutedColor(color);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to set mute color", e);
+                }
+            }
+        }
+
+        @Override
+        public void setColorMuteEnabled(boolean enable, int userId) {
+            if (DEBUG) {
+                Slog.d(TAG, "setColorMuteEnabled");
+            }
+            int callingUid = Binder.getCallingUid();
+            int callingPid = Binder.getCallingPid();
+            if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
+                mMqManagerNotifier.notifyOnPictureProfileError(
+                        null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                Slog.e(TAG, "setColorMuteEnabled: "
+                        + "no permission to enable color mute");
+                return;
+            }
+            if (mMediaQuality != null) {
+                try {
+                    mMediaQuality.setColorMuteEnabled(enable);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to enable color mute", e);
+                }
+            }
+        }
+
         @GuardedBy("mPictureProfileLock")
         @Override
         public List<String> getPictureProfilePackageNames(int userId) {
