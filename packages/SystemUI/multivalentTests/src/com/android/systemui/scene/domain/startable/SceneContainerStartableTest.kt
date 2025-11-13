@@ -2718,6 +2718,103 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun switchFromShadeToDream_whenDreamStarted() =
+        kosmos.runTest {
+            enableSingleShade()
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val transitionStateFlow = prepareState(initialSceneKey = Scenes.Lockscreen)
+            underTest.start()
+            runCurrent()
+
+            // GIVEN we are on the shade
+            sceneInteractor.changeScene(Scenes.Shade, "reason")
+            transitionStateFlow.value = ObservableTransitionState.Idle(Scenes.Shade)
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+
+            // WHEN dreaming is started
+            powerInteractor.setAwakeForTest()
+            keyguardInteractor.setDreaming(true)
+            testScope.advanceTimeBy(DREAMING_DELAY_MS)
+            runCurrent()
+
+            // THEN we should be on the dream scene
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+        }
+
+    @Test
+    fun switchFromQuickSettingsToDream_whenDreamStarted() =
+        kosmos.runTest {
+            enableSingleShade()
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val transitionState = prepareState(initialSceneKey = Scenes.Lockscreen)
+            underTest.start()
+            runCurrent()
+
+            // GIVEN we are on quick settings
+            sceneInteractor.changeScene(Scenes.QuickSettings, "reason")
+            transitionState.value = ObservableTransitionState.Idle(Scenes.QuickSettings)
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
+
+            // WHEN dreaming is started
+            powerInteractor.setAwakeForTest()
+            keyguardInteractor.setDreaming(true)
+            testScope.advanceTimeBy(DREAMING_DELAY_MS)
+            runCurrent()
+
+            // THEN we should be on the dream scene
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+        }
+
+    @Test
+    fun switchFromOccludedToDream_whenDreamStarted() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            prepareState(initialSceneKey = Scenes.Lockscreen)
+            underTest.start()
+            runCurrent()
+
+            // GIVEN we are on occluded
+            keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(true, mock())
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+
+            // WHEN dreaming is started
+            powerInteractor.setAwakeForTest()
+            keyguardInteractor.setDreaming(true)
+            testScope.advanceTimeBy(DREAMING_DELAY_MS)
+            runCurrent()
+
+            // THEN we should be on the dream scene
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+        }
+
+    @Test
+    fun switchFromCommunalToDream_whenDreamStarted() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val transitionState = prepareState(initialSceneKey = Scenes.Communal)
+            underTest.start()
+            runCurrent()
+
+            // GIVEN we are on communal
+            sceneInteractor.changeScene(Scenes.Communal, "reason")
+            transitionState.value = ObservableTransitionState.Idle(Scenes.Communal)
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+
+            // WHEN dreaming is started
+            powerInteractor.setAwakeForTest()
+            keyguardInteractor.setDreaming(true)
+            testScope.advanceTimeBy(DREAMING_DELAY_MS)
+            runCurrent()
+
+            // THEN we should be on the dream scene
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+        }
+
+    @Test
     fun switchFromDreamToLockscreen_whenLockedAndDreamStopped() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
