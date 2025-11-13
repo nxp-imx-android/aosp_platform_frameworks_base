@@ -200,8 +200,11 @@ class ExternalDisplayPolicy {
             return;
         }
 
+        var displayId = logicalDisplay.getDisplayIdLocked();
         if (!mIsBootCompleted) {
-            mDisplayIdsWaitingForBootCompletion.add(logicalDisplay.getDisplayIdLocked());
+            mDisplayIdsWaitingForBootCompletion.add(displayId);
+            // If display is connected before boot completes - send "CONNECTED" event.
+            mInjector.sendExternalDisplayEventLocked(logicalDisplay, EVENT_DISPLAY_CONNECTED);
             return;
         }
 
@@ -209,7 +212,10 @@ class ExternalDisplayPolicy {
 
         if (shouldAutoEnable(logicalDisplay)) {
             Slog.w(TAG, "External display is enabled by default, bypassing user consent.");
-            mInjector.sendExternalDisplayEventLocked(logicalDisplay, EVENT_DISPLAY_CONNECTED);
+            if (isDisplayConnectedAfterBootCompletes(displayId)) {
+                // If display is connected after boot completes - send "CONNECTED" event
+                mInjector.sendExternalDisplayEventLocked(logicalDisplay, EVENT_DISPLAY_CONNECTED);
+            }
             return;
         } else {
             // As external display is enabled by default, need to disable it now.
@@ -223,11 +229,14 @@ class ExternalDisplayPolicy {
             return;
         }
 
-        mInjector.sendExternalDisplayEventLocked(logicalDisplay, EVENT_DISPLAY_CONNECTED);
+        if (isDisplayConnectedAfterBootCompletes(displayId)) {
+            // If display is connected after boot completes - send "CONNECTED" event
+            mInjector.sendExternalDisplayEventLocked(logicalDisplay, EVENT_DISPLAY_CONNECTED);
+        }
 
         if (DEBUG) {
             Slog.d(TAG, "handleExternalDisplayConnectedLocked complete"
-                                + " displayId=" + logicalDisplay.getDisplayIdLocked());
+                                + " displayId=" + displayId);
         }
     }
 
@@ -273,6 +282,10 @@ class ExternalDisplayPolicy {
         } else {
             mExternalDisplayStatsService.onPresentationWindowRemoved(displayId);
         }
+    }
+
+    private boolean isDisplayConnectedAfterBootCompletes(int displayId) {
+        return !mDisplayIdsWaitingForBootCompletion.contains(displayId);
     }
 
     private boolean shouldAutoEnable(LogicalDisplay logicalDisplay) {
