@@ -53,7 +53,7 @@ public final class VolumeInfo implements Parcelable {
     private final int mMinVolIndex;
     private final int mMaxVolIndex;
     private final @Nullable AudioVolumeGroup mVolGroup;
-    private final @AudioManager.PublicStreamTypes int mStreamType;
+    private final @AudioManager.PublicStreamTypesWithDefault int mStreamType;
 
     private static IAudioService sService;
     private static VolumeInfo sDefaultVolumeInfo;
@@ -83,11 +83,18 @@ public final class VolumeInfo implements Parcelable {
 
     /**
      * Returns the associated stream type, or will throw if {@link #hasStreamType()} returned false.
-     * @return a stream type value, see AudioManager.STREAM_*
+     *
+     * <p>Certain volume APIs may ignore this stream type in favor of USE_DEFAULT_STREAM_TYPE. This
+     * can be the case if a change on that particular stream is not allowed. Other APIs may require
+     * a non-default value to be set.
+     *
+     * @return a stream type value, see AudioManager.STREAM_* or
+     *     AudioManager.USE_DEFAULT_STREAM_TYPE in case the default audio stream type should be
+     *     used.
      * @throws IllegalStateException when called on a VolumeInfo not configured for
      *      stream types.
      */
-    public @AudioManager.PublicStreamTypes int getStreamType() {
+    public @AudioManager.PublicStreamTypesWithDefault int getStreamType() {
         if (!mUsesStreamType) {
             throw new IllegalStateException("VolumeInfo doesn't use stream types");
         }
@@ -206,7 +213,8 @@ public final class VolumeInfo implements Parcelable {
      */
     public static final class Builder {
         private boolean mUsesStreamType = true; // false implies AudioVolumeGroup is used
-        private @AudioManager.PublicStreamTypes int mStreamType = AudioManager.STREAM_MUSIC;
+        private @AudioManager.PublicStreamTypesWithDefault int mStreamType =
+                AudioManager.STREAM_MUSIC;
         private boolean mHasMuteState = false;
         private boolean mIsMuted = false;
         private int mVolIndex = INDEX_NOT_SET;
@@ -217,7 +225,7 @@ public final class VolumeInfo implements Parcelable {
         /**
          * Builder constructor for stream type-based VolumeInfo
          */
-        public Builder(@AudioManager.PublicStreamTypes int streamType) {
+        public Builder(@AudioManager.PublicStreamTypesWithDefault int streamType) {
             if (!AudioManager.isVolumeControlStreamType(streamType)) {
                 throw new IllegalArgumentException("Not a valid public stream type " + streamType);
             }
@@ -231,7 +239,7 @@ public final class VolumeInfo implements Parcelable {
         public Builder(@NonNull AudioVolumeGroup volGroup) {
             Objects.requireNonNull(volGroup);
             mUsesStreamType = false;
-            mStreamType = -Integer.MIN_VALUE;
+            mStreamType = AudioManager.USE_DEFAULT_STREAM_TYPE;
             mVolGroup = volGroup;
         }
 
