@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import android.app.ActivityManager
 import android.app.ActivityOptions.LaunchCookie
 import android.app.ActivityTaskManager
+import android.app.WindowConfiguration
 import android.graphics.Point
 import android.graphics.Rect
 import android.view.WindowManager
@@ -116,7 +117,7 @@ constructor(
             )
         }
         if (selectedRegion == ScreenCaptureRegion.APP_WINDOW) {
-            runningTasks = activityTaskManager.getTasks(Integer.MAX_VALUE)
+            runningTasks = getAppWindowTasks()
         }
         captureRegionSource.value = selectedRegion
         uiEventLogger.log(
@@ -192,15 +193,12 @@ constructor(
 
     fun captureTaskAtPosition(pointerPosition: Point) {
         val task =
-            activityTaskManager
-                .getTasks(Integer.MAX_VALUE)
-                .filter { it.isVisible }
-                .firstOrNull {
-                    it.configuration.windowConfiguration.bounds.contains(
-                        pointerPosition.x,
-                        pointerPosition.y,
-                    )
-                }
+            getAppWindowTasks().firstOrNull {
+                it.configuration.windowConfiguration.bounds.contains(
+                    pointerPosition.x,
+                    pointerPosition.y,
+                )
+            }
         if (task == null) {
             return
         }
@@ -216,6 +214,15 @@ constructor(
             screenshotInteractor.requestAppWindowScreenshot(taskId, displayId)
         }
         closeUi()
+    }
+
+    private fun getAppWindowTasks(): List<ActivityManager.RunningTaskInfo> {
+        return activityTaskManager.getTasks(Integer.MAX_VALUE).filter {
+            it.topActivity != null &&
+                it.isVisible &&
+                it.configuration.windowConfiguration.activityType ==
+                    WindowConfiguration.ACTIVITY_TYPE_STANDARD
+        }
     }
 
     private fun startRecording() {
@@ -285,7 +292,9 @@ constructor(
         coroutineScope {
             launch { toolbarViewModel.activate() }
             launch { initializeRegionBox() }
-            launch { topTaskSource.value = activityTaskManager.getTasks(1).firstOrNull() }
+            if (captureRegion == ScreenCaptureRegion.APP_WINDOW) {
+                launch { runningTasks = getAppWindowTasks() }
+            }
         }
     }
 
