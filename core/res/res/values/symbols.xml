@@ -382,7 +382,7 @@
   <java-symbol type="bool" name="config_isMainUserPermanentAdmin"/>
   <java-symbol type="bool" name="config_disallowRemovingLastAdminUser"/>
   <java-symbol type="bool" name="config_supportProfilesOnNonMainUser"/>
-  <java-symbol type="bool" name="config_createInitialUser"/>
+  <java-symbol type="bool" name="config_createInitialAdminUserOnHsum"/>
   <java-symbol type="bool" name="config_designateMainUser"/>
   <java-symbol type="bool" name="config_canSwitchToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_enableMultiUserUI"/>
