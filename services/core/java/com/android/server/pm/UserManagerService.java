@@ -374,14 +374,14 @@ public class UserManagerService extends IUserManager.Stub {
     @VisibleForTesting
     static final int BOOT_STRATEGY_DO_NOT_OVERRIDE = -1;
     @VisibleForTesting
-    static final int BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER = 0;
+    static final int HSUM_BOOT_STRATEGY_TO_PREVIOUS_FOREGROUND_USER = 0;
     @VisibleForTesting
-    static final int BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
+    static final int HSUM_BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = false, prefix = { "BOOT_STRATEGY_" }, value = {
-            BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER,
-            BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE})
+            HSUM_BOOT_STRATEGY_TO_PREVIOUS_FOREGROUND_USER,
+            HSUM_BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE})
     @VisibleForTesting
     @interface BootStrategy {}
 
@@ -1538,15 +1538,15 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         if (isHeadlessSystemUserMode()) {
-            int bootStrategy = getHsumBootStrategy();
+            final int bootStrategy = getHsumBootStrategy();
             switch (bootStrategy) {
-                case BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER:
-                    return getPreviousOrFirstSwitchableUser();
-                case BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE:
-                    return getBootUserBasedOnProvisioning();
+                case HSUM_BOOT_STRATEGY_TO_PREVIOUS_FOREGROUND_USER:
+                    return getPreviousOrSomeSwitchableUser();
+                case HSUM_BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE:
+                    return getHsumBootUserBasedOnProvisioning();
                 default:
                     Slogf.w(LOG_TAG, "Unknown HSUM boot strategy: %d", bootStrategy);
-                    return getPreviousOrFirstSwitchableUser();
+                    return getPreviousOrSomeSwitchableUser();
             }
         }
         // Not HSUM, return system user.
@@ -1578,19 +1578,24 @@ public class UserManagerService extends IUserManager.Stub {
         return getBootUserUnchecked();
     }
 
-    private @UserIdInt int getBootUserBasedOnProvisioning()
+    /**
+     * Returns the appropriate HSUM boot user in the case of
+     * {@link #HSUM_BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE}, which will depend on whether the
+     * device has been provisioned (i.e. ready to use after setup) or not (i.e. initial boot).
+     */
+    private @UserIdInt int getHsumBootUserBasedOnProvisioning()
             throws UserManager.CheckedUserOperationException {
         final boolean provisioned = Settings.Global.getInt(mContext.getContentResolver(),
                                             Settings.Global.DEVICE_PROVISIONED, 0) != 0;
         if (provisioned) {
             return UserHandle.USER_SYSTEM;
         } else {
-            final int firstSwitchableFullUser = getFirstSwitchableUser(true);
-            if (firstSwitchableFullUser != UserHandle.USER_NULL) {
+            final int switchableFullUser = getASwitchableUser(true);
+            if (switchableFullUser != UserHandle.USER_NULL) {
                 Slogf.i(LOG_TAG,
-                        "Boot user is first switchable full user %d",
-                                firstSwitchableFullUser);
-                return firstSwitchableFullUser;
+                        "Boot user is switchable full user %d",
+                                switchableFullUser);
+                return switchableFullUser;
             }
             // No switchable full user found. Uh oh!
             throw new UserManager.CheckedUserOperationException(
@@ -1599,10 +1604,10 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /**
-     * Returns the previous foreground user, or if there isn't one, the first switchable user.
+     * Returns the previous foreground user, or if there isn't one, some switchable user.
      * The user need not be a full user; the HSU counts if it is switchable.
      */
-    private @UserIdInt int getPreviousOrFirstSwitchableUser()
+    private @UserIdInt int getPreviousOrSomeSwitchableUser()
             throws UserManager.CheckedUserOperationException {
         // Return the previous foreground user, if there is one.
         final int previousUser = getPreviousUserToEnterForeground();
@@ -1610,25 +1615,25 @@ public class UserManagerService extends IUserManager.Stub {
             Slogf.i(LOG_TAG, "Previous foreground user was %d", previousUser);
             return previousUser;
         }
-        // No previous user. Return the first switchable user if there is one.
-        final int firstSwitchableUser = getFirstSwitchableUser(false);
-        if (firstSwitchableUser != UserHandle.USER_NULL) {
-            Slogf.i(LOG_TAG, "No previous user. First switchable user is %d", firstSwitchableUser);
-            return firstSwitchableUser;
+        // No previous user. Return some switchable user.
+        final int someSwitchableUser = getASwitchableUser(false);
+        if (someSwitchableUser != UserHandle.USER_NULL) {
+            Slogf.i(LOG_TAG, "No previous user. Chosen switchable user is %d", someSwitchableUser);
+            return someSwitchableUser;
         }
         // No switchable users found. Uh oh!
         throw new UserManager.CheckedUserOperationException(
             "No switchable users found", USER_OPERATION_ERROR_UNKNOWN);
     }
 
-    private @CanBeNULL @UserIdInt int getFirstSwitchableUser(boolean fullUserOnly) {
+    /** Returns a switchable user, specifically, the switchable user with the lowest userId. */
+    private @CanBeNULL @UserIdInt int getASwitchableUser(boolean fullUserOnly) {
         synchronized (mUsersLock) {
             final int userSize = mUsers.size();
             for (int i = 0; i < userSize; i++) {
                 final UserData userData = mUsers.valueAt(i);
                 if (userData.info.supportsSwitchTo() && (!fullUserOnly || userData.info.isFull())) {
-                    int firstSwitchable = userData.info.id;
-                    return firstSwitchable;
+                    return userData.info.id;
                 }
             }
         }
