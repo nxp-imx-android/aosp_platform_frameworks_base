@@ -30,7 +30,6 @@ import static com.android.server.devicepolicy.PolicyDefinition.GENERIC_PACKAGE_U
 import static com.android.server.devicepolicy.PolicyDefinition.GENERIC_PERMISSION_GRANT;
 import static com.android.server.devicepolicy.PolicyDefinition.GENERIC_PERSISTENT_PREFERRED_ACTIVITY;
 import static com.android.server.devicepolicy.PolicyDefinition.KEYGUARD_DISABLED_FEATURES;
-import static com.android.server.devicepolicy.PolicyDefinition.LEGACY_POLICIES;
 import static com.android.server.devicepolicy.PolicyDefinition.LOCK_TASK;
 import static com.android.server.devicepolicy.PolicyDefinition.MEMORY_TAGGING;
 import static com.android.server.devicepolicy.PolicyDefinition.PACKAGES_SUSPENDED;
@@ -52,6 +51,7 @@ import android.annotation.Nullable;
 import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.PolicyKey;
 import android.app.admin.UserRestrictionPolicyKey;
+import android.app.admin.flags.Flags;
 import android.os.UserManager;
 
 import com.android.modules.utils.TypedXmlPullParser;
@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 public class PolicyDefinitionMap {
     static final String TAG = "PolicyDefinitionMap";
@@ -76,6 +77,9 @@ public class PolicyDefinitionMap {
      * distinguished by an additional key (e.g., package name for application restrictions).
      */
     private final Set<PolicyDefinition<?>> mGenericPolicyDefinitions;
+
+    // The policies that are not yet supported by DevicePolicyEngine, thus don't have definition.
+    private final Set<String> mLegacyPolicies = new HashSet<>();
 
     /**
      * Create the PolicyDefinitionMap with all supported policy definitions.
@@ -104,6 +108,7 @@ public class PolicyDefinitionMap {
             Map<String, PolicyDefinition<?>> policyDefinitions,
             Set<String> genericPolicyIdentifiers) {
         mPolicyDefinitions = Collections.unmodifiableMap(policyDefinitions);
+        populateLegacyPolicies(mPolicyDefinitions);
 
         Set<PolicyDefinition<?>> genericPolicyDefinitions = new HashSet<>();
         for (String identifier : genericPolicyIdentifiers) {
@@ -295,16 +300,6 @@ public class PolicyDefinitionMap {
                             policyDefinitions, restriction, flags);
                 });
 
-        for (String legacyPolicy : LEGACY_POLICIES) {
-            if (policyDefinitions.containsKey(legacyPolicy)) {
-                throw new IllegalStateException(
-                        "Policy with identifier ("
-                                + legacyPolicy
-                                + ") is already defined as legacy policy. Remove it from"
-                                + " LEGACY_POLICIES before adding a definition.");
-            }
-        }
-
         return policyDefinitions;
     }
 
@@ -316,6 +311,53 @@ public class PolicyDefinitionMap {
                 DevicePolicyIdentifiers.APPLICATION_RESTRICTIONS_POLICY,
                 DevicePolicyIdentifiers.APPLICATION_HIDDEN_POLICY,
                 DevicePolicyIdentifiers.ACCOUNT_MANAGEMENT_DISABLED_POLICY);
+    }
+
+    /**
+     * Adds legacy policies to mLegacyPolicies.
+     * @param policyDefinitions - map of all policies. Must be populated with items. Otherwise it
+     *                         throws an {@link IllegalStateException}.
+     */
+    private void populateLegacyPolicies(
+            @NonNull Map<String, PolicyDefinition<?>> policyDefinitions) {
+        if (policyDefinitions.isEmpty()) {
+            throw new IllegalStateException(
+                    "addLegacyPolicies must be called after policyDefinitions are filled.");
+        }
+        populateLegacyPolicy(policyDefinitions,
+                DevicePolicyIdentifiers.MANAGED_PROFILE_CALLER_ID_ACCESS_POLICY, null);
+        populateLegacyPolicy(policyDefinitions,
+                DevicePolicyIdentifiers.MANAGED_PROFILE_CONTACTS_ACCESS_POLICY, null);
+        populateLegacyPolicy(policyDefinitions, DevicePolicyIdentifiers.MAX_TIME_TO_LOCK_POLICY,
+                null);
+        populateLegacyPolicy(policyDefinitions, DevicePolicyIdentifiers.PASSWORD_QUALITY_POLICY,
+                null);
+        populateLegacyPolicy(policyDefinitions, DevicePolicyIdentifiers.PASSWORD_COMPLEXITY_POLICY,
+                () -> Flags.unmanagedModeMigration());
+    }
+
+    /**
+     * Specifies a policy as a legacy one and adds it to mLegacyPolicies. Ensures that each policy
+     * is either legacy or migrated into policy engine.
+     * Must be invoked only after policyDefinitions is filled in.
+     *
+     * @param flag - migration flag for the policy. null if the policy isn't being migrated.
+     * @param policyDefinitions - must be populated with existing policy definitions.
+     */
+    private void populateLegacyPolicy(@NonNull Map<String, PolicyDefinition<?>> policyDefinitions,
+            @NonNull String identifier, @Nullable BooleanSupplier flag) {
+        // If there's no flag, it means that there's no ongoing migration going on for the
+        // legacy policy. In that case, that policy shouldn't exist in the policyDefinitions yet.
+        if (flag == null && policyDefinitions.containsKey(identifier)) {
+            throw new IllegalStateException("Policy with identifier (" + identifier
+                    + ") is already defined as legacy policy. Remove it from policyDefinitions "
+                    + "before adding it as a legacy policy.");
+        }
+        // If there's a migration going on, only add it to the legacy policies if the migration
+        // flag is off.
+        if (flag == null || !flag.getAsBoolean()) {
+            mLegacyPolicies.add(identifier);
+        }
     }
 
     private static void createAndAddUserRestrictionPolicyDefinition(
@@ -350,6 +392,16 @@ public class PolicyDefinitionMap {
     @Nullable
     PolicyDefinition<?> getPolicyDefinitionForIdentifier(@NonNull String identifier) {
         return mPolicyDefinitions.get(identifier);
+    }
+
+    /**
+     * Checks if the policy is a legacy policy that's not yet supported by DevicePolicyEngine. If
+     * the policy has a ongoing migration to DevicePolicyEngine, this method will return true
+     * only when the migration flag is disabled.
+     * @param identifier - {@link DevicePolicyIdentifiers} constant of the policy.
+     */
+    boolean isLegacyPolicy(@NonNull String identifier) {
+        return mLegacyPolicies.contains(identifier);
     }
 
     @Nullable

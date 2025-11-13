@@ -78,6 +78,7 @@ import static android.app.admin.DeviceAdminInfo.USES_POLICY_WIPE_DATA;
 import static android.app.admin.DeviceAdminReceiver.ACTION_COMPLIANCE_ACKNOWLEDGEMENT_REQUIRED;
 import static android.app.admin.DeviceAdminReceiver.EXTRA_TRANSFER_OWNERSHIP_ADMIN_EXTRAS_BUNDLE;
 import static android.app.admin.DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY;
+import static android.app.admin.DevicePolicyIdentifiers.PASSWORD_COMPLEXITY_POLICY;
 import static android.app.admin.DevicePolicyManager.ACTION_CHECK_POLICY_COMPLIANCE;
 import static android.app.admin.DevicePolicyManager.ACTION_DEVICE_FINANCING_STATE_CHANGED;
 import static android.app.admin.DevicePolicyManager.ACTION_DEVICE_POLICY_RESOURCE_UPDATED;
@@ -268,6 +269,7 @@ import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_STATE__PASSWORD_COMPLEXITY__COMPLEXITY_UNSPECIFIED;
 import static com.android.server.devicepolicy.PolicyDefinition.CROSS_PROFILE_WIDGET_PROVIDER;
 import static com.android.server.devicepolicy.PolicyDefinition.KEYGUARD_DISABLED_FEATURES;
+import static com.android.server.devicepolicy.PolicyDefinition.PASSWORD_COMPLEXITY;
 import static com.android.server.devicepolicy.TransferOwnershipMetadataManager.ADMIN_TYPE_DEVICE_OWNER;
 import static com.android.server.devicepolicy.TransferOwnershipMetadataManager.ADMIN_TYPE_PROFILE_OWNER;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -17092,7 +17094,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         Preconditions.checkCallAuthorization(canQueryAdminPolicy(getCallerIdentity()));
 
         return Binder.withCleanCallingIdentity(() -> {
-            if (PolicyDefinition.LEGACY_POLICIES.contains(policyIdentifier)) {
+            if (mPolicyDefinitionMap.isLegacyPolicy(policyIdentifier)) {
                 android.app.admin.EnforcingAdmin legacyAdmin =
                         getEnforcingAdminForLegacyPolicies(policyIdentifier, userId);
                 if (legacyAdmin == null) {
@@ -17171,14 +17173,49 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 }
                 break;
             case DevicePolicyIdentifiers.MAX_TIME_TO_LOCK_POLICY:
-                // Return the strictest policy across all participating admins.
-                final List<ActiveAdmin> admins = getActiveAdminsForLockscreenPoliciesLocked(userId);
+                final List<ActiveAdmin> maxTimeToLockAdmins =
+                        getActiveAdminsForLockscreenPoliciesLocked(userId);
                 long time = Long.MAX_VALUE;
-                for (final ActiveAdmin activeAdmin : admins) {
+                // The admin who has set the strictest policy value is the admin who enforces it.
+                // This is parallel to the getter logic for the policy value.
+                for (final ActiveAdmin activeAdmin : maxTimeToLockAdmins) {
                     if (activeAdmin.maximumTimeToUnlock > 0
                             && activeAdmin.maximumTimeToUnlock < time) {
                         time = activeAdmin.maximumTimeToUnlock;
                         admin = activeAdmin;
+                    }
+                }
+                break;
+            case DevicePolicyIdentifiers.PASSWORD_QUALITY_POLICY:
+                List<ActiveAdmin> passwordQualityAdmins =
+                        getActiveAdminsForLockscreenPoliciesLocked(userId);
+                int quality = PASSWORD_QUALITY_UNSPECIFIED;
+                // The admin who has set the strictest policy value is the admin who enforces it.
+                // This is parallel to the getter logic for the policy value.
+                for (final ActiveAdmin activeAdmin : passwordQualityAdmins) {
+                    if (quality < activeAdmin.mPasswordPolicy.quality) {
+                        quality = activeAdmin.mPasswordPolicy.quality;
+                        admin = activeAdmin;
+                    }
+                }
+                break;
+            case PASSWORD_COMPLEXITY_POLICY:
+                // This case can be cleaned-up with the flag.
+                if (Flags.unmanagedModeMigration()) {
+                    throw new IllegalStateException(
+                            "PASSWORD_COMPLEXITY_POLICY is already migrated, legacy flow "
+                                    + "shouldn't be used.");
+                } else {
+                    List<ActiveAdmin> passwordComplexityAdmins =
+                            getActiveAdminsForLockscreenPoliciesLocked(userId);
+                    int complexity = PASSWORD_COMPLEXITY_NONE;
+                    // The admin who has set the strictest policy value is the admin who enforces
+                    // it. This is parallel to the getter logic for the policy value.
+                    for (final ActiveAdmin activeAdmin : passwordComplexityAdmins) {
+                        if (complexity < activeAdmin.mPasswordComplexity) {
+                            complexity = activeAdmin.mPasswordComplexity;
+                            admin = activeAdmin;
+                        }
                     }
                 }
                 break;
@@ -17196,12 +17233,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     /**
      * Lock screen policies can have a different handling as managed profile's policies will take
      * effect on the parent user if the managed profile has a unified challenge with parent. This
-     * can only happen for lockscreen policies (currently only {@link KEYGUARD_DISABLED_FEATURES})
-     * where this is allowed.
+     * can only happen for lockscreen policies (currently {@link KEYGUARD_DISABLED_FEATURES} and
+     * {@link PASSWORD_COMPLEXITY}) where this is allowed.
      */
     private <V> boolean isLockScreenPolicy(@NonNull PolicyDefinition<V> policyDefinition) {
-        // TODO(414733570): Add password policies to this list as they apply on lockscreen as well.
-        return policyDefinition.equals(KEYGUARD_DISABLED_FEATURES);
+        return policyDefinition.equals(KEYGUARD_DISABLED_FEATURES) || policyDefinition.equals(
+                PASSWORD_COMPLEXITY);
     }
 
     /**
