@@ -3801,8 +3801,7 @@ class ContextImpl extends Context {
 
         if (r != null) {
             // only do this if the user already has more than one preferred locale
-            if (android.content.res.Flags.defaultLocale()
-                    && r.getConfiguration().getLocales().size() > 1) {
+            if (r.getConfiguration().getLocales().size() > 1) {
                 LocaleConfig lc = LocaleConfig.fromContextIgnoringOverride(this);
                 mResources.setLocaleConfig(lc);
             }

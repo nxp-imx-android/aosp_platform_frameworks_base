@@ -2208,8 +2208,7 @@ public class ApplicationPackageManager extends PackageManager {
                 app.resourceDirs, app.overlayPaths, app.sharedLibraryFiles,
                 mContext.mPackageInfo, configuration);
         if (r != null) {
-            if (android.content.res.Flags.defaultLocale()
-                    && r.getConfiguration().getLocales().size() > 1) {
+            if (r.getConfiguration().getLocales().size() > 1) {
                 LocaleConfig lc = new LocaleConfig(app, r);
                 r.setLocaleConfig(lc);
             }
