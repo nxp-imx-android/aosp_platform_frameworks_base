@@ -101,6 +101,8 @@ public class SupervisionAppService extends Service {
     /**
      * Called when a policy is changed.
      *
+     * @param policy the policy that was changed
+     * @see Policy
      * @hide
      */
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)

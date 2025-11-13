@@ -19,7 +19,7 @@ package com.android.server.supervision;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.app.supervision.PackagePolicy;
+import android.app.supervision.PackageUsagePolicy;
 import android.app.supervision.Policy;
 import android.app.supervision.SupervisionRecoveryInfo;
 import android.app.supervision.flags.Flags;
@@ -76,10 +76,9 @@ public class SupervisionSettings {
     private static final String KEY_POLICY_HOLDER = "policy_holder";
     private static final String KEY_POLICY_TYPE = "policy_type";
     private static final String KEY_POLICY_VERSION = "policy_version";
-    private static final String KEY_POLICY_ENABLED = "policy_enabled";
-    // PackagePolicy related keys.
+    // PackageUsagePolicy related keys.
     private static final String KEY_PACKAGE_NAME = "package_name";
-    private static final String KEY_PACKAGE_RESTRICTION_TYPE = "package_restriction_type";
+    private static final String KEY_PACKAGE_TYPE = "package_type";
 
     private AtomicFile recoveryInfoFile =
             new AtomicFile(
@@ -343,11 +342,10 @@ public class SupervisionSettings {
 
             // Add policy specific data to the XML.
             switch (policy) {
-                case PackagePolicy pp -> {
-                    xml.attributeLong(null, KEY_POLICY_VERSION, policy.getVersion());
-                    xml.attributeBoolean(null, KEY_POLICY_ENABLED, policy.isEnabled());
+                case PackageUsagePolicy pp -> {
+                    xml.attributeLong(null, KEY_POLICY_VERSION, pp.getVersion());
                     xml.attribute(null, KEY_PACKAGE_NAME, pp.getPackageName());
-                    xml.attributeInt(null, KEY_PACKAGE_RESTRICTION_TYPE, pp.getRestrictionType());
+                    xml.attributeInt(null, KEY_PACKAGE_TYPE, pp.getType());
                 }
                 default -> {
                     Slog.e(
@@ -379,13 +377,12 @@ public class SupervisionSettings {
             throws XmlPullParserException, IOException {
         String policyType = parser.getAttributeValue(null, KEY_POLICY_TYPE);
         long version = parser.getAttributeLong(null, KEY_POLICY_VERSION);
-        boolean isEnabled = parser.getAttributeBoolean(null, KEY_POLICY_ENABLED);
 
         switch (policyType) {
             case Policy.PACKAGE_POLICY_IDENTIFIER -> {
                 String packageName = parser.getAttributeValue(null, KEY_PACKAGE_NAME);
-                int restrictionType = parser.getAttributeInt(null, KEY_PACKAGE_RESTRICTION_TYPE);
-                return new PackagePolicy(version, packageName, restrictionType, isEnabled);
+                int type = parser.getAttributeInt(null, KEY_PACKAGE_TYPE);
+                return new PackageUsagePolicy(version, packageName, type);
             }
             default -> {
                 Slog.e(SupervisionLog.TAG, "Unsupported policy type: " + policyType);
