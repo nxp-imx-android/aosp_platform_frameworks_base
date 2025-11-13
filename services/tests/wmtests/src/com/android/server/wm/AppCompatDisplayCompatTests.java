@@ -23,7 +23,6 @@ import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.content.pm.ActivityInfo.OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
-import static com.android.window.flags.Flags.FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
@@ -128,7 +127,6 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         });
     }
 
-    @EnableFlags(FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE)
     @EnableCompatChanges(OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE)
     @Test
     public void testAutoRestartOnDisplayMove_enabled_restartsApp() {
@@ -144,7 +142,6 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         });
     }
 
-    @EnableFlags(FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE)
     @DisableCompatChanges(OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE)
     @Test
     public void testAutoRestartOnDisplayMove_compatChangeDisabled_doesNotRestartApp() {
