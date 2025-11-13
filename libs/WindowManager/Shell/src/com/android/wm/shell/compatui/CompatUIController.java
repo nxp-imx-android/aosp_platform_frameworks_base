@@ -64,6 +64,7 @@ import com.android.wm.shell.compatui.api.CompatUIEvent;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUIInfo;
 import com.android.wm.shell.compatui.api.CompatUIRequest;
+import com.android.wm.shell.compatui.api.CompatUITypeUtils;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonClicked;
 import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
@@ -299,9 +300,10 @@ public class CompatUIController implements OnDisplaysChangedListener,
 
     @Override
     public void sendCompatUIRequest(CompatUIRequest compatUIRequest) {
-        switch(compatUIRequest.getRequestId()) {
+        switch (compatUIRequest.getRequestId()) {
             case DISPLAY_COMPAT_SHOW_RESTART_DIALOG:
-                handleDisplayCompatShowRestartDialog(compatUIRequest.asType());
+                handleDisplayCompatShowRestartDialog(CompatUITypeUtils.asTypeJava(compatUIRequest,
+                        CompatUIRequests.DisplayCompatShowRestartDialog.class));
                 break;
             default:
         }
