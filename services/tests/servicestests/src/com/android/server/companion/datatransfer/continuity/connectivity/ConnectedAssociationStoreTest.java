@@ -17,11 +17,14 @@
 package com.android.server.companion.datatransfer.continuity.connectivity;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
@@ -32,10 +35,9 @@ import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
+
 import androidx.test.platform.app.InstrumentationRegistry;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Executor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,15 +45,24 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Executor;
+
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class ConnectedAssociationStoreTest {
 
+    private static final int USER_ID = 1;
+
     private Context mMockContext;
-    @Mock private ICompanionDeviceManager mMockCompanionDeviceManagerService;
-    @Mock private Executor mMockExecutor;
-    @Mock private ConnectedAssociationStore.Listener mMockListener;
+    @Mock
+    private ICompanionDeviceManager mMockCompanionDeviceManagerService;
+    @Mock
+    private ConnectedAssociationStore.Listener mMockListener;
+    @Mock
+    private AssociationProfileManager mMockAssociationProfileManager;
 
     private ConnectedAssociationStore mConnectedAssociationStore;
 
@@ -70,7 +81,11 @@ public class ConnectedAssociationStoreTest {
 
         mConnectedAssociationStore =
                 new ConnectedAssociationStore(
-                        mCompanionDeviceManager, mMockContext.getMainExecutor(), mMockListener);
+                        USER_ID,
+                        mCompanionDeviceManager,
+                        mMockContext.getMainExecutor(),
+                        mMockListener,
+                        mMockAssociationProfileManager);
     }
 
     @Test
@@ -87,6 +102,9 @@ public class ConnectedAssociationStoreTest {
     public void testOnTransportConnected_notifyObserver() throws RemoteException {
         // Simulate a new association connected.
         AssociationInfo associationInfo = createAssociationInfo(1, "name", true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo)))
+                .thenReturn(true);
         mConnectedAssociationStore.onTransportsChanged(Collections.singletonList(associationInfo));
 
         // Verify the observer is notified.
@@ -97,6 +115,9 @@ public class ConnectedAssociationStoreTest {
     public void testOnTransportDisconnected_notifyObserver() throws RemoteException {
         // Start with an association connected.
         AssociationInfo associationInfo = createAssociationInfo(1, "name", true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo)))
+                .thenReturn(true);
         mConnectedAssociationStore.onTransportsChanged(Collections.singletonList(associationInfo));
 
         // Simulate the association being disconnected.
@@ -110,6 +131,9 @@ public class ConnectedAssociationStoreTest {
     public void testOnTransportChanged_noChange_noNotification() throws RemoteException {
         // Start with an association connected.
         AssociationInfo associationInfo = createAssociationInfo(1, "name", true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo)))
+                .thenReturn(true);
         mConnectedAssociationStore.onTransportsChanged(Collections.singletonList(associationInfo));
 
         // Simulate the same association still connected.
@@ -125,6 +149,9 @@ public class ConnectedAssociationStoreTest {
             throws RemoteException {
         // Start with an association connected.
         AssociationInfo associationInfo = createAssociationInfo(1, "name", true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo)))
+                .thenReturn(true);
         mConnectedAssociationStore.onTransportsChanged(Collections.singletonList(associationInfo));
 
         // Simulate the same association still connected.
@@ -141,10 +168,16 @@ public class ConnectedAssociationStoreTest {
             throws RemoteException {
         // Start with an association connected.
         AssociationInfo associationInfo = createAssociationInfo(1, "name", false);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo)))
+                .thenReturn(true);
         mConnectedAssociationStore.onTransportsChanged(Collections.singletonList(associationInfo));
 
         // Simulate the same association still connected.
         AssociationInfo associationInfo2 = createAssociationInfo(1, "name", true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo2)))
+                .thenReturn(true);
         mConnectedAssociationStore.onTransportsChanged(Collections.singletonList(associationInfo2));
 
         // Verify the observer is only notified once for the initial connection.
@@ -157,6 +190,13 @@ public class ConnectedAssociationStoreTest {
         // Connect two associations.
         AssociationInfo associationInfo1 = createAssociationInfo(1, "name", true);
         AssociationInfo associationInfo2 = createAssociationInfo(2, "name", true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo1)))
+                .thenReturn(true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo2)))
+                .thenReturn(true);
+
         mConnectedAssociationStore.onTransportsChanged(List.of(associationInfo1, associationInfo2));
 
         // Verify that getConnectedAssociations returns the correct set.
@@ -172,6 +212,25 @@ public class ConnectedAssociationStoreTest {
         // Verify that getConnectedAssociations returns the updated set.
         assertThat(mConnectedAssociationStore.getConnectedAssociations())
                 .containsExactly(associationInfo2);
+    }
+
+    @Test
+    public void testGetConnectedAssociations_excludesAssociationsIfFromOtherUsers()
+            throws RemoteException {
+        // Connect two associations.
+        AssociationInfo associationInfo1 = createAssociationInfo(1, "name", true);
+        AssociationInfo associationInfo2 = createAssociationInfo(2, "name", true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo1)))
+                .thenReturn(true);
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(
+                eq(USER_ID), eq(associationInfo2)))
+                .thenReturn(false);
+        mConnectedAssociationStore.onTransportsChanged(List.of(associationInfo1, associationInfo2));
+
+        // Verify that getConnectedAssociations returns the correct set.
+        assertThat(mConnectedAssociationStore.getConnectedAssociations())
+                .containsExactly(associationInfo1);
     }
 
     private AssociationInfo createAssociationInfo(

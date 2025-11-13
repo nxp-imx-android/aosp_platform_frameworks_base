@@ -17,14 +17,16 @@
 package com.android.server.companion.datatransfer.continuity.connectivity;
 
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
+
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
@@ -32,19 +34,16 @@ import android.companion.ICompanionDeviceManager;
 import android.companion.IOnMessageReceivedListener;
 import android.companion.IOnTransportsChangedListener;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
-import androidx.test.platform.app.InstrumentationRegistry;
+
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import com.android.server.companion.datatransfer.continuity.messages.TaskStackBroadcastMessage;
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,15 +52,28 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class TaskContinuityMessengerTest {
 
+    private static final int USER_ID = 1;
+
     private Context mMockContext;
-    @Mock private ICompanionDeviceManager mMockCompanionDeviceManagerService;
+    @Mock
+    private ICompanionDeviceManager mMockCompanionDeviceManagerService;
     private CompanionDeviceManager mCompanionDeviceManager;
-    @Mock private TaskContinuityMessenger.Listener mMockListener;
+    @Mock
+    private TaskContinuityMessenger.Listener mMockListener;
+    @Mock
+    private AssociationProfileManager mMockAssociationProfileManager;
+
+    private final Executor mExecutor = Runnable::run;
 
     private TaskContinuityMessenger mTaskContinuityMessenger;
 
@@ -74,20 +86,14 @@ public class TaskContinuityMessengerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mMockContext =
-                Mockito.spy(
-                        new ContextWrapper(
-                                InstrumentationRegistry.getInstrumentation().getTargetContext()));
 
         // Setup fake services.
         mCompanionDeviceManager =
                 new CompanionDeviceManager(mMockCompanionDeviceManagerService, mMockContext);
 
-        when(mMockContext.getSystemService(Context.COMPANION_DEVICE_SERVICE))
-                .thenReturn(mCompanionDeviceManager);
-
         // Create TaskContinuityMessenger.
-        mTaskContinuityMessenger = new TaskContinuityMessenger(mMockContext);
+        mTaskContinuityMessenger = new TaskContinuityMessenger(USER_ID, mCompanionDeviceManager,
+                mExecutor, mMockAssociationProfileManager);
     }
 
     @Test
@@ -151,7 +157,7 @@ public class TaskContinuityMessengerTest {
                 .sendMessage(
                         eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
                         eq(TaskContinuityMessageSerializer.serialize(TEST_MESSAGE)),
-                        aryEq(new int[] {associationId}));
+                        aryEq(new int[]{associationId}));
         assertThat(result).isEqualTo(TaskContinuityMessenger.SendMessageResult.SUCCESS);
     }
 
@@ -166,7 +172,7 @@ public class TaskContinuityMessengerTest {
                 .sendMessage(
                         eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
                         eq(TaskContinuityMessageSerializer.serialize(TEST_MESSAGE)),
-                        aryEq(new int[] {associationId}));
+                        aryEq(new int[]{associationId}));
         assertThat(result)
                 .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);
     }
@@ -185,10 +191,12 @@ public class TaskContinuityMessengerTest {
                 associationIds.stream()
                         .map(
                                 id ->
-                                        new AssociationInfo.Builder(id, 0, "com.android.test")
+                                        new AssociationInfo.Builder(id, USER_ID, "com.android.test")
                                                 .setDisplayName("name")
                                                 .build())
                         .collect(Collectors.toList());
+        when(mMockAssociationProfileManager.isAssociationAvailableForUser(eq(USER_ID),
+                any(AssociationInfo.class))).thenReturn(true);
 
         try {
             listenerCaptor.getValue().onTransportsChanged(associationInfos);
