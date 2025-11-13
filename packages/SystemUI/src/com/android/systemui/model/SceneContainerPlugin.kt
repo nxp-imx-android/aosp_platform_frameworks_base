@@ -124,7 +124,7 @@ constructor(
                             Overlays.QuickSettingsShade in it.overlays -> true
                             it.scene == Scenes.Lockscreen && Overlays.Bouncer in it.overlays ->
                                 false
-                            it.scene == Scenes.Occluded -> false
+                            it.scene.isOccluded() -> false
                             it.scene != Scenes.Gone -> true
                             else -> false
                         }
@@ -163,9 +163,11 @@ constructor(
                     },
                 SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED to
                     {
-                        it.scene == Scenes.Occluded || it.sceneBehind == Scenes.Occluded
+                        it.scene.isOccluded() || it.sceneBehind?.isOccluded() == true
                     },
                 SYSUI_STATE_COMMUNAL_HUB_SHOWING to { it.isVisible && it.scene == Scenes.Communal },
             )
     }
 }
+
+private fun SceneKey.isOccluded() = this == Scenes.Occluded || this == Scenes.Dream
