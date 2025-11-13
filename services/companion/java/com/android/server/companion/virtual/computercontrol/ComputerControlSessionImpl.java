@@ -545,12 +545,33 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         return new InteractiveMirrorImpl(mirror, mTransactionSupplier,
                 mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal,
-                this::onInteractiveMirrorClosed);
+                this::removeInteractiveMirror);
     }
 
-    private void onInteractiveMirrorClosed(InteractiveMirrorImpl interactiveMirror) {
+    private void removeInteractiveMirror(InteractiveMirrorImpl interactiveMirror) {
         synchronized (mInteractiveMirrors) {
-            mInteractiveMirrors.remove(interactiveMirror);
+            if (!mInteractiveMirrors.remove(interactiveMirror)) {
+                return;
+            }
+        }
+        try (var transaction = mTransactionSupplier.get()) {
+            interactiveMirror.closeWithTransaction(transaction);
+            transaction.apply();
+        }
+    }
+
+    private void removeAllInteractiveMirrors() {
+        synchronized (mInteractiveMirrors) {
+            if (mInteractiveMirrors.isEmpty()) {
+                return;
+            }
+            try (var transaction = mTransactionSupplier.get()) {
+                for (int i = 0; i < mInteractiveMirrors.size(); i++) {
+                    mInteractiveMirrors.get(i).closeWithTransaction(transaction);
+                }
+                transaction.apply();
+            }
+            mInteractiveMirrors.clear();
         }
     }
 
@@ -640,21 +661,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAudioCapture.stopAudioCapture();
         mVirtualDevice.close(); // closes also the VirtualAudioDevice
         mAppToken.unlinkToDeath(this, 0);
-        closeInteractiveMirrors();
+        removeAllInteractiveMirrors();
         mOnClosedListener.accept(this);
-    }
-
-    private void closeInteractiveMirrors() {
-        synchronized (mInteractiveMirrors) {
-            try (var transaction = mTransactionSupplier.get()) {
-                // Closing a mirror modifies mInteractiveMirrors, so make a copy of the list.
-                final var mirrorsCopy = new ArrayList<>(mInteractiveMirrors);
-                for (int i = 0; i < mirrorsCopy.size(); i++) {
-                    mirrorsCopy.get(i).closeWithTransaction(transaction);
-                }
-                transaction.apply();
-            }
-        }
     }
 
     private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step, int stepCount) {

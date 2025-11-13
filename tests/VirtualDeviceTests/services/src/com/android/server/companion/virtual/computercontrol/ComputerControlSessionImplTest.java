@@ -682,7 +682,7 @@ public class ComputerControlSessionImplTest {
         assertThat(mirror).isNotNull();
         verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
         verify(returnedMirrorSurface).copyFrom(mSurfaceControlArgumentCaptor.capture(), any());
-        Mockito.reset(mTransaction);
+        clearInvocations(mTransaction);
 
         mirror.close();
 
@@ -704,12 +704,31 @@ public class ComputerControlSessionImplTest {
         IInteractiveMirror mirror2 = mSession.createInteractiveMirror(new SurfaceControl());
         assertThat(mirror2).isNotNull();
         verify(mWindowManagerInternal, times(2)).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
-        Mockito.reset(mTransaction);
+        clearInvocations(mTransaction);
 
         mSession.close();
 
         verify(displayMirror1).close();
         verify(displayMirror2).close();
+    }
+
+    @Test
+    public void duplicateCloseInteractiveMirrorCall_doesNothing() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        final var displayMirror = mockDisplayMirror();
+        when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
+                .thenReturn(displayMirror);
+        final var returnedMirrorSurface = Mockito.mock(SurfaceControl.class);
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+        assertThat(mirror).isNotNull();
+        mirror.close();
+        clearInvocations(mTransaction, displayMirror);
+
+        mirror.close();
+        mirror.close();
+        mSession.close();
+
+        verifyNoInteractions(displayMirror, mTransaction);
     }
 
     @Test
