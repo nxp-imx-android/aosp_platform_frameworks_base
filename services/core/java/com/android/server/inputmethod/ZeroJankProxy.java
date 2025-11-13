@@ -39,8 +39,8 @@ import android.annotation.BinderThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
-import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.UserIdInt;
 import android.os.Binder;
 import android.os.IBinder;
@@ -138,17 +138,6 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     @Override
     public InputMethodInfoSafeList getEnabledInputMethodList(int userId) {
         return mInner.getEnabledInputMethodList(userId);
-    }
-
-    @Override
-    public List<InputMethodInfo> getInputMethodListLegacy(
-            int userId, @DirectBootAwareness int directBootAwareness) {
-        return mInner.getInputMethodListLegacy(userId, directBootAwareness);
-    }
-
-    @Override
-    public List<InputMethodInfo> getEnabledInputMethodListLegacy(int userId) {
-        return mInner.getEnabledInputMethodListLegacy(userId);
     }
 
     @Override

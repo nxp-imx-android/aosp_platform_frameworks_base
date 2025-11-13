@@ -57,16 +57,6 @@ interface IInputMethodManager {
         + "android.Manifest.permission.QUERY_INPUT_METHOD}, conditional = true)")
     InputMethodInfoSafeList getEnabledInputMethodList(int userId);
 
-    // TODO(b/339761278): Remove after getInputMethodList() is fully deployed.
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
-            + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
-    List<InputMethodInfo> getInputMethodListLegacy(int userId, int directBootAwareness);
-
-    // TODO(b/339761278): Remove after getEnabledInputMethodList() is fully deployed.
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
-            + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
-    List<InputMethodInfo> getEnabledInputMethodListLegacy(int userId);
-
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {"
         + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, "
         + "android.Manifest.permission.QUERY_INPUT_METHOD}, conditional = true)")

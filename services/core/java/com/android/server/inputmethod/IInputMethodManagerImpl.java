@@ -24,8 +24,8 @@ import android.annotation.BinderThread;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.UserIdInt;
 import android.os.Binder;
 import android.os.IBinder;
@@ -98,13 +98,6 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
 
         @NonNull
         InputMethodInfoSafeList getEnabledInputMethodList(@UserIdInt int userId);
-
-        @NonNull
-        List<InputMethodInfo> getInputMethodListLegacy(@UserIdInt int userId,
-                @DirectBootAwareness int directBootAwareness);
-
-        @NonNull
-        List<InputMethodInfo> getEnabledInputMethodListLegacy(@UserIdInt int userId);
 
         List<InputMethodSubtype> getEnabledInputMethodSubtypeList(String imiId,
                 boolean allowsImplicitlyEnabledSubtypes, @UserIdInt int userId);
@@ -265,19 +258,6 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
     @Override
     public InputMethodInfoSafeList getEnabledInputMethodList(@UserIdInt int userId) {
         return mCallback.getEnabledInputMethodList(userId);
-    }
-
-    @NonNull
-    @Override
-    public List<InputMethodInfo> getInputMethodListLegacy(@UserIdInt int userId,
-            int directBootAwareness) {
-        return mCallback.getInputMethodListLegacy(userId, directBootAwareness);
-    }
-
-    @NonNull
-    @Override
-    public List<InputMethodInfo> getEnabledInputMethodListLegacy(@UserIdInt int userId) {
-        return mCallback.getEnabledInputMethodListLegacy(userId);
     }
 
     @Override
