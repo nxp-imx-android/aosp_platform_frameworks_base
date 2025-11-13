@@ -81,10 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Menyimpan tangkapan skrin pada profil peribadi"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Tangkapan skrin disimpan"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Tidak dapat menyimpan tangkapan skrin"</string>
-    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
-    <skip />
-    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
-    <skip />
+    <string name="screenshot_save_to" msgid="3294574417295882864">"Simpan pada"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"Pilih folder"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Paparan Luaran"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Peranti mesti dibuka kunci sebelum tangkapan skrin dapat disimpan"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Cuba ambil tangkapan skrin sekali lagi"</string>
@@ -175,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Kongsi audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Kongsi tetingkap apl"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Kongsi tab"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Kongsi seluruh skrin"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Apabila anda berkongsi apl, apa-apa sahaja kandungan yang dipaparkan atau dimainkan pada apl itu boleh dilihat oleh [APP NAME]. Oleh hal yang demikian, berhati-hati dengan maklumat seperti kata laluan, butiran pembayaran, mesej, foto serta audio &amp; video."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Apabila anda berkongsi seluruh skrin anda, apa-apa sahaja kandungan pada skrin anda boleh dilihat oleh [APP NAME]. Oleh hal yang demikian, berhati-hati dengan maklumat seperti kata laluan, butiran pembayaran, mesej, foto serta audio &amp; video."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Ambil tangkapan skrin tetingkap"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Rakam tetingkap"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Ambil tangkapan skrin kawasan yang dipilih"</string>
@@ -455,7 +450,7 @@
     <string name="quick_settings_connected" msgid="3873605509184830379">"Disambungkan"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Menyambung..."</string>
     <string name="quick_settings_scanning_for_wifi" msgid="5875402701266073463">"Mengimbas Wi‑Fi..."</string>
-    <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Tempat liputan"</string>
+    <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Tempat Liputan"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Menghidupkan…"</string>
     <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"Penjimat Data dihidupkan"</string>
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# peranti}other{# peranti}}"</string>
@@ -713,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"Kosongkan semua"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"Urus"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"Sejarah"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Tetapan pemberitahuan"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Sejarah pemberitahuan"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Baharu"</string>
@@ -731,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Kelantangan, makluman peranti dikurangkan secara automatik hingga 2 minit apabila menerima banyak pemberitahuan serentak."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Matikan"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Buka kunci untuk melihat pemberitahuan lama"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"Sesetengah tetapan diurus oleh ibu/bapa anda"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Peranti ini diurus oleh ibu bapa anda"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Sesetengah tetapan peranti dilindungi oleh PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Organisasi anda memiliki peranti ini dan mungkin memantau trafik rangkaian"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> memiliki peranti ini dan mungkin memantau trafik rangkaian"</string>
@@ -887,7 +882,7 @@
     <string name="zen_alarm_warning" msgid="7844303238486849503">"Anda tidak akan mendengar penggera yang seterusnya <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template" msgid="2234991538018805736">"pada <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"pada <xliff:g id="WHEN">%1$s</xliff:g>"</string>
-    <string name="accessibility_status_bar_hotspot" msgid="2888479317489131669">"Tempat liputan"</string>
+    <string name="accessibility_status_bar_hotspot" msgid="2888479317489131669">"Tempat Liputan"</string>
     <string name="accessibility_status_bar_satellite_no_connection" msgid="3001571744269917762">"Satelit, tiada sambungan"</string>
     <string name="accessibility_status_bar_satellite_poor_connection" msgid="5231478574952724160">"Satelit, sambungan yang lemah"</string>
     <string name="accessibility_status_bar_satellite_good_connection" msgid="308079391708578704">"Satelit, sambungan yang baik"</string>
@@ -910,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"Tahniah! Penala UI Sistem telah ditambahkan pada Tetapan"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"Alih keluar daripada Tetapan"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"Alih keluar Penala UI Sistem daripada Tetapan dan berhenti menggunakan semua cirinya?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Hidupkan Bluetooth?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Untuk menyambungkan papan kekunci anda dengan tablet, anda perlu menghidupkan Bluetooth terlebih dahulu."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Hidupkan"</string>
@@ -957,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Pemberitahuan panggilan tidak boleh diubah suai."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Kumpulan pemberitahuan ini tidak boleh dikonfigurasikan di sini"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Pemberitahuan berproksi"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"Diringkaskan oleh <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Semua pemberitahuan <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Lihat lagi"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Pemberitahuan ini secara automatik &lt;b&gt;dinaikkan taraf kepada Lalai&lt;/b&gt; oleh sistem."</string>
@@ -1417,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Dicadangkan"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Input"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Output"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Hentikan sesi dikongsi anda untuk mengalihkan media kepada peranti yang lain"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Berhenti"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Hentikan perkongsian"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Perkongsian audio"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Kongsi audio"</string>
@@ -1750,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigasi kepada halaman seterusnya"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autolengkap"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"kembangkan"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Kongsi lokasi tepat"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Gunakan lokasi tepat"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Berdekatan lokasi tepat"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"Lokasi tepat"</string>
 </resources>

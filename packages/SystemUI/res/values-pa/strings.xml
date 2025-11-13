@@ -81,10 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਨੂੰ ਪ੍ਰਾਈਵੇਟ ਵਜੋਂ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ"</string>
-    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
-    <skip />
-    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
-    <skip />
+    <string name="screenshot_save_to" msgid="3294574417295882864">"ਇਸ ਵਿੱਚ ਰੱਖਿਅਤ ਕਰੋ"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"ਫੋਲਡਰ ਚੁਣੋ"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ਬਾਹਰੀ ਡਿਸਪਲੇ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਨੂੰ ਰੱਖਿਅਤ ਕੀਤੇ ਜਾਣ ਤੋਂ ਪਹਿਲਾਂ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕੀਤਾ ਹੋਣਾ ਲਾਜ਼ਮੀ ਹੈ"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਦੁਬਾਰਾ ਲੈ ਕੇ ਦੇਖੋ"</string>
@@ -175,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ਆਡੀਓ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ਐਪ ਵਿੰਡੋ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ਟੈਬ ਸਾਂਝੀ ਕਰੋ"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰੋ"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ਕਿਸੇ ਐਪ ਨੂੰ ਸਾਂਝਾ ਕਰਨ ਦੌਰਾਨ, ਉਸ ਐਪ \'ਤੇ ਦਿਖ ਰਹੀ ਜਾਂ ਚਲਾਈ ਗਈ ਹਰੇਕ ਚੀਜ਼ [APP NAME] ਨੂੰ ਦਿਖਣਯੋਗ ਹੁੰਦੀ ਹੈ। ਇਸ ਲਈ ਪਾਸਵਰਡਾਂ, ਭੁਗਤਾਨ ਵੇਰਵਿਆਂ, ਸੁਨੇਹਿਆਂ, ਫ਼ੋਟੋਆਂ ਅਤੇ ਆਡੀਓ ਅਤੇ ਵੀਡੀਓ ਵਰਗੀਆਂ ਚੀਜ਼ਾਂ ਵਾਸਤੇ ਸਾਵਧਾਨ ਰਹੋ।"</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਸਾਂਝਾ ਕਰਨ ਦੌਰਾਨ, ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ \'ਤੇ ਦਿਖ ਰਹੀ ਹਰੇਕ ਚੀਜ਼ [APP NAME] \'ਤੇ ਵੀ ਦਿਖਣਯੋਗ ਹੁੰਦੀ ਹੈ। ਇਸ ਲਈ ਪਾਸਵਰਡਾਂ, ਭੁਗਤਾਨ ਵੇਰਵਿਆਂ, ਸੁਨੇਹਿਆਂ, ਫ਼ੋਟੋਆਂ ਅਤੇ ਆਡੀਓ ਅਤੇ ਵੀਡੀਓ ਵਰਗੀਆਂ ਚੀਜ਼ਾਂ ਵਾਸਤੇ ਸਾਵਧਾਨ ਰਹੋ।"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ਵਿੰਡੋ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ਵਿੰਡੋ ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ਚੁਣੇ ਹੋਏ ਖੇਤਰ ਦਾ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
@@ -713,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"ਸਭ ਕਲੀਅਰ ਕਰੋ"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"ਪ੍ਰਬੰਧਨ ਕਰੋ"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"ਇਤਿਹਾਸ"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"ਸੂਚਨਾ ਸੈਟਿੰਗਾਂ"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"ਸੂਚਨਾ ਇਤਿਹਾਸ"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"ਨਵੀਆਂ"</string>
@@ -731,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ਇੱਕ ਵਾਰ \'ਚ ਕਈ ਸੂਚਨਾਵਾਂ ਮਿਲਣ \'ਤੇ, ਡੀਵਾਈਸ ਦੀ ਅਵਾਜ਼ ਅਤੇ ਅਲਰਟ ਵੱਧੋ-ਵੱਧ 2 ਮਿੰਟਾਂ ਲਈ ਆਪਣੇ-ਆਪ ਘੱਟ ਜਾਂਦੇ ਹਨ।"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ਬੰਦ ਕਰੋ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ਪੁਰਾਣੀਆਂ ਸੂਚਨਾਵਾਂ ਦੇਖਣ ਲਈ ਅਣਲਾਕ ਕਰੋ"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"ਕੁਝ ਸੈਟਿੰਗਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ਇਸ ਡੀਵਾਈਸ ਦਾ ਪ੍ਰਬੰਧਨ ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ਕੁਝ ਡੀਵਾਈਸ ਸੈਟਿੰਗਾਂ ਪਿੰਨ ਨਾਲ ਸੁਰੱਖਿਅਤ ਹਨ।"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ਤੁਹਾਡੀ ਸੰਸਥਾ ਕੋਲ ਇਸ ਡੀਵਾਈਸ ਦੀ ਮਲਕੀਅਤ ਹੈ ਅਤੇ ਇਹ ਨੈੱਟਵਰਕ ਟਰੈਫ਼ਿਕ ਦੀ ਨਿਗਰਾਨੀ ਕਰ ਸਕਦੀ ਹੈ"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> ਕੋਲ ਇਸ ਡੀਵਾਈਸ ਦੀ ਮਲਕੀਅਤ ਹੈ ਅਤੇ ਇਹ ਨੈੱਟਵਰਕ ਟਰੈਫ਼ਿਕ ਦੀ ਨਿਗਰਾਨੀ ਕਰ ਸਕਦੀ ਹੈ"</string>
@@ -910,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"ਵਧਾਈਆਂ! ਸਿਸਟਮ UI ਟਿਊਨਰ ਨੂੰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਜੋੜਿਆ ਗਿਆ ਹੈ"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"ਸੈਟਿੰਗਾਂ ਤੋਂ ਹਟਾਓ"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"ਕੀ ਸੈਟਿੰਗਾਂ ਤੋਂ ਸਿਸਟਮ UI ਟਿਊਨਰ ਨੂੰ ਹਟਾਉਣਾ ਹੈ ਅਤੇ ਇਸਦੀਆਂ ਸਾਰੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਨੂੰ ਵਰਤੋਂ ਕਰਨ ਤੋਂ ਰੋਕਣਾ ਹੈ?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Bluetooth ਚਾਲੂ ਕਰੋ?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ਆਪਣੇ ਟੈਬਲੈੱਟ ਨਾਲ ਆਪਣਾ ਕੀ-ਬੋਰਡ ਕਨੈਕਟ ਕਰਨ ਲਈ, ਤੁਹਾਨੂੰ ਪਹਿਲਾਂ ਬਲੂਟੁੱਥ ਚਾਲੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ।"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ਚਾਲੂ ਕਰੋ"</string>
@@ -937,7 +934,7 @@
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ਡੀਵਾਈਸ ਸੈਟਿੰਗਾਂ ਦੇ ਆਧਾਰ \'ਤੇ ਘੰਟੀ ਵੱਜ ਸਕਦੀ ਹੈ ਜਾਂ ਥਰਥਰਾਹਟ ਹੋ ਸਕਦੀ ਹੈ"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"ਡੀਵਾਈਸ ਸੈਟਿੰਗਾਂ ਦੇ ਆਧਾਰ \'ਤੇ ਘੰਟੀ ਵੱਜ ਸਕਦੀ ਹੈ ਜਾਂ ਥਰਥਰਾਹਟ ਹੋ ਸਕਦੀ ਹੈ। ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਤੌਰ \'ਤੇ <xliff:g id="APP_NAME">%1$s</xliff:g> ਬਬਲ ਤੋਂ ਗੱਲਾਂਬਾਤਾਂ।"</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"ਸਿਸਟਮ ਨੂੰ ਨਿਰਧਾਰਤ ਕਰਨ ਦਿਓ ਕਿ ਇਸ ਸੂਚਨਾ ਲਈ ਕੋਈ ਧੁਨੀ ਵਜਾਉਣੀ ਚਾਹੀਦੀ ਹੈ ਜਾਂ ਥਰਥਰਾਹਟ ਕਰਨੀ ਚਾਹੀਦੀ ਹੈ"</string>
-    <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;ਸਥਿਤੀ:&lt;/b&gt; ਦਰਜਾ ਵਧਾ ਕੇ ਪੂਰਵ-ਨਿਰਧਾਰਤ \'ਤੇ ਸੈੱਟ ਕੀਤਾ ਗਿਆ"</string>
+    <string name="notification_channel_summary_automatic_alerted" msgid="954166812246932240">"&lt;b&gt;ਸਥਿਤੀ:&lt;/b&gt; ਦਰਜਾ ਵਧਾ ਕੇ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ \'ਤੇ ਸੈੱਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;ਸਥਿਤੀ:&lt;/b&gt; ਦਰਜਾ ਘਟਾ ਕੇ ਸ਼ਾਂਤ \'ਤੇ ਸੈੱਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;ਸਥਿਤੀ:&lt;/b&gt; ਦਰਜਾ ਵਧਾਇਆ ਗਿਆ"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;ਸਥਿਤੀ:&lt;/b&gt; ਦਰਜਾ ਘਟਾਇਆ ਗਿਆ"</string>
@@ -957,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ਕਾਲ ਸੰਬੰਧੀ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ਇਹ ਸੂਚਨਾਵਾਂ ਦਾ ਗਰੁੱਪ ਇੱਥੇ ਸੰਰੂਪਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ਇੱਕ ਐਪ ਦੀ ਥਾਂ \'ਤੇ ਦੂਜੀ ਐਪ ਰਾਹੀਂ ਦਿੱਤੀ ਗਈ ਸੂਚਨਾ"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਵੱਲੋਂ ਸਾਰਾਂਸ਼ ਦਿੱਤਾ ਗਿਆ"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"ਸਾਰੀਆਂ <xliff:g id="APP_NAME">%1$s</xliff:g> ਸੂਚਨਾਵਾਂ"</string>
     <string name="see_more_title" msgid="7409317011708185729">"ਹੋਰ ਦੇਖੋ"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ਸਿਸਟਮ ਨੇ ਇਸ ਸੂਚਨਾ ਦਾ ਸਵੈਚਲਿਤ ਤੌਰ \'ਤੇ &lt;b&gt;ਦਰਜਾ ਵਧਾ ਕੇ ਪੂਰਵ-ਨਿਰਧਾਰਤ&lt;/b&gt; \'ਤੇ ਸੈੱਟ ਕਰ ਦਿੱਤਾ ਹੈ।"</string>
@@ -1417,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ਸੁਝਾਏ ਗਏ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ਇਨਪੁੱਟ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ਆਊਟਪੁੱਟ"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ਮੀਡੀਆ ਨੂੰ ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ \'ਤੇ ਲਿਜਾਉਣ ਲਈ ਆਪਣੇ ਸਾਂਝੇ ਕੀਤੇ ਸੈਸ਼ਨ ਨੂੰ ਬੰਦ ਕਰੋ"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ਬੰਦ ਕਰੋ"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"ਸਾਂਝਾਕਰਨ ਬੰਦ ਕਰੋ"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ਆਡੀਓ ਨੂੰ ਸਾਂਝਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ਆਡੀਓ ਨੂੰ ਸਾਂਝਾ ਕਰੋ"</string>
@@ -1750,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ਅਗਲੇ ਪੰਨੇ \'ਤੇ ਜਾਓ"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ਆਟੋਫਿਲ ਕਰੋ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ਵਿਸਤਾਰ ਕਰੋ"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ਸਟੀਕ ਟਿਕਾਣਾ ਸਾਂਝਾ ਕਰੋ"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ਸਟੀਕ ਟਿਕਾਣਾ ਵਰਤੋ"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"ਸਟੀਕ ਟਿਕਾਣੇ ਦੇ ਨਜ਼ਦੀਕ"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"ਸਟੀਕ ਟਿਕਾਣਾ"</string>
 </resources>
