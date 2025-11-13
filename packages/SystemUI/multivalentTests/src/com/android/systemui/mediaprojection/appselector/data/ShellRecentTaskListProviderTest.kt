@@ -1,6 +1,7 @@
 package com.android.systemui.mediaprojection.appselector.data
 
 import android.app.ActivityManager.RecentTaskInfo
+import android.content.Intent
 import android.content.pm.UserInfo
 import android.graphics.Rect
 import android.os.UserManager
@@ -94,9 +95,7 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
 
     @Test
     fun loadRecentTasks_singleTask_returnsTaskAsNotForeground() {
-        givenRecentTasks(
-            createSingleTask(taskId = 1, isVisible = true),
-        )
+        givenRecentTasks(createSingleTask(taskId = 1, isVisible = true))
 
         val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
 
@@ -105,9 +104,7 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
 
     @Test
     fun loadRecentTasks_singleTaskPair_returnsTasksAsForeground() {
-        givenRecentTasks(
-            createTaskPair(taskId1 = 2, taskId2 = 3, isVisible = true),
-        )
+        givenRecentTasks(createTaskPair(taskId1 = 2, taskId2 = 3, isVisible = true))
 
         val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
 
@@ -168,8 +165,8 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
         val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
 
         assertThat(result.map { it.isForegroundTask })
-                .containsExactly(true, true, false, false)
-                .inOrder()
+            .containsExactly(true, true, false, false)
+            .inOrder()
     }
 
     @Test
@@ -198,8 +195,8 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
         val result = runBlocking { recentTaskListProvider.loadRecentTasks() }
 
         assertThat(result.map { it.isForegroundTask })
-                .containsExactly(false, false, false, false)
-                .inOrder()
+            .containsExactly(false, false, false, false)
+            .inOrder()
     }
 
     @Test
@@ -228,7 +225,8 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
 
     private fun createRecentTask(
         taskId: Int,
-        userType: RecentTask.UserType = STANDARD
+        userType: RecentTask.UserType = STANDARD,
+        baseIntent: Intent? = null,
     ): RecentTask =
         RecentTask(
             taskId = taskId,
@@ -236,10 +234,11 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
             userId = 0,
             topActivityComponent = null,
             baseIntentComponent = null,
+            baseIntent = baseIntent,
             colorBackground = null,
             isForegroundTask = false,
             userType = userType,
-            splitBounds = null
+            splitBounds = null,
         )
 
     private fun createSingleTask(
@@ -268,7 +267,7 @@ class ShellRecentTaskListProviderTest : SysuiTestCase() {
         GroupedTaskInfo.forSplitTasks(
             createTaskInfo(taskId1, userId1, isVisible),
             createTaskInfo(taskId2, userId2, isVisible),
-            SplitBounds(Rect(), Rect(), taskId1, taskId2, SNAP_TO_2_50_50)
+            SplitBounds(Rect(), Rect(), taskId1, taskId2, SNAP_TO_2_50_50),
         )
 
     private fun createTaskInfo(taskId: Int, userId: Int, isVisible: Boolean = false) =

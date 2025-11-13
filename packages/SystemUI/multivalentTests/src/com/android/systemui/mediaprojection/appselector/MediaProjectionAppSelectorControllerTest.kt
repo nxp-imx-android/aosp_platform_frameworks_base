@@ -1,6 +1,7 @@
 package com.android.systemui.mediaprojection.appselector
 
 import android.content.ComponentName
+import android.content.Intent
 import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -247,13 +248,15 @@ class MediaProjectionAppSelectorControllerTest : SysuiTestCase() {
         taskId: Int,
         topActivityComponent: ComponentName? = null,
         userId: Int = personalUserHandle.identifier,
-        isForegroundTask: Boolean = false
+        isForegroundTask: Boolean = false,
+        baseIntent: Intent? = null,
     ): RecentTask {
         return RecentTask(
             taskId = taskId,
             displayId = 0,
             topActivityComponent = topActivityComponent,
             baseIntentComponent = ComponentName("com", "Test"),
+            baseIntent = baseIntent,
             userId = userId,
             colorBackground = 0,
             isForegroundTask = isForegroundTask,

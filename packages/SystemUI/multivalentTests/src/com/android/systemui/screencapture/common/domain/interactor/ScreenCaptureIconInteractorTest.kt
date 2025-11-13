@@ -48,6 +48,7 @@ class ScreenCaptureIconInteractorTest : SysuiTestCase() {
                     component = fakeComponent,
                     backgroundColor = null,
                     splitBounds = null,
+                    baseIntent = null,
                 )
 
             // Act

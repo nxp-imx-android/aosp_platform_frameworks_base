@@ -66,6 +66,7 @@ class ScreenCaptureThumbnailInteractorTest : SysuiTestCase() {
                     component = null,
                     backgroundColor = null,
                     splitBounds = null,
+                    baseIntent = null,
                 )
 
             // Act

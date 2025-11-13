@@ -45,7 +45,9 @@ constructor(
     appContentsViewModelFactory: AppContentsViewModel.Factory,
     private val recentTasksViewModel: RecentTasksViewModel,
     private val displaysViewModel: DisplaysViewModel,
-) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
+) :
+    HydratedActivatable(enableEnqueuedActivations = true),
+    DrawableLoaderViewModel by drawableLoaderViewModel {
     private val appContentsViewModel =
         appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
 
@@ -73,7 +75,9 @@ constructor(
         when (val currentModel = currentTargetsModel) {
             is RecentTasksViewModel -> {
                 currentModel.selectedTarget.value?.let {
-                    shareScreenUiInteractor.onAppSharingApproved(it.model.taskId)
+                    enqueueOnActivatedScope {
+                        shareScreenUiInteractor.onAppSharingApproved(it.model.taskId)
+                    }
                 }
             }
             is AppContentsViewModel -> {

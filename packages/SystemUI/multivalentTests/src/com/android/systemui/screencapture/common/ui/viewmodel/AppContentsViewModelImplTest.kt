@@ -68,6 +68,7 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
                 userId = 3,
                 topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
                 baseIntentComponent = ComponentName("FakeBasePackage", "FakeBaseClass"),
+                baseIntent = null,
                 colorBackground = 0x12345699,
                 isForegroundTask = true,
                 userType = RecentTask.UserType.STANDARD,
