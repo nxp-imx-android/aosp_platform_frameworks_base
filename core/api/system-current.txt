@@ -3087,16 +3087,43 @@ package android.app.smartspace.uitemplatedata {
 
 package android.app.supervision {
 
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public final class PackageUsagePolicy extends android.app.supervision.Policy {
+    method public int describeContents();
+    method @NonNull public String getPackageName();
+    method public int getType();
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.PackageUsagePolicy> CREATOR;
+    field public static final int TYPE_ALLOWED = 0; // 0x0
+    field public static final int TYPE_BLOCKED = 1; // 0x1
+  }
+
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public static final class PackageUsagePolicy.Builder {
+    ctor public PackageUsagePolicy.Builder();
+    ctor public PackageUsagePolicy.Builder(@NonNull android.app.supervision.PackageUsagePolicy);
+    method @NonNull public android.app.supervision.PackageUsagePolicy build();
+    method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setPackageName(@NonNull String);
+    method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setType(int);
+    method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setVersion(long);
+  }
+
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public abstract class Policy implements android.os.Parcelable {
+    method public long getVersion();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.Policy> CREATOR;
+  }
+
   @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public class SupervisionAppService extends android.app.Service {
     ctor public SupervisionAppService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public void onPolicyChanged(@NonNull android.app.supervision.Policy);
     method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onSupervisionDisabled();
     method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onSupervisionEnabled();
   }
 
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
     method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public android.content.Intent createConfirmSupervisionCredentialsIntent();
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") @NonNull public java.util.List<android.app.supervision.Policy> getPolicies();
     method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public boolean isSupervisionEnabled();
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public void setPolicy(@NonNull android.app.supervision.Policy);
     method @FlaggedApi("android.permission.flags.enable_system_supervision_role_behavior") @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public boolean shouldAllowBypassingSupervisionRoleQualification();
     field @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public static final String ACTION_DISABLE_SUPERVISION = "android.app.supervision.action.DISABLE_SUPERVISION";
     field @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public static final String ACTION_ENABLE_SUPERVISION = "android.app.supervision.action.ENABLE_SUPERVISION";

@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.StringDef;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.app.supervision.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -33,6 +34,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
+@SystemApi
 @SuppressLint({"ParcelNotFinal", "ParcelCreator"})
 @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
 public abstract class Policy implements Parcelable {
@@ -72,15 +74,6 @@ public abstract class Policy implements Parcelable {
      */
     public long getVersion() {
         return mVersion;
-    }
-
-    /**
-     * Sets the version of this policy.
-     *
-     * @param version the version to set
-     */
-    public void setVersion(long version) {
-        mVersion = version;
     }
 
     /**
@@ -157,4 +150,58 @@ public abstract class Policy implements Parcelable {
                     return new Policy[size];
                 }
             };
+
+    /**
+     * Builder for {@link Policy} objects.
+     *
+     * @param <P> the type of {@link Policy} this builder builds
+     * @param <B> the concrete builder implementation
+     * @hide
+     */
+    public abstract static class Builder<P extends Policy, B extends Builder<P, B>> {
+        long mVersion;
+        private boolean mVersionSet = false;
+
+        /** Constructs a new builder. */
+        Builder() {}
+
+        /**
+         * Constructs a new builder from an existing policy.
+         *
+         * @param policy the policy to copy from
+         */
+        Builder(@NonNull Policy policy) {
+            setVersion(policy.mVersion);
+        }
+
+        /**
+         * Sets the version of this policy.
+         *
+         * @param version the version to set
+         * @return this builder
+         */
+        @NonNull
+        public B setVersion(long version) {
+            mVersion = version;
+            mVersionSet = true;
+            return (B) this;
+        }
+
+        /**
+         * Builds the {@link Policy} object.
+         *
+         * @return the built {@link Policy}
+         * @throws IllegalStateException if the required fields have not been set
+         */
+        @NonNull
+        public P build() {
+            if (!mVersionSet) {
+                throw new IllegalStateException("Version must be set");
+            }
+            return performBuild();
+        }
+
+        /** @hide */
+        abstract P performBuild();
+    }
 }
