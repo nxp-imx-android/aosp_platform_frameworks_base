@@ -10093,6 +10093,101 @@ public class CarrierConfigManager {
             "ntn_lte_rsrp_thresholds_int_array";
 
     /**
+     * This threshold is used when connected to a non-terrestrial NR network.
+     * List of 4 customized 5G SS reference signal received power (SSRSRP) thresholds.
+     * <p>
+     * Reference: 3GPP TS 38.215
+     * <p>
+     * 4 threshold integers must be within the boundaries [-140 dB, -44 dB], and the levels are:
+     * <UL>
+     *     <LI>"NONE: [-140, threshold1)"</LI>
+     *     <LI>"POOR: [threshold1, threshold2)"</LI>
+     *     <LI>"MODERATE: [threshold2, threshold3)"</LI>
+     *     <LI>"GOOD:  [threshold3, threshold4)"</LI>
+     *     <LI>"EXCELLENT:  [threshold4, -44]"</LI>
+     * </UL>
+     * <p>
+     * This key is considered invalid if the format is violated. If the key is invalid or
+     * not configured, a default value set will apply.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_NTN_5G_NR_SSRSRP_THRESHOLDS_INT_ARRAY =
+            "ntn_5g_nr_ssrsrp_thresholds_int_array";
+
+    /**
+     * This threshold is used when connected to a non-terrestrial NR network.
+     * List of 4 customized 5G SS reference signal received quality (SSRSRQ) thresholds.
+     * <p>
+     * Reference: 3GPP TS 38.215; 3GPP TS 38.133 section 10
+     * <p>
+     * 4 threshold integers must be within the boundaries [-43 dB, 20 dB], and the levels are:
+     * <UL>
+     *     <LI>"NONE: [-43, threshold1)"</LI>
+     *     <LI>"POOR: [threshold1, threshold2)"</LI>
+     *     <LI>"MODERATE: [threshold2, threshold3)"</LI>
+     *     <LI>"GOOD:  [threshold3, threshold4)"</LI>
+     *     <LI>"EXCELLENT:  [threshold4, 20]"</LI>
+     * </UL>
+     * <p>
+     * This key is considered invalid if the format is violated. If the key is invalid or
+     * not configured, a default value set will apply.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_NTN_5G_NR_SSRSRQ_THRESHOLDS_INT_ARRAY =
+            "ntn_5g_nr_ssrsrq_thresholds_int_array";
+
+    /**
+     * This threshold is used when connected to a non-terrestrial NR network.
+     * List of 4 customized 5G SS signal-to-noise and interference ratio (SSSINR) thresholds.
+     * <p>
+     * Reference: 3GPP TS 38.215,
+     *            3GPP TS 38.133 10.1.16.1
+     * <p>
+     * 4 threshold integers must be within the boundaries [-23 dB, 40 dB], and the levels are:
+     * <UL>
+     *     <LI>"NONE: [-23, threshold1)"</LI>
+     *     <LI>"POOR: [threshold1, threshold2)"</LI>
+     *     <LI>"MODERATE: [threshold2, threshold3)"</LI>
+     *     <LI>"GOOD:  [threshold3, threshold4)"</LI>
+     *     <LI>"EXCELLENT:  [threshold4, 40]"</LI>
+     * </UL>
+     * <p>
+     * This key is considered invalid if the format is violated. If the key is invalid or
+     * not configured, a default value set will apply.
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_26Q2_APIS)
+    public static final String KEY_NTN_5G_NR_SSSINR_THRESHOLDS_INT_ARRAY =
+            "ntn_5g_nr_sssinr_thresholds_int_array";
+
+    /**
+     * Bit-field integer to determine whether to use SS reference signal received power (SSRSRP),
+     * SS reference signal received quality (SSRSRQ), or/and SS signal-to-noise and interference
+     * ratio (SSSINR) for the number of non-terrestrial 5G NR signal bars and
+     * signal criteria reporting enabling.
+     *
+     * <p> If a measure is not set, signal criteria reporting from modem will not be triggered and
+     * not be used for calculating signal level. If multiple measures are set bit, the parameter
+     * whose value is smallest is used to indicate the signal level.
+     * <UL>
+     *  <LI>SSRSRP = 1 << 0</LI>
+     *  <LI>SSRSRQ = 1 << 1</LI>
+     *  <LI>SSSINR = 1 << 2</LI>
+     * </UL>
+     *  The value of this key must be bitwise OR of {@link CellSignalStrengthNr#USE_SSRSRP},
+     *  {@link CellSignalStrengthNr#USE_SSRSRQ}, {@link CellSignalStrengthNr#USE_SSSINR}.
+     *
+     * <p> For example, if both SSRSRP and SSSINR are used, the value of key is 5 (1 << 0 | 1 << 2).
+     * If the key is invalid or not configured, a default value (SSRSRP = 1 << 0) will apply.
+     *
+     * <p> Reference: 3GPP TS 38.215,
+     *                3GPP TS 38.133 10.1.16.1
+     *
+     * @hide
+     */
+    public static final String KEY_PARAMETERS_USE_FOR_NTN_5G_NR_SIGNAL_BAR_INT =
+            "parameters_use_for_ntn_5g_nr_signal_bar_int";
+
+    /**
      * This threshold is used when connected to a non-terrestrial LTE network.
      * A list of 4 customized NTN LTE Reference Signal Received Quality (RSRQ) thresholds.
      *
@@ -11741,6 +11836,8 @@ public class CarrierConfigManager {
         sDefaults.putInt(KEY_UTRAN_ECNO_HYSTERESIS_DB_INT, 2);
         sDefaults.putInt(KEY_PARAMETERS_USE_FOR_5G_NR_SIGNAL_BAR_INT,
                 CellSignalStrengthNr.USE_SSRSRP);
+        sDefaults.putInt(KEY_PARAMETERS_USE_FOR_NTN_5G_NR_SIGNAL_BAR_INT,
+                CellSignalStrengthNr.USE_SSRSRP);
         sDefaults.putBoolean(KEY_SIGNAL_STRENGTH_NR_NSA_USE_LTE_AS_PRIMARY_BOOL, true);
         sDefaults.putStringArray(KEY_BANDWIDTH_STRING_ARRAY, new String[]{
                 "GPRS:24,24", "EDGE:70,18", "UMTS:115,115", "CDMA:14,14",
@@ -11954,6 +12051,32 @@ public class CarrierConfigManager {
                         5,  /* SIGNAL_STRENGTH_GOOD */
                         13   /* SIGNAL_STRENGTH_GREAT */
                 });
+
+        sDefaults.putIntArray(KEY_NTN_5G_NR_SSRSRP_THRESHOLDS_INT_ARRAY,
+                // Boundaries: [-140 dB, -44 dB]
+                new int[] {
+                    -110, /* SIGNAL_STRENGTH_POOR */
+                    -90,  /* SIGNAL_STRENGTH_MODERATE */
+                    -80,  /* SIGNAL_STRENGTH_GOOD */
+                    -65,  /* SIGNAL_STRENGTH_GREAT */
+                });
+        sDefaults.putIntArray(KEY_NTN_5G_NR_SSRSRQ_THRESHOLDS_INT_ARRAY,
+                // Boundaries: [-43 dB, 20 dB]
+                new int[] {
+                    -31, /* SIGNAL_STRENGTH_POOR */
+                    -19, /* SIGNAL_STRENGTH_MODERATE */
+                    -7,  /* SIGNAL_STRENGTH_GOOD */
+                    6    /* SIGNAL_STRENGTH_GREAT */
+                });
+        sDefaults.putIntArray(KEY_NTN_5G_NR_SSSINR_THRESHOLDS_INT_ARRAY,
+                // Boundaries: [-23 dB, 40 dB]
+                new int[] {
+                    -5, /* SIGNAL_STRENGTH_POOR */
+                    5,  /* SIGNAL_STRENGTH_MODERATE */
+                    15, /* SIGNAL_STRENGTH_GOOD */
+                    30  /* SIGNAL_STRENGTH_GREAT */
+                });
+
         sDefaults.putInt(KEY_PARAMETERS_USED_FOR_NTN_LTE_SIGNAL_BAR_INT,
                 CellSignalStrengthLte.USE_RSRP);
         sDefaults.putBoolean(KEY_REMOVE_SATELLITE_PLMN_IN_MANUAL_NETWORK_SCAN_BOOL, true);

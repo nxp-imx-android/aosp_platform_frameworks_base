@@ -45077,6 +45077,9 @@ package android.telephony {
     field public static final String KEY_MMS_UA_PROF_URL_STRING = "uaProfUrl";
     field public static final String KEY_MMS_USER_AGENT_STRING = "userAgent";
     field public static final String KEY_MONTHLY_DATA_CYCLE_DAY_INT = "monthly_data_cycle_day_int";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final String KEY_NTN_5G_NR_SSRSRP_THRESHOLDS_INT_ARRAY = "ntn_5g_nr_ssrsrp_thresholds_int_array";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final String KEY_NTN_5G_NR_SSRSRQ_THRESHOLDS_INT_ARRAY = "ntn_5g_nr_ssrsrq_thresholds_int_array";
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_26q2_apis") public static final String KEY_NTN_5G_NR_SSSINR_THRESHOLDS_INT_ARRAY = "ntn_5g_nr_sssinr_thresholds_int_array";
     field public static final String KEY_NTN_LTE_RSRP_THRESHOLDS_INT_ARRAY = "ntn_lte_rsrp_thresholds_int_array";
     field public static final String KEY_NTN_LTE_RSRQ_THRESHOLDS_INT_ARRAY = "ntn_lte_rsrq_thresholds_int_array";
     field public static final String KEY_NTN_LTE_RSSNR_THRESHOLDS_INT_ARRAY = "ntn_lte_rssnr_thresholds_int_array";
