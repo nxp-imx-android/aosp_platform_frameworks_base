@@ -345,14 +345,12 @@
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-close-CloseAllAppsWithAppHeaderExitTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-close-CloseAllAppsWithBackNavigationTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
