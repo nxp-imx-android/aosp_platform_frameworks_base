@@ -56,7 +56,8 @@ public abstract class ContextHint {
                 HINT_TYPE_ERROR,
                 HINT_TYPE_BUNDLE,
                 HINT_TYPE_NOTIFICATION,
-                HINT_TYPE_TEXT_CLASSIFICATION
+                HINT_TYPE_TEXT_CLASSIFICATION,
+                HINT_TYPE_CONVERSATION
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HintType {}
@@ -76,6 +77,9 @@ public abstract class ContextHint {
 
     /** Hint type for {@link TextClassificationHint}. */
     static final int HINT_TYPE_TEXT_CLASSIFICATION = 3;
+
+    /** Hint type for {@link ConversationHint}. */
+    static final int HINT_TYPE_CONVERSATION = 4;
 
     /**
      * Object returned when there is an unparceling error.
@@ -149,7 +153,7 @@ public abstract class ContextHint {
     /**
      * Writes data should be used to verify the hint has not been tampered with to a {@link Parcel}.
      *
-     * If your hint stores binders or file descriptors, you must override this method
+     * <p>If your hint stores binders or file descriptors, you must override this method
      *
      * @hide
      */
@@ -194,6 +198,7 @@ public abstract class ContextHint {
                 case HINT_TYPE_BUNDLE -> new BundleHint(bundle);
                 case HINT_TYPE_NOTIFICATION -> new NotificationHint(bundle);
                 case HINT_TYPE_TEXT_CLASSIFICATION -> new TextClassificationHint(bundle);
+                case HINT_TYPE_CONVERSATION -> new ConversationHint(bundle);
                 default -> ERROR_HINT;
             };
         } catch (Exception e) {
