@@ -469,6 +469,9 @@ flag {
     namespace: "windowing_frontend"
     description: "Virtual display owners can create system application overlays"
     bug: "432521645"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
