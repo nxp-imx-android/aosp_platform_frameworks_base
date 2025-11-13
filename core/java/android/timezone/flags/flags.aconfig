@@ -39,6 +39,13 @@ flag {
 }
 
 flag {
+    name: "enable_time_zone_offset_change_broadcast"
+    namespace: "location"
+    description: "Enable broadcast of intent for time zone offset changes."
+    bug: "452947405"
+}
+
+flag {
     name: "time_zone_offset_change_notifications"
     namespace: "location"
     description: "Enable notifications for time zone offset changes."
