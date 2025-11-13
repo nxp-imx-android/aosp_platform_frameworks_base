@@ -28,6 +28,14 @@ flag {
 }
 
 flag {
+    name: "enable_device_manufacturer_and_model_info"
+    is_exported: true
+    namespace: "media_better_together"
+    description: "Adds device model information in MediaRouter2Info."
+    bug: "446801535"
+}
+
+flag {
     name: "enable_audio_policies_device_and_bluetooth_controller"
     is_exported: true
     namespace: "media_solutions"

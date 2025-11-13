@@ -25927,6 +25927,8 @@ package android.media {
     method public int getConnectionState();
     method @NonNull public java.util.Set<java.lang.String> getDeduplicationIds();
     method @Nullable public CharSequence getDescription();
+    method @FlaggedApi("com.android.media.flags.enable_device_manufacturer_and_model_info") @NonNull public String getDeviceManufacturer();
+    method @FlaggedApi("com.android.media.flags.enable_device_manufacturer_and_model_info") @NonNull public String getDeviceModel();
     method @Nullable public android.os.Bundle getExtras();
     method @NonNull public java.util.List<java.lang.String> getFeatures();
     method @Nullable public android.net.Uri getIconUri();
@@ -26000,6 +26002,8 @@ package android.media {
     method @NonNull public android.media.MediaRoute2Info.Builder setConnectionState(int);
     method @NonNull public android.media.MediaRoute2Info.Builder setDeduplicationIds(@NonNull java.util.Set<java.lang.String>);
     method @NonNull public android.media.MediaRoute2Info.Builder setDescription(@Nullable CharSequence);
+    method @FlaggedApi("com.android.media.flags.enable_device_manufacturer_and_model_info") @NonNull public android.media.MediaRoute2Info.Builder setDeviceManufacturer(@NonNull String);
+    method @FlaggedApi("com.android.media.flags.enable_device_manufacturer_and_model_info") @NonNull public android.media.MediaRoute2Info.Builder setDeviceModel(@NonNull String);
     method @NonNull public android.media.MediaRoute2Info.Builder setExtras(@Nullable android.os.Bundle);
     method @NonNull public android.media.MediaRoute2Info.Builder setIconUri(@Nullable android.net.Uri);
     method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") @NonNull public android.media.MediaRoute2Info.Builder setRequiredPermissions(@NonNull java.util.Set<java.lang.String>);
