@@ -80,6 +80,7 @@ class BouncerContentComposeTest : SysuiTestCase() {
                     layout = BouncerOverlayLayout.BESIDE_USER_SWITCHER,
                     modifier = Modifier.testTag(BOUNCER_CONTENT_ROOT_TAG),
                     dialogFactory = bouncerDialogFactory,
+                    alphaOnEntry = { 1.0F },
                 )
             }
         }
