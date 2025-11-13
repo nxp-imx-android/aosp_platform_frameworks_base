@@ -185,7 +185,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         // Check that the doze amount is immediately set to a value slightly less than 1f. This is
         // to ensure that any scrim implementation changes its opacity immediately rather than
         // waiting an extra frame. Waiting an extra frame will cause a relayout (which is expensive)
-        // and cause us to drop a frame during the LOCKSCREEN_TRANSITION_FROM_AOD CUJ.
+        // and cause us to drop a frame during the KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN CUJ.
         assertEquals(0.99f, underTest.dozeAmount, 0.009f)
     }
 

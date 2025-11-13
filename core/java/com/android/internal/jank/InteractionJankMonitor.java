@@ -130,8 +130,8 @@ public class InteractionJankMonitor {
     @Deprecated public static final int CUJ_LOCKSCREEN_PASSWORD_DISAPPEAR = Cuj.CUJ_LOCKSCREEN_PASSWORD_DISAPPEAR;
     @Deprecated public static final int CUJ_LOCKSCREEN_PATTERN_DISAPPEAR = Cuj.CUJ_LOCKSCREEN_PATTERN_DISAPPEAR;
     @Deprecated public static final int CUJ_LOCKSCREEN_PIN_DISAPPEAR = Cuj.CUJ_LOCKSCREEN_PIN_DISAPPEAR;
-    @Deprecated public static final int CUJ_LOCKSCREEN_TRANSITION_FROM_AOD = Cuj.CUJ_LOCKSCREEN_TRANSITION_FROM_AOD;
-    @Deprecated public static final int CUJ_LOCKSCREEN_TRANSITION_TO_AOD = Cuj.CUJ_LOCKSCREEN_TRANSITION_TO_AOD;
+    @Deprecated public static final int CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN = Cuj.CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN;
+    @Deprecated public static final int CUJ_KEYGUARD_TRANSITION_LOCKSCREEN_TO_AOD = Cuj.CUJ_KEYGUARD_TRANSITION_LOCKSCREEN_TO_AOD;
     @Deprecated public static final int CUJ_SETTINGS_PAGE_SCROLL = Cuj.CUJ_SETTINGS_PAGE_SCROLL;
     @Deprecated public static final int CUJ_LOCKSCREEN_UNLOCK_ANIMATION = Cuj.CUJ_LOCKSCREEN_UNLOCK_ANIMATION;
     @Deprecated public static final int CUJ_SHADE_APP_LAUNCH_FROM_HISTORY_BUTTON = Cuj.CUJ_SHADE_APP_LAUNCH_FROM_HISTORY_BUTTON;
@@ -143,8 +143,8 @@ public class InteractionJankMonitor {
     @Deprecated public static final int CUJ_USER_SWITCH = Cuj.CUJ_USER_SWITCH;
     @Deprecated public static final int CUJ_SPLASHSCREEN_AVD = Cuj.CUJ_SPLASHSCREEN_AVD;
     @Deprecated public static final int CUJ_SPLASHSCREEN_EXIT_ANIM = Cuj.CUJ_SPLASHSCREEN_EXIT_ANIM;
-    @Deprecated public static final int CUJ_SCREEN_OFF = Cuj.CUJ_SCREEN_OFF;
-    @Deprecated public static final int CUJ_SCREEN_OFF_SHOW_AOD = Cuj.CUJ_SCREEN_OFF_SHOW_AOD;
+    @Deprecated public static final int CUJ_KEYGUARD_AOD_ENTER_ANIMATION = Cuj.CUJ_KEYGUARD_AOD_ENTER_ANIMATION;
+    @Deprecated public static final int CUJ_KEYGUARD_TRANSITION_GONE_TO_AOD = Cuj.CUJ_KEYGUARD_TRANSITION_GONE_TO_AOD;
     @Deprecated public static final int CUJ_UNFOLD_ANIM = Cuj.CUJ_UNFOLD_ANIM;
     @Deprecated public static final int CUJ_SUW_LOADING_TO_SHOW_INFO_WITH_ACTIONS = Cuj.CUJ_SUW_LOADING_TO_SHOW_INFO_WITH_ACTIONS;
     @Deprecated public static final int CUJ_SUW_SHOW_FUNCTION_SCREEN_WITH_ACTIONS = Cuj.CUJ_SUW_SHOW_FUNCTION_SCREEN_WITH_ACTIONS;
