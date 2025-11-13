@@ -3550,9 +3550,8 @@ public class Intent implements Parcelable, Cloneable {
     public static final String ACTION_POWER_DISCONNECTED =
             "android.intent.action.ACTION_POWER_DISCONNECTED";
     /**
-     * Broadcast Action:  Device is shutting down.
-     * This is broadcast when the device is being shut down (completely turned
-     * off, not sleeping).  Once the broadcast is complete, the final shutdown
+     * Broadcast Action:  This is broadcast when the user is being shut down.
+     * Once the broadcast is complete, the final shutdown
      * will proceed and all unsaved data lost.  Apps will not normally need
      * to handle this, since the foreground activity will be paused as well.
      * <p>As of {@link Build.VERSION_CODES#P} this broadcast is only sent to receivers registered
