@@ -24,6 +24,7 @@ import android.view.SurfaceControl;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * An interactive mirror of a computer control session display.
@@ -35,15 +36,27 @@ public final class InteractiveMirror implements AutoCloseable {
     /** The default value used by {@link #setInteractive(boolean)}. */
     public static final boolean DEFAULT_INTERACTIVE = false;
 
+    private final Supplier<SurfaceControl> mSurfaceControlSupplier;
     private final IInteractiveMirror mMirror;
     private final SurfaceControl mMirrorSurface;
 
-    /** @hide */
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public InteractiveMirror(@NonNull IInteractiveMirror mirror,
+    InteractiveMirror(@NonNull IInteractiveMirror mirror,
             @NonNull SurfaceControl mirrorSurface) {
+        this(mirror, mirrorSurface, SurfaceControl::new);
+    }
+
+    /**
+     * Test constructor.
+     *
+     * @hide
+     */
+    @VisibleForTesting
+    public InteractiveMirror(@NonNull IInteractiveMirror mirror,
+            @NonNull SurfaceControl mirrorSurface,
+            @NonNull Supplier<SurfaceControl> surfaceControlSupplier) {
         mMirror = Objects.requireNonNull(mirror);
         mMirrorSurface = Objects.requireNonNull(mirrorSurface);
+        mSurfaceControlSupplier = surfaceControlSupplier;
     }
 
     /**
@@ -76,10 +89,16 @@ public final class InteractiveMirror implements AutoCloseable {
         }
     }
 
-    /** Returns the mirror surface associated with the interactive mirror. */
+    /**
+     * Returns a copy of the mirror surface associated with the interactive mirror. The caller will
+     * own the returned SurfaceControl, which means the caller is responsible for calling
+     * {@link SurfaceControl#release()} on the surface control to clean up.
+     */
     @NonNull
-    public SurfaceControl getMirrorSurface() {
-        return mMirrorSurface;
+    public SurfaceControl getMirrorSurfaceControl() {
+        var sc = mSurfaceControlSupplier.get();
+        sc.copyFrom(mMirrorSurface, "InteractiveMirror#getMirrorSurfaceControl");
+        return sc;
     }
 
     @Override
@@ -87,6 +106,7 @@ public final class InteractiveMirror implements AutoCloseable {
     public void close() {
         try {
             mMirror.close();
+            mMirrorSurface.release();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

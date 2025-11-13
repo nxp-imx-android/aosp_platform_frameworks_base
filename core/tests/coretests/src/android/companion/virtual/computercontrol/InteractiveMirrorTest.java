@@ -42,12 +42,15 @@ public class InteractiveMirrorTest {
     private InteractiveMirror mMirror;
     private AutoCloseable mMockitoSession;
     private SurfaceControl mMirrorSurface;
+    private SurfaceControl mSuppliedSurfaceControl;
 
     @Before
     public void setUp() {
         mMockitoSession = MockitoAnnotations.openMocks(this);
         mMirrorSurface = new SurfaceControl();
-        mMirror = new InteractiveMirror(mMockRemoteMirror, mMirrorSurface);
+        mSuppliedSurfaceControl = new SurfaceControl();
+        mMirror = new InteractiveMirror(mMockRemoteMirror, mMirrorSurface,
+                () -> mSuppliedSurfaceControl);
     }
 
     @After
@@ -68,8 +71,8 @@ public class InteractiveMirrorTest {
     }
 
     @Test
-    public void getMirrorSurface_returnsMirrorSurface() {
-        assertThat(mMirror.getMirrorSurface()).isEqualTo(mMirrorSurface);
+    public void getMirrorSurfaceControl_returnsCopyOfMirrorSurfaceControl() {
+        assertThat(mMirror.getMirrorSurfaceControl()).isEqualTo(mSuppliedSurfaceControl);
     }
 
     @Test

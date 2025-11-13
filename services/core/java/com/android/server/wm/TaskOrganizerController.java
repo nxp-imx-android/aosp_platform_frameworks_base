@@ -437,6 +437,8 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                     // to manually show the surface here.
                     if (t.mTaskOrganizer != null && t.getSurfaceControl() != null) {
                         t.getSyncTransaction().show(t.getSurfaceControl());
+                    } else {
+                        mService.mWindowManager.mAnimator.addSurfaceVisibilityUpdate(t);
                     }
                 }
                 t.clearExcludeLayersFromTaskSnapshot();
