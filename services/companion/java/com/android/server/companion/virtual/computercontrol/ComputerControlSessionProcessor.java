@@ -233,19 +233,22 @@ public class ComputerControlSessionProcessor {
             // Don't bother creating the session if the requester is not around anymore.
             return;
         }
-        ComputerControlSessionImpl session;
+
         synchronized (mSessions) {
             if (!checkSessionCreationPreconditionsLocked(params, callback)) {
                 return;
             }
-            Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
-            session = new ComputerControlSessionImpl(
-                    mContext, mAllowlistController, callback.asBinder(), params, attributionSource,
-                    mVirtualDeviceFactory, (closedSession) -> {
-                synchronized (mSessions) {
-                    mSessions.remove(closedSession);
-                }
-            });
+        }
+
+        Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
+        final ComputerControlSessionImpl session = new ComputerControlSessionImpl(
+                mContext, mAllowlistController, callback.asBinder(), params, attributionSource,
+                mVirtualDeviceFactory, (closedSession) -> {
+            synchronized (mSessions) {
+                mSessions.remove(closedSession);
+            }
+        });
+        synchronized (mSessions) {
             mSessions.add(session);
         }
 
