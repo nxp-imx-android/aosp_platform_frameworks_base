@@ -59,7 +59,7 @@ public final class PackageUsagePolicy extends Policy {
      * @param version version of the policy
      * @param packageName package name tor this policy
      */
-    public PackageUsagePolicy(long version, @NonNull String packageName, @Type int type) {
+    private PackageUsagePolicy(long version, @NonNull String packageName, @Type int type) {
         super(version);
         mPackageName = packageName;
         mType = type;
@@ -161,5 +161,73 @@ public final class PackageUsagePolicy extends Policy {
     @Override
     public int hashCode() {
         return Objects.hash(getVersion(), mPackageName, mType);
+    }
+
+    /**
+     * Builder for {@link PackageUsagePolicy}.
+     *
+     * @hide
+     */
+    public static final class Builder extends Policy.Builder<PackageUsagePolicy, Builder> {
+        private String mPackageName;
+        private @Type int mType = -1;
+
+        /** Constructs a new builder. */
+        public Builder() {}
+
+        /**
+         * Constructs a new builder from an existing policy.
+         *
+         * @param policy the {@link PackageUsagePolicy} to copy from
+         */
+        public Builder(@NonNull PackageUsagePolicy policy) {
+            super(policy);
+            mPackageName = policy.mPackageName;
+            mType = policy.mType;
+        }
+
+        /**
+         * Sets the package name for this policy.
+         *
+         * @param packageName the package name to set
+         * @return this builder
+         */
+        @NonNull
+        public Builder setPackageName(@NonNull String packageName) {
+            mPackageName = packageName;
+            return this;
+        }
+
+        /**
+         * Sets the type of this policy.
+         *
+         * @param type the type to set, must be one of {@link PackageUsagePolicy#TYPE_ALLOWED} or
+         *     {@link PackageUsagePolicy#TYPE_BLOCKED}
+         * @return this builder
+         */
+        @NonNull
+        public Builder setType(@Type int type) {
+            mType = type;
+            return this;
+        }
+
+        /**
+         * Builds the {@link PackageUsagePolicy} object.
+         *
+         * @return the built {@link PackageUsagePolicy}
+         * @throws IllegalStateException if the required fields have not been set
+         */
+        @NonNull
+        @Override
+        PackageUsagePolicy performBuild() {
+            if (mPackageName == null) {
+                throw new IllegalStateException("Package name must be set");
+            }
+            if (mType != TYPE_ALLOWED && mType != TYPE_BLOCKED) {
+                throw new IllegalStateException("Invalid type: " + mType);
+            }
+
+            return new PackageUsagePolicy(mVersion, mPackageName, mType);
+        }
     }
 }

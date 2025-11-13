@@ -382,7 +382,11 @@ public class SupervisionSettings {
             case Policy.PACKAGE_POLICY_IDENTIFIER -> {
                 String packageName = parser.getAttributeValue(null, KEY_PACKAGE_NAME);
                 int type = parser.getAttributeInt(null, KEY_PACKAGE_TYPE);
-                return new PackageUsagePolicy(version, packageName, type);
+                return new PackageUsagePolicy.Builder()
+                        .setVersion(version)
+                        .setPackageName(packageName)
+                        .setType(type)
+                        .build();
             }
             default -> {
                 Slog.e(SupervisionLog.TAG, "Unsupported policy type: " + policyType);
