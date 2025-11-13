@@ -16,13 +16,16 @@
 
 package com.android.wm.shell.compatui.api
 
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.testing.AndroidTestingRunner
+import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.util.testCompatUIHandler
+import java.util.Locale
 import java.util.function.Consumer
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -71,6 +74,36 @@ class CompatUISharedStateHandlerTest : ShellTestCase() {
                         assertNotNull(repo.find(key = 10))
                         assertEquals(true, repo.find(key = 10)?.areParentBoundsChanged)
                         assertEquals(Rect(1, 2, 3, 4), repo.find(key = 10)?.stableBounds)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `when onCompatInfoChanged shared properties are available in shared state`() {
+        runTestScenario { r ->
+            val testConfiguration = Configuration()
+            val testTaskBounds = Rect(1, 2, 3, 4)
+            testConfiguration.windowConfiguration.bounds.set(testTaskBounds)
+            testConfiguration.setLayoutDirection(Locale.UK)
+            testCompatUIHandler(r.getSharedStateHandlerFactory()) {
+                compatUIInfo {
+                    runningTaskInfo { ti ->
+                        ti.taskId = 10
+                        ti.configuration.setTo(testConfiguration)
+                    }
+                }
+
+                validateOnCompatInfoChanged {
+                    r.useRepository { repo ->
+                        assertNotNull(repo.find(key = 10))
+                        assertEquals(testConfiguration, repo.find(key = 10)?.taskConfiguration)
+                        assertEquals(testTaskBounds, repo.find(key = 10)?.taskBoundsFn())
+                        assertEquals(
+                            View.LAYOUT_DIRECTION_LTR,
+                            repo.find(key = 10)?.layoutDirectionFn(),
+                        )
                     }
                 }
             }

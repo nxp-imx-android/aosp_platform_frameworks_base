@@ -34,7 +34,10 @@ constructor(
     override fun onCompatInfoChanged(compatUIInfo: CompatUIInfo) {
         sharedStateRepository.insert(
             compatUIInfo.taskInfo.taskId,
-            CompatUISharedState(taskId = compatUIInfo.taskInfo.taskId),
+            CompatUISharedState(
+                taskId = compatUIInfo.taskInfo.taskId,
+                taskConfiguration = compatUIInfo.taskInfo.configuration,
+            ),
             overrideIfPresent = false,
         )
         updateDisplayLayout(compatUIInfo.taskInfo)
@@ -49,17 +52,12 @@ constructor(
         val displayLayout = displayController.getDisplayLayout(taskInfo.displayId)
         val newStableBounds = Rect()
         displayLayout?.getStableBounds(newStableBounds)
-        sharedStateRepository.insert(
-            taskInfo.taskId,
-            {
-                // This is only invoked if not present
-                CompatUISharedState(
-                    taskId = taskInfo.taskId,
-                    stableBounds = newStableBounds,
-                    areParentBoundsChanged = newStableBounds != previousStableBounds,
-                )
-            },
-            overrideIfPresent = true,
-        )
+        sharedStateRepository.update(taskInfo.taskId) { item ->
+            item.copy(
+                stableBounds = newStableBounds,
+                areParentBoundsChanged = newStableBounds != previousStableBounds,
+                taskConfiguration = taskInfo.configuration,
+            )
+        }
     }
 }
