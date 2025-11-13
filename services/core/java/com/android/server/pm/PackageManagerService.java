@@ -7411,6 +7411,15 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             final boolean isUpgrading = mPriorSdkVersionFull != -1;
             return isUpgrading && (mPriorSdkVersionFull < sdkVersionFull);
         }
+
+        @Override
+        public boolean isPackageAppLockEnabled(String packageName, int userId) {
+            if (!android.security.Flags.appLockApis()) {
+                return false;
+            }
+            final Computer snapshot = snapshotComputer();
+            return mAppLockPackageHelper.isPackageAppLockEnabled(snapshot, packageName, userId);
+        }
     }
 
     private void setEnabledOverlayPackages(@UserIdInt int userId,
