@@ -32,10 +32,10 @@ import android.hardware.tv.mediaquality.ParameterName;
 import android.hardware.tv.mediaquality.ParameterRange;
 import android.hardware.tv.mediaquality.PictureParameter;
 import android.hardware.tv.mediaquality.PictureQualityEventType;
-import android.hardware.tv.mediaquality.StreamStatus;
 import android.hardware.tv.mediaquality.QualityLevel;
 import android.hardware.tv.mediaquality.SoundParameter;
 import android.hardware.tv.mediaquality.SoundStyle;
+import android.hardware.tv.mediaquality.StreamStatus;
 import android.hardware.tv.mediaquality.VendorParamCapability;
 import android.media.quality.MediaQualityContract;
 import android.media.quality.MediaQualityContract.BaseParameters;
@@ -927,13 +927,13 @@ public final class MediaQualityUtils {
             if (levelRangeString != null) {
                 byte levelRangeByte;
                 switch (levelRangeString) {
-                    case "AUTO":
+                    case MediaQualityContract.LEVEL_RANGE_AUTO:
                         levelRangeByte = ColorRange.AUTO;
                         break;
-                    case "LIMITED":
+                    case MediaQualityContract.LEVEL_RANGE_LIMITED:
                         levelRangeByte = ColorRange.LIMITED;
                         break;
-                    case "FULL":
+                    case MediaQualityContract.LEVEL_RANGE_FULL:
                         levelRangeByte = ColorRange.FULL;
                         break;
                     default:
@@ -975,13 +975,13 @@ public final class MediaQualityUtils {
             if (hdmiRgbRangeString != null) {
                 byte hdmiRgbRangeByte;
                 switch (hdmiRgbRangeString) {
-                    case "AUTO":
+                    case MediaQualityContract.HDMIRGB_RANGE_AUTO:
                         hdmiRgbRangeByte = ColorRange.AUTO;
                         break;
-                    case "LIMITED":
+                    case MediaQualityContract.HDMIRGB_RANGE_LIMITED:
                         hdmiRgbRangeByte = ColorRange.LIMITED;
                         break;
-                    case "FULL":
+                    case MediaQualityContract.HDMIRGB_RANGE_FULL:
                         hdmiRgbRangeByte = ColorRange.FULL;
                         break;
                     default:
@@ -998,25 +998,25 @@ public final class MediaQualityUtils {
             if (colorSpaceString != null) {
                 byte colorSpaceByte;
                 switch (colorSpaceString) {
-                    case "AUTO":
+                    case MediaQualityContract.COLOR_SPACE_AUTO:
                         colorSpaceByte = ColorSpace.AUTO;
                         break;
-                    case "S_RGB_BT_709":
+                    case MediaQualityContract.COLOR_SPACE_S_RGB_BT_709:
                         colorSpaceByte = ColorSpace.S_RGB_BT_709;
                         break;
-                    case "DCI":
+                    case MediaQualityContract.COLOR_SPACE_DCI:
                         colorSpaceByte = ColorSpace.DCI;
                         break;
-                    case "ADOBE_RGB":
+                    case MediaQualityContract.COLOR_SPACE_ADOBE_RGB:
                         colorSpaceByte = ColorSpace.ADOBE_RGB;
                         break;
-                    case "BT2020":
+                    case MediaQualityContract.COLOR_SPACE_BT2020:
                         colorSpaceByte = ColorSpace.BT2020;
                         break;
-                    case "ON":
+                    case MediaQualityContract.COLOR_SPACE_ON:
                         colorSpaceByte = ColorSpace.ON;
                         break;
-                    case "OFF":
+                    case MediaQualityContract.COLOR_SPACE_OFF:
                         colorSpaceByte = ColorSpace.OFF;
                         break;
                     default:
@@ -1043,13 +1043,13 @@ public final class MediaQualityUtils {
             if (gammaString != null) {
                 byte gammaByte;
                 switch (gammaString) {
-                    case "DARK":
+                    case MediaQualityContract.GAMMA_DARK:
                         gammaByte = Gamma.DARK;
                         break;
-                    case "MIDDLE":
+                    case MediaQualityContract.GAMMA_MIDDLE:
                         gammaByte = Gamma.MIDDLE;
                         break;
-                    case "BRIGHT":
+                    case MediaQualityContract.GAMMA_BRIGHT:
                         gammaByte = Gamma.BRIGHT;
                         break;
                     default:
@@ -1267,29 +1267,29 @@ public final class MediaQualityUtils {
             if (pictureQualityEventTypeString != null) {
                 byte pictureQualityEventTypeByte;
                 switch (pictureQualityEventTypeString) {
-                    case "NONE":
+                    case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_NONE:
                         pictureQualityEventTypeByte = PictureQualityEventType.NONE;
                         break;
-                    case "BBD_RESULT":
+                    case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_BBD_RESULT:
                         pictureQualityEventTypeByte = PictureQualityEventType.BBD_RESULT;
                         break;
-                    case "VIDEO_DELAY_CHANGE":
+                    case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_VIDEO_DELAY_CHANGE:
                         pictureQualityEventTypeByte = PictureQualityEventType.VIDEO_DELAY_CHANGE;
                         break;
-                    case "CAPTUREPOINT_INFO_CHANGE":
+                    case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_CAPTUREPOINT_INFO_CHANGE:
                         pictureQualityEventTypeByte =
                                 PictureQualityEventType.CAPTUREPOINT_INFO_CHANGE;
                         break;
-                    case "VIDEOPATH_CHANGE":
+                    case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_VIDEOPATH_CHANGE:
                         pictureQualityEventTypeByte = PictureQualityEventType.VIDEOPATH_CHANGE;
                         break;
-                    case "EXTRA_FRAME_CHANGE":
+                    case MediaQualityContract.EXTRA_PICTURE_QUALITY_EVENT_TYPE_FRAME_CHANGE:
                         pictureQualityEventTypeByte = PictureQualityEventType.EXTRA_FRAME_CHANGE;
                         break;
-                    case "DOLBY_IQ_CHANGE":
+                    case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_DOLBY_IQ_CHANGE:
                         pictureQualityEventTypeByte = PictureQualityEventType.DOLBY_IQ_CHANGE;
                         break;
-                    case "DOLBY_APO_CHANGE":
+                    case MediaQualityContract.PICTURE_QUALITY_EVENT_TYPE_DOLBY_APO_CHANGE:
                         pictureQualityEventTypeByte = PictureQualityEventType.DOLBY_APO_CHANGE;
                         break;
                     default:
@@ -1307,55 +1307,55 @@ public final class MediaQualityUtils {
             if (streamStatusString != null) {
                 byte streamStatusByte;
                 switch (streamStatusString) {
-                    case "SDR":
+                    case MediaQualityContract.STREAM_STATUS_SDR:
                         streamStatusByte = StreamStatus.SDR;
                         break;
-                    case "DOLBYVISION":
+                    case MediaQualityContract.STREAM_STATUS_DOLBY_VISION:
                         streamStatusByte = StreamStatus.DOLBYVISION;
                         break;
-                    case "HDR10":
+                    case MediaQualityContract.STREAM_STATUS_HDR10:
                         streamStatusByte = StreamStatus.HDR10;
                         break;
-                    case "TCH":
+                    case MediaQualityContract.STREAM_STATUS_TCH:
                         streamStatusByte = StreamStatus.TCH;
                         break;
-                    case "HLG":
+                    case MediaQualityContract.STREAM_STATUS_HLG:
                         streamStatusByte = StreamStatus.HLG;
                         break;
-                    case "HDR10PLUS":
+                    case MediaQualityContract.STREAM_STATUS_HDR10_PLUS:
                         streamStatusByte = StreamStatus.HDR10PLUS;
                         break;
-                    case "HDRVIVID":
+                    case MediaQualityContract.STREAM_STATUS_HDR_VIVID:
                         streamStatusByte = StreamStatus.HDRVIVID;
                         break;
-                    case "IMAXSDR":
+                    case MediaQualityContract.STREAM_STATUS_IMAX_SDR:
                         streamStatusByte = StreamStatus.IMAXSDR;
                         break;
-                    case "IMAXHDR10":
+                    case MediaQualityContract.STREAM_STATUS_IMAX_HDR10:
                         streamStatusByte = StreamStatus.IMAXHDR10;
                         break;
-                    case "IMAXHDR10PLUS":
+                    case MediaQualityContract.STREAM_STATUS_IMAX_HDR10_PLUS:
                         streamStatusByte = StreamStatus.IMAXHDR10PLUS;
                         break;
-                    case "FMMSDR":
+                    case MediaQualityContract.STREAM_STATUS_FMM_SDR:
                         streamStatusByte = StreamStatus.FMMSDR;
                         break;
-                    case "FMMHDR10":
+                    case MediaQualityContract.STREAM_STATUS_FMM_HDR10:
                         streamStatusByte = StreamStatus.FMMHDR10;
                         break;
-                    case "FMMHDR10PLUS":
+                    case MediaQualityContract.STREAM_STATUS_FMM_HDR10_PLUS:
                         streamStatusByte = StreamStatus.FMMHDR10PLUS;
                         break;
-                    case "FMMHLG":
+                    case MediaQualityContract.STREAM_STATUS_FMM_HLG:
                         streamStatusByte = StreamStatus.FMMHLG;
                         break;
-                    case "FMMDOLBY":
+                    case MediaQualityContract.STREAM_STATUS_FMM_DOLBY:
                         streamStatusByte = StreamStatus.FMMDOLBY;
                         break;
-                    case "FMMTCH":
+                    case MediaQualityContract.STREAM_STATUS_FMM_TCH:
                         streamStatusByte = StreamStatus.FMMTCH;
                         break;
-                    case "FMMHDRVIVID":
+                    case MediaQualityContract.STREAM_STATUS_FMM_HDR_VIVID:
                         streamStatusByte = StreamStatus.FMMHDRVIVID;
                         break;
                     default:
@@ -1593,10 +1593,10 @@ public final class MediaQualityUtils {
             if (downMixModeString != null) {
                 byte downMixModeByte;
                 switch (downMixModeString) {
-                    case "STEREO":
+                    case MediaQualityContract.DOWN_MIX_MODE_STEREO:
                         downMixModeByte = DownmixMode.STEREO;
                         break;
-                    case "SURROUND":
+                    case MediaQualityContract.DOWN_MIX_MODE_SURROUND:
                         downMixModeByte = DownmixMode.SURROUND;
                         break;
                     default:
@@ -1613,28 +1613,28 @@ public final class MediaQualityUtils {
             if (soundStyleString != null) {
                 byte soundStyleByte;
                 switch (soundStyleString) {
-                    case "USER":
+                    case MediaQualityContract.SOUND_STYLE_USER:
                         soundStyleByte = SoundStyle.USER;
                         break;
-                    case "STANDARD":
+                    case MediaQualityContract.SOUND_STYLE_STANDARD:
                         soundStyleByte = SoundStyle.STANDARD;
                         break;
-                    case "VIVID":
+                    case MediaQualityContract.SOUND_STYLE_VIVID:
                         soundStyleByte = SoundStyle.VIVID;
                         break;
-                    case "SPORTS":
+                    case MediaQualityContract.SOUND_STYLE_SPORTS:
                         soundStyleByte = SoundStyle.SPORTS;
                         break;
-                    case "MOVIE":
+                    case MediaQualityContract.SOUND_STYLE_MOVIE:
                         soundStyleByte = SoundStyle.MOVIE;
                         break;
-                    case "MUSIC":
+                    case MediaQualityContract.SOUND_STYLE_MUSIC:
                         soundStyleByte = SoundStyle.MUSIC;
                         break;
-                    case "NEWS":
+                    case MediaQualityContract.SOUND_STYLE_NEWS:
                         soundStyleByte = SoundStyle.NEWS;
                         break;
-                    case "AUTO":
+                    case MediaQualityContract.SOUND_STYLE_AUTO:
                         soundStyleByte = SoundStyle.AUTO;
                         break;
                     default:
@@ -1652,22 +1652,22 @@ public final class MediaQualityUtils {
             if (digitalOutputModeString != null) {
                 byte digitalOutputModeByte;
                 switch (digitalOutputModeString) {
-                    case "AUTO":
+                    case MediaQualityContract.DIGITAL_OUTPUT_MODE_AUTO:
                         digitalOutputModeByte = DigitalOutput.AUTO;
                         break;
-                    case "BYPASS":
+                    case MediaQualityContract.DIGITAL_OUTPUT_MODE_BYPASS:
                         digitalOutputModeByte = DigitalOutput.BYPASS;
                         break;
-                    case "PCM":
+                    case MediaQualityContract.DIGITAL_OUTPUT_MODE_PCM:
                         digitalOutputModeByte = DigitalOutput.PCM;
                         break;
-                    case "DolbyDigitalPlus":
+                    case MediaQualityContract.DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL_PLUS:
                         digitalOutputModeByte = DigitalOutput.DolbyDigitalPlus;
                         break;
-                    case "DolbyDigital":
+                    case MediaQualityContract.DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL:
                         digitalOutputModeByte = DigitalOutput.DolbyDigital;
                         break;
-                    case "DolbyMat":
+                    case MediaQualityContract.DIGITAL_OUTPUT_MODE_DOLBY_MAT:
                         digitalOutputModeByte = DigitalOutput.DolbyMat;
                         break;
                     default:
@@ -1696,25 +1696,25 @@ public final class MediaQualityUtils {
                 if (dolbySoundModeString != null) {
                     byte dolbySoundModeByte;
                     switch (dolbySoundModeString) {
-                        case "GAME":
+                        case MediaQualityContract.DOLBY_SOUND_MODE_GAME:
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.GAME;
                             break;
-                        case "MOVIE":
+                        case MediaQualityContract.DOLBY_SOUND_MODE_MOVIE:
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.MOVIE;
                             break;
-                        case "MUSIC":
+                        case MediaQualityContract.DOLBY_SOUND_MODE_MUSIC:
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.MUSIC;
                             break;
-                        case "NEWS":
+                        case MediaQualityContract.DOLBY_SOUND_MODE_NEWS:
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.NEWS;
                             break;
-                        case "STANDARD":
+                        case MediaQualityContract.DOLBY_SOUND_MODE_STANDARD:
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.STANDARD;
                             break;
-                        case "STADIUM":
+                        case MediaQualityContract.DOLBY_SOUND_MODE_STADIUM:
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.STADIUM;
                             break;
-                        case "USER":
+                        case MediaQualityContract.DOLBY_SOUND_MODE_USER:
                             dolbySoundModeByte = DolbyAudioProcessing.SoundMode.USER;
                             break;
                         default:

@@ -109,6 +109,649 @@ public class MediaQualityContract {
     /** @hide */
     public static final String COLOR_TEMP_FMMHDR = "color_temp_fmmhdr";
 
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "LEVEL_RANGE", value = {
+            LEVEL_RANGE_AUTO,
+            LEVEL_RANGE_LIMITED,
+            LEVEL_RANGE_FULL,
+    })
+    public @interface LevelRangeValue {}
+
+    /**
+     * Automatic level range option.
+     *
+     * <p>Represents that the level range is determined automatically by the system.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String LEVEL_RANGE_AUTO = "AUTO";
+
+    /**
+     * Limited level range option.
+     *
+     * <p>Represents a limited level range, typically for video content (e.g., 16-235).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String LEVEL_RANGE_LIMITED = "LIMITED";
+
+    /**
+     * Full level range option.
+     *
+     * <p>Represents a full level range, typically for PC content (e.g., 0-255).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String LEVEL_RANGE_FULL = "FULL";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "HDMIRGB_RANGE", value = {
+            HDMIRGB_RANGE_AUTO,
+            HDMIRGB_RANGE_LIMITED,
+            HDMIRGB_RANGE_FULL,
+    })
+    public @interface HdmiRgbRangeValue {}
+
+    /**
+     * Automatic HDMI RGB range option.
+     *
+     * <p>Represents that the HDMI RGB range is determined automatically by the system.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String HDMIRGB_RANGE_AUTO = "AUTO";
+
+    /**
+     * Limited HDMI RGB range option.
+     *
+     * <p>Represents a limited HDMI RGB range, typically for video content (e.g., 16-235).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String HDMIRGB_RANGE_LIMITED = "LIMITED";
+
+    /**
+     * Full HDMI RGB range option.
+     *
+     * <p>Represents a full HDMI RGB range, typically for PC content (e.g., 0-255).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String HDMIRGB_RANGE_FULL = "FULL";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "COLOR_SPACE", value = {
+            COLOR_SPACE_AUTO,
+            COLOR_SPACE_S_RGB_BT_709,
+            COLOR_SPACE_DCI,
+            COLOR_SPACE_ADOBE_RGB,
+            COLOR_SPACE_BT2020,
+            COLOR_SPACE_ON,
+            COLOR_SPACE_OFF,
+    })
+    public @interface ColorSpaceValue {}
+
+    /**
+     * Automatic color space option.
+     *
+     * <p>Represents that the color space is determined automatically by the system.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_SPACE_AUTO = "AUTO";
+
+    /**
+     * sRGB/BT.709 color space option.
+     *
+     * <p>Represents the sRGB/BT.709 color space, standard for web and HD video.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_SPACE_S_RGB_BT_709 = "S_RGB_BT_709";
+
+    /**
+     * DCI-P3 color space option.
+     *
+     * <p>Represents the DCI-P3 color space, commonly used in digital cinema.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_SPACE_DCI = "DCI";
+
+    /**
+     * Adobe RGB color space option.
+     *
+     * <p>Represents the Adobe RGB color space.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_SPACE_ADOBE_RGB = "ADOBE_RGB";
+
+    /**
+     * BT.2020 color space option.
+     *
+     * <p>Represents the BT.2020 color space, used for Ultra HD.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_SPACE_BT2020 = "BT2020";
+
+    /**
+     * On option for color space.
+     *
+     * <p>Represents that the color space feature is turned on.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_SPACE_ON = "ON";
+
+    /**
+     * Off option for color space.
+     *
+     * <p>Represents that the color space feature is turned off.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String COLOR_SPACE_OFF = "OFF";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "GAMMA", value = {
+            GAMMA_DARK,
+            GAMMA_MIDDLE,
+            GAMMA_BRIGHT,
+    })
+    public @interface GammaValue {}
+
+    /**
+     * Dark gamma option.
+     *
+     * <p>Represents a dark gamma setting.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String GAMMA_DARK = "DARK";
+
+    /**
+     * Middle gamma option.
+     *
+     * <p>Represents a middle (neutral) gamma setting.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String GAMMA_MIDDLE = "MIDDLE";
+
+    /**
+     * Bright gamma option.
+     *
+     * <p>Represents a bright gamma setting.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String GAMMA_BRIGHT = "BRIGHT";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "PICTURE_QUALITY_EVENT_TYPE", value = {
+            PICTURE_QUALITY_EVENT_TYPE_NONE,
+            PICTURE_QUALITY_EVENT_TYPE_BBD_RESULT,
+            PICTURE_QUALITY_EVENT_TYPE_VIDEO_DELAY_CHANGE,
+            PICTURE_QUALITY_EVENT_TYPE_CAPTUREPOINT_INFO_CHANGE,
+            PICTURE_QUALITY_EVENT_TYPE_VIDEOPATH_CHANGE,
+            EXTRA_PICTURE_QUALITY_EVENT_TYPE_FRAME_CHANGE,
+            PICTURE_QUALITY_EVENT_TYPE_DOLBY_IQ_CHANGE,
+            PICTURE_QUALITY_EVENT_TYPE_DOLBY_APO_CHANGE,
+    })
+    public @interface PictureQualityEventTypeValue {}
+
+    /**
+     * None event type.
+     *
+     * <p>Indicates that no picture quality event has occurred.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String PICTURE_QUALITY_EVENT_TYPE_NONE = "NONE";
+
+    /**
+     * BBD result event type.
+     *
+     * <p>Indicates an event with a result from Black Bar Detection (BBD).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String PICTURE_QUALITY_EVENT_TYPE_BBD_RESULT = "BBD_RESULT";
+
+    /**
+     * Video delay change event type.
+     *
+     * <p>Indicates an event for a change in video processing delay.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String PICTURE_QUALITY_EVENT_TYPE_VIDEO_DELAY_CHANGE = "VIDEO_DELAY_CHANGE";
+
+    /**
+     * Capture point info change event type.
+     *
+     * <p>Indicates an event for a change in the capture point information.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String PICTURE_QUALITY_EVENT_TYPE_CAPTUREPOINT_INFO_CHANGE =
+            "CAPTUREPOINT_INFO_CHANGE";
+
+    /**
+     * Video path change event type.
+     *
+     * <p>Indicates an event for a change in the video path.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String PICTURE_QUALITY_EVENT_TYPE_VIDEOPATH_CHANGE = "VIDEOPATH_CHANGE";
+
+    /**
+     * Frame change event type.
+     *
+     * <p>Indicates a picture quality event related to a frame change. This is an extra data key.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String EXTRA_PICTURE_QUALITY_EVENT_TYPE_FRAME_CHANGE =
+            "android.media.quality.extra.PICTURE_QUALITY_EVENT_TYPE_FRAME_CHANGE";
+
+    /**
+     * Dolby IQ change event type.
+     *
+     * <p>Indicates an event for a change related to Dolby IQ processing.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String PICTURE_QUALITY_EVENT_TYPE_DOLBY_IQ_CHANGE = "DOLBY_IQ_CHANGE";
+
+    /**
+     * Dolby APO change event type.
+     *
+     * <p>Indicates an event for a change related to a Dolby Audio Processing Object (APO).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String PICTURE_QUALITY_EVENT_TYPE_DOLBY_APO_CHANGE = "DOLBY_APO_CHANGE";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "STREAM_STATUS", value = {
+            STREAM_STATUS_SDR,
+            STREAM_STATUS_DOLBY_VISION,
+            STREAM_STATUS_HDR10,
+            STREAM_STATUS_TCH,
+            STREAM_STATUS_HLG,
+            STREAM_STATUS_HDR10_PLUS,
+            STREAM_STATUS_HDR_VIVID,
+            STREAM_STATUS_IMAX_SDR,
+            STREAM_STATUS_IMAX_HDR10,
+            STREAM_STATUS_IMAX_HDR10_PLUS,
+            STREAM_STATUS_FMM_SDR,
+            STREAM_STATUS_FMM_HDR10,
+            STREAM_STATUS_FMM_HDR10_PLUS,
+            STREAM_STATUS_FMM_HLG,
+            STREAM_STATUS_HDR10_PLUS,
+            STREAM_STATUS_FMM_DOLBY,
+            STREAM_STATUS_FMM_TCH,
+            STREAM_STATUS_FMM_HDR_VIVID,
+    })
+    public @interface StreamStatusValue {}
+
+    /**
+     * SDR stream status.
+     *
+     * <p>Represents that the stream is Standard Dynamic Range (SDR).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_SDR = "SDR";
+
+    /**
+     * Dolby Vision stream status.
+     *
+     * <p>Represents that the stream is Dolby Vision.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_DOLBY_VISION = "DOLBYVISION";
+
+    /**
+     * HDR10 stream status.
+     *
+     * <p>Represents that the stream is HDR10.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_HDR10 = "HDR10";
+
+    /**
+     * TCH stream status.
+     *
+     * <p>Represents that the stream is TCH.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_TCH = "TCH";
+
+    /**
+     * HLG stream status.
+     *
+     * <p>Represents that the stream is Hybrid Log-Gamma (HLG).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_HLG = "HLG";
+
+    /**
+     * HDR10+ stream status.
+     *
+     * <p>Represents that the stream is HDR10+.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_HDR10_PLUS = "HDR10PLUS";
+
+    /**
+     * HDR Vivid stream status.
+     *
+     * <p>Represents that the stream is HDR Vivid.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_HDR_VIVID = "HDRVIVID";
+
+    /**
+     * IMAX SDR stream status.
+     *
+     * <p>Represents that the stream is IMAX SDR.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_IMAX_SDR = "IMAXSDR";
+
+    /**
+     * IMAX HDR10 stream status.
+     *
+     * <p>Represents that the stream is IMAX HDR10.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_IMAX_HDR10 = "IMAXHDR10";
+
+    /**
+     * IMAX HDR10+ stream status.
+     *
+     * <p>Represents that the stream is IMAX HDR10+.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_IMAX_HDR10_PLUS = "IMAXHDR10PLUS";
+
+    /**
+     * FMM SDR stream status.
+     *
+     * <p>Represents that the stream is in Filmmaker Mode (FMM) with SDR.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_FMM_SDR = "FMMSDR";
+
+    /**
+     * FMM HDR10 stream status.
+     *
+     * <p>Represents that the stream is in Filmmaker Mode (FMM) with HDR10.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_FMM_HDR10 = "FMMHDR10";
+
+    /**
+     * FMM HDR10+ stream status.
+     *
+     * <p>Represents that the stream is in Filmmaker Mode (FMM) with HDR10+.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_FMM_HDR10_PLUS = "FMMHDR10PLUS";
+
+    /**
+     * FMM HLG stream status.
+     *
+     * <p>Represents that the stream is in Filmmaker Mode (FMM) with HLG.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_FMM_HLG = "FMMHLG";
+
+    /**
+     * FMM Dolby stream status.
+     *
+     * <p>Represents that the stream is in Filmmaker Mode (FMM) with Dolby.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_FMM_DOLBY = "FMMDOLBY";
+
+    /**
+     * FMM TCH stream status.
+     *
+     * <p>Represents that the stream is in Filmmaker Mode (FMM) with TCH.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_FMM_TCH = "FMMTCH";
+
+    /**
+     * FMM HDR Vivid stream status.
+     *
+     * <p>Represents that the stream is in Filmmaker Mode (FMM) with HDR Vivid.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String STREAM_STATUS_FMM_HDR_VIVID = "FMMHDRVIVID";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "DOWN_MIX_MODE", value = {
+            DOWN_MIX_MODE_STEREO,
+            DOWN_MIX_MODE_SURROUND,
+    })
+    public @interface DownMixModeValue {}
+
+    /**
+     * Stereo down-mix mode option.
+     *
+     * <p>Represents a down-mix mode that converts multi-channel audio to a standard stereo
+     * output (Lo/Ro).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOWN_MIX_MODE_STEREO = "STEREO";
+
+    /**
+     * Surround down-mix mode option.
+     *
+     * <p>Represents a down-mix mode that converts multi-channel audio to a matrix-encoded surround
+     * sound output (Lt/Rt).
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOWN_MIX_MODE_SURROUND = "SURROUND";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "SOUND_STYLE", value = {
+            SOUND_STYLE_USER,
+            SOUND_STYLE_STANDARD,
+            SOUND_STYLE_VIVID,
+            SOUND_STYLE_SPORTS,
+            SOUND_STYLE_MOVIE,
+            SOUND_STYLE_MUSIC,
+            SOUND_STYLE_NEWS,
+            SOUND_STYLE_AUTO,
+    })
+    public @interface SoundStyleValue {}
+
+    /**
+     * User-defined sound style.
+     *
+     * <p>Represents a sound style customized by the user.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_USER = "USER";
+
+    /**
+     * Standard sound style.
+     *
+     * <p>Represents a standard, neutral sound style.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_STANDARD = "STANDARD";
+
+    /**
+     * Vivid sound style.
+     *
+     * <p>Represents a vivid and dynamic sound style.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_VIVID = "VIVID";
+
+    /**
+     * Sports sound style.
+     *
+     * <p>Represents a sound style optimized for sports content.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_SPORTS = "SPORTS";
+
+    /**
+     * Movie sound style.
+     *
+     * <p>Represents a sound style optimized for movies.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_MOVIE = "MOVIE";
+
+    /**
+     * Music sound style.
+     *
+     * <p>Represents a sound style optimized for music.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_MUSIC = "MUSIC";
+
+    /**
+     * News sound style.
+     *
+     * <p>Represents a sound style optimized for news and dialogue.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_NEWS = "NEWS";
+
+    /**
+     * Automatic sound style.
+     *
+     * <p>Represents that the sound style is determined automatically by the system.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String SOUND_STYLE_AUTO = "AUTO";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "DIGITAL_OUTPUT_MODE", value = {
+            DIGITAL_OUTPUT_MODE_AUTO,
+            DIGITAL_OUTPUT_MODE_BYPASS,
+            DIGITAL_OUTPUT_MODE_PCM,
+            DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL_PLUS,
+            DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL,
+            DIGITAL_OUTPUT_MODE_DOLBY_MAT,
+    })
+    public @interface DigitalOutputModeValue {}
+
+    /**
+     * Automatic digital output mode.
+     *
+     * <p>The system automatically selects the preferred digital audio format supported by the
+     * connected device.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DIGITAL_OUTPUT_MODE_AUTO = "AUTO";
+
+    /**
+     * Bypass digital output mode.
+     *
+     * <p>The encoded audio stream is sent directly to the output without being decoded by the
+     * device.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DIGITAL_OUTPUT_MODE_BYPASS = "BYPASS";
+
+    /**
+     * PCM digital output mode.
+     *
+     * <p>Audio is decoded to uncompressed Pulse-Code Modulation (PCM) before output.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DIGITAL_OUTPUT_MODE_PCM = "PCM";
+
+    /**
+     * Dolby Digital Plus output mode.
+     *
+     * <p>Audio is output in Dolby Digital Plus (E-AC-3) format.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL_PLUS = "DolbyDigitalPlus";
+
+    /**
+     * Dolby Digital output mode.
+     *
+     * <p>Audio is output in Dolby Digital (AC-3) format.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL = "DolbyDigital";
+
+    /**
+     * Dolby MAT output mode.
+     *
+     * <p>Audio is output in Dolby Meridian Audio Taper (MAT) format.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DIGITAL_OUTPUT_MODE_DOLBY_MAT = "DolbyMat";
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "DOLBY_SOUND_MODE", value = {
+            DOLBY_SOUND_MODE_GAME,
+            DOLBY_SOUND_MODE_MOVIE,
+            DOLBY_SOUND_MODE_MUSIC,
+            DOLBY_SOUND_MODE_NEWS,
+            DOLBY_SOUND_MODE_STANDARD,
+            DOLBY_SOUND_MODE_STADIUM,
+            DOLBY_SOUND_MODE_USER,
+    })
+    public @interface DolbySoundModeValue {}
+
+    /**
+     * Game sound mode for Dolby audio.
+     *
+     * <p>Represents a Dolby sound mode optimized for gaming.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOLBY_SOUND_MODE_GAME = "GAME";
+
+    /**
+     * Movie sound mode for Dolby audio.
+     *
+     * <p>Represents a Dolby sound mode optimized for movies.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOLBY_SOUND_MODE_MOVIE = "MOVIE";
+
+    /**
+     * Music sound mode for Dolby audio.
+     *
+     * <p>Represents a Dolby sound mode optimized for music.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOLBY_SOUND_MODE_MUSIC = "MUSIC";
+
+    /**
+     * News sound mode for Dolby audio.
+     *
+     * <p>Represents a Dolby sound mode optimized for news and dialogue.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOLBY_SOUND_MODE_NEWS = "NEWS";
+
+    /**
+     * Standard sound mode for Dolby audio.
+     *
+     * <p>Represents a standard, neutral Dolby sound mode.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOLBY_SOUND_MODE_STANDARD = "STANDARD";
+
+    /**
+     * Stadium sound mode for Dolby audio.
+     *
+     * <p>Represents a Dolby sound mode that simulates a stadium environment.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOLBY_SOUND_MODE_STADIUM = "STADIUM";
+
+    /**
+     * User-defined sound mode for Dolby audio.
+     *
+     * <p>Represents a Dolby sound mode customized by the user.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    public static final String DOLBY_SOUND_MODE_USER = "USER";
+
 
     /**
      * @hide

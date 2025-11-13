@@ -28116,10 +28116,74 @@ package android.media.quality {
   }
 
   @FlaggedApi("android.media.tv.flags.media_quality_fw") public class MediaQualityContract {
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_ADOBE_RGB = "ADOBE_RGB";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_AUTO = "AUTO";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_BT2020 = "BT2020";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_DCI = "DCI";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_OFF = "OFF";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_ON = "ON";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_S_RGB_BT_709 = "S_RGB_BT_709";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_AUTO = "AUTO";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_BYPASS = "BYPASS";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL = "DolbyDigital";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL_PLUS = "DolbyDigitalPlus";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_DOLBY_MAT = "DolbyMat";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_PCM = "PCM";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOLBY_SOUND_MODE_GAME = "GAME";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOLBY_SOUND_MODE_MOVIE = "MOVIE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOLBY_SOUND_MODE_MUSIC = "MUSIC";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOLBY_SOUND_MODE_NEWS = "NEWS";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOLBY_SOUND_MODE_STADIUM = "STADIUM";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOLBY_SOUND_MODE_STANDARD = "STANDARD";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOLBY_SOUND_MODE_USER = "USER";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOWN_MIX_MODE_STEREO = "STEREO";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DOWN_MIX_MODE_SURROUND = "SURROUND";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String EXTRA_PICTURE_QUALITY_EVENT_TYPE_FRAME_CHANGE = "android.media.quality.extra.PICTURE_QUALITY_EVENT_TYPE_FRAME_CHANGE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String GAMMA_BRIGHT = "BRIGHT";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String GAMMA_DARK = "DARK";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String GAMMA_MIDDLE = "MIDDLE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String HDMIRGB_RANGE_AUTO = "AUTO";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String HDMIRGB_RANGE_FULL = "FULL";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String HDMIRGB_RANGE_LIMITED = "LIMITED";
     field public static final String LEVEL_HIGH = "level_high";
     field public static final String LEVEL_LOW = "level_low";
     field public static final String LEVEL_MEDIUM = "level_medium";
     field public static final String LEVEL_OFF = "level_off";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String LEVEL_RANGE_AUTO = "AUTO";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String LEVEL_RANGE_FULL = "FULL";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String LEVEL_RANGE_LIMITED = "LIMITED";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_BBD_RESULT = "BBD_RESULT";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_CAPTUREPOINT_INFO_CHANGE = "CAPTUREPOINT_INFO_CHANGE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_DOLBY_APO_CHANGE = "DOLBY_APO_CHANGE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_DOLBY_IQ_CHANGE = "DOLBY_IQ_CHANGE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_NONE = "NONE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_VIDEOPATH_CHANGE = "VIDEOPATH_CHANGE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PICTURE_QUALITY_EVENT_TYPE_VIDEO_DELAY_CHANGE = "VIDEO_DELAY_CHANGE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String SOUND_STYLE_AUTO = "AUTO";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String SOUND_STYLE_MOVIE = "MOVIE";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String SOUND_STYLE_MUSIC = "MUSIC";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String SOUND_STYLE_NEWS = "NEWS";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String SOUND_STYLE_SPORTS = "SPORTS";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String SOUND_STYLE_STANDARD = "STANDARD";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String SOUND_STYLE_USER = "USER";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String SOUND_STYLE_VIVID = "VIVID";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_DOLBY_VISION = "DOLBYVISION";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_FMM_DOLBY = "FMMDOLBY";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_FMM_HDR10 = "FMMHDR10";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_FMM_HDR10_PLUS = "FMMHDR10PLUS";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_FMM_HDR_VIVID = "FMMHDRVIVID";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_FMM_HLG = "FMMHLG";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_FMM_SDR = "FMMSDR";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_FMM_TCH = "FMMTCH";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_HDR10 = "HDR10";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_HDR10_PLUS = "HDR10PLUS";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_HDR_VIVID = "HDRVIVID";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_HLG = "HLG";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_IMAX_HDR10 = "IMAXHDR10";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_IMAX_HDR10_PLUS = "IMAXHDR10PLUS";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_IMAX_SDR = "IMAXSDR";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_SDR = "SDR";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String STREAM_STATUS_TCH = "TCH";
   }
 
   public static final class MediaQualityContract.PictureQuality {
