@@ -18,7 +18,6 @@ package com.android.wm.shell.compatui;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
-import static android.window.DesktopExperienceFlags.ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX;
 
 import static com.android.wm.shell.compatui.impl.CompatUIRequestsKt.DISPLAY_COMPAT_SHOW_RESTART_DIALOG;
 
@@ -1040,18 +1039,10 @@ public class CompatUIController implements OnDisplaysChangedListener,
         if (taskInfo == null) {
             return false;
         }
-        final boolean isDesktopModeShowing;
-        if (ENABLE_COMPAT_UI_DESKTOP_MODE_SYNCHRONIZATION_BUGFIX.isTrue()) {
-            // CompatUI is based on TaskListener and may not be synchronized with shell
-            // transitions. Checking the windowing mode in addition to desktop eligibility
-            // provides a more reliable state.
-            isDesktopModeShowing = taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM
-                    && mDesktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId);
-        } else {
-            isDesktopModeShowing = mDesktopUserRepositories.isPresent()
-                    && mDesktopUserRepositories.get().getCurrent()
-                    .isAnyDeskActive(taskInfo.displayId);
-        }
-        return isDesktopModeShowing;
+        // CompatUI is based on TaskListener and may not be synchronized with shell transitions.
+        // Checking the windowing mode in addition to desktop eligibility provides a more reliable
+        // state.
+        return taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM
+                && mDesktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId);
     }
 }
