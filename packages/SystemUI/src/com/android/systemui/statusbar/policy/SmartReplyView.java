@@ -34,9 +34,9 @@ import androidx.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ContrastColorUtil;
-import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.NotificationUtils;
+import com.android.systemui.statusbar.notification.row.AnimatedActionBackgroundDrawable;
 
 import java.text.BreakIterator;
 import java.util.ArrayList;
@@ -827,7 +827,11 @@ public class SmartReplyView extends ViewGroup {
         Drawable drawable = button.getBackground();
         if (drawable instanceof RippleDrawable) {
             // Mutate in case other notifications are using this drawable.
-            drawable = drawable.mutate();
+            if (!(drawable instanceof AnimatedActionBackgroundDrawable)) {
+                // AnimatedActionBackgroundDrawable explicitly creates inner Drawable without
+                // fetching from cache. Thus, it should not be mutated.
+                drawable = drawable.mutate();
+            }
             RippleDrawable ripple = (RippleDrawable) drawable;
             ripple.setColor(ColorStateList.valueOf(mCurrentRippleColor));
             Drawable inset = ripple.getDrawable(0);
