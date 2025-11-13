@@ -27,6 +27,8 @@ import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.adb.AdbDebuggingManager.AdbDebuggingHandler;
 
+import java.util.Optional;
+
 class AdbPairingThread extends Thread implements NsdManager.RegistrationListener {
     private static final String TAG = AdbPairingThread.class.getSimpleName();
     private final Context mContext;
@@ -43,10 +45,16 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
     @VisibleForTesting static final String SERVICE_PROTOCOL = "adb-tls-pairing";
     private final String mServiceType = String.format("_%s._tcp.", SERVICE_PROTOCOL);
     private int mPort;
+    private final AdbWifiPairingMethod mAdbWifiPairingMethod;
 
     private final Handler mHandler;
 
-    AdbPairingThread(String pairingCode, String serviceName, Context context, Handler handler) {
+    AdbPairingThread(
+            String pairingCode,
+            String serviceName,
+            Context context,
+            AdbWifiPairingMethod adbWifiPairingMethod,
+            Handler handler) {
         super(TAG);
         mPairingCode = pairingCode;
         mGuid = SystemProperties.get(AdbDebuggingManager.WIFI_PERSISTENT_GUID);
@@ -56,6 +64,7 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
         }
         mPort = -1;
         mContext = context;
+        mAdbWifiPairingMethod = adbWifiPairingMethod;
         mHandler = handler;
     }
 
@@ -80,7 +89,10 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
 
         Message message =
                 Message.obtain(
-                        mHandler, AdbDebuggingHandler.MSG_RESPONSE_PAIRING_RESULT, publicKey);
+                        mHandler,
+                        AdbDebuggingHandler.MSG_RESPONSE_PAIRING_RESULT,
+                        new AdbWifiPairingResult(
+                                Optional.ofNullable(publicKey), mAdbWifiPairingMethod));
         mHandler.sendMessage(message);
     }
 
@@ -136,4 +148,19 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
     private native void native_pairing_cancel();
 
     private native String native_pairing_wait();
+
+    enum AdbWifiPairingMethod {
+        QR_CODE,
+        PAIRING_CODE
+    }
+
+    /**
+     * Represents the result of a pairing operation.
+     *
+     * @param publicKey The key of the device that was paired. If not present, then the pairing
+     *     failed.
+     * @param adbWifiPairingMethod The pairing method used.
+     */
+    record AdbWifiPairingResult(
+            Optional<String> publicKey, AdbWifiPairingMethod adbWifiPairingMethod) {}
 }

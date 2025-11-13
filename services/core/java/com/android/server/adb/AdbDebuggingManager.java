@@ -19,6 +19,10 @@ package com.android.server.adb;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 
 import static com.android.internal.util.dump.DumpUtils.writeStringIfNotNull;
+import static com.android.server.adb.AdbMetricsLogger.logAdbConnectionChanged;
+import static com.android.server.adb.AdbMetricsLogger.logAdbWifiPairingResult;
+import static com.android.server.adb.AdbPairingThread.AdbWifiPairingMethod;
+import static com.android.server.adb.AdbPairingThread.AdbWifiPairingResult;
 import static com.android.server.adb.AdbService.ADBD;
 
 import android.annotation.NonNull;
@@ -68,7 +72,6 @@ import com.android.adbdauth.flags.Flags;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
-import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.dump.DualDumpOutputStream;
 import com.android.server.FgThread;
 
@@ -776,22 +779,25 @@ public class AdbDebuggingManager {
                         sendPersistKeyStoreMessage();
                         scheduleJobToUpdateAdbKeyStore();
                     }
-                    logAdbConnectionChanged(key, AdbProtoEnums.USER_ALLOWED, alwaysAllow);
+                    logAdbConnectionChanged(
+                            alwaysAllow
+                                    ? AdbProtoEnums.USER_ALWAYS_ALLOWED
+                                    : AdbProtoEnums.USER_ALLOWED);
                 }
                 case MESSAGE_ADB_DENY -> {
                     Slog.w(TAG, "Denying adb confirmation");
                     mThread.sendResponse("NO");
-                    logAdbConnectionChanged(null, AdbProtoEnums.USER_DENIED, false);
+                    logAdbConnectionChanged(AdbProtoEnums.USER_DENIED);
                 }
                 case MESSAGE_ADB_CONFIRM -> {
                     String key = (String) msg.obj;
                     String fingerprints = getFingerprints(key);
                     if ("".equals(fingerprints)) {
                         mThread.sendResponse("NO");
-                        logAdbConnectionChanged(key, AdbProtoEnums.DENIED_INVALID_KEY, false);
+                        logAdbConnectionChanged(AdbProtoEnums.DENIED_INVALID_KEY);
                         break;
                     }
-                    logAdbConnectionChanged(key, AdbProtoEnums.AWAITING_USER_APPROVAL, false);
+                    logAdbConnectionChanged(AdbProtoEnums.AWAITING_USER_APPROVAL);
                     mFingerprints = fingerprints;
                     startConfirmationForKey(key, mFingerprints);
                 }
@@ -836,10 +842,8 @@ public class AdbDebuggingManager {
                 }
                 case MESSAGE_ADB_DISCONNECT -> {
                     String key = (String) msg.obj;
-                    boolean alwaysAllow = false;
                     if (key != null && key.length() > 0) {
                         if (mConnectedKeys.containsKey(key)) {
-                            alwaysAllow = true;
                             int refcount = mConnectedKeys.get(key) - 1;
                             if (refcount == 0) {
                                 mAdbKeyStore.setLastConnectionTime(
@@ -854,7 +858,7 @@ public class AdbDebuggingManager {
                     } else {
                         Slog.w(TAG, "Received a disconnected key message with an empty key");
                     }
-                    logAdbConnectionChanged(key, AdbProtoEnums.DISCONNECTED, alwaysAllow);
+                    logAdbConnectionChanged(AdbProtoEnums.DISCONNECTED);
                 }
                 case MESSAGE_ADB_PERSIST_KEYSTORE -> {
                     if (mAdbKeyStore != null) {
@@ -887,7 +891,7 @@ public class AdbDebuggingManager {
                         mAdbKeyStore.setLastConnectionTime(key, mTicker.currentTimeMillis());
                         sendPersistKeyStoreMessage();
                         scheduleJobToUpdateAdbKeyStore();
-                        logAdbConnectionChanged(key, AdbProtoEnums.AUTOMATICALLY_ALLOWED, true);
+                        logAdbConnectionChanged(AdbProtoEnums.AUTOMATICALLY_ALLOWED);
                     }
                 }
                 case MSG_ADBDWIFI_ENABLE -> {
@@ -921,7 +925,7 @@ public class AdbDebuggingManager {
                     startTLSPortPoller();
                     startAdbdWifi();
                     mAdbWifiEnabled = true;
-
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_ENABLED);
                     Slog.i(TAG, "adb start wireless adb");
                 }
                 case MSG_ADBDWIFI_DISABLE -> {
@@ -934,6 +938,7 @@ public class AdbDebuggingManager {
                     mAdbNetworkMonitor.unregister();
                     stopAdbdWifi();
                     onAdbdWifiServerDisconnected(-1);
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_DISABLED);
                 }
                 case MSG_ADBWIFI_ALLOW -> {
                     if (mAdbWifiEnabled) {
@@ -946,6 +951,10 @@ public class AdbDebuggingManager {
                     if (alwaysAllow) {
                         mAdbKeyStore.addTrustedNetwork(bssid, ssid);
                     }
+                    logAdbConnectionChanged(
+                            alwaysAllow
+                                    ? AdbProtoEnums.ADB_WIFI_ALWAYS_ALLOW_NETWORK
+                                    : AdbProtoEnums.ADB_WIFI_ALLOW_NETWORK);
 
                     // Let's check again to make sure we didn't switch networks while verifying
                     // the wifi network trust status.
@@ -961,11 +970,13 @@ public class AdbDebuggingManager {
                     startTLSPortPoller();
                     startAdbdWifi();
                     mAdbWifiEnabled = true;
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_ENABLED);
                     Slog.i(TAG, "adb start wireless adb");
                 }
                 case MSG_ADBWIFI_DENY -> {
                     Settings.Global.putInt(mContentResolver, Settings.Global.ADB_WIFI_ENABLED, 0);
                     sendServerConnectionState(false, -1);
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_DENY_NETWORK);
                 }
                 case MSG_REQ_UNPAIR -> {
                     String fingerprint = (String) msg.obj;
@@ -980,10 +991,11 @@ public class AdbDebuggingManager {
                     mAdbKeyStore.removeKey(publicKey);
                     // Send the updated paired devices list to the UI.
                     sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_UNPAIR_DEVICE);
                 }
                 case MSG_RESPONSE_PAIRING_RESULT -> {
-                    String publicKey = (String) msg.obj;
-                    onPairingResult(publicKey);
+                    AdbWifiPairingResult adbWifiPairingResult = (AdbWifiPairingResult) msg.obj;
+                    onPairingResult(adbWifiPairingResult);
                     // Send the updated paired devices list to the UI.
                     sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
                 }
@@ -994,15 +1006,29 @@ public class AdbDebuggingManager {
                 case MSG_PAIR_PAIRING_CODE -> {
                     String pairingCode = createPairingCode(PAIRING_CODE_LENGTH);
                     updateUIPairCode(pairingCode);
-                    mAdbPairingThread = new AdbPairingThread(pairingCode, null, mContext, this);
+                    mAdbPairingThread =
+                            new AdbPairingThread(
+                                    pairingCode,
+                                    null,
+                                    mContext,
+                                    AdbWifiPairingMethod.PAIRING_CODE,
+                                    this);
                     mAdbPairingThread.start();
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_PAIRING_CODE_STARTED);
                 }
                 case MSG_PAIR_QR_CODE -> {
                     Bundle bundle = (Bundle) msg.obj;
                     String serviceName = bundle.getString("serviceName");
                     String password = bundle.getString("password");
-                    mAdbPairingThread = new AdbPairingThread(password, serviceName, mContext, this);
+                    mAdbPairingThread =
+                            new AdbPairingThread(
+                                    password,
+                                    serviceName,
+                                    mContext,
+                                    AdbWifiPairingMethod.QR_CODE,
+                                    this);
                     mAdbPairingThread.start();
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_QR_PAIRING_STARTED);
                 }
                 case MSG_PAIRING_CANCEL -> {
                     if (mAdbPairingThread != null) {
@@ -1014,6 +1040,7 @@ public class AdbDebuggingManager {
                             e.printStackTrace();
                         }
                         mAdbPairingThread = null;
+                        logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_PAIRING_CANCELLED);
                     }
                 }
                 case MSG_WIFI_DEVICE_CONNECTED -> {
@@ -1022,6 +1049,7 @@ public class AdbDebuggingManager {
                         sendPairedDevicesToUI(getPairedDevicesForKeys(mAdbKeyStore.getKeys()));
                         showAdbConnectedNotification(true);
                     }
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_DEVICE_CONNECTED);
                 }
                 case MSG_WIFI_DEVICE_DISCONNECTED -> {
                     String key = (String) msg.obj;
@@ -1031,6 +1059,7 @@ public class AdbDebuggingManager {
                             showAdbConnectedNotification(false);
                         }
                     }
+                    logAdbConnectionChanged(AdbProtoEnums.ADB_WIFI_DEVICE_DISCONNECTED);
                 }
                 case MSG_SERVER_CONNECTED -> {
                     int port = (int) msg.obj;
@@ -1095,29 +1124,6 @@ public class AdbDebuggingManager {
         void registerForAuthTimeChanges() {
             Uri uri = Settings.Global.getUriFor(Settings.Global.ADB_ALLOWED_CONNECTION_TIME);
             mContext.getContentResolver().registerContentObserver(uri, false, mAuthTimeObserver);
-        }
-
-        private void logAdbConnectionChanged(String key, int state, boolean alwaysAllow) {
-            long lastConnectionTime = mAdbKeyStore.getLastConnectionTime(key);
-            long authWindow = mAdbKeyStore.getAllowedConnectionTime();
-            Slog.d(
-                    TAG,
-                    "Logging key "
-                            + key
-                            + ", state = "
-                            + state
-                            + ", alwaysAllow = "
-                            + alwaysAllow
-                            + ", lastConnectionTime = "
-                            + lastConnectionTime
-                            + ", authWindow = "
-                            + authWindow);
-            FrameworkStatsLog.write(
-                    FrameworkStatsLog.ADB_CONNECTION_CHANGED,
-                    lastConnectionTime,
-                    authWindow,
-                    state,
-                    alwaysAllow);
         }
 
         /**
@@ -1268,13 +1274,14 @@ public class AdbDebuggingManager {
             return false;
         }
 
-        private void onPairingResult(String publicKey) {
-            if (publicKey == null) {
+        private void onPairingResult(AdbWifiPairingResult adbWifiPairingResult) {
+            if (adbWifiPairingResult.publicKey().isEmpty()) {
                 Intent intent = new Intent(AdbManager.WIRELESS_DEBUG_PAIRING_RESULT_ACTION);
                 intent.putExtra(AdbManager.WIRELESS_STATUS_EXTRA, AdbManager.WIRELESS_STATUS_FAIL);
                 AdbDebuggingManager.sendBroadcastWithDebugPermission(
                         mContext, intent, UserHandle.ALL);
             } else {
+                String publicKey = adbWifiPairingResult.publicKey().get();
                 Intent intent = new Intent(AdbManager.WIRELESS_DEBUG_PAIRING_RESULT_ACTION);
                 intent.putExtra(
                         AdbManager.WIRELESS_STATUS_EXTRA, AdbManager.WIRELESS_STATUS_SUCCESS);
@@ -1296,6 +1303,7 @@ public class AdbDebuggingManager {
                 sendPersistKeyStoreMessage();
                 scheduleJobToUpdateAdbKeyStore();
             }
+            logAdbWifiPairingResult(adbWifiPairingResult);
         }
 
         private void sendPairingPortToUI(int port) {
