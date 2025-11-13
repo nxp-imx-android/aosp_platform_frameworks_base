@@ -33,47 +33,45 @@ import java.io.PrintWriter
  */
 @SuppressLint("ViewConstructor")
 class FloatingToolbarRoot(
-    context: Context?,
-    private val mTargetInputToken: IBinder?,
-    transferTouchListener: TransferTouchListener,
+    context: Context,
+    private val targetInputToken: IBinder,
+    private val transferTouchListener: TransferTouchListener,
 ) : LinearLayout(context) {
-    private val mTransferTouchListener: TransferTouchListener
-    private val mContentRect = Rect()
+    private val contentRect = Rect()
 
-    private var mLastDownX = -1
-    private var mLastDownY = -1
+    private var lastDownX = -1
+    private var lastDownY = -1
 
     init {
-        mTransferTouchListener = transferTouchListener
         setFocusable(false)
     }
 
     /** Sets the Rect that shows the selection toolbar content. */
-    fun setContentRect(contentRect: Rect) {
-        mContentRect.set(contentRect)
+    fun setContentRect(rect: Rect) {
+        contentRect.set(rect)
     }
 
     /** Sets the Rect that shows the selection toolbar content to empty. */
     fun setContentRectEmpty() {
-        mContentRect.setEmpty()
+        contentRect.setEmpty()
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            mLastDownX = event.getX().toInt()
-            mLastDownY = event.getY().toInt()
+            lastDownX = event.getX().toInt()
+            lastDownY = event.getY().toInt()
             if (DEBUG) {
-                Log.d(TAG, "downX=" + mLastDownX + " downY=" + mLastDownY)
+                Log.d(TAG, "downX=" + lastDownX + " downY=" + lastDownY)
             }
             // TODO(b/215497659): Check FLAG_WINDOW_IS_PARTIALLY_OBSCURED
-            if (!mContentRect.contains(mLastDownX, mLastDownY)) {
+            if (!contentRect.contains(lastDownX, lastDownY)) {
                 if (DEBUG) {
                     Log.d(TAG, "Transfer touch focus to application.")
                 }
-                mTransferTouchListener.onTransferTouch(
+                transferTouchListener.onTransferTouch(
                     getViewRootImpl().getInputToken(),
-                    mTargetInputToken,
+                    targetInputToken,
                 )
             }
         }
@@ -81,15 +79,15 @@ class FloatingToolbarRoot(
     }
 
     /** Dumps information about this class. */
-    fun dump(prefix: String?, pw: PrintWriter) {
+    fun dump(prefix: String, pw: PrintWriter) {
         pw.print(prefix)
         pw.println("FloatingToolbarRoot:")
         pw.print(prefix + "  ")
         pw.print("last down X: ")
-        pw.println(mLastDownX)
+        pw.println(lastDownX)
         pw.print(prefix + "  ")
         pw.print("last down Y: ")
-        pw.println(mLastDownY)
+        pw.println(lastDownY)
     }
 
     companion object {

@@ -24,9 +24,7 @@ import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.drawable.AnimatedVectorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Handler
-import android.os.IBinder
 import android.os.Looper
 import android.service.selectiontoolbar.SelectionToolbarRenderService.OnPasteActionCallback
 import android.service.selectiontoolbar.SelectionToolbarRenderService.RemoteCallbackWrapper
@@ -42,7 +40,6 @@ import android.view.SurfaceControlViewHost
 import android.view.SurfaceControlViewHost.SurfacePackage
 import android.view.View
 import android.view.View.MeasureSpec
-import android.view.View.OnLayoutChangeListener
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.animation.Animation
@@ -53,8 +50,6 @@ import android.view.animation.Transformation
 import android.view.selectiontoolbar.ShowInfo
 import android.view.selectiontoolbar.ToolbarMenuItem
 import android.view.selectiontoolbar.WidgetInfo
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -81,329 +76,259 @@ import kotlin.math.sqrt
  */
 // TODO(b/215497659): share code with LocalFloatingToolbarPopup
 class RemoteSelectionToolbar(
-    uid: Int,
-    context: Context?,
+    private val hostUid: Int,
+    baseContext: Context,
     showInfo: ShowInfo,
-    callbackWrapper: RemoteCallbackWrapper,
+    private val callbackWrapper: RemoteCallbackWrapper,
     transferTouchListener: TransferTouchListener,
     onPasteActionCallback: OnPasteActionCallback,
 ) {
-    private val mUid: Int
+    private val context = wrapContext(baseContext, showInfo)
 
-    private val mContext: Context
-
-    /* Margins between the popup window and its content. */
-    private val mMarginHorizontal: Int
-    private val mMarginVertical: Int
+    private val handler =
+        Handler(
+            Looper.myLooper()
+                ?: throw IllegalStateException(
+                    "RemoteSelectionToolbar must be created on a looper thread"
+                )
+        )
+    private val hostInputToken = showInfo.hostInputToken
 
     /* View components */
-    private val mContentHolder: FloatingToolbarRoot
-    private val mContentContainer: ViewGroup // holds all contents.
-    private val mMainPanel: ViewGroup // holds menu items that are initially displayed.
+    private val contentContainer =
+        createContentContainer(context).apply {
+            addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+                updateFloatingToolbarRootContentRect()
+            }
+        } // holds all contents.
+    private val contentHolder =
+        FloatingToolbarRoot(context, hostInputToken, transferTouchListener).apply {
+            addView(contentContainer)
+        }
 
-    // holds menu items hidden in the overflow.
-    private val mOverflowPanel: OverflowPanel
-    private val mOverflowButton: ImageButton // opens/closes the overflow.
-
-    /* overflow button drawables. */
-    private val mArrow: Drawable
-    private val mOverflow: Drawable
-    private val mToArrow: AnimatedVectorDrawable
-    private val mToOverflow: AnimatedVectorDrawable
-
-    private val mOverflowPanelViewHelper: OverflowPanelViewHelper
+    /* Margins between the popup window and its content. */
+    private val marginHorizontal =
+        context.resources.getDimensionPixelSize(R.dimen.floating_toolbar_horizontal_margin)
+    private val marginVertical =
+        context.resources.getDimensionPixelSize(R.dimen.floating_toolbar_vertical_margin)
+    private val lineHeight =
+        context.resources.getDimensionPixelSize(R.dimen.floating_toolbar_height)
+    private val iconTextSpacing =
+        context.resources.getDimensionPixelSize(R.dimen.floating_toolbar_icon_text_spacing)
 
     /* Animation interpolators. */
-    private val mLogAccelerateInterpolator: Interpolator
-    private val mFastOutSlowInInterpolator: Interpolator?
-    private val mLinearOutSlowInInterpolator: Interpolator?
-    private val mFastOutLinearInInterpolator: Interpolator?
+    private val logAccelerateInterpolator = LogAccelerateInterpolator()
+    private val fastOutSlowInInterpolator =
+        AnimationUtils.loadInterpolator(context, android.R.interpolator.fast_out_slow_in)
+    private val linearOutSlowInInterpolator =
+        AnimationUtils.loadInterpolator(context, android.R.interpolator.linear_out_slow_in)
+    private val fastOutLinearInInterpolator =
+        AnimationUtils.loadInterpolator(context, android.R.interpolator.fast_out_linear_in)
+
+    /* overflow button drawables. */
+    // Drawables. Needed for views.
+    private val arrow =
+        context.resources.getDrawable(R.drawable.ft_avd_tooverflow, context.theme).apply {
+            isAutoMirrored = true
+        }
+    private val overflow =
+        context.resources.getDrawable(R.drawable.ft_avd_toarrow, context.theme).apply {
+            isAutoMirrored = true
+        }
+    private val toArrow =
+        context.resources.getDrawable(R.drawable.ft_avd_toarrow_animation, context.theme).apply {
+            isAutoMirrored = true
+        } as AnimatedVectorDrawable
+    private val toOverflow =
+        context.resources.getDrawable(R.drawable.ft_avd_tooverflow_animation, context.theme).apply {
+            isAutoMirrored = true
+        } as AnimatedVectorDrawable
+
+    // Views.
+    private val overflowButton = createOverflowButton() // opens/closes the overflow.
+    private val overflowButtonSize = measure(overflowButton)
+    private val mainPanel = createMainPanel() // holds menu items that are initially displayed.
+    private val overflowPanelViewHelper = OverflowPanelViewHelper(context, iconTextSpacing)
+    private val overflowPanel = createOverflowPanel()
 
     /* Animations. */
-    private val mShowAnimation: AnimatorSet
-    private val mDelayedHideAnimation: AnimatorSet
-    private val mImmediateHideAnimation: AnimatorSet
-    private val mOpenOverflowAnimation: AnimationSet
-    private val mCloseOverflowAnimation: AnimationSet
-    private val mOverflowAnimationListener: Animation.AnimationListener
 
-    private val mViewPortOnScreen = Rect() // portion of screen we can draw in.
+    private val overflowAnimationListener = createOverflowAnimationListener()
+    private val openOverflowAnimation =
+        AnimationSet(true).apply { setAnimationListener(overflowAnimationListener) }
+    private val closeOverflowAnimation =
+        AnimationSet(true).apply { setAnimationListener(overflowAnimationListener) }
 
-    private val mLineHeight: Int
-    private val mIconTextSpacing: Int
+    private val showAnimation = createEnterAnimation(contentContainer)
+    private val delayedHideAnimation =
+        createExitAnimation(
+            contentContainer,
+            150, // startDelay
+            object : AnimatorListenerAdapter() {
+                private var mCanceled = false
 
-    private val mHostInputToken: IBinder
-    private val mCallbackWrapper: RemoteCallbackWrapper
-    private val mTransferTouchListener: TransferTouchListener
-    private val mOnPasteActionCallback: OnPasteActionCallback
+                override fun onAnimationCancel(animation: Animator) {
+                    mCanceled = true
+                }
 
-    private var mPopupWidth = 0
-    private var mPopupHeight = 0
-
-    // Coordinates to show the toolbar relative to the specified view port
-    private val mRelativeCoordsForToolbar = Point()
-    private var mSequenceNumber = 0
-    private var mMenuItems: MutableList<ToolbarMenuItem>? = null
-    private var mSurfaceControlViewHost: SurfaceControlViewHost? = null
-    private var mSurfacePackage: SurfacePackage? = null
-    private val mHandler: Handler
-
-    /** @see OverflowPanelViewHelper.preparePopupContent */
-    private val mPreparePopupContentRTLHelper: Runnable =
-        object : Runnable {
-            override fun run() {
-                setPanelsStatesAtRestingPosition()
-                mContentContainer.setAlpha(1f)
-            }
-        }
-
-    // Tracks this selection toolbar state.
-    private var mState: Int = TOOLBAR_STATE_DISMISSED
-
-    /* Calculated sizes for panels and overflow button. */
-    private val mOverflowButtonSize: Size
-    private var mOverflowPanelSize: Size? = null // Should be null when there is no overflow.
-    private var mMainPanelSize: Size? = null
+                override fun onAnimationEnd(animation: Animator) {
+                    if (mCanceled) {
+                        mCanceled = false
+                        return
+                    }
+                    releaseSurfaceControlViewHost()
+                    callbackWrapper.onInvisible()
+                }
+            },
+        )
+    private val immediateHideAnimation =
+        createExitAnimation(
+            contentContainer,
+            0, // startDelay
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    releaseSurfaceControlViewHost()
+                    callbackWrapper.onInvisible()
+                }
+            },
+        )
 
     /* Menu items and click listeners */
-    private val mMenuItemButtonOnClickListener: View.OnClickListener
-
-    private var mOpenOverflowUpwards = false // Whether the overflow opens upwards or downwards.
-    private var mIsOverflowOpen = false
-
-    private var mTransitionDurationScale = 0 // Used to scale the toolbar transition duration.
-
-    private val mPreviousContentRect = Rect()
-
-    private val mTempContentRect = Rect()
-    private val mTempContentRectForRoot = Rect()
-    private val mTempCoords = IntArray(2)
-
-    init {
-        val looper = Looper.myLooper()
-        checkNotNull(looper) { "RemoteSelectionToolbar must be created on a looper thread" }
-        mHandler = Handler(looper)
-        mUid = uid
-        mContext = wrapContext(context, showInfo)
-        mCallbackWrapper = callbackWrapper
-        mTransferTouchListener = transferTouchListener
-        mOnPasteActionCallback = onPasteActionCallback
-        mHostInputToken = showInfo.hostInputToken
-        mContentHolder = FloatingToolbarRoot(mContext, mHostInputToken, mTransferTouchListener)
-        mContentContainer = createContentContainer(mContext)
-        mContentHolder.addView(mContentContainer)
-        mMarginHorizontal =
-            mContext
-                .getResources()
-                .getDimensionPixelSize(R.dimen.floating_toolbar_horizontal_margin)
-        mMarginVertical =
-            mContext.getResources().getDimensionPixelSize(R.dimen.floating_toolbar_vertical_margin)
-        mLineHeight = mContext.getResources().getDimensionPixelSize(R.dimen.floating_toolbar_height)
-        mIconTextSpacing =
-            mContext
-                .getResources()
-                .getDimensionPixelSize(R.dimen.floating_toolbar_icon_text_spacing)
-
-        // Interpolators
-        mLogAccelerateInterpolator = LogAccelerateInterpolator()
-        mFastOutSlowInInterpolator =
-            AnimationUtils.loadInterpolator(mContext, android.R.interpolator.fast_out_slow_in)
-        mLinearOutSlowInInterpolator =
-            AnimationUtils.loadInterpolator(mContext, android.R.interpolator.linear_out_slow_in)
-        mFastOutLinearInInterpolator =
-            AnimationUtils.loadInterpolator(mContext, android.R.interpolator.fast_out_linear_in)
-
-        // Drawables. Needed for views.
-        mArrow =
-            mContext.getResources().getDrawable(R.drawable.ft_avd_tooverflow, mContext.getTheme())
-        mArrow.setAutoMirrored(true)
-        mOverflow =
-            mContext.getResources().getDrawable(R.drawable.ft_avd_toarrow, mContext.getTheme())
-        mOverflow.setAutoMirrored(true)
-        mToArrow =
-            mContext
-                .getResources()
-                .getDrawable(R.drawable.ft_avd_toarrow_animation, mContext.getTheme())
-                as AnimatedVectorDrawable
-        mToArrow.setAutoMirrored(true)
-        mToOverflow =
-            mContext
-                .getResources()
-                .getDrawable(R.drawable.ft_avd_tooverflow_animation, mContext.getTheme())
-                as AnimatedVectorDrawable
-        mToOverflow.setAutoMirrored(true)
-
-        // Views
-        mOverflowButton = createOverflowButton()
-        mOverflowButtonSize = measure(mOverflowButton)
-        mMainPanel = createMainPanel()
-        mOverflowPanelViewHelper = OverflowPanelViewHelper(mContext, mIconTextSpacing)
-        mOverflowPanel = createOverflowPanel()
-
-        // Animation. Need views.
-        mOverflowAnimationListener = createOverflowAnimationListener()
-        mOpenOverflowAnimation = AnimationSet(true)
-        mOpenOverflowAnimation.setAnimationListener(mOverflowAnimationListener)
-        mCloseOverflowAnimation = AnimationSet(true)
-        mCloseOverflowAnimation.setAnimationListener(mOverflowAnimationListener)
-        mContentContainer.addOnLayoutChangeListener(
-            object : OnLayoutChangeListener {
-                override fun onLayoutChange(
-                    v: View?,
-                    left: Int,
-                    top: Int,
-                    right: Int,
-                    bottom: Int,
-                    oldLeft: Int,
-                    oldTop: Int,
-                    oldRight: Int,
-                    oldBottom: Int,
-                ) {
-                    updateFloatingToolbarRootContentRect()
+    private val menuItemButtonOnClickListener =
+        View.OnClickListener { v: View ->
+            // Post the callback to fg thread because the onPasteAction() callback
+            // needs to be synchronous but it shouldn't block the main thread.
+            handler.post {
+                val tag = v.tag
+                if (tag is ToolbarMenuItem) {
+                    if (tag.itemId == R.id.paste || tag.itemId == R.id.pasteAsPlainText) {
+                        onPasteActionCallback.onPasteAction(hostUid)
+                    }
+                    callbackWrapper.onMenuItemClicked(tag.itemIndex)
                 }
             }
-        )
-        mShowAnimation = createEnterAnimation(mContentContainer)
-        mDelayedHideAnimation =
-            createExitAnimation(
-                mContentContainer,
-                150, // startDelay
-                object : AnimatorListenerAdapter() {
-                    private var mCanceled = false
+        }
 
-                    override fun onAnimationCancel(animation: Animator) {
-                        mCanceled = true
-                    }
+    private val viewPortOnScreen = Rect() // portion of screen we can draw in.
 
-                    override fun onAnimationEnd(animation: Animator) {
-                        if (mCanceled) {
-                            mCanceled = false
-                            return
-                        }
-                        releaseSurfaceControlViewHost()
-                        mCallbackWrapper.onInvisible()
-                    }
-                },
-            )
-        mImmediateHideAnimation =
-            createExitAnimation(
-                mContentContainer,
-                0, // startDelay
-                object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        releaseSurfaceControlViewHost()
-                        mCallbackWrapper.onInvisible()
-                    }
-                },
-            )
-        mMenuItemButtonOnClickListener =
-            View.OnClickListener { v: View? ->
-                // Post the callback to fg thread because the onPasteAction() callback
-                // needs to be synchronous but it shouldn't block the main thread.
-                mHandler.post(
-                    Runnable {
-                        val tag = v!!.getTag()
-                        if (tag is ToolbarMenuItem) {
-                            if (tag.itemId == R.id.paste || tag.itemId == R.id.pasteAsPlainText) {
-                                mOnPasteActionCallback.onPasteAction(mUid)
-                            }
-                            mCallbackWrapper.onMenuItemClicked(tag.itemIndex)
-                        }
-                    }
-                )
-            }
+    private var popupWidth = 0
+    private var popupHeight = 0
+
+    // Coordinates to show the toolbar relative to the specified view port
+    private val relativeCoordsForToolbar = Point()
+    private var sequenceNumber = 0
+    private var menuItems: MutableList<ToolbarMenuItem>? = null
+    private var surfaceControlViewHost: SurfaceControlViewHost? = null
+    private var surfacePackage: SurfacePackage? = null
+
+    /** @see preparePopupContent */
+    private val preparePopupContentRTLHelper = {
+        setPanelsStatesAtRestingPosition()
+        contentContainer.alpha = 1f
     }
 
+    // Tracks this selection toolbar state.
+    private var state: Int = TOOLBAR_STATE_DISMISSED
+
+    private var overflowPanelSize: Size? = null // Should be null when there is no overflow.
+    private var mainPanelSize: Size? = null
+
+    private var openOverflowUpwards = false // Whether the overflow opens upwards or downwards.
+    private var isOverflowOpen = false
+
+    private var transitionDurationScale = 0 // Used to scale the toolbar transition duration.
+
+    private val previousContentRect = Rect()
+
+    private val tempContentRect = Rect()
+    private val tempContentRectForRoot = Rect()
+    private val tempCoords = IntArray(2)
+
     private fun updateFloatingToolbarRootContentRect() {
-        if (mSurfaceControlViewHost == null) {
+        if (surfaceControlViewHost == null) {
             return
         }
-        val root = mSurfaceControlViewHost!!.getView() as FloatingToolbarRoot
-        mContentContainer.getLocationOnScreen(mTempCoords)
-        val contentLeft = mTempCoords[0]
-        val contentTop = mTempCoords[1]
-        mTempContentRectForRoot.set(
+        val root = surfaceControlViewHost!!.view as FloatingToolbarRoot
+        contentContainer.getLocationOnScreen(tempCoords)
+        val contentLeft = tempCoords[0]
+        val contentTop = tempCoords[1]
+        tempContentRectForRoot.set(
             contentLeft,
             contentTop,
-            contentLeft + mContentContainer.getWidth(),
-            contentTop + mContentContainer.getHeight(),
+            contentLeft + contentContainer.width,
+            contentTop + contentContainer.height,
         )
-        root.setContentRect(mTempContentRectForRoot)
+        root.setContentRect(tempContentRectForRoot)
     }
 
     private fun createWidgetInfo(): WidgetInfo {
-        mTempContentRect.set(
-            mRelativeCoordsForToolbar.x,
-            mRelativeCoordsForToolbar.y,
-            mRelativeCoordsForToolbar.x + mPopupWidth,
-            mRelativeCoordsForToolbar.y + mPopupHeight,
+        tempContentRect.set(
+            relativeCoordsForToolbar.x,
+            relativeCoordsForToolbar.y,
+            relativeCoordsForToolbar.x + popupWidth,
+            relativeCoordsForToolbar.y + popupHeight,
         )
         val widgetInfo = WidgetInfo()
-        widgetInfo.sequenceNumber = mSequenceNumber
-        widgetInfo.contentRect = mTempContentRect
-        widgetInfo.surfacePackage = this.surfacePackage
+        widgetInfo.sequenceNumber = sequenceNumber
+        widgetInfo.contentRect = tempContentRect
+        widgetInfo.surfacePackage = getSurfacePackage()
         return widgetInfo
     }
 
-    private val surfacePackage: SurfacePackage?
-        get() {
-            if (mSurfaceControlViewHost == null) {
-                check(mHandler.getLooper().getThread() === Thread.currentThread()) {
-                    ("UI operations must be called on the same thread as the constructor." +
-                        "thisThread = " +
-                        Thread.currentThread() +
-                        " handlerThread = " +
-                        mHandler.getLooper().getThread())
-                }
-                mSurfaceControlViewHost =
-                    SurfaceControlViewHost(
-                        mContext,
-                        mContext.getDisplay(),
-                        InputTransferToken(mHostInputToken),
-                        "RemoteSelectionToolbar",
-                    )
-                mSurfaceControlViewHost!!.setView(mContentHolder, mPopupWidth, mPopupHeight)
+    private fun getSurfacePackage(): SurfacePackage {
+        if (surfaceControlViewHost == null) {
+            check(handler.looper.thread === Thread.currentThread()) {
+                ("UI operations must be called on the same thread as the constructor." +
+                    "thisThread = " +
+                    Thread.currentThread() +
+                    " handlerThread = " +
+                    handler.looper.thread)
             }
-            if (mSurfacePackage == null) {
-                mSurfacePackage = mSurfaceControlViewHost!!.getSurfacePackage()
-            }
-            return mSurfacePackage
+            surfaceControlViewHost =
+                SurfaceControlViewHost(
+                    context,
+                    context.display,
+                    InputTransferToken(hostInputToken),
+                    "RemoteSelectionToolbar",
+                )
+            surfaceControlViewHost!!.setView(contentHolder, popupWidth, popupHeight)
         }
-
-    private fun releaseSurfaceControlViewHost() {
-        mContentContainer.removeAllViews()
-        if (mSurfaceControlViewHost != null) {
-            // If hiding has finished before dismissing there will not be a SCVH to release at this
-            // point.
-            mSurfaceControlViewHost!!.release()
-            mSurfaceControlViewHost = null
+        if (surfacePackage == null) {
+            surfacePackage = surfaceControlViewHost!!.surfacePackage
         }
-        mSurfacePackage = null
+        return surfacePackage!!
     }
 
-    private fun layoutMenuItems(menuItems: MutableList<ToolbarMenuItem>, suggestedWidth: Int) {
-        var menuItems = menuItems
+    private fun releaseSurfaceControlViewHost() {
+        contentContainer.removeAllViews()
+        surfaceControlViewHost?.release()
+        surfaceControlViewHost = null
+        surfacePackage = null
+    }
+
+    private fun layoutMenuItems(menuItems: List<ToolbarMenuItem>, suggestedWidth: Int) {
         cancelOverflowAnimations()
         clearPanels()
 
-        menuItems = layoutMainPanelItems(menuItems, getAdjustedToolbarWidth(suggestedWidth))
-        if (!menuItems.isEmpty()) {
-            // Add remaining items to the overflow.
-            layoutOverflowPanelItems(menuItems)
+        layoutMainPanelItems(menuItems, getAdjustedToolbarWidth(suggestedWidth)).let {
+            if (it.isNotEmpty()) {
+                // Add remaining items to the overflow.
+                layoutOverflowPanelItems(it)
+            }
         }
         updatePopupSize()
     }
 
     /** Show the specified selection toolbar. */
     fun show(showInfo: ShowInfo) {
-        debugLog("show() for " + showInfo)
+        debugLog("show() for $showInfo")
 
-        mSequenceNumber = showInfo.sequenceNumber
-        mMenuItems = transformMenuItems(mContext, showInfo.menuItems)
-        mViewPortOnScreen.set(showInfo.viewPortOnScreen)
+        sequenceNumber = showInfo.sequenceNumber
+        menuItems = transformMenuItems(context, showInfo.menuItems)
+        viewPortOnScreen.set(showInfo.viewPortOnScreen)
 
         if (showInfo.layoutRequired) {
-            layoutMenuItems(mMenuItems!!, showInfo.suggestedWidth)
+            layoutMenuItems(menuItems!!, showInfo.suggestedWidth)
         }
 
         if (this.isHidden) {
@@ -414,323 +339,354 @@ class RemoteSelectionToolbar(
         preparePopupContent()
 
         if (!this.isShowing) {
-            mShowAnimation.start()
-            mCallbackWrapper.onShown(createWidgetInfo())
+            showAnimation.start()
+            callbackWrapper.onShown(createWidgetInfo())
         } else {
-            mCallbackWrapper.onWidgetUpdated(createWidgetInfo())
+            callbackWrapper.onWidgetUpdated(createWidgetInfo())
         }
 
-        mSurfaceControlViewHost!!.relayout(mPopupWidth, mPopupHeight)
+        surfaceControlViewHost!!.relayout(popupWidth, popupHeight)
 
-        mState = TOOLBAR_STATE_SHOWN
+        state = TOOLBAR_STATE_SHOWN
         // TODO(b/215681595): Use Choreographer to coordinate for show between different thread
-        mPreviousContentRect.set(showInfo.contentRect)
+        previousContentRect.set(showInfo.contentRect)
     }
 
     /** Dismiss the specified selection toolbar. */
     fun dismiss(uid: Int) {
-        debugLog("dismiss for uid: " + uid)
-        if (mState == TOOLBAR_STATE_DISMISSED) {
+        debugLog("dismiss for uid: $uid")
+        if (state == TOOLBAR_STATE_DISMISSED) {
             return
         }
 
-        if (!mImmediateHideAnimation.isStarted()) {
-            mDelayedHideAnimation.start()
+        if (!immediateHideAnimation.isStarted) {
+            delayedHideAnimation.start()
         }
-        mContentHolder.setContentRectEmpty()
-        mState = TOOLBAR_STATE_DISMISSED
+        contentHolder.setContentRectEmpty()
+        state = TOOLBAR_STATE_DISMISSED
     }
 
     /** Hide the specified selection toolbar. */
     fun hide(uid: Int) {
-        debugLog("hide for uid: " + uid)
+        debugLog("hide for uid: $uid")
         if (!this.isShowing) {
             return
         }
-        mDelayedHideAnimation.cancel()
-        mImmediateHideAnimation.start()
-        mContentHolder.setContentRectEmpty()
-        mState = TOOLBAR_STATE_HIDDEN
+        delayedHideAnimation.cancel()
+        immediateHideAnimation.start()
+        contentHolder.setContentRectEmpty()
+        state = TOOLBAR_STATE_HIDDEN
     }
 
     val isShowing: Boolean
-        get() = mState == TOOLBAR_STATE_SHOWN
+        get() = state == TOOLBAR_STATE_SHOWN
 
     val isHidden: Boolean
-        get() = mState == TOOLBAR_STATE_HIDDEN
+        get() = state == TOOLBAR_STATE_HIDDEN
 
     private fun refreshCoordinatesAndOverflowDirection(contentRectOnScreen: Rect) {
-        val x: Int
-        if (mPopupWidth > mViewPortOnScreen.width()) {
-            // Not enough space - prefer to position as far left as possible
-            x = mViewPortOnScreen.left
-        } else {
-            // Initialize x ensuring that the toolbar isn't rendered behind the system bar insets
-            x =
-                Math.clamp(
-                    (contentRectOnScreen.centerX() - mPopupWidth / 2).toLong(),
-                    mViewPortOnScreen.left,
-                    mViewPortOnScreen.right - mPopupWidth,
-                )
-        }
-
-        val y: Int
-
-        val availableHeightAboveContent = contentRectOnScreen.top - mViewPortOnScreen.top
-        val availableHeightBelowContent = mViewPortOnScreen.bottom - contentRectOnScreen.bottom
-
-        val margin = 2 * mMarginVertical
-        val toolbarHeightWithVerticalMargin = mLineHeight + margin
-
-        if (!hasOverflow()) {
-            if (availableHeightAboveContent >= toolbarHeightWithVerticalMargin) {
-                // There is enough space at the top of the content.
-                y = contentRectOnScreen.top - toolbarHeightWithVerticalMargin
-            } else if (availableHeightBelowContent >= toolbarHeightWithVerticalMargin) {
-                // There is enough space at the bottom of the content.
-                y = contentRectOnScreen.bottom
-            } else if (availableHeightBelowContent >= mLineHeight) {
-                // Just enough space to fit the toolbar with no vertical margins.
-                y = contentRectOnScreen.bottom - mMarginVertical
+        val x =
+            if (popupWidth > viewPortOnScreen.width()) {
+                // Not enough space - prefer to position as far left as possible
+                viewPortOnScreen.left
             } else {
-                // Not enough space. Prefer to position as high as possible.
-                y =
-                    max(
-                        mViewPortOnScreen.top,
-                        contentRectOnScreen.top - toolbarHeightWithVerticalMargin,
-                    )
+                // Initialize x ensuring that the toolbar isn't rendered behind the system bar
+                // insets
+                (contentRectOnScreen.centerX() - popupWidth / 2).coerceIn(
+                    viewPortOnScreen.left,
+                    viewPortOnScreen.right - popupWidth,
+                )
             }
-        } else {
-            // Has an overflow.
-            val minimumOverflowHeightWithMargin =
-                calculateOverflowHeight(MIN_OVERFLOW_SIZE) + margin
-            val availableHeightThroughContentDown =
-                (mViewPortOnScreen.bottom - contentRectOnScreen.top +
-                    toolbarHeightWithVerticalMargin)
-            val availableHeightThroughContentUp =
-                (contentRectOnScreen.bottom - mViewPortOnScreen.top +
-                    toolbarHeightWithVerticalMargin)
 
-            if (availableHeightAboveContent >= minimumOverflowHeightWithMargin) {
+        val availableHeightAboveContent = contentRectOnScreen.top - viewPortOnScreen.top
+        val availableHeightBelowContent = viewPortOnScreen.bottom - contentRectOnScreen.bottom
+
+        val margin = 2 * marginVertical
+        val toolbarHeightWithVerticalMargin = lineHeight + margin
+
+        val y =
+            if (hasOverflow()) {
+                getYCoordinateAndRefreshOverflowDirection(
+                    contentRectOnScreen,
+                    toolbarHeightWithVerticalMargin,
+                    availableHeightAboveContent,
+                    availableHeightBelowContent,
+                    margin,
+                )
+            } else {
+                getYCoordinateWithNoOverflow(
+                    contentRectOnScreen,
+                    toolbarHeightWithVerticalMargin,
+                    availableHeightAboveContent,
+                    availableHeightBelowContent,
+                )
+            }
+        relativeCoordsForToolbar.set(x, y)
+    }
+
+    private fun getYCoordinateAndRefreshOverflowDirection(
+        contentRectOnScreen: Rect,
+        toolbarHeightWithVerticalMargin: Int,
+        availableHeightAboveContent: Int,
+        availableHeightBelowContent: Int,
+        margin: Int,
+    ): Int {
+        // Has an overflow.
+        val minimumOverflowHeightWithMargin = calculateOverflowHeight(MIN_OVERFLOW_SIZE) + margin
+        val availableHeightThroughContentDown =
+            (viewPortOnScreen.bottom - contentRectOnScreen.top + toolbarHeightWithVerticalMargin)
+        val availableHeightThroughContentUp =
+            (contentRectOnScreen.bottom - viewPortOnScreen.top + toolbarHeightWithVerticalMargin)
+
+        return when {
+            availableHeightAboveContent >= minimumOverflowHeightWithMargin -> {
                 // There is enough space at the top of the content rect for the overflow.
                 // Position above and open upwards.
                 updateOverflowHeight(availableHeightAboveContent - margin)
-                y = contentRectOnScreen.top - mPopupHeight
-                mOpenOverflowUpwards = true
-            } else if (
-                availableHeightAboveContent >= toolbarHeightWithVerticalMargin &&
-                    availableHeightThroughContentDown >= minimumOverflowHeightWithMargin
-            ) {
+                openOverflowUpwards = true
+                contentRectOnScreen.top - popupHeight
+            }
+
+            availableHeightAboveContent >= toolbarHeightWithVerticalMargin &&
+                availableHeightThroughContentDown >= minimumOverflowHeightWithMargin -> {
                 // There is enough space at the top of the content rect for the main panel
                 // but not the overflow.
                 // Position above but open downwards.
                 updateOverflowHeight(availableHeightThroughContentDown - margin)
-                y = contentRectOnScreen.top - toolbarHeightWithVerticalMargin
-                mOpenOverflowUpwards = false
-            } else if (availableHeightBelowContent >= minimumOverflowHeightWithMargin) {
+                openOverflowUpwards = false
+                contentRectOnScreen.top - toolbarHeightWithVerticalMargin
+            }
+
+            availableHeightBelowContent >= minimumOverflowHeightWithMargin -> {
                 // There is enough space at the bottom of the content rect for the overflow.
                 // Position below and open downwards.
                 updateOverflowHeight(availableHeightBelowContent - margin)
-                y = contentRectOnScreen.bottom
-                mOpenOverflowUpwards = false
-            } else if (
-                availableHeightBelowContent >= toolbarHeightWithVerticalMargin &&
-                    mViewPortOnScreen.height() >= minimumOverflowHeightWithMargin
-            ) {
-                // There is enough space at the bottom of the content rect for the main panel
+                openOverflowUpwards = false
+                contentRectOnScreen.bottom
+            }
+
+            availableHeightBelowContent >= toolbarHeightWithVerticalMargin &&
+                viewPortOnScreen.height() >= minimumOverflowHeightWithMargin -> {
+                // There is enough space at the bottom of the content rect for the main
+                // panel
                 // but not the overflow.
                 // Position below but open upwards.
                 updateOverflowHeight(availableHeightThroughContentUp - margin)
-                y = (contentRectOnScreen.bottom + toolbarHeightWithVerticalMargin - mPopupHeight)
-                mOpenOverflowUpwards = true
-            } else {
+                openOverflowUpwards = true
+                contentRectOnScreen.bottom + toolbarHeightWithVerticalMargin - popupHeight
+            }
+
+            else -> {
                 // Not enough space.
                 // Position at the top of the view port and open downwards.
-                updateOverflowHeight(mViewPortOnScreen.height() - margin)
-                y = mViewPortOnScreen.top
-                mOpenOverflowUpwards = false
+                updateOverflowHeight(viewPortOnScreen.height() - margin)
+                openOverflowUpwards = false
+                viewPortOnScreen.top
             }
         }
-        mRelativeCoordsForToolbar.set(x, y)
     }
 
+    private fun getYCoordinateWithNoOverflow(
+        contentRectOnScreen: Rect,
+        toolbarHeightWithVerticalMargin: Int,
+        availableHeightAboveContent: Int,
+        availableHeightBelowContent: Int,
+    ): Int =
+        when {
+            availableHeightAboveContent >= toolbarHeightWithVerticalMargin -> {
+                // There is enough space at the top of the content.
+                contentRectOnScreen.top - toolbarHeightWithVerticalMargin
+            }
+
+            availableHeightBelowContent >= toolbarHeightWithVerticalMargin -> {
+                // There is enough space at the bottom of the content.
+                contentRectOnScreen.bottom
+            }
+
+            availableHeightBelowContent >= lineHeight -> {
+                // Just enough space to fit the toolbar with no vertical margins.
+                contentRectOnScreen.bottom - marginVertical
+            }
+
+            else -> {
+                // Not enough space. Prefer to position as high as possible.
+                max(viewPortOnScreen.top, contentRectOnScreen.top - toolbarHeightWithVerticalMargin)
+            }
+        }
+
     private fun cancelDismissAndHideAnimations() {
-        mDelayedHideAnimation.cancel()
-        mImmediateHideAnimation.cancel()
+        delayedHideAnimation.cancel()
+        immediateHideAnimation.cancel()
     }
 
     private fun cancelOverflowAnimations() {
-        mContentContainer.clearAnimation()
-        mMainPanel.animate().cancel()
-        mOverflowPanel.animate().cancel()
-        mToArrow.stop()
-        mToOverflow.stop()
+        contentContainer.clearAnimation()
+        mainPanel.animate().cancel()
+        overflowPanel.animate().cancel()
+        toArrow.stop()
+        toOverflow.stop()
     }
 
     private fun openOverflow() {
-        val targetWidth = mOverflowPanelSize!!.getWidth()
-        val targetHeight = mOverflowPanelSize!!.getHeight()
-        val startWidth = mContentContainer.getWidth()
-        val startHeight = mContentContainer.getHeight()
-        val startY = mContentContainer.getY()
-        val left = mContentContainer.getX()
-        val right = left + mContentContainer.getWidth()
+        val targetWidth = overflowPanelSize!!.width
+        val targetHeight = overflowPanelSize!!.height
+        val startWidth = contentContainer.width
+        val startHeight = contentContainer.height
+        val startY = contentContainer.y
+        val left = contentContainer.x
+        val right = left + contentContainer.width
         val widthAnimation: Animation =
             object : Animation() {
-                override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
                     val deltaWidth = (interpolatedTime * (targetWidth - startWidth)).toInt()
-                    setWidth(mContentContainer, startWidth + deltaWidth)
+                    setWidth(contentContainer, startWidth + deltaWidth)
                     if (isInRtlMode()) {
-                        mContentContainer.setX(left)
+                        contentContainer.x = left
 
                         // Lock the panels in place.
-                        mMainPanel.setX(0f)
-                        mOverflowPanel.setX(0f)
+                        mainPanel.x = 0f
+                        overflowPanel.x = 0f
                     } else {
-                        mContentContainer.setX(right - mContentContainer.getWidth())
+                        contentContainer.x = right - contentContainer.width
 
                         // Offset the panels' positions so they look like they're locked in place
                         // on the screen.
-                        mMainPanel.setX((mContentContainer.getWidth() - startWidth).toFloat())
-                        mOverflowPanel.setX((mContentContainer.getWidth() - targetWidth).toFloat())
+                        mainPanel.x = (contentContainer.width - startWidth).toFloat()
+                        overflowPanel.x = (contentContainer.width - targetWidth).toFloat()
                     }
                 }
             }
         val heightAnimation: Animation =
             object : Animation() {
-                override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
                     val deltaHeight = (interpolatedTime * (targetHeight - startHeight)).toInt()
-                    setHeight(mContentContainer, startHeight + deltaHeight)
-                    if (mOpenOverflowUpwards) {
-                        mContentContainer.setY(
-                            startY - (mContentContainer.getHeight() - startHeight)
-                        )
+                    setHeight(contentContainer, startHeight + deltaHeight)
+                    if (openOverflowUpwards) {
+                        contentContainer.y = startY - (contentContainer.height - startHeight)
                         positionContentYCoordinatesIfOpeningOverflowUpwards()
                     }
                 }
             }
-        val overflowButtonStartX = mOverflowButton.getX()
+        val overflowButtonStartX = overflowButton.x
         val overflowButtonTargetX =
-            if (isInRtlMode()) overflowButtonStartX + targetWidth - mOverflowButton.getWidth()
-            else overflowButtonStartX - targetWidth + mOverflowButton.getWidth()
+            if (isInRtlMode()) overflowButtonStartX + targetWidth - overflowButton.width
+            else overflowButtonStartX - targetWidth + overflowButton.width
         val overflowButtonAnimation: Animation =
             object : Animation() {
-                override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
                     val overflowButtonX =
                         (overflowButtonStartX +
                             interpolatedTime * (overflowButtonTargetX - overflowButtonStartX))
                     val deltaContainerWidth =
-                        (if (isInRtlMode()) 0 else mContentContainer.getWidth() - startWidth)
-                            .toFloat()
+                        (if (isInRtlMode()) 0 else contentContainer.width - startWidth).toFloat()
                     val actualOverflowButtonX = overflowButtonX + deltaContainerWidth
-                    mOverflowButton.setX(actualOverflowButtonX)
+                    overflowButton.x = actualOverflowButtonX
                     updateFloatingToolbarRootContentRect()
                 }
             }
-        widthAnimation.setInterpolator(mLogAccelerateInterpolator)
-        widthAnimation.setDuration(this.animationDuration.toLong())
-        heightAnimation.setInterpolator(mFastOutSlowInInterpolator)
-        heightAnimation.setDuration(this.animationDuration.toLong())
-        overflowButtonAnimation.setInterpolator(mFastOutSlowInInterpolator)
-        overflowButtonAnimation.setDuration(this.animationDuration.toLong())
-        mOpenOverflowAnimation.getAnimations().clear()
-        mOpenOverflowAnimation.addAnimation(widthAnimation)
-        mOpenOverflowAnimation.addAnimation(heightAnimation)
-        mOpenOverflowAnimation.addAnimation(overflowButtonAnimation)
-        mContentContainer.startAnimation(mOpenOverflowAnimation)
-        mIsOverflowOpen = true
-        mMainPanel
+        widthAnimation.interpolator = logAccelerateInterpolator
+        widthAnimation.duration = this.animationDuration.toLong()
+        heightAnimation.interpolator = fastOutSlowInInterpolator
+        heightAnimation.duration = this.animationDuration.toLong()
+        overflowButtonAnimation.interpolator = fastOutSlowInInterpolator
+        overflowButtonAnimation.duration = this.animationDuration.toLong()
+        openOverflowAnimation.animations.clear()
+        openOverflowAnimation.addAnimation(widthAnimation)
+        openOverflowAnimation.addAnimation(heightAnimation)
+        openOverflowAnimation.addAnimation(overflowButtonAnimation)
+        contentContainer.startAnimation(openOverflowAnimation)
+        isOverflowOpen = true
+        mainPanel
             .animate()
             .alpha(0f)
             .withLayer()
-            .setInterpolator(mLinearOutSlowInInterpolator)
+            .setInterpolator(linearOutSlowInInterpolator)
             .setDuration(250)
             .start()
-        mOverflowPanel.setAlpha(1f) // fadeIn in 0ms.
+        overflowPanel.alpha = 1f // fadeIn in 0ms.
     }
 
     private fun closeOverflow() {
-        val targetWidth = mMainPanelSize!!.getWidth()
-        val startWidth = mContentContainer.getWidth()
-        val left = mContentContainer.getX()
-        val right = left + mContentContainer.getWidth()
+        val targetWidth = mainPanelSize!!.width
+        val startWidth = contentContainer.width
+        val left = contentContainer.x
+        val right = left + contentContainer.width
         val widthAnimation: Animation =
             object : Animation() {
-                override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
                     val deltaWidth = (interpolatedTime * (targetWidth - startWidth)).toInt()
-                    setWidth(mContentContainer, startWidth + deltaWidth)
+                    setWidth(contentContainer, startWidth + deltaWidth)
                     if (isInRtlMode()) {
-                        mContentContainer.setX(left)
+                        contentContainer.x = left
 
                         // Lock the panels in place.
-                        mMainPanel.setX(0f)
-                        mOverflowPanel.setX(0f)
+                        mainPanel.x = 0f
+                        overflowPanel.x = 0f
                     } else {
-                        mContentContainer.setX(right - mContentContainer.getWidth())
+                        contentContainer.x = right - contentContainer.width
 
                         // Offset the panels' positions so they look like they're locked in place
                         // on the screen.
-                        mMainPanel.setX((mContentContainer.getWidth() - targetWidth).toFloat())
-                        mOverflowPanel.setX((mContentContainer.getWidth() - startWidth).toFloat())
+                        mainPanel.x = (contentContainer.width - targetWidth).toFloat()
+                        overflowPanel.x = (contentContainer.width - startWidth).toFloat()
                     }
                 }
             }
-        val targetHeight = mMainPanelSize!!.getHeight()
-        val startHeight = mContentContainer.getHeight()
-        val bottom = mContentContainer.getY() + mContentContainer.getHeight()
+        val targetHeight = mainPanelSize!!.height
+        val startHeight = contentContainer.height
+        val bottom = contentContainer.y + contentContainer.height
         val heightAnimation: Animation =
             object : Animation() {
-                override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
                     val deltaHeight = (interpolatedTime * (targetHeight - startHeight)).toInt()
-                    setHeight(mContentContainer, startHeight + deltaHeight)
-                    if (mOpenOverflowUpwards) {
-                        mContentContainer.setY(bottom - mContentContainer.getHeight())
+                    setHeight(contentContainer, startHeight + deltaHeight)
+                    if (openOverflowUpwards) {
+                        contentContainer.y = bottom - contentContainer.height
                         positionContentYCoordinatesIfOpeningOverflowUpwards()
                     }
                 }
             }
-        val overflowButtonStartX = mOverflowButton.getX()
+        val overflowButtonStartX = overflowButton.x
         val overflowButtonTargetX =
-            if (isInRtlMode()) overflowButtonStartX - startWidth + mOverflowButton.getWidth()
-            else overflowButtonStartX + startWidth - mOverflowButton.getWidth()
+            if (isInRtlMode()) overflowButtonStartX - startWidth + overflowButton.width
+            else overflowButtonStartX + startWidth - overflowButton.width
         val overflowButtonAnimation: Animation =
             object : Animation() {
-                override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
                     val overflowButtonX =
                         (overflowButtonStartX +
                             interpolatedTime * (overflowButtonTargetX - overflowButtonStartX))
                     val deltaContainerWidth =
-                        (if (isInRtlMode()) 0 else mContentContainer.getWidth() - startWidth)
-                            .toFloat()
+                        (if (isInRtlMode()) 0 else contentContainer.width - startWidth).toFloat()
                     val actualOverflowButtonX = overflowButtonX + deltaContainerWidth
-                    mOverflowButton.setX(actualOverflowButtonX)
+                    overflowButton.x = actualOverflowButtonX
                     updateFloatingToolbarRootContentRect()
                 }
             }
-        widthAnimation.setInterpolator(mFastOutSlowInInterpolator)
-        widthAnimation.setDuration(this.animationDuration.toLong())
-        heightAnimation.setInterpolator(mLogAccelerateInterpolator)
-        heightAnimation.setDuration(this.animationDuration.toLong())
-        overflowButtonAnimation.setInterpolator(mFastOutSlowInInterpolator)
-        overflowButtonAnimation.setDuration(this.animationDuration.toLong())
-        mCloseOverflowAnimation.getAnimations().clear()
-        mCloseOverflowAnimation.addAnimation(widthAnimation)
-        mCloseOverflowAnimation.addAnimation(heightAnimation)
-        mCloseOverflowAnimation.addAnimation(overflowButtonAnimation)
-        mContentContainer.startAnimation(mCloseOverflowAnimation)
-        mIsOverflowOpen = false
-        mMainPanel
+        widthAnimation.interpolator = fastOutSlowInInterpolator
+        widthAnimation.duration = this.animationDuration.toLong()
+        heightAnimation.interpolator = logAccelerateInterpolator
+        heightAnimation.duration = this.animationDuration.toLong()
+        overflowButtonAnimation.interpolator = fastOutSlowInInterpolator
+        overflowButtonAnimation.duration = this.animationDuration.toLong()
+        closeOverflowAnimation.animations.clear()
+        closeOverflowAnimation.addAnimation(widthAnimation)
+        closeOverflowAnimation.addAnimation(heightAnimation)
+        closeOverflowAnimation.addAnimation(overflowButtonAnimation)
+        contentContainer.startAnimation(closeOverflowAnimation)
+        isOverflowOpen = false
+        mainPanel
             .animate()
             .alpha(1f)
             .withLayer()
-            .setInterpolator(mFastOutLinearInInterpolator)
+            .setInterpolator(fastOutLinearInInterpolator)
             .setDuration(100)
             .start()
-        mOverflowPanel
+        overflowPanel
             .animate()
             .alpha(0f)
             .withLayer()
-            .setInterpolator(mLinearOutSlowInInterpolator)
+            .setInterpolator(linearOutSlowInInterpolator)
             .setDuration(150)
             .start()
     }
@@ -740,135 +696,116 @@ class RemoteSelectionToolbar(
      * stopped.
      */
     private fun setPanelsStatesAtRestingPosition() {
-        mOverflowButton.setEnabled(true)
-        mOverflowPanel.awakenScrollBars()
+        overflowButton.isEnabled = true
+        overflowPanel.awakenScrollBars()
 
-        if (mIsOverflowOpen) {
+        if (isOverflowOpen) {
             // Set open state.
-            val containerSize = mOverflowPanelSize
-            Companion.setSize(mContentContainer, containerSize!!)
-            mMainPanel.setAlpha(0f)
-            mMainPanel.setVisibility(View.INVISIBLE)
-            mOverflowPanel.setAlpha(1f)
-            mOverflowPanel.setVisibility(View.VISIBLE)
-            mOverflowButton.setImageDrawable(mArrow)
-            mOverflowButton.setContentDescription(
-                mContext.getString(R.string.floating_toolbar_close_overflow_description)
-            )
+            val containerSize = overflowPanelSize
+            setSize(contentContainer, containerSize!!)
+            mainPanel.alpha = 0f
+            mainPanel.visibility = View.INVISIBLE
+            overflowPanel.alpha = 1f
+            overflowPanel.visibility = View.VISIBLE
+            overflowButton.setImageDrawable(arrow)
+            overflowButton.contentDescription =
+                context.getString(R.string.floating_toolbar_close_overflow_description)
 
             // Update x-coordinates depending on RTL state.
             if (isInRtlMode()) {
-                mContentContainer.setX(mMarginHorizontal.toFloat()) // align left
-                mMainPanel.setX(0f) // align left
-                mOverflowButton.setX( // align right
-                    (containerSize.getWidth() - mOverflowButtonSize.getWidth()).toFloat()
-                )
-                mOverflowPanel.setX(0f) // align left
+                contentContainer.x = marginHorizontal.toFloat() // align left
+                mainPanel.x = 0f // align left
+                overflowButton.x = (containerSize.width - overflowButtonSize.width).toFloat()
+                overflowPanel.x = 0f // align left
             } else {
-                mContentContainer.setX( // align right
-                    (mPopupWidth - containerSize.getWidth() - mMarginHorizontal).toFloat()
-                )
-                mMainPanel.setX(-mContentContainer.getX()) // align right
-                mOverflowButton.setX(0f) // align left
-                mOverflowPanel.setX(0f) // align left
+                contentContainer.x = (popupWidth - containerSize.width - marginHorizontal).toFloat()
+                mainPanel.x = -contentContainer.x // align right
+                overflowButton.x = 0f // align left
+                overflowPanel.x = 0f // align left
             }
 
             // Update y-coordinates depending on overflow's open direction.
-            if (mOpenOverflowUpwards) {
-                mContentContainer.setY(mMarginVertical.toFloat()) // align top
-                mMainPanel.setY( // align bottom
-                    (containerSize.getHeight() - mContentContainer.getHeight()).toFloat()
-                )
-                mOverflowButton.setY( // align bottom
-                    (containerSize.getHeight() - mOverflowButtonSize.getHeight()).toFloat()
-                )
-                mOverflowPanel.setY(0f) // align top
+            if (openOverflowUpwards) {
+                contentContainer.y = marginVertical.toFloat() // align top
+                mainPanel.y = (containerSize.height - contentContainer.height).toFloat()
+                overflowButton.y = (containerSize.height - overflowButtonSize.height).toFloat()
+                overflowPanel.y = 0f // align top
             } else {
                 // opens downwards.
-                mContentContainer.setY(mMarginVertical.toFloat()) // align top
-                mMainPanel.setY(0f) // align top
-                mOverflowButton.setY(0f) // align top
-                mOverflowPanel.setY(mOverflowButtonSize.getHeight().toFloat()) // align bottom
+                contentContainer.y = marginVertical.toFloat() // align top
+                mainPanel.y = 0f // align top
+                overflowButton.y = 0f // align top
+                overflowPanel.y = overflowButtonSize.height.toFloat() // align bottom
             }
         } else {
             // Overflow not open. Set closed state.
-            val containerSize = mMainPanelSize
-            Companion.setSize(mContentContainer, containerSize!!)
-            mMainPanel.setAlpha(1f)
-            mMainPanel.setVisibility(View.VISIBLE)
-            mOverflowPanel.setAlpha(0f)
-            mOverflowPanel.setVisibility(View.INVISIBLE)
-            mOverflowButton.setImageDrawable(mOverflow)
-            mOverflowButton.setContentDescription(
-                mContext.getString(R.string.floating_toolbar_open_overflow_description)
-            )
+            val containerSize = mainPanelSize
+            setSize(contentContainer, containerSize!!)
+            mainPanel.alpha = 1f
+            mainPanel.visibility = View.VISIBLE
+            overflowPanel.alpha = 0f
+            overflowPanel.visibility = View.INVISIBLE
+            overflowButton.setImageDrawable(overflow)
+            overflowButton.contentDescription =
+                context.getString(R.string.floating_toolbar_open_overflow_description)
 
             if (hasOverflow()) {
                 // Update x-coordinates depending on RTL state.
                 if (isInRtlMode()) {
-                    mContentContainer.setX(mMarginHorizontal.toFloat()) // align left
-                    mMainPanel.setX(0f) // align left
-                    mOverflowButton.setX(0f) // align left
-                    mOverflowPanel.setX(0f) // align left
+                    contentContainer.x = marginHorizontal.toFloat() // align left
+                    mainPanel.x = 0f // align left
+                    overflowButton.x = 0f // align left
+                    overflowPanel.x = 0f // align left
                 } else {
-                    mContentContainer.setX( // align right
-                        (mPopupWidth - containerSize.getWidth() - mMarginHorizontal).toFloat()
-                    )
-                    mMainPanel.setX(0f) // align left
-                    mOverflowButton.setX( // align right
-                        (containerSize.getWidth() - mOverflowButtonSize.getWidth()).toFloat()
-                    )
-                    mOverflowPanel.setX( // align right
-                        (containerSize.getWidth() - mOverflowPanelSize!!.getWidth()).toFloat()
-                    )
+                    contentContainer.x =
+                        (popupWidth - containerSize.width - marginHorizontal).toFloat()
+                    mainPanel.x = 0f // align left
+                    overflowButton.x = (containerSize.width - overflowButtonSize.width).toFloat()
+                    overflowPanel.x = (containerSize.width - overflowPanelSize!!.width).toFloat()
                 }
 
                 // Update y-coordinates depending on overflow's open direction.
-                if (mOpenOverflowUpwards) {
-                    mContentContainer.setY( // align bottom
-                        (mMarginVertical + mOverflowPanelSize!!.getHeight() -
-                                containerSize.getHeight())
+                if (openOverflowUpwards) {
+                    contentContainer.y =
+                        (marginVertical + overflowPanelSize!!.height - containerSize.height)
                             .toFloat()
-                    )
-                    mMainPanel.setY(0f) // align top
-                    mOverflowButton.setY(0f) // align top
-                    mOverflowPanel.setY( // align bottom
-                        (containerSize.getHeight() - mOverflowPanelSize!!.getHeight()).toFloat()
-                    )
+                    mainPanel.y = 0f // align top
+                    overflowButton.y = 0f // align top
+                    overflowPanel.y = (containerSize.height - overflowPanelSize!!.height).toFloat()
                 } else {
                     // opens downwards.
-                    mContentContainer.setY(mMarginVertical.toFloat()) // align top
-                    mMainPanel.setY(0f) // align top
-                    mOverflowButton.setY(0f) // align top
-                    mOverflowPanel.setY(mOverflowButtonSize.getHeight().toFloat()) // align bottom
+                    contentContainer.y = marginVertical.toFloat() // align top
+                    mainPanel.y = 0f // align top
+                    overflowButton.y = 0f // align top
+                    overflowPanel.y = overflowButtonSize.height.toFloat() // align bottom
                 }
             } else {
                 // No overflow.
-                mContentContainer.setX(mMarginHorizontal.toFloat()) // align left
-                mContentContainer.setY(mMarginVertical.toFloat()) // align top
-                mMainPanel.setX(0f) // align left
-                mMainPanel.setY(0f) // align top
+                contentContainer.x = marginHorizontal.toFloat() // align left
+                contentContainer.y = marginVertical.toFloat() // align top
+                mainPanel.x = 0f // align left
+                mainPanel.y = 0f // align top
             }
         }
     }
 
     private fun updateOverflowHeight(suggestedHeight: Int) {
         if (hasOverflow()) {
-            val maxItemSize = (suggestedHeight - mOverflowButtonSize.getHeight()) / mLineHeight
+            val maxItemSize = (suggestedHeight - overflowButtonSize.height) / lineHeight
             val newHeight = calculateOverflowHeight(maxItemSize)
-            if (mOverflowPanelSize!!.getHeight() != newHeight) {
-                mOverflowPanelSize = Size(mOverflowPanelSize!!.getWidth(), newHeight)
+            if (overflowPanelSize!!.height != newHeight) {
+                overflowPanelSize = Size(overflowPanelSize!!.width, newHeight)
             }
-            Companion.setSize(mOverflowPanel, mOverflowPanelSize!!)
-            if (mIsOverflowOpen) {
-                Companion.setSize(mContentContainer, mOverflowPanelSize!!)
-                if (mOpenOverflowUpwards) {
-                    val deltaHeight = mOverflowPanelSize!!.getHeight() - newHeight
-                    mContentContainer.setY(mContentContainer.getY() + deltaHeight)
-                    mOverflowButton.setY(mOverflowButton.getY() - deltaHeight)
+            setSize(overflowPanel, overflowPanelSize!!)
+            if (isOverflowOpen) {
+                setSize(contentContainer, overflowPanelSize!!)
+                if (openOverflowUpwards) {
+                    val deltaHeight = overflowPanelSize!!.height - newHeight
+                    contentContainer.y += deltaHeight
+                    overflowButton.y -= deltaHeight
                 }
             } else {
-                Companion.setSize(mContentContainer, mMainPanelSize!!)
+                setSize(contentContainer, mainPanelSize!!)
             }
             updatePopupSize()
         }
@@ -877,45 +814,42 @@ class RemoteSelectionToolbar(
     private fun updatePopupSize() {
         var width = 0
         var height = 0
-        if (mMainPanelSize != null) {
-            width = max(width, mMainPanelSize!!.getWidth())
-            height = max(height, mMainPanelSize!!.getHeight())
+        if (mainPanelSize != null) {
+            width = max(width, mainPanelSize!!.width)
+            height = max(height, mainPanelSize!!.height)
         }
-        if (mOverflowPanelSize != null) {
-            width = max(width, mOverflowPanelSize!!.getWidth())
-            height = max(height, mOverflowPanelSize!!.getHeight())
+        if (overflowPanelSize != null) {
+            width = max(width, overflowPanelSize!!.width)
+            height = max(height, overflowPanelSize!!.height)
         }
 
-        mPopupWidth = width + mMarginHorizontal * 2
-        mPopupHeight = height + mMarginVertical * 2
+        popupWidth = width + marginHorizontal * 2
+        popupHeight = height + marginVertical * 2
         maybeComputeTransitionDurationScale()
     }
 
     private fun getAdjustedToolbarWidth(suggestedWidth: Int): Int {
         var width = suggestedWidth
         val maximumWidth =
-            mViewPortOnScreen.width() -
+            viewPortOnScreen.width() -
                 2 *
-                    mContext
-                        .getResources()
-                        .getDimensionPixelSize(R.dimen.floating_toolbar_horizontal_margin)
+                    context.resources.getDimensionPixelSize(
+                        R.dimen.floating_toolbar_horizontal_margin
+                    )
         if (width <= 0) {
             width =
-                mContext
-                    .getResources()
-                    .getDimensionPixelSize(R.dimen.floating_toolbar_preferred_width)
+                context.resources.getDimensionPixelSize(R.dimen.floating_toolbar_preferred_width)
         }
         return min(width, maximumWidth)
     }
 
     private fun isInRtlMode(): Boolean =
         // TODO STOPSHIP b/411457891 the context might not have the right information
-        mContext.getApplicationInfo().hasRtlSupport() &&
-            (mContext.getResources().getConfiguration().getLayoutDirection() ==
-                View.LAYOUT_DIRECTION_RTL)
+        context.applicationInfo.hasRtlSupport() &&
+            (context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL)
 
     private fun hasOverflow(): Boolean {
-        return mOverflowPanelSize != null
+        return overflowPanelSize != null
     }
 
     /**
@@ -925,10 +859,10 @@ class RemoteSelectionToolbar(
      * @return The menu items that are not included in this main panel.
      */
     private fun layoutMainPanelItems(
-        menuItems: MutableList<ToolbarMenuItem>,
+        menuItems: List<ToolbarMenuItem>,
         toolbarWidth: Int,
-    ): MutableList<ToolbarMenuItem> {
-        val remainingMenuItems = ArrayList<ToolbarMenuItem>()
+    ): List<ToolbarMenuItem> {
+        val remainingMenuItems = mutableListOf<ToolbarMenuItem>()
         // add the overflow menu items to the end of the remainingMenuItems list.
         val overflowMenuItems = mutableListOf<ToolbarMenuItem>()
         for (menuItem in menuItems) {
@@ -943,13 +877,13 @@ class RemoteSelectionToolbar(
         }
         remainingMenuItems.addAll(overflowMenuItems)
 
-        mMainPanel.removeAllViews()
-        mMainPanel.setPaddingRelative(0, 0, 0, 0)
+        mainPanel.removeAllViews()
+        mainPanel.setPaddingRelative(0, 0, 0, 0)
 
         var availableWidth = toolbarWidth
         var isFirstItem = true
         while (!remainingMenuItems.isEmpty()) {
-            val menuItem = remainingMenuItems.get(0)
+            val menuItem = remainingMenuItems[0]
             // if this is the first item, regardless of requiresOverflow(), it should be
             // displayed on the main panel. Otherwise all items including this one will be
             // overflow items, and should be displayed in overflow panel.
@@ -958,44 +892,44 @@ class RemoteSelectionToolbar(
             }
             val showIcon = isFirstItem && menuItem.itemId == R.id.textAssist
             val menuItemButton: View =
-                createMenuItemButton(mContext, menuItem, mIconTextSpacing, showIcon)
+                createMenuItemButton(context, menuItem, iconTextSpacing, showIcon)
             if (!showIcon && menuItemButton is LinearLayout) {
-                menuItemButton.setGravity(Gravity.CENTER)
+                menuItemButton.gravity = Gravity.CENTER
             }
             // Adding additional start padding for the first button to even out button spacing.
             if (isFirstItem) {
                 menuItemButton.setPaddingRelative(
-                    (1.5 * menuItemButton.getPaddingStart()).toInt(),
-                    menuItemButton.getPaddingTop(),
-                    menuItemButton.getPaddingEnd(),
-                    menuItemButton.getPaddingBottom(),
+                    (1.5 * menuItemButton.paddingStart).toInt(),
+                    menuItemButton.paddingTop,
+                    menuItemButton.paddingEnd,
+                    menuItemButton.paddingBottom,
                 )
             }
             // Adding additional end padding for the last button to even out button spacing.
             val isLastItem = remainingMenuItems.size == 1
             if (isLastItem) {
                 menuItemButton.setPaddingRelative(
-                    menuItemButton.getPaddingStart(),
-                    menuItemButton.getPaddingTop(),
-                    (1.5 * menuItemButton.getPaddingEnd()).toInt(),
-                    menuItemButton.getPaddingBottom(),
+                    menuItemButton.paddingStart,
+                    menuItemButton.paddingTop,
+                    (1.5 * menuItemButton.paddingEnd).toInt(),
+                    menuItemButton.paddingBottom,
                 )
             }
             menuItemButton.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
-            val menuItemButtonWidth = min(menuItemButton.getMeasuredWidth(), toolbarWidth)
+            val menuItemButtonWidth = min(menuItemButton.measuredWidth, toolbarWidth)
             // Check if we can fit an item while reserving space for the overflowButton.
             val canFitWithOverflow =
-                menuItemButtonWidth <= availableWidth - mOverflowButtonSize.getWidth()
+                menuItemButtonWidth <= availableWidth - overflowButtonSize.width
             val canFitNoOverflow = isLastItem && menuItemButtonWidth <= availableWidth
             if (canFitWithOverflow || canFitNoOverflow) {
-                menuItemButton.setTag(menuItem)
-                menuItemButton.setOnClickListener(mMenuItemButtonOnClickListener)
+                menuItemButton.tag = menuItem
+                menuItemButton.setOnClickListener(menuItemButtonOnClickListener)
                 // Set tooltips for main panel items, but not overflow items (b/35726766).
-                menuItemButton.setTooltipText(menuItem.tooltipText)
-                mMainPanel.addView(menuItemButton)
-                val params = menuItemButton.getLayoutParams()
+                menuItemButton.tooltipText = menuItem.tooltipText
+                mainPanel.addView(menuItemButton)
+                val params = menuItemButton.layoutParams
                 params.width = menuItemButtonWidth
-                menuItemButton.setLayoutParams(params)
+                menuItemButton.layoutParams = params
                 availableWidth -= menuItemButtonWidth
                 remainingMenuItems.removeAt(0)
             } else {
@@ -1005,43 +939,43 @@ class RemoteSelectionToolbar(
         }
         if (!remainingMenuItems.isEmpty()) {
             // Reserve space for overflowButton.
-            mMainPanel.setPaddingRelative(0, 0, mOverflowButtonSize.getWidth(), 0)
+            mainPanel.setPaddingRelative(0, 0, overflowButtonSize.width, 0)
         }
-        mMainPanelSize = measure(mMainPanel)
+        mainPanelSize = measure(mainPanel)
 
         return remainingMenuItems
     }
 
-    private fun layoutOverflowPanelItems(menuItems: MutableList<ToolbarMenuItem>) {
-        val overflowPanelAdapter = mOverflowPanel.getAdapter() as ArrayAdapter<ToolbarMenuItem?>
+    private fun layoutOverflowPanelItems(menuItems: List<ToolbarMenuItem>) {
+        val overflowPanelAdapter = overflowPanel.adapter as ArrayAdapter<ToolbarMenuItem>
         overflowPanelAdapter.clear()
         val size = menuItems.size
         for (i in 0..<size) {
-            overflowPanelAdapter.add(menuItems.get(i))
+            overflowPanelAdapter.add(menuItems[i])
         }
-        mOverflowPanel.setAdapter(overflowPanelAdapter)
-        if (mOpenOverflowUpwards) {
-            mOverflowPanel.setY(0f)
+        overflowPanel.adapter = overflowPanelAdapter
+        if (openOverflowUpwards) {
+            overflowPanel.y = 0f
         } else {
-            mOverflowPanel.setY(mOverflowButtonSize.getHeight().toFloat())
+            overflowPanel.y = overflowButtonSize.height.toFloat()
         }
-        val width = max(this.overflowWidth, mOverflowButtonSize.getWidth())
+        val width = max(overflowWidth, overflowButtonSize.width)
         val height = calculateOverflowHeight(MAX_OVERFLOW_SIZE)
-        mOverflowPanelSize = Size(width, height)
-        Companion.setSize(mOverflowPanel, mOverflowPanelSize!!)
+        overflowPanelSize = Size(width, height)
+        setSize(overflowPanel, overflowPanelSize!!)
     }
 
     /** Resets the content container and appropriately position it's panels. */
     private fun preparePopupContent() {
-        mContentContainer.removeAllViews()
+        contentContainer.removeAllViews()
         // Add views in the specified order so they stack up as expected.
         // Order: overflowPanel, mainPanel, overflowButton.
         if (hasOverflow()) {
-            mContentContainer.addView(mOverflowPanel)
+            contentContainer.addView(overflowPanel)
         }
-        mContentContainer.addView(mMainPanel)
+        contentContainer.addView(mainPanel)
         if (hasOverflow()) {
-            mContentContainer.addView(mOverflowButton)
+            contentContainer.addView(overflowButton)
         }
         setPanelsStatesAtRestingPosition()
 
@@ -1049,45 +983,38 @@ class RemoteSelectionToolbar(
         // Hide the view and post a runnable to recalculate positions and render the view.
         // TODO: Investigate why this happens and fix.
         if (isInRtlMode()) {
-            mContentContainer.setAlpha(0f)
-            mContentContainer.post(mPreparePopupContentRTLHelper)
+            contentContainer.alpha = 0f
+            contentContainer.post(preparePopupContentRTLHelper)
         }
     }
 
     /** Clears out the panels and their container. Resets their calculated sizes. */
     private fun clearPanels() {
-        mIsOverflowOpen = false
-        mMainPanelSize = null
-        mMainPanel.removeAllViews()
-        mOverflowPanelSize = null
-        val overflowPanelAdapter = mOverflowPanel.getAdapter() as ArrayAdapter<ToolbarMenuItem?>
+        isOverflowOpen = false
+        mainPanelSize = null
+        mainPanel.removeAllViews()
+        overflowPanelSize = null
+        val overflowPanelAdapter = overflowPanel.adapter as ArrayAdapter<ToolbarMenuItem>
         overflowPanelAdapter.clear()
-        mOverflowPanel.setAdapter(overflowPanelAdapter)
-        mContentContainer.removeAllViews()
+        overflowPanel.adapter = overflowPanelAdapter
+        contentContainer.removeAllViews()
     }
 
     private fun positionContentYCoordinatesIfOpeningOverflowUpwards() {
-        if (mOpenOverflowUpwards) {
-            mMainPanel.setY(
-                (mContentContainer.getHeight() - mMainPanelSize!!.getHeight()).toFloat()
-            )
-            mOverflowButton.setY(
-                (mContentContainer.getHeight() - mOverflowButton.getHeight()).toFloat()
-            )
-            mOverflowPanel.setY(
-                (mContentContainer.getHeight() - mOverflowPanelSize!!.getHeight()).toFloat()
-            )
+        if (openOverflowUpwards) {
+            mainPanel.y = (contentContainer.height - mainPanelSize!!.height).toFloat()
+            overflowButton.y = (contentContainer.height - overflowButton.height).toFloat()
+            overflowPanel.y = (contentContainer.height - overflowPanelSize!!.height).toFloat()
         }
     }
 
     private val overflowWidth: Int
         get() {
             var overflowWidth = 0
-            val count = mOverflowPanel.getAdapter().getCount()
+            val count = overflowPanel.adapter.count
             for (i in 0..<count) {
-                val menuItem = mOverflowPanel.getAdapter().getItem(i) as ToolbarMenuItem
-                overflowWidth =
-                    max(mOverflowPanelViewHelper.calculateWidth(menuItem), overflowWidth)
+                val menuItem = overflowPanel.adapter.getItem(i) as ToolbarMenuItem
+                overflowWidth = max(overflowPanelViewHelper.calculateWidth(menuItem), overflowWidth)
             }
             return overflowWidth
         }
@@ -1095,17 +1022,14 @@ class RemoteSelectionToolbar(
     private fun calculateOverflowHeight(maxItemSize: Int): Int {
         // Maximum of 4 items, minimum of 2 if the overflow has to scroll.
         val actualSize =
-            min(
-                MAX_OVERFLOW_SIZE,
-                min(max(MIN_OVERFLOW_SIZE, maxItemSize), mOverflowPanel.getCount()),
-            )
+            min(MAX_OVERFLOW_SIZE, min(max(MIN_OVERFLOW_SIZE, maxItemSize), overflowPanel.count))
         var extension = 0
-        if (actualSize < mOverflowPanel.getCount()) {
+        if (actualSize < overflowPanel.count) {
             // The overflow will require scrolling to get to all the items.
             // Extend the height so that part of the hidden items is displayed.
-            extension = (mLineHeight * 0.5f).toInt()
+            extension = (lineHeight * 0.5f).toInt()
         }
-        return (actualSize * mLineHeight + mOverflowButtonSize.getHeight() + extension)
+        return (actualSize * lineHeight + overflowButtonSize.height + extension)
     }
 
     private val animationDuration: Int
@@ -1114,10 +1038,10 @@ class RemoteSelectionToolbar(
          * animations. See comment about this in the code.
          */
         get() {
-            if (mTransitionDurationScale < 150) {
+            if (transitionDurationScale < 150) {
                 // For smaller transition, decrease the time.
                 return 200
-            } else if (mTransitionDurationScale > 300) {
+            } else if (transitionDurationScale > 300) {
                 // For bigger transition, increase the time.
                 return 300
             }
@@ -1130,33 +1054,30 @@ class RemoteSelectionToolbar(
         }
 
     private fun maybeComputeTransitionDurationScale() {
-        if (mMainPanelSize != null && mOverflowPanelSize != null) {
-            val w = mMainPanelSize!!.getWidth() - mOverflowPanelSize!!.getWidth()
-            val h = mOverflowPanelSize!!.getHeight() - mMainPanelSize!!.getHeight()
-            mTransitionDurationScale =
+        if (mainPanelSize != null && overflowPanelSize != null) {
+            val w = mainPanelSize!!.width - overflowPanelSize!!.width
+            val h = overflowPanelSize!!.height - mainPanelSize!!.height
+            transitionDurationScale =
                 (sqrt((w * w + h * h).toDouble()) /
-                        mContentContainer.getContext().getResources().getDisplayMetrics().density)
+                        contentContainer.context.resources.displayMetrics.density)
                     .toInt()
         }
     }
 
     private fun createMainPanel(): ViewGroup {
-        return object : LinearLayout(mContext) {
+        return object : LinearLayout(context) {
             override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
                 var widthMeasureSpec = widthMeasureSpec
                 if (isOverflowAnimating()) {
                     // Update widthMeasureSpec to make sure that this view is not clipped
                     // as we offset its coordinates with respect to its parent.
                     widthMeasureSpec =
-                        MeasureSpec.makeMeasureSpec(
-                            mMainPanelSize!!.getWidth(),
-                            MeasureSpec.EXACTLY,
-                        )
+                        MeasureSpec.makeMeasureSpec(mainPanelSize!!.width, MeasureSpec.EXACTLY)
                 }
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec)
             }
 
-            override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+            override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
                 // Intercept the touch event while the overflow is animating.
                 return isOverflowAnimating()
             }
@@ -1165,111 +1086,106 @@ class RemoteSelectionToolbar(
 
     private fun createOverflowButton(): ImageButton {
         val overflowButton =
-            LayoutInflater.from(mContext).inflate(R.layout.floating_popup_overflow_button, null)
+            LayoutInflater.from(context).inflate(R.layout.floating_popup_overflow_button, null)
                 as ImageButton
-        overflowButton.setImageDrawable(mOverflow)
-        overflowButton.setOnClickListener(
-            View.OnClickListener { v: View? ->
-                if (this.isShowing) {
-                    preparePopupContent()
-                    val widgetInfo = createWidgetInfo()
-                    mSurfaceControlViewHost!!.relayout(mPopupWidth, mPopupHeight)
-                    mCallbackWrapper.onWidgetUpdated(widgetInfo)
-                }
-                if (mIsOverflowOpen) {
-                    overflowButton.setImageDrawable(mToOverflow)
-                    mToOverflow.start()
-                    closeOverflow()
-                } else {
-                    overflowButton.setImageDrawable(mToArrow)
-                    mToArrow.start()
-                    openOverflow()
-                }
+        overflowButton.setImageDrawable(overflow)
+        overflowButton.setOnClickListener { _: View ->
+            if (isShowing) {
+                preparePopupContent()
+                val widgetInfo = createWidgetInfo()
+                surfaceControlViewHost!!.relayout(popupWidth, popupHeight)
+                callbackWrapper.onWidgetUpdated(widgetInfo)
             }
-        )
+            if (isOverflowOpen) {
+                overflowButton.setImageDrawable(toOverflow)
+                toOverflow.start()
+                closeOverflow()
+            } else {
+                overflowButton.setImageDrawable(toArrow)
+                toArrow.start()
+                openOverflow()
+            }
+        }
         return overflowButton
     }
 
     private fun createOverflowPanel(): OverflowPanel {
         val overflowPanel = OverflowPanel(this)
-        overflowPanel.setLayoutParams(
+        overflowPanel.layoutParams =
             ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
             )
-        )
-        overflowPanel.setDivider(null)
-        overflowPanel.setDividerHeight(0)
+        overflowPanel.divider = null
+        overflowPanel.dividerHeight = 0
 
         val adapter: ArrayAdapter<*> =
-            object : ArrayAdapter<ToolbarMenuItem?>(mContext, 0) {
+            object : ArrayAdapter<ToolbarMenuItem>(context, 0) {
                 override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    return mOverflowPanelViewHelper.getView(
-                        getItem(position),
-                        mOverflowPanelSize!!.getWidth(),
+                    return overflowPanelViewHelper.getView(
+                        getItem(position)!!,
+                        overflowPanelSize!!.width,
                         convertView,
                     )
                 }
             }
-        overflowPanel.setAdapter(adapter)
-        overflowPanel.setOnItemClickListener(
-            OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
-                val menuItem = overflowPanel.getAdapter().getItem(position) as ToolbarMenuItem
-                mCallbackWrapper.onMenuItemClicked(menuItem.itemIndex)
-            }
-        )
+        overflowPanel.adapter = adapter
+        overflowPanel.setOnItemClickListener { _, _, position: Int, _ ->
+            val menuItem = overflowPanel.adapter.getItem(position) as ToolbarMenuItem
+            callbackWrapper.onMenuItemClicked(menuItem.itemIndex)
+        }
         return overflowPanel
     }
 
     private fun isOverflowAnimating(): Boolean {
         val overflowOpening =
-            mOpenOverflowAnimation.hasStarted() && !mOpenOverflowAnimation.hasEnded()
+            openOverflowAnimation.hasStarted() && !openOverflowAnimation.hasEnded()
         val overflowClosing =
-            mCloseOverflowAnimation.hasStarted() && !mCloseOverflowAnimation.hasEnded()
+            closeOverflowAnimation.hasStarted() && !closeOverflowAnimation.hasEnded()
         return overflowOpening || overflowClosing
     }
 
     private fun createOverflowAnimationListener(): Animation.AnimationListener {
         return object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation?) {
+            override fun onAnimationStart(animation: Animation) {
                 // Disable the overflow button while it's animating.
                 // It will be re-enabled when the animation stops.
-                mOverflowButton.setEnabled(false)
+                overflowButton.isEnabled = false
                 // Ensure both panels have visibility turned on when the overflow animation
                 // starts.
-                mMainPanel.setVisibility(View.VISIBLE)
-                mOverflowPanel.setVisibility(View.VISIBLE)
+                mainPanel.visibility = View.VISIBLE
+                overflowPanel.visibility = View.VISIBLE
             }
 
-            override fun onAnimationEnd(animation: Animation?) {
+            override fun onAnimationEnd(animation: Animation) {
                 // Posting this because it seems like this is called before the animation
                 // actually ends.
-                mContentContainer.post(Runnable { setPanelsStatesAtRestingPosition() })
+                contentContainer.post { setPanelsStatesAtRestingPosition() }
             }
 
-            override fun onAnimationRepeat(animation: Animation?) {}
+            override fun onAnimationRepeat(animation: Animation) {}
         }
     }
 
     /** A custom ListView for the overflow panel. */
     private inner class OverflowPanel(private val mPopup: RemoteSelectionToolbar) :
-        ListView(Objects.requireNonNull<RemoteSelectionToolbar?>(mPopup).mContext) {
+        ListView(Objects.requireNonNull(mPopup).context) {
         init {
-            setScrollBarDefaultDelayBeforeFade(ViewConfiguration.getScrollDefaultDelay() * 3)
-            setScrollIndicators(SCROLL_INDICATOR_TOP or SCROLL_INDICATOR_BOTTOM)
+            scrollBarDefaultDelayBeforeFade = ViewConfiguration.getScrollDefaultDelay() * 3
+            scrollIndicators = SCROLL_INDICATOR_TOP or SCROLL_INDICATOR_BOTTOM
         }
 
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             // Update heightMeasureSpec to make sure that this view is not clipped
             // as we offset it's coordinates with respect to its parent.
-            var heightMeasureSpec = heightMeasureSpec
-            val height =
-                (mPopup.mOverflowPanelSize!!.getHeight() - mPopup.mOverflowButtonSize.getHeight())
-            heightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            val height = (mPopup.overflowPanelSize!!.height - mPopup.overflowButtonSize.height)
+            super.onMeasure(
+                widthMeasureSpec,
+                MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY),
+            )
         }
 
-        override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
             if (isOverflowAnimating()) {
                 // Eat the touch event.
                 return true
@@ -1277,6 +1193,7 @@ class RemoteSelectionToolbar(
             return super.dispatchTouchEvent(ev)
         }
 
+        // Overrides to change visibility
         public override fun awakenScrollBars(): Boolean {
             return super.awakenScrollBars()
         }
@@ -1299,41 +1216,32 @@ class RemoteSelectionToolbar(
     }
 
     /** A helper for generating views for the overflow panel. */
-    private class OverflowPanelViewHelper(context: Context?, private val mIconTextSpacing: Int) {
-        private val mContext: Context
-        private val mCalculator: View
-        private val mSidePadding: Int
+    private class OverflowPanelViewHelper(context: Context, private val mIconTextSpacing: Int) {
+        private val mContext = Objects.requireNonNull(context)
+        private val mCalculator: View = createMenuButton(null)
+        private val mSidePadding: Int =
+            context.resources.getDimensionPixelSize(R.dimen.floating_toolbar_overflow_side_padding)
 
-        init {
-            mContext = Objects.requireNonNull<Context>(context)
-            mSidePadding =
-                context!!
-                    .getResources()
-                    .getDimensionPixelSize(R.dimen.floating_toolbar_overflow_side_padding)
-            mCalculator = createMenuButton(null)
-        }
-
-        fun getView(menuItem: ToolbarMenuItem?, minimumWidth: Int, convertView: View?): View {
+        fun getView(menuItem: ToolbarMenuItem, minimumWidth: Int, convertView: View?): View {
             var convertView = convertView
-            Objects.requireNonNull<ToolbarMenuItem?>(menuItem)
             if (convertView != null) {
-                Companion.updateMenuItemButton(
+                updateMenuItemButton(
                     convertView,
-                    menuItem!!,
+                    menuItem,
                     mIconTextSpacing,
                     shouldShowIcon(menuItem),
                 )
             } else {
                 convertView = createMenuButton(menuItem)
             }
-            convertView.setMinimumWidth(minimumWidth)
+            convertView.minimumWidth = minimumWidth
             return convertView
         }
 
         fun calculateWidth(menuItem: ToolbarMenuItem): Int {
             updateMenuItemButton(mCalculator, menuItem, mIconTextSpacing, shouldShowIcon(menuItem))
             mCalculator.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
-            return mCalculator.getMeasuredWidth()
+            return mCalculator.measuredWidth
         }
 
         fun createMenuButton(menuItem: ToolbarMenuItem?): View {
@@ -1352,11 +1260,11 @@ class RemoteSelectionToolbar(
     }
 
     /** Dumps information about this class. */
-    fun dump(prefix: String?, pw: PrintWriter) {
+    fun dump(prefix: String, pw: PrintWriter) {
         pw.print(prefix)
         pw.print("state: ")
         pw.println(
-            when (mState) {
+            when (state) {
                 TOOLBAR_STATE_SHOWN -> "SHOWN"
                 TOOLBAR_STATE_HIDDEN -> "HIDDEN"
                 TOOLBAR_STATE_DISMISSED -> "DISMISSED"
@@ -1365,16 +1273,16 @@ class RemoteSelectionToolbar(
         )
         pw.print(prefix)
         pw.print("popup width: ")
-        pw.println(mPopupWidth)
+        pw.println(popupWidth)
         pw.print(prefix)
         pw.print("popup height: ")
-        pw.println(mPopupHeight)
+        pw.println(popupHeight)
         pw.print(prefix)
         pw.print("relative coords: ")
-        pw.println(mRelativeCoordsForToolbar)
+        pw.println(relativeCoordsForToolbar)
         pw.print(prefix)
         pw.print("main panel size: ")
-        pw.println(mMainPanelSize)
+        pw.println(mainPanelSize)
         val hasOverflow = hasOverflow()
         pw.print(prefix)
         pw.print("has overflow: ")
@@ -1382,17 +1290,17 @@ class RemoteSelectionToolbar(
         if (hasOverflow) {
             pw.print(prefix)
             pw.print("overflow open: ")
-            pw.println(mIsOverflowOpen)
+            pw.println(isOverflowOpen)
             pw.print(prefix)
             pw.print("overflow size: ")
-            pw.println(mOverflowPanelSize)
+            pw.println(overflowPanelSize)
         }
-        if (mSurfaceControlViewHost != null) {
-            val root = mSurfaceControlViewHost!!.getView() as FloatingToolbarRoot
+        if (surfaceControlViewHost != null) {
+            val root = surfaceControlViewHost!!.view as FloatingToolbarRoot
             root.dump(prefix, pw)
         }
-        if (mMenuItems != null) {
-            val menuItemSize = mMenuItems!!.size
+        if (menuItems != null) {
+            val menuItemSize = menuItems!!.size
             pw.print(prefix)
             pw.print("number menu items: ")
             pw.println(menuItemSize)
@@ -1400,8 +1308,8 @@ class RemoteSelectionToolbar(
                 pw.print(prefix)
                 pw.print("#")
                 pw.println(i)
-                pw.print(prefix + "  ")
-                pw.println(mMenuItems!!.get(i))
+                pw.print("$prefix  ")
+                pw.println(menuItems!![i])
             }
         }
     }
@@ -1418,32 +1326,32 @@ class RemoteSelectionToolbar(
         private const val TOOLBAR_STATE_DISMISSED = 3
 
         private fun measure(view: View): Size {
-            Preconditions.checkState(view.getParent() == null)
+            Preconditions.checkState(view.parent == null)
             view.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
-            return Size(view.getMeasuredWidth(), view.getMeasuredHeight())
+            return Size(view.measuredWidth, view.measuredHeight)
         }
 
         private fun setSize(view: View, width: Int, height: Int) {
-            view.setMinimumWidth(width)
-            view.setMinimumHeight(height)
-            var params = view.getLayoutParams()
-            params = if (params == null) ViewGroup.LayoutParams(0, 0) else params
-            params.width = width
-            params.height = height
-            view.setLayoutParams(params)
+            view.apply {
+                minimumWidth = width
+                minimumHeight = height
+                layoutParams = layoutParams ?: ViewGroup.LayoutParams(0, 0)
+                layoutParams.width = width
+                layoutParams.height = height
+            }
         }
 
         private fun setSize(view: View, size: Size) {
-            setSize(view, size.getWidth(), size.getHeight())
+            setSize(view, size.width, size.height)
         }
 
         private fun setWidth(view: View, width: Int) {
-            val params = view.getLayoutParams()
+            val params = view.layoutParams
             setSize(view, width, params.height)
         }
 
         private fun setHeight(view: View, height: Int) {
-            val params = view.getLayoutParams()
+            val params = view.layoutParams
             setSize(view, params.width, height)
         }
 
@@ -1453,7 +1361,7 @@ class RemoteSelectionToolbar(
         ): MutableList<ToolbarMenuItem> {
             val transformedMenuItems = ArrayList<ToolbarMenuItem>(menuItems.size)
             for (i in menuItems.indices) {
-                val menuItem = menuItems.get(i)
+                val menuItem = menuItems[i]
 
                 transformedMenuItems.add(
                     when (menuItem.itemId) {
@@ -1496,16 +1404,14 @@ class RemoteSelectionToolbar(
 
         /** Creates and returns a menu button for the specified menu item. */
         private fun createMenuItemButton(
-            context: Context?,
+            context: Context,
             menuItem: ToolbarMenuItem?,
             iconTextSpacing: Int,
             showIcon: Boolean,
         ): View {
             val menuItemButton =
                 LayoutInflater.from(context).inflate(R.layout.floating_popup_menu_button, null)
-            if (menuItem != null) {
-                updateMenuItemButton(menuItemButton, menuItem, iconTextSpacing, showIcon)
-            }
+            menuItem?.let { updateMenuItemButton(menuItemButton, it, iconTextSpacing, showIcon) }
             return menuItemButton
         }
 
@@ -1518,43 +1424,42 @@ class RemoteSelectionToolbar(
         ) {
             val buttonText =
                 menuItemButton.findViewById<TextView>(R.id.floating_toolbar_menu_item_text)
-            buttonText.setEllipsize(null)
+            buttonText.ellipsize = null
             if (TextUtils.isEmpty(menuItem.title)) {
-                buttonText.setVisibility(View.GONE)
+                buttonText.visibility = View.GONE
             } else {
-                buttonText.setVisibility(View.VISIBLE)
-                buttonText.setText(menuItem.title)
+                buttonText.visibility = View.VISIBLE
+                buttonText.text = menuItem.title
             }
             val buttonIcon =
                 menuItemButton.findViewById<ImageView>(R.id.floating_toolbar_menu_item_image)
             if (menuItem.icon == null || !showIcon) {
-                buttonIcon.setVisibility(View.GONE)
+                buttonIcon.visibility = View.GONE
                 buttonText.setPaddingRelative(0, 0, 0, 0)
             } else {
-                buttonIcon.setVisibility(View.VISIBLE)
-                buttonIcon.setImageDrawable(menuItem.icon.loadDrawable(menuItemButton.getContext()))
+                buttonIcon.visibility = View.VISIBLE
+                buttonIcon.setImageDrawable(menuItem.icon.loadDrawable(menuItemButton.context))
                 buttonText.setPaddingRelative(iconTextSpacing, 0, 0, 0)
             }
             val contentDescription = menuItem.contentDescription
             if (TextUtils.isEmpty(contentDescription)) {
-                menuItemButton.setContentDescription(menuItem.title)
+                menuItemButton.contentDescription = menuItem.title
             } else {
-                menuItemButton.setContentDescription(contentDescription)
+                menuItemButton.contentDescription = contentDescription
             }
         }
 
-        private fun createContentContainer(context: Context?): ViewGroup {
+        private fun createContentContainer(context: Context): ViewGroup {
             val contentContainer =
                 LayoutInflater.from(context).inflate(R.layout.floating_popup_container, null)
                     as ViewGroup
-            contentContainer.setLayoutParams(
+            contentContainer.layoutParams =
                 ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                 )
-            )
-            contentContainer.setTag(FloatingToolbar.FLOATING_TOOLBAR_TAG)
-            contentContainer.setClipToOutline(true)
+            contentContainer.tag = FloatingToolbar.FLOATING_TOOLBAR_TAG
+            contentContainer.clipToOutline = true
             return contentContainer
         }
 
@@ -1563,10 +1468,10 @@ class RemoteSelectionToolbar(
          *
          * @param view The view to animate
          */
-        private fun createEnterAnimation(view: View?): AnimatorSet {
+        private fun createEnterAnimation(view: View): AnimatorSet {
             val animation = AnimatorSet()
             animation.playTogether(
-                ObjectAnimator.ofFloat<View?>(view, View.ALPHA, 0f, 1f).setDuration(150)
+                ObjectAnimator.ofFloat(view, View.ALPHA, 0f, 1f).setDuration(150)
             )
             return animation
         }
@@ -1579,15 +1484,15 @@ class RemoteSelectionToolbar(
          * @param listener The animation listener
          */
         private fun createExitAnimation(
-            view: View?,
+            view: View,
             startDelay: Int,
             listener: Animator.AnimatorListener?,
         ): AnimatorSet {
             val animation = AnimatorSet()
             animation.playTogether(
-                ObjectAnimator.ofFloat<View?>(view, View.ALPHA, 1f, 0f).setDuration(100)
+                ObjectAnimator.ofFloat(view, View.ALPHA, 1f, 0f).setDuration(100)
             )
-            animation.setStartDelay(startDelay.toLong())
+            animation.startDelay = startDelay.toLong()
             if (listener != null) {
                 animation.addListener(listener)
             }
@@ -1595,7 +1500,7 @@ class RemoteSelectionToolbar(
         }
 
         /** Returns a re-themed context with controlled look and feel for views. */
-        private fun wrapContext(originalContext: Context?, showInfo: ShowInfo): Context {
+        private fun wrapContext(originalContext: Context, showInfo: ShowInfo): Context {
             val themeId =
                 if (showInfo.isLightTheme) R.style.Theme_DeviceDefault_Light
                 else R.style.Theme_DeviceDefault
