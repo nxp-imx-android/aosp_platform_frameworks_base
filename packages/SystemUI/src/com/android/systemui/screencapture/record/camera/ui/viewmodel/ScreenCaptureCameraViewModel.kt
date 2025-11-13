@@ -21,6 +21,7 @@ import android.view.Surface
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.flow.collectTraced
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureOverlayStateInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -32,10 +33,19 @@ import kotlinx.coroutines.launch
 
 class ScreenCaptureCameraViewModel
 @AssistedInject
-constructor(private val cameraInteractor: ScreenRecordCameraInteractor) : HydratedActivatable() {
+constructor(
+    private val cameraInteractor: ScreenRecordCameraInteractor,
+    overlayStateInteractor: ScreenCaptureOverlayStateInteractor,
+) : HydratedActivatable() {
 
-    private val currentSurface = MutableStateFlow<Surface?>(null)
+    private val currentSurface = MutableStateFlow<CameraSurface?>(null)
     private val taps = Channel<Unit>()
+
+    val shouldShowCamera: Boolean? by
+        overlayStateInteractor.isCameraInUse.hydratedStateOf(
+            "ScreenCaptureCameraViewModel#shouldShowCamera",
+            null,
+        )
 
     val surfaceSize: Size? by
         cameraInteractor.optimalCameraStreamSize.hydratedStateOf(
@@ -48,11 +58,15 @@ constructor(private val cameraInteractor: ScreenRecordCameraInteractor) : Hydrat
         coroutineScope {
             launch {
                 currentSurface.collectTraced("ScreenCaptureCameraViewModel#currentSurface") {
-                    surface ->
-                    if (surface == null) {
+                    cameraSurface ->
+                    if (cameraSurface == null) {
                         cameraInteractor.stopStream()
                     } else {
-                        cameraInteractor.startStream(surface)
+                        cameraInteractor.startStream(
+                            surface = cameraSurface.surface,
+                            width = cameraSurface.width,
+                            height = cameraSurface.height,
+                        )
                     }
                 }
             }
@@ -64,8 +78,8 @@ constructor(private val cameraInteractor: ScreenRecordCameraInteractor) : Hydrat
         }
     }
 
-    fun onSurfaceReady(surface: Surface) {
-        currentSurface.value = surface
+    fun onSurfaceReady(surface: Surface, width: Int, height: Int) {
+        currentSurface.value = CameraSurface(surface = surface, width = width, height = height)
     }
 
     fun onSurfaceDestroyed() {
@@ -80,4 +94,6 @@ constructor(private val cameraInteractor: ScreenRecordCameraInteractor) : Hydrat
     interface Factory {
         fun create(): ScreenCaptureCameraViewModel
     }
+
+    private data class CameraSurface(val surface: Surface, val width: Int, val height: Int)
 }

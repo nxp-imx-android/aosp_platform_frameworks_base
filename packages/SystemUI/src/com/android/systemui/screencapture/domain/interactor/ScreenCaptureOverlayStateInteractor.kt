@@ -35,7 +35,7 @@ constructor(
     cameraInteractor: ScreenRecordCameraInteractor,
 ) {
 
-    private val isCameraInUse: Flow<Boolean> =
+    val isCameraInUse: Flow<Boolean> =
         combine(
                 cameraInteractor.isCameraSupported,
                 parametersInteractor.parameters.map { it.shouldShowFrontCamera },

@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.camera.domain.interactor
 
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.ColorInt
@@ -35,6 +36,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+
+private const val TAG = "ScreenRecordCameraInteractor"
 
 @ScreenCaptureScope
 class ScreenRecordCameraInteractor
@@ -109,11 +112,25 @@ constructor(
         continuation.invokeOnCancellation { repository.disconnect() }
     }
 
-    suspend fun startStream(surface: Surface) {
-        repository.getOptimalCameraStreamSize()?.let { repository.startStream(surface, it) }
+    suspend fun startStream(surface: Surface, width: Int, height: Int) {
+        val optimalSize = repository.getOptimalCameraStreamSize()
+        if (optimalSize == null) {
+            Log.w(TAG, "Couldn't get optimal size. Skipping stream start")
+            return
+        }
+        if (width != optimalSize.width || height != optimalSize.height) {
+            Log.w(
+                TAG,
+                "Surface dimensions aren't optimal: optimal=$optimalSize, width=$width, height=$height",
+            )
+            return
+        }
+        Log.i(TAG, "Starting a stream with size=$optimalSize")
+        repository.startStream(surface, optimalSize)
     }
 
     suspend fun stopStream() {
+        Log.i(TAG, "Stopping the stream")
         repository.stopStream()
     }
 
