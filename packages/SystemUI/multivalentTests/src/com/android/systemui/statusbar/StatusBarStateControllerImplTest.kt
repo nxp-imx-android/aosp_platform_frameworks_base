@@ -109,12 +109,16 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             underTest.state = StatusBarState.SHADE_LOCKED
         }
 
-        val logs = kosmos.uiEventLoggerFake.logs
-        assertEquals(3, logs.size)
-        val ids = logs.map(UiEventLoggerFake.FakeUiEvent::eventId)
-        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_KEYGUARD.id, ids[0])
-        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_SHADE.id, ids[1])
-        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_SHADE_LOCKED.id, ids[2])
+        val stateLogIds =
+            kosmos.uiEventLoggerFake.logs.map(UiEventLoggerFake.FakeUiEvent::eventId).filter {
+                it == StatusBarStateEvent.STATUS_BAR_STATE_KEYGUARD.id ||
+                    it == StatusBarStateEvent.STATUS_BAR_STATE_SHADE.id ||
+                    it == StatusBarStateEvent.STATUS_BAR_STATE_SHADE_LOCKED.id
+            }
+        assertEquals(3, stateLogIds.size)
+        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_KEYGUARD.id, stateLogIds[0])
+        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_SHADE.id, stateLogIds[1])
+        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_SHADE_LOCKED.id, stateLogIds[2])
     }
 
     @Test

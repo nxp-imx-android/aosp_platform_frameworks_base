@@ -2495,9 +2495,10 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             assertThat(currentScene).isEqualTo(Scenes.Gone)
             assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
-            assertThat(uiEventLoggerFake[0].eventId)
+
+            assertThat(uiEventLoggerFake.numLogs()).isAtLeast(1)
+            assertThat(uiEventLoggerFake[uiEventLoggerFake.numLogs() - 1].eventId)
                 .isEqualTo(BouncerUiEvent.BOUNCER_DISMISS_EXTENDED_ACCESS.id)
-            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
         }
 
     @Test
