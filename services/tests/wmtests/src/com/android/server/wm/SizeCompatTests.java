@@ -4528,7 +4528,6 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX)
     public void testUpscaling_boundsUpscaledWithWindowingModeChange() {
         allowDesktopMode();
 
@@ -4591,7 +4590,6 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX)
     public void testUpscaling_boundsUpscaledWithDisplayMove() {
         final int dw = 1000;
         final int dh = 600;
