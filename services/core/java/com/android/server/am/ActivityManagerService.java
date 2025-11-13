@@ -14705,8 +14705,9 @@ public class ActivityManagerService extends IActivityManager.Stub
                     app = getProcessRecordLocked(ai.processName, uid);
                 } else {
                     // Instrumentation can kill and relaunch even persistent processes
-                    forceStopPackageLocked(ii.targetPackage, -1, true, false, true, true, false,
-                            false, userId, "start instr");
+                    final int appIdToKill = runInPccSandbox ? UserHandle.getAppId(uid) : -1;
+                    forceStopPackageLocked(ii.targetPackage, appIdToKill, true, false, true, true,
+                            false, false, userId, "start instr");
                     // Inform usage stats to make the target package active
                     if (mUsageStatsService != null) {
                         mUsageStatsService.reportEvent(ii.targetPackage, userId,
@@ -15020,8 +15021,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                             Process.getAppUidForSdkSandboxUid(app.uid));
                 }
             } else if (!instr.mNoRestart) {
-                forceStopPackageLocked(app.info.packageName, -1, false, false, true, true, false,
-                        false, app.userId, "finished inst");
+                final int appIdToKill =
+                        Process.isPccUid(app.uid) ? UserHandle.getAppId(app.uid) : -1;
+                forceStopPackageLocked(app.info.packageName, appIdToKill, false, false, true, true,
+                        false, false, app.userId, "finished inst");
             }
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
