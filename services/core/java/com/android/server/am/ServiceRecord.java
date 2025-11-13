@@ -53,6 +53,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.IBinder;
+import android.os.NativeZygoteProcess;
 import android.os.PowerExemptionManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -1168,6 +1169,9 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         if (android.os.Flags.nativeFrameworkPrototype()) {
             mIsNativeIsolated = ((sInfo.flags & ServiceInfo.FLAG_NATIVE_SERVICE) != 0)
                 && ((sInfo.flags & ServiceInfo.FLAG_ISOLATED_PROCESS) != 0);
+            if (mIsNativeIsolated) {
+                NativeZygoteProcess.prewarmNativeZygote();
+            }
         }
     }
 

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+#define ATRACE_TAG ATRACE_TAG_ACTIVITY_MANAGER
+
 #include <android-base/logging.h>
+#include <android-base/properties.h>
 #include <android-base/unique_fd.h>
 #include <binder/IInterface.h>
 #include <cutils/sockets.h>
@@ -26,6 +29,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <utils/Trace.h>
 
 #include <cstring>
 
@@ -35,6 +39,15 @@
 
 // Should be in sync with MESSAGE_BUFFER_SIZE in system/zygote/zygote-messages/src/lib.rs
 #define RESPONSE_DATA_BUF_SIZE 2048
+
+constexpr char NATIVE_ZYGOTE_INIT_SERVICE_NAME[] = "zygote_next";
+constexpr int NATIVE_ZYGOTE_STARTUP_TIMEOUT_IN_MILLIS = 20000;
+
+constexpr char PROP_INIT_START_SERVICE[] = "ctl.start";
+constexpr char PROP_ZYGOTE_NEXT_READY[] = "zygote.zygote_next.server_ready";
+constexpr char PROP_ZYGOTE_NEXT_START_ON_BOOT[] = "persist.zygote.zygote_next.start_on_boot";
+
+constexpr char PROP_VALUE_TRUE[] = "true";
 
 namespace {
 
@@ -104,6 +117,19 @@ static jint ReadSpawnResponse(int fd, JNIEnv* env) {
             jniThrowRuntimeException(env, "Received an unexpected type response");
             return -1;
     }
+}
+
+bool isNativeZygoteReady() {
+    return android::base::GetBoolProperty(PROP_ZYGOTE_NEXT_READY, false);
+}
+
+void startNativeZygote() {
+    android::base::SetProperty(PROP_INIT_START_SERVICE, NATIVE_ZYGOTE_INIT_SERVICE_NAME);
+}
+
+bool waitUntilNativeZygoteReady() {
+    std::chrono::milliseconds timeout{NATIVE_ZYGOTE_STARTUP_TIMEOUT_IN_MILLIS};
+    return android::base::WaitForProperty(PROP_ZYGOTE_NEXT_READY, PROP_VALUE_TRUE, timeout);
 }
 
 } // namespace
@@ -197,6 +223,31 @@ static jint android_os_NativeZygoteProcess_startNativeChildZygote(
     return ReadSpawnResponse(fd, env);
 }
 
+static jboolean android_os_NativeZygoteProcess_ensureNativeZygoteReadyBlocking(
+        JNIEnv* env, jclass /* classObj */) {
+    ATRACE_NAME("ensureNativeZygoteReadyBlocking");
+    jboolean res = JNI_TRUE;
+    if (!isNativeZygoteReady()) {
+        startNativeZygote();
+        res = waitUntilNativeZygoteReady() ? JNI_TRUE : JNI_FALSE;
+    }
+    return res;
+}
+
+static void android_os_NativeZygoteProcess_prewarmNativeZygote(JNIEnv* env, jclass /* classObj */) {
+    if (isNativeZygoteReady()) return;
+    startNativeZygote();
+
+    // It's likely the first time to use a native service on this device.
+    // Update the prop to start the native zygote on boot from next time,
+    // assuming that native services continue to be used. This is a simplified
+    // assumption and may not always be true, but enough for a temporary solution to
+    // mitigate impact by running the native zygote unnecessarily.
+    // TODO: b/458223100 - Remove this logic when zygote_next is used in all
+    // form-factors.
+    android::base::SetProperty(PROP_ZYGOTE_NEXT_START_ON_BOOT, PROP_VALUE_TRUE);
+}
+
 // ----------------------------------------------------------------------------
 
 static const JNINativeMethod method_table[] = {
@@ -209,6 +260,10 @@ static const JNINativeMethod method_table[] = {
          "Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;Ljava/lang/String;"
          "Ljava/lang/String;)I",
          (void*)android_os_NativeZygoteProcess_startNativeChildZygote},
+        {"nativeEnsureNativeZygoteReadyBlocking", "()Z",
+         (void*)android_os_NativeZygoteProcess_ensureNativeZygoteReadyBlocking},
+        {"nativePrewarmNativeZygote", "()V",
+         (void*)android_os_NativeZygoteProcess_prewarmNativeZygote},
 };
 
 int register_android_os_NativeZygoteProcess(JNIEnv* env) {
