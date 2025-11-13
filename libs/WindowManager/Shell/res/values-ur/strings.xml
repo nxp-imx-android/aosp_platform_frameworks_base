@@ -91,8 +91,8 @@
     <string name="bubble_overflow_empty_subtitle" msgid="2627417924958633713">"حالیہ بلبلے اور برخاست شدہ بلبلے یہاں ظاہر ہوں گے"</string>
     <string name="bubble_bar_education_stack_title" msgid="2486903590422497245">"بلبلے کے ذریعے چیٹ کریں"</string>
     <string name="bubble_bar_education_stack_text" msgid="2446934610817409820">"نئی گفتگوئیں آپ کی اسکرین کے نیچے کونے میں آئیکنز کے طور پر ظاہر ہوتی ہیں۔ انہیں پھیلانے کے لیے تھپتھپائیں یا انہیں برخاست کرنے کے لیے گھسیٹیں۔"</string>
-    <string name="bubble_bar_education_manage_title" msgid="6148404487810835924">"کسی بھی وقت بلبلے کو کنٹرول کریں"</string>
-    <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"یہ نظم کرنے کے لیے یہاں تھپتھپائیں کہ کون سی ایپس اور گفتگوئیں بلبلہ سکتی ہیں"</string>
+    <string name="bubble_bar_education_manage_title" msgid="6148404487810835924">"کسی بھی وقت بلبلوں کو کنٹرول کریں"</string>
+    <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"یہ نظم کرنے کیلئے یہاں تھپتھپائیں کہ کون سی ایپس اور گفتگوئیں بلبلہ ہو سکتی ہیں"</string>
     <string name="notification_bubble_title" msgid="6082910224488253378">"بلبلہ"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"نظم کریں"</string>
     <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"بلبلہ برخاست کر دیا گیا۔"</string>
@@ -176,6 +176,5 @@
     <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"میری پسند یاد رکھیں"</string>
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"براؤزر میں کھولیں"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"ایپ میں رہیں"</string>
-    <!-- no translation found for open_by_default_splash_dialog_ask_me_later_text (2706872945449736432) -->
-    <skip />
+    <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"مجھ سے بعد میں پوچھیں"</string>
 </resources>

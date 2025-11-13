@@ -80,7 +80,7 @@
     <string name="bubble_accessibility_announce_collapse" msgid="3178806224494537097">"<xliff:g id="BUBBLE_TITLE">%1$s</xliff:g>ni yopish"</string>
     <string name="bubbles_app_settings" msgid="3617224938701566416">"<xliff:g id="NOTIFICATION_TITLE">%1$s</xliff:g> sozlamalari"</string>
     <string name="bubble_dismiss_text" msgid="8816558050659478158">"Bulutchani yopish"</string>
-    <string name="bubble_fullscreen_text" msgid="1006758103218086231">"Butun ekranga koʻchirish"</string>
+    <string name="bubble_fullscreen_text" msgid="1006758103218086231">"Butun ekranga olish"</string>
     <string name="bubbles_dont_bubble_conversation" msgid="310000317885712693">"Suhbatlar bulutchalar shaklida chiqmasin"</string>
     <string name="bubbles_user_education_title" msgid="2112319053732691899">"Bulutchalar yordamida subhatlashish"</string>
     <string name="bubbles_user_education_description" msgid="4215862563054175407">"Yangi xabarlar qalqib chiquvchi belgilar yoki bulutchalar kabi chiqadi. Xabarni ochish uchun bildirishnoma ustiga bosing. Xabarni qayta joylash uchun bildirishnomani suring."</string>
@@ -176,6 +176,5 @@
     <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"Tanlovim eslab qolinsin"</string>
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Brauzerda ochish"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Ilovada qolish"</string>
-    <!-- no translation found for open_by_default_splash_dialog_ask_me_later_text (2706872945449736432) -->
-    <skip />
+    <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"Keyinroq soʻralsin"</string>
 </resources>

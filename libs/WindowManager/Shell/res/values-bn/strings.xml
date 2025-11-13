@@ -176,6 +176,5 @@
     <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"আমার পছন্দ মনে রাখুন"</string>
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"ব্রাউজারে খুলুন"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"অ্যাপে থাকুন"</string>
-    <!-- no translation found for open_by_default_splash_dialog_ask_me_later_text (2706872945449736432) -->
-    <skip />
+    <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"আমাকে পরে জিজ্ঞাসা করুন"</string>
 </resources>
