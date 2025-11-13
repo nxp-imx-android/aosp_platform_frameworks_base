@@ -65,25 +65,50 @@ public final class ContentClassificationResult implements Parcelable {
      */
     private final @ClassificationType int mType;
 
-    // TODO(b/458080360): Add javadoc for the public methods.
+    /**
+     * Creates a new content classification result.
+     *
+     * @param locusId the {@link LocusId} of the content that was classified
+     * @param type the classification type of the content
+     */
     public ContentClassificationResult(LocusId locusId, @ClassificationType int type) {
         mLocusId = locusId;
         mType = type;
     }
 
-    public ContentClassificationResult(Parcel in) {
+    /**
+     * Creates a new instance from a Parcel.
+     *
+     * @param in the Parcel to read from
+     */
+    private ContentClassificationResult(Parcel in) {
         mLocusId = in.readTypedObject(LocusId.CREATOR);
         mType = in.readInt();
     }
 
+    /**
+     * Returns the {@link LocusId} of the content that was classified.
+     *
+     * @return the {@link LocusId}
+     */
     public LocusId getLocusId() {
         return mLocusId;
     }
 
+    /**
+     * Returns the classification type of the content.
+     *
+     * @return the classification type
+     */
     public @ClassificationType int getType() {
         return mType;
     }
 
+    /**
+     * Returns whether the content is allowed.
+     *
+     * @return {@code true} if the content is allowed, {@code false} otherwise
+     */
     public boolean isAllowed() {
         return mType == TYPE_ALLOWED;
     }
