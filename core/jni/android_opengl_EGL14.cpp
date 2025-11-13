@@ -166,76 +166,38 @@ android_eglGetDisplayInt
 static jboolean
 android_eglInitialize
   (JNIEnv *_env, jobject _this, jobject dpy, jintArray major_ref, jint majorOffset, jintArray minor_ref, jint minorOffset) {
-    jint _exception = 0;
-    const char * _exceptionType = NULL;
-    const char * _exceptionMessage = NULL;
-    EGLBoolean _returnValue = (EGLBoolean) 0;
     EGLDisplay dpy_native = (EGLDisplay) fromEGLHandle(_env, egldisplayGetHandleID, dpy);
-    EGLint *major_base = (EGLint *) 0;
-    jint _majorRemaining;
-    EGLint *major = (EGLint *) 0;
-    EGLint *minor_base = (EGLint *) 0;
-    jint _minorRemaining;
-    EGLint *minor = (EGLint *) 0;
+    EGLint majorVersion;
+    EGLint minorVersion;
 
     if (major_ref) {
-        if (majorOffset < 0) {
-            _exception = 1;
-            _exceptionType = "java/lang/IllegalArgumentException";
-            _exceptionMessage = "majorOffset < 0";
-            goto exit;
+        if (majorOffset < 0 || majorOffset >= _env->GetArrayLength(major_ref)) {
+            jniThrowException(_env, "java/lang/IllegalArgumentException",
+                    "majorOffset outside array");
+            return JNI_FALSE;
         }
-        _majorRemaining = _env->GetArrayLength(major_ref) - majorOffset;
-        if (_majorRemaining < 1) {
-            _exception = 1;
-            _exceptionType = "java/lang/IllegalArgumentException";
-            _exceptionMessage = "length - majorOffset < 1 < needed";
-            goto exit;
-        }
-        major_base = (EGLint *)
-            _env->GetIntArrayElements(major_ref, (jboolean *)0);
-        major = major_base + majorOffset;
     }
 
     if (minor_ref) {
-        if (minorOffset < 0) {
-            _exception = 1;
-            _exceptionType = "java/lang/IllegalArgumentException";
-            _exceptionMessage = "minorOffset < 0";
-            goto exit;
+        if (minorOffset < 0 || minorOffset >= _env->GetArrayLength(minor_ref)) {
+            jniThrowException(_env, "java/lang/IllegalArgumentException",
+                    "minorOffset outside array");
+            return JNI_FALSE;
         }
-        _minorRemaining = _env->GetArrayLength(minor_ref) - minorOffset;
-        if (_minorRemaining < 1) {
-            _exception = 1;
-            _exceptionType = "java/lang/IllegalArgumentException";
-            _exceptionMessage = "length - minorOffset < 1 < needed";
-            goto exit;
-        }
-        minor_base = (EGLint *)
-            _env->GetIntArrayElements(minor_ref, (jboolean *)0);
-        minor = minor_base + minorOffset;
     }
 
-    _returnValue = eglInitialize(
-        (EGLDisplay)dpy_native,
-        (EGLint *)major,
-        (EGLint *)minor
-    );
-
-exit:
-    if (minor_base) {
-        _env->ReleaseIntArrayElements(minor_ref, (jint*)minor_base,
-            _exception ? JNI_ABORT: 0);
-    }
-    if (major_base) {
-        _env->ReleaseIntArrayElements(major_ref, (jint*)major_base,
-            _exception ? JNI_ABORT: 0);
-    }
-    if (_exception) {
-        jniThrowException(_env, _exceptionType, _exceptionMessage);
+    if (EGL_TRUE != eglInitialize(dpy_native, &majorVersion, &minorVersion)) {
         return JNI_FALSE;
     }
-    return (jboolean)_returnValue;
+
+    if (major_ref) {
+        _env->SetIntArrayRegion(major_ref, majorOffset, 1, &majorVersion);
+    }
+    if (minor_ref) {
+        _env->SetIntArrayRegion(minor_ref, minorOffset, 1, &minorVersion);
+    }
+
+    return JNI_TRUE;
 }
 
 /* EGLBoolean eglTerminate ( EGLDisplay dpy ) */
