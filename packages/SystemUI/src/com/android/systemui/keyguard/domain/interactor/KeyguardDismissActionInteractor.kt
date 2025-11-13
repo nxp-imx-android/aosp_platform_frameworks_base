@@ -173,7 +173,7 @@ constructor(
     }
 
     fun clearDismissAction() {
-        repository.setDismissAction(DismissAction.None)
+        setDismissAction(DismissAction.None)
     }
 
     /** Run the dismiss action and starts the dismiss keyguard transition. */
