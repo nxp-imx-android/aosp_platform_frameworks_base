@@ -108,12 +108,14 @@ import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
@@ -2227,6 +2229,69 @@ public class DisplayContentTests extends WindowTestsBase {
             child.migrateToNewSurfaceControl(mTransaction);
             verify(mTransaction).reparent(eq(child.mSurfaceControl), eq(dc2WinLayer));
         }
+    }
+
+    @Test
+    public void testCreateMirrorForDisplay_createsMirror() {
+        when(SurfaceControl.mirrorSurface(any())).then((inv) -> new SurfaceControl());
+        final var mirror = mDisplayContent.createMirrorForDisplay();
+
+        assertNotNull(mirror.getMirrorSurfaceControl());
+        verify(mTransaction).reparent(notNull(), eq(mirror.getMirrorSurfaceControl()));
+        verify(mTransaction).show(mirror.getMirrorSurfaceControl());
+    }
+
+    @Test
+    public void testCloseMirror_closesMirror() throws Exception {
+        when(SurfaceControl.mirrorSurface(any())).then((inv) -> new SurfaceControl());
+        final var mirror = mDisplayContent.createMirrorForDisplay();
+        assertNotNull(mirror.getMirrorSurfaceControl());
+        final var mirrorChildCaptor = ArgumentCaptor.forClass(SurfaceControl.class);
+        verify(mTransaction).reparent(mirrorChildCaptor.capture(),
+                eq(mirror.getMirrorSurfaceControl()));
+        clearInvocations(mTransaction);
+
+        mirror.close();
+
+        verify(mTransaction).remove(mirror.getMirrorSurfaceControl());
+        verify(mTransaction).remove(mirrorChildCaptor.getValue());
+    }
+
+    @Test
+    public void testDuplicateCloseMirrorCalls_doesNothing() throws Exception {
+        when(SurfaceControl.mirrorSurface(any())).then((inv) -> new SurfaceControl());
+        final var mirror = mDisplayContent.createMirrorForDisplay();
+        assertNotNull(mirror.getMirrorSurfaceControl());
+        final var mirrorChildCaptor = ArgumentCaptor.forClass(SurfaceControl.class);
+        verify(mTransaction).reparent(mirrorChildCaptor.capture(),
+                eq(mirror.getMirrorSurfaceControl()));
+        mirror.close();
+        clearInvocations(mTransaction);
+
+        mirror.close();
+        mirror.close();
+
+        verifyNoInteractions(mTransaction);
+    }
+
+    @Test
+    public void testMigrateToNewSurfaceControl_updatesMirrors() {
+        when(SurfaceControl.mirrorSurface(any())).then((inv) -> new SurfaceControl());
+        final var mirror = mDisplayContent.createMirrorForDisplay();
+        assertNotNull(mirror.getMirrorSurfaceControl());
+        final var mirrorChildCaptor = ArgumentCaptor.forClass(SurfaceControl.class);
+        verify(mTransaction).reparent(mirrorChildCaptor.capture(),
+                eq(mirror.getMirrorSurfaceControl()));
+        clearInvocations(mTransaction);
+
+        mDisplayContent.migrateToNewSurfaceControl(mTransaction);
+
+        verify(mTransaction).remove(mirrorChildCaptor.getValue());
+        final var newMirrorChildCaptor = ArgumentCaptor.forClass(SurfaceControl.class);
+        verify(mTransaction).reparent(newMirrorChildCaptor.capture(),
+                eq(mirror.getMirrorSurfaceControl()));
+        verify(mTransaction).show(newMirrorChildCaptor.getValue());
+        assertNotEquals(mirrorChildCaptor.getValue(), newMirrorChildCaptor.getValue());
     }
 
     @Test

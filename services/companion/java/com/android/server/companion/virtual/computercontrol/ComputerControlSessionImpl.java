@@ -537,13 +537,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Nullable
     private InteractiveMirrorImpl createInteractiveMirrorImpl() {
-        // NOTE: The mirror surface must not be leaked to the client app!
-        final var mirrorSurface =
+        final var mirror =
                 mWindowManagerInternal.createMirrorForDisplayContent(mVirtualDisplayId);
-        if (mirrorSurface == null) {
+        if (mirror == null) {
+            Slog.w(TAG, "Failed to create DisplayMirror from WM for display: " + mVirtualDisplayId);
             return null;
         }
-        return new InteractiveMirrorImpl(mirrorSurface, mTransactionSupplier,
+        return new InteractiveMirrorImpl(mirror, mTransactionSupplier,
                 mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal,
                 this::onInteractiveMirrorClosed);
     }
