@@ -95,7 +95,6 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         val wasAdded = super.addPreference(preference)
         if (wasAdded) {
             childPreferences.add(preference)
-            childPreferences.sortBy { it.order }
             maybeCreateExpandCollapsePreference()
             updateCollapsedItemCount()
             updateVisibilities()
@@ -246,6 +245,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
     }
 
     private fun updateVisibilities() {
+        childPreferences.sortBy { it.order }
         childPreferences.forEachIndexed { i, childBanner ->
             childBanner.isVisible = i < visiblePreferencesWhenCollapsedCount || isExpanded
         }
