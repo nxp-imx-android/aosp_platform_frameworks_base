@@ -34,6 +34,9 @@ import java.io.FileNotFoundException;
 
 @Postsubmit
 @RunWith(AndroidJUnit4.class)
+// This test could probably be run on Ravenwood if we include "ResApkBadXml.apk" as a "data".
+// But for now, let's just disable it.
+@android.platform.test.annotations.DisabledOnRavenwood(bug = 460514978)
 public class AssetManagerTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
