@@ -1955,7 +1955,7 @@ public class PowerManagerServiceTest {
 
     @EnableFlags(FLAG_DREAMS_V2)
     @Test
-    public void testDreamActivateWhileWirelessCharging_notSupported_goesToDreaming() {
+    public void testDreamActivate_wirelessChargingRestrictionUnsupported_dreamsOnAc() {
         when(mBatteryManagerInternalMock.isPowered(anyInt())).thenReturn(true);
         when(mBatteryManagerInternalMock.getPlugType()).thenReturn(
                 BatteryManager.BATTERY_PLUGGED_AC);
