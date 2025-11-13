@@ -76,6 +76,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                         Modifier.zIndex(0f)
                             .fillMaxSize()
                             .background(color = ScreenCaptureColors.scrimColor)
+                            .pointerInput(Unit) { detectTapGestures { viewModel.beginCapture() } }
                 ) {
                     PrimaryButton(
                         modifier = Modifier.align(Alignment.Center),
