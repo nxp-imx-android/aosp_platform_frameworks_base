@@ -2339,6 +2339,29 @@ public final class CompanionDeviceManager {
     }
 
     /**
+     * Queries the locally stored device metadata.
+     *
+     * @param userId The user id of the user whose metadata is being queried.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DATA_SYNC)
+    @RequiresPermission(android.Manifest.permission.MANAGE_COMPANION_DEVICES)
+    @NonNull
+    public PersistableBundle getLocalMetadata(@UserIdInt int userId) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return PersistableBundle.EMPTY;
+        }
+
+        try {
+            return mService.getLocalMetadata(userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Forwards an action request from a system service to the appropriate companion app.
      * This will bind the companion app's service if it is not already bound, and then
      * deliver the action request via a

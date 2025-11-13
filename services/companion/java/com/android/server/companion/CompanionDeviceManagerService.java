@@ -815,6 +815,14 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
+        @EnforcePermission(MANAGE_COMPANION_DEVICES)
+        public PersistableBundle getLocalMetadata(int userId) {
+            getLocalMetadata_enforcePermission();
+
+            return mDataSyncProcessor.getLocalMetadata(userId);
+        }
+
+        @Override
         public byte[] getBackupPayload(int userId) {
             enforceCallerIsSystem();
 

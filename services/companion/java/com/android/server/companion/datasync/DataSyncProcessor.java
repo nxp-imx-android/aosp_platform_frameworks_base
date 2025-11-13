@@ -30,6 +30,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.companion.association.AssociationStore;
 import com.android.server.companion.transport.CompanionTransportManager;
 
@@ -85,6 +86,7 @@ public class DataSyncProcessor {
     /**
      * Get the cached local metadata for the user.
      */
+    @NonNull
     public PersistableBundle getLocalMetadata(@UserIdInt int userId) {
         return mLocalMetadataStore.getMetadataForUser(userId);
     }
@@ -115,6 +117,26 @@ public class DataSyncProcessor {
         sendMetadataUpdate(userId, associations);
     }
 
+    /**
+     * Set the remote metadata for an association.
+     */
+    @VisibleForTesting
+    public void setRemoteMetadata(int associationId,
+            @NonNull PersistableBundle metadata) {
+        Slog.i(TAG, "Setting remote metadata for association id=[" + associationId
+                + "] value=[" + metadata + "]...");
+
+        AssociationInfo association =
+                mAssociationStore.getAssociationWithCallerChecks(associationId);
+
+        metadata.putLong(AssociationInfo.METADATA_TIMESTAMP, System.currentTimeMillis());
+        AssociationInfo updated = (new AssociationInfo.Builder(association))
+                .setMetadata(metadata)
+                .build();
+        mAssociationStore.updateAssociation(updated);
+    }
+
+
     private void broadcastMetadata(List<AssociationInfo> associations) {
         synchronized (mAssociationsWithTransport) {
             // Isolate newly attached associations and group by user.
@@ -141,14 +163,8 @@ public class DataSyncProcessor {
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse received metadata", e);
         }
-        metadata.putLong(AssociationInfo.METADATA_TIMESTAMP, System.currentTimeMillis());
 
-        AssociationInfo association =
-                mAssociationStore.getAssociationWithCallerChecks(associationId);
-        AssociationInfo updated = (new AssociationInfo.Builder(association))
-                .setMetadata(metadata)
-                .build();
-        mAssociationStore.updateAssociation(updated);
+        setRemoteMetadata(associationId, metadata);
     }
 
     private void sendMetadataUpdate(@UserIdInt int userId,
