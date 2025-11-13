@@ -34,6 +34,7 @@ import android.app.ApplicationExitInfo.Reason;
 import android.app.ApplicationExitInfo.SubReason;
 import android.app.BackgroundStartPrivileges;
 import android.app.IApplicationThread;
+import android.app.ProcessMemoryState.HostingComponentType;
 import android.content.ComponentName;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManagerInternal;
@@ -1853,5 +1854,15 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         } else {
             mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE);
         }
+    }
+
+    @Override
+    public void addHostingComponentType(@HostingComponentType int type) {
+        mProfile.addHostingComponentType(type);
+    }
+
+    @Override
+    public void clearHostingComponentType(@HostingComponentType int type) {
+        mProfile.clearHostingComponentType(type);
     }
 }
