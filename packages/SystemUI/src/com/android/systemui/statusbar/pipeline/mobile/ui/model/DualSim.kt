@@ -83,6 +83,10 @@ data class DualSim(
         override fun logChange(columnName: String, value: Int) {
             row.logChange("$prefix.$columnName", value)
         }
+
+        override fun logChange(columnName: String, value: Float) {
+            row.logChange("$prefix.$columnName", value)
+        }
     }
 }
 

@@ -32,4 +32,7 @@ public interface TableRowLogger {
 
     /** Logs a change to an int value. */
     public fun logChange(columnName: String, value: Int)
+
+    /** Logs a change to a float value. */
+    public fun logChange(columnName: String, value: Float)
 }

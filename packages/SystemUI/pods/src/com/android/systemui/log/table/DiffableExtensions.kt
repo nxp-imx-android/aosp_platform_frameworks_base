@@ -125,6 +125,25 @@ public fun Flow<String?>.logDiffsForTable(
 }
 
 /** See [logDiffsForTable(TableLogBuffer, String, T)]. */
+public fun Flow<Float>.logDiffsForTable(
+    tableLogBuffer: TableLogBuffer,
+    columnPrefix: String = "",
+    columnName: String,
+    initialValue: Float,
+): Flow<Float> {
+    val initialValueFun = {
+        tableLogBuffer.logChange(columnPrefix, columnName, initialValue, isInitial = true)
+        initialValue
+    }
+    return this.pairwiseBy(initialValueFun) { prevVal: Float, newVal: Float ->
+        if (prevVal != newVal) {
+            tableLogBuffer.logChange(columnPrefix, columnName, newVal)
+        }
+        newVal
+    }
+}
+
+/** See [logDiffsForTable(TableLogBuffer, String, T)]. */
 public fun <T> Flow<List<T>>.logDiffsForTable(
     tableLogBuffer: TableLogBuffer,
     columnPrefix: String = "",
