@@ -18,7 +18,8 @@ package com.android.server.vibrator;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.os.vibrator.VibrationEffectSegment;
+import android.hardware.vibrator.HapticGeneratorConfig;
+import android.hardware.vibrator.VibrationEffectContent;
 import android.util.IndentingPrintWriter;
 
 import com.android.tools.r8.keepanno.annotations.KeepItemKind;
@@ -80,7 +81,7 @@ interface HalVibratorManager {
 
     /** Starts a haptic generator session for converting vibration effects to PCM data. */
     boolean startHapticGeneratorSession(long sessionId, int vibratorId,
-            @NonNull android.os.vibrator.HapticGeneratorSession.Config config);
+            @NonNull HapticGeneratorConfig config);
 
     /** Closes a haptic generator session and releases its resources. */
     boolean closeHapticGeneratorSession(long sessionId);
@@ -90,7 +91,7 @@ interface HalVibratorManager {
 
     /** Starts a haptic generator stream within a session to convert a single effect. */
     boolean startHapticGeneratorStream(long sessionId, int vibratorId,
-            @NonNull VibrationEffectSegment[] segments);
+            @NonNull VibrationEffectContent[] segments);
 
     /** Reads PCM data from a haptic generator stream. */
     int readHapticGeneratorStream(long sessionId, int vibratorId, @NonNull byte[] buffer);

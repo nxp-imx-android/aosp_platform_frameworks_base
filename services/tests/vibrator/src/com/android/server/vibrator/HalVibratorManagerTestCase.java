@@ -19,14 +19,14 @@ package com.android.server.vibrator;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import android.hardware.vibrator.HapticGeneratorConfig;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
+import android.hardware.vibrator.VibrationEffectContent;
 import android.os.test.TestLooper;
 import android.os.vibrator.Flags;
-import android.os.vibrator.VibrationEffectSegment;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
@@ -377,10 +377,10 @@ public abstract class HalVibratorManagerTestCase {
         HalVibratorManager manager = newInitializedVibratorManager();
 
         assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 1,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+                new HapticGeneratorConfig())).isTrue();
 
         assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 2,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+                new HapticGeneratorConfig())).isTrue();
     }
 
     @Test
@@ -390,10 +390,10 @@ public abstract class HalVibratorManagerTestCase {
         HalVibratorManager manager = newInitializedVibratorManager();
 
         assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 1,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isFalse();
+                new HapticGeneratorConfig())).isFalse();
 
         assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 2,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isFalse();
+                new HapticGeneratorConfig())).isFalse();
     }
 
     @Test
@@ -404,7 +404,7 @@ public abstract class HalVibratorManagerTestCase {
         HalVibratorManager manager = newInitializedVibratorManager();
 
         assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 1,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+                new HapticGeneratorConfig())).isTrue();
         assertThat(manager.closeHapticGeneratorSession(/* sessionId= */ 1)).isTrue();
     }
 
@@ -427,7 +427,7 @@ public abstract class HalVibratorManagerTestCase {
         long sessionId = 1;
 
         assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+                new HapticGeneratorConfig())).isTrue();
         manager.clearHapticGeneratorSession(sessionId);
         // Close after a clear should fail
         assertThat(manager.closeHapticGeneratorSession(sessionId)).isFalse();
@@ -442,7 +442,7 @@ public abstract class HalVibratorManagerTestCase {
 
         long sessionId = 1;
         assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+                new HapticGeneratorConfig())).isTrue();
 
         // Simulate the HAL ending the session from its side
         mHelper.endHapticGeneratorSessionFromHal(sessionId);
@@ -460,10 +460,10 @@ public abstract class HalVibratorManagerTestCase {
         long sessionId = 1;
 
         assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+                new HapticGeneratorConfig())).isTrue();
 
         assertThat(manager.startHapticGeneratorStream(sessionId, /* vibratorId= */ 1,
-                new VibrationEffectSegment[0])).isTrue();
+                new VibrationEffectContent[0])).isTrue();
 
         assertThat(mHelper.getHapticGeneratorStreamStartCount()).isEqualTo(1);
     }
@@ -477,9 +477,9 @@ public abstract class HalVibratorManagerTestCase {
         long sessionId = 1;
 
         assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+                new HapticGeneratorConfig())).isTrue();
         assertThat(manager.startHapticGeneratorStream(sessionId, /* vibratorId= */ 1,
-                new VibrationEffectSegment[0])).isTrue();
+                new VibrationEffectContent[0])).isTrue();
 
         int bytesRead = manager.readHapticGeneratorStream(sessionId, /* vibratorId= */ 1,
                 new byte[10]);
@@ -498,9 +498,9 @@ public abstract class HalVibratorManagerTestCase {
         long sessionId = 1;
 
         assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
-                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+                new HapticGeneratorConfig())).isTrue();
         assertThat(manager.startHapticGeneratorStream(sessionId, /* vibratorId= */ 1,
-                new VibrationEffectSegment[0])).isTrue();
+                new VibrationEffectContent[0])).isTrue();
 
         assertThat(manager.stopHapticGeneratorStream(sessionId, /* vibratorId= */ 1)).isTrue();
 
