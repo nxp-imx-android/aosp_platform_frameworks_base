@@ -19,6 +19,7 @@ package com.android.systemui.keyguard
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
+import android.app.WindowConfiguration
 import android.content.Context
 import android.graphics.Matrix
 import android.os.IBinder
@@ -42,6 +43,7 @@ import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
 import com.android.app.animation.Interpolators
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.internal.jank.InteractionJankMonitor.CUJ_LOCKSCREEN_OCCLUSION
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.keyguard.KeyguardViewController
 import com.android.systemui.animation.ActivityTransitionAnimator
@@ -53,6 +55,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteract
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenToDreamingTransitionViewModel
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
@@ -99,7 +102,6 @@ constructor(
     @Main executor: Executor,
     @Application val applicationScope: CoroutineScope,
     val dreamingToLockscreenTransitionViewModel: DreamingToLockscreenTransitionViewModel,
-    val occlusionInteractor: KeyguardOcclusionInteractor,
 ) {
     val powerButtonY =
         context.resources.getDimensionPixelSize(
@@ -248,10 +250,7 @@ constructor(
                     taskInfo = apps.firstOrNull()?.taskInfo,
                 )
                 interactionJankMonitor.begin(
-                    createInteractionJankMonitorConf(
-                        InteractionJankMonitor.CUJ_LOCKSCREEN_OCCLUSION,
-                        "UNOCCLUDE",
-                    )
+                    createInteractionJankMonitorConf(CUJ_LOCKSCREEN_OCCLUSION, "UNOCCLUDE")
                 )
                 if (apps.isEmpty()) {
                     Log.d(
@@ -265,7 +264,6 @@ constructor(
                 val target = apps[0]
                 val localView: View = keyguardViewController.get().getViewRootImpl().getView()
                 val applier = SyncRtSurfaceTransactionApplier(localView)
-                // TODO(
                 executor.execute {
                     unoccludeAnimator?.cancel()
                     unoccludeAnimator =
@@ -316,7 +314,101 @@ constructor(
                 Log.d(TAG, "unoccludeAnimationRunner#onAnimationCancelled")
                 context.mainExecutor.execute { unoccludeAnimator?.cancel() }
                 Log.d(TAG, "Unocclude animation cancelled.")
-                interactionJankMonitor.cancel(InteractionJankMonitor.CUJ_LOCKSCREEN_OCCLUSION)
+                interactionJankMonitor.cancel(CUJ_LOCKSCREEN_OCCLUSION)
+            }
+        }
+
+    val occludeByDreamAnimationRunner: IRemoteAnimationRunner =
+        object : IRemoteAnimationRunner.Stub() {
+            private var occludeByDreamAnimator: ValueAnimator? = null
+
+            private fun finishAnimation(
+                finishedCallback: IRemoteAnimationFinishedCallback,
+                jankMonitorInteraction: Int,
+            ) {
+                try {
+                    finishedCallback.onAnimationFinished()
+                } catch (e: RemoteException) {
+                    Log.e(TAG, "Failed to call onAnimationFinished", e)
+                } finally {
+                    interactionJankMonitor.end(jankMonitorInteraction)
+                }
+            }
+
+            private fun startDreamFadeInAnimation(
+                target: RemoteAnimationTarget,
+                applier: SyncRtSurfaceTransactionApplier,
+                onAnimationEndCallback: () -> Unit,
+            ) {
+                // Cancel any previously running animation on the same thread
+                occludeByDreamAnimator?.cancel()
+
+                val animator =
+                    ValueAnimator.ofFloat(0f, 1f).apply {
+                        duration =
+                            LockscreenToDreamingTransitionViewModel.DREAMING_ANIMATION_DURATION_MS
+                        interpolator = Interpolators.LINEAR
+                        addUpdateListener { animation ->
+                            val animatedValue = animation.animatedValue as Float
+                            val params =
+                                SurfaceParams.Builder(target.leash).withAlpha(animatedValue).build()
+                            applier.scheduleApply(params)
+                        }
+                        addListener(
+                            object : AnimatorListenerAdapter() {
+                                override fun onAnimationEnd(animation: Animator) {
+                                    onAnimationEndCallback()
+                                    occludeByDreamAnimator = null
+                                }
+                            }
+                        )
+                    }
+                occludeByDreamAnimator = animator
+                animator.start()
+            }
+
+            override fun onAnimationStart(
+                transit: Int,
+                apps: Array<RemoteAnimationTarget>,
+                wallpapers: Array<RemoteAnimationTarget>,
+                nonApps: Array<RemoteAnimationTarget>,
+                finishedCallback: IRemoteAnimationFinishedCallback,
+            ) {
+                Log.d(TAG, "occludeByDreamAnimationRunner#onAnimationStart")
+
+                interactionJankMonitor.begin(
+                    createInteractionJankMonitorConf(CUJ_LOCKSCREEN_OCCLUSION, "OCCLUDE_BY_DREAM")
+                )
+
+                val target = apps.firstOrNull()
+                val taskInfo = target?.taskInfo
+                val isDream = taskInfo?.topActivityType == WindowConfiguration.ACTIVITY_TYPE_DREAM
+
+                if (target == null || !isDream) {
+                    Log.w(TAG, "Animation skipped: target is null or not a Dream.")
+                    finishAnimation(finishedCallback, CUJ_LOCKSCREEN_OCCLUSION)
+                    return
+                }
+
+                keyguardOcclusionInteractor.setWmNotifiedShowWhenLockedActivityOnTop(
+                    showWhenLockedActivityOnTop = true,
+                    taskInfo = taskInfo!!, // Safe due to the check above
+                )
+
+                val localView: View = keyguardViewController.get().getViewRootImpl().view
+                val applier = SyncRtSurfaceTransactionApplier(localView)
+
+                executor.execute {
+                    startDreamFadeInAnimation(target, applier) {
+                        finishAnimation(finishedCallback, CUJ_LOCKSCREEN_OCCLUSION)
+                    }
+                }
+            }
+
+            override fun onAnimationCancelled() {
+                Log.d(TAG, "occludeByDreamAnimationRunner#onAnimationCancelled")
+                context.mainExecutor.execute { occludeByDreamAnimator?.cancel() }
+                interactionJankMonitor.cancel(CUJ_LOCKSCREEN_OCCLUSION)
             }
         }
 

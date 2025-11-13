@@ -2363,10 +2363,11 @@ public class KeyguardViewMediator implements CoreStartable,
         }
     }
 
-    /**
-     * TODO(b/326464548): Move this to WindowManagerOcclusionManager
-     */
     public IRemoteAnimationRunner getOccludeByDreamAnimationRunner() {
+        if (KeyguardWmStateRefactor.isEnabled()) {
+            return validatingRemoteAnimationRunner(
+                    mWmOcclusionManager.getOccludeByDreamAnimationRunner());
+        }
         return validatingRemoteAnimationRunner(mOccludeByDreamAnimationRunner);
     }
 
