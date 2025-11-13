@@ -1132,6 +1132,14 @@ public class ZenModeConfigTest extends UiServiceTestCase {
         assertThat(fromXml.manualRule.enabled).isTrue();
     }
 
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void testManualRuleHasId() {
+        ZenModeConfig config = new ZenModeConfig();
+
+        assertThat(config.manualRule.id).isEqualTo(ZenModeConfig.MANUAL_RULE_ID);
+    }
+
     private static String suppressedEffectsOf(Policy policy) {
         return suppressedEffectsToString(policy.suppressedVisualEffects) + "("
                 + policy.suppressedVisualEffects + ")";
