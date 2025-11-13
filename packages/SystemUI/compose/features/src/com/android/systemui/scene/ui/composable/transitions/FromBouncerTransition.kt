@@ -40,7 +40,7 @@ fun TransitionBuilder.fromBouncerTransition(translateUpwards: Boolean = false) {
     fractionRange(start = TO_BOUNCER_FADE_FRACTION) { fade(Bouncer.Elements.Content) }
 }
 
-fun TransitionBuilder.fromBouncerBackGestureTransition() {
+fun TransitionBuilder.fromBouncerPreview() {
     fractionRange(easing = Easings.PredictiveBack) {
         scaleDraw(Bouncer.Elements.Content, scaleY = 0.8f, scaleX = 0.8f)
     }
