@@ -189,19 +189,17 @@ class DesktopTaskChangeListener(
             taskInfo.displayId,
         )
 
-        if (DesktopExperienceFlags.ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX.isTrue) {
-            // Removing an invisible task is an invisible->invisible change, so no shell transition
-            // runs for this, and DesktopRepository misses cleaning up task data, which could lead
-            // to DesktopTasksController incorrectly trying to restore the tasks when the desk is
-            // reactivated next time. See b/361419732.
-            val repository: DesktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
-            if (
-                repository.getDeskIdForTask(taskInfo.taskId) != null &&
-                    !repository.isVisibleTask(taskInfo.taskId)
-            ) {
-                repository.removeClosingTask(taskInfo.taskId)
-                repository.removeTask(taskInfo.taskId)
-            }
+        // Removing an invisible task is an invisible->invisible change, so no shell transition runs
+        // for this, and DesktopRepository misses cleaning up task data, which could lead to
+        // DesktopTasksController incorrectly trying to restore the tasks when the desk is
+        // reactivated next time. See b/361419732.
+        val repository: DesktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
+        if (
+            repository.getDeskIdForTask(taskInfo.taskId) != null &&
+                !repository.isVisibleTask(taskInfo.taskId)
+        ) {
+            repository.removeClosingTask(taskInfo.taskId)
+            repository.removeTask(taskInfo.taskId)
         }
     }
 

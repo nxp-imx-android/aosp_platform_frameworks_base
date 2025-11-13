@@ -27,7 +27,6 @@ import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.filters.SmallTest
 import com.android.server.am.Flags.FLAG_PERCEPTIBLE_TASKS
-import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.MockToken
@@ -617,7 +616,6 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX)
     fun onNonTransitionTaskClosing_invisibleFreeformTask_removesTaskFromRepo() {
         val task = createFreeformTask().apply { isVisible = false }
         desktopTaskChangeListener.onTaskOpening(task)

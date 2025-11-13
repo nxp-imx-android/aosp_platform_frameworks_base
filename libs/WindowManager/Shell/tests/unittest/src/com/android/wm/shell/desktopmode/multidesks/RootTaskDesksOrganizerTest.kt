@@ -18,7 +18,6 @@ package com.android.wm.shell.desktopmode.multidesks
 import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
@@ -35,7 +34,6 @@ import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_S
 import android.window.WindowContainerTransaction.HierarchyOp.LAUNCH_KEY_TASK_ID
 import androidx.core.util.valueIterator
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
@@ -334,7 +332,6 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX)
     fun testOnTaskVanished_removesChildTask_invokesNonTransitionTaskClosing() = runTest {
         val desk = createDeskSuspending()
         val child = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
