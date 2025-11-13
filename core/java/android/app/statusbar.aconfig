@@ -1,0 +1,10 @@
+package: "android.app"
+container: "system"
+
+flag {
+  name: "statusbar_api_show_power_menu"
+  namespace: "systemui"
+  is_exported: true
+  description: "New API to request to show the power menu"
+  bug: "449154119"
+}

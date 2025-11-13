@@ -17,6 +17,7 @@
 package android.app;
 
 import android.Manifest;
+import android.annotation.CallbackExecutor;
 import android.annotation.DrawableRes;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -27,6 +28,7 @@ import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
+import android.app.admin.DevicePolicyManager;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
@@ -54,6 +56,7 @@ import android.view.KeyEvent;
 import android.view.View;
 
 import com.android.internal.compat.IPlatformCompat;
+import com.android.internal.infra.AndroidFuture;
 import com.android.internal.statusbar.AppClipsServiceConnector;
 import com.android.internal.statusbar.IAddTileResultCallback;
 import com.android.internal.statusbar.IStatusBarService;
@@ -71,6 +74,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 /**
@@ -645,6 +650,8 @@ public class StatusBarManager {
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT)
     // TODO(b/360196209): Set target SDK to Baklava once available
     private static final long MEDIA_CONTROL_MEDIA3_ACTIONS = 360196209L;
+
+    private static final long SHOW_POWER_MENU_TIMEOUT_MILLIS = 5000L;
 
     @UnsupportedAppUsage
     private Context mContext;
@@ -1399,6 +1406,58 @@ public class StatusBarManager {
         int taskId = ActivityClient.getInstance().getTaskForActivity(activityToken, false);
         return new AppClipsServiceConnector(mContext)
                 .canLaunchCaptureContentActivityForNote(taskId);
+    }
+
+    /**
+     * Request to show the Power Menu.
+     * <p>
+     * The Power Menu is the dialog that contains options like Power off, Restart, etc. Also known
+     * as Global Actions
+     * <p>
+     * Showing this dialog may be restricted by the system, for example by
+     * {@link DevicePolicyManager}, if {@link DevicePolicyManager#LOCK_TASK_FEATURE_GLOBAL_ACTIONS}
+     * is set.
+     * <p>
+     * The {@code callback} will indicate when the Power Menu is visible (if possible), or may time
+     * out after a few seconds if the request doesn't complete. This callback can be reused
+     * for multiple requests.
+     * @param executor an {@link Executor} in which the methods of {@code callback} will be called
+     * @param callback will call back with the result of the request
+     */
+    @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
+    @RequiresPermission(Manifest.permission.SHOW_POWER_MENU)
+    public void showPowerMenu(
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull ShowPowerMenuCallback callback
+    ) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+        AndroidFuture<Boolean> future = new AndroidFuture<Boolean>()
+                .whenComplete((result, throwable) -> {
+                    final long identity = Binder.clearCallingIdentity();
+                    try {
+                        if (throwable instanceof TimeoutException) {
+                            executor.execute(
+                                    () -> callback.onError(ShowPowerMenuCallback.ERROR_TIMEOUT)
+                            );
+                        } else if (throwable != null) {
+                            executor.execute(
+                                    () -> callback.onError(ShowPowerMenuCallback.ERROR_UNKNOWN)
+                            );
+                        } else {
+                            executor.execute(() -> callback.onPowerMenuShown(result));
+                        }
+                    } finally {
+                        Binder.restoreCallingIdentity(identity);
+                    }
+                })
+                .orTimeout(SHOW_POWER_MENU_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+
+        try {
+            getService().showGlobalActionsFromApp(future);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /** @hide */

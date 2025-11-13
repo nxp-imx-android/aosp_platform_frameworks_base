@@ -15,6 +15,7 @@
  */
 package android.internal.statusbar
 
+import android.annotation.EnforcePermission
 import android.app.Notification
 import android.content.ComponentName
 import android.graphics.Rect
@@ -32,6 +33,7 @@ import android.os.UserHandle
 import android.util.ArrayMap
 import android.view.Display
 import android.view.KeyEvent
+import com.android.internal.infra.AndroidFuture
 import com.android.internal.logging.InstanceId
 import com.android.internal.statusbar.IAddTileResultCallback
 import com.android.internal.statusbar.ISessionListener
@@ -437,6 +439,12 @@ class FakeStatusBarService : IStatusBarService.Stub() {
     override fun unregisterNearbyMediaDevicesProvider(provider: INearbyMediaDevicesProvider) {}
 
     override fun showRearDisplayDialog(currentBaseState: Int) {}
+
+    /** Use with [android.os.test.FakePermissionEnforcer]. */
+    @EnforcePermission("android.permission.SHOW_POWER_MENU")
+    override fun showGlobalActionsFromApp(future: AndroidFuture<*>) {
+        showGlobalActionsFromApp_enforcePermission()
+    }
 
     companion object {
         const val DEFAULT_DISPLAY_ID = Display.DEFAULT_DISPLAY

@@ -83,6 +83,11 @@ public class GlobalActionsComponent implements CoreStartable, Callbacks, GlobalA
     }
 
     @Override
+    public void handleShowGlobalActionsMenu() {
+        mExtension.get().showGlobalActions(this);
+    }
+
+    @Override
     public void handleShowOrHideGlobalActionsMenu() {
         mExtension.get().showOrHideGlobalActions(this);
     }

@@ -473,6 +473,25 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         }
     }
 
+    /**
+     * Show the global actions dialog (creating if necessary). Will do nothing if already showing
+     *
+     * @param keyguardShowing     True if keyguard is showing
+     * @param isDeviceProvisioned True if device is provisioned
+     * @param expandable          The expandable from which we should animate the dialog when
+     *                            showing it
+     * @param displayId           Display that should show the dialog
+     */
+    public void showDialog(boolean keyguardShowing, boolean isDeviceProvisioned,
+            @Nullable Expandable expandable, int displayId
+    ) {
+        mKeyguardShowing = keyguardShowing;
+        mDeviceProvisioned = isDeviceProvisioned;
+        if (mDialog == null || !mDialog.isShowing()) {
+            handleShow(expandable, displayId);
+        }
+    }
+
     protected boolean isKeyguardShowing() {
         return mKeyguardShowing;
     }
