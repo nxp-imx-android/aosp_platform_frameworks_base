@@ -133,7 +133,7 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     }
     // If contentHeight drops below minimum visible scrim height while scrim is
     // expanded and IME is not showing, reset scrim offset.
-    LaunchedEffect(contentHeight.intValue, minScrimHeight.intValue, scrimOffset.value) {
+    LaunchedEffect(contentHeight, minScrimHeight, scrimOffset) {
         snapshotFlow { contentHeight.intValue < minScrimHeight.intValue && scrimOffset.value < 0f }
             .collect { shouldCollapse -> if (shouldCollapse) scrimOffset.snapTo(0f) }
     }
