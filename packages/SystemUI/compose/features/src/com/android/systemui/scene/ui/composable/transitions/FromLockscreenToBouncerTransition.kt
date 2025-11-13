@@ -19,8 +19,3 @@ fun TransitionBuilder.lockscreenToBouncerTransition(durationScale: Double = 1.0)
         translate(LockscreenElementKeys.Notifications.Stack, y = (-72).dp)
     }
 }
-
-fun TransitionBuilder.bouncerToLockscreenPreview() {
-    fromBouncerBackGestureTransition()
-    fractionRange(easing = Easings.PredictiveBack) { fade(LockscreenElementKeys.Root) }
-}
