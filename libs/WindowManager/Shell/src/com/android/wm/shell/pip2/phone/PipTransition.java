@@ -127,6 +127,7 @@ public class PipTransition extends PipTransitionController implements
     private final PipDesktopState mPipDesktopState;
     private final Optional<DesktopPipTransitionController> mDesktopPipTransitionController;
     private final PipInteractionHandler mPipInteractionHandler;
+    private final PipDisplayTransferHandler mPipDisplayTransferHandler;
 
     //
     // Transition caches
@@ -175,7 +176,8 @@ public class PipTransition extends PipTransitionController implements
             Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState,
             Optional<DesktopPipTransitionController> desktopPipTransitionController,
-            PipInteractionHandler pipInteractionHandler) {
+            PipInteractionHandler pipInteractionHandler,
+            PipDisplayTransferHandler pipDisplayTransferHandler) {
         super(shellInit, shellTaskOrganizer, transitions, pipBoundsState, pipMenuController,
                 pipBoundsAlgorithm);
 
@@ -193,6 +195,7 @@ public class PipTransition extends PipTransitionController implements
         mPipDesktopState = pipDesktopState;
         mDesktopPipTransitionController = desktopPipTransitionController;
         mPipInteractionHandler = pipInteractionHandler;
+        mPipDisplayTransferHandler = pipDisplayTransferHandler;
 
         mExpandHandler = new PipExpandHandler(mContext, mPipSurfaceTransactionHelper,
                 pipBoundsState, pipBoundsAlgorithm,
@@ -323,6 +326,12 @@ public class PipTransition extends PipTransitionController implements
             @NonNull SurfaceControl.Transaction finishT,
             @NonNull IBinder mergeTarget,
             @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        // If we receive a closing transition for the PiP task while mid display-transfer, cancel
+        // the ongoing animation
+        if (mPipDisplayTransferHandler.isPipRemovedMidDisplayTransfer(info)) {
+            end();
+            return;
+        }
         if (info.getType() == TRANSIT_EXIT_PIP) {
             end();
         }

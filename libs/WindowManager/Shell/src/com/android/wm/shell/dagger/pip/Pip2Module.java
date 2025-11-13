@@ -100,13 +100,15 @@ public abstract class Pip2Module {
             Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState,
             Optional<DesktopPipTransitionController> desktopPipTransitionController,
-            PipInteractionHandler pipInteractionHandler) {
+            PipInteractionHandler pipInteractionHandler,
+            PipDisplayTransferHandler pipDisplayTransferHandler) {
         return new PipTransition(context, pipSurfaceTransactionHelper, shellInit,
                 shellTaskOrganizer, transitions,
                 pipBoundsState, null, pipBoundsAlgorithm, pipTaskListener,
                 pipScheduler, pipStackListenerController, pipDisplayLayoutState,
                 pipUiStateChangeController, displayController, splitScreenControllerOptional,
-                pipDesktopState, desktopPipTransitionController, pipInteractionHandler);
+                pipDesktopState, desktopPipTransitionController, pipInteractionHandler,
+                pipDisplayTransferHandler);
     }
 
     @WMSingleton
