@@ -28137,6 +28137,16 @@ package android.media.quality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_OFF = "OFF";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_ON = "ON";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_SPACE_S_RGB_BT_709 = "S_RGB_BT_709";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_COOL = "color_temp_cool";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_COOL_HDR10PLUS = "color_temp_cool_hdr10plus";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_FMMHDR = "color_temp_fmmhdr";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_FMMSDR = "color_temp_fmmsdr";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_STANDARD = "color_temp_standard";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_STANDARD_HDR10PLUS = "color_temp_standard_hdr10plus";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_USER = "color_temp_user";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_USER_HDR10PLUS = "color_temp_user_hdr10plus";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_WARM = "color_temp_warm";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String COLOR_TEMP_WARM_HDR10PLUS = "color_temp_warm_hdr10plus";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_AUTO = "AUTO";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_BYPASS = "BYPASS";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String DIGITAL_OUTPUT_MODE_DOLBY_DIGITAL = "DolbyDigital";

@@ -88,25 +88,111 @@ public class MediaQualityContract {
     })
     public @interface ColorTempValue {}
 
-    /** @hide */
+    /**
+     * Key for the "User" color temperature preset.
+     * <p>
+     * Represents a custom color temperature configuration defined by the user.
+     * Unlike the fixed presets (Cool, Standard, Warm), this mode typically
+     * allows for manual adjustment of RGB gain and offset values to achieve
+     * a specific white point.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_USER = "color_temp_user";
-    /** @hide */
+
+    /**
+     * Key for the "Cool" color temperature preset.
+     * <p>
+     * Represents a cooler, bluish white point, typically with a color temperature
+     * higher than 7000K (often 9000K-11000K). This makes white appear crisp and bright,
+     * which can be desirable for sports content or viewing in brightly lit environments.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_COOL = "color_temp_cool";
-    /** @hide */
+
+    /**
+     * Key for the "Standard" color temperature preset.
+     * <p>
+     * Represents a balanced white point, typically positioned between Cool and Warm.
+     * This is often the default factory setting, offering a compromise between brightness
+     * and color accuracy suitable for general daytime viewing.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_STANDARD = "color_temp_standard";
-    /** @hide */
+
+    /**
+     * Key for the "Warm" color temperature preset.
+     * <p>
+     * Represents a warmer, yellowish/reddish white point, typically targeted at
+     * the D65 standard (6500K). This is the industry standard for cinema and
+     * high-end video production. It is the recommended setting for movie watching
+     * in dim environments to ensure colors are seen as the director intended.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_WARM = "color_temp_warm";
-    /** @hide */
+
+    /**
+     * Key for the "User" color temperature preset, specifically applied during
+     * HDR10+ content playback.
+     * <p>
+     * Stores custom user adjustments for white balance that are applied only when
+     * the display is in HDR10+ mode. This ensures that manual calibrations for
+     * High Dynamic Range content do not affect SDR viewing.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_USER_HDR10PLUS = "color_temp_user_hdr10plus";
-    /** @hide */
+
+    /**
+     * Key for the "Cool" color temperature preset, specifically applied during
+     * HDR10+ content playback.
+     * <p>
+     * Applies a high-Kelvin (bluish) white point optimized for the higher
+     * brightness levels of HDR10+ content.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_COOL_HDR10PLUS = "color_temp_cool_hdr10plus";
-    /** @hide */
+
+    /**
+     * Key for the "Standard" color temperature preset, specifically applied during
+     * HDR10+ content playback.
+     * <p>
+     * Applies a balanced white point optimized for the higher brightness levels
+     * of HDR10+ content.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_STANDARD_HDR10PLUS = "color_temp_standard_hdr10plus";
-    /** @hide */
+
+    /**
+     * Key for the "Warm" color temperature preset, specifically applied during
+     * HDR10+ content playback.
+     * <p>
+     * Applies a D65-targeted (6500K) white point optimized for HDR10+ content.
+     * Maintaining D65 accuracy is critical in HDR to prevent bright highlights
+     * from appearing tinted.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_WARM_HDR10PLUS = "color_temp_warm_hdr10plus";
-    /** @hide */
+
+    /**
+     * Key for the color temperature used in Filmmaker Mode (FMM) during
+     * Standard Dynamic Range (SDR) playback.
+     * <p>
+     * Filmmaker Mode is designed to preserve the creative intent of the content creator.
+     * Consequently, this parameter is typically locked to the industry standard D65
+     * (6500K) white point to ensure accurate color reproduction for SDR movies.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_FMMSDR = "color_temp_fmmsdr";
-    /** @hide */
+
+    /**
+     * Key for the color temperature used in Filmmaker Mode (FMM) during
+     * High Dynamic Range (HDR) playback.
+     * <p>
+     * Similar to {@link #COLOR_TEMP_FMMSDR}, this parameter enforces the creative
+     * intent for HDR content. It targets the D65 (6500K) white point, calibrated
+     * specifically for the HDR tone mapping curve to ensure accurate highlights
+     * and shadow detail.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
     public static final String COLOR_TEMP_FMMHDR = "color_temp_fmmhdr";
 
     /** @hide */
@@ -753,9 +839,7 @@ public class MediaQualityContract {
     public static final String DOLBY_SOUND_MODE_USER = "USER";
 
 
-    /**
-     * @hide
-     */
+    /** @hide */
     public interface BaseParameters {
         String PARAMETER_ID = "_id";
         String PARAMETER_TYPE = "_type";
