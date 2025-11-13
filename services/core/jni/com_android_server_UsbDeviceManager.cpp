@@ -388,7 +388,8 @@ class NativeGadgetMonitorThread {
         while (true) {
             nevents = epoll_wait(epollFd.get(), events, EPOLL_MAX_EVENTS, -1);
             if (nevents < 0) {
-                ALOGE("usb epoll_wait failed; errno=%d", errno);
+                if (errno != EINTR)
+                    ALOGE("Usb gadget state monitor epoll_wait failed; errno=%s", strerror(errno));
                 continue;
             }
             for (int i = 0; i < nevents; ++i) {
