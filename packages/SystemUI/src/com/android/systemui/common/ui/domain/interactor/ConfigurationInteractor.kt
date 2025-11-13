@@ -68,6 +68,8 @@ interface ConfigurationInteractor {
 
     /** Given a set of [resourceId]s, emit Map<ResourceId, DimensionPixelSize> on config change */
     fun dimensionPixelSize(resourceIds: Set<Int>): Flow<Map<Int, Int>>
+
+    fun getScaleForResolution(): Float
 }
 
 class ConfigurationInteractorImpl(private val repository: ConfigurationRepository) :
@@ -120,4 +122,8 @@ class ConfigurationInteractorImpl(private val repository: ConfigurationRepositor
     override val configurationValues: Flow<Configuration> = repository.configurationValues
 
     override val scaleForResolution: StateFlow<Float> = repository.scaleForResolution
+
+    override fun getScaleForResolution(): Float {
+        return repository.getResolutionScale()
+    }
 }

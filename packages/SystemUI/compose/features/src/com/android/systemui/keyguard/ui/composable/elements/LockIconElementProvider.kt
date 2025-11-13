@@ -20,16 +20,22 @@ import android.content.Context
 import android.util.DisplayMetrics
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.util.fastRoundToInt
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ElementContentScope
-import com.android.systemui.biometrics.AuthController
 import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -53,11 +59,11 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenEl
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shared.customization.data.SensorLocation
 import com.android.systemui.statusbar.VibratorHelper
 import com.google.android.msdl.domain.MSDLPlayer
 import dagger.Lazy
 import javax.inject.Inject
-import kotlin.collections.List
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
@@ -69,7 +75,6 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     @Main private val mainDispatcher: CoroutineDispatcher,
     private val windowManager: WindowManager,
-    private val authController: AuthController,
     private val featureFlags: FeatureFlagsClassic,
     private val deviceEntryIconViewModel: Lazy<DeviceEntryIconViewModel>,
     private val deviceEntryForegroundViewModel: Lazy<DeviceEntryForegroundViewModel>,
@@ -93,8 +98,8 @@ constructor(
     }
 
     @Composable
-    fun LockIcon(overrideColor: Color? = null, modifier: Modifier = Modifier) {
-        val context = LocalContext.current
+    fun LockIcon(modifier: Modifier = Modifier, overrideColor: Color? = null) {
+        val lockIconBounds = rememberLockIconBounds()
 
         AndroidView(
             factory = { context ->
@@ -121,7 +126,6 @@ constructor(
             },
             modifier =
                 modifier.layout { measurable, _ ->
-                    val lockIconBounds = lockIconBounds(context)
                     val placeable =
                         measurable.measure(
                             Constraints.fixed(
@@ -147,51 +151,78 @@ constructor(
     }
 
     /**
-     * Returns the bounds of the lock icon, in window view coordinates.
+     * Returns the remembered bounds of the lock icon, in window view coordinates.
      *
      * On devices that support UDFPS (under-display fingerprint sensor), the bounds of the icon are
      * the same as the bounds of the sensor.
+     *
+     * The bounds will have new values as the UDFPS location changes (something that definitely
+     * happens shortly after device boot).
      */
-    private fun lockIconBounds(context: Context): IntRect {
-        val windowViewBounds = windowManager.currentWindowMetrics.bounds
-        var widthPx = windowViewBounds.right.toFloat()
-        if (featureFlags.isEnabled(Flags.LOCKSCREEN_ENABLE_LANDSCAPE)) {
-            val insets = windowManager.currentWindowMetrics.windowInsets
-            // Assumed to be initially neglected as there are no left or right insets in portrait.
-            // However, on landscape, these insets need to included when calculating the midpoint.
-            @Suppress("DEPRECATION")
-            widthPx -= (insets.systemWindowInsetLeft + insets.systemWindowInsetRight).toFloat()
-        }
-        val defaultDensity =
-            DisplayMetrics.DENSITY_DEVICE_STABLE.toFloat() /
-                DisplayMetrics.DENSITY_DEFAULT.toFloat()
-        val lockIconRadiusPx = (defaultDensity * 36).toInt()
+    @Composable
+    private fun rememberLockIconBounds(): IntRect {
+        val context = LocalContext.current
+        val isUdfpsSupported: Boolean by
+            deviceEntryIconViewModel.get().isUdfpsSupported.collectAsStateWithLifecycle()
+        val udfpsLocation: SensorLocation? by
+            deviceEntryIconViewModel.get().udfpsLocation.collectAsStateWithLifecycle()
 
-        val udfpsLocation = authController.udfpsLocation
-        val (center, radius) =
-            if (authController.isUdfpsSupported && udfpsLocation != null) {
-                Pair(
-                    IntOffset(x = udfpsLocation.x, y = udfpsLocation.y),
-                    authController.udfpsRadius.toInt(),
-                )
-            } else {
-                val scaleFactor = authController.scaleFactor
-                val bottomPaddingPx =
-                    context.resources.getDimensionPixelSize(clocksR.dimen.lock_icon_margin_bottom)
-                val heightPx = windowViewBounds.bottom.toFloat()
-
-                Pair(
-                    IntOffset(
-                        x = (widthPx / 2).toInt(),
-                        y =
-                            (heightPx - ((bottomPaddingPx + lockIconRadiusPx) * scaleFactor))
-                                .toInt(),
-                    ),
-                    (lockIconRadiusPx * scaleFactor).toInt(),
-                )
+        val bottomPaddingPx =
+            with(LocalDensity.current) {
+                dimensionResource(clocksR.dimen.lock_icon_margin_bottom).roundToPx()
             }
 
-        return IntRect(center, radius)
+        val bounds: IntRect by
+            remember(context, isUdfpsSupported, udfpsLocation) {
+                derivedStateOf {
+                    val windowViewBounds = windowManager.currentWindowMetrics.bounds
+                    var widthPx = windowViewBounds.right.toFloat()
+                    if (featureFlags.isEnabled(Flags.LOCKSCREEN_ENABLE_LANDSCAPE)) {
+                        val insets = windowManager.currentWindowMetrics.windowInsets
+                        // Assumed to be initially neglected as there are no left or right insets in
+                        // portrait. However, on landscape, these insets need to included when
+                        // calculating the midpoint.
+                        @Suppress("DEPRECATION")
+                        widthPx -=
+                            (insets.systemWindowInsetLeft + insets.systemWindowInsetRight).toFloat()
+                    }
+
+                    val finalUdfpsLocation = udfpsLocation
+                    if (isUdfpsSupported && finalUdfpsLocation != null) {
+                        IntRect(
+                            center =
+                                IntOffset(
+                                    x = finalUdfpsLocation.centerX.fastRoundToInt(),
+                                    y = finalUdfpsLocation.centerY.fastRoundToInt(),
+                                ),
+                            radius = finalUdfpsLocation.radius.toInt(),
+                        )
+                    } else {
+                        val defaultDensity =
+                            DisplayMetrics.DENSITY_DEVICE_STABLE.toFloat() /
+                                DisplayMetrics.DENSITY_DEFAULT.toFloat()
+                        val lockIconRadiusPx = (defaultDensity * 36).toInt()
+
+                        val scaleFactor = deviceEntryIconViewModel.get().scaleFactor
+                        val heightPx = windowViewBounds.bottom.toFloat()
+
+                        IntRect(
+                            center =
+                                IntOffset(
+                                    x = (widthPx / 2).toInt(),
+                                    y =
+                                        (heightPx -
+                                                ((bottomPaddingPx + lockIconRadiusPx) *
+                                                    scaleFactor))
+                                            .toInt(),
+                                ),
+                            radius = (lockIconRadiusPx * scaleFactor).toInt(),
+                        )
+                    }
+                }
+            }
+
+        return bounds
     }
 
     companion object {

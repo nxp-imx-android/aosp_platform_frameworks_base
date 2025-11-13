@@ -119,6 +119,9 @@ constructor(
             )
         }
 
+    val scaleFactor: Float
+        get() = configurationInteractor.getScaleForResolution()
+
     companion object {
 
         private const val EMPTY_DISPLAY_ID = ""
