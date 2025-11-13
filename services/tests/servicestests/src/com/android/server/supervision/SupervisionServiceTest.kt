@@ -1150,6 +1150,20 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun getPolicies_returnsExpectedPolicies() {
+
+        // Verify that when no policies are set, an empty list is returned.
+        val policies = service.getPolicies(USER_ID)
+        assertThat(policies).isEmpty()
+
+        val policy = setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_BLOCKED)
+
+        val policiesAfterInsertion = service.getPolicies(USER_ID)
+        assertThat(policiesAfterInsertion).containsExactly(policy)
+    }
+
+    @Test
     fun hasValidRecoveryMethod_noVerifiedEmailAndAlternativeRecoveryMethods_returnsFalse() {
         injector.setRoleHoldersAsUser(
             RoleManager.ROLE_SUPERVISION,
