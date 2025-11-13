@@ -38,6 +38,7 @@ import com.android.systemui.Flags
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.dock.DockManager
 import com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController
+import com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE
 import com.android.systemui.keyguard.ScreenLifecycle
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
 import com.android.systemui.res.R
@@ -1483,6 +1484,40 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
 
         // THEN face help message deferral should NOT process any acquired frames
         verify(mFaceHelpMessageDeferral, never()).processFrame(anyInt())
+    }
+
+    @Test
+    fun faceOnAcquiredStart_hideFaceMessages() {
+        createController()
+
+        // GIVEN face sends an onBiometricHelp
+        mKeyguardUpdateMonitorCallback.onBiometricHelp(1, "placeholder", BiometricSourceType.FACE)
+
+        // WHEN face sends a FACE_ACQURIED_START
+        val acquireInfo = BiometricFaceConstants.FACE_ACQUIRED_START
+        mKeyguardUpdateMonitorCallback.onBiometricAcquired(BiometricSourceType.FACE, acquireInfo)
+
+        // THEN the biometric (fingerprint) message should be hidden
+        verify(mRotateTextViewController).hideIndication(INDICATION_TYPE_BIOMETRIC_MESSAGE)
+    }
+
+    @Test
+    fun faceOnAcquiredStart_doNotHideFingerprintMessage() {
+        createController()
+
+        // GIVEN fingerprint sends an onBiometricHelp
+        mKeyguardUpdateMonitorCallback.onBiometricHelp(
+            1,
+            "placeholder",
+            BiometricSourceType.FINGERPRINT,
+        )
+
+        // WHEN face sends a FACE_ACQURIED_START
+        val acquireInfo = BiometricFaceConstants.FACE_ACQUIRED_START
+        mKeyguardUpdateMonitorCallback.onBiometricAcquired(BiometricSourceType.FACE, acquireInfo)
+
+        // THEN the biometric (fingerprint) message should NOT be hidden
+        verify(mRotateTextViewController, never()).hideIndication(INDICATION_TYPE_BIOMETRIC_MESSAGE)
     }
 
     @Test
