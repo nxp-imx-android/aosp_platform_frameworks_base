@@ -1184,17 +1184,30 @@ public class PipTransition extends PipTransitionController implements
                         && mPipTransitionState.getPinnedTaskLeash() != null;
 
                 Preconditions.checkState(hasValidTokenAndLeash,
-                        "Unexpected bundle for " + mPipTransitionState);
+                        "Unexpected state for " + mPipTransitionState);
                 mPipInteractionHandler.begin(mPipTransitionState.getPinnedTaskLeash(),
                         PipInteractionHandler.INTERACTION_ENTER_PIP);
                 break;
             case PipTransitionState.ENTERED_PIP:
                 mPipInteractionHandler.end();
                 break;
+
             case PipTransitionState.EXITED_PIP:
                 mPipTransitionState.setPinnedTaskLeash(null);
                 mPipTransitionState.setPipTaskInfo(null);
                 mPipTransitionState.setPipCandidateTaskInfo(null);
+                break;
+
+            case PipTransitionState.CHANGING_PIP_BOUNDS:
+                Preconditions.checkState(mPipTransitionState.getPinnedTaskLeash() != null,
+                        "Unexpected state for " + mPipTransitionState);
+                mPipInteractionHandler.begin(mPipTransitionState.getPinnedTaskLeash(),
+                        PipInteractionHandler.INTERACTION_BOUNDS_CHANGE_TRANSITION);
+                break;
+            case PipTransitionState.CHANGED_PIP_BOUNDS:
+                if (oldState == PipTransitionState.CHANGING_PIP_BOUNDS) {
+                    mPipInteractionHandler.end();
+                }
                 break;
         }
     }
