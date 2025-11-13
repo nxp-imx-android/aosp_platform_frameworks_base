@@ -183,6 +183,9 @@ public class SerialManagerService extends ISerialManager.Stub {
     @SuppressLint("AndroidFrameworkRequiresPermission")
     public void grantSerialPortAccess(
             @NonNull String serialPort, int uid, @Nullable IBinder token) {
+        mContext.enforceCallingPermission(
+                Manifest.permission.MANAGE_SERIAL_PORTS,
+                "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
         synchronized (mLock) {
             if (!mSerialPorts.containsKey(serialPort)) {
                 Slog.w(TAG, "Not granting access to missing port " + serialPort);
@@ -205,6 +208,9 @@ public class SerialManagerService extends ISerialManager.Stub {
     @SuppressLint("AndroidFrameworkRequiresPermission")
     public void revokeSerialPortAccess(
             @NonNull String serialPort, int uid, @Nullable IBinder token) {
+        mContext.enforceCallingPermission(
+                Manifest.permission.MANAGE_SERIAL_PORTS,
+                "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
         synchronized (mLock) {
             // We always allow to revoke access to a port, even if it is unplugged.
 
