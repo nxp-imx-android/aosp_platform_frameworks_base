@@ -23,6 +23,7 @@ import static android.Manifest.permission.CAPTURE_AUDIO_HOTWORD;
 import static android.Manifest.permission.CAPTURE_AUDIO_OUTPUT;
 import static android.Manifest.permission.CAPTURE_MEDIA_OUTPUT;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
+import static android.Manifest.permission.MANAGE_ASSISTANT_AUDIO;
 import static android.Manifest.permission.MODIFY_AUDIO_ROUTING;
 import static android.Manifest.permission.MODIFY_AUDIO_SETTINGS;
 import static android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED;
@@ -61,6 +62,7 @@ import static android.media.audio.Flags.deviceVolumeApis;
 import static android.media.audio.Flags.featureSpatialAudioHeadtrackingLowLatency;
 import static android.media.audio.Flags.focusFreezeTestApi;
 import static android.media.audio.Flags.guardStreamVolumeApis;
+import static android.media.audio.Flags.manageAssistantAudioPermission;
 import static android.media.audio.Flags.registerVolumeCallbackApiHardening;
 import static android.media.audio.Flags.roForegroundAudioControl;
 import static android.media.audio.Flags.scoManagedByAudio;
@@ -328,6 +330,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -4224,17 +4227,22 @@ public class AudioService extends IAudioService.Stub
         }
 
         // If the stream is STREAM_ASSISTANT, make sure that the calling app have the
-        // MODIFY_AUDIO_ROUTING or MODIFY_AUDIO_SETTINGS_PRIVILEGED permissions.
-        if (streamType == AudioSystem.STREAM_ASSISTANT &&
-                (mContext.checkPermission(MODIFY_AUDIO_ROUTING, pid, uid)
-                        != PackageManager.PERMISSION_GRANTED
-                        || mContext.checkPermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED, pid, uid)
-                        != PackageManager.PERMISSION_GRANTED)) {
-            Log.w(TAG, "Permission Denial: adjustStreamVolume from pid="
-                    + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid()
-                    + " requires permission MODIFY_AUDIO_ROUTING or "
-                    + "MODIFY_AUDIO_SETTINGS_PRIVILEGED");
-            return;
+        // MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED or MODIFY_ASSISTANT_AUDIO
+        // permissions.
+        if (streamType == AudioSystem.STREAM_ASSISTANT) {
+            final Predicate<String> hasPermission = permission ->
+                    mContext.checkPermission(permission, pid, uid)
+                            == PackageManager.PERMISSION_GRANTED;
+            if (!(hasPermission.test(MODIFY_AUDIO_ROUTING)
+                    || hasPermission.test(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+                    || (manageAssistantAudioPermission() && hasPermission.test(
+                    MANAGE_ASSISTANT_AUDIO)))) {
+                Slog.w(TAG, "Permission Denial: adjustStreamVolume from pid="
+                        + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid()
+                        + " requires permission MODIFY_AUDIO_ROUTING, "
+                        + "MODIFY_AUDIO_SETTINGS_PRIVILEGED or MANAGE_ASSISTANT_AUDIO");
+                return;
+            }
         }
 
         // use stream type alias here so that streams with same alias have the same behavior,
@@ -4267,12 +4275,13 @@ public class AudioService extends IAudioService.Stub
 
         // If we are being called by the system (e.g. hardware keys) check for current user
         // so we handle user restrictions correctly.
+        int currentUid = uid;
         if (uid == android.os.Process.SYSTEM_UID) {
-            uid = UserHandle.getUid(getCurrentUserId(), UserHandle.getAppId(uid));
+            currentUid = UserHandle.getUid(getCurrentUserId(), UserHandle.getAppId(uid));
         }
         // validate calling package and app op
         if (!checkNoteAppOp(
-                STREAM_VOLUME_OPS[streamTypeAlias], uid, callingPackage, attributionTag)) {
+                STREAM_VOLUME_OPS[streamTypeAlias], currentUid, callingPackage, attributionTag)) {
             return;
         }
 
@@ -5299,14 +5308,19 @@ public class AudioService extends IAudioService.Stub
                     + " MODIFY_PHONE_STATE  callingPackage=" + callingPackage);
             return;
         }
-        if ((streamType == AudioManager.STREAM_ASSISTANT) && (mContext.checkCallingOrSelfPermission(
-                MODIFY_AUDIO_ROUTING) != PackageManager.PERMISSION_GRANTED
-                || mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
-                != PackageManager.PERMISSION_GRANTED)) {
-            Log.w(TAG, "Trying to call setStreamVolume() for STREAM_ASSISTANT without"
-                    + " MODIFY_AUDIO_ROUTING or MODIFY_AUDIO_SETTINGS_PRIVILEGED from "
-                    + "callingPackage=" + callingPackage);
-            return;
+        if (streamType == AudioSystem.STREAM_ASSISTANT) {
+            final Predicate<String> hasPermission = permission ->
+                    mContext.checkCallingOrSelfPermission(permission)
+                            == PackageManager.PERMISSION_GRANTED;
+            if (!(hasPermission.test(MODIFY_AUDIO_ROUTING)
+                    || hasPermission.test(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+                    || (manageAssistantAudioPermission() && hasPermission.test(
+                    MANAGE_ASSISTANT_AUDIO)))) {
+                Slog.w(TAG, "Trying to call setStreamVolume() for STREAM_ASSISTANT without"
+                        + " MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED or"
+                        + "MANAGE_ASSISTANT_AUDIO from callingPackage=" + callingPackage);
+                return;
+            }
         }
 
         if (ada == null) {
@@ -5621,6 +5635,8 @@ public class AudioService extends IAudioService.Stub
                 + ringMyCar());
         pw.println("\tcom.android.media.audio.streamAssistantNotAliasedToMusic:"
                 + streamAssistantNotAliasedToMusic());
+        pw.println("\tandroid.media.audio.manageAssistantAudioPermission:"
+                + manageAssistantAudioPermission());
         pw.println("\tandroid.media.audio.Flags.concurrentAudioRecordBypassPermission:"
                 + concurrentAudioRecordBypassPermission());
         pw.println("\tandroid.media.audio.Flags.guardStreamVolumeApis:" + guardStreamVolumeApis());
@@ -7245,7 +7261,10 @@ public class AudioService extends IAudioService.Stub
                                 + "MODE_ASSISTANT_CONVERSATION: setMode() from pid="
                                 + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid());
                 return;
-            } else if (!checkAudioSettingsPermission("setMode()")) {
+            } else if (!checkAudioSettingsPermission("setMode()") && (
+                    !manageAssistantAudioPermission() || mContext.checkCallingOrSelfPermission(
+                            MANAGE_ASSISTANT_AUDIO) != PackageManager.PERMISSION_GRANTED)) {
+                Slog.w(TAG, "Missing permission for setMode()");
                 return;
             }
         }
