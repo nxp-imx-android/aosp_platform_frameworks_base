@@ -29,6 +29,7 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -263,6 +264,7 @@ import java.util.Objects;
  * For the purposes of {@link AudioFormat#getFrameSizeInBytes()}, a compressed data format
  * returns a frame size of 1 byte.
  */
+@RavenwoodKeepWholeClass
 public final class AudioFormat implements Parcelable {
 
     //---------------------------------------------------------

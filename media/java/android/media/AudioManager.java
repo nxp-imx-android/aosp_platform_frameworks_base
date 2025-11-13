@@ -91,6 +91,8 @@ import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.IntArray;
@@ -126,6 +128,7 @@ import java.util.concurrent.TimeUnit;
  * AudioManager provides access to volume and ringer mode control.
  */
 @SystemService(Context.AUDIO_SERVICE)
+@RavenwoodKeepPartialClass
 public class AudioManager {
 
     private Context mOriginalContext;
@@ -526,6 +529,7 @@ public class AudioManager {
     public @interface VolumeAdjustment {}
 
     /** @hide */
+    @RavenwoodKeep
     public static final String adjustToString(int adj) {
         switch (adj) {
             case ADJUST_RAISE: return "ADJUST_RAISE";
@@ -4325,6 +4329,7 @@ public class AudioManager {
     /**
      * @hide
      */
+    @RavenwoodKeep
     public static String audioFocusToString(int focus) {
         switch (focus) {
             case AUDIOFOCUS_NONE:
@@ -7614,6 +7619,7 @@ public class AudioManager {
     public @interface AudioDeviceCategory {}
 
     /** @hide */
+    @RavenwoodKeep
     public static String audioDeviceCategoryToString(int audioDeviceCategory) {
         switch (audioDeviceCategory) {
             case AUDIO_DEVICE_CATEGORY_UNKNOWN: return "AUDIO_DEVICE_CATEGORY_UNKNOWN";

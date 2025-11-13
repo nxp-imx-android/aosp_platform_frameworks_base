@@ -40,6 +40,9 @@ import android.telephony.TelephonyManager;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.Pair;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepStaticInitializer;
+import android.ravenwood.annotation.RavenwoodReplace;
 
 import com.android.internal.annotations.GuardedBy;
 
@@ -61,6 +64,8 @@ import java.util.Set;
  * @hide
  */
 @TestApi
+@RavenwoodKeepPartialClass
+@RavenwoodKeepStaticInitializer
 public class AudioSystem
 {
     private static final boolean DEBUG_VOLUME = false;
@@ -127,19 +132,34 @@ public class AudioSystem
      * @hide
      */
     public static final int OUT_CHANNEL_COUNT_MAX = native_getMaxChannelCount();
+
+    @RavenwoodReplace
     private static native int native_getMaxChannelCount();
+    private static int native_getMaxChannelCount$ravenwood() {
+        return 2;
+    }
 
     /** Maximum value for sample rate, used by AudioFormat.
      * @hide
      */
     public static final int SAMPLE_RATE_HZ_MAX = native_getMaxSampleRate();
+
+    @RavenwoodReplace
     private static native int native_getMaxSampleRate();
+    private static int native_getMaxSampleRate$ravenwood() {
+        return 48000;
+    }
 
     /** Minimum value for sample rate, used by AudioFormat.
      * @hide
      */
     public static final int SAMPLE_RATE_HZ_MIN = native_getMinSampleRate();
+
+    @RavenwoodReplace
     private static native int native_getMinSampleRate();
+    private static int native_getMinSampleRate$ravenwood() {
+        return 16000;
+    }
 
     /** @hide */
     public static final int FCC_24 = 24; // fixed channel count 24; do not change.
@@ -216,6 +236,7 @@ public class AudioSystem
     public static final int NUM_MODES               = 8;
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String modeToString(int mode) {
         switch (mode) {
             case MODE_CURRENT: return "MODE_CURRENT";
@@ -394,6 +415,7 @@ public class AudioSystem
      * @hide
      * Convert a native audio format integer constant to a string.
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String audioFormatToString(int audioFormat) {
         switch (audioFormat) {
             case /* AUDIO_FORMAT_INVALID         */ 0xFFFFFFFF:
@@ -688,7 +710,13 @@ public class AudioSystem
      *    key1=value1;key2=value2;...
      */
     @UnsupportedAppUsage
+    @RavenwoodReplace(reason = "Updating audio HAL can be safely considered a noop on host")
     public static native int setParameters(String keyValuePairs);
+
+    /** @hide */
+    public static int setParameters$ravenwood(String keyValuePairs) {
+        return 0;
+    }
 
     /**
      * @hide
@@ -1006,6 +1034,7 @@ public class AudioSystem
      * @param error one of the java AudioSystem errors
      * @return a human-readable string
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String audioSystemErrorToString(@AudioSystemError int error) {
         switch(error) {
             case SUCCESS:
@@ -1147,15 +1176,19 @@ public class AudioSystem
 
     /** @hide */
     public static final Set<Integer> DEVICE_OUT_ALL_SET;
+
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static final Set<Integer> DEVICE_OUT_ALL_A2DP_SET = Set.of(DEVICE_OUT_BLUETOOTH_A2DP,
             DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES, DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER);
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static final Set<Integer> DEVICE_OUT_ALL_SCO_SET = Set.of(DEVICE_OUT_BLUETOOTH_SCO,
             DEVICE_OUT_BLUETOOTH_SCO_HEADSET, DEVICE_OUT_BLUETOOTH_SCO_CARKIT);
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static final Set<Integer> DEVICE_OUT_ALL_USB_SET =
             Set.of(DEVICE_OUT_USB_ACCESSORY, DEVICE_OUT_USB_DEVICE, DEVICE_OUT_USB_HEADSET);
 
@@ -1163,7 +1196,9 @@ public class AudioSystem
     public static final Set<Integer> DEVICE_OUT_ALL_HDMI_SYSTEM_AUDIO_SET;
     /** @hide */
     public static final Set<Integer> DEVICE_ALL_HDMI_SYSTEM_AUDIO_AND_SPEAKER_SET;
+
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static final Set<Integer> DEVICE_OUT_ALL_BLE_SET =
             Set.of(DEVICE_OUT_BLE_HEADSET, DEVICE_OUT_BLE_SPEAKER, DEVICE_OUT_BLE_BROADCAST);
 
@@ -1323,13 +1358,16 @@ public class AudioSystem
     /** @hide */
     public static final Set<Integer> DEVICE_IN_ALL_SET;
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static final Set<Integer> DEVICE_IN_ALL_SCO_SET =
             Set.of(DEVICE_IN_BLUETOOTH_SCO_HEADSET);
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static final Set<Integer> DEVICE_IN_ALL_USB_SET =
             Set.of(DEVICE_IN_USB_ACCESSORY, DEVICE_IN_USB_DEVICE, DEVICE_IN_USB_HEADSET);
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static final Set<Integer> DEVICE_IN_ALL_BLE_SET = Set.of(DEVICE_IN_BLE_HEADSET);
 
     static {
@@ -1450,6 +1488,7 @@ public class AudioSystem
     private static final int NUM_DEVICE_STATES = 1;
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String deviceStateToString(int state) {
         switch (state) {
             case DEVICE_STATE_UNAVAILABLE: return "DEVICE_STATE_UNAVAILABLE";
@@ -1527,6 +1566,7 @@ public class AudioSystem
 
     /** @hide */
     @UnsupportedAppUsage
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String getOutputDeviceName(int device)
     {
         switch(device) {
@@ -1605,6 +1645,7 @@ public class AudioSystem
     }
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String getInputDeviceName(int device)
     {
         switch(device) {
@@ -1710,6 +1751,7 @@ public class AudioSystem
     /** @hide */ public static final int FORCE_DEFAULT = FORCE_NONE;
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String forceUseConfigToString(int config) {
         switch (config) {
             case FORCE_NONE: return "FORCE_NONE";
@@ -1750,6 +1792,7 @@ public class AudioSystem
     public static final int DEVICE_ROLE_DISABLED = 2;
 
     /** @hide */
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String forceUseUsageToString(int usage) {
         switch (usage) {
             case FOR_COMMUNICATION: return "FOR_COMMUNICATION";
@@ -2023,6 +2066,7 @@ public class AudioSystem
 
     /** @hide */
     @NonNull
+    @android.ravenwood.annotation.RavenwoodKeep
     public static String deviceSetToString(@NonNull Set<AudioDeviceAttributes> devices) {
         int n = 0;
         StringBuilder sb = new StringBuilder();

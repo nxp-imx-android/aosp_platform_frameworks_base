@@ -32,6 +32,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.text.TextUtils;
 import android.util.IntArray;
 import android.util.Log;
@@ -82,6 +83,7 @@ import java.util.Set;
  * <code>AudioAttributes</code> instance is built through its builder,
  * {@link AudioAttributes.Builder}.
  */
+@RavenwoodKeepWholeClass
 public final class AudioAttributes implements Parcelable {
     private final static String TAG = "AudioAttributes";
 
@@ -1687,44 +1689,47 @@ public final class AudioAttributes implements Parcelable {
         }
     }
 
-    private static final Map<String, Integer> sXsdStringToUsage = new HashMap<>();
-
-    static {
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_UNKNOWN.toString(), USAGE_UNKNOWN);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_UNKNOWN.toString(), USAGE_UNKNOWN);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_MEDIA.toString(), USAGE_MEDIA);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_VOICE_COMMUNICATION.toString(),
-                USAGE_VOICE_COMMUNICATION);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING.toString(),
-                USAGE_VOICE_COMMUNICATION_SIGNALLING);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_ALARM.toString(), USAGE_ALARM);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_NOTIFICATION.toString(), USAGE_NOTIFICATION);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_NOTIFICATION_TELEPHONY_RINGTONE.toString(),
-                USAGE_NOTIFICATION_RINGTONE);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_ASSISTANCE_ACCESSIBILITY.toString(),
-                USAGE_ASSISTANCE_ACCESSIBILITY);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE.toString(),
-                USAGE_ASSISTANCE_NAVIGATION_GUIDANCE);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_ASSISTANCE_SONIFICATION.toString(),
-                USAGE_ASSISTANCE_SONIFICATION);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_GAME.toString(), USAGE_GAME);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_VIRTUAL_SOURCE.toString(),
-                USAGE_VIRTUAL_SOURCE);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_ASSISTANT.toString(), USAGE_ASSISTANT);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_CALL_ASSISTANT.toString(),
-                USAGE_CALL_ASSISTANT);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_EMERGENCY.toString(), USAGE_EMERGENCY);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_SAFETY.toString(), USAGE_SAFETY);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_VEHICLE_STATUS.toString(),
-                USAGE_VEHICLE_STATUS);
-        sXsdStringToUsage.put(AudioUsage.AUDIO_USAGE_ANNOUNCEMENT.toString(), USAGE_ANNOUNCEMENT);
+    private static final class XsdHolder {
+        static final Map<String, Integer> sInstance;
+        static {
+            sInstance = new HashMap<>();
+            sInstance.put(AudioUsage.AUDIO_USAGE_UNKNOWN.toString(), USAGE_UNKNOWN);
+            sInstance.put(AudioUsage.AUDIO_USAGE_UNKNOWN.toString(), USAGE_UNKNOWN);
+            sInstance.put(AudioUsage.AUDIO_USAGE_MEDIA.toString(), USAGE_MEDIA);
+            sInstance.put(AudioUsage.AUDIO_USAGE_VOICE_COMMUNICATION.toString(),
+                    USAGE_VOICE_COMMUNICATION);
+            sInstance.put(AudioUsage.AUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING.toString(),
+                    USAGE_VOICE_COMMUNICATION_SIGNALLING);
+            sInstance.put(AudioUsage.AUDIO_USAGE_ALARM.toString(), USAGE_ALARM);
+            sInstance.put(AudioUsage.AUDIO_USAGE_NOTIFICATION.toString(), USAGE_NOTIFICATION);
+            sInstance.put(AudioUsage.AUDIO_USAGE_NOTIFICATION_TELEPHONY_RINGTONE.toString(),
+                    USAGE_NOTIFICATION_RINGTONE);
+            sInstance.put(AudioUsage.AUDIO_USAGE_ASSISTANCE_ACCESSIBILITY.toString(),
+                    USAGE_ASSISTANCE_ACCESSIBILITY);
+            sInstance.put(AudioUsage.AUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE.toString(),
+                    USAGE_ASSISTANCE_NAVIGATION_GUIDANCE);
+            sInstance.put(AudioUsage.AUDIO_USAGE_ASSISTANCE_SONIFICATION.toString(),
+                    USAGE_ASSISTANCE_SONIFICATION);
+            sInstance.put(AudioUsage.AUDIO_USAGE_GAME.toString(), USAGE_GAME);
+            sInstance.put(AudioUsage.AUDIO_USAGE_VIRTUAL_SOURCE.toString(),
+                    USAGE_VIRTUAL_SOURCE);
+            sInstance.put(AudioUsage.AUDIO_USAGE_ASSISTANT.toString(), USAGE_ASSISTANT);
+            sInstance.put(AudioUsage.AUDIO_USAGE_CALL_ASSISTANT.toString(),
+                    USAGE_CALL_ASSISTANT);
+            sInstance.put(AudioUsage.AUDIO_USAGE_EMERGENCY.toString(), USAGE_EMERGENCY);
+            sInstance.put(AudioUsage.AUDIO_USAGE_SAFETY.toString(), USAGE_SAFETY);
+            sInstance.put(AudioUsage.AUDIO_USAGE_VEHICLE_STATUS.toString(),
+                    USAGE_VEHICLE_STATUS);
+            sInstance.put(AudioUsage.AUDIO_USAGE_ANNOUNCEMENT.toString(), USAGE_ANNOUNCEMENT);
+        }
     }
+
 
     /** @hide **/
     @TestApi
     public static @AttributeUsage int xsdStringToUsage(@NonNull String xsdUsage) {
-        if (sXsdStringToUsage.containsKey(xsdUsage)) {
-            return sXsdStringToUsage.get(xsdUsage);
+        if (XsdHolder.sInstance.containsKey(xsdUsage)) {
+            return XsdHolder.sInstance.get(xsdUsage);
         } else {
             Log.w(TAG, "Usage name not found in AudioUsage enum: " + xsdUsage);
             return USAGE_UNKNOWN;

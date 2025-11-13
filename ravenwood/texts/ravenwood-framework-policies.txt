@@ -52,6 +52,10 @@ class android.content.Context  # no-pta
 class android.text.ClipboardManager keep  # no-pta
     method <init> ()V keep
 
+# Audio
+# AIDL generated parcel
+class com.android.media.permission.UidPackageState keepclass  # no-pta
+
 #####################
 # Experimental APIs
 #####################
