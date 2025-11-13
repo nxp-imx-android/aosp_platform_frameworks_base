@@ -149,10 +149,13 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
     public String getCameraId(@NonNull VirtualCameraConfig cameraConfig) {
         connectVirtualCameraServiceIfNeeded();
 
+        final IVirtualCameraService service;
+        synchronized (mServiceLock) {
+            service = mVirtualCameraService;
+        }
+
         try {
-            synchronized (mServiceLock) {
-                return mVirtualCameraService.getCameraId(cameraConfig.getCallback().asBinder());
-            }
+            return service.getCameraId(cameraConfig.getCallback().asBinder());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -286,16 +289,24 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
 
     private boolean registerCameraWithService(VirtualCameraConfig config) throws RemoteException {
         VirtualCameraConfiguration serviceConfiguration = getServiceCameraConfiguration(config);
+        final IVirtualCameraService service;
+
         synchronized (mServiceLock) {
-            int ownerDeviceId = mDeviceId;
-
-            if (Flags.externalCameraDefaultPolicy() && mCameraPolicy == DEVICE_POLICY_DEFAULT) {
-                ownerDeviceId = Context.DEVICE_ID_DEFAULT;
+            // This case should already be prevented by connectVirtualCameraServiceIfNeeded()
+            // called in registerCamera()
+            if (mVirtualCameraService == null) {
+                throw new IllegalStateException("Virtual camera service is not connected.");
             }
-
-            return mVirtualCameraService.registerCamera(config.getCallback().asBinder(),
-                    serviceConfiguration, ownerDeviceId);
+            service = mVirtualCameraService;
         }
+
+        int ownerDeviceId = mDeviceId;
+        if (Flags.externalCameraDefaultPolicy() && mCameraPolicy == DEVICE_POLICY_DEFAULT) {
+            ownerDeviceId = Context.DEVICE_ID_DEFAULT;
+        }
+
+        return service.registerCamera(config.getCallback().asBinder(),
+                serviceConfiguration, ownerDeviceId);
     }
 
     private final class CameraDescriptor implements IBinder.DeathRecipient {
