@@ -20,6 +20,7 @@ enum class GlobalActionType(val configKey: String) {
     POWER("power"),
     AIRPLANE("airplane"),
     BUGREPORT("bugreport"),
+    FEEDBACK("feedback"),
     SILENT("silent"),
     USERS("users"),
     SETTINGS("settings"),

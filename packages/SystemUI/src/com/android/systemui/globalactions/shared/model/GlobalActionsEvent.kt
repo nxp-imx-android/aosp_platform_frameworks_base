@@ -49,7 +49,8 @@ enum class GlobalActionsEvent(private val id: Int) : UiEventLogger.UiEventEnum {
     @UiEvent(doc = "System Update button was pressed.") GA_SYSTEM_UPDATE_PRESS(1716),
     @UiEvent(doc = "Power menu was closed due to timeout.") GA_CLOSE_TIMEOUT(2148),
     @UiEvent(doc = "The global actions standby button was pressed.") GA_STANDBY_PRESS(2210),
-    @UiEvent(doc = "The global actions lock button was pressed.") GA_LOCK_PRESS(2402);
+    @UiEvent(doc = "The global actions lock button was pressed.") GA_LOCK_PRESS(2402),
+    @UiEvent(doc = "The global actions feedback button was pressed.") GA_FEEDBACK_PRESS(2509);
 
     override fun getId() = id
 }

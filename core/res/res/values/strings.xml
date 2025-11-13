@@ -792,6 +792,9 @@
     <!-- label for item that generates a bug report in the phone options dialog [CHAR LIMIT=24] -->
     <string name="global_action_bug_report">Bug report</string>
 
+    <!-- label for item that opens the feedback app in the phone options dialog [CHAR LIMIT=24] -->
+    <string name="global_action_feedback">Feedback</string>
+
     <!-- label for item that logouts the current user [CHAR LIMIT=24]-->
     <string name="global_action_logout">End session</string>
 
