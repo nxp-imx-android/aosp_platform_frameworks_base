@@ -53,7 +53,15 @@ private val MAX_CAST_LIST_HEIGHT = 5000.dp
 
 @Composable
 fun CastDetailsContent(castDetailsViewModel: CastDetailsViewModel) {
-    if (castDetailsViewModel.shouldShowChooserDialog()) {
+    // The view can be in two states: showing the device chooser or the connected device
+    // controller. `viewUpdateKey` is a state that is used to update this ui, when the user
+    // disconnects from a device or connects to a new one.
+    val showChooser =
+        remember(castDetailsViewModel.viewUpdateKey) {
+            castDetailsViewModel.shouldShowChooserDialog()
+        }
+
+    if (showChooser) {
         val contentManager: MediaRouteChooserContentManager = remember {
             castDetailsViewModel.createChooserContentManager()
         }
