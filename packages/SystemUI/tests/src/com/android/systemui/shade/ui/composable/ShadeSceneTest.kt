@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.ui.composable
 
+import android.platform.test.annotations.DisableFlags
 import android.testing.TestableLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
@@ -26,6 +27,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.EnableSceneContainer
@@ -49,7 +51,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.junit.Ignore
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,14 +60,19 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
+@DisableFlags(FLAG_DUAL_SHADE)
 class ShadeSceneTest : SysuiTestCase() {
     @get:Rule val composeTestRule = createComposeRule()
 
     private val kosmos = testKosmos()
 
+    @Before
+    fun setUp() {
+        kosmos.enableSingleShade()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    @Ignore("http://b/425670368")
     fun testSingleShadeHierarchy() =
         with(kosmos) {
             testScope.runTest {
