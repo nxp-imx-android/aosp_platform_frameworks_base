@@ -210,6 +210,7 @@ object WindowDecorationTestHelper {
                 { StubTransaction() },
                 mock<DesktopModeWindowDecorViewModel.CaptionTouchStatusListener>(),
                 mock<DesktopModeWindowDecorViewModel.AppHandleMotionEventHandler>(),
+                pinnedLayerController,
             )
         wrapped.setCaptionListeners(
             onClickListener = touchEventListener,

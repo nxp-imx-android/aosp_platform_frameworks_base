@@ -47,6 +47,7 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.NormalAppLayerController
+import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
@@ -69,7 +70,7 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 
 /**
- * Unit tests against [PinnedLayerController]
+ * Unit tests against [PinnedLayerHandler]
  *
  * Build/Install/Run: atest WMShellUnitTests:PinnedLayerHandlerTests
  */
@@ -85,6 +86,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock private lateinit var finishTransaction: SurfaceControl.Transaction
     @Mock private lateinit var normalLayerController: NormalAppLayerController
     @Mock private lateinit var presentationController: PinnedLayerPresentationController
+    @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
 
     private lateinit var pinnedLayerController: PinnedLayerController
     private lateinit var pinnedLayerHandler: PinnedLayerHandler
@@ -92,7 +94,12 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Before
     fun setup() {
         pinnedLayerController =
-            PinnedLayerController(shellInit, transitions, presentationController)
+            PinnedLayerController(
+                shellInit,
+                transitions,
+                presentationController,
+                windowDragTransitionHandler,
+            )
         pinnedLayerHandler =
             PinnedLayerHandler(shellInit, transitions, pinnedLayerController, normalLayerController)
         whenever(presentationController.isTaskSupportedForPinning(any())).thenReturn(true)
