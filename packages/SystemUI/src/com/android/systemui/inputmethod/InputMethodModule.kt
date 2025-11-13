@@ -16,14 +16,21 @@
 
 package com.android.systemui.inputmethod
 
+import com.android.systemui.CoreStartable
 import com.android.systemui.inputmethod.data.repository.InputMethodRepositoryModule
+import dagger.Binds
 import dagger.Module
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 
 /** Module for providing objects exposed by the input method package. */
-@Module(
-    includes =
-        [
-            InputMethodRepositoryModule::class,
-        ],
-)
-object InputMethodModule
+@Module(includes = [InputMethodRepositoryModule::class])
+interface InputMethodModule {
+    /** Starts ImeSwitcherMenuController. */
+    @Binds
+    @IntoMap
+    @ClassKey(ImeSwitcherMenuController::class)
+    fun provideImeSwitcherMenuControllerStartable(
+        startable: ImeSwitcherMenuController
+    ): CoreStartable
+}

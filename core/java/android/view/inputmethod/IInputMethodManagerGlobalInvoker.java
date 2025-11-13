@@ -40,6 +40,7 @@ import com.android.internal.infra.AndroidFuture;
 import com.android.internal.inputmethod.DirectBootAwareness;
 import com.android.internal.inputmethod.IBooleanListener;
 import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
+import com.android.internal.inputmethod.IImeSwitcherMenu;
 import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
@@ -351,13 +352,13 @@ final class IInputMethodManagerGlobalInvoker {
 
     @AnyThread
     @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
-    static boolean isInputMethodPickerShownForTest() {
+    static boolean isInputMethodPickerShownForTest(@UserIdInt int userId) {
         final IInputMethodManager service = getService();
         if (service == null) {
             return false;
         }
         try {
-            return service.isInputMethodPickerShownForTest();
+            return service.isInputMethodPickerShownForTest(userId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -388,6 +389,24 @@ final class IInputMethodManagerGlobalInvoker {
         }
         try {
             return service.shouldShowImeSwitcherButtonForTest();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @AnyThread
+    @RequiresPermission(allOf = {
+            Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.STATUS_BAR_SERVICE,
+    })
+    static void registerImeSwitcherMenu(@NonNull IImeSwitcherMenu imeSwitcherMenu) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return;
+        }
+        try {
+            service.registerImeSwitcherMenu(imeSwitcherMenu);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
