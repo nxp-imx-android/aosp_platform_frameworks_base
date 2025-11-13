@@ -33,6 +33,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 
 @NoRavenizer // This class shouldn't be executed with RavenwoodAwareTestRunner.
 public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
@@ -44,16 +46,16 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
     @Expected("""
     testRunStarted: classes
     testSuiteStarted: classes
-    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest
-    testStarted: testMainThreadException(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest)
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndWaitForMainLooperDoneTest
+    testStarted: testMainThreadException(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndWaitForMainLooperDoneTest)
     testFailure: Uncaught exception detected on thread Ravenwood:Main. *** Continue running remaining tests ***
-    testFinished: testMainThreadException(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest)
-    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest
+    testFinished: testMainThreadException(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndWaitForMainLooperDoneTest)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndWaitForMainLooperDoneTest
     testSuiteFinished: classes
     testRunFinished: 1,1,0,0
     """)
     // CHECKSTYLE:ON
-    public static class MainThreadExceptionAndwaitForMainLooperDoneTest {
+    public static class MainThreadExceptionAndWaitForMainLooperDoneTest {
 
         @Test
         public void testMainThreadException() throws Exception {
@@ -66,7 +68,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
             // if any. So the remaining code shouldn't be executed.
             try {
                 RavenwoodUtils.waitForMainLooperDone();
-                RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtException();
+                RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtExceptionNoClear();
             } catch (Throwable th) {
                 // Ensure that the exception has MessageWasPostedHereStackTrace as a "cause".
                 assertHasMessageWasPostedHereStackTraceAsCause(th, "testMainThreadException");
@@ -95,22 +97,36 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
     testRunFinished: 1,1,0,0
     """)
     // CHECKSTYLE:ON
-    @org.junit.Ignore // TODO(b/459868484) This test is flaky. Fix it and remove this line.
     public static class MainThreadExceptionAndPostTest {
         @Test
         public void test1() throws Exception {
-            var h = new Handler(Looper.getMainLooper());
-            h.post(() -> {
-                throw new RuntimeException("Intentional exception on the main thread!");
-            });
-            // Because the above exception happens first, this message shouldn't be
-            // executed, because before Looper executes each message, we check for a pending
-            // exception and prevents running farther messages.
-            h.post(() -> {
-                setError(new RuntimeException("Shouldn't reach here"));
-            });
-            RavenwoodUtils.waitForMainLooperDone();
-            RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtException();
+            var inTest = new AtomicBoolean(true);
+
+            try {
+                var h = new Handler(Looper.getMainLooper());
+                h.post(() -> {
+                    throw new RuntimeException("Intentional exception on the main thread!");
+                });
+                // Because the above exception happens first, this message shouldn't be
+                // executed, because before Looper executes each message, we check for a pending
+                // exception and prevents running farther messages.
+                try {
+                    h.post(() -> {
+                        // In case the message gets "leaked" somehow and we're executing
+                        // subsequent tests already, we don't want to throw.
+                        if (inTest.get()) {
+                            setError(new RuntimeException("Shouldn't reach here"));
+                        }
+                    });
+                } catch (Throwable ignore) {
+                    // post() may throw, if the first message had been executed already.
+                }
+                // Make sure to wait until the message queue is idle.
+                RavenwoodUtils.waitForMainLooperDone();
+                RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtExceptionNoClear();
+            } finally {
+                inTest.set(false);
+            }
         }
     }
 

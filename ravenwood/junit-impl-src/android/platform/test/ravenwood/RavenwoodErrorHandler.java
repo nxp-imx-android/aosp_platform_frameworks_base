@@ -111,7 +111,8 @@ public class RavenwoodErrorHandler {
 
     static void exitTestMethod(Description description) {
         cancelTimeout();
-        maybeThrowPendingRecoverableUncaughtException();
+        RavenwoodMessageTracker.getInstance().logPendingMessages();
+        maybeThrowPendingRecoverableUncaughtExceptionAndClear();
         maybeThrowUnrecoverableUncaughtException();
     }
 
@@ -223,9 +224,10 @@ public class RavenwoodErrorHandler {
     public static void onBeforeEnqueue(@NonNull Message msg) {
         // Check for pending exception, and throw it if any.
         // We don't want to enqueue any more messages if a pending exception exists.
-        maybeThrowPendingRecoverableUncaughtException();
+        maybeThrowPendingRecoverableUncaughtExceptionNoClear();
+
         // Track the msg poster in case an exception is thrown later during msg dispatch.
-        RavenwoodMessageTracker.getInstance().trackMessagePoster(msg);
+        RavenwoodMessageTracker.getInstance().trackMessage(msg);
     }
 
     /**
@@ -321,8 +323,16 @@ public class RavenwoodErrorHandler {
         }
     }
 
-    public static void maybeThrowPendingRecoverableUncaughtException() {
+    private static void maybeThrowPendingRecoverableUncaughtExceptionAndClear() {
         var pending = sPendingRecoverableUncaughtException.getAndSet(null);
+        if (pending != null) {
+            SneakyThrow.sneakyThrow(pending);
+        }
+    }
+
+    @VisibleForTesting // Used by unit tests too
+    public static void maybeThrowPendingRecoverableUncaughtExceptionNoClear() {
+        var pending = sPendingRecoverableUncaughtException.get();
         if (pending != null) {
             SneakyThrow.sneakyThrow(pending);
         }

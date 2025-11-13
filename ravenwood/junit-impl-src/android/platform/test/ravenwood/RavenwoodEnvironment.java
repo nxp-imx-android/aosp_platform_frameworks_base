@@ -387,6 +387,18 @@ public final class RavenwoodEnvironment {
         return "1".equals(getEnvVar(keyName, ""));
     }
 
+    /** Reads a per-module environmental int variable. */
+    public int getIntEnvVar(String keyName, int defValue) {
+        var v = getEnvVar(keyName, "");
+        try {
+            if (!v.isEmpty()) {
+                return Integer.parseInt(v);
+            }
+        } catch (NumberFormatException ignore) {
+        }
+        return defValue;
+    }
+
     /**
      * Reads a per-module environmental string variable, and split it with whitespace.
      * Default is an empty array;
