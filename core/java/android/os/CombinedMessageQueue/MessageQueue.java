@@ -139,12 +139,6 @@ public final class MessageQueue {
     private static boolean sUseConcurrent;
 
     /**
-     * Determine if the native looper will skip epoll_wait syscalls if nativePollOnce is called with
-     * a timeout of 0, which indicates that there are already pending messages.
-     */
-    private static boolean sSkipEpollWaitForZeroTimeoutInitialized = false;
-
-    /**
      * Caches process-level checks that determine `sUseConcurrent`.
      * This is to avoid redoing checks that shouldn't change during the process's lifetime.
      */
@@ -215,14 +209,14 @@ public final class MessageQueue {
         return false;
     }
 
+    /**
+     * Skip epoll_wait syscalls if nativePollOnce is called with a timeout of 0, which indicates
+     * that there are already pending messages.
+     */
     static void setSkipEpollWaitForZeroTimeout(long ptr) {
-        if (sSkipEpollWaitForZeroTimeoutInitialized) {
-            return;
-        }
         if (Flags.nativeLooperSkipEpollWaitForZeroTimeout()) {
             nativeSetSkipEpollWaitForZeroTimeout(ptr);
         }
-        sSkipEpollWaitForZeroTimeoutInitialized = true;
     }
 
     @Override
