@@ -564,6 +564,8 @@ public final class PowerManagerService extends SystemService
     /** Default value for whether dreams should only be activated while wireless charging. */
     private boolean mDreamsActivatedOnlyWhileWirelessChargingConfig;
 
+    private boolean mSupportDreamWirelessChargingRestriction;
+
     // True if dreams can run while not plugged in.
     private boolean mDreamsEnabledOnBatteryConfig;
 
@@ -1601,6 +1603,8 @@ public final class PowerManagerService extends SystemService
                 com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault);
         mDreamsActivatedOnlyWhileWirelessChargingConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_onlyDreamWhenWirelessChargingDefault);
+        mSupportDreamWirelessChargingRestriction = resources.getBoolean(
+                com.android.internal.R.bool.config_supportDreamWirelessChargingRestriction);
         mDreamsEnabledOnBatteryConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_dreamsEnabledOnBattery);
         mDreamsBatteryLevelMinimumWhenPoweredConfig = resources.getInteger(
@@ -3577,7 +3581,8 @@ public final class PowerManagerService extends SystemService
                 && mDockState != Intent.EXTRA_DOCK_STATE_UNDOCKED) {
             return true;
         }
-        if (dreamsV2() && mDreamsOnlyWhileWirelessChargingSetting
+        if (dreamsV2() && mSupportDreamWirelessChargingRestriction
+                && mDreamsOnlyWhileWirelessChargingSetting
                 && mPlugType != BatteryManager.BATTERY_PLUGGED_WIRELESS) {
             // Only limit dream to wireless charging for dream on sleep or dream on postured, as
             // docking (as defined by the dream setting) is mutually exclusive with wireless
