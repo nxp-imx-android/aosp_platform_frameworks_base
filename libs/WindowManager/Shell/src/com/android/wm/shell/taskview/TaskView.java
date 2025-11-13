@@ -209,6 +209,11 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
         }
     }
 
+    @Override
+    public boolean shouldHideSurfaceWhileClosing() {
+        return getAlpha() == 0 || getVisibility() != VISIBLE;
+    }
+
     /**
      * Only one listener may be set on the view, throws an exception otherwise.
      */

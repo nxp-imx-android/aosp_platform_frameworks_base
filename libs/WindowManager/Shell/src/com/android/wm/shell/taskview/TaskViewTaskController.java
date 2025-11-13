@@ -575,9 +575,12 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * Called when the associated Task closes. If the TaskView is just being hidden, prepareHide
      * is used instead.
      */
-    void prepareCloseAnimation() {
+    void prepareCloseAnimation(SurfaceControl leash, SurfaceControl.Transaction transaction) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.prepareCloseAnimation(): taskView=%d",
                 hashCode());
+        if (mTaskViewBase.shouldHideSurfaceWhileClosing()) {
+            transaction.setAlpha(leash, 0);
+        }
         handleAndNotifyTaskRemoval(mTaskInfo);
         resetTaskInfo();
     }
