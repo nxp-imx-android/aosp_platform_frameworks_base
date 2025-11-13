@@ -18,6 +18,7 @@ package com.android.server.vibrator;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.vibrator.VibrationEffectSegment;
 import android.util.IndentingPrintWriter;
 
 import com.android.tools.r8.keepanno.annotations.KeepItemKind;
@@ -36,6 +37,9 @@ interface HalVibratorManager {
 
         /** Callback triggered when vibration session is complete. */
         void onVibrationSessionComplete(long sessionId);
+
+        /** Callback triggered when haptic generator session is complete. */
+        void onHapticGeneratorSessionComplete(long sessionId);
     }
 
     /** Initializes the HAL and set callback instances for future interactions. */
@@ -73,6 +77,26 @@ interface HalVibratorManager {
 
     /** End vibration session. */
     boolean endSession(long sessionId, boolean shouldAbort);
+
+    /** Starts a haptic generator session for converting vibration effects to PCM data. */
+    boolean startHapticGeneratorSession(long sessionId, int vibratorId,
+            @NonNull android.os.vibrator.HapticGeneratorSession.Config config);
+
+    /** Closes a haptic generator session and releases its resources. */
+    boolean closeHapticGeneratorSession(long sessionId);
+
+    /** Clears the haptic generator session. */
+    void clearHapticGeneratorSession(long sessionId);
+
+    /** Starts a haptic generator stream within a session to convert a single effect. */
+    boolean startHapticGeneratorStream(long sessionId, int vibratorId,
+            @NonNull VibrationEffectSegment[] segments);
+
+    /** Reads PCM data from a haptic generator stream. */
+    int readHapticGeneratorStream(long sessionId, int vibratorId, @NonNull byte[] buffer);
+
+    /** Stops a haptic generator stream. */
+    boolean stopHapticGeneratorStream(long sessionId, int vibratorId);
 
     /** Writes information into dumpsys. */
     void dump(IndentingPrintWriter pw);

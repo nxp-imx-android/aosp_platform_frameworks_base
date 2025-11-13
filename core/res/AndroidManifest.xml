@@ -2864,6 +2864,15 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.os.vibrator.vendor_vibration_effects" />
 
+    <!-- @SystemApi Allows access to start a haptic generator session.
+         <p>Protection level: signature|privileged|vendor privileged
+        @FlaggedApi(android.os.vibrator.Flags.FLAG_HAPTIC_PCM_GENERATION)
+        @hide
+    -->
+    <permission android:name="android.permission.USE_VIBRATOR_HAPTIC_GENERATOR"
+        android:protectionLevel="signature|privileged|vendorPrivileged"
+        android:featureFlag="android.os.vibrator.haptic_pcm_generation" />
+
     <!-- @SystemApi Allows access to the vibrator state.
          <p>Protection level: signature
          @hide

@@ -21,12 +21,14 @@ import android.annotation.Nullable;
 import android.hardware.vibrator.ActivePwle;
 import android.hardware.vibrator.CompositeEffect;
 import android.hardware.vibrator.CompositePwleV2;
+import android.hardware.vibrator.HapticGeneratorConfig;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorCallback;
 import android.hardware.vibrator.IVibratorManager;
 import android.hardware.vibrator.PrimitivePwle;
 import android.hardware.vibrator.PwleV2Primitive;
+import android.hardware.vibrator.VibrationEffectContent;
 import android.hardware.vibrator.VibrationSessionConfig;
 import android.os.Binder;
 import android.os.Handler;
@@ -34,6 +36,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.VibrationEffect;
+import android.os.vibrator.HapticGeneratorSession;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwlePoint;
 import android.os.vibrator.RampSegment;
@@ -52,6 +55,8 @@ import java.util.Map;
  */
 public class HalVibratorManagerHelper {
     private final Map<Integer, HalVibratorHelper> mVibratorHelpers = new HashMap<>();
+    private final Map<Long, FakeNativeHapticSessionState> mHapticGeneratorSessions =
+            new HashMap<>();
     private final Handler mHandler;
 
     private FakeVibrationSession mLastSession;
@@ -65,6 +70,12 @@ public class HalVibratorManagerHelper {
     private int mEndSessionCount;
     private int mAbortSessionCount;
     private int mClearSessionsCount;
+    private int mStartHapticSessionCount;
+    private int mCloseHapticSessionCount;
+    private int mClearHapticSessionCount;
+    private int mStartHapticStreamCount;
+    private int mStopHapticStreamCount;
+    private int mReadHapticStreamCount;
 
     private long mCapabilities;
     private int[] mVibratorIds;
@@ -72,6 +83,12 @@ public class HalVibratorManagerHelper {
     private boolean mPrepareSyncedShouldFail = false;
     private boolean mTriggerSyncedShouldFail = false;
     private boolean mStartSessionShouldFail = false;
+    private boolean mStartHapticSessionShouldFail = false;
+    private boolean mStartHapticStreamShouldFail = false;
+
+    public static final int READ_STATUS_ERROR_IO = -5;
+    public static final int READ_STATUS_ERROR_CLOSED = -32;
+    public static final int READ_STATUS_EOF = -1;
 
     public HalVibratorManagerHelper(Looper looper) {
         mHandler = new Handler(looper);
@@ -190,6 +207,70 @@ public class HalVibratorManagerHelper {
         return mClearSessionsCount;
     }
 
+    public void setStartHapticSessionShouldFail(boolean shouldFail) {
+        mStartHapticSessionShouldFail = shouldFail;
+    }
+
+    public void setStartHapticStreamShouldFail(boolean shouldFail) {
+        mStartHapticStreamShouldFail = shouldFail;
+    }
+
+    public int getHapticGeneratorSessionStartCount() {
+        return mStartHapticSessionCount;
+    }
+
+    public int getHapticGeneratorSessionCloseCount() {
+        return mCloseHapticSessionCount;
+    }
+
+    public int getHapticGeneratorSessionClearCount() {
+        return mClearHapticSessionCount;
+    }
+
+    public int getHapticGeneratorStreamStartCount() {
+        return mStartHapticStreamCount;
+    }
+
+    public int getHapticGeneratorStreamStopCount() {
+        return mStopHapticStreamCount;
+    }
+
+    public int getHapticGeneratorStreamReadCount() {
+        return mReadHapticStreamCount;
+    }
+
+    public int getActiveHapticGeneratorSessions() {
+        return mHapticGeneratorSessions.size();
+    }
+
+    /**
+     * Simulates the HAL deciding to end a haptic generator session abruptly and
+     * triggering the completion callback.
+     */
+    public void endHapticGeneratorSessionFromHal(long sessionId) {
+        FakeNativeHapticSessionState sessionState = mHapticGeneratorSessions.get(sessionId);
+        if (sessionState != null) {
+            sessionState.mIsStreamActive = false;
+            mHandler.post(() -> {
+                try {
+                    sessionState.mCallback.onComplete();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+    }
+
+    /**
+     * Simulates the HAL deciding to end all active haptic generator sessions
+     * and triggering the completion callback for each one.
+     */
+    public void endAllHapticGeneratorSessionsFromHal() {
+        for (long sessionId : mHapticGeneratorSessions.keySet()) {
+            endHapticGeneratorSessionFromHal(sessionId);
+        }
+    }
+
     private boolean hasCapability(long capability) {
         return (mCapabilities & capability) == capability;
     }
@@ -201,6 +282,12 @@ public class HalVibratorManagerHelper {
         List<Integer> vibratorIds = Arrays.stream(mVibratorIds).boxed().toList();
         long validIdCount = Arrays.stream(ids).filter(vibratorIds::contains).count();
         return validIdCount > 0 && validIdCount == ids.length;
+    }
+
+    private static class FakeNativeHapticSessionState {
+        boolean mIsStreamActive = false;
+        IVibratorCallback mCallback;
+        boolean mHasSentData = false;
     }
 
     /** Provides fake implementation of {@link VibratorManagerService.NativeWrapper} for testing. */
@@ -293,6 +380,106 @@ public class HalVibratorManagerHelper {
         public void clearSessions() {
             mClearSessionsCount++;
             endLastSessionAbruptly();
+        }
+
+        @Override
+        public boolean startHapticGeneratorSession(long sessionId, int vibratorId,
+                @NonNull HapticGeneratorSession.Config config) {
+            if (mStartHapticSessionShouldFail) {
+                return false;
+            }
+
+            mStartHapticSessionCount++;
+
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return false;
+            }
+            FakeNativeHapticSessionState sessionState = new FakeNativeHapticSessionState();
+            sessionState.mCallback = new FakeVibratorCallback(
+                    () -> mCallbacks.onHapticGeneratorSessionComplete(sessionId));
+            mHapticGeneratorSessions.put(sessionId, sessionState);
+            return true;
+        }
+
+        @Override
+        public boolean closeHapticGeneratorSession(long sessionId) {
+            mCloseHapticSessionCount++;
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return false;
+            }
+
+            if (mHapticGeneratorSessions.remove(sessionId) == null) {
+                return false; // already closed or never started
+            }
+
+            return true;
+        }
+
+        @Override
+        public void clearHapticGeneratorSession(long sessionId) {
+            mClearHapticSessionCount++;
+            mHapticGeneratorSessions.remove(sessionId);
+        }
+
+        @Override
+        public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull VibrationEffectContent[] effect) {
+            if (mStartHapticStreamShouldFail) {
+                return false;
+            }
+
+            mStartHapticStreamCount++;
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return false;
+            }
+            FakeNativeHapticSessionState sessionState = mHapticGeneratorSessions.get(sessionId);
+            if (sessionState == null) {
+                return false;
+            }
+            sessionState.mIsStreamActive = true;
+            return true;
+        }
+
+        @Override
+        public int readHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull byte[] buffer) {
+            mReadHapticStreamCount++;
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return READ_STATUS_ERROR_IO;
+            }
+
+            FakeNativeHapticSessionState sessionState = mHapticGeneratorSessions.get(sessionId);
+            if (sessionState == null || !sessionState.mIsStreamActive) {
+                return READ_STATUS_ERROR_CLOSED;
+            }
+
+            if (!sessionState.mHasSentData && buffer.length > 0) {
+                // TODO: Add a setter for this value so the tests don't rely on this
+                //  knowledge that this will return at most 10 bytes.
+                int bytesToRead = Math.min(buffer.length, 10);
+                for (int i = 0; i < bytesToRead; i++) {
+                    buffer[i] = (byte) (i + 1); // Fill buffer with non-zero data
+                }
+                sessionState.mHasSentData = true;
+                return bytesToRead;
+            }
+
+            return READ_STATUS_EOF;
+        }
+
+        @Override
+        public boolean stopHapticGeneratorStream(long sessionId, int vibratorId) {
+            mStopHapticStreamCount++;
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return false;
+            }
+            FakeNativeHapticSessionState sessionState = mHapticGeneratorSessions.get(sessionId);
+            if (sessionState == null || !sessionState.mIsStreamActive) {
+                return false;
+            }
+
+            sessionState.mIsStreamActive = false;
+            return true;
         }
     }
 
@@ -416,6 +603,104 @@ public class HalVibratorManagerHelper {
             return result;
         }
 
+        @Override
+        public boolean startHapticGeneratorSessionWithCallback(long sessionId, int vibratorId,
+                @NonNull HapticGeneratorSession.Config config) {
+            if (mStartHapticSessionShouldFail) {
+                return false;
+            }
+
+            mStartHapticSessionCount++;
+
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return false;
+            }
+            FakeNativeHapticSessionState sessionState = new FakeNativeHapticSessionState();
+            sessionState.mCallback = new FakeVibratorCallback(
+                    () -> mManagerCallbacks.onHapticGeneratorSessionComplete(sessionId));
+            mHapticGeneratorSessions.put(sessionId, sessionState);
+            return true;
+        }
+
+        @Override
+        public boolean closeHapticGeneratorSession(long sessionId) {
+            mCloseHapticSessionCount++;
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return false;
+            }
+
+            if (mHapticGeneratorSessions.remove(sessionId) == null) {
+                return false; // already closed or never started
+            }
+
+            return true;
+        }
+
+        @Override
+        public void clearHapticGeneratorSession(long sessionId) {
+            mClearHapticSessionCount++;
+            mHapticGeneratorSessions.remove(sessionId);
+        }
+
+        @Override
+        public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull VibrationEffectContent[] effect) {
+            if (mStartHapticStreamShouldFail) {
+                return false;
+            }
+
+            mStartHapticStreamCount++;
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return false;
+            }
+            FakeNativeHapticSessionState sessionState = mHapticGeneratorSessions.get(sessionId);
+            if (sessionState == null) {
+                return false;
+            }
+            sessionState.mIsStreamActive = true;
+            return true;
+        }
+
+        @Override
+        public int readHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull byte[] buffer) {
+            mReadHapticStreamCount++;
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return READ_STATUS_ERROR_IO;
+            }
+
+            FakeNativeHapticSessionState sessionState = mHapticGeneratorSessions.get(sessionId);
+            if (sessionState == null || !sessionState.mIsStreamActive) {
+                return READ_STATUS_ERROR_CLOSED;
+            }
+
+            if (!sessionState.mHasSentData && buffer.length > 0) {
+                int bytesToRead = Math.min(buffer.length, 10);
+                for (int i = 0; i < bytesToRead; i++) {
+                    buffer[i] = (byte) (i + 1); // Fill buffer with non-zero data
+                }
+                sessionState.mHasSentData = true;
+                return bytesToRead;
+            }
+
+            return READ_STATUS_EOF;
+        }
+
+        @Override
+        public boolean stopHapticGeneratorStream(long sessionId, int vibratorId) {
+            mStopHapticStreamCount++;
+            if (!hasCapability(IVibratorManager.CAP_HAPTIC_GENERATOR)) {
+                return false;
+            }
+            FakeNativeHapticSessionState sessionState = mHapticGeneratorSessions.get(sessionId);
+            if (sessionState == null || !sessionState.mIsStreamActive) {
+                return false;
+            }
+
+            sessionState.mIsStreamActive = false;
+            return true;
+        }
+
         private void scheduleCallback(int vibratorId, long vibrationId, long stepId,
                 int durationMs) {
             mVibratorHelpers.get(vibratorId).scheduleVibrationCallback(mVibratorCallbacks,
@@ -491,6 +776,14 @@ public class HalVibratorManagerHelper {
                 throw new UnsupportedOperationException();
             }
             endLastSessionAbruptly();
+        }
+
+        @Override
+        public android.hardware.vibrator.HapticGeneratorSession startHapticGeneratorSession(
+                int[] vibratorIds,
+                HapticGeneratorConfig config, IVibratorCallback callback) throws RemoteException {
+            throw new UnsupportedOperationException(
+                    "HAL java client should not be used to start haptic generator sessions");
         }
 
         @Override

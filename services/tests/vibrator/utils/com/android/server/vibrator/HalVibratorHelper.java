@@ -27,6 +27,7 @@ import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorCallback;
 import android.hardware.vibrator.PrimitivePwle;
 import android.hardware.vibrator.PwleV2Primitive;
+import android.hardware.vibrator.VibrationEffectContent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -37,6 +38,8 @@ import android.os.RemoteException;
 import android.os.VibrationEffect;
 import android.os.VibrationEffect.VendorEffect;
 import android.os.VibratorInfo;
+import android.os.vibrator.HapticGeneratorSession;
+import android.os.vibrator.IHapticChannelStream;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwlePoint;
@@ -720,6 +723,39 @@ public final class HalVibratorHelper {
                 scheduleCallback(vibratorId, vibrationId, stepId, result);
             }
             return result;
+        }
+
+        @Override
+        public boolean startHapticGeneratorSessionWithCallback(long sessionId, int vibratorId,
+                @NonNull HapticGeneratorSession.Config config) {
+            return false;
+        }
+
+        @Override
+        public boolean closeHapticGeneratorSession(long sessionId) {
+            return false;
+        }
+
+        @Override
+        public void clearHapticGeneratorSession(long sessionId) {
+            // no-op
+        }
+
+        @Override
+        public boolean startHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull VibrationEffectContent[] effect) {
+            return false;
+        }
+
+        @Override
+        public int readHapticGeneratorStream(long sessionId, int vibratorId,
+                @NonNull byte[] buffer) {
+            return IHapticChannelStream.READ_STATUS_ERROR_IO;
+        }
+
+        @Override
+        public boolean stopHapticGeneratorStream(long sessionId, int vibratorId) {
+            return false;
         }
 
         private void scheduleCallback(int vibratorId, long vibrationId, long stepId,

@@ -33,6 +33,8 @@ import android.content.res.Resources;
 import android.hardware.vibrator.IVibrator;
 import android.media.AudioAttributes;
 import android.os.vibrator.Flags;
+import android.os.vibrator.HapticGeneratorChannelStream;
+import android.os.vibrator.HapticGeneratorSession;
 import android.os.vibrator.VendorVibrationSession;
 import android.os.vibrator.VibrationConfig;
 import android.os.vibrator.VibratorEnvelopeEffectInfo;
@@ -959,5 +961,52 @@ public abstract class Vibrator {
             @NonNull VendorVibrationSession.Callback callback) {
         Log.w(TAG, "startVendorSession is not supported");
         executor.execute(() -> callback.onFinished(VendorVibrationSession.STATUS_UNSUPPORTED));
+    }
+
+    /**
+     * Asynchronously starts a new haptic generator session.
+     *
+     * <p>A haptic generator session allows an application to convert a {@link VibrationEffect}
+     * into a stream of haptic PCM data. This is useful for creating precisely synchronized
+     * audio-coupled haptic experiences.
+     *
+     * <p>On success, the {@code callback} receives a {@link HapticGeneratorSession} instance.
+     * This session object can then be used to generate one or more
+     * {@link HapticGeneratorChannelStream}s by calling
+     * {@link HapticGeneratorSession#generateHapticChannelStream(VibrationEffect)}.
+     *
+     * <p>The session holds system resources and <strong>must</strong> be closed by calling
+     * {@link HapticGeneratorSession#close()} when it is no longer needed to release these
+     * resources.
+     *
+     * @param config   The configuration for the haptic generator session.
+     * @param executor The executor on which to invoke the callback.
+     * @param callback The callback that will receive the {@link HapticGeneratorSession} on success,
+     *                 or an {@link Exception} on failure.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    @RequiresPermission(android.Manifest.permission.USE_VIBRATOR_HAPTIC_GENERATOR)
+    public void startHapticGeneratorSession(
+            @NonNull HapticGeneratorSession.Config config,
+            @NonNull Executor executor,
+            @NonNull OutcomeReceiver<HapticGeneratorSession, Exception> callback) {
+        Log.w(TAG, "startHapticGeneratorSession is not supported");
+        executor.execute(() -> {
+            callback.onError(new UnsupportedOperationException());
+        });
+    }
+
+    /**
+     * Checks whether the vibrator supports creating haptic generator sessions.
+     *
+     * @return {@code true} if the haptic generator is supported, {@code false} otherwise.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public boolean isHapticGeneratorSupported() {
+        return false;
     }
 }
