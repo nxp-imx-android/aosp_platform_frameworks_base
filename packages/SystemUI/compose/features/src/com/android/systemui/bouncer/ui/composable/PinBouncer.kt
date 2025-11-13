@@ -56,7 +56,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.changedToDown
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
@@ -108,7 +111,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
     }
 
     // set the focus, so adb can send the key events for testing.
-    val focusRequester = FocusRequester()
+    val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
 
     VerticalGrid(
@@ -407,14 +410,16 @@ private fun Modifier.pinPadButtonInput(
 
                         while (true) {
                             val event = awaitPointerEvent()
-                            when (event.type) {
-                                PointerEventType.Press -> {
-                                    downPosition = event.changes[0].position
+                            event.changes.fastForEach { change ->
+                                if (change.changedToDown()) {
+                                    downPosition = change.position
 
                                     // Animate a ripple to show the user that their press
                                     // has been acknowledged.
-                                    downInteraction = PressInteraction.Press(downPosition)
-                                    launch { interactionSource.emit(downInteraction) }
+                                    downInteraction =
+                                        PressInteraction.Press(downPosition).also {
+                                            launch { interactionSource.emit(it) }
+                                        }
 
                                     movedTooFar = false
                                     longClicked = false
@@ -426,10 +431,12 @@ private fun Modifier.pinPadButtonInput(
                                         longClickJob = launch {
                                             delay(viewConfiguration.longPressTimeoutMillis)
                                             longClicked = true
-                                            launch {
-                                                interactionSource.emit(
-                                                    PressInteraction.Release(downInteraction)
-                                                )
+                                            downInteraction?.let {
+                                                launch {
+                                                    interactionSource.emit(
+                                                        PressInteraction.Release(it)
+                                                    )
+                                                }
                                             }
                                             onLongPressed()
                                         }
@@ -437,35 +444,33 @@ private fun Modifier.pinPadButtonInput(
                                     onPointerDown()
                                 }
 
-                                PointerEventType.Move -> {
-                                    event.changes.fastForEach { change ->
-                                        // Consumes all Move events that started inside the
-                                        // bounds of the button so the ancestor Composables
-                                        // won't see a drag and take over the gesture.
-                                        change.consume()
+                                if (change.positionChanged()) {
+                                    // Consumes all Move events that started inside the
+                                    // bounds of the button so the ancestor Composables
+                                    // won't see a drag and take over the gesture.
+                                    change.consume()
 
-                                        if (!movedTooFar) {
-                                            val distanceMoved =
-                                                (change.position - downPosition).getDistance()
-                                            if (distanceMoved >= viewConfiguration.touchSlop * 4f) {
-                                                // The held pointer has been moved enough
-                                                // such that it shouldn't become a click or
-                                                // a long click any longer.
-                                                movedTooFar = true
-                                                longClickJob?.cancel()
-                                                downInteraction?.let {
-                                                    launch {
-                                                        interactionSource.emit(
-                                                            PressInteraction.Cancel(it)
-                                                        )
-                                                    }
+                                    if (!movedTooFar) {
+                                        val distanceMoved =
+                                            (change.position - downPosition).getDistance()
+                                        if (distanceMoved >= viewConfiguration.touchSlop * 4f) {
+                                            // The held pointer has been moved enough
+                                            // such that it shouldn't become a click or
+                                            // a long click any longer.
+                                            movedTooFar = true
+                                            longClickJob?.cancel()
+                                            downInteraction?.let {
+                                                launch {
+                                                    interactionSource.emit(
+                                                        PressInteraction.Cancel(it)
+                                                    )
                                                 }
                                             }
                                         }
                                     }
                                 }
 
-                                PointerEventType.Release -> {
+                                if (change.changedToUp()) {
                                     if (!movedTooFar && !longClicked) {
                                         // The held pointer was released before the long click
                                         // occurred and wasn't moved too far. This is an actual
@@ -479,16 +484,18 @@ private fun Modifier.pinPadButtonInput(
                                         onClicked()
                                     }
                                 }
+                            }
 
-                                PointerEventType.Enter -> {
-                                    enterInteraction = HoverInteraction.Enter()
-                                    launch { interactionSource.emit(enterInteraction) }
-                                }
-
-                                PointerEventType.Exit -> {
-                                    enterInteraction?.let {
-                                        launch { interactionSource.emit(HoverInteraction.Exit(it)) }
+                            if (event.type == PointerEventType.Enter) {
+                                enterInteraction =
+                                    HoverInteraction.Enter().also {
+                                        launch { interactionSource.emit(it) }
                                     }
+                            }
+
+                            if (event.type == PointerEventType.Exit) {
+                                enterInteraction?.let {
+                                    launch { interactionSource.emit(HoverInteraction.Exit(it)) }
                                 }
                             }
                         }
