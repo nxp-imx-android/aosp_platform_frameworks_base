@@ -85,7 +85,7 @@ private fun CategoriesPanelTwoPane(
     selectedCategory: ShortcutCategoryType?,
     onCategoryClicked: (ShortcutCategoryUi) -> Unit,
 ) {
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = 4.dp)) {
         categories.fastForEach {
             CategoryItemTwoPane(
                 label = it.label,
