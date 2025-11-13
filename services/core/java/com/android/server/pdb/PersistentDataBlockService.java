@@ -317,15 +317,6 @@ public class PersistentDataBlockService extends SystemService {
         mAllowedUid = uid;
     }
 
-    private void formatIfOemUnlockEnabled() {
-        boolean enabled = doGetOemUnlockEnabled();
-        if (enabled) {
-            synchronized (mLock) {
-                formatPartitionLocked(true);
-            }
-        }
-    }
-
     private void enforceOemUnlockReadPermission() {
         if (mContext.checkCallingOrSelfPermission(Manifest.permission.READ_OEM_UNLOCK_STATE)
                 == PackageManager.PERMISSION_DENIED
@@ -453,7 +444,7 @@ public class PersistentDataBlockService extends SystemService {
             byte[] digest = computeDigestLocked(storedDigest);
             if (digest == null || !Arrays.equals(storedDigest, digest)) {
                 Slog.i(TAG, "Formatting FRP partition...");
-                formatPartitionLocked(false);
+                formatPartitionLocked();
                 return false;
             }
         }
@@ -532,7 +523,7 @@ public class PersistentDataBlockService extends SystemService {
     }
 
     @VisibleForTesting
-    void formatPartitionLocked(boolean setOemUnlockEnabled) {
+    void formatPartitionLocked() {
 
         try (FileChannel channel = getBlockOutputChannelIgnoringFrp()) {
             // Format the data selectively.
@@ -584,7 +575,6 @@ public class PersistentDataBlockService extends SystemService {
             return;
         }
 
-        doSetOemUnlockEnabledLocked(setOemUnlockEnabled);
         computeAndWriteDigestLocked();
     }
 
