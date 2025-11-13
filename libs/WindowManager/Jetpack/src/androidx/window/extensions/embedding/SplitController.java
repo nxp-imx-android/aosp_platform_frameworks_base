@@ -54,8 +54,6 @@ import static androidx.window.extensions.embedding.SplitPresenter.sanitizeBounds
 import static androidx.window.extensions.embedding.SplitPresenter.shouldShowSplit;
 import static androidx.window.extensions.embedding.TaskFragmentContainer.OverlayContainerRestoreParams;
 
-import static com.android.window.flags.Flags.activityEmbeddingDelayTaskFragmentFinishForActivityLaunch;
-
 import android.annotation.CallbackExecutor;
 import android.app.Activity;
 import android.app.ActivityClient;
@@ -809,8 +807,7 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
                         .setOriginType(TASK_FRAGMENT_TRANSIT_CLOSE);
                 mPresenter.cleanupContainer(wct, container, false /* shouldFinishDependent */);
             } else if (!container.isWaitingActivityAppear()) {
-                if (activityEmbeddingDelayTaskFragmentFinishForActivityLaunch()
-                        && container.hasActivityLaunchHint()) {
+                if (container.hasActivityLaunchHint()) {
                     // If we have recently attempted to launch a new activity into this
                     // TaskFragment, we schedule delayed cleanup. If the new activity appears in
                     // this TaskFragment, we no longer need to finish the TaskFragment.
@@ -3187,9 +3184,7 @@ public class SplitController implements JetpackTaskFragmentOrganizer.TaskFragmen
                     // the dedicated container.
                     final IBinder tfToken = launchedInTaskFragment.getTaskFragmentToken();
                     options.putBinder(KEY_LAUNCH_TASK_FRAGMENT_TOKEN, tfToken);
-                    if (activityEmbeddingDelayTaskFragmentFinishForActivityLaunch()) {
-                        launchedInTaskFragment.setActivityLaunchHint();
-                    }
+                    launchedInTaskFragment.setActivityLaunchHint();
                     if (!allExistingTFTokens.contains(tfToken)) {
                         // When we are creating a new TaskFragment for this Intent, keep track of it
                         // in case the startActivity fails, so that we can cleanup early.
