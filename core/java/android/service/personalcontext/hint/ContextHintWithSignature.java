@@ -20,7 +20,6 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.TestApi;
-import android.content.ComponentName;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
@@ -52,19 +51,19 @@ public final class ContextHintWithSignature implements Parcelable {
     private final @NonNull byte[] mHash;
     private final @NonNull ContextHintWrapper mContextHintWrapper;
     private final @NonNull List<ContextHintWithSignature> mAttributionHints;
-    private final @Nullable ComponentName mOriginatingComponent;
+    private final @Nullable String mOriginatingPackageName;
     private final @Nullable RenderToken mRenderToken;
 
     private ContextHintWithSignature(
             @NonNull byte[] hash,
             @NonNull ContextHintWrapper contextHint,
             @NonNull List<ContextHintWithSignature> attributionHints,
-            @Nullable ComponentName originatingComponent,
+            @Nullable String originatingPackageName,
             @Nullable RenderToken renderToken) {
         mHash = hash;
         mContextHintWrapper = contextHint;
         mAttributionHints = attributionHints;
-        mOriginatingComponent = originatingComponent;
+        mOriginatingPackageName = originatingPackageName;
         mRenderToken = renderToken;
     }
 
@@ -77,7 +76,7 @@ public final class ContextHintWithSignature implements Parcelable {
         source.readParcelableList(
                 mAttributionHints, /* loader= */ null, ContextHintWithSignature.class);
 
-        mOriginatingComponent = source.readParcelable(null, ComponentName.class);
+        mOriginatingPackageName = source.readString8();
         mRenderToken = source.readParcelable(/* loader= */ null, RenderToken.class);
     }
 
@@ -105,7 +104,7 @@ public final class ContextHintWithSignature implements Parcelable {
      */
     @Nullable
     public String getOriginatingPackage() {
-        return mOriginatingComponent != null ? mOriginatingComponent.getPackageName() : null;
+        return mOriginatingPackageName;
     }
 
     /** Returns the {@link RenderToken} that is associated with this hint. */
@@ -124,7 +123,7 @@ public final class ContextHintWithSignature implements Parcelable {
         return Arrays.equals(mHash, signData(
                 mContextHintWrapper,
                 mAttributionHints,
-                mOriginatingComponent,
+                mOriginatingPackageName,
                 mRenderToken,
                 secretKey));
     }
@@ -135,7 +134,7 @@ public final class ContextHintWithSignature implements Parcelable {
         final ContextHintWithSignature that = (ContextHintWithSignature) o;
         return Objects.equals(mContextHintWrapper, that.mContextHintWrapper)
                 && Objects.equals(mAttributionHints, that.mAttributionHints)
-                && Objects.equals(mOriginatingComponent, that.mOriginatingComponent)
+                && Objects.equals(mOriginatingPackageName, that.mOriginatingPackageName)
                 && Objects.equals(mRenderToken, that.mRenderToken)
                 && Objects.deepEquals(mHash, that.mHash);
     }
@@ -145,7 +144,7 @@ public final class ContextHintWithSignature implements Parcelable {
         return Objects.hash(
                 mContextHintWrapper,
                 mAttributionHints,
-                mOriginatingComponent,
+                mOriginatingPackageName,
                 mRenderToken,
                 Arrays.hashCode(mHash));
     }
@@ -154,7 +153,7 @@ public final class ContextHintWithSignature implements Parcelable {
     public String toString() {
         return "ContextHintWithSignature{"
                 + "contextHint=" + mContextHintWrapper.getContextHint()
-                + ", originatingComponent='" + mOriginatingComponent + '\''
+                + ", originatingPackageName='" + mOriginatingPackageName + '\''
                 + ", renderToken=" + mRenderToken
                 + '}';
     }
@@ -169,7 +168,7 @@ public final class ContextHintWithSignature implements Parcelable {
         dest.writeByteArray(mHash);
         dest.writeParcelable(mContextHintWrapper, 0);
         dest.writeParcelableList(mAttributionHints, 0);
-        dest.writeParcelable(mOriginatingComponent, 0);
+        dest.writeString8(mOriginatingPackageName);
         dest.writeParcelable(mRenderToken, 0);
     }
 
@@ -217,14 +216,14 @@ public final class ContextHintWithSignature implements Parcelable {
     private static byte[] signData(
             @NonNull ContextHintWrapper contextHintWrapper,
             @NonNull List<ContextHintWithSignature> attributionHints,
-            @Nullable ComponentName originatingComponent,
+            @Nullable String originatingPackageName,
             @Nullable RenderToken renderToken,
             @NonNull SecretKeySpec secretKey) throws GeneralSecurityException {
         final Parcel scratch = Parcel.obtain();
         try {
             contextHintWrapper.getContextHint().writeToSignatureParcel(scratch);
             scratch.writeParcelableList(attributionHints, 0);
-            scratch.writeParcelable(originatingComponent, 0);
+            scratch.writeString(originatingPackageName);
             scratch.writeParcelable(renderToken, 0);
 
             // Generate the signature.
@@ -246,7 +245,7 @@ public final class ContextHintWithSignature implements Parcelable {
         private final @NonNull ContextHintWrapper mContextHintWrapper;
         private final @NonNull List<ContextHintWithSignature> mAttributionHints = new ArrayList<>();
         private final @NonNull SecretKeySpec mSecretKey;
-        private @Nullable ComponentName mOriginatingComponent;
+        private @Nullable String mOriginatingPackageName;
         private @Nullable RenderToken mRenderToken = null;
 
         /** @hide */
@@ -261,11 +260,10 @@ public final class ContextHintWithSignature implements Parcelable {
             this(new ContextHintWrapper(contextHint), secretKey);
         }
 
-        /** Sets the originating component of the ContextHint. */
-        @SuppressWarnings("MissingGetterMatchingBuilder")
+        /** Sets the originating package of the ContextHint. */
         @NonNull
-        public Builder setOriginatingComponent(@Nullable ComponentName originatingComponent) {
-            mOriginatingComponent = originatingComponent;
+        public Builder setOriginatingPackage(@Nullable String originatingPackageName) {
+            mOriginatingPackageName = originatingPackageName;
             return this;
         }
 
@@ -293,18 +291,17 @@ public final class ContextHintWithSignature implements Parcelable {
         /** Signs the data pieces and builds an instance of {@link ContextHintWithSignature}. */
         @NonNull
         public ContextHintWithSignature build() throws GeneralSecurityException {
-
             // Build the new instance.
             return new ContextHintWithSignature(
                     signData(
                             mContextHintWrapper,
                             mAttributionHints,
-                            mOriginatingComponent,
+                            mOriginatingPackageName,
                             mRenderToken,
                             mSecretKey),
                     mContextHintWrapper,
                     mAttributionHints,
-                    mOriginatingComponent,
+                    mOriginatingPackageName,
                     mRenderToken);
         }
     }
