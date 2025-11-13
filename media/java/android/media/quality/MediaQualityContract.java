@@ -1072,45 +1072,100 @@ public class MediaQualityContract {
                 "auto_super_resolution_enabled";
 
         /**
-         * @hide
+         * The quantization level range for the video signal, which specifies
+         * the mapping of digital code values to black and white levels.
+         * <p>Must be one of the following values:
+         * <ul>
+         * <li><b>Auto:</b> The system determines the appropriate level range
+         * automatically.</li>
+         * <li><b>Limited:</b> Represents the limited range where black is 16 and
+         * white is 235 (for 8-bit color). Standard for broadcast video.</li>
+         * <li><b>Full:</b> Represents the full range where black is 0 and white
+         * is 255 (for 8-bit color). Common for PC content and graphics.</li>
+         * </ul>
          *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_LEVEL_RANGE = "level_range";
 
         /**
-         * @hide
+         * If {@code true}, enables gamut mapping to translate colors
+         * from the source's color space to the display's gamut. This is used to
+         * prevent color clipping when the source gamut is wider than the display's.
+         * If {@code false}, out-of-gamut colors may be clipped.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_GAMUT_MAPPING = "gamut_mapping";
 
         /**
-         * @hide
+         * Set to {@code true} to enable PC Mode. This ensures a "dot by dot"
+         * or 1:1 pixel mapping from the source signal to the display panel. When
+         * enabled, this mode disables overscan, preventing the edges of the picture
+         * from being cut off. This is ideal for sources like a personal computer
+         * where sharp text and precise pixel representation are critical. If
+         * {@code false}, standard TV processing, including potential overscan, will
+         * be applied.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_PC_MODE = "pc_mode";
 
         /**
-         * @hide
+         * Set to {@code true} to enable a low latency mode (e.g., "Game Mode").
+         * This mode minimizes video processing latency (input lag) by reducing or
+         * bypassing non-essential image enhancement features. This is ideal for
+         * interactive content like video games where responsiveness is critical.
+         * Set to {@code false} for standard processing.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_LOW_LATENCY = "low_latency";
 
         /**
-         * @hide
+         * Set to {@code true} to enable Variable Refresh Rate (VRR). VRR synchronizes
+         * the display's refresh rate in real-time with the frame rate of the source device
+         * (e.g., a game console or PC). This eliminates screen tearing and reduces stutter,
+         * providing a smoother visual experience, especially in video games. Set to {@code false}
+         * to use a standard fixed refresh rate.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_VRR = "vrr";
 
         /**
-         * @hide
+         * Set to {@code true} to enable Cinema Variable Refresh Rate (CVRR).
+         * This mode synchronizes the display's refresh rate with the cadence of
+         * cinematic content, which often has a frame rate (e.g., 24fps) that does
+         * not divide evenly into standard display refresh rates (e.g., 60Hz).
+         * Enabling CVRR eliminates the motion "judder" that can result from this
+         * mismatch, ensuring smooth playback as the director intended.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_CVRR = "cvrr";
 
         /**
-         * @hide
+         * Specifies the RGB color range for the HDMI signal to ensure
+         * correct black and white levels.
+         * <ul>
+         * <li><b>Auto:</b> Allows the source and display to automatically negotiate the
+         * correct range.</li>
+         * <li><b>Limited:</b> Sets the range to 16-235 (for 8-bit color). This is the
+         * standard for most broadcast, Blu-ray, and streaming video content.</li>
+         * <li><b>Full:</b> Sets the range to 0-255 (for 8-bit color). This is the
+         * standard for PC graphics, game consoles, and digital photography.</li>
+         * </ul>
          *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_HDMI_RGB_RANGE = "hdmi_rgb_range";
 
         /**

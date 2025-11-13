@@ -28217,16 +28217,23 @@ package android.media.quality {
     field public static final String PARAMETER_COLOR_TUNER_RED_OFFSET = "color_tuner_red_offset";
     field public static final String PARAMETER_COLOR_TUNER_SATURATION = "color_tuner_saturation";
     field public static final String PARAMETER_CONTRAST = "contrast";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_CVRR = "cvrr";
     field public static final String PARAMETER_DECONTOUR = "decontour";
     field public static final String PARAMETER_DYNAMIC_LUMA_CONTROL = "dynamic_luma_control";
     field public static final String PARAMETER_FILM_MODE = "film_mode";
     field public static final String PARAMETER_FLESH_TONE = "flesh_tone";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_GAMUT_MAPPING = "gamut_mapping";
     field public static final String PARAMETER_GLOBAL_DIMMING = "global_dimming";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_HDMI_RGB_RANGE = "hdmi_rgb_range";
     field public static final String PARAMETER_HUE = "hue";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_LEVEL_RANGE = "level_range";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_LOW_LATENCY = "low_latency";
     field public static final String PARAMETER_MPEG_NOISE_REDUCTION = "mpeg_noise_reduction";
     field public static final String PARAMETER_NOISE_REDUCTION = "noise_reduction";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_PC_MODE = "pc_mode";
     field public static final String PARAMETER_SATURATION = "saturation";
     field public static final String PARAMETER_SHARPNESS = "sharpness";
+    field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_VRR = "vrr";
   }
 
   public static final class MediaQualityContract.SoundQuality {
