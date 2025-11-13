@@ -30,6 +30,7 @@ import android.hardware.display.DisplayTopology
 import android.os.Bundle
 import android.platform.helpers.SysuiRestarter
 import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.rule.ScreenRecordRule
@@ -85,7 +86,6 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 /** Tests to verify the smoke test scenario defined in go/cd-smoke. */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 @RunWith(BlockJUnit4ClassRunner::class)
-@Postsubmit
 class ConnectedDisplayCujSmokeTests {
 
     private val context = instrumentation.targetContext
@@ -208,6 +208,7 @@ class ConnectedDisplayCujSmokeTests {
     // > Connected devices > Connected Display
     @Test
     @ExtendedOnly
+    @Presubmit
     fun cuj1e() {
         cuj1()
     }
@@ -217,6 +218,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ProjectedOnly
     @RequiresDevice
+    @Postsubmit
     fun cuj1p() {
         cuj1()
     }
@@ -224,6 +226,7 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: When an ext. display is connected, Taskbar shows on both displays
     @Test
     @ExtendedOnly
+    @Presubmit
     fun cuj2e() {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
@@ -235,6 +238,7 @@ class ConnectedDisplayCujSmokeTests {
     // the external monitor and they default to Desktop Windowing mode
     @Test
     @ExtendedOnly
+    @Presubmit
     fun cuj3e() {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
@@ -250,6 +254,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ProjectedOnly
     @RequiresDevice
+    @Postsubmit
     fun cuj3p() {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
@@ -265,6 +270,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ProjectedOnly
     @RequiresDevice
+    @Postsubmit
     fun cuj4p() {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
@@ -283,6 +289,7 @@ class ConnectedDisplayCujSmokeTests {
     // on one
     @Test
     @ExtendedOnly
+    @Presubmit
     fun cuj5e() {
         // Specify launch windowing mode as desktop-first state is undefined here.
         context.startActivity(
@@ -304,6 +311,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ProjectedOnly
     @RequiresDevice
+    @Postsubmit
     fun cuj5p() {
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
@@ -337,6 +345,7 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: All window modes are supported on the connected display, including split screen
     @Test
     @ExtendedOnly
+    @Presubmit
     fun cuj6e() {
         cuj6()
     }
@@ -345,6 +354,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ProjectedOnly
     @RequiresDevice
+    @Postsubmit
     fun cuj6p() {
         cuj6()
     }
@@ -354,6 +364,7 @@ class ConnectedDisplayCujSmokeTests {
     // tiles to the left
     @Test
     @ExtendedOnly
+    @Presubmit
     fun cuj7e() {
         // Specify launch windowing mode as desktop-first state is undefined here.
         context.startActivity(
@@ -391,6 +402,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ProjectedOnly
     @RequiresDevice
+    @Postsubmit
     fun cuj7p() {
         // Clear all tasks
         RecentTasksUtils.clearAllVisibleRecentTasks(instrumentation)
@@ -436,6 +448,7 @@ class ConnectedDisplayCujSmokeTests {
     // isn’t in fullscreen
     @Test
     @ExtendedOnly
+    @Presubmit
     fun cuj8e() {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
         desktopMouseRule.setupMouse()
@@ -473,6 +486,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ProjectedOnly
     @RequiresDevice
+    @Postsubmit
     fun cuj9p() {
         browserApp.launchViaIntent()
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
@@ -513,6 +527,7 @@ class ConnectedDisplayCujSmokeTests {
     // ext.display (i.e. does not crash)
     @Test
     @ExtendedOnly
+    @Presubmit
     fun cuj10e() {
         cuj10()
     }
@@ -522,6 +537,7 @@ class ConnectedDisplayCujSmokeTests {
     @Test
     @ProjectedOnly
     @RequiresDevice
+    @Postsubmit
     fun cuj10p() {
         cuj10()
     }
