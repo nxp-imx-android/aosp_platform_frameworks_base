@@ -415,6 +415,16 @@ flag {
 }
 
 flag {
+    name: "predictive_back_fix_ime_events_skip_back_dispatcher"
+    namespace: "windowing_frontend"
+    description: "Fixes a bug that prevented IMEs to send back events to the app's dispatcher"
+    bug: "460382604"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "transit_invisible_existence_change"
     namespace: "windowing_frontend"
     description: "Allow invisible containers to be in a transition if gone or created"

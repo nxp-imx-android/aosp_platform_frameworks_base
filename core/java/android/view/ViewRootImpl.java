@@ -139,6 +139,7 @@ import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
+import static com.android.window.flags.Flags.predictiveBackFixImeEventsSkipBackDispatcher;
 import static com.android.window.flags.Flags.predictiveBackStopKeycodeBackForwarding;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
@@ -7820,23 +7821,31 @@ public final class ViewRootImpl implements ViewParent,
                             // Unable to forward the back key to host, forward to next stage.
                             return FORWARD;
                         }
-                    } else if (mContext != null
-                            && (mOnBackInvokedDispatcher.isOnBackInvokedCallbackEnabled()
-                            || mOnBackInvokedDispatcher.getTopCallback()
-                            instanceof ImeBackAnimationController
-                            || mOnBackInvokedDispatcher.getTopCallback()
-                            instanceof ImeBackCallbackProxy.ImeOnBackInvokedCallback)
-                    ) {
-                        return doOnBackKeyEvent(keyEvent);
+                    } else if (mContext != null) {
+                        OnBackInvokedCallback topCallback =
+                                mOnBackInvokedDispatcher.getTopCallback();
+                        boolean isImeCallback = isImeCallback(topCallback);
+
+                        boolean shouldHandleBackKey = isImeCallback
+                                ? !q.shouldSkipIme()
+                                : mOnBackInvokedDispatcher.isOnBackInvokedCallbackEnabled();
+                        if (shouldHandleBackKey) {
+                            return doOnBackKeyEvent(keyEvent);
+                        }
                     }
                 }
 
-                if (mInputQueue != null) {
+                if (mInputQueue != null && !q.shouldSkipIme()) {
                     mInputQueue.sendInputEvent(q.mEvent, q, true, this);
                     return DEFER;
                 }
             }
             return FORWARD;
+        }
+
+        private static boolean isImeCallback(@Nullable OnBackInvokedCallback callback) {
+            return callback instanceof ImeBackAnimationController
+                    || callback instanceof ImeBackCallbackProxy.ImeOnBackInvokedCallback;
         }
 
         private int doOnBackKeyEvent(KeyEvent keyEvent) {
@@ -7895,6 +7904,21 @@ public final class ViewRootImpl implements ViewParent,
                 return;
             }
             forward(q);
+        }
+
+        @Override
+        protected void onDeliverToNext(QueuedInputEvent q) {
+            if (q.shouldSkipIme()) {
+                if (DEBUG_INPUT_STAGES) {
+                    Log.v(mTag, "Done with " + getClass().getSimpleName()
+                            + ". Directly forwarding to mFirstPostImeInputStage due to "
+                            + "shouldSkipIme()=true. "
+                            + q);
+                }
+                mFirstPostImeInputStage.deliver(q);
+            } else {
+                super.onDeliverToNext(q);
+            }
         }
     }
 
@@ -10775,7 +10799,11 @@ public final class ViewRootImpl implements ViewParent,
             if (q.shouldSendToSynthesizer()) {
                 stage = mSyntheticInputStage;
             } else {
-                stage = q.shouldSkipIme() ? mFirstPostImeInputStage : mFirstInputStage;
+                if (predictiveBackFixImeEventsSkipBackDispatcher()) {
+                    stage = mFirstInputStage;
+                } else {
+                    stage = q.shouldSkipIme() ? mFirstPostImeInputStage : mFirstInputStage;
+                }
             }
 
             if (q.mEvent instanceof KeyEvent) {
