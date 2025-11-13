@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -333,20 +334,29 @@ private fun ContentScope.StandardLayout(
         )
 
     FoldAware(
-        modifier = modifier.padding(top = 92.dp, bottom = 32.dp),
+        modifier = modifier,
         viewModel = viewModel,
         aboveFold = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth(),
             ) {
+                // These spacers are designed to collapse when vertical space is constrained (e.g.,
+                // when the IME is visible). For this to work, the parent container of aboveFold
+                // must also be set as vertically flexible (weighted).
+                DynamicSpacer(height = 92.dp)
+
                 StatusMessage(viewModel = viewModel.message, modifier = Modifier)
 
-                OutputArea(
-                    viewModel = viewModel,
-                    alphaOnEntry = alphaOnEntry,
-                    modifier = Modifier.padding(top = if (isHeightExpanded) 96.dp else 64.dp),
+                DynamicSpacer(
+                    height =
+                        when (viewModel.authMethodViewModel) {
+                            is PatternBouncerViewModel -> 0.dp
+                            else -> if (isHeightExpanded) 96.dp else 64.dp
+                        }
                 )
+
+                OutputArea(viewModel = viewModel, alphaOnEntry = alphaOnEntry, modifier = Modifier)
             }
         },
         belowFold = {
@@ -367,10 +377,9 @@ private fun ContentScope.StandardLayout(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    ActionArea(viewModel = viewModel, modifier = Modifier.padding(top = 32.dp))
-                    // This spacer dynamically resizes to 0 when there is insufficient space
-                    // available, e.g. when the IME is shown.
-                    Spacer(modifier = Modifier.weight(1f, fill = false).height(16.dp))
+                    DynamicSpacer(height = 32.dp)
+                    ActionArea(viewModel = viewModel, modifier = Modifier)
+                    DynamicSpacer(height = 48.dp)
                 }
             }
         },
@@ -709,11 +718,18 @@ private fun FoldAware(
 
     SceneTransitionLayout(state, modifier = modifier) {
         scene(SceneKeys.ContiguousSceneKey) {
-            FoldableScene(aboveFold = aboveFold, belowFold = belowFold, isSplit = false)
+            FoldableScene(
+                aboveFold = aboveFold,
+                belowFold = belowFold,
+                // This makes the aboveFold area participate in the flexible vertical space
+                // distribution, ensuring the DynamicSpacer within it can shrink when vertical
+                // space is constrained (e.g., by the IME).
+                useWeightedLayout = viewModel.authMethodViewModel is PasswordBouncerViewModel,
+            )
         }
 
         scene(SceneKeys.SplitSceneKey) {
-            FoldableScene(aboveFold = aboveFold, belowFold = belowFold, isSplit = true)
+            FoldableScene(aboveFold = aboveFold, belowFold = belowFold, useWeightedLayout = true)
         }
     }
 }
@@ -722,7 +738,7 @@ private fun FoldAware(
 private fun ContentScope.FoldableScene(
     aboveFold: @Composable BoxScope.() -> Unit,
     belowFold: @Composable BoxScope.() -> Unit,
-    isSplit: Boolean,
+    useWeightedLayout: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val splitRatio =
@@ -734,7 +750,7 @@ private fun ContentScope.FoldableScene(
         // Content above the fold, when split on a foldable device in a "table top" posture:
         Box(
             modifier =
-                Modifier.element(SceneElements.AboveFold).thenIf(isSplit) {
+                Modifier.element(SceneElements.AboveFold).thenIf(useWeightedLayout) {
                     Modifier.weight(splitRatio)
                 }
         ) {
@@ -746,7 +762,7 @@ private fun ContentScope.FoldableScene(
             modifier =
                 Modifier.element(SceneElements.BelowFold)
                     .weight(
-                        if (isSplit) {
+                        if (useWeightedLayout) {
                             1 - splitRatio
                         } else {
                             1f
@@ -1111,6 +1127,17 @@ private fun UserSwitcherDropdownMenu(
             }
         }
     }
+}
+
+/**
+ * A flexible spacer that collapses when vertical space is constrained.
+ *
+ * This spacer will occupy up to the given [height], but shrinks to 0.dp when there is insufficient
+ * vertical space (e.g., when the IME appears).
+ */
+@Composable
+private fun ColumnScope.DynamicSpacer(height: Dp) {
+    Spacer(modifier = Modifier.weight(1f, fill = false).height(height))
 }
 
 @Composable
