@@ -186,6 +186,7 @@ package android.media {
     method @NonNull public java.util.List<android.bluetooth.BluetoothLeAudioCodecConfig> getHwOffloadFormatsSupportedForLeAudio();
     method @NonNull public java.util.List<android.bluetooth.BluetoothLeAudioCodecConfig> getHwOffloadFormatsSupportedForLeBroadcast();
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_STACK) public void handleBluetoothActiveDeviceChanged(@Nullable android.bluetooth.BluetoothDevice, @Nullable android.bluetooth.BluetoothDevice, @NonNull android.media.BluetoothProfileConnectionInfo);
+    method @FlaggedApi("android.media.audio.bt_audio_disconnect_api") @RequiresPermission(android.Manifest.permission.BLUETOOTH_STACK) public void handleBluetoothHfpAudioDisconnected(@NonNull android.bluetooth.BluetoothDevice, int);
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_STACK) public void setA2dpSuspended(boolean);
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_STACK) public void setBluetoothHeadsetProperties(@NonNull String, boolean, boolean);
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_STACK) public void setHfpEnabled(boolean);
@@ -194,6 +195,10 @@ package android.media {
     method @RequiresPermission(android.Manifest.permission.BLUETOOTH_STACK) public void setLeAudioSuspended(boolean);
     method public void setStreamVolumeForUid(int, int, int, @NonNull String, int, int, int);
     field public static final int FLAG_FROM_KEY = 4096; // 0x1000
+    field @FlaggedApi("android.media.audio.bt_audio_disconnect_api") public static final int HFP_AUDIO_DISCONNECT_CODEC_NEGOTIATION_FAILED = 2; // 0x2
+    field @FlaggedApi("android.media.audio.bt_audio_disconnect_api") public static final int HFP_AUDIO_DISCONNECT_INTERNAL_ERROR = 4; // 0x4
+    field @FlaggedApi("android.media.audio.bt_audio_disconnect_api") public static final int HFP_AUDIO_DISCONNECT_PRECONDITION_FAILED = 3; // 0x3
+    field @FlaggedApi("android.media.audio.bt_audio_disconnect_api") public static final int HFP_AUDIO_DISCONNECT_REMOTE_INITIATED = 1; // 0x1
   }
 
   public final class BluetoothProfileConnectionInfo implements android.os.Parcelable {

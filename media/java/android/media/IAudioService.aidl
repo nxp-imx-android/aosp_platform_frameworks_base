@@ -457,6 +457,9 @@ interface IAudioService {
     void handleBluetoothActiveDeviceChanged(in BluetoothDevice newDevice,
             in BluetoothDevice previousDevice, in BluetoothProfileConnectionInfo info);
 
+    @EnforcePermission("BLUETOOTH_STACK")
+    void handleBluetoothHfpAudioDisconnected(in BluetoothDevice device, in int reason);
+
     oneway void setFocusRequestResultFromExtPolicy(in AudioFocusInfo afi, int requestResult,
             in IAudioPolicyCallback pcb);
 

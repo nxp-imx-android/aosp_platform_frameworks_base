@@ -1263,6 +1263,10 @@ public class AudioDeviceBroker {
         sendLMsgNoDelay(MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT, SENDMSG_QUEUE, data);
     }
 
+    /*package*/ void postBluetoothHfpAudioDisconnected(BluetoothDevice device, int reason) {
+        sendILMsgNoDelay(MSG_IL_BT_HFP_AUDIO_DISCONNECTED, SENDMSG_QUEUE, reason, device);
+    }
+
     /*package*/ void startBluetoothScoForClient(IBinder cb,
             @NonNull AttributionSource attributionSource, boolean isPrivileged,
             @NonNull String eventSource) {
@@ -2101,6 +2105,13 @@ public class AudioDeviceBroker {
                         }
                     }
                 } break;
+                case MSG_IL_BT_HFP_AUDIO_DISCONNECTED: {
+                    synchronized (mSetModeLock) {
+                        synchronized (mDeviceStateLock) {
+                            onHfpAudioDisconnected((BluetoothDevice) msg.obj, msg.arg1);
+                        }
+                    }
+                } break;
                 case MSG_CHECK_MUTE_MUSIC:
                     synchronized (mDeviceStateLock) {
                         checkMessagesMuteMusic(0);
@@ -2195,9 +2206,10 @@ public class AudioDeviceBroker {
     private static final int MSG_L_ACTIVE_UIDS_UPDATE = 45;
 
     private static final int MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT = 46;
-    //
+    private static final int MSG_IL_BT_HFP_AUDIO_DISCONNECTED = 47;
+
     // process set volume for Le Audio, obj is BleVolumeInfo
-    private static final int MSG_II_SET_LE_AUDIO_OUT_VOLUME = 47;
+    private static final int MSG_II_SET_LE_AUDIO_OUT_VOLUME = 48;
 
     private static final int MSG_IIL_BTLEAUDIO_TIMEOUT = 49;
 
@@ -2684,6 +2696,19 @@ public class AudioDeviceBroker {
         }
     }
 
+    @GuardedBy("mDeviceStateLock")
+    private void onHfpAudioDisconnected(BluetoothDevice device, int reason) {
+        // TODO: reason metrics
+        // Since we currently operate on device types within the stack for BT,
+        // unconditionally remove any preference for a SCO device
+        final AttributionSource previousBtScoRequesterAS =
+                bluetoothScoRequestOwnerAttributionSource();
+
+        mCommunicationStack.removeClientPreference(
+                x -> x.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+        onUpdateCommunicationRouteClient(
+                bluetoothScoRequestOwnerAttributionSource(), "onBluetoothHfpAudioDisconnected");
+    }
 
     List<String> getDeviceIdentityAddresses(AudioDeviceAttributes device) {
         synchronized (mDeviceStateLock) {
