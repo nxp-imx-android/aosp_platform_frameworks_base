@@ -16,11 +16,64 @@
 
 package com.android.server.companion.datatransfer.continuity.settings;
 
+import android.annotation.NonNull;
+import android.os.Bundle;
+import android.os.UserManager;
+import com.android.internal.annotations.GuardedBy;
+import com.android.server.LocalServices;
+import com.android.server.pm.UserManagerInternal;
+import com.android.server.pm.UserManagerInternal.UserRestrictionsListener;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 /** Manages policy for Handoff across all users on a device. */
-public class HandoffPolicyManager {
+public class HandoffPolicyManager implements UserRestrictionsListener {
+
+    public interface Listener {
+        void onHandoffPolicyChanged(int userId);
+    }
+
+    private final UserManagerInternal mUserManagerInternal;
+
+    @GuardedBy("mListeners")
+    private final Set<Listener> mListeners = new HashSet<>();
+
+    public HandoffPolicyManager() {
+        mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
+    }
+
+    public HandoffPolicyManager(@NonNull UserManagerInternal userManagerInternal) {
+        mUserManagerInternal = Objects.requireNonNull(userManagerInternal);
+    }
 
     public boolean isHandoffAllowedForUser(int userId) {
-        // TODO: Connect to policy for this.
-        return true;
+        return !mUserManagerInternal.getUserRestriction(userId, UserManager.DISALLOW_HANDOFF);
+    }
+
+    public void addListener(@NonNull Listener listener) {
+        synchronized (mListeners) {
+            mListeners.add(listener);
+        }
+    }
+
+    public void removeListener(@NonNull Listener listener) {
+        synchronized (mListeners) {
+            mListeners.remove(listener);
+        }
+    }
+
+    @Override
+    public void onUserRestrictionsChanged(
+            int userId, Bundle newRestrictions, Bundle prevRestrictions) {
+
+        boolean wasRestricted = prevRestrictions.getBoolean(UserManager.DISALLOW_HANDOFF, false);
+        boolean isRestricted = newRestrictions.getBoolean(UserManager.DISALLOW_HANDOFF, false);
+
+        if (wasRestricted != isRestricted) {
+            for (Listener listener : mListeners) {
+                listener.onHandoffPolicyChanged(userId);
+            }
+        }
     }
 }

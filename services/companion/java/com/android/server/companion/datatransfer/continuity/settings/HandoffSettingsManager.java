@@ -22,17 +22,11 @@ import android.companion.datatransfer.continuity.TaskContinuityManager;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Slog;
-
 import com.android.internal.annotations.GuardedBy;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import java.util.Objects;
 
 /** Manages settings for Handoff across all users on a device. */
-public class HandoffSettingsManager {
+public class HandoffSettingsManager implements HandoffPolicyManager.Listener {
 
     private static final String TAG = HandoffSettingsManager.class.getSimpleName();
 
@@ -48,6 +42,7 @@ public class HandoffSettingsManager {
             @NonNull HandoffPolicyManager handoffPolicyManager) {
         mHandoffPreferenceStore = Objects.requireNonNull(handoffPreferenceStore);
         mHandoffPolicyManager = handoffPolicyManager;
+        mHandoffPolicyManager.addListener(this);
     }
 
     /**
@@ -95,6 +90,11 @@ public class HandoffSettingsManager {
         synchronized (mHandoffFeatureStateListeners) {
             mHandoffFeatureStateListeners.unregister(Objects.requireNonNull(listener));
         }
+    }
+
+    @Override
+    public void onHandoffPolicyChanged(int userId) {
+        notifyHandoffFeatureStateChanged(userId);
     }
 
     private int getHandoffAvailabilityForUser(int userId) {
