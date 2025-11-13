@@ -1042,11 +1042,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private boolean doesCallerHoldAnySupervisionRole() {
-        // TODO(b/458458947): Implement a proper role holder cache in the system server and use it
-        // here to avoid iterating all role holders.
-
         UserHandle userHandle = Binder.getCallingUserHandle();
-        @UserIdInt int userId = userHandle.getIdentifier();
         int callingUid = Binder.getCallingUid();
 
         List<String> roleHolders =
