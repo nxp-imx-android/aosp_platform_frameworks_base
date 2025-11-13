@@ -114,6 +114,7 @@ import android.view.IWindowManager;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.content.PackageMonitor;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.util.CollectionUtils;
 import com.android.internal.util.DumpUtils;
@@ -483,8 +484,45 @@ public class ShortcutService extends IShortcutService.Stub {
         }
     }
 
+    private final PackageMonitor myPackageMonitor = new PackageMonitor() {
+        @Override
+        public void onPackageAppLockEnabled(String packageName) {
+            if(android.content.pm.Flags.appLockShortcutRemoval()) {
+                if(DEBUG) {
+                    Slog.d(TAG, "App Lock enabled for: " + packageName
+                            + "removing all pinned shortcuts");
+                }
+                handleAppLockEnabled(packageName, getChangingUserId());
+            }
+        }
+    };
+
     public ShortcutService(Context context) {
         this(context, getBgLooper(), /*onyForPackgeManagerApis*/ false);
+    }
+
+    @VisibleForTesting
+    void handleAppLockEnabled(String packageName, int userId) {
+        synchronized (mServiceLock) {
+            final ShortcutUser user = getUserShortcutsLocked(userId);
+            if (user == null) {
+                return;
+            }
+            AtomicBoolean pinnedShortcutsRemoved = new AtomicBoolean(false);
+            // Remove pinned shortcuts from all launchers.
+            user.forAllLaunchers(l -> {
+                if (l.cleanUpPackage(packageName, userId)) {
+                    pinnedShortcutsRemoved.set(true);
+                }
+            });
+            if (pinnedShortcutsRemoved.get()) {
+                // Now there may be orphan shortcuts because we removed pinned shortcuts at the
+                // previous step. Remove them too.
+                user.forAllPackages(p -> p.refreshPinnedFlags());
+                notifyListeners(packageName, userId);
+            }
+            user.rescanPackageIfNeeded(packageName, /* forceRescan=*/ true);
+        }
     }
 
     private static Looper getBgLooper() {
@@ -667,6 +705,8 @@ public class ShortcutService extends IShortcutService.Stub {
         @Override
         public void onStart() {
             publishBinderService(Context.SHORTCUT_SERVICE, mService);
+            mService.myPackageMonitor.register(mService.mContext, mService.mHandler.getLooper(),
+                UserHandle.ALL, true);
         }
 
         @Override
