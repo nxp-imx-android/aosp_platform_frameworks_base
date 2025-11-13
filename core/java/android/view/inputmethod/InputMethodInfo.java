@@ -378,9 +378,13 @@ public final class InputMethodInfo implements Parcelable {
                             .InputMethod_Subtype_physicalKeyboardHintLanguageTag);
                     String pkLayoutType = a.getString(com.android.internal.R.styleable
                             .InputMethod_Subtype_physicalKeyboardHintLayoutType);
+                    String subtypeShortLabel = a.getString(com.android.internal.R.styleable
+                            .InputMethod_Subtype_shortLabel);
                     subtype = new InputMethodSubtypeBuilder()
                             .setSubtypeNameResId(a.getResourceId(com.android.internal.R.styleable
                                     .InputMethod_Subtype_label, 0))
+                            .setSubtypeShortLabel(
+                                    subtypeShortLabel == null ? "" : subtypeShortLabel)
                             .setSubtypeIconResId(a.getResourceId(com.android.internal.R.styleable
                                     .InputMethod_Subtype_icon, 0))
                             .setPhysicalKeyboardHint(

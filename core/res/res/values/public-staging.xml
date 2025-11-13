@@ -134,6 +134,8 @@
     <public name="usesAssistScreenshots"/>
     <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
     <public name="usesAssistStructureScreenContent"/>
+    <!-- @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SUBTYPE_SHORT_LABEL) -->
+    <public name="shortLabel"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x01a10000">

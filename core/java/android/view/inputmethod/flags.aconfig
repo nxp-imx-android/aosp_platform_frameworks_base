@@ -261,3 +261,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "ime_subtype_short_label"
+  namespace: "input_method"
+  description: "Feature flag for supporting IME subtype short labels"
+  bug: "443854916"
+  is_exported: true
+}
