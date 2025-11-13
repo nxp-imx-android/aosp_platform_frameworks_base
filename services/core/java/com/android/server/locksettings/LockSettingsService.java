@@ -2371,6 +2371,23 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     @Override
+    public void prepareToVerifyCredential(int userId) {
+        checkPasswordReadPermission();
+        if (!android.security.Flags.enableWeaverWarmup()) {
+            return;
+        }
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            synchronized (mSpManager) {
+                final long protectorId = getCurrentLskfBasedProtectorId(userId);
+                mSpManager.prepareToUnlockLskfBasedProtector(protectorId, userId);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    @Override
     public VerifyCredentialResponse checkCredential(LockscreenCredential credential, int userId,
             ICheckCredentialProgressCallback progressCallback) {
         checkPasswordReadPermission();

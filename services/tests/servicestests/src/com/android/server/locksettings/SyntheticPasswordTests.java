@@ -51,6 +51,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import android.app.admin.PasswordMetrics;
 import android.content.pm.UserInfo;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -1083,6 +1084,39 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
 
         assertFalse(mSpManager.hasProfilePassword(MANAGED_PROFILE_USER_ID, profileProtectorId));
         assertNull(mSpManager.loadProfilePassword(MANAGED_PROFILE_USER_ID, profileProtectorId));
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_WARMUP)
+    public void testPrepareToVerifyCredential_succeedsWithNonNoneCredential() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        initSpAndSetCredential(userId, newPin("1234"));
+        mService.prepareToVerifyCredential(userId);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_WARMUP)
+    public void testPrepareToVerifyCredential_succeedsWithNoneCredential() {
+        final int userId = PRIMARY_USER_ID;
+        mService.initializeSyntheticPassword(userId);
+        // Warm-up with a NONE credential is supported, though this is not the primary use case.
+        mService.prepareToVerifyCredential(userId);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_WARMUP)
+    public void testPrepareToVerifyCredential_succeedsWithInvalidUserId() {
+        final int userId = UserHandle.USER_NULL;
+        // This should log a warning, but it should not throw an exception.
+        mService.prepareToVerifyCredential(userId);
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_ENABLE_WEAVER_WARMUP)
+    public void testPrepareToVerifyCredential_flagDisabled() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        initSpAndSetCredential(userId, newPin("1234"));
+        mService.prepareToVerifyCredential(userId);
     }
 
     // b/62213311
