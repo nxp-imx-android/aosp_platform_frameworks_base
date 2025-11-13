@@ -68,13 +68,13 @@ public class LocationButtonClientWrapper extends ILocationButtonClient.Stub {
 
     /**
      * Handles the binder callback for a precise location permission result. This invokes
-     * {@link LocationButtonClient#onPermissionsResult} callback with the precise location
+     * {@link LocationButtonClient#onPermissionResult} callback with the precise location
      * permission grant result on the client's executor.
      */
     @Override
     public void onPermissionsResult(boolean isPermissionGranted) {
         mClientExecutor.execute(
-                () -> mClient.onPermissionsResult(isPermissionGranted));
+                () -> mClient.onPermissionResult(isPermissionGranted));
     }
 
     /**
