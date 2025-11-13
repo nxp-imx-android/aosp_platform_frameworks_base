@@ -818,6 +818,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Override
     public boolean onInterceptHoverEvent(MotionEvent event) {
+        if (Flags.hunTimerPauseOnHover() && isHeadsUpState()) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_HOVER_ENTER ->
+                    mHeadsUpManager.setHeadsUpDismissTimerPaused(getKey(), /* paused= */ true);
+                case MotionEvent.ACTION_HOVER_EXIT ->
+                    mHeadsUpManager.setHeadsUpDismissTimerPaused(getKey(), /* paused= */ false);
+            }
+        }
+
         if (!NotificationAddXOnHoverToDismiss.isEnabled()) {
             return super.onInterceptHoverEvent(event);
         }
