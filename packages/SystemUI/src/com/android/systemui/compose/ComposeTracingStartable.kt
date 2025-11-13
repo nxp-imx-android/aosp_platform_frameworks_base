@@ -22,6 +22,7 @@ import android.util.Log
 import androidx.compose.runtime.InternalComposeTracingApi
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.flags.SystemPropertiesHelper
 import com.android.systemui.statusbar.commandline.Command
 import com.android.systemui.statusbar.commandline.CommandRegistry
 import com.android.systemui.statusbar.commandline.ParseableCommand
@@ -33,6 +34,16 @@ private const val COMMAND_NAME = "composition-tracing"
 private const val SUBCOMMAND_ENABLE = "enable"
 private const val SUBCOMMAND_DISABLE = "disable"
 private const val VERBOSE_FLAG = "verbose"
+
+/**
+ * When sysui boots it checks this sysprop. If enabled, it also enables compose tracing (verbose).
+ *
+ * ```
+ * adb shell setprop persist.debug.enable_verbose_compose_tracing_in_sysui_on_startup true
+ * ```
+ */
+private const val ENABLE_COMPOSE_TRACING_ON_STARTUP =
+    "persist.debug.enable_verbose_compose_tracing_in_sysui_on_startup"
 
 /**
  * Sets up a [Command] to enable or disable Composition tracing.
@@ -66,6 +77,7 @@ class ComposeTracingStartable
 constructor(
     private val commandRegistry: CommandRegistry,
     private val recompositionCauseTracing: RecompositionCauseTracing,
+    private val systemPropertiesHelper: SystemPropertiesHelper,
 ) : CoreStartable {
 
     override fun start() {
@@ -73,6 +85,15 @@ constructor(
         commandRegistry.registerCommand(COMMAND_NAME) {
             CompositionTracingCommand(recompositionCauseTracing)
         }
+
+        if (isInitiallyEnabled()) {
+            CompositionSlicesTracing.enable()
+            recompositionCauseTracing.enable()
+        }
+    }
+
+    private fun isInitiallyEnabled(): Boolean {
+        return systemPropertiesHelper.getBoolean(ENABLE_COMPOSE_TRACING_ON_STARTUP, false)
     }
 }
 
