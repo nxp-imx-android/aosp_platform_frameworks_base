@@ -137,6 +137,12 @@ final class AppCompatResourceOverlayPolicy {
             mLastReportedOverlayPathsToConstraintsMap.put(overlayPath, overlayConstraints);
         }
 
+        Slog.v(TAG, "doResourceOverlayChangesAffectActivity: result: " + result
+                + " componentName: " + mActivityRecord.mActivityComponent
+                + " overlayPathsAdded: " + overlayPathsAdded
+                + " overlayPathsRemoved: " + overlayPathsRemoved
+                + " displayId: " + mDisplayId + " deviceId: " + mDeviceId);
+
         return result;
     }
 
