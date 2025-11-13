@@ -195,7 +195,7 @@ public final class FadeOutManagerTest {
 
     private FocusRequester createFocusRequester(AudioAttributes aa, String clientId,
             String packageName, int uid, int flags) {
-        MediaFocusControl mfc = new MediaFocusControl(mContext, null);
+        MediaFocusControl mfc = new MediaFocusControl(null, false);
         return new FocusRequester(aa, AudioManager.AUDIOFOCUS_GAIN, flags, null, null, clientId,
                 null, packageName, uid, mfc, 1, mMockEventLogger);
     }

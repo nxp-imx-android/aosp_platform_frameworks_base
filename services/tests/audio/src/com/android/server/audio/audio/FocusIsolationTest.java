@@ -73,7 +73,7 @@ public class FocusIsolationTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         var context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        mMediaFocusControl = new MediaFocusControl(context, mPlayerFocusEnforcer);
+        mMediaFocusControl = new MediaFocusControl(mPlayerFocusEnforcer, false);
     }
 
     @Test

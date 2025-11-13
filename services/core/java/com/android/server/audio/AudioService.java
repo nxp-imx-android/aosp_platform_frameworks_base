@@ -53,6 +53,7 @@ import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
 import static android.media.AudioManager.STREAM_SYSTEM;
 import static android.media.audio.Flags.assistantVolumeControl;
+import static android.media.audio.Flags.audioFocusDesktop;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.concurrentAudioRecordBypassPermission;
 import static android.media.audio.Flags.dapInjectionStarveManagement;
@@ -1477,7 +1478,14 @@ public class AudioService extends IAudioService.Stub
         mBroadcastHandlerThread = new HandlerThread("AudioService Broadcast");
         mBroadcastHandlerThread.start();
 
-        mDeviceBroker = new AudioDeviceBroker(mContext, this, mAudioSystem);
+        final PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        var brokerWakeLock =
+                pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "handleAudioDeviceEvent");
+
+        mDeviceBroker = new AudioDeviceBroker(mContext, this,
+                new AudioDeviceInventory(mAudioSystem,
+                        audioSystem.getAudioProductStrategies(/* filterInternal= */ true)),
+                SystemServerAdapter.getDefaultAdapter(mContext), mAudioSystem, brokerWakeLock);
 
         mIsSingleVolume = AudioSystem.isSingleVolume(context);
 
@@ -1486,7 +1494,6 @@ public class AudioService extends IAudioService.Stub
         mSensorPrivacyManagerInternal =
                 LocalServices.getService(SensorPrivacyManagerInternal.class);
 
-        PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         mAudioEventWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "handleAudioEvent");
 
         mSfxHelper = new SoundEffectsHelper(mContext, playerBase -> ignorePlayerLogs(playerBase));
@@ -1711,9 +1718,22 @@ public class AudioService extends IAudioService.Stub
                 new PlaybackActivityMonitor(context, MAX_STREAM_VOLUME[AudioSystem.STREAM_ALARM],
                         device -> onMuteAwaitConnectionTimeout(device),
                         stream -> isStreamMute(stream));
-        mPlaybackMonitor.registerPlaybackCallback(mPlaybackActivityMonitor, true);
 
-        mMediaFocusControl = new MediaFocusControl(mContext, mPlaybackMonitor);
+        final ContentResolver cr = mContext.getContentResolver();
+        boolean multiAudioFocusEnabledDefault =
+                audioFocusDesktop()
+                        && mContext.getResources()
+                                .getBoolean(
+                                        com.android.internal.R.bool
+                                                .config_multi_audio_focus_enabled_default);
+        boolean isMultiFocus = Settings.System.getIntForUser(cr,
+                Settings.System.MULTI_AUDIO_FOCUS_ENABLED,
+                multiAudioFocusEnabledDefault ? 1 : 0, cr.getUserId()) != 0;
+
+
+       mPlaybackMonitor.registerPlaybackCallback(mPlaybackActivityMonitor, true);
+
+        mMediaFocusControl = new MediaFocusControl( mPlaybackMonitor, isMultiFocus);
 
         readAndSetLowRamDevice();
 
@@ -16052,6 +16072,10 @@ public class AudioService extends IAudioService.Stub
         if (mMediaFocusControl != null) {
             boolean mafEnabled = mMediaFocusControl.getMultiAudioFocusEnabled();
             if (mafEnabled != enabled) {
+                final ContentResolver cr = mContext.getContentResolver();
+                Settings.System.putIntForUser(cr, Settings.System.MULTI_AUDIO_FOCUS_ENABLED,
+                        enabled ? 1 : 0, cr.getUserId());
+
                 mMediaFocusControl.updateMultiAudioFocus(enabled);
                 if (!enabled) {
                     mDeviceBroker.postBroadcastBecomingNoisy();
