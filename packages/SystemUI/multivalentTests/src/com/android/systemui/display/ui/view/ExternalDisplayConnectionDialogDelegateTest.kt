@@ -164,6 +164,44 @@ class ExternalDisplayConnectionDialogDelegateTest : SysuiTestCase() {
     }
 
     @Test
+    fun startDesktopButton_desktopModeNotSupported_isNotVisible() {
+        val kioskModeDialogDelegate =
+            ExternalDisplayConnectionDialogDelegate(
+                context = context,
+                showConcurrentDisplayInfo = false,
+                isDesktopModeSupported = false,
+                rememberChoiceCheckBoxListener = rememberChoiceCallback,
+                onStartDesktopClickListener = onStartDesktopCallback,
+                onStartMirroringClickListener = onStartMirroringCallback,
+                onCancelClickListener = onCancelCallback,
+                insetsProvider = { Insets.of(Rect()) },
+            )
+        kioskModeDialogDelegate.onCreate(dialog, null)
+
+        val desktopModeButton = dialog.requireViewById<View>(R.id.start_desktop_mode)
+        assertThat(desktopModeButton.visibility).isEqualTo(View.GONE)
+    }
+
+    @Test
+    fun saveChoiceCheckbox_desktopModeNotSupported_isVisible() {
+        val kioskModeDialogDelegate =
+            ExternalDisplayConnectionDialogDelegate(
+                context = context,
+                showConcurrentDisplayInfo = false,
+                isDesktopModeSupported = false,
+                rememberChoiceCheckBoxListener = rememberChoiceCallback,
+                onStartDesktopClickListener = onStartDesktopCallback,
+                onStartMirroringClickListener = onStartMirroringCallback,
+                onCancelClickListener = onCancelCallback,
+                insetsProvider = { Insets.of(Rect()) },
+            )
+        kioskModeDialogDelegate.onCreate(dialog, null)
+
+        val saveChoiceCheckbox = dialog.requireViewById<CheckBox>(R.id.save_connection_preference)
+        assertThat(saveChoiceCheckbox.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
     fun saveChoiceCheckbox_inKioskMode_isNotVisible() {
         val kioskModeDialogDelegate =
             ExternalDisplayConnectionDialogDelegate(
