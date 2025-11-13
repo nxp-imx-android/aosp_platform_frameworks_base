@@ -54,6 +54,8 @@ class PinnedLayerController(
     var currentPinnedTask: TaskInfo? = null
         private set
 
+    private val pinnedTasksListeners = mutableSetOf<PinnedTasksListener>()
+
     // Stores pin layer transitions that are in progress.
     private val activeTransitions = mutableMapOf<IBinder, MutableSet<ActiveTransition>>()
 
@@ -154,13 +156,22 @@ class PinnedLayerController(
 
         val wct = WindowContainerTransaction()
         wct.removeTask(task.token)
-        transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)
+        val transition = transitions.startTransition(TRANSIT_CLOSE, wct, /* handler= */ null)
+        activeTransitions[transition] = mutableSetOf(ActiveTransition.Unpin(task))
         return true
     }
 
     // TODO(b/449681882): Remove when Handler introduces its own state management for animations.
     fun cleanup(transition: IBinder) {
         activeTransitions.remove(transition)
+    }
+
+    fun addPinnedTasksListener(listener: PinnedTasksListener) {
+        pinnedTasksListeners += listener
+    }
+
+    fun removePinnedTasksListener(listener: PinnedTasksListener) {
+        pinnedTasksListeners -= listener
     }
 
     override fun onTransitionReady(
@@ -197,11 +208,13 @@ class PinnedLayerController(
     private fun pin(taskInfo: TaskInfo) {
         pinnedTasks += taskInfo.taskId
         currentPinnedTask = taskInfo
+        pinnedTasksListeners.forEach { it.onPinnedTasksAdded(taskInfo) }
     }
 
     private fun unpin(taskInfo: TaskInfo, rememberAsPinned: Boolean = false) {
         if (!rememberAsPinned) {
             pinnedTasks -= taskInfo.taskId
+            pinnedTasksListeners.forEach { it.onPinnedTasksRemoved(taskInfo) }
         }
 
         if (currentPinnedTask?.taskId == taskInfo.taskId) {
@@ -239,5 +252,10 @@ class PinnedLayerController(
          * handler wants to decide where to put the task.
          */
         CLEAN,
+    }
+
+    interface PinnedTasksListener {
+        fun onPinnedTasksAdded(taskInfo: TaskInfo)
+        fun onPinnedTasksRemoved(taskInfo: TaskInfo)
     }
 }
