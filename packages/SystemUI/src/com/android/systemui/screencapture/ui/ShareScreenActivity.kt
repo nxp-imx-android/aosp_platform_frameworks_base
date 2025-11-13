@@ -23,6 +23,7 @@ import android.media.projection.MediaProjectionManager.EXTRA_MEDIA_PROJECTION
 import android.os.Bundle
 import android.os.UserHandle
 import android.util.Log
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -57,7 +58,9 @@ constructor(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        window.attributes.privateFlags =
+            window.attributes.privateFlags or
+                WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
         val uid = intent.getIntExtra(EXTRA_HOST_APP_UID, -1)
         val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
         val reviewGrantedConsentRequired =
