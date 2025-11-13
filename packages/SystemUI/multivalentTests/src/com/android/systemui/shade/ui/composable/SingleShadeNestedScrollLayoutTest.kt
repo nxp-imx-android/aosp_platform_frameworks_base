@@ -17,6 +17,8 @@
 package com.android.systemui.shade.ui.composable
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -24,7 +26,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
@@ -46,12 +51,16 @@ import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.scene.session.shared.SessionStorage
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.Session
+import com.android.systemui.statusbar.notification.stack.data.repository.notificationPlaceholderRepository
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModel
 import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,10 +73,11 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
 
+    // region Layout tests
     @Test
     fun scrimAtRest() =
         kosmos.runTest {
-            setTestContent(scrimContentHeight = LayoutSize)
+            setTestContent(contentHeight = { LayoutSize })
 
             // Initial layout placement
             assertNode(TAG_LAYOUT, width = LayoutSize, height = LayoutSize, top = 0.dp)
@@ -82,14 +92,14 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
     @Test
     fun scrimScrolledToTop() =
         kosmos.runTest {
-            // Given a scrim tall enough to scroll, and is at rest
-            setTestContent(scrimContentHeight = 1000.dp)
+            // Given the content is tall enough to scroll, and scrim is at rest
+            setTestContent(contentHeight = { 1000.dp })
             assertScrimAtRest()
 
             // When swiped up
             swipeScrimUp()
 
-            // Then it collapses
+            // Then scrim moves up
             assertScrimScrolledToTop()
         }
 
@@ -97,21 +107,113 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
     fun scrimScrolledUpAndDown() =
         kosmos.runTest {
             // Given a scrim tall enough to scroll, and is at rest
-            setTestContent(scrimContentHeight = 1000.dp)
+            setTestContent(contentHeight = { 1000.dp })
 
             // When swiped up
             swipeScrimUp()
-            // Then it collapses
+            // Then scrim moves up
             assertScrimScrolledToTop()
 
             // When swiped down
             swipeScrimDown()
-            // Then it returns to rest
+            // Then the scrim returns to rest
             assertScrimAtRest()
         }
 
+    @Test
+    fun scrimDoesNotScrollWhenContentIsShort() =
+        kosmos.runTest {
+            // Given content that is shorter than the available space (LayoutSize - SB - Header)
+            setTestContent(contentHeight = { 100.dp })
+            assertScrimAtRest()
+
+            // When swiped up
+            swipeScrimUp()
+
+            // Then it should STILL be at rest (did not move because content is short)
+            assertScrimAtRest()
+        }
+
+    @Test
+    fun scrimSnapsToRestWhenContentShrinks() =
+        kosmos.runTest {
+            // Given tall content, scrolled all the way to the top
+            var contentHeight by mutableStateOf(1000.dp)
+            setTestContent(contentHeight = { contentHeight })
+            swipeScrimUp()
+            assertScrimScrolledToTop()
+
+            // When content suddenly becomes short (shorter than available space at rest)
+            contentHeight = 100.dp
+            rule.waitForIdle()
+
+            // Then the scrim snaps back to rest automatically
+            assertScrimAtRest()
+        }
+
+    // endregion
+
+    // region Side effect tests
+    @Test
+    fun scrollState_scrimAtRest() =
+        kosmos.runTest {
+            val contentScrollState by
+                collectLastValue(notificationPlaceholderRepository.shadeScrollState)
+
+            // When the scrim is at rest
+            setTestContent(contentHeight = { LayoutSize })
+            runCurrent()
+
+            // Then the content is "scrolledToTop"
+            assertThat(contentScrollState?.isScrolledToTop).isTrue()
+            assertThat(contentScrollState?.scrollPosition).isEqualTo(0)
+        }
+
+    @Test
+    fun scrollState_scrimScrolledToTop() =
+        kosmos.runTest {
+            val contentScrollState by
+                collectLastValue(notificationPlaceholderRepository.shadeScrollState)
+
+            // Given the content is tall enough to scroll, and the scrim is at rest
+            setTestContent(contentHeight = { 1000.dp })
+            runCurrent()
+            assertThat(contentScrollState?.isScrolledToTop).isTrue()
+
+            // When the scrim is swiped up
+            swipeScrimUp()
+            runCurrent()
+
+            // Then the content is not "scrolledToTop" anymore
+            assertThat(contentScrollState?.isScrolledToTop).isFalse()
+        }
+
+    @Test
+    fun scrollState_whenScrimSnapsToRestAfterContentShrinks() =
+        kosmos.runTest {
+            val contentScrollState by
+                collectLastValue(notificationPlaceholderRepository.shadeScrollState)
+
+            // Given tall content, scrolled all the way to the top
+            var contentHeight by mutableStateOf(1000.dp)
+            setTestContent(contentHeight = { contentHeight })
+            swipeScrimUp()
+            runCurrent()
+            assertThat(contentScrollState?.isScrolledToTop).isFalse()
+
+            // When content suddenly becomes short (shorter than available space at rest)
+            contentHeight = 100.dp
+            rule.waitForIdle() // wait for compose
+            runCurrent() // wait for the flow
+
+            // Then the content is "scrolledToTop" again
+            assertThat(contentScrollState?.isScrolledToTop).isTrue()
+        }
+
+    // endregion
+
     // region Setup Helpers
-    private fun setTestContent(scrimContentHeight: Dp) {
+    private fun setTestContent(contentHeight: () -> Dp) {
         rule.setContent {
             TestContentScope {
                 TestLayout(
@@ -129,11 +231,16 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
                         // This box must be scrollable, for the parent's NestedScrollConnection
                         Box(
                             Modifier.testTag(TAG_SCRIM)
-                                .fillMaxWidth()
-                                .height(scrimContentHeight)
-                                .onSizeChanged { onHeightChanged(it.height) }
+                                .fillMaxSize()
                                 .verticalScroll(rememberScrollState())
-                        )
+                        ) {
+                            // Emulate the content structure of the real shade.
+                            Box(
+                                Modifier.fillMaxWidth().height(contentHeight()).onSizeChanged {
+                                    onHeightChanged(it.height)
+                                }
+                            )
+                        }
                     },
                 )
             }
@@ -144,6 +251,7 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
     @Composable
     private fun ContentScope.TestLayout(
         modifier: Modifier = Modifier,
+        cutoutInsets: WindowInsets? = null,
         statusBarHeader: @Composable () -> Unit,
         mediaAndQqsHeader: @Composable () -> Unit,
         scrollableScrim: @Composable (onContentHeightChanged: (Int) -> Unit) -> Unit,
@@ -158,7 +266,7 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
             statusBarHeader = statusBarHeader,
             mediaAndQqsHeader = mediaAndQqsHeader,
             scrollableScrim = scrollableScrim,
-            cutoutInsetsProvider = { null },
+            cutoutInsetsProvider = { cutoutInsets },
         )
     }
 
