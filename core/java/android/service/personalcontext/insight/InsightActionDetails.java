@@ -157,6 +157,7 @@ public final class InsightActionDetails implements Parcelable {
             };
 
     /** Builder for {@link InsightActionDetails}. */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private Intent mActionIntent;
         private RemoteAction mRemoteAction;

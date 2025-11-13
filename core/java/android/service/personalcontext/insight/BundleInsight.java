@@ -62,6 +62,7 @@ public final class BundleInsight extends ContextInsight {
     }
 
     /** Builder for {@link BundleInsight}. */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final Bundle mDataBundle = new Bundle();
