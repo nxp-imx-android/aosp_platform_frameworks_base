@@ -338,7 +338,6 @@
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-UnlockIntoDesktopFromLockScreenTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
