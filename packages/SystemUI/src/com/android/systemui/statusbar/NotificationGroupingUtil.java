@@ -18,6 +18,7 @@ package com.android.systemui.statusbar;
 
 import static android.app.Flags.notificationsRedesignTemplates;
 
+import android.app.Flags;
 import android.app.Notification;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -147,6 +148,9 @@ public class NotificationGroupingUtil {
         // To hide the header text if it's the same
         mProcessors.add(Processor.forTextView(mRow, com.android.internal.R.id.header_text));
 
+        if (Flags.apiMetricStyle()) {
+            mDividers.add(com.android.internal.R.id.app_name_text_divider);
+        }
         mDividers.add(com.android.internal.R.id.header_text_divider);
         mDividers.add(com.android.internal.R.id.header_text_secondary_divider);
         mDividers.add(com.android.internal.R.id.time_divider);
