@@ -8552,7 +8552,7 @@
 
     <!-- Required for apps to post promoted notifications.
          <p>This is required in addition to (not instead of)
-         {@link android.app.Manifest.permission#POST_NOTIFICATIONS}.
+         {@link android.Manifest.permission#POST_NOTIFICATIONS}.
          <p>Protection level: normal|appops
          @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION)
          -->
