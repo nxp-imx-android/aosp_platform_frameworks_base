@@ -145,7 +145,7 @@ flag {
 
 flag {
   name: "enable_supervision_manager_policy_apis"
-  is_exported: false
+  is_exported: true
   namespace: "supervision"
   description: "Flag that enables supervision policy APIs in Supervision Service"
   bug: "443997530"

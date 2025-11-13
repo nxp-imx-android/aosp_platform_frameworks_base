@@ -392,6 +392,7 @@ public class SupervisionManager {
      *     android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} roles
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     @NonNull
     public List<Policy> getPolicies() {
@@ -417,6 +418,7 @@ public class SupervisionManager {
      *     android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} roles
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     public void setPolicy(@NonNull Policy policy) {
         if (mService != null) {

@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.StringDef;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.app.supervision.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -33,6 +34,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
+@SystemApi
 @SuppressLint({"ParcelNotFinal", "ParcelCreator"})
 @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
 public abstract class Policy implements Parcelable {

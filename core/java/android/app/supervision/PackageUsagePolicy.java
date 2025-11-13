@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.app.supervision.flags.Flags;
 import android.os.Parcel;
 
@@ -32,6 +33,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
 public final class PackageUsagePolicy extends Policy {
     /** Policy type for allowed package usage. */
@@ -168,6 +170,8 @@ public final class PackageUsagePolicy extends Policy {
      *
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     public static final class Builder extends Policy.Builder<PackageUsagePolicy, Builder> {
         private String mPackageName;
         private @Type int mType = -1;
@@ -216,6 +220,7 @@ public final class PackageUsagePolicy extends Policy {
          *
          * @return the built {@link PackageUsagePolicy}
          * @throws IllegalStateException if the required fields have not been set
+         * @hide
          */
         @NonNull
         @Override
