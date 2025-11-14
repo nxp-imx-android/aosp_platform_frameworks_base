@@ -35,11 +35,12 @@ import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeStyle;
 import android.database.ContentObserver;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.Log;
 import android.util.Slog;
 
 import androidx.annotation.VisibleForTesting;
@@ -83,7 +84,7 @@ import java.util.concurrent.Executor;
  * handling cases where color information comes from presets or when specific styles need to
  * be applied.
  * </ol><ol>
- * Driving the ThemeStateManager lifecycle: It provides a clean, user-specific lifecycle
+ * Driving the ThemeStateManager lifecycle: It provides a clean, user-specific lishoufecycle
  * to the ThemeStateManager by invoking appropriate methods based on the processed events.
  * This includes informing the state manager about new users, user setup completion,
  * theme style changes, and other relevant events, ensuring the correct application of
@@ -299,12 +300,18 @@ public class ThemeManagerService extends SystemService {
     private boolean shouldForceReloadForVersion() {
         String storedVersion = Settings.Global.getString(mContext.getContentResolver(),
                 KEY_COLOR_PALETTE_VERSION);
+        String currentVersion = mSystemPropertiesReader.get("ro.build.date.utc", null);
 
-        if (storedVersion != null && Objects.equals(storedVersion, Build.ID)) return false;
+        if (TextUtils.isEmpty(currentVersion)) {
+            Slog.i(TAG, "Palette version missing. Refreshing overlays");
+            return true;
+        }
 
-        Slog.i(TAG, "Palette version bumped from " + storedVersion + " to " + Build.ID);
+        if (storedVersion != null && Objects.equals(storedVersion, currentVersion)) return false;
+
+        Slog.i(TAG, "Palette version bumped from " + storedVersion + " to " + currentVersion);
         Settings.Global.putString(mContext.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
-                Build.ID);
+                currentVersion);
         return true;
     }
 }
