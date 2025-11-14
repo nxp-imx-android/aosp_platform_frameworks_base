@@ -1,4 +1,4 @@
-/* * Copyright (C) 2008 The Android Open Source Project
+/* Copyright (C) 2008 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,13 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.hardware.light.HwLight;
+import android.hardware.light.HwLightEffect;
 import android.hardware.light.HwLightState;
 import android.hardware.light.ILights;
+import android.hardware.light.InterpolationType;
 import android.hardware.light.LightType;
 import android.hardware.lights.ColorSequence;
+import android.hardware.lights.ColorSequence.InterpolationMode;
 import android.hardware.lights.ILightsManager;
 import android.hardware.lights.Light;
 import android.hardware.lights.LightState;
@@ -36,6 +39,8 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.Trace;
 import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.IntArray;
 import android.util.Slog;
 import android.util.SparseArray;
 
@@ -45,11 +50,14 @@ import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.Preconditions;
 import com.android.server.SystemService;
+import com.android.server.lights.feature.flags.Flags;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +77,7 @@ public class LightsService extends SystemService {
     final LightsManagerBinderService mManagerService;
 
     private Handler mH;
+    private boolean mSupportsEffects = false;
 
     private final class LightsManagerBinderService extends ILightsManager.Stub
           implements IBinder.DeathRecipient {
@@ -109,6 +118,13 @@ public class LightsService extends SystemService {
                         Light.Builder lightBuilder =
                                 new Light.Builder(hwLight.id, hwLight.ordinal, hwLight.type);
 
+                        if (mSupportsEffects && hwLight.minUpdatePeriodMillis > 0) {
+                            lightBuilder.setMinUpdatePeriodMillis(hwLight.minUpdatePeriodMillis);
+                            lightBuilder.setCapabilities(
+                                    Light.LIGHT_CAPABILITY_ANIMATION
+                                            | Light.LIGHT_CAPABILITY_COLOR_RGB);
+                        }
+
                         lights.add(lightBuilder.build());
                     }
                 }
@@ -138,7 +154,7 @@ public class LightsService extends SystemService {
                 for (int i = 0; i < lightIds.length; i++) {
                     session.setRequest(lightIds[i], lightStates[i]);
                 }
-                invalidateLightStatesLocked();
+                computeAndApplyLightConfigurationsLocked();
             }
         }
 
@@ -160,6 +176,22 @@ public class LightsService extends SystemService {
         @Override
         public void setLightEffect(IBinder token, MultiLightEffect effect) {
             setLightEffect_enforcePermission();
+
+            if (!mSupportsEffects) {
+                throw new UnsupportedOperationException("This device does not support effects.");
+            }
+            Preconditions.checkArgument(
+                    effect.getLights().length == effect.getSequences().size(), "uneven effect");
+
+            synchronized (LightsService.this) {
+                Session session = getSessionLocked(Preconditions.checkNotNull(token));
+                Preconditions.checkState(session != null, "not registered");
+
+                checkRequestIsValid(effect.getLights());
+
+                session.addEffect(effect);
+                computeAndApplyLightConfigurationsLocked();
+            }
         }
 
         @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
@@ -168,7 +200,20 @@ public class LightsService extends SystemService {
                 throws RemoteException {
             getLightSequence_enforcePermission();
 
-            return null;
+            if (!mSupportsEffects) {
+                Slog.w(TAG, "Device does not support animations.");
+                return null;
+            }
+
+            synchronized (LightsService.this) {
+                final LightImpl light = mLightsById.get(lightId);
+
+                Preconditions.checkArgument(light != null && !light.isSystemLight());
+                if (light.mConfiguration == null || !light.mConfiguration.isDynamic()) {
+                    return null;
+                }
+                return light.mConfiguration.getEffect().getSequences().get(lightId);
+            }
         }
 
         @android.annotation.EnforcePermission(android.Manifest.permission.CONTROL_DEVICE_LIGHTS)
@@ -218,17 +263,26 @@ public class LightsService extends SystemService {
                 pw.println("Lights:");
                 for (int i = 0; i < mLightsById.size(); i++) {
                     final LightImpl light = mLightsById.valueAt(i);
-                    pw.println(String.format("  Light id=%d ordinal=%d color=%08x",
+                    pw.println(TextUtils.formatSimple("  Light id=%d ordinal=%d color=%08x",
                             light.mHwLight.id, light.mHwLight.ordinal, light.getColor()));
                 }
 
                 pw.println("Session clients:");
                 for (Session session : mSessions) {
                     pw.println("  Session token=" + session.mToken);
-                    for (int i = 0; i < session.mRequests.size(); i++) {
-                        pw.println(String.format("    Request id=%d color=%08x",
-                                session.mRequests.keyAt(i),
-                                session.mRequests.valueAt(i).getColor()));
+                    for (int i = 0; i < session.mConfigurations.size(); i++) {
+                        if (Flags.enableLightAnimations()) {
+                            pw.println(TextUtils.formatSimple("    Configuration lightId=%d %s",
+                                    session.mConfigurations.keyAt(i),
+                                    session.mConfigurations.valueAt(i)));
+                        } else {
+                            // With the flag off, state should never be null, since effects are not
+                            // allowed, but is worth checking to avoid the NullPointerException.
+                            LightState state = session.mConfigurations.valueAt(i).getState();
+                            pw.println(TextUtils.formatSimple("    Request id=%d color=%08x",
+                                    session.mConfigurations.keyAt(i),
+                                    state != null ? state.getColor() : 0));
+                        }
                     }
                 }
             }
@@ -239,7 +293,7 @@ public class LightsService extends SystemService {
                 final Session session = getSessionLocked(token);
                 if (session != null) {
                     mSessions.remove(session);
-                    invalidateLightStatesLocked();
+                    computeAndApplyLightConfigurationsLocked();
                     token.unlinkToDeath(LightsManagerBinderService.this, 0);
                 }
             }
@@ -254,17 +308,34 @@ public class LightsService extends SystemService {
         }
 
         /**
+         * Computes and applies the light configurations based on session requests and the current
+         * light state for each light.
+         * <p>
+         * Sessions are evaluated based on priority and in case of conflict, the session that
+         * started earliest wins.
+         */
+        private void computeAndApplyLightConfigurationsLocked() {
+            if (Flags.enableLightAnimations()) {
+                invalidateLightConfigurationsLocked();
+            } else {
+                invalidateLightStatesLocked();
+            }
+        }
+
+        /**
          * Apply light state requests for all light IDs.
-         *
-         * <p>In case of conflict, the session that started earliest wins.
+         * <p>
+         * In case of conflict, the session that started earliest wins.
          */
         private void invalidateLightStatesLocked() {
             final Map<Integer, LightState> states = new HashMap<>();
             for (int i = 0; i < mSessions.size(); i++) {
-                SparseArray<LightState> requests = mSessions.get(i).mRequests;
-                for (int j = 0; j < requests.size(); j++) {
+                Session session = mSessions.get(i);
+                for (int j = 0; j < session.mConfigurations.size(); j++) {
                     // Add the light state if a higher priority session is not using the light.
-                    states.putIfAbsent(requests.keyAt(j), requests.valueAt(j));
+                    states.putIfAbsent(
+                            session.mConfigurations.keyAt(j),
+                            session.mConfigurations.valueAt(j).getState());
                 }
             }
             for (int i = 0; i < mLightsById.size(); i++) {
@@ -280,6 +351,87 @@ public class LightsService extends SystemService {
             }
         }
 
+        @SuppressWarnings("AndroidFrameworkEfficientCollections")
+        private void invalidateLightConfigurationsLocked() {
+            // Traverse the sessions in priority order to find the used lights.
+            final Map<Integer, LightConfiguration> configs = new HashMap<>();
+            for (Session session : mSessions) {
+                Map<Integer, LightConfiguration> effectConfigs = new HashMap<>();
+                boolean isEffectPlayable = true;
+                for (int i = 0; i < session.mConfigurations.size(); i++) {
+                    int lightId = session.mConfigurations.keyAt(i);
+                    LightConfiguration nextConfig = session.mConfigurations.valueAt(i);
+
+                    if (nextConfig.isDynamic()) {
+                        // Skip the effect if the HAL doesn't have support or a light needed by the
+                        // effect is already in use by a higher priority session.
+                        if (!mSupportsEffects || configs.containsKey(lightId)) {
+                            isEffectPlayable = false;
+                            break;
+                        }
+                        effectConfigs.put(lightId, nextConfig);
+                    } else {
+                        configs.putIfAbsent(lightId, nextConfig);
+                    }
+                }
+
+                if (isEffectPlayable) {
+                    configs.putAll(effectConfigs);
+                }
+            }
+
+            // Traverse the list of lights, finding the effects that need to be applied in bulk.
+            ArrayList<HwLightEffect> effectsList = new ArrayList<>(mLightsById.size());
+            for (int i = 0; i < mLightsById.size(); i++) {
+                LightImpl light = mLightsById.valueAt(i);
+                if (!light.isSystemLight()) {
+                    LightConfiguration config = configs.get(light.mHwLight.id);
+
+                    boolean shouldUpdate = light.setConfiguration(config);
+                    if (shouldUpdate) {
+                        effectsList.add(
+                                vintfEffectFromSequence(light.mHwLight, config.getEffect()));
+                    }
+                }
+            }
+
+            // Finally, send the effects for playback.
+            if (!effectsList.isEmpty()) {
+                try {
+                    mVintfLights.get().setLightEffects(
+                            effectsList.toArray(new HwLightEffect[0]));
+                } catch (RemoteException re) {
+                    Slog.e(TAG, "Exception trying to set the light effect.", re);
+                }
+            }
+        }
+
+        private HwLightEffect vintfEffectFromSequence(HwLight light, MultiLightEffect effect) {
+            ColorSequence sequence = null;
+            for (int i = 0; i < effect.getLights().length; i++) {
+                if (effect.getLights()[i] == light.id) {
+                    sequence = effect.getColorSequences()[i];
+                    break;
+                }
+            }
+
+            IntArray frames = new IntArray();
+            for (int delay : sequence.getDelaysMillis()) {
+                frames.add(delay / light.minUpdatePeriodMillis);
+            }
+
+            HwLightEffect hwEffect = new HwLightEffect();
+            hwEffect.interpolationType = toHalInterpolationType(sequence.getInterpolationMode());
+            hwEffect.framePeriodMillis = light.minUpdatePeriodMillis;
+            hwEffect.lightId = light.id;
+            hwEffect.frames = frames.toArray();
+            hwEffect.colors = sequence.getColors();
+            hwEffect.iterations = effect.getIterations();
+            hwEffect.preemptive = effect.isPreemptive();
+
+            return hwEffect;
+        }
+
         private @Nullable Session getSessionLocked(IBinder token) {
             for (int i = 0; i < mSessions.size(); i++) {
                 if (token.equals(mSessions.get(i).mToken)) {
@@ -289,9 +441,21 @@ public class LightsService extends SystemService {
             return null;
         }
 
+        private static byte toHalInterpolationType(@InterpolationMode int interpolationMode) {
+            return switch (interpolationMode) {
+                case ColorSequence.INTERPOLATION_MODE_LINEAR -> InterpolationType.LINEAR;
+                case ColorSequence.INTERPOLATION_MODE_NONE -> InterpolationType.NONE;
+                default -> InterpolationType.NONE;
+            };
+        }
+
         private final class Session implements Comparable<Session> {
+            private static final int MAX_EFFECT_QUEUE_SIZE = 10;
+
             final IBinder mToken;
-            final SparseArray<LightState> mRequests = new SparseArray<>();
+            final SparseArray<LightConfiguration> mConfigurations = new SparseArray<>();
+            final Deque<MultiLightEffect> mEffects = new ArrayDeque<>(MAX_EFFECT_QUEUE_SIZE);
+
             final int mPriority;
 
             Session(IBinder token, int priority) {
@@ -300,10 +464,46 @@ public class LightsService extends SystemService {
             }
 
             void setRequest(int lightId, LightState state) {
+                LightConfiguration previousConfig = mConfigurations.get(lightId);
+                // If the light was part of an effect, clear the effect first.
+                if (previousConfig != null && previousConfig.isDynamic()) {
+                    clearEffectConfiguration(mEffects.getFirst());
+                    mEffects.clear();
+                }
+
                 if (state != null) {
-                    mRequests.put(lightId, state);
+                    mConfigurations.put(lightId, new LightConfiguration(state));
                 } else {
-                    mRequests.remove(lightId);
+                    mConfigurations.remove(lightId);
+                }
+            }
+
+            void addEffect(MultiLightEffect effect) {
+                if (!effect.isPreemptive() && mEffects.size() == MAX_EFFECT_QUEUE_SIZE) {
+                    throw new IllegalStateException("Too many effects queued.");
+                }
+
+                if (effect.isPreemptive()) {
+                    mEffects.clear();
+                }
+                mEffects.add(effect);
+
+                // If the effect should start playback immediatelly, update the internal state.
+                if (mEffects.size() == 1) {
+                    applyEffectConfiguration(mEffects.getFirst());
+                }
+            }
+
+            private void applyEffectConfiguration(MultiLightEffect effect) {
+                LightConfiguration newConfig = new LightConfiguration(effect);
+                for (int lightId : effect.getLights()) {
+                    mConfigurations.put(lightId, newConfig);
+                }
+            }
+
+            private void clearEffectConfiguration(MultiLightEffect effect) {
+                for (int lightId : effect.getLights()) {
+                    mConfigurations.remove(lightId);
                 }
             }
 
@@ -319,6 +519,43 @@ public class LightsService extends SystemService {
 
         private LightImpl(Context context, HwLight hwLight) {
             mHwLight = hwLight;
+        }
+
+        /**
+         * Set the light configuration for this particular logical light.
+         * <p>
+         * A configuration update usually requires changes to the hardware light but some of the
+         * updates are handled automatically by the configuration change to maintain pre-existing
+         * behavior.
+         * <p>
+         * If the configuration update is handled automatically this method returns false to
+         * indicate that the configuration doesn't require the service to do further work. When the
+         * update just changes the internal state, this method returns true to require the service
+         * to issue the update.
+         *
+         * @param configuration A configuration object with the desired state for this light.
+         * @return true if the light state needs to be updated by the service. False otherwise.
+         */
+        boolean setConfiguration(LightConfiguration configuration) {
+            LightConfiguration previousConfig = mConfiguration;
+            mConfiguration = configuration;
+
+            if (mConfiguration == null) {
+                turnOff();
+                return false;
+            }
+
+            if (!mConfiguration.isDynamic()) {
+                setColor(mConfiguration.getState().getColor());
+                return false;
+            }
+
+            // Reset the static color to transparent to clear state when we have an effect.
+            mColor = 0;
+
+            // If the configuration is different from the last configuration the effect needs to be
+            // sent down to the HAL, so return true to let the service know it needs to do it.
+            return !mConfiguration.equals(previousConfig);
         }
 
         @Override
@@ -480,6 +717,7 @@ public class LightsService extends SystemService {
                 case  LightType.ATTENTION:
                 case  LightType.BLUETOOTH:
                 case  LightType.WIFI:
+                case LightType.PRIORITY_NOTIFICATIONS:
                     return true;
                 default:
                     return false;
@@ -491,6 +729,7 @@ public class LightsService extends SystemService {
         }
 
         private HwLight mHwLight;
+        private LightConfiguration mConfiguration;
         private int mColor;
         private int mMode;
         private int mOnMS;
@@ -536,6 +775,9 @@ public class LightsService extends SystemService {
 
     private void populateAvailableLightsFromAidl(Context context) {
         try {
+            mSupportsEffects =
+                Flags.enableLightAnimations() && mVintfLights.get().getInterfaceVersion() >= 3;
+
             for (HwLight hwLight : mVintfLights.get().getLights()) {
                 mLightsById.put(hwLight.id, new LightImpl(context, hwLight));
             }
