@@ -1027,16 +1027,27 @@ internal class MutableStateImpl<T>(internal val nameData: NameData, initialValue
     private val dataRef =
         AtomicReference(Data(initialValue, readEpoch = null, connectedData = null))
 
+    // immutable data tracking emissions and reads
     private data class Data<out T>(
+        // the last value that was emitted via a call to update { .. }
         val lastEmit: Lazy<T>,
+        // the last time the current value of [lastEmit] was sampled, or null if it hasn't been
+        // sampled yet
         val readEpoch: Long?,
+        // additional data that is only present when connected to the network
         val connectedData: ConnectedData<T>?,
     )
 
+    // tracks network emissions
     private data class ConnectedData<out T>(
+        // the network this MutableState is connected to
         val network: Network,
+        // whether there is an emission scheduled due to a call to update { .. }
         val emitScheduled: Boolean,
+        // the current value of this state as seen by the network, lags behind [Data.lastEmit] until
+        // updated within a transaction
         val currentValue: Lazy<T>,
+        // the last time that [currentValue] was updated
         val writeEpoch: Long,
     )
 
@@ -1065,12 +1076,15 @@ internal class MutableStateImpl<T>(internal val nameData: NameData, initialValue
         val data =
             dataRef.getAndUpdate { data ->
                 val newEmit = lazyOf(block(data.lastEmit.value))
+                // if connected to the network, track emit scheduled
                 val connData = data.connectedData?.copy(emitScheduled = true)
+                // reset readEpoch for the new value
                 data.copy(lastEmit = newEmit, readEpoch = null, connectedData = connData)
             }
         // if connected to network, go through input event emitter
         @Suppress("DeferredResultUnused")
         data.connectedData
+            // no need to schedule more than once
             ?.takeUnless { it.emitScheduled }
             ?.let { it.network.transaction("MutableState.update") { pushUpdate(this) } }
     }
@@ -1080,26 +1094,27 @@ internal class MutableStateImpl<T>(internal val nameData: NameData, initialValue
         val data =
             dataRef.getAndUpdate { data ->
                 val new = data.lastEmit
-                val current = data.connectedData!!.currentValue
-                changed = new.value != current.value
-                data.copy(
-                    readEpoch = evalScope.epoch,
-                    connectedData =
-                        data.connectedData.copy(
+                val newConnData =
+                    data.connectedData?.let { connData ->
+                        val current = connData.currentValue
+                        changed = new.value != current.value
+                        connData.copy(
                             emitScheduled = false,
                             currentValue = if (changed) new else current,
                             writeEpoch =
                                 if (changed) evalScope.epoch + 1 else data.connectedData.writeEpoch,
-                        ),
-                )
+                        )
+                    }
+                data.copy(readEpoch = evalScope.epoch, connectedData = newConnData)
             }
-        transactionCache.put(
-            evalScope,
-            data.connectedData!!.let { it.currentValue.value to it.writeEpoch },
-        )
-        val new = data.lastEmit.value
-        if (changed) {
-            inputNode.visit(evalScope, new)
+        data.connectedData?.let { connData ->
+            // cache the old value, for sampling within this transaction
+            transactionCache.put(evalScope, connData.currentValue.value to connData.writeEpoch)
+            // push the new value if it changed
+            val new = data.lastEmit.value
+            if (changed) {
+                inputNode.visit(evalScope, new)
+            }
         }
     }
 
