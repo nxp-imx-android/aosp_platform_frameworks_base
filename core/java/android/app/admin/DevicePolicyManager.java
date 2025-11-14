@@ -12857,8 +12857,11 @@ public class DevicePolicyManager {
 
         if (mService != null) {
             try {
+                List<EnforcingAdmin> enforcingAdmins = mService.getEnforcingAdminsForPolicy(
+                        policyIdentifier, userId);
+                // In some test environments, service can return null. Guard against that.
                 return new PolicyEnforcementInfo(
-                        mService.getEnforcingAdminsForPolicy(policyIdentifier, userId));
+                        enforcingAdmins == null ? Collections.emptyList() : enforcingAdmins);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }

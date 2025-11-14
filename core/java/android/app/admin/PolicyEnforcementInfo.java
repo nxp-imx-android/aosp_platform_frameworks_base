@@ -16,11 +16,13 @@
 
 package android.app.admin;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.role.RoleManager;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class that contains information about the admins that are enforcing a specific policy.
@@ -30,12 +32,14 @@ import java.util.List;
 public class PolicyEnforcementInfo {
     // Contains all admins who has enforced the policy. The admins will be ordered as
     // supervision, DPC admin then any other admin if they exist in the list.
+    @NonNull
     private final List<EnforcingAdmin> mAllAdmins;
 
     /**
      * @hide
      */
-    public PolicyEnforcementInfo(List<EnforcingAdmin> enforcingAdmins) {
+    public PolicyEnforcementInfo(@NonNull List<EnforcingAdmin> enforcingAdmins) {
+        Objects.requireNonNull(enforcingAdmins);
         mAllAdmins = enforcingAdmins.stream().sorted(Comparator.comparingInt(admin -> {
             if (isSupervisionRole(admin)) {
                 return 0; // Supervision role holders have the highest priority.
