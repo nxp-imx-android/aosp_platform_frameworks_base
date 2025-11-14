@@ -291,7 +291,7 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
 
         if ((diff1 & StatusBarManager.DISABLE_NOTIFICATION_ALERTS) != 0) {
             if ((state1 & StatusBarManager.DISABLE_NOTIFICATION_ALERTS) != 0) {
-                mHeadsUpManager.releaseAllImmediately();
+                mHeadsUpManager.releaseAllImmediately("CentralSurfacesCommandQueueCallbacks");
             }
         }
 

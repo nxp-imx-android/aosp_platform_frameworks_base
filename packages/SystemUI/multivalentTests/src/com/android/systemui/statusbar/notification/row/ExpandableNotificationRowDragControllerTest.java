@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.row;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -88,7 +89,7 @@ public class ExpandableNotificationRowDragControllerTest extends SysuiTestCase {
         mRow.doLongClickCallback(0, 0);
         mRow.doDragCallback(0, 0);
         verify(controller).startDragAndDrop(mRow);
-        verify(mKosmos.getMockHeadsUpManager(), times(1)).releaseAllImmediately();
+        verify(mKosmos.getMockHeadsUpManager(), times(1)).releaseAllImmediately(anyString());
         if (NotificationBundleUi.isEnabled()) {
             verify(mNotificationPanelLogger, times(1))
                     .logNotificationDrag(any(EntryAdapter.class));
