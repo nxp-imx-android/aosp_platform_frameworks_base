@@ -43496,6 +43496,31 @@ package android.service.personalcontext.hint {
     method @NonNull public android.os.Bundle getDataBundle();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class CapturedText implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public String getResourceId();
+    method @NonNull public String getViewId();
+    method @NonNull public android.graphics.Rect getViewNodeBoundingBox();
+    method @NonNull public String getViewNodeDescription();
+    method @Nullable public java.time.Instant getViewNodeLastSeen();
+    method @NonNull public java.time.Instant getViewNodeLastUpdated();
+    method @NonNull public String getViewNodeText();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.CapturedText> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class CapturedText.Builder {
+    ctor public CapturedText.Builder();
+    method @NonNull public android.service.personalcontext.hint.CapturedText build();
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setResourceId(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewId(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeBoundingBox(@NonNull android.graphics.Rect);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeDescription(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeLastSeen(@Nullable java.time.Instant);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeLastUpdated(@NonNull java.time.Instant);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeText(@NonNull String);
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageData implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public String getAuthor();
@@ -43632,6 +43657,18 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.NotificationHint build();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RecentViewHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.List<android.service.personalcontext.hint.CapturedText> getCapturedTexts();
+    method @Nullable public String getLocusId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class RecentViewHint.Builder {
+    ctor public RecentViewHint.Builder();
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder addCapturedText(@NonNull android.service.personalcontext.hint.CapturedText);
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint build();
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder setLocusId(@Nullable String);
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class TextClassificationHint extends android.service.personalcontext.hint.ContextHint {
     method @NonNull public android.view.textclassifier.TextClassification.Request getTextClassificationRequest();
   }
@@ -43639,6 +43676,40 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class TextClassificationHint.Builder {
     ctor public TextClassificationHint.Builder(@NonNull android.view.textclassifier.TextClassification.Request);
     method @NonNull public android.service.personalcontext.hint.TextClassificationHint build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class UserInputHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.service.personalcontext.hint.UserInputText getUserInputText();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class UserInputHint.Builder {
+    ctor public UserInputHint.Builder(@NonNull android.service.personalcontext.hint.UserInputText);
+    method @NonNull public android.service.personalcontext.hint.UserInputHint build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class UserInputText implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getFieldType();
+    method @NonNull public String getText();
+    method public int getUserInputTextSource();
+    method @NonNull public android.graphics.Rect getViewNodeBoundingBox();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.UserInputText> CREATOR;
+    field public static final int FIELD_TYPE_SEARCH_BOX = 1; // 0x1
+    field public static final int FIELD_TYPE_UNKNOWN = 0; // 0x0
+    field public static final int USER_INPUT_TEXT_SOURCE_CLICKED = 3; // 0x3
+    field public static final int USER_INPUT_TEXT_SOURCE_INFERRED = 2; // 0x2
+    field public static final int USER_INPUT_TEXT_SOURCE_TYPED = 1; // 0x1
+    field public static final int USER_INPUT_TEXT_SOURCE_UNKNOWN = 0; // 0x0
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class UserInputText.Builder {
+    ctor public UserInputText.Builder();
+    method @NonNull public android.service.personalcontext.hint.UserInputText build();
+    method @NonNull public android.service.personalcontext.hint.UserInputText.Builder setFieldType(int);
+    method @NonNull public android.service.personalcontext.hint.UserInputText.Builder setText(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.UserInputText.Builder setUserInputTextSource(int);
+    method @NonNull public android.service.personalcontext.hint.UserInputText.Builder setViewNodeBoundingBox(@NonNull android.graphics.Rect);
   }
 
 }
