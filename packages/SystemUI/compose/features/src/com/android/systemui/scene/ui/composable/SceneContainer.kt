@@ -178,6 +178,7 @@ fun SceneContainer(
             mutableStateMapOf()
         }
     val windowInsetsController = view.windowInsetsController
+    var lastNavigationBarVisibleRequest: Boolean? = remember { null }
     LaunchedEffect(actionableContentKey) {
         try {
             val actionableContent: ActionableContent =
@@ -192,10 +193,13 @@ fun SceneContainer(
 
                 val isNavigationBarVisible =
                     userActions.containsKey(Back) || actionableContentKey == Scenes.Gone
-                if (isNavigationBarVisible) {
-                    windowInsetsController?.show(WindowInsetsCompat.Type.navigationBars())
-                } else {
-                    windowInsetsController?.hide(WindowInsetsCompat.Type.navigationBars())
+                if (isNavigationBarVisible != lastNavigationBarVisibleRequest) {
+                    lastNavigationBarVisibleRequest = isNavigationBarVisible
+                    if (isNavigationBarVisible) {
+                        windowInsetsController?.show(WindowInsetsCompat.Type.navigationBars())
+                    } else {
+                        windowInsetsController?.hide(WindowInsetsCompat.Type.navigationBars())
+                    }
                 }
             }
         } finally {
