@@ -19,6 +19,7 @@
 package com.android.compose.animation.scene
 
 import android.util.Log
+import android.view.ViewRootImpl
 import androidx.annotation.VisibleForTesting
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
@@ -398,6 +400,7 @@ fun MutableSceneTransitionLayoutState(
         object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
             override var transitions: SceneTransitions = transitions
             override val motionScheme: MotionScheme = motionScheme
+            override val viewRootImpl: ViewRootImpl? = null
         }
 
     return MutableSceneTransitionLayoutStateImpl(
@@ -430,11 +433,16 @@ fun rememberMutableSceneTransitionLayoutState(
     deferTransitionProgress: Boolean = false,
 ): MutableSceneTransitionLayoutState {
     val motionScheme = MaterialTheme.motionScheme
+    val viewRootImpl = LocalView.current.viewRootImpl
     val uiDelegate = remember {
         object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
             override var transitions = transitions
             override var motionScheme: MotionScheme = motionScheme
+            override val viewRootImpl: ViewRootImpl = viewRootImpl
         }
+    }
+    check(viewRootImpl == uiDelegate.viewRootImpl) {
+        "The ViewRootImpl of a STL is not expected to change"
     }
 
     val layoutState = remember {
@@ -486,6 +494,8 @@ internal class MutableSceneTransitionLayoutStateImpl(
         // TODO(b/450236706): Make this a `val`.
         var transitions: SceneTransitions
         val motionScheme: MotionScheme
+        // TODO(b/450236706): Make this non nullable
+        val viewRootImpl: ViewRootImpl?
     }
 
     private val creationThread: Thread = Thread.currentThread()
@@ -610,6 +620,9 @@ internal class MutableSceneTransitionLayoutStateImpl(
     override suspend fun startTransition(transition: TransitionState.Transition, chain: Boolean) {
         Log.i(TAG, "startTransition(transition=$transition, chain=$chain)")
         checkThread()
+
+        // Notify to VRI that the next frame is going to be expensive.
+        uiDelegate().viewRootImpl?.notifyRendererOfExpensiveFrame("startTransition($transition)")
 
         // Prepare the transition before starting it. This is outside of the try/finally block on
         // purpose because preparing a transition might throw an exception (e.g. if we find multiple
@@ -981,11 +994,17 @@ internal class HoistedSceneTransitionLayoutStateImpl(
         transitions: SceneTransitions
     ): MutableSceneTransitionLayoutStateImpl {
         val motionScheme = MaterialTheme.motionScheme
+        val viewRootImpl = LocalView.current.viewRootImpl
         val delegate = remember {
             object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
                 override var transitions: SceneTransitions = transitions
                 override var motionScheme: MotionScheme = motionScheme
+                override val viewRootImpl: ViewRootImpl = viewRootImpl
             }
+        }
+
+        check(viewRootImpl == delegate.viewRootImpl) {
+            "The ViewRootImpl of a STL is not expected to change"
         }
 
         DisposableEffect(Unit) {

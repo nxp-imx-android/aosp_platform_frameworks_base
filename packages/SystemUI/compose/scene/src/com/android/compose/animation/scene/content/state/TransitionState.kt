@@ -121,7 +121,7 @@ sealed interface TransitionState {
                 }
 
             override fun toString(): String {
-                return "ChangeScene(fromScene=$fromScene, toScene=$toScene)"
+                return "ChangeScene(fromScene=${fromScene.debugName}, toScene=${toScene.debugName})"
             }
         }
 
@@ -190,8 +190,8 @@ sealed interface TransitionState {
 
             override fun toString(): String {
                 val isShowing = overlay == toContent
-                return "ShowOrHideOverlay(overlay=$overlay, fromOrToScene=$fromOrToScene, " +
-                    "isShowing=$isShowing)"
+                return "ShowOrHideOverlay(overlay=${overlay.debugName}, " +
+                    "fromOrToScene=${fromOrToScene.debugName}, isShowing=$isShowing)"
             }
         }
 
@@ -245,7 +245,8 @@ sealed interface TransitionState {
             }
 
             override fun toString(): String {
-                return "ReplaceOverlay(fromOverlay=$fromOverlay, toOverlay=$toOverlay)"
+                return "ReplaceOverlay(fromOverlay=${fromOverlay.debugName}, " +
+                    "toOverlay=${toOverlay.debugName})"
             }
         }
 
