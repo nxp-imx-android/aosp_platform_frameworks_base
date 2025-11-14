@@ -5025,6 +5025,7 @@
   <java-symbol type="bool" name="device_idle_wait_for_unlock" />
   <java-symbol type="bool" name="device_idle_use_window_alarms" />
   <java-symbol type="bool" name="device_idle_use_mode_manager" />
+  <java-symbol type="bool" name="device_idle_use_non_wakeup_deep_alarms" />
 
   <!-- Binder heavy hitter watcher configs -->
   <java-symbol type="bool" name="config_defaultBinderHeavyHitterWatcherEnabled" />

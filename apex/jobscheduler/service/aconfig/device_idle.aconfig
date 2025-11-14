@@ -37,3 +37,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "allow_non_wake_up_deep_alarms"
+    namespace: "wear_frameworks"
+    description: "Allows using non-wakeup alarms to transition between deep alarm states."
+    bug: "458144517"
+}
