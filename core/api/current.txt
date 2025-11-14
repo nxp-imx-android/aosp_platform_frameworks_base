@@ -1547,6 +1547,7 @@ package android {
     field public static final int sharedUserMaxSdkVersion = 16844365; // 0x101064d
     field public static final int shell = 16844180; // 0x1010594
     field @FlaggedApi("com.android.text.flags.use_bounds_for_width") public static final int shiftDrawingOffsetForStartOverhang = 16844450; // 0x10106a2
+    field @FlaggedApi("android.view.inputmethod.ime_subtype_short_label") public static final int shortLabel;
     field public static final int shortcutDisabledMessage = 16844075; // 0x101052b
     field public static final int shortcutId = 16844072; // 0x1010528
     field public static final int shortcutLongLabel = 16844074; // 0x101052a
@@ -58209,6 +58210,7 @@ package android.view.inputmethod {
     method public int getNameResId();
     method @Nullable public android.icu.util.ULocale getPhysicalKeyboardHintLanguageTag();
     method @NonNull public String getPhysicalKeyboardHintLayoutType();
+    method @FlaggedApi("android.view.inputmethod.ime_subtype_short_label") @NonNull public CharSequence getSubtypeShortLabel();
     method public boolean isAsciiCapable();
     method public boolean isAuxiliary();
     method public boolean overridesImplicitlyEnabledSubtype();
@@ -58233,6 +58235,7 @@ package android.view.inputmethod {
     method public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setSubtypeMode(String);
     method @NonNull public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setSubtypeNameOverride(@NonNull CharSequence);
     method public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setSubtypeNameResId(int);
+    method @FlaggedApi("android.view.inputmethod.ime_subtype_short_label") @NonNull public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setSubtypeShortLabel(@NonNull CharSequence);
   }
 
   public final class InsertGesture extends android.view.inputmethod.HandwritingGesture implements android.os.Parcelable {
