@@ -525,6 +525,33 @@ internal constructor(
                 try {
                     val result = future.get()
                     Log.d(TAG, "Saved screenshot: $result")
+
+                    // Signifies custom save failed & saved to default folder instead
+                    if (
+                        screenshot.customSaveUri != null &&
+                            !result.uri.toString().startsWith(screenshot.customSaveUri.toString())
+                    ) {
+                        val customFolderName =
+                            screenshot.customSaveUri.lastPathSegment
+                                ?.split(":")
+                                ?.last()
+                                ?.split("/")
+                                ?.last()
+                                ?.let {
+                                    if (it.length > 15) {
+                                        "${it.take(15)}…"
+                                    } else {
+                                        it
+                                    }
+                                }
+                        val defaultSaveErrorText =
+                            context.getString(
+                                R.string.screenshot_custom_uri_save_fail_message,
+                                customFolderName,
+                            )
+                        notificationController.notifyCustomUriSaveError(defaultSaveErrorText)
+                    }
+
                     logScreenshotResultStatus(result.uri, screenshot.userHandle)
                     onResult.accept(result)
                     if (LogConfig.DEBUG_CALLBACK) {
