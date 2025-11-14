@@ -6761,23 +6761,16 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         wct.sendPendingIntent(launchIntent, null, opts.toBundle())
         if (windowingMode == WINDOWING_MODE_FREEFORM) {
-            if (
-                DesktopModeFlags.ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX.isTrue ||
-                    DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue
-            ) {
-                val deskId = getOrCreateDefaultDeskId(destinationDisplay, userId) ?: return false
-                startLaunchTransition(
-                    TRANSIT_OPEN,
-                    wct,
-                    launchingTaskId = null,
-                    deskId = deskId,
-                    displayId = destinationDisplay,
-                    userId = userId,
-                    dragEvent = dragEvent,
-                )
-            } else {
-                desktopModeDragAndDropTransitionHandler.handleDropEvent(wct, dragEvent)
-            }
+            val deskId = getOrCreateDefaultDeskId(destinationDisplay, userId) ?: return false
+            startLaunchTransition(
+                TRANSIT_OPEN,
+                wct,
+                launchingTaskId = null,
+                deskId = deskId,
+                displayId = destinationDisplay,
+                userId = userId,
+                dragEvent = dragEvent,
+            )
         } else {
             transitions.startTransition(TRANSIT_OPEN, wct, null)
         }
