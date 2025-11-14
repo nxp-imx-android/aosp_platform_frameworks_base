@@ -4416,9 +4416,9 @@ public class ApplicationPackageManager extends PackageManager {
     }
 
     @Override
-    public int getAppUidForPccUid(int pccUid) {
+    public int getAppUidForPrivateComputeCoreUid(int pccUid) {
         try {
-            return mPM.getAppUidForPccUid(pccUid);
+            return mPM.getAppUidForPrivateComputeCoreUid(pccUid);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

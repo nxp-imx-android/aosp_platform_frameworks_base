@@ -621,7 +621,8 @@ public class PackageManagerServiceTest {
     public void getAppUidForPccUid_nonPccUid_returnsInvalid() throws Exception {
         // A regular app UID is not a PCC UID, so the method should return INVALID_UID.
         final int nonPccUid = Process.myUid();
-        Assert.assertEquals(Process.INVALID_UID, mIPackageManager.getAppUidForPccUid(nonPccUid));
+        Assert.assertEquals(Process.INVALID_UID,
+                            mIPackageManager.getAppUidForPrivateComputeCoreUid(nonPccUid));
     }
 
     @Test
@@ -629,6 +630,7 @@ public class PackageManagerServiceTest {
         // Use a valid PCC UID that is not associated with any installed package.
         // The method should return INVALID_UID as no matching package setting will be found.
         final int pccUid = Process.FIRST_PCC_UID;
-        Assert.assertEquals(Process.INVALID_UID, mIPackageManager.getAppUidForPccUid(pccUid));
+        Assert.assertEquals(Process.INVALID_UID,
+                            mIPackageManager.getAppUidForPrivateComputeCoreUid(pccUid));
     }
 }

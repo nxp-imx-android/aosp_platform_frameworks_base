@@ -4986,8 +4986,8 @@ public class AppOpsService extends IAppOpsService.Stub {
                 // Shouldn't happen for the supplemental package
                 e.printStackTrace();
             }
-        } else if (Process.isPccUid(uid)) {
-            uid = pm.getAppUidForPccUid(uid);
+        } else if (Process.isPrivateComputeCoreUid(uid)) {
+            uid = pm.getAppUidForPrivateComputeCoreUid(uid);
         }
         return uid;
     }

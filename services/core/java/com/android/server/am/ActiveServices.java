@@ -7202,7 +7202,7 @@ public final class ActiveServices {
     // Returns whether the process should be used for hosting the passed in ServiceRecord
     private boolean processMatchesServiceRecord(ProcessRecord proc, String processName,
             ServiceRecord sr) {
-        final int srUid = Process.isPccUid(proc.uid) ? sr.appInfo.pccUid
+        final int srUid = Process.isPrivateComputeCoreUid(proc.uid) ? sr.appInfo.pccUid
                 : sr.appInfo.uid;
         if (proc == sr.isolationHostProc || (proc.uid == srUid
                 && processName.equals(sr.processName))) {
