@@ -70,18 +70,19 @@ public class RavenwoodSettingsProviderTest {
 
     @Test
     public void testTestableSettingsProvider() {
-        var context = new TestableContext(mContext);
-        var cr = context.getContentResolver();
-        assertEquals(999, Global.getInt(cr, Global.AIRPLANE_MODE_ON, 999));
+        try (var context = new TestableContext(mContext)) {
+            var cr = context.getContentResolver();
+            assertEquals(999, Global.getInt(cr, Global.AIRPLANE_MODE_ON, 999));
 
-        Global.putInt(cr, Global.AIRPLANE_MODE_ON, 1000);
+            Global.putInt(cr, Global.AIRPLANE_MODE_ON, 1000);
 
-        assertEquals(1000, Global.getInt(cr, Global.AIRPLANE_MODE_ON, 999));
+            assertEquals(1000, Global.getInt(cr, Global.AIRPLANE_MODE_ON, 999));
 
-        Secure.putString(cr, Secure.AUTOFILL_SERVICE, "abc");
-        assertEquals("abc", Secure.getString(cr, Secure.AUTOFILL_SERVICE));
+            Secure.putString(cr, Secure.AUTOFILL_SERVICE, "abc");
+            assertEquals("abc", Secure.getString(cr, Secure.AUTOFILL_SERVICE));
 
-        Secure.putInt(cr, System.MIN_REFRESH_RATE, 3);
-        assertEquals(3, Secure.getInt(cr, System.MIN_REFRESH_RATE, 0));
+            Secure.putInt(cr, System.MIN_REFRESH_RATE, 3);
+            assertEquals(3, Secure.getInt(cr, System.MIN_REFRESH_RATE, 0));
+        }
     }
 }

@@ -82,6 +82,37 @@ public class RavenwoodProxyHelper {
     }
 
     /**
+     * Returns the default value for a given type.
+     */
+    public static Object getDefaultValue(Class<?> t) {
+        if (t == boolean.class || t == Boolean.class) {
+            return false;
+        }
+        if (t == int.class || t == Integer.class) {
+            return 0;
+        }
+        if (t == long.class || t == Long.class) {
+            return 0L;
+        }
+        if (t == short.class || t == Short.class) {
+            return (short) 0;
+        }
+        if (t == char.class || t == Character.class) {
+            return (char) 0;
+        }
+        if (t == byte.class || t == Byte.class) {
+            return (byte) 0;
+        }
+        if (t == float.class || t == Float.class) {
+            return (float) 0;
+        }
+        if (t == double.class || t == Double.class) {
+            return (double) 0;
+        }
+        return null;
+    }
+
+    /**
      * InvocationHandler that always returns the default value.
      */
     public static final InvocationHandler sDefaultHandler = new DefaultReturningInvocationHandler();
@@ -153,32 +184,7 @@ public class RavenwoodProxyHelper {
     private static class DefaultReturningInvocationHandler implements InvocationHandler {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
-            var t = method.getReturnType();
-            if (t == boolean.class || t == Boolean.class) {
-                return false;
-            }
-            if (t == int.class || t == Integer.class) {
-                return 0;
-            }
-            if (t == long.class || t == Long.class) {
-                return 0L;
-            }
-            if (t == short.class || t == Short.class) {
-                return (short) 0;
-            }
-            if (t == char.class || t == Character.class) {
-                return (char) 0;
-            }
-            if (t == byte.class || t == Byte.class) {
-                return (byte) 0;
-            }
-            if (t == float.class || t == Float.class) {
-                return (float) 0;
-            }
-            if (t == double.class || t == Double.class) {
-                return (double) 0;
-            }
-            return null;
+            return getDefaultValue(method.getReturnType());
         }
     }
 }
