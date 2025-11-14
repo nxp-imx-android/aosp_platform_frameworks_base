@@ -213,13 +213,14 @@ public abstract class Pip2Module {
             PipUiEventLogger pipUiEventLogger,
             @ShellMainThread ShellExecutor mainExecutor,
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
-            PipDisplayTransferHandler pipDisplayTransferHandler) {
+            PipDisplayTransferHandler pipDisplayTransferHandler,
+            PipInteractionHandler pipInteractionHandler) {
         return new PipTouchHandler(context, pipSurfaceTransactionHelper, shellInit,
                 shellCommandHandler, menuPhoneController,
                 pipBoundsAlgorithm, pipBoundsState, pipTransitionState, pipScheduler,
                 sizeSpecSource, pipDisplayLayoutState, pipDesktopState, displayController,
                 pipMotionHelper, floatingContentCoordinator, pipUiEventLogger, mainExecutor,
-                pipPerfHintControllerOptional, pipDisplayTransferHandler);
+                pipPerfHintControllerOptional, pipDisplayTransferHandler, pipInteractionHandler);
     }
 
     @WMSingleton
