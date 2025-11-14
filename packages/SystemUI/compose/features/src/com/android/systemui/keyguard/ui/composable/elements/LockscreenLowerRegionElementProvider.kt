@@ -18,14 +18,11 @@ package com.android.systemui.keyguard.ui.composable.elements
 
 import android.content.Context
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.areNavigationBarsVisible
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -96,20 +93,14 @@ constructor(
             }
         }
 
-        @OptIn(ExperimentalLayoutApi::class)
         @Composable
         private fun Modifier.padding(): Modifier {
             val horizontalPadding = dimensionResource(R.dimen.keyguard_affordance_horizontal_offset)
-            return if (WindowInsets.areNavigationBarsVisible) {
-                    windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        .padding(horizontal = horizontalPadding)
-                } else {
-                    padding(
-                        start = horizontalPadding,
-                        end = horizontalPadding,
-                        bottom = dimensionResource(R.dimen.keyguard_affordance_vertical_offset),
-                    )
-                }
+            return padding(
+                    start = horizontalPadding,
+                    end = horizontalPadding,
+                    bottom = dimensionResource(R.dimen.keyguard_affordance_vertical_offset),
+                )
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Bottom))
         }
 
