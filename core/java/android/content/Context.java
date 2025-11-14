@@ -7299,6 +7299,18 @@ public abstract class Context {
     public static final String ANOMALY_DETECTOR_SERVICE = "anomaly_detector";
 
     /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.bettertogether.D2dConnectivityManager}.
+     *
+     * @see #getSystemService(String)
+     * @see android.bettertogether.D2dConnectivityManager
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.bettertogether.flags.Flags.FLAG_ENABLE_D2D_CONNECTIVITY_SERVICE)
+    public static final String D2D_CONNECTIVITY_SERVICE = "d2d_connectivity";
+
+    /**
      * Determine whether the given permission is allowed for a particular
      * process and user ID running in the system.
      *
