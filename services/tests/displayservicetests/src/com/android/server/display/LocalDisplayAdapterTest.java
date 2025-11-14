@@ -1166,12 +1166,15 @@ public class LocalDisplayAdapterTest {
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
                 ));
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
-        verify(mSurfaceControlProxy).setDesiredDisplayModeSpecs(display.token,
+        verify(mSurfaceControlProxy).setDesiredDisplayModeSpecs(
+                new SurfaceControl.DesiredDisplayModeSpecs[] {
                 new SurfaceControl.DesiredDisplayModeSpecs(
+                        display.token,
+                        /* applyToken */ null,
                         /* baseModeId */ 0,
                         /* allowGroupSwitching */ false,
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
-                ));
+                )});
 
         // Change the display
         display.dynamicInfo.supportedDisplayModes = new SurfaceControl.DisplayMode[]{
@@ -1203,12 +1206,15 @@ public class LocalDisplayAdapterTest {
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
 
         // Verify that this will reapply the desired modes.
-        verify(mSurfaceControlProxy).setDesiredDisplayModeSpecs(display.token,
+        verify(mSurfaceControlProxy).setDesiredDisplayModeSpecs(
+                new SurfaceControl.DesiredDisplayModeSpecs[] {
                 new SurfaceControl.DesiredDisplayModeSpecs(
+                        display.token,
+                        /* applyToken */ null,
                         /* baseModeId */ 2,
                         /* allowGroupSwitching */ false,
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig
-                ));
+                )});
     }
 
     @Test
@@ -1801,6 +1807,8 @@ public class LocalDisplayAdapterTest {
 
         public SurfaceControl.DesiredDisplayModeSpecs desiredDisplayModeSpecs =
                 new SurfaceControl.DesiredDisplayModeSpecs(
+                        token,
+                        /* applyToken */ null,
                         /* defaultMode */ 0,
                         /* allowGroupSwitching */ false,
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES,
