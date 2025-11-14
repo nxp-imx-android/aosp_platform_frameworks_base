@@ -1441,8 +1441,9 @@ public class KeyguardIndicationController {
         @Override
         public void onBiometricAcquired(BiometricSourceType biometricSourceType, int acquireInfo) {
             if (biometricSourceType == FACE) {
-                if (acquireInfo == FACE_ACQUIRED_START) {
-                    // Let's hide any previous messages when authentication starts, otherwise
+                if (mBiometricMessageSource == BiometricSourceType.FACE
+                        && acquireInfo == FACE_ACQUIRED_START) {
+                    // Let's hide any previous face messages when authentication starts, otherwise
                     // multiple auth attempts would overlap.
                     hideBiometricMessage();
                     mBiometricErrorMessageToShowOnScreenOn = null;
