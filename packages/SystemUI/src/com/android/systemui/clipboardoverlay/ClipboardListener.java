@@ -198,7 +198,13 @@ public class ClipboardListener implements
     }
 
     private boolean isUserSetupComplete() {
-        return Settings.Secure.getInt(mContext.getContentResolver(),
+        Context userContext;
+        try {
+            userContext = mContext.createContextAsUser(mUserTracker.getUserHandle(), 0);
+        } catch (IllegalStateException e) {
+            userContext = mContext;
+        }
+        return Settings.Secure.getInt(userContext.getContentResolver(),
                 SETTINGS_SECURE_USER_SETUP_COMPLETE, 0) == 1;
     }
 
