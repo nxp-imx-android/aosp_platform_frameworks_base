@@ -30,7 +30,7 @@ interface TargetViewModel : Activatable {
     /** The label associated with the target, if any. */
     val label: Result<CharSequence>?
     /** The thumbnail associated with the target, if any. */
-    val thumbnail: Result<Bitmap>?
+    val thumbnail: Result<Bitmap?>?
     /** The background color associated with the target. Alpha channel removed. */
     val backgroundColorOpaque: Color
 }

@@ -28034,10 +28034,19 @@ package android.media.projection {
   }
 
   @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public final class MediaProjectionAppContent implements android.os.Parcelable {
-    ctor public MediaProjectionAppContent(@NonNull android.graphics.Bitmap, @NonNull CharSequence, int);
     method public int describeContents();
+    method public int getId();
+    method @Nullable public android.graphics.Bitmap getThumbnail();
+    method @NonNull public CharSequence getTitle();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.projection.MediaProjectionAppContent> CREATOR;
+  }
+
+  public static final class MediaProjectionAppContent.Builder {
+    ctor public MediaProjectionAppContent.Builder(int);
+    method @NonNull public android.media.projection.MediaProjectionAppContent build();
+    method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setThumbnail(@NonNull android.graphics.Bitmap);
+    method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setTitle(@NonNull CharSequence);
   }
 
   public final class MediaProjectionConfig implements android.os.Parcelable {
@@ -28060,7 +28069,7 @@ package android.media.projection {
     ctor public MediaProjectionConfig.Builder();
     method @NonNull public android.media.projection.MediaProjectionConfig build();
     method @NonNull public android.media.projection.MediaProjectionConfig.Builder setInitiallySelectedSource(int);
-    method @NonNull public android.media.projection.MediaProjectionConfig.Builder setOwnAppContentProvided(@NonNull android.content.Context, boolean);
+    method @NonNull public android.media.projection.MediaProjectionConfig.Builder setOwnAppContentProvided(boolean);
     method @NonNull public android.media.projection.MediaProjectionConfig.Builder setRequesterHint(@Nullable String);
     method @NonNull public android.media.projection.MediaProjectionConfig.Builder setSourceEnabled(int, boolean);
   }

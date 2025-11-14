@@ -24,7 +24,7 @@ data class ScreenCaptureAppContent(
     val packageName: String,
     val contentId: Int,
     val label: CharSequence,
-    val thumbnail: Bitmap,
+    val thumbnail: Bitmap?,
 ) : TargetModel {
     constructor(
         packageName: String,

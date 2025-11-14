@@ -41,17 +41,15 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
 
     private val fakeUserHandle = UserHandle.of(123)
     private val fakeMediaProjectionAppContent1 =
-        MediaProjectionAppContent(
-            /* thumbnail= */ createBitmap(100, 100),
-            /* title= */ "FakeTitle1",
-            /* id= */ 456,
-        )
+        MediaProjectionAppContent.Builder(456)
+            .setTitle("FakeTitle1")
+            .setThumbnail(createBitmap(100, 100))
+            .build()
     private val fakeMediaProjectionAppContent2 =
-        MediaProjectionAppContent(
-            /* thumbnail= */ createBitmap(200, 200),
-            /* title= */ "FakeTitle2",
-            /* id= */ 789,
-        )
+        MediaProjectionAppContent.Builder(789)
+            .setTitle("FakeTitle2")
+            .setThumbnail(createBitmap(200, 200))
+            .build()
     private val fakeThrowable = IllegalStateException("FakeMessage")
 
     @Test
