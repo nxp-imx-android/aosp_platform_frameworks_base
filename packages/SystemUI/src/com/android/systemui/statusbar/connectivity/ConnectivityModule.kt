@@ -308,12 +308,14 @@ interface ConnectivityModule {
             mapper: WifiTileMapper,
             dataInteractor: WifiTileDataInteractor,
             userActionInteractor: WifiTileUserActionInteractor,
+            internetDetailsViewModelFactory: InternetDetailsViewModel.Factory,
         ): QSTileViewModel =
             factory.create(
                 TileSpec.create(WIFI_TILE_SPEC),
                 userActionInteractor,
                 dataInteractor,
                 mapper,
+                internetDetailsViewModelFactory.create(),
             )
 
         @Provides
@@ -339,12 +341,14 @@ interface ConnectivityModule {
             mapper: MobileDataTileMapper,
             dataInteractor: MobileDataTileDataInteractor,
             userActionInteractor: MobileDataTileUserActionInteractor,
+            internetDetailsViewModelFactory: InternetDetailsViewModel.Factory,
         ): QSTileViewModel =
             factory.create(
                 TileSpec.create(MOBILE_DATA_TILE_SPEC),
                 userActionInteractor,
                 dataInteractor,
                 mapper,
+                internetDetailsViewModelFactory.create(),
             )
 
         @Provides
