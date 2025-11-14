@@ -88,6 +88,7 @@ import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyl
 import com.android.systemui.statusbar.notification.row.icon.NotificationRowIconViewInflaterFactory
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
+import com.android.systemui.statusbar.notification.row.icon.mockBridgedIconProvider
 import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.shared.SkeletonImageTransform
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
@@ -289,6 +290,7 @@ class ExpandableNotificationRowBuilder(
             NotificationRowIconViewInflaterFactory(
                 kosmos.mockAppIconProvider,
                 NotificationIconStyleProviderImpl(kosmos.dumpManager, kosmos.fakeSystemClock),
+                kosmos.mockBridgedIconProvider,
             ),
         )
     }
