@@ -18,13 +18,12 @@ package com.android.systemui.shade.ui.viewmodel
 
 import androidx.annotation.FloatRange
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
-import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -42,6 +41,7 @@ import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -75,8 +75,7 @@ constructor(
     val mediaViewModelFactory: MediaViewModel.Factory,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
-    keyguardInteractor: KeyguardInteractor,
-    blurConfig: BlurConfig,
+    private val blurConfig: BlurConfig,
     unfoldTransitionInteractor: UnfoldTransitionInteractor,
     deviceEntryInteractor: DeviceEntryInteractor,
     private val sceneInteractor: SceneInteractor,
@@ -105,14 +104,6 @@ constructor(
 
     val shadeMode: ShadeMode by
         hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
-
-    val isShadeBlurred: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isShadeBlurred",
-            source = keyguardInteractor.primaryBouncerShowing,
-        )
-
-    val shadeBlurRadius: Float by mutableFloatStateOf(blurConfig.maxBlurRadiusPx)
 
     /** Whether clicking on the empty area of the shade should do something. */
     val isEmptySpaceClickable: Boolean by
@@ -189,6 +180,21 @@ constructor(
                     else -> Unit
                 }
             }
+        }
+    }
+
+    /**
+     * Calculates the blur radius to apply to the scene UI.
+     *
+     * @param transitionState The current transition state of the scene (from its `ContentScope`)
+     * @return The blur radius to apply to the scene UI, in pixels.
+     */
+    fun calculateBlur(transitionState: TransitionState): Float {
+        return when {
+            !isTransparencyEnabled -> 0f
+            Scenes.Shade != transitionState.currentScene -> 0f
+            Overlays.Bouncer in transitionState.currentOverlays -> blurConfig.maxBlurRadiusPx
+            else -> 0f
         }
     }
 
