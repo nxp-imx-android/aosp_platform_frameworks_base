@@ -140,10 +140,7 @@ open class PolicyHandlerTest {
         val handler =
             object :
                 PolicyHandler<Int>(Policy.key, Policy.metadata, Policy.definition, mockDelegate) {
-                override fun convertValue(
-                    caller: CallerIdentity,
-                    transportValue: PolicyValueTransport?,
-                ): Int? {
+                override fun convertValue(transportValue: PolicyValueTransport?): Int? {
                     methodCalls.add("convertValue")
                     return 5
                 }
@@ -352,10 +349,7 @@ open class PolicyHandlerTest {
         val handler =
             object :
                 PolicyHandler<Int>(Policy.key, Policy.metadata, Policy.definition, mockDelegate) {
-                override fun convertValue(
-                    caller: CallerIdentity,
-                    transportValue: PolicyValueTransport?,
-                ): Int? {
+                override fun convertValue(transportValue: PolicyValueTransport?): Int? {
                     methodCalls.add("convertValue")
                     return 5
                 }
