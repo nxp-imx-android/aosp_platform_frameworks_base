@@ -20,11 +20,11 @@ import android.annotation.IntDef
 import android.graphics.Rect
 
 /**
- * A node in the layout tree that contains other nodes. It represents a split container that
- * can be oriented either vertically or horizontally.
+ * A node in the layout tree that contains other nodes. It represents a split container that can be
+ * oriented either vertically or horizontally.
  *
  * @param orientation The orientation of the split, either [ORIENTATION_VERTICAL] or
- * [ORIENTATION_HORIZONTAL].
+ *   [ORIENTATION_HORIZONTAL].
  * @param children The children of this node.
  * @param weight The proportional weight of this node within its parent.
  * @param dividerSize The size of the space in pixels to leave between children.
@@ -38,7 +38,7 @@ class BranchNode(
     val dividerSize: Int = 0,
     val isOffscreen: Boolean = false,
     val mainChildIndex: Int = 0,
-    override val debugName: String? = null
+    override val debugName: String? = null,
 ) : LayoutNode {
 
     @IntDef(prefix = ["ORIENTATION_"], value = [ORIENTATION_VERTICAL, ORIENTATION_HORIZONTAL])
@@ -63,7 +63,7 @@ class BranchNode(
     override fun toString(): String {
         val orientationStr = if (orientation == ORIENTATION_VERTICAL) "V" else "H"
         return "BranchNode(${debugName ?: ""}, $orientationStr, w=$weight, " +
-                "children=${children.size}, offscreen=$isOffscreen)"
+            "children=${children.size}, offscreen=$isOffscreen)"
     }
 
     /** Adds a child to this node at the given index. */

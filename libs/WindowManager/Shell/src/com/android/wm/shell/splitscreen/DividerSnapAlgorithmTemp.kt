@@ -20,8 +20,8 @@ import android.graphics.Rect
 import kotlin.math.abs
 
 /**
- * A stateless calculator that determines the closest valid snap point for a divider based on
- * user input and a list of available snap points.
+ * A stateless calculator that determines the closest valid snap point for a divider based on user
+ * input and a list of available snap points.
  *
  * TODO: This probably will go away and be replaced by the existing DividerSnapAlgorithm
  */
@@ -40,36 +40,40 @@ class DividerSnapAlgorithmTemp {
         releasePosition: Int,
         availablePoints: List<Float>,
         bounds: Rect,
-        orientation: Int
+        orientation: Int,
     ): SnapTargetTemp {
-        val relevantTotalSize = if (orientation == BranchNode.ORIENTATION_HORIZONTAL) {
-            bounds.width()
-        } else {
-            bounds.height()
-        }
-        val relevantStart = if (orientation == BranchNode.ORIENTATION_HORIZONTAL) {
-            bounds.left
-        } else {
-            bounds.top
-        }
+        val relevantTotalSize =
+            if (orientation == BranchNode.ORIENTATION_HORIZONTAL) {
+                bounds.width()
+            } else {
+                bounds.height()
+            }
+        val relevantStart =
+            if (orientation == BranchNode.ORIENTATION_HORIZONTAL) {
+                bounds.left
+            } else {
+                bounds.top
+            }
 
         // 1. Convert proportional points to absolute pixel positions.
-        val absoluteTargets = availablePoints.map { proportion ->
-            val pixelPosition = relevantStart + (relevantTotalSize * proportion).toInt()
-            // Store both for later use
-            Pair(pixelPosition, proportion)
-        }
+        val absoluteTargets =
+            availablePoints.map { proportion ->
+                val pixelPosition = relevantStart + (relevantTotalSize * proportion).toInt()
+                // Store both for later use
+                Pair(pixelPosition, proportion)
+            }
 
         // 2. Find the pair with the minimum distance to the release position.
-        val closestTarget = absoluteTargets.minByOrNull { (pixelPosition, _) ->
-            abs(pixelPosition - releasePosition)
-        }
+        val closestTarget =
+            absoluteTargets.minByOrNull { (pixelPosition, _) ->
+                abs(pixelPosition - releasePosition)
+            }
 
         // 3. Return a structured SnapTarget object.
         return SnapTargetTemp(
             position = closestTarget?.first ?: relevantStart + (relevantTotalSize / 2),
             proportion = closestTarget?.second ?: 0.5f,
-            isDismissTarget = false // This could be determined in LayoutPolicy
+            isDismissTarget = false, // This could be determined in LayoutPolicy
         )
     }
 }

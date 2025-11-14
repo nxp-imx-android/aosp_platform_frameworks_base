@@ -31,7 +31,7 @@ data class LayoutDefinition(
     var taskInfo: RunningTaskInfo? = null,
     var orientation: Int = 0,
     var children: List<LayoutDefinition>? = null,
-    var weight: Float = 0f
+    var weight: Float = 0f,
 ) {
 
     /** Returns true if this is a leaf node. */

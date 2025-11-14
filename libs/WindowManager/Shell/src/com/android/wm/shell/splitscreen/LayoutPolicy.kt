@@ -21,13 +21,14 @@ package com.android.wm.shell.splitscreen
  * Its purpose is to answer the question, "Is this proposed layout state valid?" This includes
  * checking for constraints like the maximum number of apps, minimum window sizes, or
  * device-specific restrictions.
+ *
  * NOTE: This is a placeholder class for now, ignore.
  */
 class LayoutPolicy {
 
     /**
-     * Gets the list of available proportional snap points for a given pair of nodes.
-     * This is where all device and feature-specific rules are checked.
+     * Gets the list of available proportional snap points for a given pair of nodes. This is where
+     * all device and feature-specific rules are checked.
      *
      * @param nodeBefore The first node.
      * @param nodeAfter The second node.

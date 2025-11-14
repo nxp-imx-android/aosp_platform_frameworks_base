@@ -28,7 +28,7 @@ import android.graphics.Rect
 class LeafNode(
     val taskInfo: RunningTaskInfo,
     override var weight: Float = 1.0f,
-    override val debugName: String? = null
+    override val debugName: String? = null,
 ) : LayoutNode {
 
     override val bounds = Rect()
