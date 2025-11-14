@@ -53,6 +53,7 @@ abstract class EnterDesktopWithDragWindowsLimit(val rotation: Rotation = Rotatio
     @Before
     fun setup() {
         Assume.assumeTrue(desktopConfig.maxTaskLimit > 0)
+
         clockDesktopAppHelper.enterDesktopMode(wmHelper, device, shouldUseDragToDesktop = true)
         mailAppHelper.launchViaIntent(wmHelper)
         calculatorHelper.launchViaIntent(wmHelper)

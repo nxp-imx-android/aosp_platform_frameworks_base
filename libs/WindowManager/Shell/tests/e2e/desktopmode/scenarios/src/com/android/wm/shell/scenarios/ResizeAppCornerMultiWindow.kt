@@ -25,6 +25,7 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import org.junit.After
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -49,6 +50,7 @@ constructor(
 
     @Before
     fun setup() {
+        Assume.assumeTrue(maxNum > 0)
         mailAppDesktopHelper.enterDesktopMode(wmHelper, device)
         mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 1)
     }
