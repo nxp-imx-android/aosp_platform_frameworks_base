@@ -27,26 +27,11 @@ class FullAdbRestoreEngineThread implements Runnable {
 
     FullAdbRestoreEngine mEngine;
     InputStream mEngineStream;
-    private final boolean mMustKillAgent;
 
-    FullAdbRestoreEngineThread(FullAdbRestoreEngine engine, ParcelFileDescriptor engineSocket) {
-        mEngine = engine;
-        engine.setRunning(true);
-        // We *do* want this FileInputStream to own the underlying fd, so that
-        // when we are finished with it, it closes this end of the pipe in a way
-        // that signals its other end.
-        mEngineStream = new AutoCloseInputStream(engineSocket);
-        // Tell it to be sure to leave the agent instance up after finishing
-        mMustKillAgent = false;
-    }
-
-    //for adb restore
     FullAdbRestoreEngineThread(FullAdbRestoreEngine engine, InputStream inputStream) {
         mEngine = engine;
         engine.setRunning(true);
         mEngineStream = inputStream;
-        // philippov: in adb agent is killed after restore.
-        mMustKillAgent = true;
     }
 
     public boolean isRunning() {
@@ -61,9 +46,7 @@ class FullAdbRestoreEngineThread implements Runnable {
     public void run() {
         try {
             while (mEngine.isRunning()) {
-                mEngine.restoreOneFile(mEngineStream, mMustKillAgent, mEngine.mBuffer,
-                        mEngine.mOnlyPackage, mEngine.mAllowApks, mEngine.mEphemeralOpToken,
-                        mEngine.mMonitor);
+                mEngine.restoreOneFile(mEngineStream);
             }
         } finally {
             // Because mEngineStream adopted its underlying FD, this also

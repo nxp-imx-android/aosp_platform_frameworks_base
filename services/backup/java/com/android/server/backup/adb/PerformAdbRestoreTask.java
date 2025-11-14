@@ -113,8 +113,7 @@ public class PerformAdbRestoreTask implements Runnable {
                     mBackupManagerService.getContext(),
                     BackupDestination.ADB_BACKUP);
             FullAdbRestoreEngine mEngine = new FullAdbRestoreEngine(mBackupManagerService,
-                    mOperationStorage, null, mObserver, null, null,
-                    true, 0 /*unused*/, true, eligibilityRules);
+                    mOperationStorage, mObserver, eligibilityRules);
             FullAdbRestoreEngineThread mEngineThread = new FullAdbRestoreEngineThread(mEngine,
                     tarInputStream);
             mEngineThread.run();
