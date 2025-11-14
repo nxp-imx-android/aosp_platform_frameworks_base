@@ -7781,10 +7781,10 @@
     <!-- @hide @SystemApi Allows an application to mark notifications as originating from
     another device and provide metadata for displaying the notification to the user.
     <p>Not for use by third-party applications.
-    @FlaggedApi(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS_API)-->
+    @FlaggedApi(android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS)-->
     <permission android:name="android.permission.POST_BRIDGED_NOTIFICATIONS"
         android:protectionLevel="signature|privileged"
-        android:featureFlag="android.app.bridged_notifications_api"/>
+        android:featureFlag="android.app.bridged_notifications"/>
 
     <!-- Allows access to keyguard secure storage.  Only allowed for system processes.
         @hide -->

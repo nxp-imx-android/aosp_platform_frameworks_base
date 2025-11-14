@@ -17,7 +17,7 @@
 package android.app;
 
 import static android.annotation.Dimension.DP;
-import static android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS_API;
+import static android.app.Flags.FLAG_BRIDGED_NOTIFICATIONS;
 import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
@@ -4817,7 +4817,7 @@ public class Notification implements Parcelable
      * metadata is used for displaying the notification as a bridged notification to the user.
      */
     @Nullable
-    @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS_API)
+    @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS)
     public BridgedNotificationMetadata getBridgedNotificationMetadata() {
         return mBridgedNotificationMetadata;
     }
@@ -5287,7 +5287,7 @@ public class Notification implements Parcelable
         @NonNull
         @SystemApi
         @RequiresPermission("android.Manifest.permission.POST_BRIDGED_NOTIFICATIONS")
-        @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS_API)
+        @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS)
         public Builder setBridgedNotificationMetadata(@Nullable BridgedNotificationMetadata data) {
             mN.mBridgedNotificationMetadata = data;
             return this;
@@ -16322,7 +16322,7 @@ public class Notification implements Parcelable
      *
      * Only preauthorized applications with bridging permissions can post bridged notifications.
      */
-    @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS_API)
+    @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS)
     public static final class BridgedNotificationMetadata implements Parcelable {
         public static final int BRIDGED_METADATA_TYPE_UNKNOWN = 0;
         public static final int BRIDGED_METADATA_TYPE_PHONE = 1;

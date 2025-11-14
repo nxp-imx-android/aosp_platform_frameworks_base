@@ -970,7 +970,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS_API)
+    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS)
     public void testBuilder_setBridgedNotificationMetadata() {
         Icon icon = Icon.createWithBitmap(
                 Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888));
@@ -995,7 +995,7 @@ public class NotificationTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS_API)
+    @EnableFlags(Flags.FLAG_BRIDGED_NOTIFICATIONS)
     public void testBuilder_dontSetBridgedMetadata() {
         Notification notification = new Notification.Builder(mContext, "whatever")
                 .build();
