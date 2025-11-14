@@ -398,6 +398,6 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
     companion object {
         private const val ENTER_YOUR_PATTERN = "Enter your pattern"
         private const val WRONG_PATTERN = "Wrong pattern"
-        private val CORRECT_PATTERN = FakeAuthenticationRepository.PATTERN
+        private val CORRECT_PATTERN = FakeAuthenticationRepository.DEFAULT_PATTERN
     }
 }

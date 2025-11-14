@@ -257,7 +257,7 @@ class BouncerInteractorTest : SysuiTestCase() {
                     AuthenticationPatternCoordinate(0, 0),
                     AuthenticationPatternCoordinate(0, 1),
                 )
-            assertThat(wrongPattern).isNotEqualTo(FakeAuthenticationRepository.PATTERN)
+            assertThat(wrongPattern).isNotEqualTo(FakeAuthenticationRepository.DEFAULT_PATTERN)
             assertThat(wrongPattern.size)
                 .isAtLeast(kosmos.fakeAuthenticationRepository.minPatternLength)
             assertThat(underTest.authenticate(wrongPattern)).isEqualTo(AuthenticationResult.FAILED)
@@ -266,7 +266,7 @@ class BouncerInteractorTest : SysuiTestCase() {
 
             // Too short input.
             val tooShortPattern =
-                FakeAuthenticationRepository.PATTERN.subList(
+                FakeAuthenticationRepository.DEFAULT_PATTERN.subList(
                     0,
                     kosmos.fakeAuthenticationRepository.minPatternLength - 1,
                 )
@@ -274,7 +274,7 @@ class BouncerInteractorTest : SysuiTestCase() {
                 .isEqualTo(AuthenticationResult.SKIPPED)
 
             // Correct input.
-            assertThat(underTest.authenticate(FakeAuthenticationRepository.PATTERN))
+            assertThat(underTest.authenticate(FakeAuthenticationRepository.DEFAULT_PATTERN))
                 .isEqualTo(AuthenticationResult.SUCCEEDED)
             assertThat(uiEventLoggerFake[1].eventId)
                 .isEqualTo(BouncerUiEvent.BOUNCER_PASSWORD_SUCCESS.id)
@@ -294,7 +294,7 @@ class BouncerInteractorTest : SysuiTestCase() {
             // Try the wrong PIN repeatedly, until lockout is triggered:
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT) { times ->
                 // Wrong PIN.
-                assertThat(underTest.authenticate(listOf(6, 7, 8, 9)))
+                assertThat(underTest.authenticate(listOf(6, 7, 8, 9, times)))
                     .isEqualTo(AuthenticationResult.FAILED)
                 if (times < FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT - 1) {
                     assertThat(lockoutStartedEvents).isEmpty()

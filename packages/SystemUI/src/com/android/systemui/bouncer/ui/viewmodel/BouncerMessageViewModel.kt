@@ -53,6 +53,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -381,6 +382,18 @@ constructor(
                             isFingerprintAllowed,
                             isSecureLockDeviceEnabled,
                             isDuplicate) ->
+                        authenticationInteractor.lockoutEndTime?.let {
+                            if (
+                                !lockscreenLargerTimeoutTimeUnits() ||
+                                    it < clock.elapsedRealtime().milliseconds
+                            ) {
+                                // Skip setting the message only when there is an active lockout,
+                                // since the countdown job should be handling it.
+                                return@let
+                            }
+                            startLockoutCountdown()
+                            return@collectLatest
+                        }
                         message.emit(
                             BouncerMessageStrings.incorrectSecurityInput(
                                     authMethod,
@@ -511,7 +524,7 @@ constructor(
     }
 
     companion object {
-        private const val MESSAGE_DURATION = 2000L
+        private val MESSAGE_DURATION = 2.seconds
     }
 }
 
