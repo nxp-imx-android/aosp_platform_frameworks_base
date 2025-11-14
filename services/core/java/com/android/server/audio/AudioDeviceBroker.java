@@ -56,6 +56,7 @@ import android.content.AttributionSource;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceInfo;
@@ -499,8 +500,10 @@ public class AudioDeviceBroker {
         if (mScoManagedByAudio) {
             if (isBtScoRequested && (!wasBtScoRequested || !isBluetoothScoActive()
                     || !mBtHelper.isBluetoothScoRequestedInternally())) {
+                boolean scoStarted = false;
                 if (shouldStartScoForAttributionSource(btScoRequesterAS)) {
-                    if (!mBtHelper.startBluetoothSco(eventSource)) {
+                    scoStarted = mBtHelper.startBluetoothSco(eventSource);
+                    if (!scoStarted) {
                         Log.w(TAG, "setCommunicationRouteForClient: "
                                 + "failure to start BT SCO for uid: " + attributionSource.getUid());
                         // clean up or restore previous client selection
@@ -512,11 +515,17 @@ public class AudioDeviceBroker {
                         }
                         postBroadcastScoConnectionState(AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                     }
+                } else {
+                    scoStarted = true;
+                }
+                if (scoStarted) {
+                    setBluetoothScoOn(true, "setCommunicationRouteForClient");
                 }
             } else if (!isBtScoRequested && wasBtScoRequested) {
                 if (shouldStartScoForAttributionSource(previousBtScoRequesterAS)) {
                     mBtHelper.stopBluetoothSco(eventSource);
                 }
+                setBluetoothScoOn(false, "setCommunicationRouteForClient");
             }
         } else {
             if (isBtScoRequested && (!wasBtScoRequested || !isBluetoothScoActive()
@@ -1145,13 +1154,19 @@ public class AudioDeviceBroker {
     /*package*/ void setBluetoothScoOn(boolean on, String eventSource) {
         synchronized (mBluetoothAudioStateLock) {
             AttributionSource btScoRequesterAS = bluetoothScoRequestOwnerAttributionSource();
-            if (!mScoManagedByAudio) {
-                Log.i(TAG, "setBluetoothScoOn: " + on + ", mBluetoothScoOn: "
-                        + mBluetoothScoOn + ", btScoRequesterUId: "
-                        + safeUidFromAttributionSource(btScoRequesterAS)
-                        + ", from: " + eventSource);
+            Log.i(TAG, "setBluetoothScoOn: " + on + ", mBluetoothScoOn: "
+                    + mBluetoothScoOn + ", btScoRequesterUId: "
+                    + safeUidFromAttributionSource(btScoRequesterAS)
+                    + ", from: " + eventSource);
+            // TODO: b/460593503 - Temporary workaround for certain AHAL implementations to still
+            // receive KVP under AMSCO
+            if (!mScoManagedByAudio
+                    || getContext().getPackageManager().hasSystemFeature(
+                            PackageManager.FEATURE_PC)) {
                 mBluetoothScoOn = on;
                 updateAudioHalBluetoothState();
+            }
+            if (!mScoManagedByAudio) {
                 postUpdateCommunicationRouteClient(btScoRequesterAS, eventSource);
             }
             if (on) {
@@ -2597,6 +2612,7 @@ public class AudioDeviceBroker {
                     if (shouldStartScoForAttributionSource(previousBtScoRequesterAS)) {
                         mBtHelper.stopBluetoothSco(eventSource);
                     }
+                    setBluetoothScoOn(false, eventSource);
                 } else {
                     mBtHelper.stopBluetoothSco(eventSource);
                 }
