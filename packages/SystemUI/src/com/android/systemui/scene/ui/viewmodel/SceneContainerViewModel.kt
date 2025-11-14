@@ -408,6 +408,7 @@ constructor(
         val interactionTypeOrNull =
             when (content) {
                 Overlays.Bouncer -> Classifier.BOUNCER_SWIPE
+                Scenes.Communal -> Classifier.GLANCEABLE_HUB_SWIPE
                 Scenes.Gone -> Classifier.UNLOCK
                 Scenes.Shade -> Classifier.SHADE_DRAG
                 Overlays.NotificationsShade -> Classifier.NOTIFICATION_DRAG_DOWN
