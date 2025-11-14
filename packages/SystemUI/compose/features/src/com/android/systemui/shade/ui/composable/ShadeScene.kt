@@ -257,7 +257,7 @@ private fun ContentScope.SingleShade(
 
     LaunchedEffectWithLifecycle(Unit) { viewModel.detectShadeModeChanges() }
 
-    val shouldPunchHoleBehindScrim =
+    val onlyPunchHolesInThisScene =
         layoutState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
             layoutState.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Shade)
     val mediaInRow = viewModel.showMediaInRow
@@ -269,9 +269,10 @@ private fun ContentScope.SingleShade(
 
     Box(
         modifier =
-            modifier.thenIf(shouldPunchHoleBehindScrim) {
+            modifier.thenIf(onlyPunchHolesInThisScene) {
                 // Render the scene to an offscreen buffer so that BlendMode.DstOut only clears this
-                // scene (and not the one under it) during a scene transition.
+                // scene (and not the one under it). It is used to saves the LS content from being
+                // cut out during the LS -> Shade transition.
                 Modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
             }
     ) {
@@ -366,7 +367,7 @@ private fun ContentScope.SingleShade(
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
-                    shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
+                    shouldPunchHoleBehindScrim = true,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = navBarHeight,
