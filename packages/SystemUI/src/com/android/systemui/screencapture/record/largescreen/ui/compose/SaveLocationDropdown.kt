@@ -100,7 +100,7 @@ fun SaveLocationDropdown(
                     ProvideTextStyle(value = MaterialTheme.typography.labelMedium) {
                         Text(text = stringResource(R.string.screenshot_save_to))
                         Text(
-                            text = viewModel.currentSaveLocation,
+                            text = viewModel.currentSaveLocationString,
                             maxLines = 1,
                             modifier = Modifier.basicMarquee(),
                         )

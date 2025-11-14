@@ -20,6 +20,7 @@ import android.app.ActivityManager
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
+import android.net.Uri
 import android.view.WindowManager
 import android.view.WindowMetrics
 import android.view.windowManager
@@ -41,6 +42,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiPar
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
 import com.android.systemui.screencapture.common.shared.model.largeScreenCaptureUiParameters
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.largeScreenCaptureParametersInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
@@ -618,5 +620,52 @@ class PreCaptureViewModelTest : SysuiTestCase() {
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
 
             assertThat(viewModel.isShowingUi).isTrue()
+        }
+
+    @Test
+    fun currentSaveLocationUri_whenCustomLocationNotSet_isNull() =
+        kosmos.runTest {
+            setupViewModel()
+            val toolbarViewModel = viewModel.toolbarViewModel
+
+            assertThat(toolbarViewModel.currentSaveLocationUri).isNull()
+        }
+
+    @Test
+    fun currentSaveLocationUri_whenCustomLocationNotSetAndMadeActive_remainsNull() =
+        kosmos.runTest {
+            setupViewModel()
+            val toolbarViewModel = viewModel.toolbarViewModel
+            toolbarViewModel.setCustomSaveLocationActiveStatus(true)
+
+            assertThat(toolbarViewModel.currentSaveLocationUri).isNull()
+        }
+
+    @Test
+    fun currentSaveLocationUri_whenCustomLocationSetAndActive_isNotNull() =
+        kosmos.runTest {
+            setupViewModel()
+            val toolbarViewModel = viewModel.toolbarViewModel
+            val customUri =
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+
+            largeScreenCaptureParametersInteractor.setCustomSaveLocation(customUri)
+            toolbarViewModel.setCustomSaveLocationActiveStatus(true)
+
+            assertThat(toolbarViewModel.currentSaveLocationUri).isEqualTo(customUri)
+        }
+
+    @Test
+    fun currentSaveLocationUri_whenCustomLocationSetButInactive_isNull() =
+        kosmos.runTest {
+            setupViewModel()
+            val toolbarViewModel = viewModel.toolbarViewModel
+            val customUri =
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+
+            largeScreenCaptureParametersInteractor.setCustomSaveLocation(customUri)
+            toolbarViewModel.setCustomSaveLocationActiveStatus(false)
+
+            assertThat(toolbarViewModel.currentSaveLocationUri).isNull()
         }
 }

@@ -518,6 +518,7 @@ internal constructor(
                 screenshot.bitmap,
                 screenshot.userHandle,
                 display.displayId,
+                screenshot.customSaveUri,
             )
         future.addListener(
             {

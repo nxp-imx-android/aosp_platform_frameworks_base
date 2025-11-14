@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.record.largescreen.domain.interactor
 import android.content.pm.UserInfo
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.net.Uri
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -63,7 +64,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     fun requestFullscreenScreenshot_callsScreenshotHelper_withCorrectRequest() {
         kosmos.runTest {
             val displayId = 3
-            interactor.requestFullscreenScreenshot(displayId)
+            interactor.requestFullscreenScreenshot(displayId, null)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(mockScreenshotHelper, times(1))
@@ -78,11 +79,28 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    fun requestFullscreenScreenshot_callsScreenshotHelper_usesCustomUriInRequest() {
+        kosmos.runTest {
+            val displayId = 3
+            val customUri =
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+            interactor.requestFullscreenScreenshot(displayId, customUri)
+
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(mockScreenshotHelper, times(1))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.customSaveUri).isEqualTo(customUri)
+        }
+    }
+
+    @Test
     fun requestFullscreenScreenshot_logsEvent() =
         kosmos.runTest {
             val displayId = 3
 
-            interactor.requestFullscreenScreenshot(displayId)
+            interactor.requestFullscreenScreenshot(displayId, null)
 
             assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
             assertThat(uiEventLoggerFake.eventId(0))
@@ -105,7 +123,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             fakeUserRepository.setUserInfos(listOf(mainUser, secondaryUser))
             fakeUserRepository.setSelectedUserInfo(secondaryUser)
 
-            interactor.requestPartialScreenshot(bounds, displayId)
+            interactor.requestPartialScreenshot(bounds, displayId, null)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(mockImageCapture, times(1)).captureDisplay(any(), eq(bounds))
@@ -124,6 +142,27 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    fun requestPartialScreenshot_callsScreenshotHelper_usesCustomUriInRequest() {
+        kosmos.runTest {
+            val bounds = Rect(0, 0, 100, 100)
+            val displayId = 3
+            val customUri =
+                Uri.parse("content://com.android.externalstorage.documents/tree/primary%3ATest")
+            whenever(mockImageCapture.captureDisplay(eq(displayId), eq(bounds)))
+                .thenReturn(mockBitmap)
+
+            interactor.requestPartialScreenshot(bounds, displayId, customUri)
+
+            val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
+            verify(mockScreenshotHelper, times(1))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
+            val capturedRequest = screenshotRequestCaptor.lastValue
+            assertThat(capturedRequest.customSaveUri).isEqualTo(customUri)
+        }
+    }
+
+    @Test
     fun requestPartialScreenshot_logsEvent() =
         kosmos.runTest {
             val bounds = Rect(0, 0, 100, 100)
@@ -131,7 +170,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             whenever(mockImageCapture.captureDisplay(eq(displayId), eq(bounds)))
                 .thenReturn(mockBitmap)
 
-            interactor.requestPartialScreenshot(bounds, displayId)
+            interactor.requestPartialScreenshot(bounds, displayId, null)
 
             assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
             assertThat(uiEventLoggerFake.eventId(0))
