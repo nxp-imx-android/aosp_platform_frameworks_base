@@ -34236,6 +34236,7 @@ package android.os {
     method public boolean getBoolean(String);
     method public boolean getBoolean(String, boolean);
     method @Nullable public boolean[] getBooleanArray(@Nullable String);
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") @Nullable public byte[] getByteArray(@Nullable String);
     method public double getDouble(String);
     method public double getDouble(String, double);
     method @Nullable public double[] getDoubleArray(@Nullable String);
@@ -34253,6 +34254,7 @@ package android.os {
     method public void putAll(android.os.PersistableBundle);
     method public void putBoolean(@Nullable String, boolean);
     method public void putBooleanArray(@Nullable String, @Nullable boolean[]);
+    method @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public void putByteArray(@Nullable String, @Nullable byte[]);
     method public void putDouble(@Nullable String, double);
     method public void putDoubleArray(@Nullable String, @Nullable double[]);
     method public void putInt(@Nullable String, int);
@@ -34530,7 +34532,6 @@ package android.os {
     method @Nullable public android.os.Bundle getBundle(@Nullable String);
     method public byte getByte(String);
     method public Byte getByte(String, byte);
-    method @Nullable public byte[] getByteArray(@Nullable String);
     method public char getChar(String);
     method public char getChar(String, char);
     method @Nullable public char[] getCharArray(@Nullable String);
@@ -34564,7 +34565,6 @@ package android.os {
     method public void putBinder(@Nullable String, @Nullable android.os.IBinder);
     method public void putBundle(@Nullable String, @Nullable android.os.Bundle);
     method public void putByte(@Nullable String, byte);
-    method public void putByteArray(@Nullable String, @Nullable byte[]);
     method public void putChar(@Nullable String, char);
     method public void putCharArray(@Nullable String, @Nullable char[]);
     method public void putCharSequence(@Nullable String, @Nullable CharSequence);
