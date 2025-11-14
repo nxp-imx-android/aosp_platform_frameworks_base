@@ -34,6 +34,8 @@ import android.content.pm.ApplicationInfo;
 import android.os.Binder;
 import android.util.SparseArray;
 
+import com.android.internal.protolog.ProtoLog;
+import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 
@@ -142,6 +144,9 @@ class AppCompatDisplayCompatModePolicy {
         }
 
         if (shouldRestartOnDisplayMove()) {
+            ProtoLog.v(WmProtoLogGroups.WM_DEBUG_APP_COMPAT,
+                    "Automatically restarting app process on display move: %s",
+                    mActivityRecord.packageName);
             // At this point, a transition for moving the app between displays should be running, so
             // the restarting logic below will be queued as a new transition, which means the
             // configuration change for the display move has been processed when the process is
@@ -315,6 +320,8 @@ class AppCompatDisplayCompatModePolicy {
         }
 
         private void moveToState(SelfKillState state) {
+            ProtoLog.v(WmProtoLogGroups.WM_DEBUG_APP_COMPAT,
+                    "Self-kill state transitioning from %s to %s.", mSelfKillState, state);
             mSelfKillState = state;
         }
 
@@ -325,6 +332,9 @@ class AppCompatDisplayCompatModePolicy {
                 if (displayMoveTransition != null) {
                     final Runnable timeoutCallback = () -> {
                         synchronized (mActivityRecord.mWmService.mGlobalLock) {
+                            ProtoLog.e(WmProtoLogGroups.WM_DEBUG_APP_COMPAT,
+                                    "Timeout waiting for display-move transition (%d) to finish.",
+                                    displayMoveTransition.getSyncId());
                             mDisplayMoveTransitions.remove(displayMoveTransition.getSyncId());
                             if (mDisplayMoveTransitions.size() == 0) {
                                 mSelfKillState = SelfKillState.UNDEFINED;
@@ -405,6 +415,8 @@ class AppCompatDisplayCompatModePolicy {
                 // already be in background at this point, and relaunching itself can be blocked by
                 // BAL.
                 mActivityRecord.mAtmService.mH.post(() -> {
+                    ProtoLog.v(WmProtoLogGroups.WM_DEBUG_APP_COMPAT,
+                            "Relaunching Self-killed app: %s", mActivityRecord.packageName);
                     final int callingPid = Binder.getCallingPid();
                     final int callingUid = Binder.getCallingUid();
                     final Intent restartIntent = new Intent(mActivityRecord.intent);
