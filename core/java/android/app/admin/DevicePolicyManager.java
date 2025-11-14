@@ -18960,6 +18960,75 @@ public class DevicePolicyManager {
     }
 
     /**
+     * Returns the effective value of the given device-wide policy.
+     *
+     * <p> Can only applied on a {@link #RESOURCE_DEVICE_WIDE} policy.
+     *
+     * @param id Which policy to retrieve.
+     * @param <T> The type of the policy
+     * @return The effective value of the policy.
+     * @throws IllegalArgumentException if the policy is not a device-wide resource.
+     * @throws SecurityException If the caller does not have sufficient permissions to get the
+     *      specified policy. Check the documentation of individual identifiers for more details.
+     *      The QUERY_ADMIN_POLICY permission can in most cases be used to replace the per-policy
+     *      permission, but the cros-user permission is still checked.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    @Nullable
+    public <T> T getResolvedDeviceWidePolicy(@NonNull PolicyIdentifier<T> id) {
+        throwIfParentInstance("getResolvedDeviceWidePolicy");
+        if (mService == null) {
+            return null;
+        }
+
+        try {
+            PolicyValueTransport value =
+                    mService.getResolvedDeviceWidePolicy(mContext.getPackageName(), id.getId());
+            return policyValueFromTransport(id, value);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the effective value of the given per-user policy.
+     *
+     * <p> Can only applied on a {@link #RESOURCE_PER_USER} policy. Returns the effective policy
+     * value of the context user.
+     *
+     * @param id Which policy to retrieve.
+     * @param <T> The type of the policy
+     * @return The effective value of the policy.
+     * @throws IllegalArgumentException if the policy is not a per-user resource.
+     * throws SecurityException If the caller does not have sufficient permissions to get the
+     *      specified policy. Check the documentation of individual identifiers for more details.
+     *      The QUERY_ADMIN_POLICY permission can in most cases be used to replace the per-policy
+     *      permission, but the cros-user permission is still checked when querying a different
+     *      user.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    @UserHandleAware
+    @Nullable
+    public <T> T getResolvedPerUserPolicy(@NonNull PolicyIdentifier<T> id) {
+        throwIfParentInstance("getResolvedPerUserPolicy");
+        if (mService == null) {
+            return null;
+        }
+
+        try {
+            PolicyValueTransport value = mService.getResolvedPerUserPolicy(
+                    mContext.getPackageName(),
+                    myUserId(),
+                    id.getId()
+            );
+
+            return policyValueFromTransport(id, value);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Template free version of setPolicy to clear policies. The other type specific versions
      * defined below don't allow specifying null as a value.
      *
@@ -19017,6 +19086,22 @@ public class DevicePolicyManager {
             @PolicyScope int scope) {
         // TODO(b/434920631): Remove this method and use {@link #getPolicy} in tests directly.
         var result = getPolicy(new PolicyIdentifier<Integer>(key), scope);
+        return result == null ? -1 : result;
+    }
+
+    /**
+     * Template free version of getPolicy for integers.
+     * Returns '-1' if the policy is not set.
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public int getIntegerResolvedPerUserPolicy(
+            @NonNull String key) {
+        // TODO(b/434920631): Remove this method and use {@link #getResolvedPerUserPolicy} in tests
+        //  directly.
+        var result = getResolvedPerUserPolicy(new PolicyIdentifier<Integer>(key));
         return result == null ? -1 : result;
     }
 }

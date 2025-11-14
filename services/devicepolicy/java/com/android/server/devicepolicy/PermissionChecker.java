@@ -645,6 +645,7 @@ public class PermissionChecker implements IPermissionChecker {
      * @param permission The name of the permission being checked.
      * @param caller     The identity of the calling application.
      */
+    @Override
     public boolean hasPermission(@NonNull String permission, @NonNull CallerIdentity caller) {
         if (permission == null) {
             return true;

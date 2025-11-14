@@ -240,6 +240,7 @@ import static android.net.ConnectivityManager.PROFILE_NETWORK_PREFERENCE_ENTERPR
 import static android.net.ConnectivityManager.PROFILE_NETWORK_PREFERENCE_ENTERPRISE_BLOCKING;
 import static android.net.ConnectivityManager.PROFILE_NETWORK_PREFERENCE_ENTERPRISE_NO_FALLBACK;
 import static android.net.NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK;
+import static android.os.UserHandle.USER_ALL;
 import static android.provider.Settings.Global.PRIVATE_DNS_SPECIFIER;
 import static android.provider.Settings.Secure.MANAGED_PROVISIONING_DPC_DOWNLOADED;
 import static android.provider.Settings.Secure.USER_SETUP_COMPLETE;
@@ -25645,6 +25646,32 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     throw new IllegalArgumentException("Invalid scope " + scope);
             }
         }
+
+        @Override
+        @Nullable
+        public <T> T getResolvedDeviceWidePolicy(@NonNull PolicyDefinition<T> key) {
+            if (VERBOSE_LOG) {
+                Slogf.d(LOG_TAG, "Retrieving effective policy %s from policy engine", key);
+            }
+
+            // TODO(b/455504405): Add real support for device-wide policies.
+            return mDevicePolicyEngine.getResolvedPolicy(key, USER_ALL);
+        }
+
+        @Override
+        @Nullable
+        public <T> T getResolvedPerUserPolicy(
+                @UserIdInt int userId, @NonNull PolicyDefinition<T> key) {
+            if (VERBOSE_LOG) {
+                Slogf.d(
+                        LOG_TAG,
+                        "Retrieving effective policy %s from policy engine for user %d",
+                        key,
+                        userId);
+            }
+
+            return mDevicePolicyEngine.getResolvedPolicy(key, userId);
+        }
     }
 
     @Override
@@ -25706,6 +25733,67 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return Binder.withCleanCallingIdentity(() -> {
             handler.checkPermissions(caller, scope);
             return handler.getPolicyUnchecked(caller, scope);
+        });
+    }
+
+    @Override
+    public PolicyValueTransport getResolvedDeviceWidePolicy(String callerPackageName, String id) {
+        if (!Flags.policyStreamlining()) {
+            throw new UnsupportedOperationException("Policy streamlining is not enabled");
+        }
+
+        if (VERBOSE_LOG) {
+            Slogf.d(
+                    LOG_TAG,
+                    "Getting effective device-wide policy %s through generic API",
+                    id
+            );
+        }
+
+        maybeInitializePolicyHandlers();
+        PolicyHandler<?> handler = mPolicyHandlers.get(id);
+        if (handler == null) {
+            throw new IllegalArgumentException("Unknown policy " + id);
+        }
+
+        var caller = getCallerIdentity(callerPackageName);
+
+        return Binder.withCleanCallingIdentity(() -> {
+            handler.checkReadResolvedDeviceWidePermissions(caller);
+            return handler.getResolvedDeviceWidePolicyUnchecked();
+        });
+    }
+
+    @Override
+    public PolicyValueTransport getResolvedPerUserPolicy(
+            String callerPackageName,
+            int userId,
+            String id
+    ) {
+        if (!Flags.policyStreamlining()) {
+            throw new UnsupportedOperationException("Policy streamlining is not enabled");
+        }
+
+        if (VERBOSE_LOG) {
+            Slogf.d(
+                    LOG_TAG,
+                    "Getting effective per-user policy %s for user %d through generic API",
+                    id,
+                    userId
+            );
+        }
+
+        maybeInitializePolicyHandlers();
+        PolicyHandler<?> handler = mPolicyHandlers.get(id);
+        if (handler == null) {
+            throw new IllegalArgumentException("Unknown policy " + id);
+        }
+
+        var caller = getCallerIdentity(callerPackageName);
+
+        return Binder.withCleanCallingIdentity(() -> {
+            handler.checkReadResolvedPerUserPermissions(caller, userId);
+            return handler.getResolvedPerUserPolicyUnchecked(userId);
         });
     }
 }
