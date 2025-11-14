@@ -68,6 +68,7 @@ import com.android.systemui.res.R
 @Composable
 fun ShortcutPickerDialogContent(
     infoList: List<AccessibilityTargetModel>,
+    showEditButton: Boolean,
     onEditClick: () -> Unit,
     onDoneClick: () -> Unit,
     onTargetClick: (AccessibilityTargetModel) -> Unit,
@@ -91,14 +92,19 @@ fun ShortcutPickerDialogContent(
                     }
                 }
             },
-            negativeButton = {
-                PlatformOutlinedButton(
-                    onClick = onEditClick,
-                    modifier = Modifier.testTag("edit_button"),
-                ) {
-                    Text(stringResource(R.string.accessibility_shortcutchooser_edit_button))
-                }
-            },
+            negativeButton =
+                if (showEditButton) {
+                    {
+                        PlatformOutlinedButton(
+                            onClick = onEditClick,
+                            modifier = Modifier.testTag("edit_button"),
+                        ) {
+                            Text(stringResource(R.string.accessibility_shortcutchooser_edit_button))
+                        }
+                    }
+                } else {
+                    null
+                },
             positiveButton = {
                 PlatformOutlinedButton(
                     onClick = onDoneClick,

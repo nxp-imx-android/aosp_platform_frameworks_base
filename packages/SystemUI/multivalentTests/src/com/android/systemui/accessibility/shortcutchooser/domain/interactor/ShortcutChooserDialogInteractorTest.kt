@@ -17,6 +17,7 @@
 package com.android.systemui.accessibility.shortcutchooser.domain.interactor
 
 import android.content.Intent
+import android.os.UserHandle
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -26,19 +27,24 @@ import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutT
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.broadcast.mockBroadcastSender
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.testKosmosNew
+import com.android.systemui.user.data.repository.userRepository
+import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 @SmallTest
@@ -48,10 +54,18 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
     private val broadcastDispatcher = kosmos.broadcastDispatcher
 
     // mocks
-    private val mockRepository = mock(AccessibilityShortcutsRepository::class.java)
+    private val mockRepository = mock<AccessibilityShortcutsRepository>()
 
     private val Kosmos.underTest by
-        Kosmos.Fixture { ShortcutChooserDialogInteractor(mockRepository, broadcastDispatcher) }
+        Kosmos.Fixture {
+            ShortcutChooserDialogInteractor(
+                mockRepository,
+                broadcastDispatcher,
+                mockBroadcastSender,
+                userRepository,
+                fakeHeadlessSystemUserMode,
+            )
+        }
 
     @Test
     fun dialogRequest_topRowKeyType_onDefaultDisplay_flowIsValid() =
@@ -161,6 +175,32 @@ class ShortcutChooserDialogInteractorTest : SysuiTestCase() {
 
             verify(mockRepository, never())
                 .performAccessibilityShortcut(anyInt(), anyInt(), anyString())
+        }
+
+    @Test
+    fun sendBroadcastToLaunchQuickAccessDialog_sendBroadcast() =
+        kosmos.runTest {
+            val intentArgumentCaptor = argumentCaptor<Intent>()
+            val userHandleArgumentCaptor = argumentCaptor<UserHandle>()
+            underTest.sendBroadcastToLaunchQuickAccessDialog(DEFAULT_DISPLAY)
+
+            verify(mockBroadcastSender, times(1))
+                .sendBroadcastAsUser(
+                    intentArgumentCaptor.capture(),
+                    userHandleArgumentCaptor.capture(),
+                )
+            assertThat(intentArgumentCaptor.firstValue.`package`)
+                .isEqualTo(ShortcutChooserDialogInteractor.SYSTEMUI_PACKAGE)
+            assertThat(intentArgumentCaptor.firstValue.action)
+                .isEqualTo(ShortcutChooserDialogInteractor.QUICK_ACCESS_DIALOG_ACTION)
+            assertThat(
+                    intentArgumentCaptor.firstValue.getIntExtra(
+                        ShortcutChooserDialogConstants.DISPLAY_ID,
+                        INVALID_DISPLAY,
+                    )
+                )
+                .isEqualTo(DEFAULT_DISPLAY)
+            assertThat(userHandleArgumentCaptor.firstValue).isEqualTo(UserHandle.CURRENT)
         }
 
     private fun sendIntentBroadcast(@UserShortcutType shortcutType: Int, displayId: Int) {

@@ -28,9 +28,13 @@ import com.android.systemui.accessibility.data.repository.AccessibilityShortcuts
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.accessibility.shortcutchooser.shared.model.DialogRequestModel
 import com.android.systemui.broadcast.BroadcastDispatcher
+import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class ShortcutChooserDialogInteractor
@@ -38,15 +42,20 @@ class ShortcutChooserDialogInteractor
 constructor(
     private val repository: AccessibilityShortcutsRepository,
     private val broadcastDispatcher: BroadcastDispatcher,
+    private val broadcastSender: BroadcastSender,
+    private val userRepository: UserRepository,
+    private val hsum: HeadlessSystemUserMode,
 ) {
     val dialogRequest: Flow<DialogRequestModel?> =
-        broadcastDispatcher.broadcastFlow(
-            filter = IntentFilter().apply { addAction(ACTION) },
-            user = UserHandle.SYSTEM,
-            flags = Context.RECEIVER_NOT_EXPORTED,
-        ) { intent, _ ->
-            processRequest(intent)
-        }
+        broadcastDispatcher
+            .broadcastFlow(
+                filter = IntentFilter().apply { addAction(ACTION) },
+                user = UserHandle.SYSTEM,
+                flags = Context.RECEIVER_NOT_EXPORTED,
+            ) { intent, _ ->
+                intent
+            }
+            .map { processRequest(it) }
 
     fun getAllAccessibilityTargetsInfo(
         @UserShortcutType shortcutType: Int
@@ -74,7 +83,22 @@ constructor(
         repository.performAccessibilityShortcut(displayId, shortcutType, targetName)
     }
 
-    private fun processRequest(intent: Intent): DialogRequestModel? {
+    fun sendBroadcastToLaunchQuickAccessDialog(displayId: Int) {
+        broadcastSender.sendBroadcastAsUser(
+            Intent().apply {
+                setPackage(SYSTEMUI_PACKAGE)
+                setAction(QUICK_ACCESS_DIALOG_ACTION)
+                putExtra(ShortcutChooserDialogConstants.DISPLAY_ID, displayId)
+            },
+            UserHandle.CURRENT,
+        )
+    }
+
+    /* True if on login screen(HSU). */
+    private suspend fun isHeadlessSystemUser(): Boolean =
+        hsum.isHeadlessSystemUser(userRepository.getSelectedUserInfo().id)
+
+    private suspend fun processRequest(intent: Intent): DialogRequestModel? {
         val shortcutType = intent.getIntExtra(ShortcutChooserDialogConstants.SHORTCUT_TYPE, 0)
         val displayId =
             intent.getIntExtra(ShortcutChooserDialogConstants.DISPLAY_ID, INVALID_DISPLAY)
@@ -82,7 +106,7 @@ constructor(
         return if (shortcutType == UserShortcutType.DEFAULT || displayId == INVALID_DISPLAY) {
             null
         } else {
-            DialogRequestModel(shortcutType, displayId)
+            DialogRequestModel(shortcutType, displayId, isHeadlessSystemUser())
         }
     }
 
@@ -90,5 +114,9 @@ constructor(
         @VisibleForTesting
         const val ACTION =
             "com.android.systemui.action.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG"
+        @VisibleForTesting
+        const val QUICK_ACCESS_DIALOG_ACTION =
+            "com.android.systemui.action.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
+        @VisibleForTesting const val SYSTEMUI_PACKAGE = "com.android.systemui"
     }
 }
