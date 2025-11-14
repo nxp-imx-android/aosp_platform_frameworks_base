@@ -19,6 +19,8 @@ package com.android.server.display;
 import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK;
 import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DESKTOP;
 import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_MIRROR;
+import static android.hardware.display.DisplayManager.HDR_PREFERENCE_HDR_ALLOWED;
+import static android.hardware.display.DisplayManager.HDR_PREFERENCE_SDR_ONLY;
 
 import static com.android.server.display.PersistentDataStoreTestUtils.createTestDisplayDevice;
 import static com.android.server.display.PersistentDataStoreTestUtils.stateBuilder;
@@ -212,6 +214,176 @@ public class PersistentDataStoreTest {
         mDataStore.saveIfNeeded();
         mTestLooper.dispatchAll();
         assertFalse("A save should NOT be triggered if the data was not dirty",
+                mInjector.wasWriteSuccessful());
+    }
+
+    @Test
+    public void getHdrPreference_withStoredValues_returnsExpectedValues() {
+        final DisplayDevice testDisplayDevice =
+                createTestDisplayDevice(mDisplayAdapter, "test:123");
+        final DisplayDevice testDisplayDevice2 =
+                createTestDisplayDevice(mDisplayAdapter, "test:456");
+
+        String xml =
+                stateBuilder()
+                        .display(
+                                "test:123",
+                                display ->
+                                        display.withHdrPreference(
+                                                HDR_PREFERENCE_HDR_ALLOWED))
+                        .display(
+                                "test:456",
+                                display ->
+                                        display.withHdrPreference(
+                                                HDR_PREFERENCE_SDR_ONLY))
+                        .build();
+
+        InputStream is = new ByteArrayInputStream(xml.getBytes(UTF_8));
+        mInjector.setReadStream(is);
+        mDataStore.loadIfNeeded();
+
+        int hdrPreference = mDataStore.getUserPreferredHdrMode(testDisplayDevice);
+        int hdrPreference2 = mDataStore.getUserPreferredHdrMode(testDisplayDevice2);
+        assertEquals(HDR_PREFERENCE_HDR_ALLOWED, hdrPreference);
+        assertEquals(HDR_PREFERENCE_SDR_ONLY, hdrPreference2);
+    }
+
+    @Test
+    public void getHdrPreference_whenDisplayHasUnstableId_returnsDefault() {
+        final DisplayDevice unstableDisplayDevice =
+                createTestDisplayDevice(
+                        mDisplayAdapter, "not:found", /* hasStableUniqueId= */ false);
+
+        mDataStore.loadIfNeeded();
+
+        int preference = mDataStore.getUserPreferredHdrMode(unstableDisplayDevice);
+        assertEquals(
+                "Should return default for unstable display IDs",
+                HDR_PREFERENCE_HDR_ALLOWED,
+                preference);
+    }
+
+    @Test
+    public void getHdrPreference_whenDisplayStateNotFound_returnsDefault() {
+        final DisplayDevice unknownDisplayDevice =
+                createTestDisplayDevice(mDisplayAdapter, "test:0");
+
+        String emptyContents = stateBuilder().build();
+        mInjector.setReadStream(new ByteArrayInputStream(emptyContents.getBytes()));
+        mDataStore.loadIfNeeded();
+
+        int preference = mDataStore.getUserPreferredHdrMode(unknownDisplayDevice);
+        assertEquals(
+                "Should return default for a display with no saved state",
+                HDR_PREFERENCE_HDR_ALLOWED,
+                preference);
+    }
+
+    @Test
+    public void getHdrPreference_newDisplay_setsPreferenceAndMarksDirty() {
+        final DisplayDevice testDisplayDevice =
+                createTestDisplayDevice(mDisplayAdapter, "test:555");
+        mDataStore.loadIfNeeded();
+
+        boolean result =
+                mDataStore.setUserPreferredHdrMode(
+                        testDisplayDevice, HDR_PREFERENCE_SDR_ONLY);
+        assertTrue("setHdrPreference should return true for a new value", result);
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        mInjector.setWriteStream(baos);
+        mDataStore.saveIfNeeded();
+        mTestLooper.dispatchAll();
+        assertTrue(
+                "A save should have been triggered because the data was dirty",
+                mInjector.wasWriteSuccessful());
+
+        TestInjector newInjector = new TestInjector();
+        PersistentDataStore newDataStore =
+                new PersistentDataStore(newInjector, new Handler(mTestLooper.getLooper()));
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        newInjector.setReadStream(bais);
+        newDataStore.loadIfNeeded();
+
+        assertEquals(
+                "The new preference should be restored after a save/load cycle",
+                HDR_PREFERENCE_SDR_ONLY,
+                newDataStore.getUserPreferredHdrMode(testDisplayDevice));
+    }
+
+    @Test
+    public void setHdrPreference_updateExisting_setsPreferenceAndMarksDirty() {
+        final DisplayDevice testDisplayDevice =
+                createTestDisplayDevice(mDisplayAdapter, "test:321");
+        String xml =
+                stateBuilder()
+                        .display(
+                                "test:321",
+                                display ->
+                                        display.withHdrPreference(
+                                                HDR_PREFERENCE_HDR_ALLOWED))
+                        .build();
+        mInjector.setReadStream(new ByteArrayInputStream(xml.getBytes(UTF_8)));
+        mDataStore.loadIfNeeded();
+        assertEquals(
+                HDR_PREFERENCE_HDR_ALLOWED,
+                mDataStore.getUserPreferredHdrMode(testDisplayDevice));
+
+        boolean result =
+                mDataStore.setUserPreferredHdrMode(
+                        testDisplayDevice, HDR_PREFERENCE_SDR_ONLY);
+        assertTrue("setHdrPreference should return true when updating the value", result);
+        assertEquals(
+                "The preference should be updated from HDR_ALLOWED to SDR_ONLY",
+                HDR_PREFERENCE_SDR_ONLY,
+                mDataStore.getUserPreferredHdrMode(testDisplayDevice));
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        mInjector.setWriteStream(baos);
+        mDataStore.saveIfNeeded();
+        mTestLooper.dispatchAll();
+        assertTrue(mInjector.wasWriteSuccessful());
+
+        TestInjector newInjector = new TestInjector();
+        PersistentDataStore newDataStore =
+                new PersistentDataStore(newInjector, new Handler(mTestLooper.getLooper()));
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        newInjector.setReadStream(bais);
+        newDataStore.loadIfNeeded();
+
+        assertEquals(
+                "The updated preference should be SDR_ONLY after a save/load cycle",
+                HDR_PREFERENCE_SDR_ONLY,
+                newDataStore.getUserPreferredHdrMode(testDisplayDevice));
+    }
+
+    @Test
+    public void setHdrPreference_sameValue_returnsFalseAndNotDirty() {
+        final DisplayDevice testDisplayDevice =
+                createTestDisplayDevice(mDisplayAdapter, "test:123");
+        String xml =
+                stateBuilder()
+                        .display(
+                                "test:123",
+                                display ->
+                                        display.withHdrPreference(
+                                                HDR_PREFERENCE_HDR_ALLOWED))
+                        .build();
+        mInjector.setReadStream(new ByteArrayInputStream(xml.getBytes()));
+        mDataStore.loadIfNeeded();
+
+        boolean result =
+                mDataStore.setUserPreferredHdrMode(
+                        testDisplayDevice, HDR_PREFERENCE_HDR_ALLOWED);
+
+        assertFalse("setHdrPreference should return false if the value is unchanged", result);
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        mInjector.setWriteStream(baos);
+        mDataStore.saveIfNeeded();
+        mTestLooper.dispatchAll();
+        assertFalse(
+                "A save should NOT be triggered if the data was not dirty",
                 mInjector.wasWriteSuccessful());
     }
 

@@ -1628,6 +1628,32 @@ public final class DisplayManagerGlobal {
     }
 
     /**
+     * @see DisplayManager#setUserPreferredHdrMode(int, int)
+     */
+    @RequiresPermission(MANAGE_DISPLAYS)
+    public void setUserPreferredHdrMode(
+            int displayId, @DisplayManager.HdrPreference int hdrPreference) {
+        try {
+            mDm.setUserPreferredHdrMode(displayId, hdrPreference);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @see DisplayManager#getUserPreferredHdrMode(int)
+     */
+    @RequiresPermission(MANAGE_DISPLAYS)
+    @DisplayManager.HdrPreference
+    public int getUserPreferredHdrMode(int displayId) {
+        try {
+            return mDm.getUserPreferredHdrMode(displayId);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * @see DisplayManager#getDisplayTopology
      */
     @Nullable

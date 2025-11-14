@@ -16,12 +16,14 @@
 
 package com.android.server.display;
 
+import static android.hardware.display.DisplayManager.DEFAULT_HDR_PREFERENCE;
 import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK;
 
 import android.annotation.Nullable;
 import android.graphics.Point;
 import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager.ExternalDisplayConnection;
+import android.hardware.display.DisplayManager.HdrPreference;
 import android.hardware.display.WifiDisplay;
 import android.os.Handler;
 import android.util.AtomicFile;
@@ -136,6 +138,7 @@ final class PersistentDataStore {
     private static final String TAG_BRIGHTNESS_NITS_FOR_DEFAULT_DISPLAY =
             "brightness-nits-for-default-display";
     private static final String TAG_CONNECTION_PREFERENCE = "connection-preference";
+    private static final String TAG_HDR_PREFERENCE = "hdr-preference";
 
     public static final int DEFAULT_USER_ID = -1;
     public static final int DEFAULT_CONNECTION_PREFERENCE =
@@ -483,6 +486,52 @@ final class PersistentDataStore {
         return state.getConnectionPreference();
     }
 
+    /**
+     * Sets and persists user HDR preferred mode for a given display device.
+     *
+     * <p>The preference is only stored if the device has a stable unique ID. This method marks the
+     * data store as dirty if the preference changes, triggering a subsequent save operation.
+     *
+     * @param displayDevice The display device for which to set the preference.
+     * @param preference The HDR preference to set, as defined by the
+     *     {@code @HdrPreference} values in {@link
+     *     android.hardware.display.DisplayManager}.
+     * @return {@code true} if the preference was successfully updated, {@code false} if the value
+     *     was unchanged or if the device does not have a stable unique ID.
+     */
+    public boolean setUserPreferredHdrMode(
+            DisplayDevice displayDevice, @HdrPreference int preference) {
+        final String displayDeviceUniqueId = displayDevice.getUniqueId();
+        if (!displayDevice.hasStableUniqueId() || displayDeviceUniqueId == null) {
+            return false;
+        }
+        DisplayState state =
+                getDisplayState(displayDeviceUniqueId, /* createIfAbsent= */ true);
+        if (state.setHdrPreference(preference)) {
+            setDirty();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Gets user HDR preferred mode for a given display device.
+     *
+     * @param device The display device for which to retrieve the preference.
+     * @return The stored {@code @HdrPreference} preference for the device, or a
+     *     default value if no preference has been saved or if the device lacks a stable unique ID.
+     */
+    public @HdrPreference int getUserPreferredHdrMode(DisplayDevice device) {
+        if (!device.hasStableUniqueId()) {
+            return DEFAULT_HDR_PREFERENCE;
+        }
+        DisplayState state = getDisplayState(device.getUniqueId(), /* createIfAbsent= */ false);
+        if (state == null) {
+            return DEFAULT_HDR_PREFERENCE;
+        }
+        return state.getHdrPreference();
+    }
+
     private DisplayState getDisplayState(String uniqueId, boolean createIfAbsent) {
         loadIfNeeded();
         DisplayState state = mDisplayStates.get(uniqueId);
@@ -723,6 +772,7 @@ final class PersistentDataStore {
         private int mWidth;
         private int mHeight;
         private float mRefreshRate;
+        private int mHdrPreference = DEFAULT_HDR_PREFERENCE;
 
         // Brightness configuration by user
         private BrightnessConfigurations mDisplayBrightnessConfigurations =
@@ -816,6 +866,18 @@ final class PersistentDataStore {
             mDisplayBrightnessConfigurations.removeUser(userId);
         }
 
+        private boolean setHdrPreference(int preference) {
+            if (preference == mHdrPreference) {
+                return false;
+            }
+            mHdrPreference = preference;
+            return true;
+        }
+
+        private int getHdrPreference() {
+            return mHdrPreference;
+        }
+
         public void loadFromXml(TypedXmlPullParser parser)
                 throws IOException, XmlPullParserException {
             final int outerDepth = parser.getDepth();
@@ -848,6 +910,10 @@ final class PersistentDataStore {
                         String connectionPreference = parser.nextText();
                         mConnectionPreference = Integer.parseInt(connectionPreference);
                         break;
+                    case TAG_HDR_PREFERENCE:
+                        String hdrPreference = parser.nextText();
+                        mHdrPreference = Integer.parseInt(hdrPreference);
+                        break;
                 }
             }
         }
@@ -871,6 +937,10 @@ final class PersistentDataStore {
             serializer.startTag(null, TAG_CONNECTION_PREFERENCE);
             serializer.text(Integer.toString(mConnectionPreference));
             serializer.endTag(null, TAG_CONNECTION_PREFERENCE);
+
+            serializer.startTag(null, TAG_HDR_PREFERENCE);
+            serializer.text(Integer.toString(mHdrPreference));
+            serializer.endTag(null, TAG_HDR_PREFERENCE);
 
             serializer.startTag(null, TAG_RESOLUTION_WIDTH);
             serializer.text(Integer.toString(mWidth));
@@ -897,6 +967,7 @@ final class PersistentDataStore {
             pw.println(prefix + "ConnectionPreference=" + mConnectionPreference);
             pw.println(prefix + "Resolution=" + mWidth + " " + mHeight);
             pw.println(prefix + "RefreshRate=" + mRefreshRate);
+            pw.println(prefix + "HdrPreference=" + mHdrPreference);
         }
 
         private void loadBrightnessFromXml(TypedXmlPullParser parser)
