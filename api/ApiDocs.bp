@@ -211,6 +211,9 @@ droidstubs {
             removed_api_file: ":android-removed.api.combined.public.latest",
         },
     },
+    visibility: [
+        "//development/build",
+    ],
 }
 
 droidstubs {

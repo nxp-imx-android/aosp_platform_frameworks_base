@@ -263,3 +263,16 @@ filegroup {
         "//frameworks/base/api",
     ],
 }
+
+// For packaging part of sdk-repo-platforms*.zip.
+genrule {
+    name: "sdk_platforms_data_res",
+    tools: ["soong_zip"],
+    srcs: [
+        "res/**/*",
+    ],
+    out: ["sdk_platforms_data_res.zip"],
+    cmd: "mkdir -p $(genDir)/out/data/ && " +
+        "cp -r frameworks/base/core/res/res/ $(genDir)/out/data/ && " +
+        "$(location soong_zip) -o $(out) -C $(genDir)/out -D $(genDir)/out",
+}
