@@ -171,8 +171,7 @@ constructor(
     }
 
     private fun setHandleTouchesDisregardingUdfpsOverlayViewLifecycle(): Boolean {
-        return requestReason == REASON_AUTH_KEYGUARD &&
-            overlayParams.sensorType == TYPE_UDFPS_ULTRASONIC
+        return overlayParams.sensorType == TYPE_UDFPS_ULTRASONIC
     }
 
     /** Show the overlay or return false and do nothing if it is already showing. */
@@ -182,14 +181,25 @@ constructor(
             overlayParams = params
             overlayAttachStateListener = attachListener
             sensorBounds = Rect(params.sensorBounds)
-            val isSetHandleTouchesOutsideOfUdfpsViewLifecycle =
-                setHandleTouchesDisregardingUdfpsOverlayViewLifecycle()
-            if (isSetHandleTouchesOutsideOfUdfpsViewLifecycle) {
-                // doesn't use the overlayTouchView to handle the lifecycle of forwarding
+            var udfpsTouchForwarder: UdfpsOverlayInteractor? = udfpsOverlayInteractor
+            if (setHandleTouchesDisregardingUdfpsOverlayViewLifecycle()) {
+                // don't use the overlayTouchView to handle the lifecycle of forwarding
                 // shouldHandleTouches to the HAL
-                udfpsOverlayInteractor.updateSetHandleTouchesForKeyguard(
-                    deviceEntryUdfpsTouchOverlayViewModel.get()
-                )
+                udfpsTouchForwarder = null
+                when (requestReason) {
+                    REASON_AUTH_KEYGUARD ->
+                        udfpsOverlayInteractor.setTouchHandlingViewModel(
+                            deviceEntryUdfpsTouchOverlayViewModel.get()
+                        )
+                    REASON_AUTH_BP ->
+                        udfpsOverlayInteractor.setTouchHandlingViewModel(
+                            promptUdfpsTouchOverlayViewModel.get()
+                        )
+                    else ->
+                        udfpsOverlayInteractor.setTouchHandlingViewModel(
+                            defaultUdfpsTouchOverlayViewModel.get()
+                        )
+                }
             }
             try {
                 overlayTouchView =
@@ -209,24 +219,19 @@ constructor(
                                     UdfpsTouchOverlayBinder.bind(
                                         view = this,
                                         viewModel = deviceEntryUdfpsTouchOverlayViewModel.get(),
-                                        udfpsOverlayInteractor =
-                                            if (isSetHandleTouchesOutsideOfUdfpsViewLifecycle) {
-                                                null
-                                            } else {
-                                                udfpsOverlayInteractor
-                                            },
+                                        udfpsOverlayInteractor = udfpsTouchForwarder,
                                     )
                                 REASON_AUTH_BP ->
                                     UdfpsTouchOverlayBinder.bind(
                                         view = this,
                                         viewModel = promptUdfpsTouchOverlayViewModel.get(),
-                                        udfpsOverlayInteractor = udfpsOverlayInteractor,
+                                        udfpsOverlayInteractor = udfpsTouchForwarder,
                                     )
                                 else ->
                                     UdfpsTouchOverlayBinder.bind(
                                         view = this,
                                         viewModel = defaultUdfpsTouchOverlayViewModel.get(),
-                                        udfpsOverlayInteractor = udfpsOverlayInteractor,
+                                        udfpsOverlayInteractor = udfpsTouchForwarder,
                                     )
                             }
                         }
@@ -306,7 +311,7 @@ constructor(
     fun hide(): Boolean {
         val wasShowing = isShowing
         Log.d(TAG, "hideUdfpsControllerOverlay wasShowing=$wasShowing")
-        udfpsOverlayInteractor.stopSetHandleTouchesForKeyguard()
+        udfpsOverlayInteractor.stopHandlingTouches()
         udfpsDisplayModeProvider.disable(null)
         getTouchOverlay()?.apply {
             if (this.parent != null) {
