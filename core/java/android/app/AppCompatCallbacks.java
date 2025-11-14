@@ -38,34 +38,34 @@ public final class AppCompatCallbacks implements Compatibility.BehaviorChangeDel
     /**
      * Install this class into the current process using the disabled and loggable changes lists.
      *
-     * @param disabledChanges Set of compatibility changes that are disabled for this process.
-     * @param loggableChanges Set of compatibility changes that we want to log.
+     * @param disabledChangesSorted Sorted set of compatibility changes that are disabled for
+     * this process.
+     * @param loggableChangesSorted Sorted set of compatibility changes that we want to log.
      */
-    public static void install(
-            long[] disabledChanges, long[] loggableChanges) {
+    public static void install(long[] disabledChangesSorted, long[] loggableChangesSorted) {
         Compatibility.setBehaviorChangeDelegate(
-                new AppCompatCallbacks(disabledChanges, loggableChanges, false));
+                new AppCompatCallbacks(disabledChangesSorted, loggableChangesSorted, false));
     }
 
     /**
      * Install this class into the current process using the disabled and loggable changes lists.
      *
-     * @param disabledChanges Set of compatibility changes that are disabled for this process.
-     * @param loggableChanges Set of compatibility changes that we want to log.
+     * @param disabledChangesSorted Sorted set of compatibility changes that are disabled for
+     * this process.
+     * @param loggableChangesSorted Sorted set of compatibility changes that we want to log.
      * @param logChangeChecksToStatsD Whether to log change checks to statsd.
      */
-    public static void install(
-            long[] disabledChanges, long[] loggableChanges, boolean logChangeChecksToStatsD) {
+    public static void install(long[] disabledChangesSorted, long[] loggableChangesSorted,
+            boolean logChangeChecksToStatsD) {
         Compatibility.setBehaviorChangeDelegate(
-                new AppCompatCallbacks(disabledChanges, loggableChanges, logChangeChecksToStatsD));
+                new AppCompatCallbacks(
+                        disabledChangesSorted, loggableChangesSorted, logChangeChecksToStatsD));
     }
 
-    private AppCompatCallbacks(
-            long[] disabledChanges, long[] loggableChanges, boolean logChangeChecksToStatsD) {
-        mDisabledChanges = Arrays.copyOf(disabledChanges, disabledChanges.length);
-        mLoggableChanges = Arrays.copyOf(loggableChanges, loggableChanges.length);
-        Arrays.sort(mDisabledChanges);
-        Arrays.sort(mLoggableChanges);
+    private AppCompatCallbacks(long[] disabledChangesSorted, long[] loggableChangesSorted,
+            boolean logChangeChecksToStatsD) {
+        mDisabledChanges = disabledChangesSorted;
+        mLoggableChanges = loggableChangesSorted;
         mChangeReporter = new ChangeReporter(ChangeReporter.SOURCE_APP_PROCESS);
         mLogChangeChecksToStatsD = logChangeChecksToStatsD;
     }
