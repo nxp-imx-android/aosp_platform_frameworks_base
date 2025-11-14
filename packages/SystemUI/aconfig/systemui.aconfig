@@ -2032,3 +2032,10 @@ flag {
     description: "Enables showing Cue Bar while IME is visible"
     bug: "451865977"
 }
+
+flag {
+  name: "use_systemui_views_for_system_toolbar"
+  namespace: "permissions"
+  description: "Use the views moved into system ui from the framework for the system selection toolbar."
+  bug: "450977221"
+}

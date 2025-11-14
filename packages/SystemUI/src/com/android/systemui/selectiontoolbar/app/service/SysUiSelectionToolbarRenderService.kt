@@ -16,39 +16,57 @@
 
 package com.android.systemui.selectiontoolbar.app.service
 
-import android.service.selectiontoolbar.RemoteSelectionToolbar
+import android.service.selectiontoolbar.RemoteSelectionToolbar as FrameworkRemoteSelectionToolbar
 import android.service.selectiontoolbar.SelectionToolbarRenderService
 import android.util.IndentingPrintWriter
 import android.util.Log
 import android.util.Slog
 import android.view.selectiontoolbar.ShowInfo
+import com.android.systemui.selectiontoolbar.app.ui.RemoteSelectionToolbar as SystemUiRemoteSelectionToolbar
 import java.io.FileDescriptor
 import java.io.PrintWriter
 
 class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
 
     // Only show one toolbar, dismiss the old ones and remove from cache
-    private val toolbarCache = mutableMapOf<Int, RemoteSelectionToolbar>()
+    private val toolbarCache = mutableMapOf<Int, Any>()
 
     override fun onShow(uid: Int, showInfo: ShowInfo, callbackWrapper: RemoteCallbackWrapper) {
         val existingToolbar = toolbarCache[uid]
         // Only allow one package to create one toolbar
         if (existingToolbar != null) {
             verboseLog("Reshow for existing toolbar for uid: $uid")
-            existingToolbar.show(showInfo)
+            when (existingToolbar) {
+                is SystemUiRemoteSelectionToolbar -> existingToolbar.show(showInfo)
+                is FrameworkRemoteSelectionToolbar -> existingToolbar.show(showInfo)
+            }
         } else {
             verboseLog("Show new toolbar for uid: $uid")
             val toolbar =
-                RemoteSelectionToolbar(
-                    uid,
-                    this,
-                    showInfo,
-                    callbackWrapper,
-                    ::transferTouch,
-                    ::onPasteAction,
-                )
+                if (useSystemUiRemoteSelectionToolbar()) {
+                    SystemUiRemoteSelectionToolbar(
+                        uid,
+                        this,
+                        showInfo,
+                        callbackWrapper,
+                        ::transferTouch,
+                        ::onPasteAction,
+                    )
+                } else {
+                    FrameworkRemoteSelectionToolbar(
+                        uid,
+                        this,
+                        showInfo,
+                        callbackWrapper,
+                        ::transferTouch,
+                        ::onPasteAction,
+                    )
+                }
             toolbarCache[uid] = toolbar
-            toolbar.show(showInfo)
+            when (toolbar) {
+                is SystemUiRemoteSelectionToolbar -> toolbar.show(showInfo)
+                is FrameworkRemoteSelectionToolbar -> toolbar.show(showInfo)
+            }
         }
     }
 
@@ -56,7 +74,10 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
             verboseLog("onHide() for uid: $uid")
-            toolbar.hide(uid)
+            when (toolbar) {
+                is SystemUiRemoteSelectionToolbar -> toolbar.hide(uid)
+                is FrameworkRemoteSelectionToolbar -> toolbar.hide(uid)
+            }
         }
     }
 
@@ -73,7 +94,10 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
     private fun removeAndDismissToolbar(uid: Int) {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
-            toolbar.dismiss(uid)
+            when (toolbar) {
+                is SystemUiRemoteSelectionToolbar -> toolbar.dismiss(uid)
+                is FrameworkRemoteSelectionToolbar -> toolbar.dismiss(uid)
+            }
             toolbarCache -= uid
         }
     }
@@ -84,12 +108,14 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         ipw.println(toolbarCache.size)
         ipw.increaseIndent()
         toolbarCache.forEach {
-            it
             val uid = it.key
-            val selectionToolbar = it.value
+            val toolbar = it.value
             ipw.print("uid: ")
             ipw.println(uid)
-            selectionToolbar.dump("", ipw)
+            when (toolbar) {
+                is SystemUiRemoteSelectionToolbar -> toolbar.dump("", ipw)
+                is FrameworkRemoteSelectionToolbar -> toolbar.dump("", ipw)
+            }
             ipw.println()
         }
         ipw.decreaseIndent()
@@ -112,5 +138,8 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
                 Slog.w(TAG, message)
             }
         }
+
+        private fun useSystemUiRemoteSelectionToolbar(): Boolean =
+            com.android.systemui.Flags.useSystemuiViewsForSystemToolbar()
     }
 }
