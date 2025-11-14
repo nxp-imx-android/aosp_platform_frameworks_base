@@ -1118,12 +1118,20 @@ public class ActivityManagerService extends IActivityManager.Stub
         public void onActivityLaunched(long id, ComponentName name, int temperature,
                 String processName, int uid) {
             mAppProfiler.onActivityLaunched();
+
+            final String packageName = name.getPackageName();
             synchronized (ActivityManagerService.this) {
                 String processRecordName = Flags.appStartInfoProcessNameFix()
-                        ? processName : name.getPackageName();
+                        ? processName : packageName;
                 ProcessRecord record = getProcessRecordLocked(processRecordName, uid);
                 mProcessList.getAppStartInfoTracker().onActivityLaunched(id, name, temperature,
                         record);
+            }
+
+            if (android.os.profiling.Flags.profilingTriggerColdStart()
+                    && temperature == ApplicationStartInfo.START_TYPE_COLD
+                    && packageName != null) {
+                sendProfilingTrigger(uid, packageName, ProfilingTrigger.TRIGGER_TYPE_COLD_START);
             }
         }
 
