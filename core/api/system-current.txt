@@ -12896,17 +12896,17 @@ package android.provider {
     field @Deprecated public static final String STATE = "state";
   }
 
-  @FlaggedApi("android.provider.new_default_account_api_enabled") public static final class ContactsContract.RawContacts.DefaultAccount {
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @NonNull @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static java.util.List<android.accounts.Account> getEligibleCloudAccounts(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static int getNumberOfMovableLocalContacts(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static int getNumberOfMovableSimContacts(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static void moveLocalContactsToCloudDefaultAccount(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static void moveSimContactsToCloudDefaultAccount(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static void setDefaultAccountForNewContacts(@NonNull android.content.ContentResolver, @NonNull android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState);
+  public static final class ContactsContract.RawContacts.DefaultAccount {
+    method @NonNull @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static java.util.List<android.accounts.Account> getEligibleCloudAccounts(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(allOf={android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static int getNumberOfMovableLocalContacts(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(allOf={android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static int getNumberOfMovableSimContacts(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(allOf={android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static void moveLocalContactsToCloudDefaultAccount(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(allOf={android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static void moveSimContactsToCloudDefaultAccount(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static void setDefaultAccountForNewContacts(@NonNull android.content.ContentResolver, @NonNull android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState);
   }
 
   public static final class ContactsContract.Settings implements android.provider.ContactsContract.SettingsColumns {
-    method @Deprecated @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static void setDefaultAccount(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account);
+    method @Deprecated @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static void setDefaultAccount(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account);
   }
 
   public static final class ContactsContract.SimContacts {

@@ -38788,12 +38788,12 @@ package android.provider {
     field public static final String CONTENT_DIRECTORY = "data";
   }
 
-  @FlaggedApi("android.provider.new_default_account_api_enabled") public static final class ContactsContract.RawContacts.DefaultAccount {
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState getDefaultAccountForNewContacts(@NonNull android.content.ContentResolver);
+  public static final class ContactsContract.RawContacts.DefaultAccount {
+    method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState getDefaultAccountForNewContacts(@NonNull android.content.ContentResolver);
     field public static final String ACTION_MOVE_CONTACTS_TO_DEFAULT_ACCOUNT = "android.provider.action.MOVE_CONTACTS_TO_DEFAULT_ACCOUNT";
   }
 
-  @FlaggedApi("android.provider.new_default_account_api_enabled") public static final class ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState {
+  public static final class ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState {
     method @Nullable public android.accounts.Account getAccount();
     method public int getState();
     method @NonNull public static android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState ofCloud(@NonNull android.accounts.Account);
@@ -38842,7 +38842,7 @@ package android.provider {
 
   public static final class ContactsContract.Settings implements android.provider.ContactsContract.SettingsColumns {
     method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.READ_CONTACTS) public static long getAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String);
-    method @Deprecated @FlaggedApi("android.provider.new_default_account_api_enabled") @Nullable public static android.accounts.Account getDefaultAccount(@NonNull android.content.ContentResolver);
+    method @Deprecated @Nullable public static android.accounts.Account getDefaultAccount(@NonNull android.content.ContentResolver);
     method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS) public static void resetAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String);
     method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS) public static void setAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String, long);
     field public static final String ACTION_SET_DEFAULT_ACCOUNT = "android.provider.action.SET_DEFAULT_ACCOUNT";

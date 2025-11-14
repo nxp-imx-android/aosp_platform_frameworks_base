@@ -3081,7 +3081,6 @@ public final class ContactsContract {
          * New raw contacts requested to be inserted without a specified {@link Account} will be
          * saved in the default account.
          */
-        @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
         public static final class DefaultAccount {
             /**
              * no public constructor since this is a utility class
@@ -3159,7 +3158,6 @@ public final class ContactsContract {
              * saved in this SIM account. </li>
              * </ul>
              */
-            @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
             public static final class DefaultAccountAndState {
                 /** A state indicating that default account is not set. */
                 public static final int DEFAULT_ACCOUNT_STATE_NOT_SET = 1;
@@ -3349,7 +3347,6 @@ public final class ContactsContract {
              * @throws RuntimeException if failed to look up the default account.
              * @throws IllegalStateException if the default account is in an invalid state.
              */
-            @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
             public static @NonNull DefaultAccountAndState getDefaultAccountForNewContacts(
                     @NonNull ContentResolver resolver) {
                 Bundle response = nullSafeCall(resolver, ContactsContract.AUTHORITY_URI,
@@ -3406,7 +3403,6 @@ public final class ContactsContract {
              * @hide
              */
             @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS)
-            @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
             @SystemApi
             public static void setDefaultAccountForNewContacts(@NonNull ContentResolver resolver,
                     @NonNull DefaultAccountAndState defaultAccountAndState) {
@@ -3436,7 +3432,6 @@ public final class ContactsContract {
              * @hide
              */
             @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS)
-            @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
             @SystemApi
             public static @NonNull List<Account> getEligibleCloudAccounts(
                     @NonNull ContentResolver resolver) {
@@ -3470,7 +3465,6 @@ public final class ContactsContract {
              * @hide
              */
             @SystemApi
-            @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
             @RequiresPermission(allOf = {android.Manifest.permission.WRITE_CONTACTS,
                     android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS})
             public static void moveLocalContactsToCloudDefaultAccount(
@@ -3503,7 +3497,6 @@ public final class ContactsContract {
              * @hide
              */
             @SystemApi
-            @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
             @RequiresPermission(allOf = {android.Manifest.permission.WRITE_CONTACTS,
                     android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS})
             public static void moveSimContactsToCloudDefaultAccount(
@@ -3545,7 +3538,6 @@ public final class ContactsContract {
              * @hide
              */
             @SystemApi
-            @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
             @RequiresPermission(allOf = {android.Manifest.permission.READ_CONTACTS,
                     android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS})
             public static int getNumberOfMovableLocalContacts(
@@ -3589,7 +3581,6 @@ public final class ContactsContract {
              * @hide
              */
             @SystemApi
-            @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
             @RequiresPermission(allOf = {android.Manifest.permission.READ_CONTACTS,
                     android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS})
             public static int getNumberOfMovableSimContacts(
@@ -9487,7 +9478,6 @@ public final class ContactsContract {
          * should be used.
          */
         @Deprecated
-        @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
         @Nullable
         public static Account getDefaultAccount(@NonNull ContentResolver resolver) {
             Bundle response = resolver.call(ContactsContract.AUTHORITY_URI,
@@ -9514,7 +9504,6 @@ public final class ContactsContract {
          * should be used.
          */
         @Deprecated
-        @FlaggedApi(Flags.FLAG_NEW_DEFAULT_ACCOUNT_API_ENABLED)
         @SystemApi
         @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS)
         public static void setDefaultAccount(@NonNull ContentResolver resolver,
