@@ -57,6 +57,13 @@ flag {
 }
 
 flag {
+    name: "enable_uaoa_p6"
+    namespace: "usb"
+    description: "Enables AOA userspace implementation only for pixel 6 series devices"
+    bug: "440091110"
+}
+
+flag {
     name: "enable_uaoa_p8"
     namespace: "usb"
     description: "Enables AOA userspace implementation only for pixel 8 series devices"
@@ -64,8 +71,8 @@ flag {
 }
 
 flag {
-    name: "enable_uaoa_all_pixels_except_p8"
+    name: "enable_uaoa_p10"
     namespace: "usb"
-    description: "Enables AOA userspace implementation all pixel devices except pixel 8 series"
+    description: "Enables AOA userspace implementation only for pixel 10 series devices"
     bug: "440091110"
 }
