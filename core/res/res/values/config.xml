@@ -3350,7 +3350,8 @@
          If allowed, the headless system user can run in the foreground even though it is not a
          full user. However, it is not a human user, and may not show up in the list of human users.
          It is expected that, if true, its UI always provides a way to switch to a human user (and
-         create one if one doesn't already exist).
+         create one if one doesn't already exist), and have an appropriate HOME app reflecting
+         its intended usage (e.g. a login screen app, rather than a standard launcher app).
          This config is only relevant on Headless System User Mode (HSUM) devices. -->
     <bool name="config_canSwitchToHeadlessSystemUser">false</bool>
 
@@ -3367,8 +3368,10 @@
 
     <!-- Indicates the boot strategy in Headless System User Mode (HSUM)
          This config has no effect if the device is not in HSUM.
-         0 (Default) : boot to the previous foreground user if there is one, otherwise the first switchable user.
-         1 : boot to the first switchable full user for initial boot (unprovisioned device), else to the headless system user, i.e. user 0. -->
+         0 (Default) : boot to the previous foreground user (or, if there is none, some switchable
+                       user). User 0 counts if it is switchable.
+         1 : boot to the headless system user, except on the initial boot (unprovisioned device),
+             in which case, boot to the first full user. -->
     <integer name="config_hsumBootStrategy">0</integer>
 
     <!-- List of activities (flattened component names) allowed to be launched when the current user is the Headless System User -->
@@ -6429,9 +6432,10 @@
     <!-- If true, multiuser switcher would be automatically enabled when second user is created on the device. -->
     <bool name="config_enableUserSwitcherUponUserCreation">true</bool>
 
-    <!--
-    Whether the user switching can only happen by logging out and going through the system user (login screen).
-    -->
+    <!-- Used by Settings and SysUi to indicate whether UI-based user switching should happen by
+         logging out and going through the system user (login screen).
+         Only intended for interactive Headless System User Mode (HSUM) devices that have set up
+         their system user to serve as a login screen. -->
     <bool name="config_userSwitchingMustGoThroughLoginScreen">false</bool>
 
     <!-- Set to true to make assistant show in front of the dream/screensaver. -->
