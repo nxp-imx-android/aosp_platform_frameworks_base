@@ -1012,6 +1012,25 @@ public class BroadcastRecordTest {
         testLogBroadcastProcessedEventRecord(1);
     }
 
+    @Test
+    public void testToShortString() {
+        final Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        final BroadcastRecord record = createBroadcastRecord(
+                List.of(createResolveInfo(PACKAGE1, APP_UID)),
+                UserHandle.USER_ALL, intent);
+        final String actualShortString = record.toShortString();
+        assertTrue("Missing identity hashcode in " + actualShortString,
+                actualShortString.contains(Integer.toHexString(System.identityHashCode(record))));
+        assertTrue("Missing intent action in " + actualShortString,
+                actualShortString.contains(intent.getAction()));
+        assertTrue("Missing userId in " + actualShortString,
+                actualShortString.contains("u" + UserHandle.USER_ALL));
+        assertTrue("Missing broadcast type in " + actualShortString,
+                actualShortString.contains("0x" + Integer.toHexString(
+                        record.calculateTypeForLogging())));
+    }
+
     private void testLogBroadcastProcessedEventRecord(int times) {
         final ResolveInfo receiver = createResolveInfo(PACKAGE1, getAppId(1));
         final BroadcastRecord record = createBroadcastRecord(
