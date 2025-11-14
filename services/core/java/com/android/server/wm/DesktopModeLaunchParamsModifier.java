@@ -149,6 +149,12 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 // overwriting the params.
                 return RESULT_DONE;
             }
+            if (Flags.enableDesktopFirstPolicyFullscreenDecisionBugfix()
+                    && outParams.mWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+                // The desktop-first policy decides to use WINDOWING_MODE_FULLSCREEN with intention,
+                // return RESULT_DONE to prevent other modifiers from overwriting the params.
+                return RESULT_DONE;
+            }
             hasLaunchWindowingMode = true;
         }
 
