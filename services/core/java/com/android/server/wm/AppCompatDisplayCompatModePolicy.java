@@ -22,7 +22,6 @@ import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
-import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_COMPAT_MODE;
@@ -81,8 +80,6 @@ class AppCompatDisplayCompatModePolicy {
 
     private boolean mDisplayChangedForComputerControlWithoutRestart;
 
-    private int mLastDisplayId = INVALID_DISPLAY;
-
     AppCompatDisplayCompatModePolicy(@NonNull ActivityRecord activityRecord) {
         mActivityRecord = activityRecord;
         mSelfKillStateMachine = new SelfKillStateMachine(mActivityRecord);
@@ -118,7 +115,6 @@ class AppCompatDisplayCompatModePolicy {
      */
     void onMovedToDisplay(@NonNull DisplayContent previousDisplay,
             @NonNull DisplayContent newDisplay) {
-        mLastDisplayId = newDisplay.getDisplayId();
         if (previousDisplay.getDisplayInfo().type == TYPE_INTERNAL
                 && newDisplay.getDisplayInfo().type == TYPE_INTERNAL) {
             // A transition between internal displays (fold<->unfold on foldable) is not considered
