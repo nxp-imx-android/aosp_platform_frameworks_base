@@ -7,3 +7,10 @@ flag {
     description: "Feature flag to persist permissions after device disconnect"
     bug: "389062495"
 }
+
+flag {
+    name: "enable_authorization_management"
+    namespace: "desktop_connectivity"
+    description: "Feature flag to manage previously authorized/denied devices"
+    bug: "432527670"
+}
