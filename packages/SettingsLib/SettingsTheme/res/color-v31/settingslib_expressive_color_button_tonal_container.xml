@@ -21,6 +21,7 @@
         android:alpha="0.1"
         android:color="@color/settingslib_materialColorOnSurface"
         android:state_enabled="false"/>
-
+    <item android:state_checked="true" android:color="?attr/colorContainerChecked"/>
+    <item android:state_checkable="true" android:color="?attr/colorContainerUnchecked"/>
     <item android:color="@color/settingslib_materialColorSecondaryContainer" />
 </selector>
