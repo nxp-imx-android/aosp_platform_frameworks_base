@@ -455,6 +455,10 @@ public class AudioService extends IAudioService.Stub
         return mPlatformType == AudioSystem.PLATFORM_PC;
     }
 
+    private static boolean hasFeatureWatch(final Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
+    }
+
     /** The controller for the volume UI. */
     private final VolumeController mVolumeController = new VolumeController();
 
@@ -2938,7 +2942,7 @@ public class AudioService extends IAudioService.Stub
         int assistantStreamAlias = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_useAssistantVolume) ?
                 AudioSystem.STREAM_ASSISTANT : AudioSystem.STREAM_MUSIC;
-        if (streamAssistantNotAliasedToMusic() && !mIsSingleVolume) {
+        if (streamAssistantNotAliasedToMusic() && !mIsSingleVolume && !hasFeatureWatch(mContext)) {
             assistantStreamAlias = AudioSystem.STREAM_ASSISTANT;
         }
 
