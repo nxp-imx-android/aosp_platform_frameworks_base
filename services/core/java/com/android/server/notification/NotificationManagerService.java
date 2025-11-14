@@ -7273,8 +7273,11 @@ public class NotificationManagerService extends SystemService {
         public void deleteDynamicBundle(INotificationListener token, int dynamicBundleId) {
             final long identity = Binder.clearCallingIdentity();
             try {
-                synchronized (mNotificationLock) {
-                    mAssistants.checkServiceTokenLocked(token);
+                // STOPSHIP(b/438704204): remove this check before teamfood
+                if (!isCallerSystemOrSystemUi()) {
+                    synchronized (mNotificationLock) {
+                        mAssistants.checkServiceTokenLocked(token);
+                    }
                 }
                 boolean existed = mAssistants.deleteDynamicBundle(
                         Binder.getCallingUserHandle().getIdentifier(), dynamicBundleId);
@@ -7304,8 +7307,11 @@ public class NotificationManagerService extends SystemService {
 
             final long identity = Binder.clearCallingIdentity();
             try {
-                synchronized (mNotificationLock) {
-                    mAssistants.checkServiceTokenLocked(token);
+                // STOPSHIP(b/438704204): remove this check before teamfood
+                if (!isCallerSystemOrSystemUi()) {
+                    synchronized (mNotificationLock) {
+                        mAssistants.checkServiceTokenLocked(token);
+                    }
                 }
                 boolean created = mAssistants.createDynamicBundle(
                         Binder.getCallingUserHandle().getIdentifier(),
