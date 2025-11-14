@@ -81,10 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"स्क्रीनशॉट खाजगीमध्ये सेव्ह करत आहे"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"स्क्रीनशॉट सेव्ह केला"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"स्क्रीनशॉट सेव्ह करू शकलो नाही"</string>
-    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
-    <skip />
-    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
-    <skip />
+    <string name="screenshot_save_to" msgid="3294574417295882864">"इथे सेव्ह करा"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"फोल्डर निवडा"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"बाह्य डिस्प्ले"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"स्क्रीनशॉट सेव्ह करण्याआधी डिव्हाइस अनलॉक करणे आवश्यक आहे"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"स्क्रीनशॉट पुन्हा घेण्याचा प्रयत्न करा"</string>
@@ -175,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ऑडिओ शेअर करा"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"अ‍ॅप विंडो शेअर करा"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"टॅब शेअर करा"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"संपूर्ण स्क्रीन शेअर करा"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"तुम्ही अ‍ॅप शेअर करता, तेव्हा त्या अ‍ॅपमध्ये दाखवलेल्या किंवा प्ले केलेल्या कोणत्याही गोष्टी [APP NAME] साठी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"तुम्ही तुमची संपूर्ण स्क्रीन शेअर करता, तेव्हा तुमच्या स्क्रीनवरील सर्व गोष्टी [APP NAME] ला दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विंडोचा स्क्रीनशॉट घ्या"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विंडो रेकॉर्ड करा"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"निवडलेल्या भागाचा स्क्रीनशॉट घ्या"</string>
@@ -507,7 +502,7 @@
     <string name="restore_default" msgid="5259420807486239755">"डीफॉल्ट रिस्टोअर करा"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"एकहाती मोड"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"श्रवणयंत्रे"</string>
-    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"ॲक्टिव्ह आहे"</string>
+    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"ॲक्टिव्ह"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"डिस्कनेक्ट केले आहे"</string>
     <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"श्रवणयंत्रे"</string>
     <string name="quick_settings_pair_hearing_devices" msgid="5987105102207447322">"नवीन डिव्हाइस पेअर करा"</string>
@@ -686,7 +681,7 @@
     <!-- no translation found for media_projection_entry_app_permission_dialog_option_text_entire_screen (5100078808078139706) -->
     <skip />
     <string name="media_projection_entry_app_permission_dialog_warning_entire_screen" msgid="5504288438067851086">"तुम्ही तुमची संपूर्ण स्क्रीन कास्ट करता, तेव्हा तुमच्या स्क्रीनवरील कोणत्याही गोष्टी <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> साठी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
-    <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"तुम्ही अ‍ॅप शेअर करता, तेव्हा त्या अ‍ॅपमध्ये दाखवल्या किंवा प्ले होणाऱ्या कोणत्याही गोष्टी <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> साठी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
+    <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"तुम्ही अ‍ॅप शेअर करता, तेव्हा त्या अ‍ॅपमध्ये दाखवलेल्या किंवा प्ले होणाऱ्या कोणत्याही गोष्टी <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> साठी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"स्क्रीन शेअर करा"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> हा पर्याय बंद केला आहे"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"ॲपद्वारे सपोर्ट नाही"</string>
@@ -713,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"सर्व साफ करा"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"व्यवस्थापित करा"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"इतिहास"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"नोटिफिकेशन सेटिंग्ज"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"नोटिफिकेशन इतिहास"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"नवीन"</string>
@@ -731,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"एकाच वेळी अनेक नोटिफिकेशन मिळाल्यास, डिव्हाइसचा आवाज आणि सूचना आपोआप कमाल २ मिनिटांपर्यंत कमी होतात."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"बंद करा"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"जुन्या सूचना पाहण्यासाठी अनलॉक करा"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"काही सेटिंग्ज तुमच्या पालकांद्वारे व्यवस्थापित केली जातात"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"हे डिव्हाइस तुमचे पालक व्यवस्थापित करत आहेत"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"काही डिव्हाइस सेटिंग्ज पिनद्वारे संरक्षित केलेल्या आहेत."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"तुमच्‍या संस्‍थेकडे या डिव्हाइसची मालकी आहे आणि ती नेटवर्क ट्रॅफिकचे परीक्षण करू शकते"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"हे डिव्हाइस <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> च्या मालकीचे आहे आणि ती नेटवर्क ट्रॅफिकचे परीक्षण करू शकते"</string>
@@ -910,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"अभिनंदन! सिस्टीम UI ट्युनर सेटिंग्जमध्ये जोडले गेले आहे"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"सेटिंग्ज मधून काढा"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"सेटिंग्ज मधून सिस्टीम UI ट्युनर काढून त्याची सर्व वैशिष्ट्ये वापरणे थांबवायचे?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"ब्लूटूथ सुरू करायचे?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"तुमचा कीबोर्ड तुमच्या टॅबलेटसह कनेक्ट करण्यासाठी, तुम्ही प्रथम ब्लूटूथ सुरू करणे आवश्यक आहे."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सुरू करा"</string>
@@ -957,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"कॉलशी संबंधित सूचनांमध्ये फेरबदल केला जाऊ शकत नाही."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"या सूचनांचा संच येथे कॉन्फिगर केला जाऊ शकत नाही"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"प्रॉक्सी केलेल्या सूचना"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> यांनी सारांश दिला आहे"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"सर्व <xliff:g id="APP_NAME">%1$s</xliff:g> वरील सूचना"</string>
     <string name="see_more_title" msgid="7409317011708185729">"आणखी पहा"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"सिस्टमद्वारे ही सूचना आपोआप &lt;b&gt;डीफॉल्ट वर प्रमोट केली&lt;/b&gt; गेली."</string>
@@ -1417,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"सुचवलेले"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"इनपुट"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"आउटपुट"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"मीडिया दुसऱ्या डिव्हाइसवर शेअर करण्यासाठी तुमचे शेअर केलेले सेशन थांबवा"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"थांबवा"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"शेअर करणे थांबवा"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ऑडिओ शेअर करत आहे"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ऑडिओ शेअर करा"</string>
@@ -1750,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"पुढील पेजवर नेव्हिगेट करा"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ऑटोफिल"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"विस्तार करा"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"अचूक स्थान शेअर करा"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"अचूक स्थान वापरा"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"अचूक स्थानाजवळ"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"अचूक स्थान"</string>
 </resources>

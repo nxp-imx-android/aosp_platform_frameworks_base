@@ -81,10 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"സ്ക്രീൻഷോട്ട് സ്വകാര്യമാക്കി സംരക്ഷിക്കുന്നു"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"സ്‌ക്രീൻഷോട്ട് സംരക്ഷിച്ചു"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"സ്‌ക്രീൻഷോട്ട് സംരക്ഷിക്കാനായില്ല"</string>
-    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
-    <skip />
-    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
-    <skip />
+    <string name="screenshot_save_to" msgid="3294574417295882864">"ഇതിൽ സംരക്ഷിക്കുക"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"ഫോൾഡർ തിരഞ്ഞെടുക്കുക"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ബാഹ്യ ഡിസ്പ്ലേ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"സ്ക്രീൻഷോട്ട് സംരക്ഷിക്കുന്നതിന് മുമ്പ് ഉപകരണം അൺലോക്ക് ചെയ്തിരിക്കണം"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"സ്‌ക്രീൻഷോട്ട് എടുക്കാൻ വീണ്ടും ശ്രമിക്കുക"</string>
@@ -710,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"എല്ലാം മായ്‌ക്കുക"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"മാനേജ് ചെയ്യുക"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"ചരിത്രം"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"അറിയിപ്പ് ക്രമീകരണം"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"അറിയിപ്പ് ചരിത്രം"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"പുതിയത്"</string>
@@ -728,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"നിരവധി അറിയിപ്പ് ഒരുമിച്ച് ലഭിക്കുമ്പോൾ, ഉപകരണത്തിന്റെ ശബ്‌ദവും മുന്നറിയിപ്പും 2 മിനിറ്റ് വരെ സ്വയമേവ കുറയ്ക്കും."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ഓഫാക്കുക"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"പഴയ അറിയിപ്പുകൾ കാണാൻ അൺലോക്ക് ചെയ്യുക"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"ചില ക്രമീകരണങ്ങൾ നിങ്ങളുടെ രക്ഷിതാവാണ് മാനേജ് ചെയ്യുന്നത്"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ഈ ഉപകരണം മാനേജ് ചെയ്യുന്നത് നിങ്ങളുടെ രക്ഷിതാവാണ്"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ചില ഉപകരണ ക്രമീകരണത്തിന് പിൻ പരിരക്ഷയുണ്ട്."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ഈ ഉപകരണം നിങ്ങളുടെ സ്ഥാപനത്തിന്റെ ഉടമസ്ഥതയിലായതിനാൽ നെറ്റ്‌വർക്ക് ട്രാഫിക്ക് നിരീക്ഷിച്ചേക്കാം"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"ഈ ഉപകരണം <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> എന്ന സ്ഥാപനത്തിന്റെ ഉടമസ്ഥതയിലായതിനാൽ നെറ്റ്‌വർക്ക് ട്രാഫിക്ക് നിരീക്ഷിച്ചേക്കാം"</string>
@@ -907,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"അഭിനന്ദനങ്ങൾ! ക്രമീകരണത്തിലേക്ക് സിസ്റ്റം UI ട്യൂണർ ചേർത്തിരിക്കുന്നു"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"ക്രമീകരണത്തിൽ നിന്ന് നീക്കംചെയ്യുക"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"ക്രമീകരണത്തിൽ നിന്ന് സിസ്റ്റം UI ട്യൂണർ നീക്കംചെയ്യുകയും അതിന്റെ ഫീച്ചറുകളെല്ലാം ഉപയോഗിക്കുന്നത് നിർത്തുകയും ചെയ്യണോ?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Bluetooth ഓണാക്കണോ?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"നിങ്ങളുടെ ടാബ്‌ലെറ്റുമായി കീബോർഡ് കണക്റ്റുചെയ്യുന്നതിന്, ആദ്യം Bluetooth ഓണാക്കേണ്ടതുണ്ട്."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ഓണാക്കുക"</string>
@@ -1413,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"നിർദ്ദേശിക്കുന്നത്"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ഇൻപുട്ട്"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ഔട്ട്പുട്ട്"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"മീഡിയയെ മറ്റൊരു ഉപകരണത്തിലേക്ക് നീക്കുന്നതിന് നിങ്ങളുടെ പങ്കിട്ട സെഷൻ നിർത്തുക"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"നിർത്തുക"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"പങ്കിടൽ നിർത്തുക"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ഓഡിയോ പങ്കിടുന്നു"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ഓഡിയോ പങ്കിടുക"</string>
@@ -1746,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"അടുത്ത പേജിലേക്ക് നാവിഗേറ്റ് ചെയ്യുക"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"സ്വയമേവ പൂരിപ്പിക്കൽ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"വികസിപ്പിക്കുക"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"കൃത്യമായ ലൊക്കേഷൻ പങ്കിടുക"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"കൃത്യമായ ലൊക്കേഷൻ ഉപയോഗിക്കുക"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"കൃത്യമായ ലൊക്കേഷന് സമീപം"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"കൃത്യമായ ലൊക്കേഷൻ"</string>
 </resources>

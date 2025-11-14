@@ -81,10 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"స్క్రీన్‌షాట్‌ను ప్రైవేట్ ప్రొఫైల్‌కు సేవ్ చేస్తోంది"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"స్క్రీన్‌షాట్ సేవ్ చేయబడింది"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"స్క్రీన్‌షాట్‌ని సేవ్ చేయడం సాధ్యం కాలేదు"</string>
-    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
-    <skip />
-    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
-    <skip />
+    <string name="screenshot_save_to" msgid="3294574417295882864">"దీనిలో సేవ్ అవుతుంది"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"ఫోల్డర్‌ను ఎంచుకోండి"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"వెలుపలి డిస్‌ప్లే"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"స్క్రీన్‌షాట్ సేవ్ అవ్వకముందే పరికరం అన్‌లాక్ చేయబడాలి"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"స్క్రీన్‌షాట్ తీయడానికి మళ్లీ ట్రై చేయండి"</string>
@@ -175,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ఆడియోను షేర్ చేయండి"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"యాప్ విండోను షేర్ చేయండి"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ట్యాబ్‌ను షేర్ చేయండి"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"మొత్తం స్క్రీన్‌ను షేర్ చేయండి"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"మీరు యాప్‌ను షేర్ చేసేటప్పుడు, సంబంధిత యాప్‌లో కనిపించేవి లేదా ప్లే అయ్యేవన్నీ [APP NAME]కు కనిపిస్తాయి. కాబట్టి పాస్‌వర్డ్‌లు, పేమెంట్ వివరాలు, మెసేజ్‌లు, ఫోటోలు, ఆడియో, వీడియో వంటి విషయాల్లో జాగ్రత్త వహించండి."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"మీ మొత్తం స్క్రీన్‌ను మీరు షేర్ చేసేటప్పుడు, మీ స్క్రీన్‌పై ఉన్నవన్నీ [APP NAME]కు కనిపిస్తాయి. కాబట్టి పాస్‌వర్డ్‌లు, పేమెంట్ వివరాలు, మెసేజ్‌లు, ఫోటోలు, ఆడియో, వీడియో వంటి విషయాల్లో జాగ్రత్త వహించండి."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"విండో స్క్రీన్‌షాట్‌ను తీయండి"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"విండోను రికార్డ్ చేయండి"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ఎంచుకున్న ఏరియా తాలూకు స్క్రీన్‌షాట్‌ను తీయండి"</string>
@@ -713,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"అన్నీ క్లియర్ చేయండి"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"మేనేజ్ చేయండి"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"హిస్టరీ"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"నోటిఫికేషన్ సెట్టింగ్‌లు"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"నోటిఫికేషన్ హిస్టరీ"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"కొత్తవి"</string>
@@ -731,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ఒకేసారి పలు నోటిఫికేషన్లు వస్తే, పరికర వాల్యూమ్, అలర్ట్స్ ఆటోమేటిగ్గా 2 నిమిషాలకు తగ్గించబడతాయి."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ఆఫ్ చేయండి"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"పాత నోటిఫికేషన్‌ల కోసం అన్‌లాక్ చేయండి"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"కొన్ని సెట్టింగ్‌లను మీ తల్లి/తండ్రి మేనేజ్ చేస్తున్నారు"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ఈ డివైజ్‌ను మీ తల్లి/తండ్రి మేనేజ్ చేస్తున్నారు"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"కొన్ని డివైజ్ సెట్టింగ్‌లకు PIN రక్షణ ఉంటుంది."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ఈ పరికరం మీ సంస్థకు చెందినది, కాబట్టి అది నెట్‌వర్క్ ట్రాఫిక్‌ను పర్యవేక్షించవచ్చు"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"మీ పరికరం <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>కు చెందినది, కాబట్టి అది నెట్‌వర్క్ ట్రాఫిక్‌ను పర్యవేక్షించవచ్చు"</string>
@@ -910,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"అభినందనలు! సెట్టింగ్‌లకు సిస్టమ్ UI ట్యూనర్ జోడించబడింది"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"సెట్టింగ్‌ల నుండి తీసివేయండి"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"సిస్టమ్ UI ట్యూనర్‌ను సెట్టింగ్‌ల నుండి తీసివేసి, దాని అన్ని లక్షణాలను ఉపయోగించడం ఆపివేయాలా?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"బ్లూటూత్ ఆన్ చేయాలా?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"మీ కీబోర్డ్‌ను మీ టాబ్లెట్‌తో కనెక్ట్ చేయడానికి, మీరు ముందుగా బ్లూటూత్ ఆన్ చేయాలి."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ఆన్ చేయి"</string>
@@ -957,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"కాల్ నోటిఫికేషన్‌లను ఎడిట్ చేయడం సాధ్యం కాదు."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ఈ నోటిఫికేషన్‌ల గ్రూప్‌ను ఇక్కడ కాన్ఫిగర్ చేయలేము"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ప్రాక్సీ చేయబడిన నోటిఫికేషన్"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> అందించిన సారాంశం"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"అన్ని <xliff:g id="APP_NAME">%1$s</xliff:g> నోటిఫికేషన్‌లు"</string>
     <string name="see_more_title" msgid="7409317011708185729">"మరిన్ని చూడండి"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ఈ నోటిఫికేషన్, సిస్టమ్ ద్వారా దానంతట అదే &lt;b&gt;ఆటోమేటిక్‌గా ప్రమోట్ చేయబడింది&lt;/b&gt;."</string>
@@ -1417,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"సూచించినవి"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ఇన్‌పుట్"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"అవుట్‌పుట్"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"మీడియాను మరొక పరికరానికి తరలించడానికి మీ షేర్ చేసిన సెషన్‌ను ఆపండి"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ఆపండి"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"షేరింగ్ ఆపివేయండి"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ఆడియో షేర్ అవుతోంది"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ఆడియోను షేర్ చేయండి"</string>
@@ -1750,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"తర్వాతి పేజీకి నావిగేట్ చేయండి"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ఆటోఫిల్ చేయండి"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"విస్తరించండి"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ఖచ్చితమైన లొకేషన్‌ను షేర్ చేయండి"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ఖచ్చితమైన లొకేషన్‌ను ఉపయోగించండి"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"ఖచ్చితమైన లొకేషన్‌కు సమీపంలో"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"ఖచ్చితమైన లొకేషన్"</string>
 </resources>

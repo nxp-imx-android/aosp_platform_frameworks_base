@@ -81,10 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Salvando captura de tela no perfil particular"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Captura de tela salva"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Falha ao salvar a captura de tela"</string>
-    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
-    <skip />
-    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
-    <skip />
+    <string name="screenshot_save_to" msgid="3294574417295882864">"Salvar na pasta"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"Selecionar pasta"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Tela externa"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Para que a captura de tela seja salva, o dispositivo precisa ser desbloqueado"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Tente fazer a captura de tela novamente"</string>
@@ -710,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"Remover tudo"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"Gerenciar"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"Histórico"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Configurações de notificação"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Histórico de notificações"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Novas"</string>
@@ -728,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Volume e alertas são reduzidos por até 2 min quando você recebe muitas notificações juntas."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Desativar"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Desbloqueie p/ acessar notificações antigas"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"Algumas configurações são gerenciadas pelo seu familiar responsável"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Este dispositivo é gerenciado pelo seu familiar responsável"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Algumas configurações do dispositivo são protegidas por PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Sua organização é dona deste dispositivo e pode monitorar o tráfego de rede"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"A organização <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> é dona deste dispositivo e pode monitorar o tráfego de rede"</string>
@@ -907,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"Parabéns! O sintonizador System UI foi adicionado às configurações"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"Remover das configurações"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"Remover sintonizador System UI das configurações e parar de usar todos os seus recursos?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Ativar o Bluetooth?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Para conectar o teclado ao tablet, é preciso primeiro ativar o Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Ativar"</string>
@@ -1413,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Sugestões"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Entrada"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Saída"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Interrompa sua sessão compartilhada para transferir mídia a outro dispositivo"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Parar"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Interromper compartilhamento"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Compartilhando áudio"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Compartilhar áudio"</string>
@@ -1595,7 +1593,7 @@
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Microfone, câmera e localização"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Uso recente do app"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Ver acessos recentes"</string>
-    <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Concluído"</string>
+    <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Concluir"</string>
     <string name="privacy_dialog_expand_action" msgid="9129262348628331377">"Abrir e mostrar opções"</string>
     <string name="privacy_dialog_collapse_action" msgid="277419962019466347">"Fechar"</string>
     <string name="privacy_dialog_close_app_button" msgid="8006250171305878606">"Fechar este app"</string>
@@ -1746,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navegar para a próxima página"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"preencher automaticamente"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"abrir"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Compartilhar local exato"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Usar local exato"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Perto do local exato"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"Local exato"</string>
 </resources>

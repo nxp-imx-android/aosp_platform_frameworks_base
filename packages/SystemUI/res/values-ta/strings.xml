@@ -81,10 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"தனிப்பட்ட சுயவிவரத்தில் ஸ்கிரீன்ஷாட் சேமிக்கப்படுகிறது"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"ஸ்கிரீன்ஷாட் சேமிக்கப்பட்டது"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"ஸ்கிரீன் ஷாட்டைச் சேமிக்க முடியவில்லை"</string>
-    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
-    <skip />
-    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
-    <skip />
+    <string name="screenshot_save_to" msgid="3294574417295882864">"இதில் சேமி"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"ஃபோல்டரைத் தேர்ந்தெடுங்கள்"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"வெளித் திரை"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ஸ்கிரீன்ஷாட் சேமிக்கப்படுவதற்கு முன்பு சாதனம் அன்லாக் செய்யப்பட வேண்டும்"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ஸ்கிரீன் ஷாட்டை மீண்டும் எடுக்க முயலவும்"</string>
@@ -175,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ஆடியோவைப் பகிர்தல்"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ஆப்ஸ் சாளரத்தைப் பகிர்தல்"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"பிரிவைப் பகிர்தல்"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"முழுத் திரையையும் பகிருங்கள்"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ஆப்ஸைப் பகிரும்போது, அந்த ஆப்ஸில் காட்டப்படும்/பிளே செய்யப்படும் அனைத்தும் [APP NAME] ஆப்ஸிற்குக் காட்டப்படும். கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனமாக இருங்கள்."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"உங்கள் முழுத்திரையையும் பகிரும்போது, திரையில் உள்ள அனைத்தும் [APP NAME] ஆப்ஸிற்குக் காட்டப்படும். கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனமாக இருங்கள்."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"சாளரத்தை ஸ்கிரீன்ஷாட் எடுக்கும்"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"சாளரத்தை ரெக்கார்டு செய்யும்"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"தேர்ந்தெடுக்கப்பட்ட பகுதியை ஸ்கிரீன்ஷாட் எடுக்கும்"</string>
@@ -713,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"எல்லாவற்றையும் அழி"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"நிர்வகி"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"இதுவரை வந்த அறிவிப்புகள்"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"அறிவிப்பு அமைப்புகள்"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"இதுவரையான அறிவிப்புகள்"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"புதிது"</string>
@@ -731,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ஒரே நேரம் பல அறிவிப்புகள் வரும்போது சாதன ஒலியளவும் விழிப்பூட்டலும் தானாக 2 நிமிடம் குறைக்கப்படும்."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ஆஃப் செய்"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"பழைய அறிவிப்பைப் பார்க்க அன்லாக் செய்க"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"சில அமைப்புகளை உங்கள் பெற்றோர் மட்டுமே நிர்வகிப்பார்கள்"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"இந்தச் சாதனம் உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"சில சாதன அமைப்புகள் பின் (PIN) மூலம் பாதுகாக்கப்பட்டுள்ளன."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"இந்த சாதனம் உங்கள் நிறுவனத்துக்கு உரியது, நெட்வொர்க் ட்ராஃபிக்கையும் நிறுவனமே கண்காணிக்கக்கூடும்"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"இந்த சாதனம் <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> நிறுவனத்துக்கு உரியது, நெட்வொர்க் ட்ராஃபிக்கையும் நிறுவனமே கண்காணிக்கக்கூடும்"</string>
@@ -910,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"வாழ்த்துகள்! அமைப்புகளில் System UI Tuner சேர்க்கப்பட்டது"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"அமைப்புகளிலிருந்து அகற்று"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"அமைப்புகளிலிருந்து System UI Tunerஐ அகற்றிவிட்டு, அதன் எல்லா அம்சங்களையும் பயன்படுத்துவதை நிறுத்தவா?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"புளூடூத்தை இயக்கவா?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"உங்கள் டேப்லெட்டுடன் கீபோர்டை இணைக்க, முதலில் புளூடூத்தை இயக்க வேண்டும்."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"இயக்கு"</string>
@@ -957,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"அழைப்பு அறிவிப்புகளை மாற்ற முடியாது."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"இந்த அறிவுப்புக் குழுக்களை இங்கே உள்ளமைக்க இயலாது"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ப்ராக்ஸியான அறிவிப்பு"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"சுருக்கமாக வழங்கியது: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"அனைத்து <xliff:g id="APP_NAME">%1$s</xliff:g> அறிவிப்புகளும்"</string>
     <string name="see_more_title" msgid="7409317011708185729">"மேலும் காட்டு"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"சிஸ்டத்தால் தானாகவே இந்த அறிவிப்பு &lt;b&gt;இயல்பு நிலைக்கு உயர்த்தி அமைக்கப்பட்டது&lt;/b&gt;."</string>
@@ -1417,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"பரிந்துரைக்கப்படுவது"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"உள்ளீடு"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"வெளியீடு"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"மீடியாவை வேறொரு சாதனத்திற்கு மாற்ற \'பகிரப்படும் அமர்வை\' நிறுத்தவும்"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"நிறுத்து"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"பகிர்வதை நிறுத்து"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ஆடியோ பகிரப்படுகிறது"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ஆடியோவைப் பகிர்"</string>
@@ -1750,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"அடுத்த பக்கத்திற்குச் செல்லும்"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"தானாக நிரப்பும்"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"விரிவாக்கும்"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"துல்லியமான இருப்பிடத்தைப் பகிர்"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"துல்லியமான இருப்பிடத்தைப் பயன்படுத்து"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"துல்லியமான இருப்பிடத்திற்கு அருகில்"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"துல்லியமான இருப்பிடம்"</string>
 </resources>

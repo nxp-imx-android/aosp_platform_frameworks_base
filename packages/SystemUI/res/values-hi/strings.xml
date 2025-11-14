@@ -173,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ऑडियो शेयर करें"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ऐप्लिकेशन की विंडो शेयर करें"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"टैब को शेयर करें"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"पूरी स्क्रीन शेयर करें"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"जब कोई ऐप्लिकेशन शेयर किया जाता है, तो उस पर दिख रहा या चलाया जा रहा कॉन्टेंट [APP NAME] पर दिखता है. इसलिए, पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो जैसी चीज़ों को लेकर सावधानी बरतें."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"जब पूरी स्क्रीन शेयर की जाती है, तो आपकी स्क्रीन पर दिख रहा कॉन्टेंट [APP NAME] पर दिखता है. इसलिए, पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो जैसी चीज़ों को लेकर सावधानी बरतें."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"विंडो का स्क्रीनशॉट लें"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"विंडो को रिकॉर्ड करें"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"चुने गए हिस्से का स्क्रीनशॉट लें"</string>
@@ -711,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"सभी हटाएं"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"मैनेज करें"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"इतिहास"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"सूचना सेटिंग"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"सूचनाओं का इतिहास"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"नई सूचनाएं"</string>
@@ -729,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"एक साथ कई सूचनाएं मिलने पर, डिवाइस में सूचनाओं से होने वाली आवाज़ और सूचनाएं, दो मिनट के लिए अपने-आप कम हो जाएंगी."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"बंद करें"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"पुरानी सूचाएं देखने के लिए अनलॉक करें"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"कुछ सेटिंग आपके माता-पिता मैनेज करते हैं"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"इस डिवाइस को आपके माता-पिता मैनेज करते हैं"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"डिवाइस की कुछ सेटिंग, पिन से सुरक्षित की गई हैं."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"इस डिवाइस का मालिकाना हक आपके संगठन के पास है. आपका संगठन, नेटवर्क के ट्रैफ़िक की निगरानी कर सकता है"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"इस डिवाइस का मालिकाना हक <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> के पास है. आपका संगठन, नेटवर्क के ट्रैफ़िक की निगरानी कर सकता है"</string>
@@ -908,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"बधाई हो! सिस्टम यूज़र इंटरफ़ेस (यूआई) ट्यूनर को सेटिंग में जोड़ दिया गया है"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"सेटिंग से निकालें"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"सेटिंग से सिस्टम यूज़र इंटरफ़ेस (यूआई) ट्यूनर निकालें और इसकी सभी सुविधाओं का इस्तेमाल रोक दें?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"ब्लूटूथ चालू करें?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"अपने कीबोर्ड को अपने टैबलेट से कनेक्ट करने के लिए, आपको पहले ब्लूटूथ चालू करना होगा."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"चालू करें"</string>
@@ -955,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"कॉल से जुड़ी सूचनाओं को ब्लॉक नहीं किया जा सकता."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"सूचनाओं के इस समूह को यहां कॉन्फ़िगर नहीं किया जा सकता"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"प्रॉक्सी सूचना"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> से मिली खास जानकारी"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"सभी <xliff:g id="APP_NAME">%1$s</xliff:g> सूचनाएं"</string>
     <string name="see_more_title" msgid="7409317011708185729">"ज़्यादा देखें"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"सिस्टम ने अपने-आप इस सूचना का &lt;b&gt;लेवल बढ़ाकर, इसे डिफ़ॉल्ट&lt;/b&gt; के तौर पर सेट किया था."</string>
@@ -1415,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"सुझाया गया"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"इनपुट"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"आउटपुट"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"मीडिया को किसी दूसरे डिवाइस में ट्रांसफ़र करने के लिए, अपने शेयर किए गए सेशन को बंद करें"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"बंद करें"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"शेयर करना बंद करें"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ऑडियो शेयर किया जा रहा है"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ऑडियो शेयर करें"</string>
@@ -1748,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"अगले पेज पर जाएं"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ऑटोमैटिक भरने की सुविधा"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"बड़ा करें"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"जगह की सटीक जानकारी शेयर करें"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"जगह की सटीक जानकारी का इस्तेमाल करें"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"जगह की काफ़ी हद तक सटीक जानकारी"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"जगह की सटीक जानकारी"</string>
 </resources>

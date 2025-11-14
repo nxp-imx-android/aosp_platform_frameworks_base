@@ -81,10 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Lagrer skjermbilde i den private profilen"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Skjermdumpen er lagret"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Kunne ikke lagre skjermbilde"</string>
-    <!-- no translation found for screenshot_save_to (3294574417295882864) -->
-    <skip />
-    <!-- no translation found for screenshot_select_folder (4770537414396025502) -->
-    <skip />
+    <string name="screenshot_save_to" msgid="3294574417295882864">"Lagre i"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"Velg mappen"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Ekstern skjerm"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Enheten må være låst opp før skjermbildet kan lagres"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Prøv å ta skjermbilde på nytt"</string>
@@ -175,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Del lyd"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Del appvinduet"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Del fanen"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Del hele skjermen"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Når du deler en app, er alt som vises eller spilles av i appen, synlig for [APPNAVN]. Vær derfor forsiktig med for eksempel passord, betalingsopplysninger, meldinger, bilder, lyd og video."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Når du deler hele skjermen, er alt på skjermen synlig for [APPNAVN]. Vær derfor forsiktig med for eksempel passord, betalingsopplysninger, meldinger, bilder, lyd og video."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Ta skjermbilde av vinduet"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Ta opp vinduet"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Ta skjermbilde av det valgte området"</string>
@@ -713,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"Fjern alt"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"Administrer"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"Logg"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Varslingsinnstillinger"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Varsellogg"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Ny"</string>
@@ -731,10 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Enhetsvolumet og varsler reduseres automatisk i opptil 2 min når du får for mange varsler samtidig."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Slå av"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Lås opp for å se eldre varsler"</string>
-    <!-- no translation found for quick_settings_disclosure_parental_controls (5560100935261229784) -->
-    <skip />
-    <!-- no translation found for quick_settings_disclosure_parental_controls_legacy (4116797775361496057) -->
-    <skip />
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"Noen innstillinger administreres av forelderen din"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Denne enheten administreres av forelderen din"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Noen enhetsinnstillinger er beskyttet med PIN-kode."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Organisasjonen din eier denne enheten og kan overvåke nettverkstrafikken"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> eier denne enheten og kan overvåke nettverkstrafikken"</string>
@@ -910,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"Gratulerer! System UI Tuner er lagt til i Innstillinger"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"Fjern fra Innstillinger"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"Vil du fjerne System UI Tuner fra Innstillinger og slutte å bruke alle de tilknyttede funksjonene?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Vil du slå på Bluetooth?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"For å koble tastaturet til nettbrettet ditt må du først slå på Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Slå på"</string>
@@ -957,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Anropsvarsler kan ikke endres."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Denne varselgruppen kan ikke konfigureres her"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Omdirigert varsel"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"Oppsummert av <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g>: alle varsler"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Se mer"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Dette varselet ble automatisk &lt;b&gt;oppgradert til standard&lt;/b&gt; av systemet."</string>
@@ -1170,7 +1166,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Ikke slå på"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Slå på hurtigtasten"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Hurtigtasten <xliff:g id="ID_1">%1$s</xliff:g> er slått på"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> er hurtigtasten for å bruke <xliff:g id="ID_4">^4</xliff:g>, som er en tilgjengelighetsfunksjon. Dette gjør at du raskt kan zoome inn på skjermen for å gjøre innhold større. Når forstørrelse er på, trykker du på <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> og «+» eller «-» for å justere zoomnivået."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> er hurtigtasten for å bruke <xliff:g id="ID_4">^4</xliff:g>, som er en tilgjengelighetsfunksjon. Dette gjør at du raskt kan zoome inn på skjermen for å gjøre innhold større. Når forstørring er på, trykker du på <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> og «+» eller «-» for å justere zoomnivået."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Slå av hurtigtasten"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Behold på"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> er hurtigtasten for å bruke <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> er en skjermleser du kan bruke for å få lest opp elementer. Dette kan være nyttig for personer som har vanskeligheter med å se skjermen. Dette kan endre hvordan enheten din fungerer."</string>
@@ -1417,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Foreslått"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Inngang"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Utgang"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Stopp den delte økten for å flytte medieinnholdet til en annen enhet"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Stopp"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Slutt å dele"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Deler lyd"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Del lyd"</string>
@@ -1750,12 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"gå til neste side"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofyll"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"vis"</string>
-    <!-- no translation found for location_button_text_share_precise_location (5341882050169860712) -->
-    <skip />
-    <!-- no translation found for location_button_text_use_precise_location (3499475231656390476) -->
-    <skip />
-    <!-- no translation found for location_button_text_near_precise_location (3607275724182981412) -->
-    <skip />
-    <!-- no translation found for location_button_text_precise_location (4441259889842542799) -->
-    <skip />
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Del nøyaktig posisjon"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Bruk nøyaktig posisjon"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Nær nøyaktig posisjon"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"Nøyaktig posisjon"</string>
 </resources>
