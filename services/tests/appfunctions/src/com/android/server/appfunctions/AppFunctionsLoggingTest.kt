@@ -42,7 +42,6 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.uri.UriGrantsManagerInternal
 import com.google.common.util.concurrent.MoreExecutors
-import java.util.concurrent.Executors
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -85,12 +84,6 @@ class AppFunctionsLoggingTest {
             },
             mAppFunctionsLoggerWrapper,
             mock<AppFunctionAgentAllowlistStorage>(),
-            MultiUserAppFunctionAccessHistory(
-                ServiceConfigImpl(),
-                Executors.newSingleThreadScheduledExecutor(),
-            ) { _ ->
-                mock()
-            },
             mock<MultiUserDynamicAppFunctionRegistry>(),
             MoreExecutors.directExecutor(),
         )

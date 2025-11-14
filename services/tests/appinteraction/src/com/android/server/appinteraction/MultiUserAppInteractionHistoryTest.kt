@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.appfunctions
+package com.android.server.appinteraction
 
 import android.content.pm.UserInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -30,27 +30,26 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
-class MultiUserAppFunctionAccessHistoryTest {
+class MultiUserAppInteractionHistoryTest {
 
     private lateinit var serviceConfig: ServiceConfig
 
     private lateinit var scheduledExecutorService: FakeScheduledExecutorService
 
-    private lateinit var multiUserAccessHistory: MultiUserAppFunctionAccessHistory
+    private lateinit var multiUserInteractionHistory: MultiUserAppInteractionHistory
 
-    private lateinit var accessHistoryMap: MutableMap<Int, AppFunctionAccessHistory>
+    private lateinit var interactionHistoryMap: MutableMap<Int, AppInteractionHistory>
 
     @Before
     fun setup() {
-        accessHistoryMap = mutableMapOf()
+        interactionHistoryMap = mutableMapOf()
         serviceConfig = ServiceConfigImpl()
         scheduledExecutorService = FakeScheduledExecutorService()
-        multiUserAccessHistory =
-            MultiUserAppFunctionAccessHistory(serviceConfig, scheduledExecutorService) { userHandle
-                ->
-                val accessHistory = mock<AppFunctionAccessHistory>()
-                accessHistoryMap[userHandle.identifier] = accessHistory
-                accessHistory
+        multiUserInteractionHistory =
+            MultiUserAppInteractionHistory(serviceConfig, scheduledExecutorService) { userHandle ->
+                val interactionHistory = mock<AppInteractionHistory>()
+                interactionHistoryMap[userHandle.identifier] = interactionHistory
+                interactionHistory
             }
     }
 
@@ -58,48 +57,48 @@ class MultiUserAppFunctionAccessHistoryTest {
     fun switchUser_afterUserUnlocked_success() {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
 
-        multiUserAccessHistory.onUserUnlocked(targetUser)
-        val userAccessHistory = multiUserAccessHistory.asUser(10)
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
+        val userAccessHistory = multiUserInteractionHistory.asUser(10)
 
         assertThat(userAccessHistory).isNotNull()
-        assertThat(userAccessHistory).isEqualTo(accessHistoryMap[10])
+        assertThat(userAccessHistory).isEqualTo(interactionHistoryMap[10])
     }
 
     @Test
     fun switchUser_beforeUserUnlocked_fail() {
-        assertFailsWith<IllegalStateException> { multiUserAccessHistory.asUser(10) }
+        assertFailsWith<IllegalStateException> { multiUserInteractionHistory.asUser(10) }
     }
 
     @Test
     fun switchUser_afterUserStopping_fail() {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
-        multiUserAccessHistory.onUserUnlocked(targetUser)
-        multiUserAccessHistory.onUserStopping(targetUser)
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
+        multiUserInteractionHistory.onUserStopping(targetUser)
 
-        assertFailsWith<IllegalStateException> { multiUserAccessHistory.asUser(10) }
+        assertFailsWith<IllegalStateException> { multiUserInteractionHistory.asUser(10) }
     }
 
     @Test
     fun schedulePeriodicCleanUp_afterUserUnlocked() {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
 
-        multiUserAccessHistory.onUserUnlocked(targetUser)
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
         scheduledExecutorService.fastForwardTime(1)
         scheduledExecutorService.fastForwardTime(
-            serviceConfig.appFunctionExpiredAccessHistoryDeletionIntervalMillis
+            serviceConfig.appInteractionExpiredHistoryDeletionIntervalMillis
         )
         scheduledExecutorService.fastForwardTime(
-            serviceConfig.appFunctionExpiredAccessHistoryDeletionIntervalMillis
+            serviceConfig.appInteractionExpiredHistoryDeletionIntervalMillis
         )
         scheduledExecutorService.fastForwardTime(
-            serviceConfig.appFunctionExpiredAccessHistoryDeletionIntervalMillis
+            serviceConfig.appInteractionExpiredHistoryDeletionIntervalMillis
         )
 
         assertThat(scheduledExecutorService.futures).hasSize(1)
-        val userAccessHistory = multiUserAccessHistory.asUser(10)
+        val userAccessHistory = multiUserInteractionHistory.asUser(10)
         verify(userAccessHistory, times(4))
-            .deleteExpiredAppFunctionAccessHistories(
-                eq(serviceConfig.appFunctionAccessHistoryRetentionMillis)
+            .deleteExpiredAppInteractionHistories(
+                eq(serviceConfig.appInteractionHistoryRetentionMillis)
             )
     }
 
@@ -107,19 +106,19 @@ class MultiUserAppFunctionAccessHistoryTest {
     fun periodicCleanUpStop_afterUserStopping() {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
 
-        multiUserAccessHistory.onUserUnlocked(targetUser)
-        val userAccessHistory = multiUserAccessHistory.asUser(10)
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
+        val userAccessHistory = multiUserInteractionHistory.asUser(10)
         scheduledExecutorService.fastForwardTime(1)
-        multiUserAccessHistory.onUserStopping(targetUser)
+        multiUserInteractionHistory.onUserStopping(targetUser)
         scheduledExecutorService.fastForwardTime(
-            serviceConfig.appFunctionExpiredAccessHistoryDeletionIntervalMillis
+            serviceConfig.appInteractionExpiredHistoryDeletionIntervalMillis
         )
 
         assertThat(scheduledExecutorService.futures).isEmpty()
         // Should only trigger once as the job should be cancel during the second schedule
         verify(userAccessHistory, times(1))
-            .deleteExpiredAppFunctionAccessHistories(
-                eq(serviceConfig.appFunctionAccessHistoryRetentionMillis)
+            .deleteExpiredAppInteractionHistories(
+                eq(serviceConfig.appInteractionHistoryRetentionMillis)
             )
     }
 
@@ -127,9 +126,9 @@ class MultiUserAppFunctionAccessHistoryTest {
     fun scheduleExactlyOneCleanUp_afterMultiUserUnlocked() {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
 
-        multiUserAccessHistory.onUserUnlocked(targetUser)
-        multiUserAccessHistory.onUserUnlocked(targetUser)
-        multiUserAccessHistory.onUserUnlocked(targetUser)
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
 
         assertThat(scheduledExecutorService.futures).hasSize(1)
     }
@@ -138,6 +137,6 @@ class MultiUserAppFunctionAccessHistoryTest {
     fun stoppingUser_nonStartedOne() {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
 
-        multiUserAccessHistory.onUserStopping(targetUser)
+        multiUserInteractionHistory.onUserStopping(targetUser)
     }
 }

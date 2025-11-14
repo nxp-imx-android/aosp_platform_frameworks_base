@@ -14,47 +14,51 @@
  * limitations under the License.
  */
 
-package com.android.server.appfunctions;
+package com.android.server.appinteraction;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.WorkerThread;
-import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
+import android.app.AppInteractionAttribution;
 import android.database.Cursor;
 
-/** Manages the AppFunction Access Histories. */
-public interface AppFunctionAccessHistory extends AutoCloseable {
-    /** Queries the AppFunction access histories. */
+/** Manages the App Interaction Histories. */
+public interface AppInteractionHistory extends AutoCloseable {
+    /** Queries the App Interaction histories. */
     @Nullable
-    Cursor queryAppFunctionAccessHistory(
+    Cursor queryAppInteractionHistories(
             @Nullable String[] projection,
             @Nullable String selection,
             @Nullable String[] selectionArgs,
             @Nullable String sortOrder);
 
     /**
-     * Inserts an AppFunction access history.
+     * Inserts an App Interaction history.
      *
      * @return The row id or -1 if fail to insert.
      */
     @WorkerThread
-    long insertAppFunctionAccessHistory(
-            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long accessTime, long duration);
+    long insertAppInteractionHistory(
+            @NonNull String sourcePackage,
+            @NonNull String targetPackage,
+            @Nullable AppInteractionAttribution appInteractionAttribution,
+            long accessTime,
+            long duration);
 
     /**
-     * Deletes expired AppFunction access histories.
+     * Deletes expired App Interaction histories.
      *
      * @param retentionMillis The maximum age of records to keep, in milliseconds. Records older
      *     than this will be deleted.
      */
     @WorkerThread
-    void deleteExpiredAppFunctionAccessHistories(long retentionMillis);
+    void deleteExpiredAppInteractionHistories(long retentionMillis);
 
-    /** Deletes AppFunction access histories that are associated with the given packageName. */
+    /** Deletes App Interaction histories that are associated with the given packageName. */
     @WorkerThread
-    void deleteAppFunctionAccessHistories(@NonNull String packageName);
+    void deleteAppInteractionHistories(@NonNull String packageName);
 
-    /** Deletes all AppFunction access histories. */
+    /** Deletes all App Interaction histories. */
     @WorkerThread
     void deleteAll();
 }

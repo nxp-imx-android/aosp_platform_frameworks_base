@@ -87,7 +87,6 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
-import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.permission.flags.Flags;
@@ -151,8 +150,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final DeviceSettingHelper mDeviceSettingHelper;
 
-    private final MultiUserAppFunctionAccessHistory mMultiUserAppFunctionAccessHistory;
-
     private final MultiUserDynamicAppFunctionRegistry mDynamicAppFunctionRegistry;
 
     private final Object mAgentAllowlistLock = new Object();
@@ -199,7 +196,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull UriGrantsManagerInternal uriGrantsManagerInternal,
             @NonNull AppFunctionsLoggerWrapper loggerWrapper,
             @NonNull AppFunctionAgentAllowlistStorage agentAllowlistStorage,
-            @NonNull MultiUserAppFunctionAccessHistory multiUserAppFunctionAccessHistory,
             @NonNull MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             @NonNull Executor backgroundExecutor) {
         this(
@@ -219,7 +215,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 uriGrantsManagerInternal,
                 new DeviceSettingHelperImpl(context),
                 agentAllowlistStorage,
-                multiUserAppFunctionAccessHistory,
                 dynamicAppFunctionRegistry,
                 backgroundExecutor,
                 new AppFunctionMetadataReader());
@@ -238,7 +233,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             UriGrantsManagerInternal uriGrantsManagerInternal,
             DeviceSettingHelper deviceSettingHelper,
             AppFunctionAgentAllowlistStorage agentAllowlistStorage,
-            MultiUserAppFunctionAccessHistory multiUserAppFunctionAccessHistory,
             MultiUserDynamicAppFunctionRegistry dynamicAppFunctionRegistry,
             Executor backgroundExecutor,
             AppFunctionMetadataReader appFunctionMetadataReader) {
@@ -257,8 +251,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         mUriGrantsManagerInternal.newUriPermissionOwner("appfunctions"));
         mDeviceSettingHelper = Objects.requireNonNull(deviceSettingHelper);
         mAgentAllowlistStorage = Objects.requireNonNull(agentAllowlistStorage);
-        mMultiUserAppFunctionAccessHistory =
-                Objects.requireNonNull(multiUserAppFunctionAccessHistory);
         mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
@@ -272,9 +264,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         PackageMonitor pkgMonitorForUser =
                 AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
-        if (accessCheckFlagsEnabled()) {
-            mMultiUserAppFunctionAccessHistory.onUserUnlocked(user);
-        }
 
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
             mDynamicAppFunctionRegistry.onUserUnlocked(user);
@@ -296,9 +285,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (mPackageMonitors.contains(userIdentifier)) {
             mPackageMonitors.get(userIdentifier).unregister();
             mPackageMonitors.delete(userIdentifier);
-        }
-        if (accessCheckFlagsEnabled()) {
-            mMultiUserAppFunctionAccessHistory.onUserStopping(user);
         }
     }
 
@@ -790,12 +776,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     @EnforcePermission(Manifest.permission.MANAGE_APP_FUNCTION_ACCESS)
     public void clearAccessHistory(int userId) {
         clearAccessHistory_enforcePermission();
-        enforceClearAccessHistoryUserPermission(userId);
-        try {
-            mMultiUserAppFunctionAccessHistory.asUser(userId).deleteAll();
-        } catch (IllegalStateException e) {
-            Slog.w(TAG, "Unable to clear access history", e);
-        }
+        // TODO(b/459347717): Remove this alone with public test API
     }
 
     @Override
@@ -1283,23 +1264,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     private void recordAppFunctionAccess(@NonNull ExecuteAppFunctionAidlRequest aidlRequest) {
-        if (!accessCheckFlagsEnabled()) return;
-        final long duration = SystemClock.elapsedRealtime() - aidlRequest.getRequestTime();
-        final long accessTime = aidlRequest.getRequestWallTime();
-        mBackgroundExecutor.execute(
-                () -> {
-                    try {
-                        mMultiUserAppFunctionAccessHistory
-                                .asUser(aidlRequest.getUserHandle().getIdentifier())
-                                .insertAppFunctionAccessHistory(aidlRequest, accessTime, duration);
-                    } catch (IllegalStateException e) {
-                        Slog.e(
-                                TAG,
-                                "Fail to insert new access history to user "
-                                        + aidlRequest.getUserHandle().getIdentifier(),
-                                e);
-                    }
-                });
+        // TODO(b/459347717): Use AppInteractionService
     }
 
     private static class AppFunctionMetadataObserver implements ObserverCallback {

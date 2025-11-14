@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.appfunctions;
-
-import static com.android.server.appfunctions.AppFunctionExecutors.SCHEDULED_EXECUTOR_SERVICE;
+package com.android.server.appinteraction;
 
 import android.annotation.NonNull;
 import android.content.Context;
@@ -28,21 +26,22 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
 
 import java.util.Objects;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-/** Manages {@link AppFunctionAccessHistory} in a multi-user environment. */
-public class MultiUserAppFunctionAccessHistory {
-    private static final String TAG = "MultiUserAppFunctionAccess";
+/** Manages {@link AppInteractionHistory} in a multi-user environment. */
+public class MultiUserAppInteractionHistory {
+    private static final String TAG = "MultiUserAppInteraction";
 
-    private static MultiUserAppFunctionAccessHistory sInstance = null;
+    private static MultiUserAppInteractionHistory sInstance = null;
 
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
-    private final SparseArray<AppFunctionAccessHistory> mUserAccessHistoryMap = new SparseArray<>();
+    private final SparseArray<AppInteractionHistory> mUserHistoryMap = new SparseArray<>();
 
     private final SparseArray<ScheduledFuture<?>> mUserPeriodicCleanUpFutures = new SparseArray<>();
 
@@ -50,42 +49,41 @@ public class MultiUserAppFunctionAccessHistory {
 
     private final ScheduledExecutorService mScheduledExecutorService;
 
-    private final Function<UserHandle, AppFunctionAccessHistory> mUserAccessHistoryFactory;
+    private final Function<UserHandle, AppInteractionHistory> mUserHistoryFactory;
 
-    public MultiUserAppFunctionAccessHistory(
+    public MultiUserAppInteractionHistory(
             @NonNull ServiceConfig serviceConfig,
             @NonNull ScheduledExecutorService scheduledExecutorService,
-            @NonNull Function<UserHandle, AppFunctionAccessHistory> userAccessHistoryFactory) {
+            @NonNull Function<UserHandle, AppInteractionHistory> userHistoryFactory) {
         mServiceConfig = Objects.requireNonNull(serviceConfig);
         mScheduledExecutorService = Objects.requireNonNull(scheduledExecutorService);
-        mUserAccessHistoryFactory = Objects.requireNonNull(userAccessHistoryFactory);
+        mUserHistoryFactory = Objects.requireNonNull(userHistoryFactory);
     }
 
     /**
      * Called after an existing user is unlocked.
      *
-     * <p>This will start tracking {@code user}'s AppFunction access history.
+     * <p>This will start tracking {@code user}'s App Interaction history.
      */
     public void onUserUnlocked(@NonNull SystemService.TargetUser user) {
         synchronized (mLock) {
-            if (!mUserAccessHistoryMap.contains(user.getUserIdentifier())) {
-                mUserAccessHistoryMap.put(
-                        user.getUserIdentifier(),
-                        mUserAccessHistoryFactory.apply(user.getUserHandle()));
+            if (!mUserHistoryMap.contains(user.getUserIdentifier())) {
+                mUserHistoryMap.put(
+                        user.getUserIdentifier(), mUserHistoryFactory.apply(user.getUserHandle()));
             }
-            schedulePeriodicAccessHistoryCleanUpJob(user.getUserIdentifier());
+            schedulePeriodicInteractionCleanUpJob(user.getUserIdentifier());
         }
     }
 
     /**
      * Called when an existing user is stopping.
      *
-     * <p>This will stop tracking {@code user}'s AppFunction access history.
+     * <p>This will stop tracking {@code user}'s App Interaction history.
      */
     public void onUserStopping(@NonNull SystemService.TargetUser user) {
         synchronized (mLock) {
-            final AppFunctionAccessHistory removed =
-                    mUserAccessHistoryMap.removeReturnOld(user.getUserIdentifier());
+            final AppInteractionHistory removed =
+                    mUserHistoryMap.removeReturnOld(user.getUserIdentifier());
             if (removed != null) {
                 cancelScheduledCleanUpJob(user.getUserHandle());
                 try {
@@ -98,7 +96,7 @@ public class MultiUserAppFunctionAccessHistory {
     }
 
     @GuardedBy("mLock")
-    private void schedulePeriodicAccessHistoryCleanUpJob(int userId) {
+    private void schedulePeriodicInteractionCleanUpJob(int userId) {
         if (mScheduledExecutorService.isShutdown()) {
             Slog.e(TAG, "Scheduled executor service is shut down.");
             return;
@@ -116,20 +114,20 @@ public class MultiUserAppFunctionAccessHistory {
                         () -> {
                             try {
                                 asUser(userId)
-                                        .deleteExpiredAppFunctionAccessHistories(
+                                        .deleteExpiredAppInteractionHistories(
                                                 mServiceConfig
-                                                    .getAppFunctionAccessHistoryRetentionMillis());
+                                                        .getAppInteractionHistoryRetentionMillis());
                             } catch (IllegalStateException e) {
                                 Slog.w(
                                         TAG,
-                                        "Fail to delete expired AppFunction access history for user"
+                                        "Fail to delete expired App Interaction history for user"
                                                 + " "
                                                 + userId,
                                         e);
                             }
                         },
                         0,
-                        mServiceConfig.getAppFunctionExpiredAccessHistoryDeletionIntervalMillis(),
+                        mServiceConfig.getAppInteractionExpiredHistoryDeletionIntervalMillis(),
                         TimeUnit.MILLISECONDS);
         mUserPeriodicCleanUpFutures.put(userId, scheduledFuture);
     }
@@ -144,15 +142,15 @@ public class MultiUserAppFunctionAccessHistory {
     }
 
     /**
-     * Starts a {@link AppFunctionAccessHistory} as {@code userId}. The caller can use this to
-     * interact with {@link AppFunctionAccessHistory} for the target user.
+     * Starts a {@link AppInteractionHistory} as {@code userId}. The caller can use this to interact
+     * with {@link AppInteractionHistory} for the target user.
      *
      * @throws IllegalStateException if the {@code user} is not unlocked yet.
      */
     @NonNull
-    public AppFunctionAccessHistory asUser(int userId) throws IllegalStateException {
+    public AppInteractionHistory asUser(int userId) throws IllegalStateException {
         synchronized (mLock) {
-            final AppFunctionAccessHistory cache = mUserAccessHistoryMap.get(userId);
+            final AppInteractionHistory cache = mUserHistoryMap.get(userId);
             if (cache == null) {
                 throw new IllegalStateException("User " + userId + " is not unlocked yet");
             }
@@ -161,20 +159,20 @@ public class MultiUserAppFunctionAccessHistory {
     }
 
     /** Gets a singleton instance. */
-    public static synchronized MultiUserAppFunctionAccessHistory getInstance(
+    public static synchronized MultiUserAppInteractionHistory getInstance(
             @NonNull Context context) {
         if (sInstance == null) {
             sInstance =
-                    new MultiUserAppFunctionAccessHistory(
+                    new MultiUserAppInteractionHistory(
                             new ServiceConfigImpl(),
-                            SCHEDULED_EXECUTOR_SERVICE,
+                            Executors.newSingleThreadScheduledExecutor(
+                                    new NamedThreadFactory("AppInteractionScheduledExecutors")),
                             /* userAccessHistoryFactory */ new Function<>() {
                                 @Override
                                 @NonNull
-                                public AppFunctionAccessHistory apply(
-                                        @NonNull UserHandle userHandle) {
+                                public AppInteractionHistory apply(@NonNull UserHandle userHandle) {
                                     Objects.requireNonNull(userHandle);
-                                    return new AppFunctionSQLiteAccessHistory(
+                                    return new AppInteractionSQLiteHistory(
                                             context.createContextAsUser(
                                                     userHandle, /* flags= */ 0));
                                 }

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.appfunctions;
+package com.android.server.appinteraction;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.appfunctions.AppFunctionAttribution;
+import android.app.AppInteractionAttribution;
 import android.app.appfunctions.AppFunctionManager.AccessHistory;
-import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -33,13 +32,14 @@ import android.util.Slog;
 
 import java.util.Objects;
 
-/** The database helper for managing AppFunction access histories. */
-public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
-        implements AppFunctionAccessHistory {
+/** The database helper for managing App Interaction histories. */
+public final class AppInteractionSQLiteHistory extends SQLiteOpenHelper
+        implements AppInteractionHistory {
 
     private static final class AccessHistoryTable {
-        static final String DB_TABLE = "appfunction_access";
+        static final String DB_TABLE = "appinteraction";
 
+        // TODO(b/452916227): Update to use App Interaction contracts
         static final String CREATE_TABLE_SQL =
                 "CREATE TABLE IF NOT EXISTS "
                         + DB_TABLE
@@ -55,8 +55,6 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
                         + AccessHistory.COLUMN_CUSTOM_INTERACTION_TYPE
                         + " TEXT, "
                         + AccessHistory.COLUMN_INTERACTION_URI
-                        + " TEXT, "
-                        + AccessHistory.COLUMN_THREAD_ID
                         + " TEXT, "
                         + AccessHistory.COLUMN_ACCESS_TIME
                         + " INTEGER, "
@@ -79,13 +77,13 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
         static final String DELETE_TABLE_DATA = "DELETE FROM " + DB_TABLE;
     }
 
-    private static final String DB_NAME = "appfunction_access.db";
+    private static final String DB_NAME = "appinteraction.db";
 
     private static final int DB_VERSION = 1;
 
-    private static final String TAG = "AppFunctionDatabase";
+    private static final String TAG = "AppInteractionDatabase";
 
-    AppFunctionSQLiteAccessHistory(@NonNull Context context) {
+    AppInteractionSQLiteHistory(@NonNull Context context) {
         super(context, DB_NAME, /* factory= */ null, DB_VERSION);
     }
 
@@ -104,7 +102,7 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
 
     @Override
     @Nullable
-    public Cursor queryAppFunctionAccessHistory(
+    public Cursor queryAppInteractionHistories(
             @Nullable String[] projection,
             @Nullable String selection,
             @Nullable String[] selectionArgs,
@@ -135,14 +133,24 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
     }
 
     @Override
-    public long insertAppFunctionAccessHistory(
-            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long accessTime, long duration) {
-        Objects.requireNonNull(aidlRequest);
+    public long insertAppInteractionHistory(
+            @NonNull String sourcePackage,
+            @NonNull String targetPackage,
+            @Nullable AppInteractionAttribution appInteractionAttribution,
+            long accessTime,
+            long duration) {
+        Objects.requireNonNull(sourcePackage);
+        Objects.requireNonNull(targetPackage);
 
         try {
             final SQLiteDatabase db = getWritableDatabase();
             final ContentValues values =
-                    prepareAppFunctionAccessContentValue(aidlRequest, accessTime, duration);
+                    prepareAppInteractionContentValue(
+                            sourcePackage,
+                            targetPackage,
+                            appInteractionAttribution,
+                            accessTime,
+                            duration);
 
             return db.insert(AccessHistoryTable.DB_TABLE, /* nullColumnHack= */ null, values);
         } catch (Exception e) {
@@ -152,36 +160,34 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
     }
 
     @NonNull
-    private ContentValues prepareAppFunctionAccessContentValue(
-            @NonNull ExecuteAppFunctionAidlRequest aidlRequest, long accessTime, long duration) {
-        Objects.requireNonNull(aidlRequest);
+    private ContentValues prepareAppInteractionContentValue(
+            @NonNull String sourcePackage,
+            @NonNull String targetPackage,
+            @Nullable AppInteractionAttribution appInteractionAttribution,
+            long accessTime,
+            long duration) {
+        Objects.requireNonNull(sourcePackage);
+        Objects.requireNonNull(targetPackage);
 
         final ContentValues values = new ContentValues();
 
-        values.put(
-                AccessHistory.COLUMN_AGENT_PACKAGE_NAME,
-                Objects.requireNonNull(aidlRequest.getCallingPackage()));
-        final String targetPackage =
-                Objects.requireNonNull(aidlRequest.getClientRequest().getTargetPackageName());
+        values.put(AccessHistory.COLUMN_AGENT_PACKAGE_NAME, sourcePackage);
         values.put(AccessHistory.COLUMN_TARGET_PACKAGE_NAME, targetPackage);
         values.put(AccessHistory.COLUMN_ACCESS_TIME, accessTime);
         values.put(AccessHistory.COLUMN_DURATION, duration);
 
-        final AppFunctionAttribution attribution = aidlRequest.getClientRequest().getAttribution();
-
-        if (attribution != null) {
-            values.put(AccessHistory.COLUMN_INTERACTION_TYPE, attribution.getInteractionType());
-            final String customInteractionType = attribution.getCustomInteractionType();
+        if (appInteractionAttribution != null) {
+            values.put(
+                    AccessHistory.COLUMN_INTERACTION_TYPE,
+                    appInteractionAttribution.getInteractionType());
+            final String customInteractionType =
+                    appInteractionAttribution.getCustomInteractionType();
             if (customInteractionType != null) {
                 values.put(AccessHistory.COLUMN_CUSTOM_INTERACTION_TYPE, customInteractionType);
             }
-            final Uri interactionUri = attribution.getInteractionUri();
+            final Uri interactionUri = appInteractionAttribution.getInteractionUri();
             if (interactionUri != null) {
                 values.put(AccessHistory.COLUMN_INTERACTION_URI, interactionUri.toString());
-            }
-            final String threadId = attribution.getThreadId();
-            if (threadId != null) {
-                values.put(AccessHistory.COLUMN_THREAD_ID, threadId);
             }
         }
 
@@ -189,7 +195,7 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
     }
 
     @Override
-    public void deleteExpiredAppFunctionAccessHistories(long retentionMillis) {
+    public void deleteExpiredAppInteractionHistories(long retentionMillis) {
         try {
             final SQLiteDatabase db = getWritableDatabase();
             final long cutOffTimestamp = System.currentTimeMillis() - retentionMillis;
@@ -202,7 +208,7 @@ public final class AppFunctionSQLiteAccessHistory extends SQLiteOpenHelper
     }
 
     @Override
-    public void deleteAppFunctionAccessHistories(@NonNull String packageName) {
+    public void deleteAppInteractionHistories(@NonNull String packageName) {
         Objects.requireNonNull(packageName);
 
         try {
