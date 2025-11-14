@@ -19,7 +19,7 @@ import static android.view.contentcapture.ContentCaptureHelper.sDebug;
 import static android.view.contentcapture.ContentCaptureHelper.sVerbose;
 import static android.view.contentcapture.ContentCaptureHelper.toSet;
 import static android.view.contentprotection.flags.Flags.FLAG_SET_CONTENT_PROTECTION_ALLOWLIST_ENABLED;
-
+import static android.view.contentcapture.flags.Flags.deprecateSetContentCaptureEnabled;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -33,11 +33,15 @@ import android.annotation.UiThread;
 import android.annotation.UserIdInt;
 import android.app.Activity;
 import android.app.Service;
+import android.app.compat.CompatChanges;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledSince;
 import android.content.ComponentName;
 import android.content.ContentCaptureOptions;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -220,6 +224,10 @@ import java.util.function.Consumer;
 public final class ContentCaptureManager {
 
     private static final String TAG = ContentCaptureManager.class.getSimpleName();
+
+    @ChangeId
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CINNAMON_BUN)
+    private static final long DEPRECATE_SET_CONTENT_CAPTURE_ENABLED = 454307959L;
 
     /** @hide */
     public static final boolean DEBUG = false;
@@ -810,10 +818,24 @@ public final class ContentCaptureManager {
     /**
      * Called by apps to explicitly enable or disable content capture.
      *
-     * <p><b>Note: </b> this call is not persisted accross reboots, so apps should typically call
+     * <p><b>Note: </b> this call is not persisted across reboots, so apps should typically call
      * it on {@link android.app.Activity#onCreate(android.os.Bundle, android.os.PersistableBundle)}.
+     *
+     * @deprecated For apps targeting SDK 37 and higher, this method is deprecated. To opt
+     * out of content capture, you should use
+     * {@link android.view.WindowManager.LayoutParams#FLAG_SECURE}.
      */
+    @Deprecated
+    @FlaggedApi("android.view.contentcapture.flags.deprecate_set_content_capture_enabled")
     public void setContentCaptureEnabled(boolean enabled) {
+        if (deprecateSetContentCaptureEnabled()
+                && CompatChanges.isChangeEnabled(DEPRECATE_SET_CONTENT_CAPTURE_ENABLED)) {
+            Log.w(TAG, "setContentCaptureEnabled is deprecated and a no-op for apps targeting SDK "
+                    + "higher than " + Build.VERSION_CODES.BAKLAVA + ". Use "
+                    + "WindowManager.LayoutParams.FLAG_SECURE to prevent screen capture.");
+            return;
+        }
+
         if (sDebug) {
             Log.d(TAG, "setContentCaptureEnabled(): setting to " + enabled + " for " + mContext);
         }
