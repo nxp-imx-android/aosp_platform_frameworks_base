@@ -434,6 +434,11 @@ public class UsbDevice implements Parcelable {
         return Pair.create(id / 1000, id % 1000);
     }
 
+    /** @hide */
+    public static String getDeviceName(int busNum, int devNum) {
+        return getDeviceName((busNum * 1000) + (devNum % 1000));
+    }
+
     private static native int native_get_device_id(String name);
     private static native String native_get_device_name(int id);
 
