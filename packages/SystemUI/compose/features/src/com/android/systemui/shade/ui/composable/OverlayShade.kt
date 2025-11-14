@@ -241,12 +241,6 @@ private fun Modifier.panelContainerPadding(
 object OverlayShade {
     object Elements {
         val Scrim = ElementKey("OverlayShadeScrim", contentPicker = LowestZIndexContentPicker)
-        val Panel =
-            ElementKey(
-                "OverlayShadePanel",
-                contentPicker = LowestZIndexContentPicker,
-                placeAllCopies = true,
-            )
     }
 
     object Colors {
