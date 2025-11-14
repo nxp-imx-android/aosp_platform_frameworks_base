@@ -9701,7 +9701,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         final ProcessRecord r = handleApplicationWtfInner(callingUid, callingPid, app, tag,
                 crashInfo);
 
-        final boolean isFatal = Build.IS_ENG || Settings.Global
+        final boolean isFatal = Settings.Global
                 .getInt(mContext.getContentResolver(), Settings.Global.WTF_IS_FATAL, 0) != 0;
         final boolean isSystem = (r == null) || r.isPersistent();
 
