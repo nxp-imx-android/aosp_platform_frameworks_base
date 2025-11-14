@@ -1253,95 +1253,239 @@ public class MediaQualityContract {
         public static final String PARAMETER_HDMI_RGB_RANGE = "hdmi_rgb_range";
 
         /**
-         * @hide
+         * Sets the color space of the video signal, which defines the
+         * range of colors (gamut) it can represent. This must be set correctly
+         * to ensure accurate color reproduction.
+         * <ul>
+         * <li> {@link #COLOR_SPACE_S_RGB_BT_709} Standard for web and High Definition (HD) content.
+         * </li>
+         * <li> {@link #COLOR_SPACE_DCI} Wide color gamut (WCG) common in digital cinema and on
+         * premium displays.</li>
+         * <li> {@link #COLOR_SPACE_BT2020} Wide color gamut (WCG) standard for Ultra High
+         * Definition (UHD, 4K/8K) and HDR content.</li>
+         * <li> {@link #COLOR_SPACE_ADOBE_RGB} RGB created by adobe system. </li>
+         * <li> {@link #COLOR_SPACE_AUTO} </li>
+         * <li> {@link #COLOR_SPACE_ON} </li>
+         * <li> {@link #COLOR_SPACE_OFF} </li>
+         * </ul>
          *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_SPACE = "color_space";
 
         /**
-         * @hide
+         * Specifies the initial maximum luminance of the display panel, in nits.
+         * <p>
+         * This value typically represents the factory-calibrated peak brightness
+         * of the panel and is used by the system as a baseline for brightness
+         * control and HDR tone mapping calculations.
          *
+         * The value range is from 0 - 10000
+         *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_PANEL_INIT_MAX_LUMINCE_NITS =
                 "panel_init_max_lumince_nits";
 
         /**
-         * @hide
+         * A flag indicating if the
+         * {@code panelInitMaxLuminceNits} value is valid and can be trusted.
+         * <p>
+         * If {@code false}, the panel was unable to report a valid maximum
+         * luminance (e.g., a read error occurred), and the associated
+         * {@code panelInitMaxLuminceNits} value should be ignored.
          *
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID =
                 "panel_init_max_lumince_valid";
 
         /**
-         * @hide
+         * Sets the electro-optical transfer function (EOTF), or "gamma,"
+         * to be used. This non-linear curve dictates the display's brightness
+         * response to the video signal, ensuring correct contrast and shadow detail.
+         * <p>
          *
+         * <p>Possible values:
+         * <ul>
+         *     <li> {@link #GAMMA_DARK} </li>
+         *     <li> {@link #GAMMA_MIDDLE} </li>
+         *     <li> {@link #GAMMA_BRIGHT} </li>
+         * </ul>
+         *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_GAMMA = "gamma";
 
         /**
-         * @hide
+         * The color red gain value for color temperature adjustment.
+         * The value adjusts the intensity of red in the bright areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate red color
+         * and 100 would significantly boost red color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to red color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_RED_GAIN =
                 "color_temperature_red_gain";
 
         /**
-         * @hide
+         * The color green gain value for color temperature adjustment.
+         * The value adjusts the intensity of green in the bright areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate green color
+         * and 100 would significantly boost green color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to green color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN =
                 "color_temperature_green_gain";
 
         /**
-         * @hide
+         * The color blue gain value for color temperature adjustment.
+         * The value adjusts the intensity of blue in the bright areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate blue color
+         * and 100 would significantly boost blue color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to blue color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN =
                 "color_temperature_blue_gain";
 
         /**
-         * @hide
+         * The color red offset value for color temperature adjustment.
+         * This value adjusts the intensity of red color in the dark areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate red color
+         * and 100 would significantly boost red color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to red color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_RED_OFFSET =
                 "color_temperature_red_offset";
 
         /**
-         * @hide
+         * The color green offset value for color temperature adjustment.
+         * This value adjusts the intensity of green color in the dark areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate green color
+         * and 100 would significantly boost green color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to green color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET =
                 "color_temperature_green_offset";
 
         /**
-         * @hide
+         * The color blue offset value for color temperature adjustment.
+         * This value adjusts the intensity of blue color in the dark areas on the TV.
+         * <p>
+         * The value range is from -100 to 100 where -100 would eliminate blue color
+         * and 100 would significantly boost blue color.
+         * <p>
+         * The default/unmodified value is 0. No adjustment is applied to blue color.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET =
                 "color_temperature_blue_offset";
 
         /**
-         * @hide
+         * The parameters in this section is for 11-point white balance in advanced TV picture
+         * setting. 11-Point White Balance allows for very precise adjustment of the color
+         * temperature of the TV. It aims to make sure white looks truly white, without any unwanted
+         * color tints, across the entire range of brightness levels.
+         * <p>
+         * The "11 points" refer to 11 different brightness levels from 0 (black) to 10 (white).
+         * At each of these points, we can fine-tune the mixture of red, green and blue to achieve
+         * neutral white.
+         * <p>
+         * Control the amount of red at each of the 11 brightness points. The parameter type is an
+         * int array with a fix size of 11. The indexes 0 - 10 are the 11 different points. For
+         * example, elevenPointRed[0] adjusts the red level at the darkest black level.
+         * elevenPointRed[1] adjusts red at the next brightness level up, and so on.
+         * <p>
+         * The value range is from 0 - 100 for each indexes, where 0 is the minimum intensity of
+         * red at a specific brightness point and 100 is the maximum intensity of red at that point.
+         * <p>
+         * The default/unmodified value is 50. It can be other values depends on different TVs.
          *
+         * <p>Type: INTEGER ARRAY
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_ELEVEN_POINT_RED = "eleven_point_red";
 
         /**
-         * @hide
+         * Control the amount of green at each of the 11 brightness points. The parameter type is an
+         * int array with a fix size of 11. The indexes 0 - 10 are the 11 different points. For
+         * example, elevenPointGreen[0] adjust the green level at the darkest black level.
+         * elevenPointGreen[1] adjust green at the next brightness level up, and so on.
+         * <p>
+         * The value range is from 0 - 100 for each indexes, where 0 is the minimum intensity of
+         * green at a specific brightness point and 100 is the maximum intensity of green at that
+         * point.
+         * <p>
+         * The default/unmodified value is 50. It can be other values depends on different TVs.
          *
+         * <p>Type: INTEGER ARRAY
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_ELEVEN_POINT_GREEN = "eleven_point_green";
 
         /**
-         * @hide
+         * Control the amount of blue at each of the 11 brightness points. The parameter type is an
+         * int array with a fix size of 11. The indexes 0 - 10 are the 11 different points. For
+         * example, elevenPointBlue[0] adjust the blue level at the darkest black level.
+         * elevenPointBlue[1] adjust blue at the next brightness level up, and so on.
+         * <p>
+         * The value range is from 0 - 100 for each indexes, where 0 is the minimum intensity of
+         * blue at a specific brightness point and 100 is the maximum intensity of blue at that
+         * point.
+         * <p>
+         * The default/unmodified value is 50. It can be other values depends on different TVs.
          *
+         * <p>Type: INTEGER ARRAY
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_ELEVEN_POINT_BLUE = "eleven_point_blue";
 
         /**
-         * @hide
+         * Adjust gamma blue gain/offset.
          *
+         * <p>Possible values:
+         *
+         * <ul>
+         *   <li>{@link #LEVEL_LOW}
+         *   <li>{@link #LEVEL_MEDIUM}
+         *   <li>{@link #LEVEL_HIGH}
+         *   <li>{@link #LEVEL_OFF}
+         * </ul>
+         * The default value is {@link #LEVEL_MEDIUM}. Can be different depends on different TVs.
+         *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_LOW_BLUE_LIGHT = "low_blue_light";
 
         /**
