@@ -1810,6 +1810,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 )
             runCurrent()
             verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(false)
+            verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(true)
 
             fakeSceneDataSource.unpause(expectedScene = Scenes.Shade)
             transitionStateFlow.value = ObservableTransitionState.Idle(Scenes.Shade)
@@ -1875,7 +1876,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             // window should be focusable.
             runCurrent()
             verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(false)
-            verify(notificationShadeWindowController, times(2)).setNotificationShadeFocusable(true)
+            verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(true)
         }
 
     @Test
