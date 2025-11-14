@@ -166,6 +166,14 @@ public class NotificationActionListLayout extends LinearLayout {
             }
         }
 
+        if (android.app.Flags.apiNotificationActionCustom()) {
+            // In evenly-divided mode the extra start padding must be zero regardless of
+            // mCollapsibleIndentDimen. The measurement was made with that assumption.
+            // (I don't understand how this was working... perhaps we never switched
+            // setEvenlyDividedMode to true -> false -> true in practice before?)
+            mExtraStartPadding = 0;
+        }
+
         return innerWidth;
     }
 
@@ -328,7 +336,6 @@ public class NotificationActionListLayout extends LinearLayout {
                 childLeft += mExtraStartPadding;
             }
         }
-
 
         // Where bottom of child should go
         final int height = bottom - top;

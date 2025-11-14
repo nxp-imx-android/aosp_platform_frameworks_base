@@ -3800,21 +3800,12 @@ public class Notification implements Parcelable
                             -1,
                             null,
                             null);
-                } else if (Flags.apiNotificationSemanticStyle()
-                        && span instanceof Annotation annotation
-                        && ANNOTATION_SEMANTIC_STYLE_KEY.equals(annotation.getKey())
-                        && semanticColors != null) {
-                    try {
-                        int semanticStyle = Integer.parseInt(annotation.getValue());
-                        int semanticColor = semanticColors.getSemanticColor(semanticStyle);
-                        if (semanticColor != COLOR_DEFAULT) {
-                            resultSpan = new ForegroundColorSpan(semanticColor);
-                        } else {
-                            continue;
-                        }
-                    } catch (NumberFormatException ex) {
-                        Log.w(TAG, "Invalid " + ANNOTATION_SEMANTIC_STYLE_KEY + ": "
-                                + annotation.getValue());
+                } else if (Flags.apiNotificationSemanticStyle() && semanticColors != null
+                        && span instanceof Annotation annotation) {
+                    Integer semanticColor = semanticAnnotationToColor(annotation, semanticColors);
+                    if (semanticColor != null) {
+                        resultSpan = new ForegroundColorSpan(semanticColor);
+                    } else {
                         continue;
                     }
                 } else {
@@ -3826,6 +3817,27 @@ public class Notification implements Parcelable
             return outString;
         }
         return text;
+    }
+
+    @Nullable
+    @ColorInt
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+    private static Integer semanticAnnotationToColor(Annotation annotation,
+            @NonNull SemanticColors semanticColors) {
+        if (ANNOTATION_SEMANTIC_STYLE_KEY.equals(annotation.getKey())) {
+            try {
+                int semanticStyle = Integer.parseInt(annotation.getValue());
+                int semanticColor = semanticColors.getSemanticColor(semanticStyle);
+                if (semanticColor != COLOR_DEFAULT) {
+                    return semanticColor;
+                }
+            } catch (NumberFormatException ex) {
+                Log.wtfStack(TAG, "Invalid " + ANNOTATION_SEMANTIC_STYLE_KEY + ": "
+                        + annotation.getValue());
+            }
+        }
+
+        return null;
     }
 
     private static CharSequence normalizeBigText(@Nullable CharSequence charSequence) {
@@ -7197,87 +7209,308 @@ public class Notification implements Parcelable
             }
         }
 
+        private RemoteViews applyStandardTemplateWithActions(int layoutId,
+                StandardTemplateParams p, TemplateBindResult result) {
+            if (!Flags.apiNotificationActionCustom()) {
+                return legacyApplyStandardTemplateWithActions(layoutId, p, result);
+            }
+
+            RemoteViews contentView = applyStandardTemplate(layoutId, p, result);
+
+            resetStandardTemplateWithActions(contentView);
+            bindSnoozeAction(contentView, p);
+            ColorStateList actionColor = ColorStateList.valueOf(getStandardActionColor(p));
+            contentView.setColorStateList(R.id.snooze_button, "setImageTintList", actionColor);
+            contentView.setColorStateList(R.id.bubble_button, "setImageTintList", actionColor);
+
+            ActionButtons actions = getEffectiveActions();
+
+            contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", actions.edgeToEdge());
+
+            boolean validRemoteInput = false;
+            // The actions_container should always be visible to act as padding when there are no
+            // actions. We're making its child GONE instead.
+            if (!actions.actions().isEmpty() && !p.mHideActions) {
+                contentView.setViewVisibility(R.id.actions_container_layout, View.VISIBLE);
+                contentView.setViewVisibility(R.id.actions, View.VISIBLE);
+                updateMarginsForActions(contentView, actions.emphasized());
+                validRemoteInput = populateActionsContainer(contentView, p, actions);
+            } else {
+                contentView.setViewVisibility(R.id.actions_container_layout, View.GONE);
+            }
+
+            if (validRemoteInput) {
+                displayRemoteInputHistory(contentView, p);
+            }
+
+            return contentView;
+        }
+
+        /**
+         * @param originalIndex position of the action in {@link Builder#mActions}.
+         *     This differs from the list index because some actions are filtered out. It also
+         *     differs from {@code mActions.indexOf(action)} because the Action object is modified
+         *     by {@link #getEffectiveActions()}.
+         */
+        private record ActionButton(Action action, int originalIndex) { }
+
+        private record ActionButtons(
+                List<ActionButton> actions, boolean edgeToEdge, boolean emphasized) {
+            private static final ActionButtons EMPTY =
+                    new ActionButtons(List.of(), false, false);
+        }
+
         /**
          * Returns the subset of actions to be shown in the actions "row" of a notification.
          * <ul>
          *     <li>Excludes actions with RemoteInput in live-ongoing notifications.
          *     <li>Excludes contextual actions, which are shown separately.
+         *     <li>Resolves {@link Action#STYLE_AUTO} and {@link Action#EMPHASIS_AUTO} into
+         *     concrete values for RONs/FSI/CallStyle notifications.
+         *     <li>Applies other style restrictions (e.g. if single action, must be SECONDARY).
          *     <li>Limits the number of actions to 3.
          * </ul>
          */
-        private @NonNull List<Action> getEffectiveActions() {
-            if (mActions == null) return Collections.emptyList();
-            List<Notification.Action> effectiveActions = new ArrayList<>();
-            for (Notification.Action action : mActions) {
-                if (mN.isPromotedOngoing() && hasValidRemoteInput(action)) {
+        private @NonNull ActionButtons getEffectiveActions() {
+            if (mActions == null || mActions.isEmpty()) {
+                return ActionButtons.EMPTY;
+            }
+
+            boolean isPromotedOngoing = mN.isPromotedOngoing();
+            boolean isCallStyle = mN.isStyle(CallStyle.class);
+            boolean isPseudoFsi = mN.fullScreenIntent != null
+                    || (mN.flags & FLAG_FSI_REQUESTED_BUT_DENIED) != 0;
+
+            List<ActionButton> candidates = new ArrayList<>();
+            for (int i = 0; i < mActions.size(); i++) {
+                Notification.Action action = mActions.get(i);
+                if (isPromotedOngoing && hasValidRemoteInput(action)) {
                     continue;
                 }
                 if (action.isContextual()) {
                     continue;
                 }
-                effectiveActions.add(action);
-                if (effectiveActions.size() >= MAX_ACTION_BUTTONS) {
+                candidates.add(new ActionButton(action, i));
+                if (candidates.size() >= MAX_ACTION_BUTTONS) {
                     break;
                 }
             }
-            return effectiveActions;
+
+            // Resolve AUTO style/emphasis, or force specific style/emphasis for special cases.
+            if (Flags.apiNotificationActionCustom()) {
+                for (int i = 0; i < candidates.size(); i++) {
+                    ActionButton candidate = candidates.get(i);
+                    Action original = candidate.action;
+                    Action.Builder updated = new Action.Builder(original);
+                    if (isCallStyle) {
+                        updated.setStyleHint(Action.STYLE_ICON_AND_TEXT);
+                    } else if (!isPromotedOngoing || original.getStyleHint() == Action.STYLE_AUTO) {
+                        updated.setStyleHint(Action.STYLE_TEXT_ONLY);
+                    }
+                    if (isCallStyle) {
+                        updated.setEmphasisHint(Action.EMPHASIS_PRIMARY);
+                    } else if (!isPromotedOngoing
+                            || original.getEmphasisHint() == Action.EMPHASIS_AUTO
+                            || (isPromotedOngoing && candidates.size() == 1)) {
+                        // Promoted ongoing with 1 action is forced to SECONDARY regardless of
+                        // caller's choice.
+                        updated.setEmphasisHint(Action.EMPHASIS_SECONDARY);
+                    }
+                    candidates.set(i, new ActionButton(updated.build(), candidate.originalIndex));
+                }
+            }
+
+            boolean edgeToEdge =
+                    (Flags.apiNotificationActionCustom() && (isPromotedOngoing || isPseudoFsi))
+                            || isCallStyle;
+            boolean emphasized =
+                    (Flags.apiNotificationActionCustom() && isPromotedOngoing)
+                            || isCallStyle || isPseudoFsi;
+
+            return new ActionButtons(candidates, edgeToEdge, emphasized);
         }
 
-        private RemoteViews applyStandardTemplateWithActions(int layoutId,
-                StandardTemplateParams p, TemplateBindResult result) {
-            RemoteViews contentView = applyStandardTemplate(layoutId, p, result);
-
-            resetStandardTemplateWithActions(contentView);
-            bindSnoozeAction(contentView, p);
-            // color the snooze and bubble actions with the theme color
-            ColorStateList actionColor = ColorStateList.valueOf(getStandardActionColor(p));
-            contentView.setColorStateList(R.id.snooze_button, "setImageTintList", actionColor);
-            contentView.setColorStateList(R.id.bubble_button, "setImageTintList", actionColor);
-
-            List<Notification.Action> effectiveActions = getEffectiveActions();
-
-            boolean emphasizedMode = mN.fullScreenIntent != null
-                    || p.mCallStyleActions
-                    || ((mN.flags & FLAG_FSI_REQUESTED_BUT_DENIED) != 0);
-
-            if (p.mCallStyleActions) {
-                // Clear view padding to allow buttons to start on the left edge.
-                // This must be done before 'setEmphasizedMode' which sets top/bottom margins.
-                contentView.setViewPadding(R.id.actions, 0, 0, 0, 0);
-                if (!Flags.notificationsRedesignTemplates()) {
-                    // Add an optional indent that will make buttons start at the correct column
-                    // when there is enough space to do so (and fall back to the left edge if not).
-                    // This is handled directly in NotificationActionListLayout in the new design.
-                    contentView.setInt(R.id.actions, "setCollapsibleIndentDimen",
-                            R.dimen.call_notification_collapsible_indent);
-                }
-                if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
-                    Log.d(TAG, "setting evenly divided mode on action list");
-                }
-                contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
-            }
-            if (!notificationsRedesignTemplates()) {
-                contentView.setBoolean(R.id.actions, "setEmphasizedMode", emphasizedMode);
-            }
-
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        private boolean populateActionsContainer(RemoteViews contentView, StandardTemplateParams p,
+                ActionButtons actions) {
             boolean validRemoteInput = false;
-            // With the new design, the actions_container should always be visible to act as padding
-            // when there are no actions. We're making its child GONE instead.
-            int actionsContainerForVisibilityChange = notificationsRedesignTemplates()
-                    ? R.id.actions_container_layout : R.id.actions_container;
-            if (!effectiveActions.isEmpty() && !p.mHideActions) {
-                contentView.setViewVisibility(actionsContainerForVisibilityChange, View.VISIBLE);
-                contentView.setViewVisibility(R.id.actions, View.VISIBLE);
-                updateMarginsForActions(contentView, emphasizedMode);
-                validRemoteInput = populateActionsContainer(contentView, p, effectiveActions,
-                        emphasizedMode);
-            } else {
-                contentView.setViewVisibility(actionsContainerForVisibilityChange, View.GONE);
+            for (ActionButton action : actions.actions()) {
+                boolean actionHasValidInput = hasValidRemoteInput(action.action);
+                validRemoteInput |= actionHasValidInput;
+
+                final RemoteViews button = generateActionButton(action, actions.emphasized(), p);
+                if (actionHasValidInput && !actions.emphasized()) {
+                    // Clear the drawable
+                    button.setInt(R.id.action0, "setBackgroundResource", 0);
+                }
+                if (actions.emphasized() && actions.actions().indexOf(action) > 0) {
+                    // Clear start margin from non-first buttons to reduce the gap between them.
+                    //  (8dp remaining gap is from all buttons' standard 4dp inset).
+                    button.setViewLayoutMarginDimen(R.id.action0, RemoteViews.MARGIN_START, 0);
+                }
+                contentView.addView(R.id.actions, button);
+            }
+            return validRemoteInput;
+        }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        private RemoteViews generateActionButton(ActionButton actionButton, boolean emphasizedMode,
+                StandardTemplateParams p) {
+            Action action = actionButton.action;
+            final boolean tombstone = (action.actionIntent == null);
+            final boolean showIcon =
+                    emphasizedMode && action.getStyleHint() != Action.STYLE_TEXT_ONLY;
+            final boolean showText =
+                    !emphasizedMode || action.getStyleHint() != Action.STYLE_ICON_ONLY;
+
+            final RemoteViews button = new BuilderRemoteViews(mContext.getApplicationInfo(),
+                    getActionButtonLayoutResource(emphasizedMode, tombstone));
+
+            if (!tombstone) {
+                button.setOnClickPendingIntent(R.id.action0, action.actionIntent);
+            }
+            button.setContentDescription(R.id.action0, action.title);
+            if (action.mRemoteInputs != null) {
+                button.setRemoteInputs(R.id.action0, action.mRemoteInputs);
             }
 
+            if (emphasizedMode) {
+                button.setBoolean(R.id.action0, "setEnabled", !tombstone);
+
+                // TODO: b/461472579 - useColorFromActionTitle should always be true?
+                EmphasizedButtonColors colors = resolveEmphasisColors(action, p,
+                        /* useColorFromActionTitle= */ true, tombstone);
+
+                button.setColorStateList(R.id.action0, "setButtonBackground",
+                        ColorStateList.valueOf(colors.background));
+                button.setColorStateList(R.id.action0, "setButtonBorder",
+                        colors.outline != Color.TRANSPARENT
+                                ? ColorStateList.valueOf(colors.outline)
+                                : null);
+                button.setColorStateList(R.id.action0, "setRippleColor",
+                        ColorStateList.valueOf(colors.ripple));
+                button.setTextColor(R.id.action0, colors.text); // Used for icon too.
+
+                if (showText) {
+                    // Already mapped color/semanticStyle spans to button color. Drop any others.
+                    final CharSequence label = stripStyling(action.title);
+                    button.setCharSequence(R.id.action0, "glueLabel", label);
+                } else {
+                    button.setCharSequence(R.id.action0, "glueLabel", null);
+                }
+
+                if (showIcon) {
+                    button.setIcon(R.id.action0, "glueIcon", action.getIcon());
+                } else {
+                    button.setIcon(R.id.action0, "glueIcon", null);
+                }
+
+                if (p.mCallStyleActions) {
+                    boolean priority = action.getExtras().getBoolean(CallStyle.KEY_ACTION_PRIORITY);
+                    button.setBoolean(R.id.action0, "setIsPriority", priority);
+                    int minWidthDimen =
+                            priority ? R.dimen.call_notification_system_action_min_width : 0;
+                    button.setIntDimen(R.id.action0, "setMinimumWidth", minWidthDimen);
+                }
+            } else {
+                button.setTextViewText(R.id.action0, stripUnwantedSpans(action.title, p));
+                button.setTextColor(R.id.action0, getStandardActionColor(p));
+            }
+
+            button.setIntTag(R.id.action0, R.id.notification_action_index_tag,
+                    actionButton.originalIndex);
+            return button;
+        }
+
+        private int getActionButtonLayoutResource(boolean emphasizedMode, boolean tombstone) {
+            if (emphasizedMode) {
+                if (Flags.apiNotificationActionCustom()) {
+                    // With apiNotificationActionCustom() all emphasized-button properties are set
+                    // in runtime, so no need for separate layout for tombstones. This is likely
+                    // also possible for normal buttons with a little effort.
+                    return getEmphasizedActionLayoutResource();
+                } else {
+                    return tombstone ? getEmphasizedTombstoneActionLayoutResource()
+                            : getEmphasizedActionLayoutResource();
+                }
+            } else {
+                return tombstone ? getActionTombstoneLayoutResource()
+                        : getActionLayoutResource();
+            }
+        }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        private record EmphasizedButtonColors(@ColorInt int background, @ColorInt int outline,
+                                              @ColorInt int text, @ColorInt int ripple) { }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        private EmphasizedButtonColors resolveEmphasisColors(Action action,
+                StandardTemplateParams p, boolean useColorFromActionTitle, boolean isTombstone) {
+            Colors colors = getColors(p);
+            int notifBackgroundColor = getColors(p).getBackgroundColor();
+
+            int backgroundColor;
+            int outlineColor;
+            int textColor;
+
+            Integer customColor = null;
+            if (useColorFromActionTitle && !isLegacy()) {
+                // Check for a full-length span color (including semantic color) to use as the
+                // button color. This will have to be adjusted for contrast, below.
+                customColor = getFullLengthSpanColor(action.title, colors);
+            }
+
+            if (action.getEmphasisHint() == Action.EMPHASIS_PRIMARY) {
+                outlineColor = Color.TRANSPARENT;
+                if (customColor != null) {
+                    backgroundColor = Colors.ensureMinimalContrast(customColor,
+                            notifBackgroundColor);
+                    textColor = Colors.ensureTextContrast(colors.getPrimaryEmphasisText(),
+                            backgroundColor);
+                } else {
+                    backgroundColor = colors.getPrimaryEmphasisBackground();
+                    textColor = colors.getPrimaryEmphasisText();
+                }
+            } else {
+                backgroundColor = Color.TRANSPARENT;
+                if (customColor != null) {
+                    outlineColor = Colors.ensureThinContrast(customColor, notifBackgroundColor);
+                    textColor = Colors.ensureTextContrast(colors.getSecondaryEmphasisText(),
+                            notifBackgroundColor);
+                } else {
+                    outlineColor = colors.getSecondaryEmphasisOutline();
+                    textColor = colors.getSecondaryEmphasisText();
+                }
+            }
+
+            // We only want about 20% alpha for the ripple.
+            int rippleColor = (textColor & 0x00ffffff) | 0x33000000;
+
+            if (isTombstone) {
+                // Make the colors a bit more transparent.
+                // Don't fade BOTH background and text, just one of them.
+                // We don't force contrast after this because it shouldn't happen for proper apps.
+                if (backgroundColor != Color.TRANSPARENT) {
+                    backgroundColor = getDisabledActionColor(mContext, backgroundColor);
+                } else {
+                    outlineColor = getDisabledActionColor(mContext, outlineColor);
+                    textColor = getDisabledActionColor(mContext, textColor);
+                }
+            }
+
+            return new EmphasizedButtonColors(backgroundColor, outlineColor, textColor,
+                    rippleColor);
+        }
+
+        private static @ColorInt int getDisabledActionColor(Context context, @ColorInt int color) {
+            return setAlphaComponentByFloatDimen(context, color,
+                    R.dimen.notification_action_disabled_content_alpha);
+        }
+
+        private void displayRemoteInputHistory(RemoteViews contentView, StandardTemplateParams p) {
             RemoteInputHistoryItem[] replyText = getParcelableArrayFromBundle(
                     mN.extras, EXTRA_REMOTE_INPUT_HISTORY_ITEMS, RemoteInputHistoryItem.class);
-            if (validRemoteInput && replyText != null && replyText.length > 0
+            if (replyText != null && replyText.length > 0
                     && !TextUtils.isEmpty(replyText[0].getText())
                     && p.maxRemoteInputHistory > 0) {
                 boolean showSpinner = mN.extras.getBoolean(EXTRA_SHOW_REMOTE_INPUT_SPINNER);
@@ -7314,8 +7547,199 @@ public class Notification implements Parcelable
                     }
                 }
             }
+        }
+
+        // TODO: Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
+        private RemoteViews legacyApplyStandardTemplateWithActions(int layoutId,
+                StandardTemplateParams p, TemplateBindResult result) {
+            RemoteViews contentView = applyStandardTemplate(layoutId, p, result);
+
+            resetStandardTemplateWithActions(contentView);
+            bindSnoozeAction(contentView, p);
+            // color the snooze and bubble actions with the theme color
+            ColorStateList actionColor = ColorStateList.valueOf(getStandardActionColor(p));
+            contentView.setColorStateList(R.id.snooze_button, "setImageTintList", actionColor);
+            contentView.setColorStateList(R.id.bubble_button, "setImageTintList", actionColor);
+
+            List<Notification.Action> effectiveActions = legacyGetEffectiveActions();
+
+            boolean emphasizedMode = mN.fullScreenIntent != null
+                    || p.mCallStyleActions
+                    || ((mN.flags & FLAG_FSI_REQUESTED_BUT_DENIED) != 0);
+
+            if (p.mCallStyleActions) {
+                // Clear view padding to allow buttons to start on the left edge.
+                // This must be done before 'setEmphasizedMode' which sets top/bottom margins.
+                contentView.setViewPadding(R.id.actions, 0, 0, 0, 0);
+                if (!Flags.notificationsRedesignTemplates()) {
+                    // Add an optional indent that will make buttons start at the correct column
+                    // when there is enough space to do so (and fall back to the left edge if not).
+                    // This is handled directly in NotificationActionListLayout in the new design.
+                    contentView.setInt(R.id.actions, "setCollapsibleIndentDimen",
+                            R.dimen.call_notification_collapsible_indent);
+                }
+                if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
+                    Log.d(TAG, "setting evenly divided mode on action list");
+                }
+                contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
+            }
+            if (!notificationsRedesignTemplates()) {
+                contentView.setBoolean(R.id.actions, "setEmphasizedMode", emphasizedMode);
+            }
+
+            boolean validRemoteInput = false;
+            // With the new design, the actions_container should always be visible to act as padding
+            // when there are no actions. We're making its child GONE instead.
+            int actionsContainerForVisibilityChange = notificationsRedesignTemplates()
+                    ? R.id.actions_container_layout : R.id.actions_container;
+            if (!effectiveActions.isEmpty() && !p.mHideActions) {
+                contentView.setViewVisibility(actionsContainerForVisibilityChange, View.VISIBLE);
+                contentView.setViewVisibility(R.id.actions, View.VISIBLE);
+                updateMarginsForActions(contentView, emphasizedMode);
+                validRemoteInput = legacyPopulateActionsContainer(contentView, p, effectiveActions,
+                        emphasizedMode);
+            } else {
+                contentView.setViewVisibility(actionsContainerForVisibilityChange, View.GONE);
+            }
+
+            if (validRemoteInput) {
+                displayRemoteInputHistory(contentView, p);
+            }
 
             return contentView;
+        }
+
+        /**
+         * Returns the subset of actions to be shown in the actions "row" of a notification.
+         * <ul>
+         *     <li>Excludes actions with RemoteInput in live-ongoing notifications.
+         *     <li>Excludes contextual actions, which are shown separately.
+         *     <li>Limits the number of actions to 3.
+         * </ul>
+         */
+        // TODO: Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
+        private @NonNull List<Action> legacyGetEffectiveActions() {
+            if (mActions == null) return Collections.emptyList();
+            List<Notification.Action> effectiveActions = new ArrayList<>();
+            for (Notification.Action action : mActions) {
+                if (mN.isPromotedOngoing() && hasValidRemoteInput(action)) {
+                    continue;
+                }
+                if (action.isContextual()) {
+                    continue;
+                }
+                effectiveActions.add(action);
+                if (effectiveActions.size() >= MAX_ACTION_BUTTONS) {
+                    break;
+                }
+            }
+            return effectiveActions;
+        }
+
+        // TODO: Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
+        private boolean legacyPopulateActionsContainer(RemoteViews contentView,
+                StandardTemplateParams p, List<Action> effectiveActions, boolean emphasizedMode) {
+            boolean validRemoteInput = false;
+            for (Action action : effectiveActions) {
+                boolean actionHasValidInput = hasValidRemoteInput(action);
+                validRemoteInput |= actionHasValidInput;
+
+                final RemoteViews button = legacyGenerateActionButton(action, emphasizedMode, p);
+                if (actionHasValidInput && !emphasizedMode) {
+                    // Clear the drawable
+                    button.setInt(R.id.action0, "setBackgroundResource", 0);
+                }
+                if (emphasizedMode && effectiveActions.indexOf(action) > 0) {
+                    // Clear start margin from non-first buttons to reduce the gap between them.
+                    //  (8dp remaining gap is from all buttons' standard 4dp inset).
+                    button.setViewLayoutMarginDimen(R.id.action0, RemoteViews.MARGIN_START, 0);
+                }
+                contentView.addView(R.id.actions, button);
+            }
+            return validRemoteInput;
+        }
+
+        // TODO: Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
+        private RemoteViews legacyGenerateActionButton(Action action, boolean emphasizedMode,
+                StandardTemplateParams p) {
+            final boolean tombstone = (action.actionIntent == null);
+            final RemoteViews button = new BuilderRemoteViews(mContext.getApplicationInfo(),
+                    getActionButtonLayoutResource(emphasizedMode, tombstone));
+            if (!tombstone) {
+                button.setOnClickPendingIntent(R.id.action0, action.actionIntent);
+            }
+            button.setContentDescription(R.id.action0, action.title);
+            if (action.mRemoteInputs != null) {
+                button.setRemoteInputs(R.id.action0, action.mRemoteInputs);
+            }
+            if (emphasizedMode) {
+                // change the background bgColor
+                CharSequence title = action.title;
+                int buttonFillColor = getColors(p).getSecondaryAccentColor();
+                if (tombstone) {
+                    buttonFillColor = setAlphaComponentByFloatDimen(mContext,
+                            ContrastColorUtil.resolveSecondaryColor(
+                                    mContext, getColors(p).getBackgroundColor(), mInNightMode),
+                            R.dimen.notification_action_disabled_container_alpha);
+                }
+
+                if (!isLegacy()) {
+                    // Check for a full-length span color to use as the button fill color.
+                    Integer fullLengthColor = getFullLengthSpanColor(title, null);
+                    if (fullLengthColor != null) {
+                        // Ensure the custom button fill has 1.3:1 contrast w/ notification bg.
+                        int notifBackgroundColor = getColors(p).getBackgroundColor();
+                        buttonFillColor = ensureButtonFillContrast(
+                                fullLengthColor, notifBackgroundColor);
+                    }
+                }
+
+                final CharSequence label = stripUnwantedSpans(title, p);
+                if (p.mCallStyleActions) {
+                    if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
+                        Log.d(TAG, "new action layout enabled, gluing instead of setting text");
+                    }
+                    button.setCharSequence(R.id.action0, "glueLabel", label);
+                } else {
+                    button.setTextViewText(R.id.action0, label);
+                }
+                int textColor = ContrastColorUtil.resolvePrimaryColor(mContext,
+                        buttonFillColor, mInNightMode);
+                if (tombstone) {
+                    textColor = setAlphaComponentByFloatDimen(mContext,
+                            ContrastColorUtil.resolveSecondaryColor(
+                                    mContext, getColors(p).getBackgroundColor(), mInNightMode),
+                            R.dimen.notification_action_disabled_content_alpha);
+                }
+                button.setTextColor(R.id.action0, textColor);
+                // We only want about 20% alpha for the ripple
+                final int rippleColor = (textColor & 0x00ffffff) | 0x33000000;
+                button.setColorStateList(R.id.action0, "setRippleColor",
+                        ColorStateList.valueOf(rippleColor));
+                button.setColorStateList(R.id.action0, "setButtonBackground",
+                        ColorStateList.valueOf(buttonFillColor));
+                if (p.mCallStyleActions) {
+                    if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
+                        Log.d(TAG, "new action layout enabled, gluing instead of setting icon");
+                    }
+                    button.setIcon(R.id.action0, "glueIcon", action.getIcon());
+                    boolean priority = action.getExtras().getBoolean(CallStyle.KEY_ACTION_PRIORITY);
+                    button.setBoolean(R.id.action0, "setIsPriority", priority);
+                    int minWidthDimen =
+                            priority ? R.dimen.call_notification_system_action_min_width : 0;
+                    button.setIntDimen(R.id.action0, "setMinimumWidth", minWidthDimen);
+                }
+            } else {
+                button.setTextViewText(R.id.action0, stripUnwantedSpans(action.title, p));
+                button.setTextColor(R.id.action0, getStandardActionColor(p));
+            }
+            // CallStyle notifications add action buttons which don't actually exist in mActions,
+            //  so we have to omit the index in that case.
+            int actionIndex = mActions.indexOf(action);
+            if (actionIndex != -1) {
+                button.setIntTag(R.id.action0, R.id.notification_action_index_tag, actionIndex);
+            }
+            return button;
         }
 
         private void updateMarginsForActions(RemoteViews contentView, boolean emphasizedMode) {
@@ -7340,28 +7764,6 @@ public class Notification implements Parcelable
                 contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
                         RemoteViews.MARGIN_BOTTOM, 0);
             }
-        }
-
-        private boolean populateActionsContainer(RemoteViews contentView, StandardTemplateParams p,
-                List<Action> effectiveActions, boolean emphasizedMode) {
-            boolean validRemoteInput = false;
-            for (Action action : effectiveActions) {
-                boolean actionHasValidInput = hasValidRemoteInput(action);
-                validRemoteInput |= actionHasValidInput;
-
-                final RemoteViews button = generateActionButton(action, emphasizedMode, p);
-                if (actionHasValidInput && !emphasizedMode) {
-                    // Clear the drawable
-                    button.setInt(R.id.action0, "setBackgroundResource", 0);
-                }
-                if (emphasizedMode && effectiveActions.indexOf(action) > 0) {
-                    // Clear start margin from non-first buttons to reduce the gap between them.
-                    //  (8dp remaining gap is from all buttons' standard 4dp inset).
-                    button.setViewLayoutMarginDimen(R.id.action0, RemoteViews.MARGIN_START, 0);
-                }
-                contentView.addView(R.id.actions, button);
-            }
-            return validRemoteInput;
         }
 
         /**
@@ -7810,98 +8212,6 @@ public class Notification implements Parcelable
             return summary;
         }
 
-        private RemoteViews generateActionButton(Action action, boolean emphasizedMode,
-                StandardTemplateParams p) {
-            final boolean tombstone = (action.actionIntent == null);
-            final RemoteViews button = new BuilderRemoteViews(mContext.getApplicationInfo(),
-                    getActionButtonLayoutResource(emphasizedMode, tombstone));
-            if (!tombstone) {
-                button.setOnClickPendingIntent(R.id.action0, action.actionIntent);
-            }
-            button.setContentDescription(R.id.action0, action.title);
-            if (action.mRemoteInputs != null) {
-                button.setRemoteInputs(R.id.action0, action.mRemoteInputs);
-            }
-            if (emphasizedMode) {
-                // change the background bgColor
-                CharSequence title = action.title;
-                int buttonFillColor = getColors(p).getSecondaryAccentColor();
-                if (tombstone) {
-                    buttonFillColor = setAlphaComponentByFloatDimen(mContext,
-                            ContrastColorUtil.resolveSecondaryColor(
-                                    mContext, getColors(p).getBackgroundColor(), mInNightMode),
-                            R.dimen.notification_action_disabled_container_alpha);
-                }
-
-                if (!isLegacy()) {
-                    // Check for a full-length span color to use as the button fill color.
-                    Integer fullLengthColor = getFullLengthSpanColor(title);
-                    if (fullLengthColor != null) {
-                        // Ensure the custom button fill has 1.3:1 contrast w/ notification bg.
-                        int notifBackgroundColor = getColors(p).getBackgroundColor();
-                        buttonFillColor = ensureButtonFillContrast(
-                                fullLengthColor, notifBackgroundColor);
-                    }
-                }
-
-                final CharSequence label = stripUnwantedSpans(title, p);
-                if (p.mCallStyleActions) {
-                    if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
-                        Log.d(TAG, "new action layout enabled, gluing instead of setting text");
-                    }
-                    button.setCharSequence(R.id.action0, "glueLabel", label);
-                } else {
-                    button.setTextViewText(R.id.action0, label);
-                }
-                int textColor = ContrastColorUtil.resolvePrimaryColor(mContext,
-                        buttonFillColor, mInNightMode);
-                if (tombstone) {
-                    textColor = setAlphaComponentByFloatDimen(mContext,
-                            ContrastColorUtil.resolveSecondaryColor(
-                                    mContext, getColors(p).getBackgroundColor(), mInNightMode),
-                            R.dimen.notification_action_disabled_content_alpha);
-                }
-                button.setTextColor(R.id.action0, textColor);
-                // We only want about 20% alpha for the ripple
-                final int rippleColor = (textColor & 0x00ffffff) | 0x33000000;
-                button.setColorStateList(R.id.action0, "setRippleColor",
-                        ColorStateList.valueOf(rippleColor));
-                button.setColorStateList(R.id.action0, "setButtonBackground",
-                        ColorStateList.valueOf(buttonFillColor));
-                if (p.mCallStyleActions) {
-                    if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
-                        Log.d(TAG, "new action layout enabled, gluing instead of setting icon");
-                    }
-                    button.setIcon(R.id.action0, "glueIcon", action.getIcon());
-                    boolean priority = action.getExtras().getBoolean(CallStyle.KEY_ACTION_PRIORITY);
-                    button.setBoolean(R.id.action0, "setIsPriority", priority);
-                    int minWidthDimen =
-                            priority ? R.dimen.call_notification_system_action_min_width : 0;
-                    button.setIntDimen(R.id.action0, "setMinimumWidth", minWidthDimen);
-                }
-            } else {
-                button.setTextViewText(R.id.action0, stripUnwantedSpans(action.title, p));
-                button.setTextColor(R.id.action0, getStandardActionColor(p));
-            }
-            // CallStyle notifications add action buttons which don't actually exist in mActions,
-            //  so we have to omit the index in that case.
-            int actionIndex = mActions.indexOf(action);
-            if (actionIndex != -1) {
-                button.setIntTag(R.id.action0, R.id.notification_action_index_tag, actionIndex);
-            }
-            return button;
-        }
-
-        private int getActionButtonLayoutResource(boolean emphasizedMode, boolean tombstone) {
-            if (emphasizedMode) {
-                return tombstone ? getEmphasizedTombstoneActionLayoutResource()
-                        : getEmphasizedActionLayoutResource();
-            } else {
-                return tombstone ? getActionTombstoneLayoutResource()
-                        : getActionLayoutResource();
-            }
-        }
-
         /**
          * Set the alpha component of {@code color} to be {@code alphaDimenResId}.
          */
@@ -7916,13 +8226,16 @@ public class Notification implements Parcelable
          * Extract the color from a full-length span from the text.
          *
          * @param charSequence the charSequence containing spans
+         * @param semanticColors if provided, and a full-length semantic style annotation is found,
+         *                       then its corresponding actual color will be returned
          * @return the raw color of the text's last full-length span containing a color, or
          * {@code null} if no full-length span sets the text color.
          * @hide
          */
         @VisibleForTesting
         @Nullable
-        public static Integer getFullLengthSpanColor(CharSequence charSequence) {
+        public static Integer getFullLengthSpanColor(CharSequence charSequence,
+                @Nullable SemanticColors semanticColors) {
             // NOTE: this method preserves the functionality that for a CharSequence with multiple
             // full-length spans, the color of the last one is used.
             Integer result = null;
@@ -7947,6 +8260,13 @@ public class Notification implements Parcelable
                     } else if (span instanceof ForegroundColorSpan) {
                         ForegroundColorSpan originalSpan = (ForegroundColorSpan) span;
                         result = originalSpan.getForegroundColor();
+                    } else if (Flags.apiNotificationSemanticStyle() && semanticColors != null
+                            && span instanceof Annotation annotation) {
+                        Integer semanticColor = semanticAnnotationToColor(annotation,
+                                semanticColors);
+                        if (semanticColor != null) {
+                            result = semanticColor;
+                        }
                     }
                 }
             }
@@ -10555,7 +10875,6 @@ public class Notification implements Parcelable
 
             return contentView;
         }
-
 
         /**
          * @hide
@@ -18212,7 +18531,24 @@ public class Notification implements Parcelable
      * @hide
      */
     public static class Colors implements SemanticColors {
+        /**
+         * Minimal contrast that any text should have over its background (e.g. text on notification
+         * background, button text on button color).
+         */
         private static final double TEXT_CONTRAST = 4.5;
+
+        /**
+         * Minimal contrast for a non-text but "thin" visual element (e.g. a line, separator, or
+         * outline on top of a background).
+         */
+        private static final double THIN_CONTRAST = 3;
+
+        /**
+         * Minimal contrast for any two colors (e.g. button color over its parent background color).
+         * Note that this contrast is only acceptable for "filled" elements (e.g. pills), and not
+         * for "thin" ones (e.g. outlines).
+         */
+        private static final double MINIMAL_CONTRAST = 1.3;
 
         private int mPaletteIsForRawColor = COLOR_INVALID;
         private boolean mPaletteIsForColorized = false;
@@ -18233,6 +18569,12 @@ public class Notification implements Parcelable
         private int mSemanticRedContainerHighColor = COLOR_INVALID;
         private int mContrastColor = COLOR_INVALID;
         private int mRippleAlpha = 0x33;
+
+        // Colors for emphasized buttons.
+        private int mPrimaryEmphasisBackground = COLOR_INVALID;
+        private int mPrimaryEmphasisText = COLOR_INVALID;
+        private int mSecondaryEmphasisOutline = COLOR_INVALID;
+        private int mSecondaryEmphasisText = COLOR_INVALID;
 
         // Colors associated to semantic styles.
         private int mSemanticInfo = COLOR_INVALID;
@@ -18314,6 +18656,18 @@ public class Notification implements Parcelable
                 mOnTertiaryFixedAccentTextColor = mOnTertiaryAccentTextColor;
                 mErrorColor = mPrimaryTextColor;
                 mRippleAlpha = 0x33;
+
+                if (Flags.apiNotificationActionCustom()) {
+                    mPrimaryEmphasisBackground = ensureMinimalContrast(
+                            ctx.getColor(R.color.materialColorPrimary), mBackgroundColor);
+                    mPrimaryEmphasisText = ensureTextContrast(
+                            ctx.getColor(R.color.materialColorOnPrimary),
+                            mPrimaryEmphasisBackground);
+                    mSecondaryEmphasisOutline = ensureThinContrast(
+                            ctx.getColor(R.color.materialColorOutlineVariant), mBackgroundColor);
+                    mSecondaryEmphasisText = ensureTextContrast(
+                            ctx.getColor(R.color.materialColorPrimary), mBackgroundColor);
+                }
             } else {
                 int[] attrs = {
                         R.attr.colorError,
@@ -18375,22 +18729,40 @@ public class Notification implements Parcelable
                 if (mErrorColor == COLOR_INVALID) {
                     mErrorColor = mPrimaryTextColor;
                 }
-                if (Flags.apiNotificationSemanticStyle()) {
-                    // TODO: b/454876153 - Use theme-based tokens, once they exist.
-                    mSemanticInfo = Builder.ensureColorContrast(Color.BLUE, mBackgroundColor,
-                            TEXT_CONTRAST);
-                    mSemanticSafe = Builder.ensureColorContrast(Color.GREEN, mBackgroundColor,
-                            TEXT_CONTRAST);
-                    mSemanticCaution = Builder.ensureColorContrast(Color.YELLOW, mBackgroundColor,
-                            TEXT_CONTRAST);
-                    mSemanticDanger = Builder.ensureColorContrast(Color.RED, mBackgroundColor,
-                            TEXT_CONTRAST);
+
+                if (Flags.apiNotificationActionCustom()) {
+                    // For non-colorized, theme should provide enough contrast.
+                    mPrimaryEmphasisBackground = ctx.getColor(R.color.materialColorPrimary);
+                    mPrimaryEmphasisText = ctx.getColor(R.color.materialColorOnPrimary);
+                    mSecondaryEmphasisOutline = ctx.getColor(R.color.materialColorOutlineVariant);
+                    mSecondaryEmphasisText = ctx.getColor(R.color.materialColorPrimary);
                 }
             }
+
+            if (Flags.apiNotificationSemanticStyle()) {
+                // TODO: b/454876153 - Use theme-based tokens, once they exist.
+                mSemanticInfo = ensureTextContrast(Color.BLUE, mBackgroundColor);
+                mSemanticSafe = ensureTextContrast(Color.GREEN, mBackgroundColor);
+                mSemanticCaution = ensureTextContrast(Color.YELLOW, mBackgroundColor);
+                mSemanticDanger = ensureTextContrast(Color.RED, mBackgroundColor);
+            }
+
             // make sure every color has a valid value
             mProtectionColor = ctx.getColor(R.color.customColorSurfaceEffect3);
             mSemanticRedContainerHighColor =
                     ctx.getColor(R.color.semanticRedContainerHigh);
+        }
+
+        private static @ColorInt int ensureTextContrast(@ColorInt int textColor, @ColorInt int bg) {
+            return Builder.ensureColorContrast(textColor, bg, TEXT_CONTRAST);
+        }
+
+        private static @ColorInt int ensureThinContrast(@ColorInt int color, @ColorInt int bg) {
+            return Builder.ensureColorContrast(color, bg, THIN_CONTRAST);
+        }
+
+        private static @ColorInt int ensureMinimalContrast(@ColorInt int color, @ColorInt int bg) {
+            return Builder.ensureColorContrast(color, bg, MINIMAL_CONTRAST);
         }
 
         /** calculates the contrast color for the non-colorized notifications */
@@ -18510,6 +18882,30 @@ public class Notification implements Parcelable
                 case SEMANTIC_STYLE_UNSPECIFIED -> COLOR_DEFAULT;
                 default -> COLOR_DEFAULT;
             };
+        }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        @ColorInt
+        int getPrimaryEmphasisBackground() {
+            return mPrimaryEmphasisBackground;
+        }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        @ColorInt
+        int getPrimaryEmphasisText() {
+            return mPrimaryEmphasisText;
+        }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        @ColorInt
+        int getSecondaryEmphasisOutline() {
+            return mSecondaryEmphasisOutline;
+        }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
+        @ColorInt
+        int getSecondaryEmphasisText() {
+            return mSecondaryEmphasisText;
         }
     }
 }
