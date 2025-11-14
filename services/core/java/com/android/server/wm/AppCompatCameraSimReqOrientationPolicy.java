@@ -16,11 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_LANDSCAPE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_NONE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED;
@@ -40,7 +35,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.CameraCompatTaskInfo;
 import android.content.res.CameraCompatibilityInfo;
 import android.content.res.CompatibilityInfo;
 import android.os.RemoteException;
@@ -173,9 +167,6 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         final ActivityRecord activity = getTopActivityFromCameraTask(task);
         if (activity != null) {
             activity.recomputeConfiguration();
-        }
-        if (task != null) {
-            task.dispatchTaskInfoChangedIfNeeded(/* force= */ true);
         }
         if (app != null) {
             final boolean refreshNeeded = updateCompatibilityInfo(app, activity);
@@ -360,6 +351,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         return Flags.cameraCompatLandscapeCameraSupport()
                 && !mCameraDisplayRotationProvider.isCameraDeviceNaturalOrientationPortrait();
     }
+
     /**
      * Returns true if letterboxing should be allowed for camera apps, even if otherwise it isn't.
      *
@@ -405,40 +397,6 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         }
 
         return MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
-    }
-
-    @CameraCompatTaskInfo.CameraCompatMode
-    int getCameraCompatMode(@NonNull ActivityRecord topActivity) {
-        if (!isCompatibilityTreatmentEnabledForActivity(topActivity,
-                /* checkOrientation= */ true)) {
-            return CAMERA_COMPAT_NONE;
-        }
-
-        // This treatment targets only devices with portrait natural orientation, which most tablets
-        // have.
-        if (!mCameraDisplayRotationProvider.isCameraDeviceNaturalOrientationPortrait()) {
-            // TODO(b/365725400): handle landscape natural orientation.
-            return CAMERA_COMPAT_NONE;
-        }
-
-        final int appOrientation = topActivity.getRequestedConfigurationOrientation();
-        final boolean isDisplayRotationPortrait = mCameraDisplayRotationProvider
-                .isCameraDeviceOrientationPortrait();
-        if (appOrientation == ORIENTATION_PORTRAIT) {
-            if (isDisplayRotationPortrait) {
-                return CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
-            } else {
-                return CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
-            }
-        } else if (appOrientation == ORIENTATION_LANDSCAPE) {
-            if (isDisplayRotationPortrait) {
-                return CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT;
-            } else {
-                return CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_LANDSCAPE;
-            }
-        }
-
-        return CAMERA_COMPAT_NONE;
     }
 
     /**
