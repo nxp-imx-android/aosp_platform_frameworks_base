@@ -23,7 +23,6 @@ import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -39,6 +38,7 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.offset
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
+import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
 import com.android.internal.jank.Cuj.CUJ_NOTIFICATION_SHADE_SCROLL_FLING
 import com.android.internal.jank.InteractionJankMonitor
@@ -106,7 +106,7 @@ fun ContentScope.SingleShadeNestedScrollLayout(
         scrollState.isScrollInProgress ||
             scrimOverScrollEffect.isInProgress ||
             scrimOffset.isRunning
-    LaunchedEffect(isScrollInProgress) {
+    LaunchedEffectWithLifecycle(isScrollInProgress) {
         if (isScrollInProgress) {
             jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
             debugLog(viewModel) { "STACK scroll begins" }
@@ -127,13 +127,13 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                 )
             }
         }
-    LaunchedEffect(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
+    LaunchedEffectWithLifecycle(shadeScrollState) { viewModel.setScrollState(shadeScrollState) }
     fun isContentTallerThanScrimAtRest(): Boolean {
         return minScrimHeight.intValue < contentHeight.intValue
     }
     // If contentHeight drops below minimum visible scrim height while scrim is
     // expanded and IME is not showing, reset scrim offset.
-    LaunchedEffect(contentHeight, minScrimHeight, scrimOffset) {
+    LaunchedEffectWithLifecycle(contentHeight, minScrimHeight, scrimOffset) {
         snapshotFlow { contentHeight.intValue < minScrimHeight.intValue && scrimOffset.value < 0f }
             .collect { shouldCollapse -> if (shouldCollapse) scrimOffset.snapTo(0f) }
     }
