@@ -58,7 +58,9 @@ constructor(
     }
 
     /**
-     * String with list of types joined for content description
+     * String with list of types joined for content description.
+     *
+     * Use [PrivacyChipContentDescriptionGenerator] to generate.
      */
     protected fun setContentDescriptions(joinedTypes: String) {
         contentDescription =

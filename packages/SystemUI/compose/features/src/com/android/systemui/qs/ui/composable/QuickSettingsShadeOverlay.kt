@@ -104,6 +104,7 @@ import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.OverlayShadeHeader
 import com.android.systemui.shade.ui.composable.QuickSettingsOverlayHeader
+import com.android.systemui.shade.ui.composable.QuickSettingsOverlayPrivacyChip
 import com.android.systemui.shade.ui.composable.isFullWidthShade
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
@@ -340,6 +341,7 @@ private fun ContentScope.QuickSettingsLayout(
         modifier = modifier.padding(horizontal = QuickSettingsShade.Dimensions.HorizontalPadding),
     ) {
         if (isFullWidthShade()) {
+            QuickSettingsOverlayPrivacyChip(qsContainerViewModel.shadeHeaderViewModel)
             VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
             QuickSettingsOverlayHeader(
                 viewModel = qsContainerViewModel.shadeHeaderViewModel,
@@ -349,6 +351,10 @@ private fun ContentScope.QuickSettingsLayout(
             VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
         } else {
             VerticalSeparator(QuickSettingsShade.Dimensions.VerticalPadding)
+            QuickSettingsOverlayPrivacyChip(
+                qsContainerViewModel.shadeHeaderViewModel,
+                modifier = Modifier.padding(bottom = QuickSettingsShade.Dimensions.ShortPadding),
+            )
         }
 
         val toolbarViewModel =
@@ -427,9 +433,10 @@ private fun ContentScope.QuickSettingsLayout(
                         )
                         Spacer(Modifier.width(8.dp))
                         IconButton(
-                            modifier = Modifier.size(
-                                QuickSettingsShade.Dimensions.volumeSliderDimensions.trackHeight
-                            ),
+                            modifier =
+                                Modifier.size(
+                                    QuickSettingsShade.Dimensions.volumeSliderDimensions.trackHeight
+                                ),
                             colors =
                                 IconButtonDefaults.iconButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,

@@ -18,14 +18,17 @@ package com.android.systemui.shade
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.view.ViewStub
 import androidx.constraintlayout.motion.widget.MotionLayout
 import com.android.compose.animation.scene.SceneKey
 import com.android.keyguard.logging.ScrimLogger
+import com.android.systemui.Flags.groupedPrivacyChip
 import com.android.systemui.biometrics.AuthRippleView
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.view.KeyguardRootView
 import com.android.systemui.privacy.AbstractOngoingPrivacyChip
+import com.android.systemui.privacy.ui.view.ComposeOngoingPrivacyChip
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.SceneContainerConfig
@@ -217,7 +220,17 @@ abstract class ShadeViewProviderModule {
         fun providesOngoingPrivacyChip(
             @Named(SHADE_HEADER) header: MotionLayout
         ): AbstractOngoingPrivacyChip {
-            return header.requireViewById(R.id.privacy_chip)
+            val legacyChips: AbstractOngoingPrivacyChip = header.requireViewById(R.id.privacy_chip)
+            if (groupedPrivacyChip()) {
+                val newChips = ComposeOngoingPrivacyChip(legacyChips.context)
+                (legacyChips.parent as ViewGroup).apply {
+                    removeAllViews()
+                    addView(newChips, legacyChips.layoutParams)
+                }
+                return newChips
+            } else {
+                return legacyChips
+            }
         }
 
         @Provides
