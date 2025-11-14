@@ -44,6 +44,7 @@ public class DefaultSurfaceAnimator implements Runnable {
     private final Choreographer mChoreographer = Choreographer.getInstance();
     private SurfaceControl.Transaction mTransaction;
     private boolean mScheduled;
+    private int mNumRunningAnimations;
 
     private DefaultSurfaceAnimator() {
     }
@@ -60,6 +61,27 @@ public class DefaultSurfaceAnimator implements Runnable {
         mScheduled = false;
         mTransaction.setFrameTimelineVsync(mChoreographer.getVsyncId());
         mTransaction.apply();
+    }
+
+    private static void onAnimationStart(@NonNull AnimationAdapter animation) {
+        final DefaultSurfaceAnimator animator = sSurfaceAnimator.get();
+        animation.mSurfaceAnimator = animator;
+        if (animator.mTransaction != null) {
+            animation.mTransaction = animator.mTransaction;
+        } else {
+            animation.mTransaction = animator.mTransaction = animation.mTransactionPool.acquire();
+        }
+        animator.mNumRunningAnimations++;
+    }
+
+    private static void onAnimationEnd(@NonNull AnimationAdapter animation) {
+        final DefaultSurfaceAnimator animator = animation.mSurfaceAnimator;
+        animator.mNumRunningAnimations--;
+        if (animator.mScheduled || animator.mNumRunningAnimations > 0) {
+            return;
+        }
+        animation.mTransactionPool.release(animator.mTransaction);
+        animator.mTransaction = null;
     }
 
     /** Builds an animator for the surface and adds it to the `animations` list. */
@@ -93,7 +115,7 @@ public class DefaultSurfaceAnimator implements Runnable {
         va.setDuration(anim.computeDurationHint());
         setupValueAnimator(va, updateListener, (vanim) -> {
             if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction2()) {
-                updateListener.releaseTransactionIfNeeded();
+                DefaultSurfaceAnimator.onAnimationEnd(updateListener);
             } else {
                 pool.release(transaction);
             }
@@ -119,25 +141,6 @@ public class DefaultSurfaceAnimator implements Runnable {
 
         void setTransaction(@NonNull SurfaceControl.Transaction transaction) {
             mTransaction = transaction;
-        }
-
-        /** This method can only be called from onAnimationStart. */
-        void setSurfaceAnimator() {
-            mSurfaceAnimator = sSurfaceAnimator.get();
-            if (mSurfaceAnimator.mTransaction != null) {
-                mTransaction = mSurfaceAnimator.mTransaction;
-            } else {
-                mTransaction = mSurfaceAnimator.mTransaction = mTransactionPool.acquire();
-            }
-        }
-
-        /** This method can only be called from onAnimationEnd. */
-        void releaseTransactionIfNeeded() {
-            if (mSurfaceAnimator.mScheduled || mSurfaceAnimator.mTransaction == null) {
-                return;
-            }
-            mTransactionPool.release(mSurfaceAnimator.mTransaction);
-            mSurfaceAnimator.mTransaction = null;
         }
 
         @Override
@@ -253,7 +256,7 @@ public class DefaultSurfaceAnimator implements Runnable {
             public void onAnimationStart(Animator animation) {
                 if (com.android.window.flags.Flags.defaultAnimatorSingleTransaction2()
                         && updateListener instanceof AnimationAdapter animationAdapter) {
-                    animationAdapter.setSurfaceAnimator();
+                    DefaultSurfaceAnimator.onAnimationStart(animationAdapter);
                 }
             }
 
