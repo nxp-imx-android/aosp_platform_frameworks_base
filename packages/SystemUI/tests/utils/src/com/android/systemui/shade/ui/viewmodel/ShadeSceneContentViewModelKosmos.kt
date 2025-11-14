@@ -17,7 +17,6 @@
 package com.android.systemui.shade.ui.viewmodel
 
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
@@ -53,7 +52,6 @@ val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
         mediaViewModelFactory = mediaViewModelFactory,
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
         mediaInRowInLandscapeViewModelFactory = mediaInRowInLandscapeViewModelFactory,
-        keyguardInteractor = keyguardInteractor,
         blurConfig = blurConfig,
         shadeStatusBarComponentsInteractor = shadeStatusBarComponentsInteractor,
     )

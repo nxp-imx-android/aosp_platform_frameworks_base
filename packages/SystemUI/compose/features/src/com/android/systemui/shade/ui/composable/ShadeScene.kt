@@ -40,6 +40,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -163,15 +164,20 @@ constructor(
             rememberViewModel("ShadeScene-notifPlaceholderViewModel") {
                 notificationsPlaceholderViewModelFactory.create()
             }
-        val isShadeBlurred = viewModel.isShadeBlurred
-        val shadeBlurRadius = with(LocalDensity.current) { viewModel.shadeBlurRadius.toDp() }
+        val targetBlur by
+            remember(layoutState) {
+                derivedStateOf { viewModel.calculateBlur(layoutState.transitionState) }
+            }
+        val animatedBlurRadiusPx: Float by
+            animateFloatAsState(targetValue = targetBlur, label = "Shade-blurRadius")
+
         ShadeScene(
             notificationStackScrollView.get(),
             viewModel = viewModel,
             headerViewModel = headerViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
             jankMonitor = jankMonitor,
-            modifier = modifier.thenIf(isShadeBlurred) { Modifier.blur(shadeBlurRadius) },
+            modifier = modifier.blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() }),
             shadeSession = shadeSession,
         )
     }
