@@ -1525,10 +1525,8 @@ public class Intent implements Parcelable, Cloneable {
      * An optional field on {@link #ACTION_ASSIST} containing the display id
      * that should be used to invoke the assist. If not set, invoke the assist on the default
      * display is suggested.
-     *
-     * @hide
      */
-    @FlaggedApi(com.android.window.flags.Flags.FLAG_SUPPORT_GEMINI_ON_MULTI_DISPLAY)
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ASSIST_DISPLAY_ID_PUBLIC)
     public static final String EXTRA_ASSIST_DISPLAY_ID =
             "android.intent.extra.ASSIST_DISPLAY_ID";
 

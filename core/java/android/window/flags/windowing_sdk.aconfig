@@ -205,3 +205,12 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+
+flag {
+    name: "assist_display_id_public"
+    namespace: "windowing_sdk"
+    description: "Make the preferred display id extra for launching assistant public."
+    bug: "428619705"
+    is_exported: true
+}

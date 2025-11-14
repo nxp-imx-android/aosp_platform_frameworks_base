@@ -12140,6 +12140,7 @@ package android.content {
     field public static final String EXTRA_ALTERNATE_INTENTS = "android.intent.extra.ALTERNATE_INTENTS";
     field @FlaggedApi("android.content.pm.archiving") public static final String EXTRA_ARCHIVAL = "android.intent.extra.ARCHIVAL";
     field public static final String EXTRA_ASSIST_CONTEXT = "android.intent.extra.ASSIST_CONTEXT";
+    field @FlaggedApi("com.android.window.flags.assist_display_id_public") public static final String EXTRA_ASSIST_DISPLAY_ID = "android.intent.extra.ASSIST_DISPLAY_ID";
     field public static final String EXTRA_ASSIST_INPUT_DEVICE_ID = "android.intent.extra.ASSIST_INPUT_DEVICE_ID";
     field public static final String EXTRA_ASSIST_INPUT_HINT_KEYBOARD = "android.intent.extra.ASSIST_INPUT_HINT_KEYBOARD";
     field public static final String EXTRA_ASSIST_PACKAGE = "android.intent.extra.ASSIST_PACKAGE";
