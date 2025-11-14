@@ -93,7 +93,7 @@
     <string name="bubble_bar_education_stack_text" msgid="2446934610817409820">"Жаңа әңгімелер экранның төменгі бөлігінде белгіше түрінде көрсетіледі. Оларды жаю үшін түртіңіз, ал жабу үшін сүйреңіз."</string>
     <string name="bubble_bar_education_manage_title" msgid="6148404487810835924">"Қалқыма хабарларды кез келген уақытта басқарыңыз"</string>
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"Қалқыма хабарда көрсетілетін қолданбалар мен әңгімелерді реттеу үшін осы жерді түртіңіз."</string>
-    <string name="notification_bubble_title" msgid="6082910224488253378">"Көпіршік"</string>
+    <string name="notification_bubble_title" msgid="6082910224488253378">"Қалқыма хабар"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"Басқару"</string>
     <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"Қалқыма хабар жабылды."</string>
     <string name="restart_button_description" msgid="4564728020654658478">"Көріністі жақсарту үшін осы қолданбаны түртіп, қайта ашыңыз."</string>
@@ -176,6 +176,5 @@
     <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"Менің таңдауымды есте сақтау"</string>
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Браузерден ашу"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Қолданбада қалу"</string>
-    <!-- no translation found for open_by_default_splash_dialog_ask_me_later_text (2706872945449736432) -->
-    <skip />
+    <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"Кейінірек сұралсын"</string>
 </resources>
