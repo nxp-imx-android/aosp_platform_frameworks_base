@@ -187,7 +187,8 @@ public class ComputerControlSessionProcessorTest {
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
 
         when(mAllowlistController.isPackageAllowedToCreateSession(anyString())).thenReturn(true);
-        when(mAllowlistController.isPackageAutomatable(TARGET_PACKAGE)).thenReturn(true);
+        when(mAllowlistController.isPackageAutomatable(TARGET_PACKAGE, OWNER_PACKAGE_NAME))
+                .thenReturn(true);
 
         mProcessor = new ComputerControlSessionProcessor(
                 context, mVirtualDeviceFactory, mPendingIntentFactory, mAllowlistController);
@@ -227,7 +228,7 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void anyTargetAppNotAllowListed_throwsException() throws Exception {
-        when(mAllowlistController.isPackageAutomatable(ANOTHER_TARGET_PACKAGE))
+        when(mAllowlistController.isPackageAutomatable(ANOTHER_TARGET_PACKAGE, OWNER_PACKAGE_NAME))
                 .thenReturn(false);
 
         ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
@@ -242,7 +243,7 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void allTargetAppsAllowListed_sessionCreated() throws Exception {
-        when(mAllowlistController.isPackageAutomatable(ANOTHER_TARGET_PACKAGE))
+        when(mAllowlistController.isPackageAutomatable(ANOTHER_TARGET_PACKAGE, OWNER_PACKAGE_NAME))
                 .thenReturn(true);
 
         ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()

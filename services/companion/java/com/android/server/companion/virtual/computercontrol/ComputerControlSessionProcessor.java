@@ -196,7 +196,8 @@ public class ComputerControlSessionProcessor {
                         || packageName.isEmpty()
                         || mPackageManager.getPermissionControllerPackageName().equals(packageName)
                         || mPackageManager.getLaunchIntentForPackage(packageName) == null
-                        || !mAllowlistController.isPackageAutomatable(packageName)) {
+                        || !mAllowlistController.isPackageAutomatable(
+                                packageName, callerPackageName)) {
                     throw new IllegalArgumentException(
                             "Invalid target package for ComputerControl: " + packageName);
                 }
