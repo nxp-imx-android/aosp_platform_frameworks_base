@@ -23,6 +23,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,7 +48,6 @@ import android.app.UiAutomation;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetManagerInternal;
-import android.content.pm.PackageManager;
 import android.appwidget.AppWidgetProviderInfo;
 import android.appwidget.PendingHostUpdate;
 import android.appwidget.flags.Flags;
@@ -56,9 +56,15 @@ import android.content.ComponentName;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherApps;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ShortcutServiceInternal;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
@@ -68,6 +74,7 @@ import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.SparseArray;
 import android.util.Xml;
+import android.view.Display;
 import android.widget.RemoteViews;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -81,6 +88,8 @@ import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
+import com.android.server.appwidget.AppWidgetServiceImpl.Provider;
+import com.android.server.appwidget.AppWidgetServiceImpl.Widget;
 
 import org.junit.After;
 import org.junit.Before;
@@ -95,13 +104,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
-import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -656,6 +665,75 @@ public class AppWidgetServiceImplTest {
 
         assertThat(id1.equals(id2)).isTrue();
         assertThat(id1.hashCode()).isEqualTo(id2.hashCode());
+    }
+
+    @Test
+    public void testWidgetViewsMemoryLimit_pre38_bitmap() {
+        RemoteViews viewsWithBitmapOverLimit = new RemoteViews(mTestContext.getPackageName(),
+                R.layout.widget_preview);
+        viewsWithBitmapOverLimit.setBitmap(R.id.widget_preview, "method", createTooBigBitmap());
+        Widget widget = setupWidgetWithTargetSdk(37, viewsWithBitmapOverLimit);
+        assertThrows(IllegalArgumentException.class, () -> {
+            mService.ensureWidgetViewsMemoryLimitLocked(widget);
+        });
+    }
+
+    @Test
+    public void testWidgetViewsMemoryLimit_pre38_icon() {
+        RemoteViews viewsWithIconOverLimit = new RemoteViews(mTestContext.getPackageName(),
+                R.layout.widget_preview);
+        viewsWithIconOverLimit.setIcon(R.id.widget_preview, "method", Icon.createWithBitmap(
+                createTooBigBitmap()));
+        Widget widget = setupWidgetWithTargetSdk(37, viewsWithIconOverLimit);
+        // The following will only log, not throw an error
+        mService.ensureWidgetViewsMemoryLimitLocked(widget);
+    }
+
+    @Test
+    public void testWidgetViewsMemoryLimit_post38_bitmap() {
+        RemoteViews viewsWithBitmapOverLimit = new RemoteViews(mTestContext.getPackageName(),
+                R.layout.widget_preview);
+        viewsWithBitmapOverLimit.setBitmap(R.id.widget_preview, "method", createTooBigBitmap());
+
+        Widget widget = setupWidgetWithTargetSdk(38, viewsWithBitmapOverLimit);
+        assertThrows(IllegalArgumentException.class, () -> {
+            mService.ensureWidgetViewsMemoryLimitLocked(widget);
+        });
+    }
+
+    @EnableFlags(Flags.FLAG_LIMIT_ICON_MEMORY)
+    @Test
+    public void testWidgetViewsMemoryLimit_post38_icon() {
+        RemoteViews viewsWithIconOverLimit = new RemoteViews(mTestContext.getPackageName(),
+                R.layout.widget_preview);
+        viewsWithIconOverLimit.setIcon(R.id.widget_preview, "method", Icon.createWithBitmap(
+                createTooBigBitmap()));
+
+        Widget widget = setupWidgetWithTargetSdk(38, viewsWithIconOverLimit);
+        assertThrows(IllegalArgumentException.class, () -> {
+            mService.ensureWidgetViewsMemoryLimitLocked(widget);
+        });
+    }
+
+    /**
+     * Create a bitmap that is bigger than mMaxWidgetBitmapMemory.
+     */
+    private Bitmap createTooBigBitmap() {
+        Display display = mTestContext.getDisplayNoVerify();
+        Point size = new Point();
+        display.getRealSize(size);
+        return  Bitmap.createBitmap(2 * size.x, 2 * size.y, Bitmap.Config.ARGB_8888);
+    }
+
+    private static Widget setupWidgetWithTargetSdk(int targetSdk, RemoteViews views) {
+        Widget widget = new Widget();
+        widget.views = views;
+        widget.provider = new Provider();
+        widget.provider.info = new AppWidgetProviderInfo();
+        widget.provider.info.providerInfo = new ActivityInfo();
+        widget.provider.info.providerInfo.applicationInfo = new ApplicationInfo();
+        widget.provider.info.providerInfo.applicationInfo.targetSdkVersion = targetSdk;
+        return widget;
     }
 
     private void verifyRestoreUpdateRecord(

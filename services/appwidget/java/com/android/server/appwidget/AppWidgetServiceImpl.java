@@ -18,6 +18,7 @@ package com.android.server.appwidget;
 
 import static android.appwidget.AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL;
 import static android.appwidget.flags.Flags.appLockWidgetRemoval;
+import static android.appwidget.flags.Flags.limitIconMemory;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.removeAppWidgetServiceIoFromCriticalPath;
@@ -3090,18 +3091,42 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 // For a full update we replace the RemoteViews completely.
                 widget.views = views;
             }
-            long memoryUsage;
-            if ((UserHandle.getAppId(Binder.getCallingUid()) != Process.SYSTEM_UID) &&
-                    (widget.views != null) &&
-                    ((memoryUsage = widget.views.estimateMemoryUsage()) > mMaxWidgetBitmapMemory)) {
-                widget.views = null;
-                throw new IllegalArgumentException("RemoteViews for widget update exceeds"
-                        + " maximum bitmap memory usage (used: " + memoryUsage
-                        + ", max: " + mMaxWidgetBitmapMemory + ")");
-            }
+            ensureWidgetViewsMemoryLimitLocked(widget);
             scheduleNotifyUpdateAppWidgetLocked(widget, widget.getEffectiveViewsLocked());
         }
     }
+
+    @VisibleForTesting
+    void ensureWidgetViewsMemoryLimitLocked(Widget widget) {
+        if ((UserHandle.getAppId(Binder.getCallingUid()) == Process.SYSTEM_UID)
+                || (widget.views == null)) {
+            return;
+        }
+        long bitmapCacheMemoryUsage = widget.views.estimateMemoryUsage();
+        long totalMemoryUsage = bitmapCacheMemoryUsage + widget.views.estimateIconMemoryUsage();
+        int targetSdk = getWidgetTargetSdkLocked(widget);
+        long memoryUsage =
+                (targetSdk > 37 && limitIconMemory()) ? totalMemoryUsage : bitmapCacheMemoryUsage;
+        if (memoryUsage > mMaxWidgetBitmapMemory) {
+            widget.views = null;
+            throw new IllegalArgumentException("RemoteViews for widget update exceeds"
+                    + " maximum bitmap memory usage (used: " + memoryUsage
+                    + ", max: " + mMaxWidgetBitmapMemory + ")");
+        } else if (targetSdk <= 37 && totalMemoryUsage > mMaxWidgetBitmapMemory) {
+            Slog.w(TAG, "RemoteViews for widget update exceeds maximum Bitmap and Icon "
+                    + "memory usage (used: " + totalMemoryUsage + ", max: "
+                    + mMaxWidgetBitmapMemory + "). This will throw an exception for "
+                    + "targetSdk > 37");
+        }
+    }
+
+    private int getWidgetTargetSdkLocked(Widget widget) {
+        if (widget.provider != null && widget.provider.info != null) {
+            return widget.provider.info.getActivityInfo().applicationInfo.targetSdkVersion;
+        }
+        return -1;
+    }
+
     private void scheduleNotifyAppWidgetViewDataChanged(Widget widget, int viewId) {
         if (viewId == ID_VIEWS_UPDATE || viewId == ID_PROVIDER_CHANGED) {
             // A view id should never collide with these constants but a developer can call this
@@ -6612,7 +6637,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     private static final int ID_VIEWS_UPDATE = 0;
     private static final int ID_PROVIDER_CHANGED = 1;
 
-    private static final class Widget {
+    @VisibleForTesting
+    static final class Widget {
         int appWidgetId;
         int restoredId;  // tracking & remapping any restored state
         Provider provider;

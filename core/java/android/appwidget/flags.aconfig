@@ -117,3 +117,13 @@ flag {
   description: "Remove app widgets from app-locked packages"
   bug: "447547850"
 }
+
+flag {
+    name: "limit_icon_memory"
+    namespace: "app_widgets"
+    description: "Include memory usage from Icons when checking RemoteView bitmap memory limits"
+    bug: "381943444"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
