@@ -544,6 +544,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_ime_chip"
+    namespace: "systemui"
+    description: "Feature flag for the ime chip in desktop status bar"
+    bug: "443854916"
+}
+
+flag {
     name: "status_bar_chronometer_fixes"
     namespace: "systemui"
     description: "Fixes ticking behavior for the chronometer used in status bar chips"
