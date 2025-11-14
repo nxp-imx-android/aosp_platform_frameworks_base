@@ -163,14 +163,14 @@ class BubbleDataRepository(
      * write operation to finish then run another write operation exactly once.
      *
      * e.g.
-     * Job A started -> blocking I/O
-     * Job B started, cancels A, wait for blocking I/O in A finishes
-     * Job C started, cancels B, wait for job B to finish
-     * Job D started, cancels C, wait for job C to finish
-     * Job A completed
-     * Job B resumes and reaches yield() and is then cancelled
-     * Job C resumes and reaches yield() and is then cancelled
-     * Job D resumes and performs another blocking I/O
+     * - Job A started -> blocking I/O
+     * - Job B started, cancels A, wait for blocking I/O in A finishes
+     * - Job C started, cancels B, wait for job B to finish
+     * - Job D started, cancels C, wait for job C to finish
+     * - Job A completed
+     * - Job B resumes and reaches yield() and is then cancelled
+     * - Job C resumes and reaches yield() and is then cancelled
+     * - Job D resumes and performs another blocking I/O
      */
     @VisibleForTesting
     fun persistToDisk(

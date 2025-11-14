@@ -26,7 +26,7 @@ import java.io.PrintWriter
  * Handles adb shell commands for bubbles, typically for testing.
  *
  * Example usage to remove all bubbles:
- * adb shell dumpsys activity service SystemUIService WMShell bubbles removeAll
+ * - adb shell dumpsys activity service SystemUIService WMShell bubbles removeAll
  */
 class BubbleShellCommandHandler(private val bubbleController: BubbleController) :
     ShellCommandHandler.ShellCommandActionHandler {
