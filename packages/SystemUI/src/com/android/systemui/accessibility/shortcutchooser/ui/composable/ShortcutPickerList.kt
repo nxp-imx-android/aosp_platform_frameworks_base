@@ -16,6 +16,7 @@
 
 package com.android.systemui.accessibility.shortcutchooser.ui.composable
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,7 +43,11 @@ fun ShortcutPickerList(
     val canScrollDown by remember { derivedStateOf { listState.canScrollForward } }
 
     Box {
-        LazyColumn(state = listState, modifier = modifier.fillMaxWidth()) {
+        LazyColumn(
+            state = listState,
+            modifier = modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
             items(targets, key = { target -> target.targetName }) { target ->
                 ShortcutPickerRow(target, onClick = { onTargetClick(target) })
             }
