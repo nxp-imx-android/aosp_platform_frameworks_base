@@ -19648,6 +19648,7 @@ package android.telephony.satellite {
     field public static final int SATELLITE_MODEM_STATE_LISTENING = 1; // 0x1
     field public static final int SATELLITE_MODEM_STATE_NOT_CONNECTED = 6; // 0x6
     field public static final int SATELLITE_MODEM_STATE_OFF = 4; // 0x4
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_suspend") public static final int SATELLITE_MODEM_STATE_SUSPENSION = 10; // 0xa
     field public static final int SATELLITE_MODEM_STATE_UNAVAILABLE = 5; // 0x5
     field public static final int SATELLITE_MODEM_STATE_UNKNOWN = -1; // 0xffffffff
     field public static final int SATELLITE_RESULT_ACCESS_BARRED = 16; // 0x10

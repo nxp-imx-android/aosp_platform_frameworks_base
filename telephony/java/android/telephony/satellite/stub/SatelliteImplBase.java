@@ -90,6 +90,15 @@ public class SatelliteImplBase extends SatelliteService {
         }
 
         @Override
+        public void requestSatelliteSuspended(boolean enabled,
+                IIntegerConsumer resultCallback) throws RemoteException {
+            executeMethodAsync(
+                    () -> SatelliteImplBase.this
+                            .requestSatelliteSuspended(
+                    enabled, resultCallback), "requestSatelliteSuspended");
+        }
+
+        @Override
         public void requestSatelliteEnabled(SatelliteModemEnableRequestAttributes enableAttributes,
                 IIntegerConsumer resultCallback) throws RemoteException {
             executeMethodAsync(
@@ -316,6 +325,17 @@ public class SatelliteImplBase extends SatelliteService {
      * @param resultCallback The callback to receive the error code result of the operation.
      */
     public void enableTerrestrialNetworkScanWhileSatelliteModeIsOn(boolean enabled,
+            @NonNull IIntegerConsumer resultCallback) {
+        // stub implementation
+    }
+
+    /**
+     * Request to suspend or resume satellite mode.
+     * @param enabled  {@code true} to enable suspension while satellite mode is on
+     * and {@code false} to resume satellite mode
+     * @param resultCallback The callback to receive the error code result of the operation.
+     */
+    public void requestSatelliteSuspended(boolean enabled,
             @NonNull IIntegerConsumer resultCallback) {
         // stub implementation
     }

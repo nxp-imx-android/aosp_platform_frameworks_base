@@ -1432,6 +1432,18 @@ public final class SatelliteManager {
     public static final int SATELLITE_MODEM_STATE_DISABLING_SATELLITE = 9;
 
     /**
+     * The satellite modem is in a suspension state.
+     * In this state, the modem is still powered on, but all satellite communication
+     * is unavailable.
+     * Modem will enter or exit this state only when it receives the explicit request
+     * from the Telephony framework.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_SUSPEND)
+    public static final int SATELLITE_MODEM_STATE_SUSPENSION = 10;
+
+    /**
      * Satellite modem state is unknown. This generic modem state should be used only when the
      * modem state cannot be mapped to other specific modem states.
      * @hide
@@ -1451,6 +1463,7 @@ public final class SatelliteManager {
             SATELLITE_MODEM_STATE_CONNECTED,
             SATELLITE_MODEM_STATE_ENABLING_SATELLITE,
             SATELLITE_MODEM_STATE_DISABLING_SATELLITE,
+            SATELLITE_MODEM_STATE_SUSPENSION,
             SATELLITE_MODEM_STATE_UNKNOWN
     })
     @Retention(RetentionPolicy.SOURCE)
