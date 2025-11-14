@@ -1164,6 +1164,84 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @EnableSceneContainer
+    fun resetViewStates_qsToShade_clampsHeadsUpTop() {
+        // Step 1: Set up HUN over full screen QS (expansion 1.0) with mFullQsHeadsUpTop = 200f
+        hostView.removeAllViews()
+        ambientState.trackedHeadsUpRow = notificationRow
+        hostView.addView(notificationRow)
+        whenever(notificationRow.isHeadsUp).thenReturn(true)
+
+        ambientState.qsExpansionFraction = 1.0f
+        ambientState.headsUpTop = 200f
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // Step 2: Transition towards Shade (expansion 0.5)
+        // The new source for headsUpTop jumps down to 500f (larger Y)
+        stackScrollAlgorithm.setIsExpanded(true)
+        ambientState.qsExpansionFraction = 0.5f
+        ambientState.headsUpTop = 500f
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // Then: The HUN's Y Translation should be clamped to the saved QS position (200f),
+        // preventing a visual jump downwards.
+        assertThat(notificationRow.viewState.yTranslation).isEqualTo(200f)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_qsToShade_doesNotClampIfNewIsHigher() {
+        // Step 1: Set up HUN over full screen QS (expansion 1.0) with mFullQsHeadsUpTop = 200f
+        hostView.removeAllViews()
+        ambientState.trackedHeadsUpRow = notificationRow
+        hostView.addView(notificationRow)
+        whenever(notificationRow.isHeadsUp).thenReturn(true)
+
+        ambientState.qsExpansionFraction = 1.0f
+        ambientState.headsUpTop = 200f
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // Step 2: Transition towards Shade (expansion 0.5)
+        // The new source for headsUpTop moves up to 100f (smaller Y, higher on screen)
+        stackScrollAlgorithm.setIsExpanded(true)
+        ambientState.qsExpansionFraction = 0.5f
+        ambientState.headsUpTop = 100f
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // Then: The HUN should be at the new, higher position (100f) because clamping
+        // only prevents downward jumps (larger Y).
+        assertThat(notificationRow.viewState.yTranslation).isEqualTo(100f)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_qsClosed_resetsClampedValue() {
+        // Step 1: Set up HUN over full screen QS (expansion 1.0) with mFullQsHeadsUpTop = 200f
+        hostView.removeAllViews()
+        ambientState.trackedHeadsUpRow = notificationRow
+        hostView.addView(notificationRow)
+        whenever(notificationRow.isHeadsUp).thenReturn(true)
+
+        ambientState.qsExpansionFraction = 1.0f
+        ambientState.headsUpTop = 200f
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // Step 2: Close QS completely (expansion 0.0)
+        // This should reset the clamped value inside the algorithm
+        stackScrollAlgorithm.setIsExpanded(true)
+        ambientState.qsExpansionFraction = 0.0f
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // Step 3: Start a new transition where headsUpTop is 500f
+        ambientState.qsExpansionFraction = 0.5f
+        ambientState.headsUpTop = 500f
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // Then: HUN should have updated from 200f to 500f
+        assertThat(notificationRow.viewState.yTranslation).isEqualTo(500f)
+    }
+
+    @Test
     fun getGapForLocation_onLockscreen_returnsSmallGap() {
         val gap =
             stackScrollAlgorithm.getGapForLocation(
