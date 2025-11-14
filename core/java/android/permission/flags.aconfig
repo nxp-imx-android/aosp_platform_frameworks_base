@@ -35,6 +35,14 @@ flag {
 }
 
 flag {
+    name: "read_media_documents_permission_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "enable permission to read documents from shared storage"
+    bug: "442892237"
+}
+
+flag {
     name: "set_next_attribution_source"
     is_exported: true
     namespace: "permissions"

@@ -1302,6 +1302,15 @@
                 android:description="@string/permdesc_readMediaImages"
                 android:protectionLevel="dangerous" />
 
+   <!-- Allows an application to read document files from external storage.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(android.permission.flags.Flags.FLAG_READ_MEDIA_DOCUMENTS_PERMISSION_ENABLED) -->
+    <permission android:name="android.permission.READ_MEDIA_DOCUMENTS"
+                android:label="@string/permlab_readMediaDocuments"
+                android:description="@string/permdesc_readMediaDocuments"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.permission.flags.read_media_documents_permission_enabled" />
+
     <!-- Allows an application to read image or video files from external storage that a user has
       selected via the permission prompt photo picker. Apps can check this permission to verify that
       a user has decided to use the photo picker, instead of granting access to
