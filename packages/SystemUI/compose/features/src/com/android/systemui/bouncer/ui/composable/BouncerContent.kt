@@ -898,7 +898,7 @@ private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modi
                         // Fade the button in:
                         alpha = appearFadeInAnimatable.value
                     }
-                    .height(56.dp)
+                    .height(48.dp)
                     .clip(ButtonDefaults.shape)
                     .background(color = MaterialTheme.colorScheme.secondaryContainer)
                     .semantics { role = Role.Button }
