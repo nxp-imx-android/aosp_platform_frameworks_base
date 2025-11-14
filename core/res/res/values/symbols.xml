@@ -551,6 +551,7 @@
   <java-symbol type="bool" name="config_hibernationDeletesOatArtifactsEnabled"/>
   <java-symbol type="integer" name="config_defaultAnalogClockSecondsHandFps"/>
   <java-symbol type="bool" name="config_notificationCloseButtonSupported"/>
+  <java-symbol type="bool" name="config_enableColorInversionInSetupWizard" />
   <java-symbol type="bool" name="config_enableGaiaEducationInPrivateSpace"/>
   <java-symbol type="bool" name="config_enableUdcSysfsUsbStateUpdate"/>
   <java-symbol type="bool" name="config_enableSearchTileHideIllustrationInPrivateSpace"/>
