@@ -204,6 +204,14 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     }
 
     /**
+     * @return pinned task leash or {@code null} if no such leash is cached.
+     */
+    @Nullable
+    public SurfaceControl getPipLeash() {
+        return mPipTransitionState.getPinnedTaskLeash();
+    }
+
+    /**
      * Schedules exit PiP via expand transition.
      */
     public void scheduleExitPipViaExpand(boolean wasVisible) {

@@ -97,6 +97,7 @@ class PipTouchHandlerTest : ShellTestCase() {
     private val mockMotionEvent = mock<MotionEvent>()
     private val mockPipDismissTargetHandler = mock<PipDismissTargetHandler>()
     private val mockPipResizeGestureHandler = mock<PipResizeGestureHandler>()
+    private val mockPipInteractionHandler = mock<PipInteractionHandler>()
     private val mockPipInputConsumer = mock<PipInputConsumer>()
     private val mockAccessibilityManager = mock<AccessibilityManager>()
 
@@ -118,7 +119,8 @@ class PipTouchHandlerTest : ShellTestCase() {
             mockPipTransitionState, mockPipScheduler, mockSizeSpecSource, mockPipDisplayLayoutState,
             mockPipDesktopState, mockDisplayController, mockPipMotionHelper,
             mockFloatingContentCoordinator, mockPipUiEventLogger, shellExecutor,
-            Optional.of(mockPipPerfHintController), mockPipDisplayTransferHandler
+            Optional.of(mockPipPerfHintController), mockPipDisplayTransferHandler,
+            mockPipInteractionHandler
         )
         pipTouchGesture = pipTouchHandler.touchGesture
         pipTouchHandler.setPipTouchState(pipTouchState)

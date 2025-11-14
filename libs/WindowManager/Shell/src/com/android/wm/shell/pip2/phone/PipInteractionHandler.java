@@ -37,7 +37,8 @@ public class PipInteractionHandler {
             INTERACTION_EXIT_PIP_TO_SPLIT,
             INTERACTION_ENTER_PIP,
             INTERACTION_REMOVE_PIP,
-            INTERACTION_BOUNDS_CHANGE_TRANSITION
+            INTERACTION_BOUNDS_CHANGE_TRANSITION,
+            INTERACTION_PINCHING_PIP
     })
 
     @Retention(RetentionPolicy.SOURCE)
@@ -48,6 +49,7 @@ public class PipInteractionHandler {
     public static final int INTERACTION_ENTER_PIP = 2;
     public static final int INTERACTION_REMOVE_PIP = 3;
     public static final int INTERACTION_BOUNDS_CHANGE_TRANSITION = 4;
+    public static final int INTERACTION_PINCHING_PIP = 5;
 
     private final Context mContext;
     private final Handler mHandler;
@@ -91,6 +93,7 @@ public class PipInteractionHandler {
             case INTERACTION_ENTER_PIP -> "ENTER_PIP";
             case INTERACTION_REMOVE_PIP -> "REMOVE_PIP";
             case INTERACTION_BOUNDS_CHANGE_TRANSITION -> "BOUNDS_CHANGE_TRANSITION";
+            case INTERACTION_PINCHING_PIP -> "PINCHING_PIP";
             default -> "";
         };
     }
