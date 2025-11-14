@@ -45,6 +45,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
+import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AppOpsManager;
 import android.app.IUriGrantsManager;
@@ -1737,14 +1738,16 @@ public class ClipboardService extends SystemService {
             mWorkerHandler.post(() -> FrameworkStatsLog.write(
                     FrameworkStatsLog.CLIPBOARD_GET_EVENT_REPORTED,
                     sourceUid, intendingUid,
-                    mAmInternal.getUidProcessState(intendingUid),
+                    ActivityManager
+                            .processStateAmToProto(mAmInternal.getUidProcessState(intendingUid)),
                     mimeTypes.toArray(),
                     secondsSinceSet));
         } else {
             mWorkerHandler.post(() -> FrameworkStatsLog.write(
                     FrameworkStatsLog.CLIPBOARD_GET_EVENT_REPORTED,
                     sourceUid, intendingUid,
-                    mAmInternal.getUidProcessState(intendingUid),
+                    ActivityManager
+                            .processStateAmToProto(mAmInternal.getUidProcessState(intendingUid)),
                     CLIP_DATA_TYPES_UNKNOWN, 0));
         }
     }
