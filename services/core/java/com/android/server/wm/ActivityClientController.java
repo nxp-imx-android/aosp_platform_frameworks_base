@@ -608,6 +608,10 @@ class ActivityClientController extends IActivityClientController.Stub {
                         Slog.i(TAG, "Failed to finish by app-request");
                     }
                 }
+
+                if (res) {
+                    r.mAppCompatController.getDisplayCompatModePolicy().onActivityFinishing();
+                }
                 return res;
             } finally {
                 Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);

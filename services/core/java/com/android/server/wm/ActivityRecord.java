@@ -4098,8 +4098,6 @@ final class ActivityRecord extends WindowToken {
         if (mDisplayContent != null) {
             mDisplayContent.mUnknownAppVisibilityController.appRemovedOrHidden(this);
         }
-
-        mAppCompatController.getDisplayCompatModePolicy().onActivityFinishing();
     }
 
     /**
@@ -4123,8 +4121,6 @@ final class ActivityRecord extends WindowToken {
         }
 
         mRootWindowContainer.resumeFocusedTasksTopActivities();
-
-        mAppCompatController.getDisplayCompatModePolicy().onActivityDestroyed();
     }
 
     /**
@@ -8840,6 +8836,8 @@ final class ActivityRecord extends WindowToken {
             // Note: don't need to call pauseIfSleepingLocked() here, because the caller will only
             // request resume if this activity is currently resumed, which implies we aren't
             // sleeping.
+            mAppCompatController.getDisplayCompatModePolicy()
+                    .onActivityRelaunching(configChangeFlags);
         }
 
         if (andResume) {
