@@ -20,7 +20,6 @@ import android.hardware.power.stats.EnergyConsumerType;
 import android.os.BatteryConsumer;
 import android.os.Handler;
 import android.os.PersistableBundle;
-import android.os.Process;
 import android.util.Slog;
 import android.util.SparseArray;
 
@@ -389,12 +388,7 @@ public class CpuPowerStatsCollector extends PowerStatsCollector {
             uidStats.timeByPowerBracket[bracket] = timeByPowerBracket[bracket];
         }
         if (nonzero) {
-            int ownerUid;
-            if (Process.isSdkSandboxUid(uid)) {
-                ownerUid = Process.getAppUidForSdkSandboxUid(uid);
-            } else {
-                ownerUid = mUidResolver.mapUid(uid);
-            }
+            int ownerUid = mUidResolver.getOwnerUid(uid);
 
             long[] ownerStats = mCpuPowerStats.uidStats.get(ownerUid);
             if (ownerStats == null) {

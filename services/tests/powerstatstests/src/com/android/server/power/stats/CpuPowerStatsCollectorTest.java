@@ -16,6 +16,8 @@
 
 package com.android.server.power.stats;
 
+import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -26,12 +28,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import android.content.pm.PackageManager;
 import android.hardware.power.stats.EnergyConsumerResult;
 import android.hardware.power.stats.EnergyConsumerType;
 import android.os.BatteryConsumer;
 import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.IndentingPrintWriter;
 import android.util.SparseArray;
 
@@ -61,6 +65,10 @@ public class CpuPowerStatsCollectorTest {
     private static final int ISOLATED_UID = 99123;
     private static final int UID_1 = 42;
     private static final int UID_2 = 99;
+
+    private static final int UID_PCC_PARENT = 10042;
+
+    private static final int UID_PCC = 30042;
     private final MockClock mMockClock = new MockClock();
     private final HandlerThread mHandlerThread = new HandlerThread("test");
     private final PowerStatsUidResolver mUidResolver = new PowerStatsUidResolver();
@@ -72,6 +80,9 @@ public class CpuPowerStatsCollectorTest {
     @Mock
     private PowerStatsCollector.ConsumedEnergyRetriever mConsumedEnergyRetriever;
     private CpuScalingPolicies mCpuScalingPolicies;
+
+    @Mock
+    private PackageManager mPackageManager;
 
     private class TestInjector implements CpuPowerStatsCollector.Injector {
         private final int mDefaultCpuPowerBrackets;
@@ -143,6 +154,7 @@ public class CpuPowerStatsCollectorTest {
                 .thenReturn(new int[0]);
         when(mConsumedEnergyRetriever.getVoltageMv()).thenReturn(3500);
         mUidResolver.noteIsolatedUidAdded(ISOLATED_UID, UID_2);
+        mUidResolver.setPackageManager(mPackageManager);
     }
 
     @Test
@@ -317,6 +329,75 @@ public class CpuPowerStatsCollectorTest {
                 .isEqualTo(45);
         assertThat(layout.getUidTimeByPowerBracket(mCollectedStats.uidStats.get(UID_2), 1))
                 .isEqualTo(78);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void collectStats_pccUid() throws Exception {
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(eq(UID_PCC))).thenReturn(
+                UID_PCC_PARENT);
+
+        mockCpuScalingPolicies(1);
+        mockPowerProfile();
+        mockEnergyConsumers();
+
+        CpuPowerStatsCollector collector = createCollector(8, 0);
+        CpuPowerStatsLayout layout = new CpuPowerStatsLayout(collector.getPowerStatsDescriptor());
+
+        mockKernelCpuStats(new long[]{1111, 2222, 3333},
+                new SparseArray<>() {{
+                    put(UID_PCC_PARENT, new long[]{100, 200});
+                    put(UID_PCC, new long[]{300, 400});
+                }}, 0, 1234);
+
+        mMockClock.uptime = 1000;
+        collector.forceSchedule();
+        waitForIdle();
+
+        assertThat(mCollectedStats.durationMs).isEqualTo(1234);
+
+        assertThat(layout.getCpuScalingStepCount()).isEqualTo(3);
+        assertThat(layout.getTimeByScalingStep(mCollectedStats.stats, 0)).isEqualTo(1111);
+        assertThat(layout.getTimeByScalingStep(mCollectedStats.stats, 1)).isEqualTo(2222);
+        assertThat(layout.getTimeByScalingStep(mCollectedStats.stats, 2)).isEqualTo(3333);
+
+        assertThat(layout.getConsumedEnergy(mCollectedStats.stats, 0)).isEqualTo(0);
+        assertThat(layout.getConsumedEnergy(mCollectedStats.stats, 1)).isEqualTo(0);
+
+        assertThat(layout.getUidTimeByPowerBracket(mCollectedStats.uidStats.get(UID_PCC_PARENT), 0))
+                .isEqualTo(400);
+        assertThat(layout.getUidTimeByPowerBracket(mCollectedStats.uidStats.get(UID_PCC_PARENT), 1))
+                .isEqualTo(600);
+        assertThat(mCollectedStats.uidStats.get(UID_PCC))
+                .isNull();
+
+        mockKernelCpuStats(new long[]{5555, 4444, 3333},
+                new SparseArray<>() {{
+                    put(UID_PCC_PARENT, new long[]{123, 234});
+                    put(UID_PCC, new long[]{323, 434});
+                }}, 1234, 3421);
+
+        mMockClock.uptime = 2000;
+        collector.forceSchedule();
+        waitForIdle();
+
+        assertThat(mCollectedStats.durationMs).isEqualTo(3421 - 1234);
+
+        assertThat(layout.getTimeByScalingStep(mCollectedStats.stats, 0)).isEqualTo(4444);
+        assertThat(layout.getTimeByScalingStep(mCollectedStats.stats, 1)).isEqualTo(2222);
+        assertThat(layout.getTimeByScalingStep(mCollectedStats.stats, 2)).isEqualTo(0);
+
+        // 500 * 1000 / 3500
+        assertThat(layout.getConsumedEnergy(mCollectedStats.stats, 0)).isEqualTo(143);
+        // 700 * 1000 / 3500
+        assertThat(layout.getConsumedEnergy(mCollectedStats.stats, 1)).isEqualTo(200);
+
+        assertThat(layout.getUidTimeByPowerBracket(mCollectedStats.uidStats.get(UID_PCC_PARENT), 0))
+                .isEqualTo(46);
+        assertThat(layout.getUidTimeByPowerBracket(mCollectedStats.uidStats.get(UID_PCC_PARENT), 1))
+                .isEqualTo(68);
+        assertThat(mCollectedStats.uidStats.get(UID_PCC))
+                .isNull();
     }
 
     @Test
