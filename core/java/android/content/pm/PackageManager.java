@@ -1456,7 +1456,8 @@ public abstract class PackageManager {
      * {@link ApplicationInfo}, {@link ComponentInfo}, and {@link ResolveInfo} flag: return the
      * {@link ApplicationInfo#isAppLockSupported} and {@link ApplicationInfo#isAppLockEnabled}
      * associated with an application. The caller should have the
-     * {@link Manifest.permission.LOCK_APPS} permission, or the data will not be returned.
+     * {@link Manifest.permission.LOCK_APPS} permission, or a {@link SecurityException} will be
+     * thrown.
      */
     @FlaggedApi(android.security.Flags.FLAG_APP_LOCK_APIS)
     public static final long GET_APP_LOCK_INFO = 1L << 35;
