@@ -285,27 +285,8 @@ public class LauncherAppsService extends SystemService {
             registerSettingsObserver();
         }
 
-        /**
-         * Returns the {@link PackageManager#GET_APP_LOCK_INFO} flag if the caller is permitted to
-         * access App Lock information, and 0L otherwise. This is used to help automatically add the
-         * flag to authorized callers.
-         *
-         * <p>This flag is necessary to query the App Lock status fields ({@link
-         * ApplicationInfo#isAppLockEnabled} and {@link ApplicationInfo#isAppLockSupported})
-         * from {@link ApplicationInfo}.
-         *
-         * <p>If the caller lacks the permission or the feature is disabled, 0L is returned. This
-         * prevents a {@link SecurityException} that would occur if
-         * {@link PackageManager#GET_APP_LOCK_INFO} were used in {@link PackageManager} calls
-         * without the required permission.
-         *
-         * @param callingPid The process ID of the caller.
-         * @param callingUid The UID of the caller.
-         * @return {@link PackageManager#GET_APP_LOCK_INFO} if conditions are met, otherwise 0L.
-         */
-        private long getAppLockInfoFlag(int callingPid, int callingUid) {
-            return (android.security.Flags.appLockApis() && hasLockAppsPermission(callingPid,
-                    callingUid)) ? PackageManager.GET_APP_LOCK_INFO : 0L;
+        private static long getAppLockInfoFlag() {
+            return android.security.Flags.appLockApis() ? PackageManager.GET_APP_LOCK_INFO : 0L;
         }
 
         @VisibleForTesting
@@ -335,12 +316,6 @@ public class LauncherAppsService extends SystemService {
 
         private int getCallingUserId() {
             return UserHandle.getUserId(injectBinderCallingUid());
-        }
-
-        @VisibleForTesting // Overridden in tests
-        boolean hasLockAppsPermission(int callingPid, int callingUid) {
-            return mContext.checkPermission(Manifest.permission.LOCK_APPS, callingPid, callingUid)
-                    == PackageManager.PERMISSION_GRANTED;
         }
 
         /*
@@ -703,7 +678,6 @@ public class LauncherAppsService extends SystemService {
             }
 
             final int callingUid = injectBinderCallingUid();
-            final int callingPid = injectBinderCallingPid();
             final long ident = injectClearCallingIdentity();
             try {
                 if (mUserManagerInternal.getUserInfo(user.getIdentifier()).isManagedProfile()) {
@@ -724,8 +698,7 @@ public class LauncherAppsService extends SystemService {
                         return launcherActivities;
                     }
                     final ApplicationInfo appInfo = mPackageManagerInternal.getApplicationInfo(
-                            packageName, getAppLockInfoFlag(callingPid, callingUid), callingUid,
-                            user.getIdentifier());
+                            packageName, getAppLockInfoFlag(), callingUid, user.getIdentifier());
                     if (shouldShowSyntheticActivity(user, appInfo)) {
                         LauncherActivityInfoInternal info = getHiddenAppActivityInfo(packageName,
                                 callingUid, user);
@@ -741,8 +714,7 @@ public class LauncherAppsService extends SystemService {
                 }
                 final List<ApplicationInfo> installedPackages =
                         mPackageManagerInternal.getInstalledApplications(
-                                getAppLockInfoFlag(callingPid, callingUid), user.getIdentifier(),
-                                callingUid);
+                                getAppLockInfoFlag(), user.getIdentifier(), callingUid);
                 for (ApplicationInfo applicationInfo : installedPackages) {
                     if (!visiblePackages.contains(applicationInfo.packageName)) {
                         if (!shouldShowSyntheticActivity(user, applicationInfo)) {
@@ -850,7 +822,6 @@ public class LauncherAppsService extends SystemService {
             }
 
             final int callingUid = injectBinderCallingUid();
-            final int callingPid = injectBinderCallingPid();
             final long ident = Binder.clearCallingIdentity();
             try {
                 ActivityInfo activityInfo =
@@ -858,7 +829,7 @@ public class LauncherAppsService extends SystemService {
                                 component,
                                 PackageManager.MATCH_DIRECT_BOOT_AWARE
                                         | PackageManager.MATCH_DIRECT_BOOT_UNAWARE
-                                        | getAppLockInfoFlag(callingPid, callingUid),
+                                        | getAppLockInfoFlag(),
                                 callingUid,
                                 user.getIdentifier());
                 if (activityInfo == null) {
@@ -1000,11 +971,11 @@ public class LauncherAppsService extends SystemService {
         @NonNull
         List<ApplicationInfo> getApplicationInfoListForAllArchivedApps(UserHandle user) {
             final int callingUid = injectBinderCallingUid();
-            final int callingPid = injectBinderCallingPid();
             List<ApplicationInfo> installedApplicationInfoList =
                     mPackageManagerInternal.getInstalledApplicationsCrossUser(
-                            PackageManager.MATCH_ARCHIVED_PACKAGES | getAppLockInfoFlag(callingPid,
-                                    callingUid), user.getIdentifier(), callingUid);
+                            PackageManager.MATCH_ARCHIVED_PACKAGES | getAppLockInfoFlag(),
+                            user.getIdentifier(),
+                            callingUid);
             List<ApplicationInfo> archivedApplicationInfos = new ArrayList<>();
             for (int i = 0; i < installedApplicationInfoList.size(); i++) {
                 ApplicationInfo installedApplicationInfo = installedApplicationInfoList.get(i);
@@ -1020,11 +991,12 @@ public class LauncherAppsService extends SystemService {
         List<ApplicationInfo> getApplicationInfoForArchivedApp(
                 @NonNull String packageName, UserHandle user) {
             final int callingUid = injectBinderCallingUid();
-            final int callingPid = injectBinderCallingPid();
-            ApplicationInfo applicationInfo = Binder.withCleanCallingIdentity(
-                    () -> mPackageManagerInternal.getApplicationInfo(packageName,
-                            PackageManager.MATCH_ARCHIVED_PACKAGES | getAppLockInfoFlag(callingPid,
-                                    callingUid), callingUid, user.getIdentifier()));
+            ApplicationInfo applicationInfo = Binder.withCleanCallingIdentity(() ->
+                    mPackageManagerInternal.getApplicationInfo(
+                            packageName,
+                            PackageManager.MATCH_ARCHIVED_PACKAGES | getAppLockInfoFlag(),
+                            callingUid,
+                            user.getIdentifier()));
             if (applicationInfo == null || !applicationInfo.isArchived) {
                 return Collections.EMPTY_LIST;
             }
@@ -1034,12 +1006,10 @@ public class LauncherAppsService extends SystemService {
         @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
         List<LauncherActivityInfoInternal> queryIntentLauncherActivities(
                 Intent intent, int callingUid, UserHandle user) {
-            final int callingPid = injectBinderCallingPid();
             final List<ResolveInfo> apps = mPackageManagerInternal.queryIntentActivities(intent,
                     intent.resolveTypeIfNeeded(mContext.getContentResolver()),
                     PackageManager.MATCH_DIRECT_BOOT_AWARE
-                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE | getAppLockInfoFlag(
-                            callingPid, callingUid),
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE | getAppLockInfoFlag(),
                     callingUid, user.getIdentifier());
             final int numResolveInfos = apps.size();
             List<LauncherActivityInfoInternal> results = new ArrayList<>();
@@ -1190,12 +1160,10 @@ public class LauncherAppsService extends SystemService {
             }
 
             final int callingUid = injectBinderCallingUid();
-            final int callingPid = injectBinderCallingPid();
             final long ident = Binder.clearCallingIdentity();
             try {
                 final ApplicationInfo info = mPackageManagerInternal.getApplicationInfo(packageName,
-                        flags | getAppLockInfoFlag(callingPid, callingUid), callingUid,
-                        user.getIdentifier());
+                        flags | getAppLockInfoFlag(), callingUid, user.getIdentifier());
                 return info;
             } finally {
                 Binder.restoreCallingIdentity(ident);
