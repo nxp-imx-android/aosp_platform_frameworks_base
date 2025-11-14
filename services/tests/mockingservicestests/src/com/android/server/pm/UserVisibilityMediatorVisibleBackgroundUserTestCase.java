@@ -40,8 +40,10 @@ abstract class UserVisibilityMediatorVisibleBackgroundUserTestCase
         extends UserVisibilityMediatorTestCase {
 
     UserVisibilityMediatorVisibleBackgroundUserTestCase(boolean backgroundUsersOnDisplaysEnabled,
-            boolean backgroundUserOnDefaultDisplayAllowed) throws Exception {
-        super(backgroundUsersOnDisplaysEnabled, backgroundUserOnDefaultDisplayAllowed);
+            boolean backgroundUserOnDefaultDisplayAllowed, boolean flagCacheEnabled)
+            throws Exception {
+        super(backgroundUsersOnDisplaysEnabled, backgroundUserOnDefaultDisplayAllowed,
+                flagCacheEnabled);
     }
 
     @Test
