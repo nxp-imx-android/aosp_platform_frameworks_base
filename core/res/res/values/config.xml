@@ -7857,4 +7857,11 @@
 
      <!-- Whether user information setup is enabled in SuW. -->
     <bool name="config_enableUserInfoSetupInSuw">false</bool>
+
+     <!-- Adapt the default WindowManager behavior onBackPressed so that root activities are
+     not finished, regardless of the startup source or whether the intent was ACTION_MAIN.
+     This is particularly useful for Wear OS to better suit the wearable user experience and
+     improve performance. If the application overrides onBackPressed, this configuration will
+     be ignored. -->
+     <bool name="config_alwaysMoveTaskToBackOnBackPressed">false</bool>
 </resources>
