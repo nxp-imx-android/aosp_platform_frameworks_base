@@ -72,6 +72,10 @@ constructor(
 
     val regionRecordingSupported = featuresInteractor.regionRecordingSupported
 
+    val showClicksAndKeysSupported = featuresInteractor.showClicksAndKeysSupported
+
+    val frontCameraSupported = featuresInteractor.frontCameraSupported
+
     val customSaveLocationUriString: String by
         largeScreenCaptureParametersInteractor.customSaveLocationUriString.hydratedStateOf(
             initialValue = ""
