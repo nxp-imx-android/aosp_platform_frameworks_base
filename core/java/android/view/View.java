@@ -5653,6 +5653,17 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     public static final int DRAG_FLAG_HIDE_CALLING_TASK_ON_DRAG_START = 1 << 14;
 
     /**
+     * Flag indicating that the caller wishes to disable the default {@link PointerIcon} that would
+     * otherwise be set on drag start when the input source is {@link InputDevice.SOURCE_MOUSE}.
+     *
+     * The caller must hold the {@link android.Manifest.permission#START_TASKS_FROM_RECENTS}
+     * permission in order to use this flag.
+     *
+     * @hide
+     */
+    public static final int DRAG_FLAG_DISABLE_DEFAULT_POINTER_ICON = 1 << 15;
+
+    /**
      * Vertical scroll factor cached by {@link #getVerticalScrollFactor}.
      */
     private float mVerticalScrollFactor;
