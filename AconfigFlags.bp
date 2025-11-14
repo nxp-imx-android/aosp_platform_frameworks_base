@@ -111,6 +111,7 @@ aconfig_declarations_group {
         "com.android.media.flags.editing-aconfig-java",
         "com.android.media.flags.mediasession-aconfig-java",
         "com.android.media.flags.projection-aconfig-java",
+        "com.android.nfc.module.flags-aconfig-exported-java",
         "com.android.net.http.flags-aconfig-exported-java",
         "com.android.net.thread.platform.flags-aconfig-java",
         "com.android.permission.flags-aconfig-java-export",
