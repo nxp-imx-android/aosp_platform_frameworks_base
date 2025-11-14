@@ -1106,8 +1106,9 @@ public class MediaQualityContract {
         /**
          * Enable/disable black color auto stretch
          *
-         * @hide
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_BLACK_STRETCH = "black_stretch";
 
         /**
@@ -1489,208 +1490,526 @@ public class MediaQualityContract {
         public static final String PARAMETER_LOW_BLUE_LIGHT = "low_blue_light";
 
         /**
-         * @hide
+         * Advance setting for local dimming level.
          *
+         * <p>Possible values:
+         *
+         * <ul>
+         *   <li>{@link #LEVEL_LOW}
+         *   <li>{@link #LEVEL_MEDIUM}
+         *   <li>{@link #LEVEL_HIGH}
+         *   <li>{@link #LEVEL_OFF}
+         * </ul>
+         * The default value is {@link #LEVEL_OFF}. Can be different depends on different TVs.
+         *
+         * <p>Type: STRING
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_LD_MODE = "ld_mode";
 
         /**
-         * @hide
+         * The parameters in this section are for on-screen display color gain and offset.
+         * <p>
+         * Color gain is to adjust the intensity of that color (red, blue, green) in the brighter
+         * part of the image.
+         * Color offset is to adjust the intensity of that color in the darker part of the image.
+         * <p>
+         * Increasing OSD (on-screen display) red gain will make brighter reds even more
+         * intense, while decreasing it will make them less vibrant.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_RED_GAIN = "osd_red_gain";
 
         /**
-         * @hide
+         * Increasing OSD (on-screen display) green gain will make brighter greens even more
+         * intense, while decreasing it will make them less vibrant.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_GREEN_GAIN = "osd_green_gain";
 
         /**
-         * @hide
+         * Increasing OSD (on-screen display) blue gain will make brighter blues even more
+         * intense, while decreasing it will make them less vibrant.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_BLUE_GAIN = "osd_blue_gain";
 
         /**
-         * @hide
+         * Increasing OSD red offset will add more red to the darker areas, while decreasing it will
+         * reduce the red in the shadows.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_RED_OFFSET = "osd_red_offset";
 
         /**
-         * @hide
+         * Increasing OSD green offset will add more green to the darker areas, while decreasing it
+         * will reduce the green in the shadows.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_GREEN_OFFSET = "osd_green_offset";
 
         /**
-         * @hide
+         * Increasing OSD blue offset will add more blue to the darker areas, while decreasing it
+         * will reduce the blue in the shadows.
+         * <p>
+         * The value range is from 0 to 2047. (11-bit resolution for the adjustment)
+         * The default value depends on different TVs.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_BLUE_OFFSET = "osd_blue_offset";
 
         /**
-         * @hide
+         * Key for adjusting the Hue (color tint) of the On-Screen Display (OSD).
+         * <p>
+         * This parameter affects only the graphical user interface layer (e.g., system menus,
+         * volume bars, channel information) and does not alter the underlying video content.
+         * <p>
+         * Adjusting the OSD Hue rotates the color phase of the UI elements. While rarely
+         * changed for standard usage, it can be used for accessibility purposes or specific
+         * stylistic themes.
+         * <p>
+         * The value range is from 0 - 100.
+         * The default value is 50.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_HUE = "osd_hue";
 
         /**
-         * @hide
+         * Key for adjusting the Saturation (color intensity) of the On-Screen Display (OSD).
+         * <p>
+         * Controls the vividness of the colors in the UI layer.
+         * <ul>
+         * <li><b>Lower values:</b> Reduce color intensity, moving towards grayscale. This is
+         * often used to prevent screen burn-in on OLED panels for static UI elements or
+         * to make the menu less distracting during movie playback.</li>
+         * <li><b>Higher values:</b> Increase color intensity, making the UI appear more
+         * vivid and punchy.</li>
+         * </ul>
          *
+         * The value range is 0 - 255.
+         * The default value depends on different TVs.
+         *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_SATURATION = "osd_saturation";
 
         /**
-         * @hide
+         * Key for adjusting the Contrast of the On-Screen Display (OSD).
+         * <p>
+         * Controls the difference in luminance between the brightest and darkest parts
+         * of the UI layer.
+         * <p>
+         * Unlike the "Brightness" setting which lifts the overall backlight, OSD Contrast
+         * specifically affects the digital signal values of the graphics plane.
+         * Increasing this value can make text and icons stand out more sharply against
+         * their background, improving legibility, while decreasing it can soften the UI
+         * to reduce eye strain in dark viewing environments.
+         * <p>
+         * The value range is 0 - 100.
+         * The default value is 50.
          *
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_OSD_CONTRAST = "osd_contrast";
 
         /**
-         * @hide
-         *
+         * Key for the master switch to enable or disable the Color Tuner feature.
+         * <p>
+         * The Color Tuner allows for advanced calibration of the display's color reproduction,
+         * including 6-axis adjustment of Hue, Saturation, and Luminance, as well as
+         * detailed White Balance (Color Temperature) controls.
+         * <ul>
+         * <li><b>{@code true}:</b> Enables the Color Tuner. Custom values for hue,
+         * saturation, luminance, and gain/offset are applied.</li>
+         * <li><b>{@code false}:</b> Disables the Color Tuner. The display reverts to
+         * its factory default color calibration.</li>
+         * </ul>
+         * <p>Type: BOOLEAN
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SWITCH = "color_tuner_switch";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the red color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of red pixels. Moving the value away from
+         * default shifts red towards **Magenta** (purplish-red) or **Yellow** (orange-red).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_RED = "color_tuner_hue_red";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the green color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of green pixels. Moving the value away from
+         * default shifts green towards yellow (lime-green) or cyan (teal-green).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_GREEN = "color_tuner_hue_green";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the blue color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of blue pixels. Moving the value away from
+         * default shifts blue towards cyan (sky blue) or magenta (purplish-blue).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_BLUE = "color_tuner_hue_blue";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the cyan color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of cyan pixels. Moving the value away from
+         * default shifts cyan towards green or blue.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_CYAN = "color_tuner_hue_cyan";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the magenta color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of magenta pixels. Moving the value away from
+         * default shifts magenta towards blue (violet) or red (rose).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_MAGENTA = "color_tuner_hue_magenta";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the yellow color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS).
+         * <ul>
+         * <li><b>Effect:</b> Rotates the hue of yellow pixels. Moving the value away from
+         * default shifts yellow towards red (orange) or green (lime).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_YELLOW = "color_tuner_hue_yellow";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the flesh (Skin Tone) color component.
+         * <p>
+         * This is a dedicated parameter for fine-tuning skin tones.
+         * <ul>
+         * <li><b>Effect:</b> Adjusts the complexion of human subjects. Moving the value
+         * away from default shifts skin tones towards Reddish/Rosy or
+         * Yellowish/Golden.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_HUE_FLESH = "color_tuner_hue_flesh";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the red color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of red colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the red phase. Moving away from the default value
+         * will shift red pixels towards magenta (purplish-red) or yellow
+         * (orange-red).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_RED =
                 "color_tuner_saturation_red";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the Green color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of green colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the green phase. Moving away from the default value
+         * will shift green pixels towards Yellow (lime-green) or Cyan (teal-green).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_GREEN =
                 "color_tuner_saturation_green";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the blue color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of blue colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the blue phase. Moving away from the default value
+         * will shift blue pixels towards Cyan (sky blue) or Magenta (purplish-blue).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_BLUE =
                 "color_tuner_saturation_blue";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the cyan color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of cyan colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the cyan phase. Moving away from the default value
+         * will shift cyan pixels towards Green or Blue.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_CYAN =
                 "color_tuner_saturation_cyan";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the magenta color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of magenta colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the magenta phase. Moving away from the default value
+         * will shift magenta pixels towards blue (violet) or red (rose).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_MAGENTA =
                 "color_tuner_saturation_magenta";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the yellow color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * independent adjustment of yellow colors without affecting other hues.
+         * <ul>
+         * <li><b>Effect:</b> Rotates the yellow phase. Moving away from the default value
+         * will shift yellow pixels towards red (orange) or green (lime).</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_YELLOW =
                 "color_tuner_saturation_yellow";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Hue of the flesh (Skin Tone) color component.
+         * <p>
+         * This is a dedicated parameter for fine-tuning skin tones, which typically reside
+         * in the orange/red region of the color spectrum.
+         * <ul>
+         * <li><b>Effect:</b> Adjusts the complexion of human subjects. Moving away from
+         * the default value typically shifts skin tones towards Reddish/Rosy or
+         * Yellowish/Golden, helping to correct "sunburned" or "greenish" looks.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_SATURATION_FLESH =
                 "color_tuner_saturation_flesh";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the red color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of red areas to be adjusted independently without affecting
+         * the saturation or hue.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of red pixels. Values higher
+         * than default make red colors appear brighter and more vibrant, while lower
+         * values make them appear darker and deeper.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_RED =
                 "color_tuner_luminance_red";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the green color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of green areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of green pixels. Values higher
+         * than default make green colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_GREEN =
                 "color_tuner_luminance_green";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the blue color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of blue areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of blue pixels. Values higher
+         * than default make blue colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_BLUE =
                 "color_tuner_luminance_blue";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the cyan color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of cyan areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of cyan pixels. Values higher
+         * than default make cyan colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_CYAN =
                 "color_tuner_luminance_cyan";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the magenta color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of magenta areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of magenta pixels. Values higher
+         * than default make magenta colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA =
                 "color_tuner_luminance_magenta";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the yellow color component.
+         * <p>
+         * This parameter is part of the 6-axis Color Management System (CMS). It allows
+         * the brightness of yellow areas to be adjusted independently.
+         * <ul>
+         * <li><b>Effect:</b> Controls the light intensity of yellow pixels. Values higher
+         * than default make yellow colors appear brighter, while lower values make
+         * them appear darker.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW =
                 "color_tuner_luminance_yellow";
 
         /**
-         * @hide
-         *
+         * Key for adjusting the Luminance (brightness) of the flesh (Skin Tone) component.
+         * <p>
+         * This is a dedicated parameter for fine-tuning the brightness of skin tones.
+         * <ul>
+         * <li><b>Effect:</b> Adjusts the exposure of human subjects. Increasing this value
+         * can help brighten faces in shadow or dark scenes, while decreasing it can
+         * help recover detail in bright, washed-out highlights on faces.</li>
+         * <li><b>Value Range:</b> 0 to 100.</li>
+         * <li><b>Default:</b> 50 (Neutral/No change).</li>
+         * </ul>
+         * <p>Type: INTEGER
          */
+        @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
         public static final String PARAMETER_COLOR_TUNER_LUMINANCE_FLESH =
                 "color_tuner_luminance_flesh";
 
