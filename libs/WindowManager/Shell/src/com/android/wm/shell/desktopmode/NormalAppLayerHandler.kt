@@ -17,7 +17,6 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.AppTask.WINDOWING_LAYER_NORMAL_APP
-import android.app.TaskInfo
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.window.TransitionInfo
@@ -26,13 +25,23 @@ import android.window.TransitionRequestInfo.WindowingLayerChange
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOWING_LAYER
+import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 
 /** A class responsible for handling [WINDOWING_LAYER_NORMAL_APP] requests. */
 class NormalAppLayerHandler(
+    shellInit: ShellInit,
+    private val transitions: Transitions,
     private val normalAppLayerController: NormalAppLayerController,
-    private val userRepositories: DesktopUserRepositories,
 ) : Transitions.TransitionHandler {
+
+    init {
+        shellInit.addInitCallback(this::onInit, this)
+    }
+
+    private fun onInit() {
+        transitions.addHandler(this)
+    }
 
     override fun handleRequest(
         transition: IBinder,
@@ -41,7 +50,7 @@ class NormalAppLayerHandler(
         val triggerTask = request.triggerTask ?: return null
         val windowingLayerChange = request.windowingLayerChange ?: return null
 
-        if (!windowingLayerChange.isNormalLayerRequest(triggerTask)) {
+        if (!windowingLayerChange.isNormalLayerRequest()) {
             return null
         }
 
@@ -52,11 +61,8 @@ class NormalAppLayerHandler(
         )
     }
 
-    private fun WindowingLayerChange?.isNormalLayerRequest(task: TaskInfo): Boolean {
-        val desktopRepository = userRepositories.getProfile(task.userId)
-        return this != null &&
-            !desktopRepository.isActiveTask(task.taskId) &&
-            windowingLayer == WINDOWING_LAYER_NORMAL_APP
+    private fun WindowingLayerChange?.isNormalLayerRequest(): Boolean {
+        return this != null && windowingLayer == WINDOWING_LAYER_NORMAL_APP
     }
 
     override fun startAnimation(

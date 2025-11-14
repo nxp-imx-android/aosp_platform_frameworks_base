@@ -21,7 +21,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.dagger.WMShellBaseModule
 import com.android.wm.shell.dagger.WMSingleton
-import com.android.wm.shell.desktopmode.NormalAppLayerHandler
+import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
@@ -43,19 +43,19 @@ object PinnedLayerModule {
     fun providePinnedLayerHandler(
         shellInit: ShellInit,
         transitions: Transitions,
-        normalAppLayerHandler: Optional<NormalAppLayerHandler>,
         pinnedLayerController: Optional<PinnedLayerController>,
         // observer is unused here, but required to inject to make sure it is created so it can
         // register itself as a listener.
         pinnedLayerPermissionObserver: Optional<PinnedLayerPermissionObserver>,
+        normalAppLayerController: Optional<NormalAppLayerController>,
     ): Optional<PinnedLayerHandler> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                 PinnedLayerHandler(
                     shellInit = shellInit,
                     transitions = transitions,
-                    normalAppLayerHandler = normalAppLayerHandler.get(),
                     pinnedLayerController = pinnedLayerController.get(),
+                    normalLayerController = normalAppLayerController.get()
                 )
             )
         }

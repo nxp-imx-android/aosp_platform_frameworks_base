@@ -55,6 +55,7 @@ import com.android.wm.shell.bubbles.BubbleHelper;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
+import com.android.wm.shell.desktopmode.NormalAppLayerHandler;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pip.PipTransitionController;
@@ -98,6 +99,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     private UnfoldTransitionHandler mUnfoldHandler;
     private ActivityEmbeddingController mActivityEmbeddingController;
     private @Nullable PinnedLayerHandler mPinnedLayerHandler;
+    private @Nullable NormalAppLayerHandler mNormalAppLayerHandler;
 
     abstract static class MixedTransition {
 
@@ -358,6 +360,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             Optional<SplitScreenController> splitScreenControllerOptional,
             @Nullable PipTransitionController pipTransitionController,
             @Nullable Optional<PipScheduler> pipScheduler,
+            @Nullable NormalAppLayerHandler normalAppLayerHandler,
             @Nullable PinnedLayerHandler pinnedLayerHandler,
             Optional<RecentsTransitionHandler> recentsHandlerOptional,
             KeyguardTransitionHandler keyguardHandler,
@@ -375,6 +378,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mPipHandler.setMixedHandler(this);
             }
             mPipScheduler = pipScheduler.orElse(null);
+            mNormalAppLayerHandler = normalAppLayerHandler;
             mPinnedLayerHandler = pinnedLayerHandler;
             mSplitHandler = splitScreenControllerOptional.map(
                     SplitScreenController::getTransitionHandler).orElse(null);
@@ -603,7 +607,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             // dismissing pinned layer if pip is opening
             if (requestHasPipEnter(request) && mPinnedLayerHandler.hasActivePinnedTask()) {
                 mActiveTransitions.add(createDefaultMixedTransition(
-                    MixedTransition.TYPE_ENTER_PIP_WITH_PINNED_LAYER_DISMISS, transition));
+                        MixedTransition.TYPE_ENTER_PIP_WITH_PINNED_LAYER_DISMISS, transition));
                 final WindowContainerTransaction out = new WindowContainerTransaction();
                 mPipHandler.augmentRequest(transition, request, out);
                 mPinnedLayerHandler.augmentRequestDismissPinnedTask(transition, request, out);
@@ -1008,8 +1012,10 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         return mixed.startSubAnimation(keyguardHandler, info, startTransaction, finishTransaction);
     }
 
-    /** Use to when split use intent to enter, check if this enter transition should be mixed or
-     * not.*/
+    /**
+     * Use to when split use intent to enter, check if this enter transition should be mixed or
+     * not.
+     */
     public boolean isIntentInPip(PendingIntent intent) {
         // Check if this intent package is same as pip one or not, if true we want let the pip
         // task enter split.
@@ -1020,8 +1026,10 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         return false;
     }
 
-   /** Use to when split use taskId to enter, check if this enter transition should be mixed or
-     * not.*/
+    /**
+     * Use to when split use taskId to enter, check if this enter transition should be mixed or
+     * not.
+     */
     public boolean isTaskInPip(int taskId, ShellTaskOrganizer shellTaskOrganizer) {
         // Check if this intent package is same as pip one or not, if true we want let the pip
         // task enter split.

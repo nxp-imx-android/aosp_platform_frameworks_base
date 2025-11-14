@@ -3772,6 +3772,7 @@ class DesktopTasksController(
             logV("skipping handleRequest reason=%s", "triggerTask is null")
             return null
         }
+        val windowingLayerChange = request.windowingLayerChange
         val recentsAnimationRunning =
             RecentsTransitionStateListener.isAnimating(recentsTransitionState)
         val shouldHandleMidRecentsFreeformLaunch =
@@ -3824,6 +3825,11 @@ class DesktopTasksController(
                 // Only handle fullscreen or freeform tasks
                 !triggerTask.isFullscreen && !triggerTask.isFreeform -> {
                     reason = "windowingMode not handled (${triggerTask.windowingMode})"
+                    false
+                }
+                // Ignore windowing layer requests.
+                windowingLayerChange != null -> {
+                    reason = "windowing lauyer requests are handled by other handlers"
                     false
                 }
                 // Otherwise process it

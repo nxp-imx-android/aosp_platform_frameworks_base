@@ -16,8 +16,10 @@
 
 package com.android.wm.shell.pinnedlayer.phone
 
+import android.app.ActivityManager.AppTask.WINDOWING_LAYER_NORMAL_APP
 import android.app.ActivityManager.AppTask.WINDOWING_LAYER_PINNED
 import android.app.ActivityManager.AppTask.WINDOWING_LAYER_UNDEFINED
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.TaskInfo
 import android.app.TaskWindowingLayerRequestHandler.RESULT_FAILED_BAD_STATE
 import android.os.IBinder
@@ -26,7 +28,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.TransitionRequestInfo.WindowingLayerChange
 import android.window.WindowContainerTransaction
-import com.android.wm.shell.desktopmode.NormalAppLayerHandler
+import com.android.wm.shell.desktopmode.NormalAppLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController.UnpinStrategy
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logV
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logW
@@ -41,8 +43,8 @@ import com.android.wm.shell.transition.Transitions
 class PinnedLayerHandler(
     shellInit: ShellInit,
     private val transitions: Transitions,
-    private val normalAppLayerHandler: NormalAppLayerHandler,
     private val pinnedLayerController: PinnedLayerController,
+    private val normalLayerController: NormalAppLayerController,
 ) : Transitions.TransitionHandler {
 
     init {
@@ -110,14 +112,36 @@ class PinnedLayerHandler(
                 pinnedLayerController.unpinTask(transition, triggerTask, targetUnpinType),
                 true,
             )
-        }
 
-        // TODO(b/449681882): not quite what we need, normal layer should be self sufficient.
-        normalAppLayerHandler.handleRequest(transition, request)?.let { normalLayerWct ->
-            wct.merge(normalLayerWct, /* transfer= */ true)
+            moveToAnotherLayerIfNeeded(
+                transition,
+                triggerTask,
+                windowingLayerChange?.windowingLayer ?: WINDOWING_LAYER_UNDEFINED,
+                wct,
+            )
         }
 
         return wct
+    }
+
+    private fun moveToAnotherLayerIfNeeded(
+        transition: IBinder,
+        targetTask: RunningTaskInfo,
+        layer: Int,
+        wct: WindowContainerTransaction,
+    ) {
+        when (layer) {
+            WINDOWING_LAYER_NORMAL_APP -> {
+                val normalLayerWct =
+                    normalLayerController.moveTaskToNormalLayer(transition, targetTask)
+                wct.merge(normalLayerWct, true)
+            }
+            WINDOWING_LAYER_PINNED,
+            WINDOWING_LAYER_UNDEFINED -> {}
+            else -> {
+                logW("PinnedLayerHandler tried to move a task=%s, but the layer=%s is skipped.")
+            }
+        }
     }
 
     private fun resolveTargetUnpinType(request: TransitionRequestInfo): UnpinStrategy {
