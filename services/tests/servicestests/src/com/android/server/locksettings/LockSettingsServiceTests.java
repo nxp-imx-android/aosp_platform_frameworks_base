@@ -1009,6 +1009,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
+    @DisableFlags(android.security.Flags.FLAG_ENABLE_UNCLAMPED_LOCKOUTS)
     public void testVerifyCredentialResponseTimeoutClamping() {
         testTimeoutClamping(Duration.ofMillis(Long.MIN_VALUE), Integer.MAX_VALUE);
         testTimeoutClamping(Duration.ofMillis(Integer.MIN_VALUE), Integer.MAX_VALUE);
@@ -1023,6 +1024,24 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         testTimeoutClamping(Duration.ofMillis(Integer.MAX_VALUE), Integer.MAX_VALUE);
         testTimeoutClamping(Duration.ofMillis((long) Integer.MAX_VALUE + 1), Integer.MAX_VALUE);
         testTimeoutClamping(Duration.ofMillis(Long.MAX_VALUE), Integer.MAX_VALUE);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_ENABLE_UNCLAMPED_LOCKOUTS)
+    public void testVerifyCredentialResponseNoTimeoutClamping() {
+        testNoTimeoutClamping(Duration.ofMillis(Long.MIN_VALUE));
+        testNoTimeoutClamping(Duration.ofMillis(Integer.MIN_VALUE));
+        testNoTimeoutClamping(Duration.ofMillis(-100));
+        testNoTimeoutClamping(Duration.ofMillis(-1));
+        testNoTimeoutClamping(Duration.ofNanos(-1));
+        testNoTimeoutClamping(Duration.ZERO);
+        testNoTimeoutClamping(Duration.ofNanos(1));
+        testNoTimeoutClamping(Duration.ofMillis(1));
+        testNoTimeoutClamping(Duration.ofSeconds(1));
+        testNoTimeoutClamping(Duration.ofSeconds(1000000));
+        testNoTimeoutClamping(Duration.ofMillis(Integer.MAX_VALUE));
+        testNoTimeoutClamping(Duration.ofMillis((long) Integer.MAX_VALUE + 1));
+        testNoTimeoutClamping(Duration.ofMillis(Long.MAX_VALUE));
     }
 
     @Test
@@ -1153,6 +1172,11 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     private void testTimeoutClamping(Duration originalTimeout, int expectedClampedTimeout) {
         VerifyCredentialResponse response = VerifyCredentialResponse.fromTimeout(originalTimeout);
         assertEquals(Duration.ofMillis(expectedClampedTimeout), response.getTimeout());
+    }
+
+    private void testNoTimeoutClamping(Duration originalTimeout) {
+        VerifyCredentialResponse response = VerifyCredentialResponse.fromTimeout(originalTimeout);
+        assertEquals(originalTimeout, response.getTimeout());
     }
 
     private void checkRecordedFrpNotificationIntent() {

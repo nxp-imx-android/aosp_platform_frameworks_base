@@ -211,6 +211,13 @@ flag {
 }
 
 flag {
+    name: "enable_unclamped_lockouts"
+    namespace: "security"
+    description: "Do not clamp lockout durations to Integer.MAX_VALUE milliseconds"
+    bug: "444472965"
+}
+
+flag {
   name: "thread_safe_key_generation"
   namespace: "hardware_backed_security"
   description: "Retry key generation requests when the key generation thread is busy"
