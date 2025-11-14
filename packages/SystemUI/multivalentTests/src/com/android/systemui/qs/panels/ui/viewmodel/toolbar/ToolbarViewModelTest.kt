@@ -90,8 +90,8 @@ class ToolbarViewModelTest : SysuiTestCase() {
                 setSecurityConfig(MANAGED_CONFIG)
 
                 with(underTest.securityInfoViewModel!!) {
-                    assertThat(icon).isEqualTo(MANAGED_CONFIG.icon)
-                    assertThat(text).isEqualTo(MANAGED_CONFIG.text)
+                    assertThat(model.icon).isEqualTo(MANAGED_CONFIG.icon)
+                    assertThat(model.text).isEqualTo(MANAGED_CONFIG.text)
                     assertThat(onClick).isNotNull()
                 }
 
@@ -134,8 +134,8 @@ class ToolbarViewModelTest : SysuiTestCase() {
                 setSecurityConfig(INFO_CONFIG)
 
                 with(underTest.securityInfoViewModel!!) {
-                    assertThat(icon).isEqualTo(INFO_CONFIG.icon)
-                    assertThat(text).isEqualTo(INFO_CONFIG.text)
+                    assertThat(model.icon).isEqualTo(INFO_CONFIG.icon)
+                    assertThat(model.text).isEqualTo(INFO_CONFIG.text)
                     assertThat(onClick).isNull()
                 }
 

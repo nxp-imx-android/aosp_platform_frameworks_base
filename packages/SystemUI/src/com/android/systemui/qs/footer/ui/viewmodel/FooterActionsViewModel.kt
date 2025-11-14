@@ -359,9 +359,9 @@ fun securityButtonViewModel(
 ): FooterActionsSecurityButtonViewModel {
     val (icon, text, isClickable) = config
     return FooterActionsSecurityButtonViewModel(
-        icon,
-        text,
-        if (isClickable) onSecurityButtonClicked else null,
+        icon = icon,
+        text = text,
+        onClick = if (isClickable) onSecurityButtonClicked else null,
     )
 }
 
@@ -381,7 +381,7 @@ fun foregroundServicesButtonViewModel(
         )
 
     return FooterActionsForegroundServicesButtonViewModel(
-        foregroundServicesCount,
+        foregroundServicesCount = foregroundServicesCount,
         text = text,
         displayText = securityModel == null && textFeedbackModel == TextFeedbackModel.NoFeedback,
         hasNewChanges = hasNewChanges,

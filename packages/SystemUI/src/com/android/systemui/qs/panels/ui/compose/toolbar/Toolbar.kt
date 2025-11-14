@@ -170,7 +170,7 @@ private fun IconButton(
             modifier
                 .sizeIn(
                     minHeight = IconButtonDimensions.MinimumSize,
-                    minWidth = IconButtonDimensions.MinimumSize
+                    minWidth = IconButtonDimensions.MinimumSize,
                 )
                 .aspectRatio(1.0F)
                 .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50))
@@ -185,15 +185,14 @@ private fun IconButton(
             }
         Box(
             modifier =
-                Modifier
-                    .size(IconButtonDimensions.ColoredBackgroundSize)
+                Modifier.size(IconButtonDimensions.ColoredBackgroundSize)
                     .background(color = protectionColor, shape = CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             ToolbarIcon(
                 icon = model.icon,
                 modifier = Modifier.size(IconButtonDimensions.IconSize),
-                tint = iconColor
+                tint = iconColor,
             )
         }
     }
@@ -230,7 +229,7 @@ private fun ToolbarTextFeedback(
             enter = fadeIn(tween(durationMillis = 200)),
             exit = fadeOut(tween(durationMillis = 200)),
         ) {
-            TextFeedback(model = viewModel.textFeedback)
+            TextFeedback(viewModel = viewModel.textFeedback)
         }
     }
 }
@@ -253,8 +252,5 @@ object IconButtonDimensions {
         get() = dimensionResource(id = R.dimen.toolbar_button_icon_size)
 
     val MinimumSize: Dp
-        @Composable
-        @ReadOnlyComposable
-        get() =
-            dimensionResource(id = R.dimen.toolbar_button_size)
+        @Composable @ReadOnlyComposable get() = dimensionResource(id = R.dimen.toolbar_button_size)
 }
