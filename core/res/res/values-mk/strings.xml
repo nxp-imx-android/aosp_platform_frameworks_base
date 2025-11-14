@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"Слушен апарат"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"Користење на пристапноста"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"Екран"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"Родителски контроли"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> користи батерија"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> апликации користат батерија"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Допрете за детали за батеријата и потрошениот интернет"</string>
@@ -1662,7 +1661,7 @@
     <string name="keyboardview_keycode_alt" msgid="8997420058584292385">"Копче „Alt“"</string>
     <string name="keyboardview_keycode_cancel" msgid="2134624484115716975">"Откажи"</string>
     <string name="keyboardview_keycode_delete" msgid="2661117313730098650">"Копче „Избриши“"</string>
-    <string name="keyboardview_keycode_done" msgid="2524518019001653851">"Копче „Готово“"</string>
+    <string name="keyboardview_keycode_done" msgid="2524518019001653851">"Готово"</string>
     <string name="keyboardview_keycode_mode_change" msgid="2743735349997999020">"Копче „Промени режим“"</string>
     <string name="keyboardview_keycode_shift" msgid="3026509237043975573">"Копче „Shift“"</string>
     <string name="keyboardview_keycode_enter" msgid="168054869339091055">"Копче „Внеси“"</string>
