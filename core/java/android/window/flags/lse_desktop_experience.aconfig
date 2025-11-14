@@ -841,6 +841,13 @@ flag {
 }
 
 flag {
+    name: "enable_focus_transition_observer_cleanup"
+    namespace: "lse_desktop_experience"
+    description: "Enable migration from TaskInfo#isFocused to FocusTransitionObserver on per display focus use case"
+    bug: "460356020"
+}
+
+flag {
     name: "enable_freeform_box_shadows"
     namespace: "lse_desktop_experience"
     description: "Enables box shadows for freeform windows."
