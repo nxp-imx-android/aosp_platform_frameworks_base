@@ -22,6 +22,7 @@
 use crate::common::{TunnelControl, UserId};
 use crate::mode_selector::ModeSelector;
 use crate::pci_authorizer::PciAuthorizer;
+use crate::sysfs::SysfsUtils;
 use tokio::runtime::Runtime;
 
 /// The main engine that encapsulates all policy and authorization logic.
@@ -32,6 +33,8 @@ pub struct PolicyEngine {
     pub pci_authorizer: PciAuthorizer,
     /// The embedded `ModeSelector` that handles mode selection logic.
     pub mode_selector: ModeSelector,
+    /// Sysfs utils for checking pci tunnel support.
+    pub sysfs_utils: SysfsUtils,
     /// The Tokio runtime for the PciAuthorizer's async tasks.
     _runtime: Runtime,
 }
@@ -47,8 +50,14 @@ impl PolicyEngine {
             .expect("Failed to create Tokio runtime for PolicyEngine");
         let (pci_authorizer, mode_selector) =
             runtime.block_on(async { (PciAuthorizer::default(), ModeSelector::new()) });
+        let sysfs_utils = SysfsUtils::default();
 
-        Self { pci_authorizer, mode_selector, _runtime: runtime }
+        Self { pci_authorizer, mode_selector, sysfs_utils, _runtime: runtime }
+    }
+
+    /// Check whether pci tunnels are supported.
+    pub fn check_pci_tunnels_supported(&self) -> bool {
+        self.sysfs_utils.check_pci_tunnels_supported()
     }
 }
 impl Default for PolicyEngine {
