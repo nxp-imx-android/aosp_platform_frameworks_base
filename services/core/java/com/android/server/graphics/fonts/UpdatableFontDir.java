@@ -64,6 +64,8 @@ final class UpdatableFontDir {
     private static final String RANDOM_DIR_PREFIX = "~~";
 
     private static final String FONT_SIGNATURE_FILE = "font.fsv_sig";
+    private static final String EMOJI_LANG = "und-Zsye";
+    private static final String EMOJI_DEFAULT_POSTSCRIPT_NAME = "NotoColorEmoji";
 
     /** Interface to mock font file access in tests. */
     interface FontFileParser {
@@ -814,11 +816,86 @@ final class UpdatableFontDir {
         return map;
     }
 
+    private static class PrioritizedResolvedUnnamedFamily {
+        public int priority;
+        public FontConfig.FontFamily family;
+    }
+
+    void addEmojiFontsToFallbackFamilyList(
+            List<PrioritizedResolvedUnnamedFamily> prioritizedFamilyList,
+            List<FontConfig.FontFamily> newFallbackFamilies) {
+        // Sort by priority in reverse order to process them in order.
+        // Because we are inserting emoji font based on the emoji postscript name, if we insert
+        // emoji font based on the reverse order, the highest priority font will come before the
+        // lowest priority font.
+        prioritizedFamilyList.sort((a, b) -> Integer.compare(b.priority, a.priority));
+
+        for (PrioritizedResolvedUnnamedFamily prioritizedResolvedUnnamedFamily
+                : prioritizedFamilyList) {
+            FontConfig.FontFamily resolvedFontFamily = prioritizedResolvedUnnamedFamily.family;
+            if (!Objects.equals(resolvedFontFamily.getLocaleList().toLanguageTags(), EMOJI_LANG)) {
+                continue;
+            }
+            int insertionIndex = -1;
+            // Find the insertion point: right before the "NotoColorEmoji" font family.
+            outer:
+            for (int i = 0; i < newFallbackFamilies.size(); i++) {
+                FontConfig.FontFamily fontFamily = newFallbackFamilies.get(i);
+                for (FontConfig.Font font : fontFamily.getFontList()) {
+                    if (EMOJI_DEFAULT_POSTSCRIPT_NAME.equals(font.getPostScriptName())) {
+                        insertionIndex = i;
+                        break outer;
+                    }
+                }
+            }
+            if (insertionIndex != -1) {
+                // Insert the resolved font family at the calculated position.
+                newFallbackFamilies.add(insertionIndex, resolvedFontFamily);
+            } else {
+                // If no NotoColorEmoji font is found, just add it to the end of the list.
+                newFallbackFamilies.add(resolvedFontFamily);
+            }
+        }
+    }
+
+    void addGeneralFontsToFallbackFamilyList(
+            List<PrioritizedResolvedUnnamedFamily> prioritizedFamilyList,
+            List<FontConfig.FontFamily> newFallbackFamilies) {
+        // Sort by priority to process them in order.
+        prioritizedFamilyList.sort((a, b) -> Integer.compare(a.priority, b.priority));
+
+        for (PrioritizedResolvedUnnamedFamily prioritizedResolvedUnnamedFamily
+                : prioritizedFamilyList) {
+            FontConfig.FontFamily resolvedFontFamily = prioritizedResolvedUnnamedFamily.family;
+            String lang = resolvedFontFamily.getLocaleList().toLanguageTags();
+            if (Objects.equals(lang, EMOJI_LANG)) {
+                continue;
+            }
+
+            int insertionIndex = -1;
+            // General case: insert before the first family with the same language tag.
+            for (int i = 0; i < newFallbackFamilies.size(); i++) {
+                if (lang.equals(newFallbackFamilies.get(i).getLocaleList().toLanguageTags())) {
+                    insertionIndex = i;
+                    break;
+                }
+            }
+            if (insertionIndex != -1) {
+                // Insert the resolved font family at the calculated position.
+                newFallbackFamilies.add(insertionIndex, resolvedFontFamily);
+            } else {
+                // If matching lang found, just add it to the end of the list.
+                newFallbackFamilies.add(resolvedFontFamily);
+            }
+        }
+    }
+
     /* package */ FontConfig getSystemFontConfig() {
         FontConfig config = mConfigSupplier.apply(getPostScriptMap());
         PersistentSystemFontConfig.Config persistentConfig = readPersistentConfig();
-        List<FontUpdateRequest.Family> families = persistentConfig.fontFamilies;
 
+        // First, handle the named families.
+        List<FontUpdateRequest.Family> families = persistentConfig.fontFamilies;
         List<FontConfig.NamedFamilyList> mergedFamilies =
                 new ArrayList<>(config.getNamedFamilyLists().size() + families.size());
         // We should keep the first font family (config.getFontFamilies().get(0)) because it's used
@@ -832,6 +909,46 @@ final class UpdatableFontDir {
             if (family != null) {
                 mergedFamilies.add(family);
             }
+        }
+
+        if (com.android.text.flags.Flags.insertFontFamily()) {
+            // Now, handle the fallback families, inserting the dynamic ones at the correct
+            // position. In general we insert updated fallback fonts before the corresponding
+            // fallback fonts based on lang. For Emoji, vendors may have put custom emojis before
+            // AOSP NotoColorEmoji. In that case, we insert updated emoji fonts between custom
+            // emojis and AOSP NotoColorEmoji.
+            List<FontConfig.FontFamily> newFallbackFamilies =
+                    new ArrayList<>(config.getFontFamilies());
+            List<PersistentSystemFontConfig.PrioritizedFamily> prioritizedFamilyList =
+                    persistentConfig.prioritizedFamilyList;
+
+            // Resolve all dynamic fallbacks into a single list.
+            List<PrioritizedResolvedUnnamedFamily> prioritizedUnnamedFamilies = new ArrayList<>();
+            for (PersistentSystemFontConfig.PrioritizedFamily prioritizedFamily :
+                    prioritizedFamilyList) {
+                FontUpdateRequest.Family family = prioritizedFamily.family;
+                FontConfig.FontFamily resolvedFontFamily = resolveFontFilesForUnnamedFamily(family);
+                if (resolvedFontFamily == null) {
+                    continue;
+                }
+                PrioritizedResolvedUnnamedFamily resolvedUnnamedFamily =
+                        new PrioritizedResolvedUnnamedFamily();
+                resolvedUnnamedFamily.priority = prioritizedFamily.priority;
+                resolvedUnnamedFamily.family = resolvedFontFamily;
+                prioritizedUnnamedFamilies.add(resolvedUnnamedFamily);
+            }
+
+            addEmojiFontsToFallbackFamilyList(
+                    prioritizedUnnamedFamilies, newFallbackFamilies);
+            addGeneralFontsToFallbackFamilyList(
+                    prioritizedUnnamedFamilies, newFallbackFamilies);
+            return new FontConfig(
+                    newFallbackFamilies, // Use the modified fallback list
+                    config.getAliases(),
+                    mergedFamilies,
+                    config.getLocaleFallbackCustomizations(),
+                    mLastModifiedMillis,
+                    mConfigVersion);
         }
 
         return new FontConfig(
