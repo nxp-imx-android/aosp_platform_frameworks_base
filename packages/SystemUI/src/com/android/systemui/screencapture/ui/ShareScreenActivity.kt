@@ -26,14 +26,25 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
@@ -56,11 +67,14 @@ constructor(
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
 ) : ComponentActivity() {
 
+    // Controls the visibility and animation state of the Compose UI.
+    private val visibleState = MutableTransitionState(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.attributes.privateFlags =
-            window.attributes.privateFlags or
-                WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
+        setupWindow()
+        visibleState.targetState = true
+
         val uid = intent.getIntExtra(EXTRA_HOST_APP_UID, -1)
         val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
         val reviewGrantedConsentRequired =
@@ -113,11 +127,11 @@ constructor(
                                 is ShareScreenUiInteractor.SharingState.Approved -> {
                                     setResult(RESULT_OK, createSuccessIntent(state.projection))
                                     setForceSendResultForMediaProjection()
-                                    finish()
+                                    hide()
                                 }
                                 is ShareScreenUiInteractor.SharingState.Denied -> {
                                     setResult(RESULT_CANCELED)
-                                    finish()
+                                    hide()
                                 }
                                 is ShareScreenUiInteractor.SharingState.NotStarted -> {
                                     // Do nothing
@@ -127,8 +141,43 @@ constructor(
                         .launchIn(this)
                 }
 
-                Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
-                    uiComponent.screenCaptureContent.Content()
+                if (!visibleState.targetState && visibleState.isIdle) {
+                    // Dismiss the activity only after the exit animation has completed.
+                    SideEffect { finishAndRemoveTask() }
+                }
+
+                val density = LocalDensity.current
+                val emphasizedDecelerate = remember { CubicBezierEasing(0.05f, 0.7f, 0.1f, 1.0f) }
+                val standardEasing = remember { CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f) }
+                val initialOffsetPx = with(density) { 40.dp.roundToPx() }
+                val standardAccelerate = remember { CubicBezierEasing(0.3f, 0.0f, 1.0f, 1.0f) }
+                val targetOffsetPx = with(density) { 20.dp.roundToPx() }
+
+                AnimatedVisibility(
+                    visibleState = visibleState,
+                    enter =
+                        slideInVertically(
+                            animationSpec =
+                                tween(durationMillis = 300, easing = emphasizedDecelerate),
+                            initialOffsetY = { initialOffsetPx },
+                        ) +
+                            fadeIn(
+                                animationSpec = tween(durationMillis = 300, easing = standardEasing)
+                            ),
+                    exit =
+                        slideOutVertically(
+                            animationSpec =
+                                tween(durationMillis = 150, easing = standardAccelerate),
+                            targetOffsetY = { targetOffsetPx },
+                        ) +
+                            fadeOut(
+                                animationSpec =
+                                    tween(durationMillis = 150, easing = standardAccelerate)
+                            ),
+                ) {
+                    Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
+                        uiComponent.screenCaptureContent.Content()
+                    }
                 }
             }
         }
@@ -140,6 +189,26 @@ constructor(
         val intent = Intent()
         intent.putExtras(extras)
         return intent
+    }
+
+    private fun setupWindow() {
+        window.attributes =
+            window.attributes.apply {
+                title = "ShareScreenActivity" // Not the same as Window#setTitle
+            }
+        window.attributes.privateFlags =
+            window.attributes.privateFlags or
+                WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS
+        with(window) {
+            addFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
+            // This is a regular activity and should not be a system overlay.
+            // By not setting a type, it will remain a standard application window.
+            setWindowAnimations(-1)
+        }
+    }
+
+    private fun hide() {
+        visibleState.targetState = false
     }
 
     companion object {
