@@ -164,6 +164,13 @@ flag {
 }
 
 flag {
+    name: "enable_back_navigation_desktop_app_no_minimize"
+    namespace: "lse_desktop_experience"
+    description: "Enables preventing minimization for predictive-back-enabled desktop apps when back navigation is triggered."
+    bug: "456302602"
+}
+
+flag {
     name: "enable_backup_and_restore_display_window_settings"
     namespace: "lse_desktop_experience"
     description: "Enables backup and restore for display window settings."
