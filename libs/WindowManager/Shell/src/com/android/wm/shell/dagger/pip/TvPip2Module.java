@@ -16,14 +16,18 @@
 
 package com.android.wm.shell.dagger.pip;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.dagger.WMShellBaseModule;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.pip.tv.TvPipBoundsAlgorithm;
 import com.android.wm.shell.pip.tv.TvPipBoundsState;
 import com.android.wm.shell.pip.tv.TvPipMenuController;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.tv.TvPipTransition;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -42,13 +46,25 @@ public abstract class TvPip2Module {
     @WMSingleton
     @Provides
     static TvPipTransition provideTvPipTransition(
+            Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             @NonNull ShellInit shellInit,
             @NonNull ShellTaskOrganizer shellTaskOrganizer,
             @NonNull Transitions transitions,
             TvPipBoundsState tvPipBoundsState,
             TvPipMenuController tvPipMenuController,
             TvPipBoundsAlgorithm tvPipBoundsAlgorithm) {
-        return new TvPipTransition(shellInit, shellTaskOrganizer, transitions,
-                tvPipBoundsState, tvPipMenuController, tvPipBoundsAlgorithm);
+        return new TvPipTransition(context, pipSurfaceTransactionHelper, shellInit,
+                shellTaskOrganizer, transitions, tvPipBoundsState, tvPipMenuController,
+                tvPipBoundsAlgorithm);
+    }
+
+    @WMSingleton
+    @Provides
+    static PipSurfaceTransactionHelper providePipSurfaceTransactionHelper(
+            Context context,
+            @android.annotation.NonNull ShellInit shellInit,
+            PipDisplayLayoutState pipDisplayLayoutState) {
+        return new PipSurfaceTransactionHelper(context, shellInit, pipDisplayLayoutState);
     }
 }
