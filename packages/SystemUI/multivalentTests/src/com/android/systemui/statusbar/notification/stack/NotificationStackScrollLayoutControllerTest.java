@@ -810,6 +810,26 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
         verify(mNotificationStackScrollLayout, never()).onInterceptTouchEventScroll(event);
     }
 
+    @Test
+    public void testUpdateAlpha_notOnKeyguard_alphaIsOne() {
+        initController(/* viewIsAttached= */ true);
+        when(mNotificationStackScrollLayout.onKeyguard()).thenReturn(false);
+
+        mController.setMaxAlphaForKeyguard(0.5f, "test");
+
+        verify(mNotificationStackScrollLayout).setAlpha(1.0f);
+    }
+
+    @Test
+    public void testUpdateAlpha_onKeyguard_alphaIsSet() {
+        initController(/* viewIsAttached= */ true);
+        when(mNotificationStackScrollLayout.onKeyguard()).thenReturn(true);
+
+        mController.setMaxAlphaForKeyguard(0.5f, "test");
+
+        verify(mNotificationStackScrollLayout).setAlpha(0.5f);
+    }
+
     private LogMaker logMatcher(int category, int type) {
         return argThat(new LogMatcher(category, type));
     }
