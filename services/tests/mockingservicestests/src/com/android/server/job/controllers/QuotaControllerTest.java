@@ -5029,7 +5029,8 @@ public class QuotaControllerTest {
 
         // Ran jobs up to the job limit. All of them should be allowed to run.
         for (int i = 0; i < mQcConstants.MAX_JOB_COUNT_PER_RATE_LIMITING_WINDOW; ++i) {
-            JobStatus job = createJobStatus("testStartAlarmScheduled_JobCount_AllowedTime", i);
+            JobStatus job = createJobStatus("testStartAlarmScheduled_JobCount_RateLimitingWindow",
+                    i);
             setStandbyBucket(WORKING_INDEX, job);
             synchronized (mQuotaController.mLock) {
                 mQuotaController.maybeStartTrackingJobLocked(job, null);
@@ -5048,7 +5049,7 @@ public class QuotaControllerTest {
 
         // The app is now out of job count quota
         JobStatus throttledJob = createJobStatus(
-                "testStartAlarmScheduled_JobCount_AllowedTime", 42);
+                "testStartAlarmScheduled_JobCount_RateLimitingWindow", 42);
         setStandbyBucket(WORKING_INDEX, throttledJob);
         synchronized (mQuotaController.mLock) {
             mQuotaController.maybeStartTrackingJobLocked(throttledJob, null);
