@@ -24,9 +24,8 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.keyguard.logging.ScrimLogger
 import com.android.systemui.biometrics.AuthRippleView
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.ui.view.KeyguardRootView
-import com.android.systemui.privacy.OngoingPrivacyChip
+import com.android.systemui.privacy.AbstractOngoingPrivacyChip
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.SceneContainerConfig
@@ -217,7 +216,7 @@ abstract class ShadeViewProviderModule {
         @Named(SHADE_HEADER)
         fun providesOngoingPrivacyChip(
             @Named(SHADE_HEADER) header: MotionLayout
-        ): OngoingPrivacyChip {
+        ): AbstractOngoingPrivacyChip {
             return header.requireViewById(R.id.privacy_chip)
         }
 
