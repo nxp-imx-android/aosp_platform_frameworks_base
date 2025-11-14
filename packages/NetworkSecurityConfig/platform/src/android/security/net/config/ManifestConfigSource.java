@@ -50,7 +50,6 @@ public class ManifestConfigSource implements ConfigSource {
     @ChangeId
     @Overridable
     @Disabled
-    @FlaggedApi(android.sdk.Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
     static final long DEPRECATE_USES_CLEARTEXT_TRAFFIC = 415007211L;
 
     public ManifestConfigSource(Context context) {

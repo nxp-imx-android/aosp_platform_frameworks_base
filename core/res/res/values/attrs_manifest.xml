@@ -570,7 +570,7 @@
          @deprecated This API will be deprecated in the future and will have no effect.
          Specify a <a href="{@docRoot}privacy-and-security/security-config#manifest">
          Network Security Config file</a> in addition to this API to prevent future breakage.
-         @FlaggedApi(android.security.Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC)
+         @FlaggedApi(android.security.Flags.FLAG_DEPRECATE_USES_CLEARTEXT_TRAFFIC2)
          -->
     <attr name="usesCleartextTraffic" format="boolean" />
 
