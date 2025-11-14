@@ -98,6 +98,7 @@ import android.os.Handler;
 import android.os.LimitExceededException;
 import android.os.Looper;
 import android.os.Message;
+import android.os.ParcelDuration;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.os.RemoteCallbackList;
@@ -2187,10 +2188,37 @@ public class JobSchedulerService extends com.android.server.SystemService
             final JobStatus job = mJobs.getJobByUidAndJobId(uid, namespace, jobId);
             if (job == null) {
                 // Job doesn't exist.
-                throw new IllegalArgumentException("Invalid job id");
+                throw new IllegalArgumentException("Job not found for uid=" + uid
+                        + ", namespace=" + namespace + ", jobId=" + jobId);
             }
 
             return job.getPendingJobReasonsHistory();
+        }
+    }
+
+    /**
+     * Retrieves statistics about the reasons a job is pending.
+     *
+     * @param uid The UID of the application that scheduled the job.
+     * @param namespace The namespace of the job.
+     * @param jobId The ID of the job to retrieve stats for.
+     * @return A map where the keys are the pending reasons (as defined in
+     *         {@link JobScheduler}) and the values are {@link ParcelDuration} objects
+     *         representing the total time the job has been pending for that reason.
+     * @throws IllegalArgumentException if the job cannot be found.
+     */
+    @NonNull
+    private Map<String, ParcelDuration> getPendingJobReasonStats(int uid, String namespace,
+            int jobId) {
+        synchronized (mLock) {
+            final JobStatus job = mJobs.getJobByUidAndJobId(uid, namespace, jobId);
+            if (job == null) {
+                // Job doesn't exist.
+                throw new IllegalArgumentException("Job not found for uid=" + uid
+                        + ", namespace=" + namespace + ", jobId=" + jobId);
+            }
+
+            return job.getPendingJobReasonStats();
         }
     }
 
@@ -5366,6 +5394,19 @@ public class JobSchedulerService extends com.android.server.SystemService
         }
 
         @Override
+        public Map<String, ParcelDuration> getPendingJobReasonStats(String namespace, int jobId)
+                throws RemoteException {
+            final int uid = Binder.getCallingUid();
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                return JobSchedulerService.this.getPendingJobReasonStats(
+                        uid, validateNamespace(namespace), jobId);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        @Override
         public void cancelAll() throws RemoteException {
             final int uid = Binder.getCallingUid();
             final long ident = Binder.clearCallingIdentity();
@@ -6135,6 +6176,9 @@ public class JobSchedulerService extends com.android.server.SystemService
             pw.println();
             pw.print(android.app.job.Flags.FLAG_ADD_TYPE_INFO_TO_WAKELOCK_TAG,
                     android.app.job.Flags.addTypeInfoToWakelockTag());
+            pw.println();
+            pw.print(android.app.job.Flags.FLAG_GET_PENDING_JOB_REASON_STATS_API,
+                    android.app.job.Flags.getPendingJobReasonStatsApi());
             pw.println();
             pw.decreaseIndent();
             pw.println();

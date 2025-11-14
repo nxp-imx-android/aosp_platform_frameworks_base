@@ -60,6 +60,7 @@ flag {
 
 flag {
     name: "get_pending_job_reason_stats_api"
+    is_exported: true
     namespace: "backstage_power"
     description: "Introduce a new getPendingJobReasonStats() API which returns a holistic view of which constraints contributed the most to why a job remained pending."
     bug: "448485520"
