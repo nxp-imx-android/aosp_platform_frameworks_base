@@ -56648,6 +56648,7 @@ package android.view.accessibility {
     method public void setEnabled(boolean);
     method public void setError(CharSequence);
     method @FlaggedApi("android.view.accessibility.a11y_expansion_state_api") public void setExpandedState(int);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public void setExtraRenderingInfo(@Nullable android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo);
     method @FlaggedApi("android.view.accessibility.a11y_is_required_api") public void setFieldRequired(boolean);
     method public void setFocusable(boolean);
     method public void setFocused(boolean);
@@ -56881,20 +56882,38 @@ package android.view.accessibility {
     method @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setSortDirection(int);
   }
 
-  public static final class AccessibilityNodeInfo.ExtraRenderingInfo {
+  public static final class AccessibilityNodeInfo.ExtraRenderingInfo implements android.os.Parcelable {
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public int describeContents();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public float getAlpha();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @ColorInt public int getBackgroundColor();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @ColorInt public int getHintTextColor();
     method @Nullable public android.util.Size getLayoutSize();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @ColorInt public int getLinkTextColor();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @ColorInt public int getTextColor();
     method public float getTextSizeInPx();
     method public int getTextSizeUnit();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public static final android.os.Parcelable.Creator<android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo> CREATOR;
   }
 
   @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public static final class AccessibilityNodeInfo.ExtraRenderingInfo.Builder {
     ctor @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public AccessibilityNodeInfo.ExtraRenderingInfo.Builder();
     ctor @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") public AccessibilityNodeInfo.ExtraRenderingInfo.Builder(@NonNull android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo);
     method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo build();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearAlpha();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearBackgroundColor();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearHintTextColor();
     method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearLayoutSize();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearLinkTextColor();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearTextColor();
     method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearTextSizeInPx();
     method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder clearTextSizeUnit();
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setAlpha(@FloatRange(from=0.0, to=1.0) float);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setBackgroundColor(@ColorInt int);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setHintTextColor(@ColorInt int);
     method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setLayoutSize(int, int);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setLinkTextColor(@ColorInt int);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setTextColor(@ColorInt int);
     method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setTextSizeInPx(float);
     method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setTextSizeUnit(int);
   }
