@@ -329,8 +329,7 @@ private fun ContentScope.QuickSettingsContent(
 
         // ############# NAV BAR paddings ###############
 
-        val navBarBottomHeight =
-            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val navBarInsets = WindowInsets.navigationBars.asPaddingValues()
 
         // ############# Media ###############
         val mediaInRow = viewModel.qsContainerViewModel.showMediaInRow
@@ -338,9 +337,7 @@ private fun ContentScope.QuickSettingsContent(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier =
-                Modifier.fillMaxSize()
-                    .overscroll(verticalOverscrollEffect)
-                    .padding(bottom = navBarBottomHeight.coerceAtLeast(0.dp)),
+                Modifier.fillMaxSize().overscroll(verticalOverscrollEffect).padding(navBarInsets),
         ) {
             Box(modifier = Modifier.fillMaxSize().weight(1f)) {
                 Column(
@@ -411,7 +408,7 @@ private fun ContentScope.QuickSettingsContent(
             shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
             isTransparencyEnabled = viewModel.isTransparencyEnabled,
             stackTopPadding = notificationStackPadding,
-            stackBottomPadding = navBarBottomHeight,
+            stackBottomPadding = navBarInsets.calculateBottomPadding(),
             shouldIncludeHeadsUpSpace = false,
             modifier =
                 Modifier.fillMaxWidth()
