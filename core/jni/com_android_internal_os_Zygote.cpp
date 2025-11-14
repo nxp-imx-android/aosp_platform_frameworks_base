@@ -29,6 +29,7 @@
 #include <async_safe/log.h>
 #include <bionic/malloc.h>
 #include <bionic/mte.h>
+#include <com_android_base_core_jni_flags.h>
 #include <cutils/fs.h>
 #include <cutils/multiuser.h>
 #include <cutils/sockets.h>
@@ -104,6 +105,8 @@ using android::base::StringAppendF;
 using android::base::StringPrintf;
 using android::base::WriteStringToFile;
 using android::base::GetBoolProperty;
+
+using ::com::android::base::core::jni::flags::zygote_set_no_swap_system_server;
 
 using android::zygote::ZygoteFailure;
 
@@ -1994,12 +1997,19 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
                                                 /* pid= */ 0, strerror(-rc)));
         }
 
-        if (is_system_server && UsePerAppMemcg()) {
-            // Assign system_server to the correct memory cgroup.
-            // Not all devices mount memcg so check if it is mounted first
+        if (is_system_server) {
+            // Not all devices mount memcgv1 so check if it is mounted first
             // to avoid unnecessarily printing errors and denials in the logs.
-            if (!SetTaskProfiles(getpid(), std::vector<std::string>{"SystemMemoryProcess"})) {
-                ALOGE("couldn't add process %d into system memcg group", getpid());
+            if (UsePerAppMemcg()) {
+                // Assign system_server to the correct memory cgroup.
+                if (!SetTaskProfiles(getpid(), std::vector<std::string>{"SystemMemoryProcess"})) {
+                    ALOGE("couldn't add process %d into system memcg group", getpid());
+                }
+            }
+
+            if (zygote_set_no_swap_system_server() &&
+                !SetTaskProfiles(getpid(), std::vector<std::string>{"NoSwapUsage"})) {
+                ALOGE("couldn't apply NoSwapUsage on process %d ", getpid());
             }
         }
     }
