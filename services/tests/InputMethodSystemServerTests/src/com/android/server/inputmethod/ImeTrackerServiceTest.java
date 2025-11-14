@@ -627,6 +627,66 @@ public class ImeTrackerServiceTest {
                 reason, ImeTracker.PHASE_NOT_SET, fromUser, userId, displayId);
     }
 
+    /** Check that an entry that is started with a userId and displayId contains given data. */
+    @Test
+    public void testUserIdAndDisplayId() {
+        final int id = 0;
+        final var tag = "MUMD";
+        final var token = new ImeTracker.Token(id, tag);
+        final int uid = 10;
+        final int type = ImeTracker.TYPE_SHOW;
+        final int origin = ImeTracker.ORIGIN_CLIENT;
+        final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
+        final boolean fromUser = false;
+        final int userId = 10;
+        final int displayId = 0;
+
+        mService.onStart(token, uid, type, origin, reason, fromUser, userId, displayId,
+                System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
+        synchronized (mService.mLock) {
+            final var entry = mHistory.getActive(id);
+            assertWithMessage("Created entry").that(entry).isNotNull();
+            assertWithMessage("UserId matches in active entry")
+                    .that(entry.mUserId).isEqualTo(userId);
+            assertWithMessage("DisplayId matches in active entry")
+                    .that(entry.mDisplayId).isEqualTo(displayId);
+        }
+
+        final int secondId = 1;
+        final var secondTag = "MUMD";
+        final var secondToken = new ImeTracker.Token(secondId, secondTag);
+        // Start again with different userId and displayId.
+        final int secondUserId = 11;
+        final int secondDisplayId = 1;
+        mService.onStart(secondToken, uid, type, origin, reason, fromUser, secondUserId,
+                secondDisplayId, System.currentTimeMillis() /* startWallTimeMs */,
+                SystemClock.elapsedRealtime() /* startTimestampMs */);
+        synchronized (mService.mLock) {
+            final var secondEntry = mHistory.getActive(secondId);
+            assertWithMessage("Created entry").that(secondEntry).isNotNull();
+            assertWithMessage("UserId matches in active entry")
+                    .that(secondEntry.mUserId).isEqualTo(secondUserId);
+            assertWithMessage("DisplayId matches in active entry")
+                    .that(secondEntry.mDisplayId).isEqualTo(secondDisplayId);
+        }
+
+        mService.onShown(token);
+        mService.onShown(secondToken);
+        synchronized (mService.mLock) {
+            assertWithMessage("No active entries remaining").that(mHistory.activeEntries())
+                    .isEmpty();
+        }
+
+        advanceTime(TIMEOUT_MS);
+
+        assertWithMessage("Two entries recorded").that(mRecordedEntries).hasSize(2);
+        verifyEntry(mRecordedEntries.getFirst(), tag, uid, type, ImeTracker.STATUS_SUCCESS, origin,
+                reason, ImeTracker.PHASE_NOT_SET, fromUser, userId, displayId);
+        verifyEntry(mRecordedEntries.getLast(), secondTag, uid, type, ImeTracker.STATUS_SUCCESS,
+                origin, reason, ImeTracker.PHASE_NOT_SET, fromUser, secondUserId, secondDisplayId);
+    }
+
     /** Check that an entry that is finished twice will ignore the second finish. */
     @Test
     public void testFinishTwice() {
