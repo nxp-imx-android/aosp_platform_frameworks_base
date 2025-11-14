@@ -104,7 +104,13 @@ internal fun ContentScope.PasswordBouncer(
                 OutlinedSecureTextField(
                     state = viewModel.textFieldState,
                     enabled = isInputEnabled,
-                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    textStyle =
+                        LocalTextStyle.current.copy(
+                            textAlign =
+                                if (hasAnyTrailingIcons(viewModel, isImeSwitcherButtonVisible))
+                                    TextAlign.Start
+                                else TextAlign.Center
+                        ),
                     keyboardOptions =
                         KeyboardOptions(
                             autoCorrectEnabled = false,
@@ -147,6 +153,17 @@ internal fun ContentScope.PasswordBouncer(
             }
         }
     }
+}
+
+private fun hasAnyTrailingIcons(
+    viewModel: PasswordBouncerViewModel,
+    isImeSwitcherButtonVisible: Boolean,
+): Boolean {
+    if (!viewModel.isMoreIndicatorsAndButtonsEnabled) {
+        return isImeSwitcherButtonVisible
+    }
+
+    return true
 }
 
 @Composable
