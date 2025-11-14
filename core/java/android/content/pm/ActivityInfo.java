@@ -1738,6 +1738,25 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public static final long OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE = 427878712L;
 
     /**
+     * This change id enables the virtual gamepad for game apps on foldable devices.
+     *
+     * <p>Some game apps don't work well on foldable devices. They misbehave upon device folding
+     * and unfolding when the display size changes. They also don't fully utilize the larger inner
+     * display space. In addition, even without compatibility issues, some games work better with
+     * a gamepad. Showing a system-provided virtual gamepad can improve the user experience.
+     *
+     * This is disabled by default, and can be enabled by device manufacturers on a per-application
+     * basis, controlled via
+     * <a href="https://developer.android.com/guide/practices/device-compatibility-mode#device_manufacturer_per-app_overrides">Device manufacturer per-app overrides</a>.
+     *
+     * @hide
+     */
+    @ChangeId
+    @Overridable
+    @Disabled
+    public static final long OVERRIDE_ENABLE_VIRTUAL_GAMEPAD = 447093535L;
+
+    /**
      * Optional set of a certificates identifying apps that are allowed to embed this activity. From
      * the "knownActivityEmbeddingCerts" attribute.
      */
