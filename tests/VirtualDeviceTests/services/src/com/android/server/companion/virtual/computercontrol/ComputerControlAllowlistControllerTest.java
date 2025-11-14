@@ -330,7 +330,9 @@ public class ComputerControlAllowlistControllerTest {
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
     @Test
-    public void isPackageAutomatable_allAppsAllowlisted_returnsTrue() throws Exception {
+    @Parameters(method = "getAllowlistStringsIncludingEverything")
+    public void isPackageAutomatable_allAppsAllowlisted_returnsTrue(
+            String allowlistStringIncludingEverything) throws Exception {
         final String packageName1 = "com.hello.foo";
         final Signature signature1 = generateSignature((byte) 1);
         preparePackage(packageName1, signature1);
@@ -338,7 +340,8 @@ public class ComputerControlAllowlistControllerTest {
         final Signature signature2 = generateSignature((byte) 5);
         preparePackage(packageName2, signature2);
 
-        mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY, "*");
+        mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY,
+                allowlistStringIncludingEverything);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         assertTrue(mAllowlistController.isPackageAutomatable(packageName1, "com.some.owner1"));
@@ -421,14 +424,16 @@ public class ComputerControlAllowlistControllerTest {
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
     @Test
-    public void isPackageAutomatable_allAppsAllowlisted_denylistedApp_returnsFalse()
-            throws Exception {
+    @Parameters(method = "getAllowlistStringsIncludingEverything")
+    public void isPackageAutomatable_allAppsAllowlisted_denylistedApp_returnsFalse(
+            String allowlistStringIncludingEverything) throws Exception {
         final String packageName = "com.hello.fun";
         final Signature signature = generateSignature((byte) 7);
         final String certificateDigest = preparePackage(packageName, signature);
 
         // Allowlist all packages via DeviceConfig.
-        mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY, "*");
+        mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY,
+                allowlistStringIncludingEverything);
         // Denylist the given package via DeviceConfig.
         mDeviceConfigWriter.denylistAutomatableApp(packageName, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
@@ -638,13 +643,33 @@ public class ComputerControlAllowlistControllerTest {
     }
 
     @SuppressWarnings("unused") // Parameter for parametrized tests
-    private static String[] getMalformedValues() {
-        return new String[]{
-                null,
-                "garbage",
-                "1234",
-                "com.android.app",
-                "@#$%^&*",
+    private static Object[][] getMalformedValues() {
+        return new Object[][]{
+                {null},
+                {"garbage"},
+                {"1234"},
+                {"**"},
+                {","},
+                {",,,,,,"},
+                {" , "},
+                {"This is a sentence."},
+                {"Hello,Goodbye"},
+                {"com.android.app"},
+                {"com.android.app:123456QWERTY,#"},
+                {"@#$%^&*"}
+        };
+    }
+
+    @SuppressWarnings("unused") // Parameter for parametrized tests
+    private static Object[][] getAllowlistStringsIncludingEverything() {
+        return new Object[][]{
+                {"*"},
+                {"*,"},
+                {"*,*,"},
+                {"com.android.app:123456QWERTY,*,"},
+                {"*,com.android.app:123456QWERTY,"},
+                {"*,com.android.app:123456QWERTY,*,"},
+                {"com.android.app1:98765QWERTY,*,com.android.app2:123456QWERTY,"}
         };
     }
 

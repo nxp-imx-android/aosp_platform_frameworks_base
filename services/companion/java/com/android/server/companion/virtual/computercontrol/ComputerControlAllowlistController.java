@@ -319,13 +319,18 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             return new SignedPackages();
         }
 
-        if (INCLUDE_EVERYTHING_WILDCARD.equals(input)) {
-            return new SignedPackages(true /* includeEverything */);
+        final List<SignedPackage> signedPackages = new ArrayList<>();
+        final String[] parts = input.split(SIGNED_PACKAGE_SEPARATOR);
+        if (parts.length == 0) {
+            throw new IllegalArgumentException("Invalid input string " + input);
         }
 
-        final List<SignedPackage> signedPackages = new ArrayList<>();
-        for (String signedPackageInput : input.split(SIGNED_PACKAGE_SEPARATOR)) {
-            final SignedPackage signedPackage = parse(signedPackageInput);
+        for (int i = 0; i < parts.length; i++) {
+            final String part = parts[i];
+            if (INCLUDE_EVERYTHING_WILDCARD.equals(part)) {
+                return new SignedPackages(true /* includeEverything */);
+            }
+            final SignedPackage signedPackage = parse(part);
             Slog.v(TAG, "Parsed signed package : " + signedPackage);
             signedPackages.add(signedPackage);
         }
