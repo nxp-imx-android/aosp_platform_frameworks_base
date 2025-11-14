@@ -3279,6 +3279,12 @@
          When set to true, config_multiuserVisibleBackgroundUsers must also be true. -->
     <bool name="config_multiuserVisibleBackgroundUsersOnDefaultDisplay">false</bool>
 
+    <!-- Allow to skip showing keyguard/bouncer upon user switch when the user being switched to
+         already has their credential-encrypted (CE) storage unlocked, and not require strong
+         authentication. This will also force users to require strong authentication when switching
+         away from them. -->
+    <bool name="config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers">false</bool>
+
     <!-- Whether to automatically switch to the designated Dock User (the user chosen for
          displaying dreams, etc.) after a timeout when the device is docked.  -->
     <bool name="config_enableTimeoutToDockUserWhenDocked">false</bool>

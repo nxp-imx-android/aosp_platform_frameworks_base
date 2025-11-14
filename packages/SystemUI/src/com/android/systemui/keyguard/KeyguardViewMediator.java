@@ -83,6 +83,7 @@ import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.os.storage.StorageManager;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.telephony.SubscriptionManager;
@@ -696,7 +697,16 @@ public class KeyguardViewMediator implements CoreStartable,
             adjustStatusBarLocked();
             mKeyguardStateController.notifyKeyguardGoingAway(false);
             if (mLockPatternUtils.isSecure(userId) && !mShowing) {
-                doKeyguardLocked(null);
+                if (android.multiuser.Flags.credentialCapture()
+                        && mContext.getResources().getBoolean(com.android.internal.R.bool
+                            .config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers)
+                        && StorageManager.isCeStorageUnlocked(userId)
+                        && mLockPatternUtils.isTrustAllowedForUser(userId)) {
+                    Log.d(TAG, "Skipping keyguard due to "
+                            + "config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers");
+                } else {
+                    doKeyguardLocked(null);
+                }
             } else {
                 resetStateLocked();
             }
@@ -3066,7 +3076,9 @@ public class KeyguardViewMediator implements CoreStartable,
         synchronized(this) {
             if (DEBUG) Log.d(TAG, "handleKeyguardDoneDrawing");
             if (mWaitingUntilKeyguardVisible) {
-                if (DEBUG) Log.d(TAG, "handleKeyguardDoneDrawing: notifying mWaitingUntilKeyguardVisible");
+                if (DEBUG) {
+                    Log.d(TAG, "handleKeyguardDoneDrawing: notifying mWaitingUntilKeyguardVisible");
+                }
                 mWaitingUntilKeyguardVisible = false;
                 notifyAll();
 

@@ -20,6 +20,7 @@ import static android.provider.Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT;
 import static android.view.WindowManagerPolicyConstants.OFF_BECAUSE_OF_TIMEOUT;
 import static android.view.WindowManagerPolicyConstants.OFF_BECAUSE_OF_USER;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT;
@@ -69,6 +70,7 @@ import android.graphics.Rect;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
+import android.os.storage.StorageManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.telephony.TelephonyManager;
@@ -158,6 +160,8 @@ import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.MockitoSession;
+import org.mockito.quality.Strictness;
 
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
@@ -252,6 +256,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
     private boolean mUsePostAfterTraversalRunnable;
     private Runnable mPostAfterTraversalRunnable;
 
+    private MockitoSession mStaticMockSession;
+
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getFlags() {
         return FlagsParameterization.allCombinationsOf(FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION);
@@ -265,11 +271,17 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        mStaticMockSession =
+                mockitoSession()
+                        .strictness(Strictness.LENIENT)
+                        .mockStatic(StorageManager.class)
+                        .startMocking();
         mFalsingCollector = new FalsingCollectorFake();
         mSystemClock = new FakeSystemClock();
         mUsePostAfterTraversalRunnable = false;
         mPostAfterTraversalRunnable = null;
         when(mLockPatternUtils.getDevicePolicyManager()).thenReturn(mDevicePolicyManager);
+        when(StorageManager.isCeStorageUnlocked(anyInt())).thenReturn(false);
         when(mPowerManager.newWakeLock(anyInt(), any())).thenReturn(mock(WakeLock.class));
         when(mPowerManager.isInteractive()).thenReturn(true);
         mContext.addMockSystemService(Context.ALARM_SERVICE, mAlarmManager);
@@ -329,6 +341,13 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         }).when(mKeyguardStateController).notifyKeyguardGoingAway(anyBoolean());
 
         createAndStartViewMediator();
+    }
+
+    @After
+    public void tearDown() {
+        if (mStaticMockSession != null) {
+            mStaticMockSession.finishMocking();
+        }
     }
 
     /**
@@ -554,6 +573,84 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
             fail();
         }
         assertTrue(mViewMediator.isShowingAndNotOccluded());
+    }
+
+    private void assertKeyguardShowingAfterUserSwitchToUnlockedUser(
+            boolean ceStorageUnlocked, boolean requireStrongAuth, boolean expectShowingKeyguard) {
+        mContext.getOrCreateTestableResources()
+                .addOverride(
+                        com.android.internal.R.bool
+                                .config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers,
+                        true);
+
+        setCurrentUser(/* userId= */ 1099, /* isSecure= */ true);
+
+        // Setup keyguard as not visible
+        mViewMediator.onSystemReady();
+        processAllMessagesAndBgExecutorMessages();
+        mViewMediator.setShowingLocked(false, "");
+        processAllMessagesAndBgExecutorMessages();
+
+        // Begin a switch to a new secure user and set up preconditions for potentially skipping
+        // keyguard
+        int nextUserId = 500;
+        setCurrentUser(nextUserId, /* isSecure= */ true);
+        when(StorageManager.isCeStorageUnlocked(nextUserId)).thenReturn(ceStorageUnlocked);
+        when(mLockPatternUtils.isTrustAllowedForUser(nextUserId)).thenReturn(!requireStrongAuth);
+
+        Runnable beforeResult = mock(Runnable.class);
+        mViewMediator.handleBeforeUserSwitching(nextUserId, beforeResult);
+        processAllMessagesAndBgExecutorMessages();
+        verify(beforeResult).run();
+
+        try {
+            assertATMSLockScreenShowing(expectShowingKeyguard);
+        } catch (Exception e) {
+            fail();
+        }
+        assertEquals(expectShowingKeyguard, mViewMediator.isShowingAndNotOccluded());
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @EnableFlags(android.multiuser.Flags.FLAG_CREDENTIAL_CAPTURE)
+    public void testUserSwitchToUnlockedSecureUserSkipsKeyguardIfConfigured() {
+        assertKeyguardShowingAfterUserSwitchToUnlockedUser(
+                /* ceStorageUnlocked= */ true,
+                /* requireStrongAuth= */ false,
+                /* expectShowingKeyguard= */ false);
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @EnableFlags(android.multiuser.Flags.FLAG_CREDENTIAL_CAPTURE)
+    public void testUserSwitchToUnlockedSecureUserShowsKeyguardIfSkipConfiguredButCeLocked() {
+        assertKeyguardShowingAfterUserSwitchToUnlockedUser(
+                /* ceStorageUnlocked= */ false,
+                /* requireStrongAuth= */ false,
+                /* expectShowingKeyguard= */ true);
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @EnableFlags(android.multiuser.Flags.FLAG_CREDENTIAL_CAPTURE)
+    public void
+            testUserSwitchToUnlockedSecureUserShowsKeyguardIfSkipConfiguredButStrongAuthRequired() {
+        assertKeyguardShowingAfterUserSwitchToUnlockedUser(
+                /* ceStorageUnlocked= */ true,
+                /* requireStrongAuth= */ true,
+                /* expectShowingKeyguard= */ true);
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @EnableFlags(android.multiuser.Flags.FLAG_CREDENTIAL_CAPTURE)
+    public void
+            testUserSwitchToUnlockedSecureUserShowsKeyguardIfSkipConfiguredButNeitherRequirementFulfilled() {
+        assertKeyguardShowingAfterUserSwitchToUnlockedUser(
+                /* ceStorageUnlocked= */ false,
+                /* requireStrongAuth= */ true,
+                /* expectShowingKeyguard= */ true);
     }
 
     @Test
@@ -1641,15 +1738,14 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
     }
 
     private void createAndStartViewMediator() {
-        createAndStartViewMediator(false);
+        createAndStartViewMediator(/* orderUnlockAndWake= */ false);
     }
 
     private void createAndStartViewMediator(boolean orderUnlockAndWake) {
         mContext.getOrCreateTestableResources().addOverride(
                 com.android.internal.R.bool.config_orderUnlockAndWake, orderUnlockAndWake);
 
-        mViewMediator = new KeyguardViewMediator(
-                mContext,
+        mViewMediator = new KeyguardViewMediator(mContext,
                 mUiEventLogger,
                 mSessionTracker,
                 mUserTracker,

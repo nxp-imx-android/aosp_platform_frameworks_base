@@ -9041,8 +9041,12 @@ public class ActivityManagerService extends IActivityManager.Stub
             final int backgroundUserConsideredDispensableTimeSecs = res.getInteger(
                     com.android.internal.R.integer
                             .config_backgroundUserConsideredDispensableTimeSecs);
+            final boolean skipKeyguardWhenSwitchingToUnlockedUsers = res.getBoolean(
+                    com.android.internal.R.bool
+                            .config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers);
             mUserController.setInitialConfig(userSwitchUiEnabled, maxRunningUsers,
-                    delayUserDataLocking, backgroundUserConsideredDispensableTimeSecs);
+                    delayUserDataLocking, backgroundUserConsideredDispensableTimeSecs,
+                    skipKeyguardWhenSwitchingToUnlockedUsers);
         }
         mAppErrors.loadAppsNotReportingCrashesFromConfig(res.getString(
                 com.android.internal.R.string.config_appsNotReportingCrashes));
