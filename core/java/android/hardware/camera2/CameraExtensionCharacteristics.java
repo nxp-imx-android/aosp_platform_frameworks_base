@@ -289,7 +289,8 @@ public final class CameraExtensionCharacteristics {
             return GLOBAL_CAMERA_MANAGER;
         }
 
-        private void releaseProxyConnectionLocked(Context ctx, int extension) {
+        private void releaseProxyConnectionLocked(Context context, int extension) {
+            Context ctx = context.getApplicationContext();
             if (mConnectionManager.getConnection(extension) != null) {
                 ctx.unbindService(mConnectionManager.getConnection(extension));
                 mConnectionManager.setConnection(extension, null);
@@ -298,7 +299,8 @@ public final class CameraExtensionCharacteristics {
             }
         }
 
-        private void connectToProxyLocked(Context ctx, int extension, boolean useFallback) {
+        private void connectToProxyLocked(Context context, int extension, boolean useFallback) {
+            Context ctx = context.getApplicationContext();
             if ((mConnectionManager.getConnection(extension) == null) ||
                     (mConnectionManager.getProxy(extension) == null)) {
                 Intent intent = new Intent();
