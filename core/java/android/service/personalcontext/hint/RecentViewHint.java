@@ -23,6 +23,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,11 @@ public final class RecentViewHint extends ContextHint {
     private final String mLocusId;
 
     /** Creates a new {@link RecentViewHint}. */
-    private RecentViewHint(@NonNull List<CapturedText> capturedTexts, @Nullable String locusId) {
-        super();
+    private RecentViewHint(
+            @NonNull ConstructorParams baseParams,
+            @NonNull List<CapturedText> capturedTexts,
+            @Nullable String locusId) {
+        super(baseParams);
         mCapturedTexts = List.copyOf(capturedTexts);
         mLocusId = locusId;
     }
@@ -53,13 +57,11 @@ public final class RecentViewHint extends ContextHint {
      *
      * @hide
      */
-    RecentViewHint(@NonNull Bundle bundle) {
-        super(bundle);
-        final Bundle hintData = bundle.getBundle(KEY_HINT_DATA);
-        requireNonNull(hintData, "Bundle must contain hint data");
-        mCapturedTexts = hintData.getParcelableArrayList(KEY_CAPTURED_TEXTS, CapturedText.class);
+    RecentViewHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
+        super(baseParams);
+        mCapturedTexts = bundle.getParcelableArrayList(KEY_CAPTURED_TEXTS, CapturedText.class);
         requireNonNull(mCapturedTexts, "Bundle must contain captured text set");
-        mLocusId = hintData.getString(KEY_LOCUS_ID);
+        mLocusId = bundle.getString(KEY_LOCUS_ID);
     }
 
     /** @hide */
@@ -123,11 +125,23 @@ public final class RecentViewHint extends ContextHint {
     /** Builder used to create a {@link RecentViewHint}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final List<CapturedText> mCapturedTexts = new ArrayList<>();
         private String mLocusId;
 
         /** Creates an instance of {@link Builder}. */
         public Builder() {}
+
+        /**
+         * Adds a token to the resulting {@link RecentViewHint}.
+         *
+         * @param token the token to add
+         */
+        @NonNull
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
+            return this;
+        }
 
         /**
          * Adds a {@link CapturedText} object containing information about a single captured UI text
@@ -152,7 +166,7 @@ public final class RecentViewHint extends ContextHint {
          */
         @NonNull
         public RecentViewHint build() {
-            return new RecentViewHint(mCapturedTexts, mLocusId);
+            return new RecentViewHint(mBaseBuilder.build(), mCapturedTexts, mLocusId);
         }
     }
 }

@@ -22,6 +22,7 @@ import android.annotation.TestApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.text.TextUtils;
@@ -56,7 +57,7 @@ public abstract class ContextInsight {
     private static final String KEY_INSIGHT_ID = "key_insight_id";
     private static final String KEY_INSIGHT_TYPE = "key_insight_type";
     private static final String KEY_ORIGIN_HINTS = "key_origin_hints";
-    private static final String KEY_TAGS = "key_tags";
+    private static final String KEY_TOKENS = "key_tokens";
     private static final String KEY_INSIGHT_DATA = "key_insight_data";
 
     /**
@@ -113,7 +114,7 @@ public abstract class ContextInsight {
 
     private final UUID mId;
     private final Set<ContextHintWithSignature> mOriginHints;
-    private final Set<String> mTags;
+    private final Set<Token> mTokens;
 
     /**
      * Internal constructor for insights. This should be called by subclasses in their public
@@ -124,7 +125,7 @@ public abstract class ContextInsight {
     ContextInsight(@NonNull ConstructorParams params) {
         mId = params.mId;
         mOriginHints = Collections.unmodifiableSet(new HashSet<>(params.mOriginHints));
-        mTags = Collections.unmodifiableSet(new HashSet<>(params.mTags));
+        mTokens = Collections.unmodifiableSet(new HashSet<>(params.mTokens));
     }
 
     /**
@@ -173,10 +174,10 @@ public abstract class ContextInsight {
         return renderTokenHint != null ? renderTokenHint.getRenderToken() : null;
     }
 
-    /** Returns the set of tags that were added to this insight. */
+    /** Returns the set of tokens that were added to this insight. */
     @NonNull
-    public final Set<String> getTags() {
-        return mTags;
+    public final Set<Token> getTokens() {
+        return mTokens;
     }
 
     @NonNull abstract Bundle toBundleImpl();
@@ -192,7 +193,7 @@ public abstract class ContextInsight {
         b.putInt(KEY_INSIGHT_TYPE, getInsightType());
         b.putString(KEY_INSIGHT_ID, mId.toString());
         b.putParcelableArrayList(KEY_ORIGIN_HINTS, new ArrayList<>(mOriginHints));
-        b.putStringArrayList(KEY_TAGS, new ArrayList<>(mTags));
+        b.putParcelableArrayList(KEY_TOKENS, new ArrayList<>(mTokens));
         b.putBundle(KEY_INSIGHT_DATA, toBundleImpl());
         return b;
     }
@@ -238,7 +239,7 @@ public abstract class ContextInsight {
         final ConstructorParams constructorParams = new ConstructorParams(
                 UUID.fromString(bundle.getString(KEY_INSIGHT_ID)),
                 bundle.getParcelableArrayList(KEY_ORIGIN_HINTS, ContextHintWithSignature.class),
-                bundle.getStringArrayList(KEY_TAGS));
+                bundle.getParcelableArrayList(KEY_TOKENS, Token.class));
 
         try {
             return switch (type) {
@@ -261,25 +262,25 @@ public abstract class ContextInsight {
     static class ConstructorParams {
         private final UUID mId;
         private final Collection<ContextHintWithSignature> mOriginHints;
-        private final Collection<String> mTags;
+        private final Collection<Token> mTokens;
 
         private ConstructorParams(
-                Collection<ContextHintWithSignature> originHints, Collection<String> tags) {
-            this(UUID.randomUUID(), originHints, tags);
+                Collection<ContextHintWithSignature> originHints, Collection<Token> tokens) {
+            this(UUID.randomUUID(), originHints, tokens);
         }
 
         private ConstructorParams(
                 UUID id,
                 Collection<ContextHintWithSignature> originHints,
-                Collection<String> tags) {
+                Collection<Token> tokens) {
             mId = id;
             mOriginHints = originHints;
-            mTags = tags;
+            mTokens = tokens;
         }
 
         static final class Builder {
             private final Set<ContextHintWithSignature> mOriginHints = new HashSet<>();
-            private final Set<String> mTags = new HashSet<>();
+            private final Set<Token> mTokens = new HashSet<>();
 
             /**
              * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
@@ -295,16 +296,16 @@ public abstract class ContextInsight {
             /**
              * Adds a tag to the resulting {@link ContextInsight}.
              *
-             * @param tag the tag to add
+             * @param token the token to add
              */
             @NonNull
-            Builder addTag(@NonNull String tag) {
-                mTags.add(tag);
+            Builder addToken(@NonNull Token token) {
+                mTokens.add(token);
                 return this;
             }
 
             ConstructorParams build() {
-                return new ConstructorParams(mOriginHints, mTags);
+                return new ConstructorParams(mOriginHints, mTokens);
             }
         }
     }

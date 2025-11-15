@@ -65,9 +65,10 @@ public class RendererWorkflowTest {
     private static ContextInsight buildInsight(RenderToken renderToken, SecretKeySpec key)
             throws GeneralSecurityException {
         return new BundleInsight.Builder()
-                .addOriginHint(new ContextHintWithSignature.Builder(new BundleHint(), key)
-                        .setRenderToken(renderToken)
-                        .build())
+                .addOriginHint(
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .setRenderToken(renderToken)
+                                .build())
                 .build();
     }
 
@@ -216,16 +217,18 @@ public class RendererWorkflowTest {
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
         final ContextInsight insight = new BundleInsight.Builder()
-                .addOriginHint(new ContextHintWithSignature.Builder(new BundleHint(), key)
-                        .setRenderToken(new RenderToken.RenderTokenBuilder()
-                                .setRendererComponentId(UUID.randomUUID())
+                .addOriginHint(
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .setRenderToken(new RenderToken.RenderTokenBuilder()
+                                        .setRendererComponentId(UUID.randomUUID())
+                                        .build())
                                 .build())
-                        .build())
-                .addOriginHint(new ContextHintWithSignature.Builder(new BundleHint(), key)
-                        .setRenderToken(new RenderToken.RenderTokenBuilder()
-                                .setRendererComponentId(UUID.randomUUID())
+                .addOriginHint(
+                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                                .setRenderToken(new RenderToken.RenderTokenBuilder()
+                                        .setRendererComponentId(UUID.randomUUID())
+                                        .build())
                                 .build())
-                        .build())
                 .build();
 
         RendererWorkflow.start(

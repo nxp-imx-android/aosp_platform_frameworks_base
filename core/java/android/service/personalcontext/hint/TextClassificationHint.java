@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 import android.view.textclassifier.TextClassification;
 
 import androidx.annotation.NonNull;
@@ -36,8 +37,10 @@ public class TextClassificationHint extends ContextHint {
      *
      * @hide
      */
-    TextClassificationHint(@NonNull TextClassification.Request textClassificationRequest) {
-        super();
+    TextClassificationHint(
+            @NonNull ConstructorParams baseParams,
+            @NonNull TextClassification.Request textClassificationRequest) {
+        super(baseParams);
         mTextClassificationRequest = textClassificationRequest;
     }
 
@@ -46,12 +49,10 @@ public class TextClassificationHint extends ContextHint {
      *
      * @hide
      */
-    TextClassificationHint(@NonNull Bundle bundle) {
-        super(bundle);
-        final Bundle hintData = bundle.getBundle(KEY_HINT_DATA);
-        requireNonNull(hintData, "Bundle must contain hint data");
+    TextClassificationHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
+        super(baseParams);
         TextClassification.Request classificationRequest =
-                hintData.getParcelable(
+                bundle.getParcelable(
                         KEY_TEXT_CLASSIFICATION_REQUEST, TextClassification.Request.class);
         requireNonNull(classificationRequest, "Bundle must contain classification request");
         mTextClassificationRequest = classificationRequest;
@@ -81,6 +82,7 @@ public class TextClassificationHint extends ContextHint {
     /** Builder used to create a {@link TextClassificationHint}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final TextClassification.Request mTextClassificationRequest;
 
         /**
@@ -93,10 +95,21 @@ public class TextClassificationHint extends ContextHint {
             mTextClassificationRequest = textClassificationRequest;
         }
 
+        /**
+         * Adds a token to the resulting {@link TextClassificationHint}.
+         *
+         * @param token the token to add
+         */
+        @NonNull
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
+            return this;
+        }
+
         /** Returns the built {@link TextClassificationHint}. */
         @NonNull
         public TextClassificationHint build() {
-            return new TextClassificationHint(mTextClassificationRequest);
+            return new TextClassificationHint(mBaseBuilder.build(), mTextClassificationRequest);
         }
     }
 }

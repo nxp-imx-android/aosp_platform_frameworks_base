@@ -49,7 +49,7 @@ import java.util.List;
  * the client via its builder. For example, if the client app wanted to receive a surface containing
  * a confirmation number, it could add a custom {@link ContextHint}, like this:
  * <pre>{@code
- * final BundleHint hint = new BundleHint();
+ * final BundleHint hint = new BundleHint.Builder().build();
  * hint.getDataBundle().putString("field-to-fill", "confirmation-number");
  * final InsightSurfaceClient client =
  *          new InsightSurfaceClient.Builder(context, surfaceView).addHint(hint).build();

@@ -27,6 +27,7 @@ import android.service.personalcontext.IPersonalContextManager;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.RenderToken.RenderTokenBuilder;
+import android.service.personalcontext.Token;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
@@ -380,6 +381,12 @@ public class PersonalContextManagerService extends SystemService {
                             userId,
                             ContextHintWrapper.unwrapInto(clientHints, new HashSet<>()),
                             clientInfo));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public Token mintToken() {
+            return new Token();
         }
 
         @PermissionManuallyEnforced

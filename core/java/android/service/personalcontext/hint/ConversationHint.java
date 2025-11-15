@@ -16,12 +16,13 @@
 
 package android.service.personalcontext.hint;
 
+import static java.util.Objects.requireNonNull;
+
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
-
-import static java.util.Objects.requireNonNull;
+import android.service.personalcontext.Token;
 
 import java.util.Objects;
 
@@ -37,8 +38,9 @@ public final class ConversationHint extends ContextHint {
     private static final String KEY_CONVERSATION_EVENT = "key_conversation_event";
     private final ConversationEvent mConversationEvent;
 
-    private ConversationHint(@NonNull ConversationEvent conversationEvent) {
-        super();
+    private ConversationHint(
+            @NonNull ConstructorParams baseParams, @NonNull ConversationEvent conversationEvent) {
+        super(baseParams);
         mConversationEvent = requireNonNull(conversationEvent);
     }
 
@@ -47,14 +49,13 @@ public final class ConversationHint extends ContextHint {
      *
      * @hide
      */
-    ConversationHint(@NonNull Bundle bundle) {
-        super(bundle);
-        final Bundle hintData = bundle.getBundle(KEY_HINT_DATA);
-        requireNonNull(hintData, "Bundle must contain hint data");
-        mConversationEvent =
-                ConversationEvent.fromBundle(
-                        requireNonNull(hintData.getBundle(KEY_CONVERSATION_EVENT)));
-        requireNonNull(mConversationEvent, "Bundle must contain conversation event");
+    ConversationHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
+        this(
+                baseParams,
+                requireNonNull(
+                        ConversationEvent.fromBundle(
+                                requireNonNull(bundle.getBundle(KEY_CONVERSATION_EVENT))),
+                        "Bundle must contain conversation event"));
     }
 
     /** @hide */
@@ -111,6 +112,7 @@ public final class ConversationHint extends ContextHint {
     /** Builder for {@link ConversationHint}. */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final ConversationEvent mConversationEvent;
 
         /**
@@ -121,10 +123,21 @@ public final class ConversationHint extends ContextHint {
             mConversationEvent = requireNonNull(conversationEvent);
         }
 
+        /**
+         * Adds a token to the resulting {@link ConversationHint}.
+         *
+         * @param token the token to add
+         */
+        @NonNull
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
+            return this;
+        }
+
         /** Creates the {@link ConversationHint}. */
         @NonNull
         public ConversationHint build() {
-            return new ConversationHint(mConversationEvent);
+            return new ConversationHint(mBaseBuilder.build(), mConversationEvent);
         }
     }
 }

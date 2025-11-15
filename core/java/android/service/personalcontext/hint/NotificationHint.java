@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 
 /**
  * A hint that contains a notification-related event.
@@ -37,8 +38,9 @@ public final class NotificationHint extends ContextHint {
      *
      * @hide
      */
-    NotificationHint(@NonNull NotificationEvent notificationEvent) {
-        super();
+    NotificationHint(
+            @NonNull ConstructorParams baseParams, @NonNull NotificationEvent notificationEvent) {
+        super(baseParams);
         mNotificationEvent = notificationEvent;
     }
 
@@ -47,11 +49,9 @@ public final class NotificationHint extends ContextHint {
      *
      * @hide
      */
-    NotificationHint(@NonNull Bundle bundle) {
-        super(bundle);
-        final Bundle hintData = bundle.getBundle(KEY_HINT_DATA);
-        requireNonNull(hintData, "Bundle must contain hint data");
-        mNotificationEvent = NotificationEvent.fromBundle(hintData);
+    NotificationHint(@NonNull ConstructorParams baseParams, @NonNull Bundle bundle) {
+        super(baseParams);
+        mNotificationEvent = NotificationEvent.fromBundle(bundle);
     }
 
     /** @hide */
@@ -100,6 +100,7 @@ public final class NotificationHint extends ContextHint {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private NotificationEvent mNotificationEvent;
 
         /**
@@ -112,11 +113,22 @@ public final class NotificationHint extends ContextHint {
         }
 
         /**
+         * Adds a token to the resulting {@link NotificationHint}.
+         *
+         * @param token the token to add
+         */
+        @NonNull
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
+            return this;
+        }
+
+        /**
          * @return the built {@link NotificationHint}.
          */
         @NonNull
         public NotificationHint build() {
-            return new NotificationHint(mNotificationEvent);
+            return new NotificationHint(mBaseBuilder.build(), mNotificationEvent);
         }
     }
 }

@@ -67,8 +67,10 @@ public class HintRefinerServiceTest {
 
     @Test
     public void testOnRefineList() throws RemoteException {
-        final List<ContextHint> inputHints = Arrays.asList(new BundleHint(), new BundleHint());
-        final List<ContextHint> outputHints = Arrays.asList(new BundleHint(), new BundleHint());
+        final List<ContextHint> inputHints = Arrays.asList(
+                new BundleHint.Builder().build(), new BundleHint.Builder().build());
+        final List<ContextHint> outputHints = Arrays.asList(
+                new BundleHint.Builder().build(), new BundleHint.Builder().build());
 
         doAnswer(invocation -> {
             assertThat(inputHints).containsExactlyElementsIn((List<?>) invocation.getArgument(0));
