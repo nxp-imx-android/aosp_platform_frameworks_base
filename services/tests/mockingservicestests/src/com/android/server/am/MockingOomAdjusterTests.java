@@ -567,10 +567,10 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_RunningInstrumentation() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
-        mProcessStateController.setActiveInstrumentation(app, mock(ActiveInstrumentation.class));
+        mProcessStateController.setHasActiveInstrumentation(app, true);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
-        mProcessStateController.setActiveInstrumentation(app, null);
+        mProcessStateController.setHasActiveInstrumentation(app, false);
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
@@ -1192,11 +1192,11 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertThatProcess(app).notHasCpuTimeCapability();
 
-        mProcessStateController.setActiveInstrumentation(app, mock(ActiveInstrumentation.class));
+        mProcessStateController.setHasActiveInstrumentation(app, true);
         updateOomAdj(app);
         assertThatProcess(app).hasCpuTimeCapability();
 
-        mProcessStateController.setActiveInstrumentation(app, null);
+        mProcessStateController.setHasActiveInstrumentation(app, false);
         updateOomAdj(app);
         assertThatProcess(app).notHasCpuTimeCapability();
     }
