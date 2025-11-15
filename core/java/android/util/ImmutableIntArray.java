@@ -29,21 +29,29 @@ public final class ImmutableIntArray implements Cloneable {
     private final int[] mValues;
 
     /**
-     * Creates a new instance from the current values in the given {@code source}.
+     * Creates a new instance from the current values in the given {@code array}.
      */
     public static ImmutableIntArray from(int[] array) {
         Objects.requireNonNull(array, "array cannot be null");
         return new ImmutableIntArray(array);
     }
 
+    /**
+     * Creates a new instance from the current values in the given {@code intArray}.
+     */
+    public static ImmutableIntArray from(IntArray intArray) {
+        Objects.requireNonNull(intArray, "intArray cannot be null");
+        return new ImmutableIntArray(intArray);
+    }
+
     private ImmutableIntArray(int[] array) {
-        if (array.length == 0) {
-            mValues = EmptyArray.INT;
-            return;
-        }
-        int size = array.length;
-        mValues = new int[size];
-        System.arraycopy(array, 0, mValues, 0, size);
+        mValues = (array.length == 0)
+                ? EmptyArray.INT
+                : Arrays.copyOf(array, array.length);
+    }
+
+    public ImmutableIntArray(IntArray intArray) {
+        mValues = intArray.toArray();
     }
 
     private ImmutableIntArray(ImmutableIntArray cloned) {
@@ -51,7 +59,7 @@ public final class ImmutableIntArray implements Cloneable {
     }
 
     /** Gets the size of the array. */
-    public int getSize() {
+    public int size() {
         return mValues.length;
     }
 
@@ -62,6 +70,11 @@ public final class ImmutableIntArray implements Cloneable {
      */
     public int get(int index) {
         return mValues[index];
+    }
+
+    /** Returns a new array with the contents of this {@code ImmutableIntArray}. */
+    public int[] toArray() {
+        return Arrays.copyOf(mValues, mValues.length);
     }
 
     @Override

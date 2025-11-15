@@ -43,6 +43,7 @@ import android.annotation.UserIdInt;
 import android.os.Handler;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.text.TextUtils;
+import android.util.ImmutableIntArray;
 import android.util.IntArray;
 import android.util.Log;
 
@@ -687,13 +688,13 @@ abstract class UserVisibilityMediatorTestCase extends ExpectableTestCase {
     }
 
     @Nullable
-    private IntArray getVisibleUsersOnDisplayIfFlagEnabled(String when, int displayId) {
+    private ImmutableIntArray getVisibleUsersOnDisplayIfFlagEnabled(String when, int displayId) {
         if (!mFlagCacheEnabled) {
             assertThrows(IllegalStateException.class, () -> mMediator.getVisibleUsers(displayId));
             return null;
         }
         String suffix = TextUtils.isEmpty(when) ? "" : " on " + when;
-        IntArray visibleUsers = mMediator.getVisibleUsers(displayId);
+        ImmutableIntArray visibleUsers = mMediator.getVisibleUsers(displayId);
         expectWithMessage("getVisibleUsers(%s)%s", displayId, suffix)
                 .that(visibleUsers)
                 .isNotNull();
@@ -701,7 +702,8 @@ abstract class UserVisibilityMediatorTestCase extends ExpectableTestCase {
     }
 
     protected void expectVisibleUsersOnDisplay(int displayId, @UserIdInt Integer... userIds) {
-        IntArray visibleUsers = getVisibleUsersOnDisplayIfFlagEnabled(/* when= */ "", displayId);
+        ImmutableIntArray visibleUsers =
+                getVisibleUsersOnDisplayIfFlagEnabled(/* when= */ "", displayId);
         if (visibleUsers == null) {
             return;
         }
@@ -718,7 +720,8 @@ abstract class UserVisibilityMediatorTestCase extends ExpectableTestCase {
 
     private void expectUserVisibleOnVisibleUsersForDisplay(String when, @UserIdInt int userId,
             int displayId) {
-        IntArray visibleUsersOnDisplay = getVisibleUsersOnDisplayIfFlagEnabled(when, displayId);
+        ImmutableIntArray visibleUsersOnDisplay = getVisibleUsersOnDisplayIfFlagEnabled(when,
+                displayId);
         if (visibleUsersOnDisplay == null) {
             return;
         }
@@ -746,7 +749,8 @@ abstract class UserVisibilityMediatorTestCase extends ExpectableTestCase {
 
     private void expectUserNotVisibleOnVisibleUsersForDisplay(String when, @UserIdInt int userId,
             int displayId) {
-        IntArray visibleUsersOnDisplay = getVisibleUsersOnDisplayIfFlagEnabled(when, displayId);
+        ImmutableIntArray visibleUsersOnDisplay =
+                getVisibleUsersOnDisplayIfFlagEnabled(when, displayId);
         if (visibleUsersOnDisplay == null) {
             return;
         }
