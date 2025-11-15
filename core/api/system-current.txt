@@ -4161,6 +4161,7 @@ package android.content {
 
   public class ContentProviderClient implements java.lang.AutoCloseable {
     method @RequiresPermission(android.Manifest.permission.REMOVE_TASKS) public void setDetectNotResponding(long);
+    method @FlaggedApi("android.content.flags.enable_content_provider_client_anr_on_cancel") @RequiresPermission(android.Manifest.permission.REMOVE_TASKS) public void setDetectNotRespondingOnCancel(long, long);
   }
 
   public abstract class ContentResolver {
