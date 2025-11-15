@@ -20852,6 +20852,7 @@ package android.hardware.camera2 {
     field @NonNull public static final android.hardware.camera2.CaptureRequest.Key<java.lang.Float> LENS_FOCAL_LENGTH;
     field @NonNull public static final android.hardware.camera2.CaptureRequest.Key<java.lang.Float> LENS_FOCUS_DISTANCE;
     field @NonNull public static final android.hardware.camera2.CaptureRequest.Key<java.lang.Integer> LENS_OPTICAL_STABILIZATION_MODE;
+    field @FlaggedApi("com.android.internal.camera.flags.logical_multi_camera_additional_results") @NonNull public static final android.hardware.camera2.CaptureRequest.Key<java.lang.Boolean> LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS;
     field @NonNull public static final android.hardware.camera2.CaptureRequest.Key<java.lang.Integer> NOISE_REDUCTION_MODE;
     field @NonNull public static final android.hardware.camera2.CaptureRequest.Key<java.lang.Float> REPROCESS_EFFECTIVE_EXPOSURE_FACTOR;
     field @NonNull public static final android.hardware.camera2.CaptureRequest.Key<android.graphics.Rect> SCALER_CROP_REGION;
@@ -20963,6 +20964,7 @@ package android.hardware.camera2 {
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> LENS_STATE;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.String> LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_ID;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<android.graphics.Rect> LOGICAL_MULTI_CAMERA_ACTIVE_PHYSICAL_SENSOR_CROP_REGION;
+    field @FlaggedApi("com.android.internal.camera.flags.logical_multi_camera_additional_results") @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Boolean> LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Integer> NOISE_REDUCTION_MODE;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Float> REPROCESS_EFFECTIVE_EXPOSURE_FACTOR;
     field @NonNull public static final android.hardware.camera2.CaptureResult.Key<java.lang.Byte> REQUEST_PIPELINE_DEPTH;
