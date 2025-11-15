@@ -22,8 +22,8 @@ import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
-import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
+import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
 
@@ -43,6 +43,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.graphics.PointF;
+import android.gui.StalledTransactionInfo;
 import android.hardware.SensorPrivacyManager;
 import android.hardware.SensorPrivacyManager.Sensors;
 import android.hardware.SensorPrivacyManagerInternal;
@@ -144,6 +145,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.InputMethodSubtypeHandle;
 import com.android.internal.os.SomeArgs;
+import com.android.internal.os.TimeoutRecord;
 import com.android.internal.policy.IShortcutService;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.protolog.ProtoLogGroup;
@@ -160,6 +162,7 @@ import com.android.server.input.data.InputDataStore;
 import com.android.server.input.debug.FocusEventDebugView;
 import com.android.server.input.debug.TouchpadDebugViewController;
 import com.android.server.policy.WindowManagerPolicy;
+import com.android.server.utils.AnrTimer;
 
 import libcore.io.IoUtils;
 
@@ -2630,16 +2633,41 @@ public class InputManagerService extends IInputManager.Stub
 
     // Native callback.
     @SuppressWarnings("unused")
-    private void notifyNoFocusedWindowAnr(InputApplicationHandle inputApplicationHandle) {
-        mWindowManagerCallbacks.notifyNoFocusedWindowAnr(inputApplicationHandle);
+    private void notifyNoFocusedWindowAnr(
+            InputApplicationHandle inputApplicationHandle,
+            int eventId,
+            long eventTimeNs,
+            long timeoutDurationMs) {
+        TimeoutRecord timeoutRecord =
+                TimeoutRecord.forInputDispatchNoFocusedWindow(
+                        timeoutMessage(
+                                OptionalInt.empty(), "Application does not have a focused window"));
+
+        if (android.app.Flags.includeAnrInfo()) {
+            setAnrInfoInTimeoutRecord(timeoutRecord, eventId, eventTimeNs, timeoutDurationMs);
+        }
+        mWindowManagerCallbacks.notifyNoFocusedWindowAnr(inputApplicationHandle, timeoutRecord);
     }
 
     // Native callback
     @SuppressWarnings("unused")
-    private void notifyWindowUnresponsive(IBinder token, int pid, boolean isPidValid,
-            String reason) {
-        mWindowManagerCallbacks.notifyWindowUnresponsive(token,
-                isPidValid ? OptionalInt.of(pid) : OptionalInt.empty(), reason);
+    private void notifyWindowUnresponsive(
+            IBinder token,
+            int pid,
+            boolean isPidValid,
+            String reason,
+            int eventId,
+            long eventTimeNs,
+            long timeoutDurationMs) {
+        OptionalInt optionalPid = isPidValid ? OptionalInt.of(pid) : OptionalInt.empty();
+        TimeoutRecord timeoutRecord =
+                TimeoutRecord.forInputDispatchWindowUnresponsive(
+                        timeoutMessage(optionalPid, reason));
+
+        if (android.app.Flags.includeAnrInfo()) {
+            setAnrInfoInTimeoutRecord(timeoutRecord, eventId, eventTimeNs, timeoutDurationMs);
+        }
+        mWindowManagerCallbacks.notifyWindowUnresponsive(token, optionalPid, timeoutRecord);
     }
 
     // Native callback
@@ -3545,17 +3573,20 @@ public class InputManagerService extends IInputManager.Stub
          * Notify the window manager about the focused application that does not have any focused
          * window and is unable to respond to focused input events.
          */
-        void notifyNoFocusedWindowAnr(InputApplicationHandle applicationHandle);
+        void notifyNoFocusedWindowAnr(
+                InputApplicationHandle applicationHandle, @NonNull TimeoutRecord timeoutRecord);
 
         /**
          * Notify the window manager about a window that is unresponsive.
          *
          * @param token the token that can be used to look up the window
          * @param pid the pid of the window owner, if known
-         * @param reason the reason why this connection is unresponsive
+         * @param timeoutRecord a record containing details about the ANR event.
          */
-        void notifyWindowUnresponsive(@NonNull IBinder token, @NonNull OptionalInt pid,
-                @NonNull String reason);
+        void notifyWindowUnresponsive(
+                @NonNull IBinder token,
+                @NonNull OptionalInt pid,
+                @NonNull TimeoutRecord timeoutRecord);
 
         /**
          * Notify the window manager about a window that has become responsive.
@@ -4467,6 +4498,40 @@ public class InputManagerService extends IInputManager.Stub
                  MotionEvent.AXIS_RY -> true;
             default -> false;
         };
+    }
+
+    private String timeoutMessage(OptionalInt pid, String reason) {
+        String message =
+                (reason == null)
+                        ? "Input dispatching timed out."
+                        : TextUtils.formatSimple("Input dispatching timed out (%s).", reason);
+        if (pid.isEmpty()) {
+            return message;
+        }
+        StalledTransactionInfo stalledTransactionInfo =
+                SurfaceControl.getStalledTransactionInfo(pid.getAsInt());
+        if (stalledTransactionInfo == null) {
+            return message;
+        }
+        return String.format(
+                "%s Buffer processing for the associated surface is stuck due to an "
+                        + "unsignaled fence (window=%s, bufferId=0x%016X, frameNumber=%s). This "
+                        + "potentially indicates a GPU hang.",
+                message,
+                stalledTransactionInfo.layerName,
+                stalledTransactionInfo.bufferId,
+                stalledTransactionInfo.frameNumber);
+    }
+
+    /**
+     * Creates a {@link AnrTimer.ExpiredTimer} object which store information about the ANR
+     * information and attach it to the timeout record to propagate ANR details.
+     */
+    private void setAnrInfoInTimeoutRecord(
+            TimeoutRecord timeoutRecord, int anrId, long eventTimeNs, long timeoutDurationMs) {
+        AnrTimer.ExpiredTimer expiredTimer =
+                new AnrTimer.ExpiredTimer(anrId, eventTimeNs / 1000_000, timeoutDurationMs);
+        timeoutRecord.setExpiredTimer(expiredTimer);
     }
 
     interface KeyboardBacklightControllerInterface {
