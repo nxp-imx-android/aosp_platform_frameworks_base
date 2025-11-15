@@ -34,6 +34,7 @@ import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigProvider
 import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigTestBuilder
 import com.android.systemui.qs.tiles.base.shared.model.QSTileState
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig
+import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileDataInteractor
 import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileIcon
@@ -72,6 +73,7 @@ class MobileDataTileTest : SysuiTestCase() {
     @Mock private lateinit var dataInteractor: MobileDataTileDataInteractor
     @Mock private lateinit var tileMapper: MobileDataTileMapper
     @Mock private lateinit var userActionInteractor: MobileDataTileUserActionInteractor
+    @Mock private lateinit var internetDetailsViewModelFactory: InternetDetailsViewModel.Factory
 
     private lateinit var testableLooper: TestableLooper
     private lateinit var underTest: MobileDataTile
@@ -124,6 +126,7 @@ class MobileDataTileTest : SysuiTestCase() {
                 dataInteractor,
                 tileMapper,
                 userActionInteractor,
+                internetDetailsViewModelFactory,
             )
 
         underTest.initialize()
