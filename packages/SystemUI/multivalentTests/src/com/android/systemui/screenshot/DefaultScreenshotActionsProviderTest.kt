@@ -27,6 +27,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags as SysuiFlags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.res.R
+import com.android.systemui.screenshot.ui.viewmodel.ActionButtonAppearance
 import com.android.systemui.screenshot.ui.viewmodel.PreviewAction
 import com.android.systemui.shared.Flags
 import com.google.common.truth.Truth.assertThat
@@ -39,6 +41,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -69,6 +72,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     private lateinit var actionsProvider: ScreenshotActionsProvider
 
     @Test
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun previewActionAccessed_beforeScreenshotCompleted_doesNothing() {
         actionsProvider = createActionsProvider()
 
@@ -79,20 +83,19 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun actionButtonsAccessed_beforeScreenshotCompleted_doesNothing() {
         actionsProvider = createActionsProvider()
 
         val actionButtonCaptor = argumentCaptor<() -> Unit>()
         verify(actionsCallback, times(2))
             .provideActionButton(any(), any(), actionButtonCaptor.capture())
-        val firstAction = actionButtonCaptor.firstValue
-        val secondAction = actionButtonCaptor.secondValue
-        firstAction.invoke()
-        secondAction.invoke()
+        actionButtonCaptor.allValues.forEach { it.invoke() }
         verifyNoMoreInteractions(actionExecutor)
     }
 
     @Test
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun actionAccessed_withResult_launchesIntent() {
         actionsProvider = createActionsProvider()
 
@@ -112,6 +115,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_SCREENSHOT_CONTEXT_URL)
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun shareAction_includesAssistContentUri() {
         actionsProvider = createActionsProvider()
 
@@ -136,6 +140,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun actionAccessed_whilePending_launchesMostRecentAction() {
         actionsProvider = createActionsProvider()
 
@@ -157,8 +162,11 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         assertThat(intentCaptor.firstValue.action).isEqualTo(Intent.ACTION_EDIT)
     }
 
-    @DisableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
     @Test
+    @DisableFlags(
+        SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE,
+        SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+    )
     fun scrollChipClicked_callsOnClick_legacy() {
         actionsProvider = createActionsProvider()
 
@@ -173,8 +181,9 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         verify(onScrollClick).invoke(Uri.EMPTY)
     }
 
-    @EnableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
     @Test
+    @EnableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun scrollChipClicked_callsOnClick() {
         actionsProvider = createActionsProvider()
 
@@ -191,6 +200,7 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun scrollChipClicked_afterInvalidate_doesNothing() {
         actionsProvider = createActionsProvider()
 
@@ -206,8 +216,11 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         verify(onScrollClick, never()).invoke(any())
     }
 
-    @DisableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
     @Test
+    @DisableFlags(
+        SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE,
+        SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE,
+    )
     fun scrollChipClicked_afterUpdate_runsNewAction_legacy() {
         actionsProvider = createActionsProvider()
 
@@ -227,8 +240,9 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
         verify(onScrollClick, never()).invoke(any())
     }
 
-    @EnableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
     @Test
+    @EnableFlags(SysuiFlags.FLAG_DELETE_AFTER_SCROLL_CAPTURE)
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
     fun scrollChipClicked_afterUpdate_runsNewAction() {
         actionsProvider = createActionsProvider()
 
@@ -247,6 +261,69 @@ class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
 
         verify(onScrollClick2).invoke(validResult.uri)
         verify(onScrollClick, never()).invoke(any())
+    }
+
+    @Test
+    @DisableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun copyToClipboardAction_whenFeatureFlagDisabled_doesNotIncludeButton() {
+        actionsProvider = createActionsProvider()
+
+        val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
+        verify(actionsCallback, atLeastOnce())
+            .provideActionButton(actionButtonAppearanceCaptor.capture(), any(), any())
+
+        val buttonDescriptions = actionButtonAppearanceCaptor.allValues.map { it.description }
+        assertThat(buttonDescriptions)
+            .doesNotContain(context.getString(R.string.screenshot_copy_description))
+    }
+
+    @Test
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun copyToClipboardAction_whenFeatureFlagEnabled_andNotLargeScreen_doesNotIncludeButton() {
+        overrideResource(R.bool.config_enableLargeScreenScreencapture, false)
+        actionsProvider = createActionsProvider()
+
+        val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
+        verify(actionsCallback, atLeastOnce())
+            .provideActionButton(actionButtonAppearanceCaptor.capture(), any(), any())
+
+        val buttonDescriptions = actionButtonAppearanceCaptor.allValues.map { it.description }
+        assertThat(buttonDescriptions)
+            .doesNotContain(context.getString(R.string.screenshot_copy_description))
+    }
+
+    @Test
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun copyToClipboardAction_whenFeatureFlagEnabled_andIsLargeScreen_includesButton() {
+        overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
+        actionsProvider = createActionsProvider()
+
+        val actionButtonAppearanceCaptor = argumentCaptor<ActionButtonAppearance>()
+        verify(actionsCallback, atLeastOnce())
+            .provideActionButton(actionButtonAppearanceCaptor.capture(), any(), any())
+
+        val buttonDescriptions = actionButtonAppearanceCaptor.allValues.map { it.description }
+        assertThat(buttonDescriptions)
+            .contains(context.getString(R.string.screenshot_copy_description))
+    }
+
+    @Test
+    @EnableFlags(SysuiFlags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun copyToClipboardAction_copiesToClipboard() {
+        overrideResource(R.bool.config_enableLargeScreenScreencapture, true)
+        actionsProvider = createActionsProvider()
+        actionsProvider.setCompletedScreenshot(validResult)
+
+        val actionButtonCaptor = argumentCaptor<() -> Unit>()
+        // share, edit, copy
+        verify(actionsCallback, times(3))
+            .provideActionButton(any(), any(), actionButtonCaptor.capture())
+        val copyAction = actionButtonCaptor.thirdValue
+        copyAction.invoke()
+
+        val uriCaptor = argumentCaptor<Uri>()
+        verify(actionExecutor).copyScreenshotToClipboard(uriCaptor.capture())
+        assertThat(uriCaptor.firstValue).isEqualTo(validResult.uri)
     }
 
     private fun createActionsProvider(): ScreenshotActionsProvider {
