@@ -10,6 +10,13 @@ flag {
 }
 
 flag {
+    name: "enable_content_provider_client_anr_on_cancel"
+    namespace: "backstage_power"
+    description: "Enables the ContentProviderClient.setDetectNotResponding system API variant that set timeout on cancellation."
+    bug: "457843307"
+}
+
+flag {
     name: "stop_voice_command"
     is_exported: true
     namespace: "bluetooth"
