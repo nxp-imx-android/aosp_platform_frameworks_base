@@ -29,6 +29,7 @@ import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_C
 import static android.view.accessibility.AccessibilityNodeInfo.EXTRA_DATA_TEXT_CHARACTER_LOCATION_IN_WINDOW_KEY;
 import static android.view.accessibility.Flags.FLAG_A11Y_CHARACTER_IN_WINDOW_API;
 import static android.view.accessibility.Flags.a11yCharacterInWindowApi;
+import static android.view.accessibility.Flags.a11yExtraRenderingInfoColorAdditions;
 import static android.view.accessibility.Flags.a11yTextChangeTypesApi;
 import static android.view.inputmethod.CursorAnchorInfo.FLAG_HAS_VISIBLE_REGION;
 import static android.view.inputmethod.EditorInfo.STYLUS_HANDWRITING_ENABLED_ANDROIDX_EXTRAS_KEY;
@@ -91,6 +92,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.fonts.FontStyle;
 import android.graphics.fonts.FontVariationAxis;
@@ -14430,6 +14432,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     @Override
     public void addExtraDataToAccessibilityNodeInfo(
             AccessibilityNodeInfo info, String extraDataKey, Bundle arguments) {
+        super.addExtraDataToAccessibilityNodeInfo(info, extraDataKey, arguments);
         boolean isCharacterLocationKey = extraDataKey.equals(
                 EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY);
         boolean isCharacterLocationInWindowKey = (a11yCharacterInWindowApi() && extraDataKey.equals(
@@ -14469,12 +14472,36 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             return;
         }
         if (extraDataKey.equals(AccessibilityNodeInfo.EXTRA_DATA_RENDERING_INFO_KEY)) {
-            final AccessibilityNodeInfo.ExtraRenderingInfo extraRenderingInfo =
-                    AccessibilityNodeInfo.ExtraRenderingInfo.obtain();
-            extraRenderingInfo.setLayoutSize(getLayoutParams().width, getLayoutParams().height);
-            extraRenderingInfo.setTextSizeInPx(getTextSize());
-            extraRenderingInfo.setTextSizeUnit(getTextSizeUnit());
-            info.setExtraRenderingInfo(extraRenderingInfo);
+            if (a11yExtraRenderingInfoColorAdditions()) {
+                AccessibilityNodeInfo.ExtraRenderingInfo original = info.getExtraRenderingInfo();
+                final AccessibilityNodeInfo.ExtraRenderingInfo.Builder builder =
+                        original == null
+                                ? new AccessibilityNodeInfo.ExtraRenderingInfo.Builder()
+                                : new AccessibilityNodeInfo.ExtraRenderingInfo.Builder(original);
+                builder.setLayoutSize(getLayoutParams().width, getLayoutParams().height)
+                        .setTextSizeInPx(getTextSize())
+                        .setTextSizeUnit(getTextSizeUnit())
+                        .setTextColor(getCurrentTextColor());
+
+                if (mHintTextColor != null) {
+                    builder.setHintTextColor(mCurHintTextColor);
+                }
+
+                ColorStateList linkColors = getLinkTextColors();
+                if (linkColors != null) {
+                    builder.setLinkTextColor(
+                            linkColors.getColorForState(
+                                    getDrawableState(), linkColors.getDefaultColor()));
+                }
+                info.setExtraRenderingInfo(builder.build());
+            } else {
+                final AccessibilityNodeInfo.ExtraRenderingInfo extraRenderingInfo =
+                        AccessibilityNodeInfo.ExtraRenderingInfo.obtain();
+                extraRenderingInfo.setLayoutSize(getLayoutParams().width, getLayoutParams().height);
+                extraRenderingInfo.setTextSizeInPx(getTextSize());
+                extraRenderingInfo.setTextSizeUnit(getTextSizeUnit());
+                info.setExtraRenderingInfo(extraRenderingInfo);
+            }
         }
     }
 
