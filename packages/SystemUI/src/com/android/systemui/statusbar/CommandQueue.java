@@ -28,6 +28,7 @@ import android.app.StatusBarManager.Disable2Flags;
 import android.app.StatusBarManager.DisableFlags;
 import android.app.StatusBarManager.WindowType;
 import android.app.StatusBarManager.WindowVisibleState;
+import android.app.motioncues.MotionCuesSettings;
 import android.content.ComponentName;
 import android.content.Context;
 import android.graphics.drawable.Icon;
@@ -190,6 +191,8 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final int MSG_DISPLAY_REMOVE_SYSTEM_DECORATIONS = 85 << MSG_SHIFT;
     private static final int MSG_DISABLE_ALL  = 86 << MSG_SHIFT;
     private static final int MSG_SHOW_GLOBAL_ACTIONS = 87 << MSG_SHIFT;
+    private static final int MSG_START_MOTION_CUES = 88 << MSG_SHIFT;
+    private static final int MSG_END_MOTION_CUES = 89 << MSG_SHIFT;
 
     public static final int FLAG_EXCLUDE_NONE = 0;
     public static final int FLAG_EXCLUDE_SEARCH_PANEL = 1 << 0;
@@ -596,6 +599,17 @@ public class CommandQueue extends IStatusBar.Stub implements
          * @see IStatusBar#moveFocusedTaskToDesktop(int)
          */
         default void moveFocusedTaskToDesktop(int displayId) {}
+
+        /**
+         * @see IStatusBar#startMotionCuesSession(ComponentName, MotionCuesSettings)
+         */
+        default void startMotionCuesSession(
+                ComponentName componentName, MotionCuesSettings motionCuesSettings) {}
+
+        /**
+         * @see IStatusBar#endMotionCuesSession()
+         */
+        default void endMotionCuesSession() {}
     }
 
     @VisibleForTesting
@@ -1563,6 +1577,20 @@ public class CommandQueue extends IStatusBar.Stub implements
         mHandler.obtainMessage(MSG_ENTER_DESKTOP, args).sendToTarget();
     }
 
+    @Override
+    public void startMotionCuesSession(
+            ComponentName componentName, MotionCuesSettings motionCuesSettings)
+            throws RemoteException {
+        SomeArgs args = SomeArgs.obtain();
+        args.arg1 = componentName;
+        args.arg2 = motionCuesSettings;
+        mHandler.obtainMessage(MSG_START_MOTION_CUES, args).sendToTarget();
+    }
+
+    @Override
+    public void endMotionCuesSession() throws RemoteException {
+        mHandler.obtainMessage(MSG_END_MOTION_CUES).sendToTarget();
+    }
 
     private final class H extends Handler {
         private H(Looper l) {
@@ -2111,6 +2139,20 @@ public class CommandQueue extends IStatusBar.Stub implements
                     }
                     break;
                 }
+                case MSG_START_MOTION_CUES:
+                    args = (SomeArgs) msg.obj;
+                    ComponentName motionCuesComponentName = (ComponentName) args.arg1;
+                    MotionCuesSettings motionCuesSettings = (MotionCuesSettings) args.arg2;
+                    for (Callbacks callback : mCallbacks) {
+                        callback.startMotionCuesSession(
+                                motionCuesComponentName, motionCuesSettings);
+                    }
+                    break;
+                case MSG_END_MOTION_CUES:
+                    for (Callbacks callback : mCallbacks) {
+                        callback.endMotionCuesSession();
+                    }
+                    break;
             }
         }
     }

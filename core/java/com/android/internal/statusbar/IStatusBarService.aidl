@@ -16,6 +16,7 @@
 
 package com.android.internal.statusbar;
 
+import android.app.motioncues.MotionCuesSettings;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.graphics.drawable.Icon;
@@ -249,4 +250,14 @@ interface IStatusBarService
 
     /** Shows rear display educational dialog */
     void showRearDisplayDialog(int currentBaseState);
+
+    /** Directs the system to bind to the given component and start a motion cues session.
+    *
+    * @param componentName the component to bind to.
+    * @param motionCuesSettings the initial settings for motion cues.
+    */
+    void startMotionCuesSession(in ComponentName componentName, in MotionCuesSettings motionCuesSettings);
+
+    /** Terminates the started motion cues session */
+    void endMotionCuesSession();
 }

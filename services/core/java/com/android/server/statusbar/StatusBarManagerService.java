@@ -17,6 +17,7 @@
 package com.android.server.statusbar;
 
 import static android.Manifest.permission.CONTROL_DEVICE_STATE;
+import static android.Manifest.permission.DRAW_MOTION_CUES;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.app.StatusBarManager.DISABLE2_GLOBAL_ACTIONS;
@@ -49,6 +50,8 @@ import android.app.ITransientNotificationCallback;
 import android.app.Notification;
 import android.app.StatusBarManager;
 import android.app.compat.CompatChanges;
+import android.app.motioncues.MotionCuesService;
+import android.app.motioncues.MotionCuesSettings;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.EnabledSince;
@@ -1790,6 +1793,10 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
                 || mContext.checkCallingPermission(INTERACT_ACROSS_USERS) == PERMISSION_GRANTED;
     }
 
+    private void enforceMotionCuesDrawingControl() {
+        mContext.enforceCallingOrSelfPermission(DRAW_MOTION_CUES, "StatusBarManagerService");
+    }
+
     /**
      *  For targetSdk S+ we require STATUS_BAR. For targetSdk < S, we only require EXPAND_STATUS_BAR
      *  but also require that it falls into one of the allowed use-cases to lock down abuse vector.
@@ -2927,6 +2934,58 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             tp.go(fd);
         } catch (Throwable t) {
             Slog.e(TAG, "Error sending command to IStatusBar", t);
+        }
+    }
+
+    /**
+     * Directs the system to bind to the given component and start a motion cues session.
+     *
+     * <p>A motion cues session is a period during which a designated service provides data
+     * to draw visual cues on the screen. These cues are typically rendered as shapes
+     * overlaying the current application. The primary goal is to help alleviate symptoms of
+     * motion sickness while in a moving vehicle by matching the cues to the vehicle's motion.
+     *
+     * <p>When a session is active, the service specified by {@code componentName} will send
+     * updates through a callback to SystemUI to render these cues.
+     *
+     * @param componentName The ComponentName of the {@link MotionCuesService} implementation for
+     *                      SystemUi to bind to that will provide the motion cue events.
+     * @param motionCuesSettings The initial {@link MotionCuesSettings} to configure the appearance
+     *                           and layout of the motion cues.
+     */
+    @Override
+    public void startMotionCuesSession(
+            @NonNull ComponentName componentName, @NonNull MotionCuesSettings motionCuesSettings) {
+        enforceMotionCuesDrawingControl();
+        IStatusBar bar = mBar;
+        if (bar != null) {
+            try {
+                bar.startMotionCuesSession(componentName, motionCuesSettings);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "startMotionCuesSession", e);
+            }
+        }
+    }
+
+    /**
+     * Terminates the active motion cues session.
+     *
+     * <p>This method stops the rendering of any on-screen visual cues and unbinds the system
+     * from the {@link android.app.motioncues.MotionCuesService} instance that was
+     * previously started with {@link #startMotionCuesSession(ComponentName, MotionCuesSettings)}.
+     *
+     * <p>If no motion cues session is currently active, calling this method has no effect.
+     */
+    @Override
+    public void endMotionCuesSession() {
+        enforceMotionCuesDrawingControl();
+        IStatusBar bar = mBar;
+        if (bar != null) {
+            try {
+                bar.endMotionCuesSession();
+            } catch (RemoteException e) {
+                Slog.e(TAG, "endMotionCuesSession", e);
+            }
         }
     }
 

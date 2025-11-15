@@ -17,6 +17,7 @@
 package com.android.internal.statusbar;
 
 import android.app.ITransientNotificationCallback;
+import android.app.motioncues.MotionCuesSettings;
 import android.content.ComponentName;
 import android.graphics.drawable.Icon;
 import android.graphics.Rect;
@@ -418,4 +419,14 @@ oneway interface IStatusBar
     * @param displayId the id of the current display.
     */
     void moveFocusedTaskToDesktop(int displayId);
+
+    /** Directs the system to bind to the given component and start a motion cues session.
+    *
+    * @param componentName the component to bind to.
+    * @param motionCuesSettings the initial settings for motion cues.
+    */
+    void startMotionCuesSession(in ComponentName componentName, in MotionCuesSettings motionCuesSettings);
+
+    /** Terminates the started motion cues session */
+    void endMotionCuesSession();
 }
