@@ -56679,6 +56679,7 @@ package android.view.accessibility {
     method public android.view.accessibility.AccessibilityNodeInfo.RangeInfo getRangeInfo();
     method @FlaggedApi("android.view.accessibility.a11y_selection_api") @Nullable public android.view.accessibility.AccessibilityNodeInfo.Selection getSelection();
     method @Nullable public CharSequence getStateDescription();
+    method @FlaggedApi("android.view.accessibility.a11y_math_api") @Nullable public android.view.accessibility.AccessibilityNodeInfo.StructuredDataInfo getStructuredDataInfo();
     method @FlaggedApi("android.view.accessibility.supplemental_description") @Nullable public CharSequence getSupplementalDescription();
     method public CharSequence getText();
     method public int getTextSelectionEnd();
@@ -56792,6 +56793,7 @@ package android.view.accessibility {
     method public void setSource(android.view.View);
     method public void setSource(android.view.View, int);
     method public void setStateDescription(@Nullable CharSequence);
+    method @FlaggedApi("android.view.accessibility.a11y_math_api") public void setStructuredDataInfo(@Nullable android.view.accessibility.AccessibilityNodeInfo.StructuredDataInfo);
     method @FlaggedApi("android.view.accessibility.supplemental_description") public void setSupplementalDescription(@Nullable CharSequence);
     method public void setText(CharSequence);
     method public void setTextEntryKey(boolean);
@@ -57027,6 +57029,37 @@ package android.view.accessibility {
     method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @NonNull public android.view.accessibility.AccessibilityNodeInfo.ExtraRenderingInfo.Builder setTextSizeUnit(int);
   }
 
+  @FlaggedApi("android.view.accessibility.a11y_math_api") public static final class AccessibilityNodeInfo.MathInfo extends android.view.accessibility.AccessibilityNodeInfo.StructuredDataInfo implements android.os.Parcelable {
+    ctor public AccessibilityNodeInfo.MathInfo(@NonNull String);
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.view.accessibility.AccessibilityNodeInfo.MathInfo> CREATOR;
+    field public static final String MATH_ATTRIBUTE_ARG = "arg";
+    field public static final String MATH_ATTRIBUTE_INTENT = "intent";
+    field public static final String MATH_TAG_FRACTION = "mfrac";
+    field public static final String MATH_TAG_IDENTIFIER = "mi";
+    field public static final String MATH_TAG_MATH = "math";
+    field public static final String MATH_TAG_MULTISCRIPTS = "mmultiscripts";
+    field public static final String MATH_TAG_NONE_SCRIPT = "none";
+    field public static final String MATH_TAG_NUMBER = "mn";
+    field public static final String MATH_TAG_OPERATOR = "mo";
+    field public static final String MATH_TAG_OVER = "mover";
+    field public static final String MATH_TAG_PRESCRIPT_DELIMITER = "mprescripts";
+    field public static final String MATH_TAG_ROOT = "mroot";
+    field public static final String MATH_TAG_ROW = "mrow";
+    field public static final String MATH_TAG_SQUARE_ROOT = "msqrt";
+    field public static final String MATH_TAG_STRING_LITERAL = "ms";
+    field public static final String MATH_TAG_SUB = "msub";
+    field public static final String MATH_TAG_SUB_SUP = "msubsup";
+    field public static final String MATH_TAG_SUP = "msup";
+    field public static final String MATH_TAG_TABLE = "mtable";
+    field public static final String MATH_TAG_TABLE_CELL = "mtd";
+    field public static final String MATH_TAG_TABLE_ROW = "mtr";
+    field public static final String MATH_TAG_TEXT = "mtext";
+    field public static final String MATH_TAG_UNDER = "munder";
+    field public static final String MATH_TAG_UNDER_OVER = "munderover";
+  }
+
   public static final class AccessibilityNodeInfo.RangeInfo {
     ctor public AccessibilityNodeInfo.RangeInfo(int, float, float, float);
     method public float getCurrent();
@@ -57059,6 +57092,14 @@ package android.view.accessibility {
     method public int getOffset();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.view.accessibility.AccessibilityNodeInfo.SelectionPosition> CREATOR;
+  }
+
+  @FlaggedApi("android.view.accessibility.a11y_math_api") public abstract static class AccessibilityNodeInfo.StructuredDataInfo {
+    method public void addAttribute(@NonNull String, @NonNull String);
+    method @Nullable public String getAttribute(@NonNull String);
+    method @NonNull public java.util.Map<java.lang.String,java.lang.String> getAttributes();
+    method @NonNull public String getTag();
+    method public void removeAttribute(@NonNull String);
   }
 
   public static final class AccessibilityNodeInfo.TouchDelegateInfo implements android.os.Parcelable {

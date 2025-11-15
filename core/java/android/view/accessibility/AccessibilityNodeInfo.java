@@ -29,6 +29,7 @@ import android.annotation.FloatRange;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.StringDef;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -1200,6 +1201,8 @@ public class AccessibilityNodeInfo implements Parcelable {
     private CollectionItemInfo mCollectionItemInfo;
 
     private TouchDelegateInfo mTouchDelegateInfo;
+
+    private StructuredDataInfo mStructuredDataInfo;
 
     private ExtraRenderingInfo mExtraRenderingInfo;
 
@@ -3234,6 +3237,35 @@ public class AccessibilityNodeInfo implements Parcelable {
     }
 
     /**
+     * Gets additional structured data properties of this node. This is only populated for nodes
+     * that offer additional structured data, like a mathematical expression.
+     *
+     * @return A concrete subclass of {@link StructuredDataInfo} representing the type and
+     *         additional structured data for this node, or {@code null} if this node does not have
+     *         additional structured data attached.
+     * @see #setStructuredDataInfo(StructuredDataInfo)
+     */
+    @FlaggedApi(Flags.FLAG_A11Y_MATH_API)
+    @Nullable
+    public StructuredDataInfo getStructuredDataInfo() {
+        return mStructuredDataInfo;
+    }
+
+    /**
+     * Sets additional structured data properties of this node, such as for a mathematical
+     * expression.
+     *
+     * @param info The {@link StructuredDataInfo} object (e.g., an instance of {@link MathInfo})
+     *             describing the node.
+     * @see #getStructuredDataInfo()
+     */
+    @FlaggedApi(Flags.FLAG_A11Y_MATH_API)
+    public void setStructuredDataInfo(@Nullable StructuredDataInfo info) {
+        enforceNotSealed();
+        mStructuredDataInfo = info;
+    }
+
+    /**
      * Sets the range info if this node is a range.
      * <p>
      *   <strong>Note:</strong> Cannot be called from an
@@ -5003,6 +5035,10 @@ public class AccessibilityNodeInfo implements Parcelable {
             nonDefaultFields |= bitAt(fieldIndex);
         }
         fieldIndex++;
+        if (!Objects.equals(mStructuredDataInfo, DEFAULT.mStructuredDataInfo)) {
+            nonDefaultFields |= bitAt(fieldIndex);
+        }
+        fieldIndex++;
         if (mChecked != DEFAULT.mChecked) {
             nonDefaultFields |= bitAt(fieldIndex);
         }
@@ -5193,6 +5229,11 @@ public class AccessibilityNodeInfo implements Parcelable {
             mSelection.writeToParcel(parcel, flags);
         }
         if (isBitSet(nonDefaultFields, fieldIndex++)) {
+            if (mStructuredDataInfo instanceof Parcelable) {
+                ((Parcelable) mStructuredDataInfo).writeToParcel(parcel, flags);
+            }
+        }
+        if (isBitSet(nonDefaultFields, fieldIndex++)) {
             parcel.writeInt(mChecked);
         }
         if (isBitSet(nonDefaultFields, fieldIndex++)) {
@@ -5330,6 +5371,12 @@ public class AccessibilityNodeInfo implements Parcelable {
                         new Selection(
                                 new SelectionPosition(sps.mSourceNodeId, sps.getOffset()),
                                 new SelectionPosition(spe.mSourceNodeId, spe.getOffset()));
+            }
+        }
+
+        if (Flags.a11yMathApi()) {
+            if (other.mStructuredDataInfo instanceof MathInfo) {
+                mStructuredDataInfo = new MathInfo((MathInfo) other.mStructuredDataInfo);
             }
         }
     }
@@ -5511,6 +5558,10 @@ public class AccessibilityNodeInfo implements Parcelable {
         }
         if (isBitSet(nonDefaultFields, fieldIndex++)) {
             mSelection = Selection.CREATOR.createFromParcel(parcel);
+        }
+        if (isBitSet(nonDefaultFields, fieldIndex++)) {
+            // TODO(460637464): Support polymorphism.
+            mStructuredDataInfo = MathInfo.CREATOR.createFromParcel(parcel);
         }
         if (isBitSet(nonDefaultFields, fieldIndex++)) {
             mChecked = parcel.readInt();
@@ -5801,6 +5852,13 @@ public class AccessibilityNodeInfo implements Parcelable {
         builder.append("; visible: ").append(isVisibleToUser());
         builder.append("; actions: ").append(mActions);
         builder.append("; isTextSelectable: ").append(isTextSelectable());
+
+        if (mStructuredDataInfo != null) {
+            builder.append("; StructuredDataInfo: ").append(mStructuredDataInfo.getTag());
+            if (!mStructuredDataInfo.getAttributes().isEmpty()) {
+                builder.append(", Attributes: ").append(mStructuredDataInfo.getAttributes());
+            }
+        }
 
         return builder.toString();
     }
@@ -7984,6 +8042,360 @@ public class AccessibilityNodeInfo implements Parcelable {
                 }
             }
         }
+    }
+
+    /**
+     * An abstract base class for holding structured semantic information about a node.
+     * <p>
+     * This class provides a container for a "tag" (a string constant representing the node's role)
+     * and a set of key-value "attributes" that provide additional properties. This object can be
+     * attached to an {@link AccessibilityNodeInfo} to give accessibility services rich, structured
+     * information about the node's meaning.
+     * <p>
+     * This class is intended to be subclassed for structured semantic standards.
+     *
+     * @see #getStructuredDataInfo()
+     * @see #setStructuredDataInfo(StructuredDataInfo)
+     */
+    @FlaggedApi(Flags.FLAG_A11Y_MATH_API)
+    public abstract static class StructuredDataInfo {
+        private final String mTag;
+        private Bundle mAttributes;
+
+        /**
+         * Creates a new StructuredDataInfo.
+         *
+         * @param tag The tag for this structured semantic information.
+         *
+         * @hide
+         */
+        protected StructuredDataInfo(@NonNull String tag) {
+            mTag = tag;
+        }
+
+        /**
+         * @return The internal attributes bundle.
+         *
+         * @hide
+         */
+        @NonNull
+        protected Bundle getAttributesBundle() {
+            if (mAttributes == null) {
+                mAttributes = new Bundle();
+            }
+            return mAttributes;
+        }
+
+        /**
+         * @param attributes The target internal attributes bundle.
+         *
+         * @hide
+         */
+        protected void setAttributesBundle(@Nullable Bundle attributes) {
+            mAttributes = attributes;
+        }
+
+        /**
+         * @return The tag for this structured semantic information.
+         */
+        @NonNull
+        public String getTag() {
+            return mTag;
+        }
+
+        /**
+         * Adds an attribute.
+         *
+         * @param attributeKey The attribute key.
+         * @param value The attribute value.
+         */
+        public void addAttribute(@NonNull String attributeKey, @NonNull String value) {
+            getAttributesBundle().putString(attributeKey, value);
+        }
+
+        /**
+         * Removes an attribute.
+         *
+         * @param attributeKey The attribute key.
+         */
+        public void removeAttribute(@NonNull String attributeKey) {
+            getAttributesBundle().remove(attributeKey);
+        }
+
+        /**
+         * Gets the value of an attribute.
+         *
+         * @param attributeKey The attribute key.
+         * @return The attribute value.
+         */
+        @Nullable
+        public String getAttribute(@NonNull String attributeKey) {
+            return getAttributesBundle().getString(attributeKey);
+        }
+
+        /**
+         * @return The map of attributes.
+         */
+        @NonNull
+        public Map<String, String> getAttributes() {
+            Map<String, String> attributesMap = new ArrayMap<>();
+            Bundle attributesBundle = getAttributesBundle();
+            for (String key : attributesBundle.keySet()) {
+                attributesMap.put(key, attributesBundle.getString(key));
+            }
+            return attributesMap;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof StructuredDataInfo)) return false;
+            StructuredDataInfo that = (StructuredDataInfo) o;
+            return Objects.equals(mTag, that.mTag)
+                    && Objects.equals(getAttributes(), that.getAttributes());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mTag, getAttributes());
+        }
+    }
+
+    /**
+     * A class that holds information about a node that represents a mathematical expression.
+     * <p>
+     * This class's structure is based on the concepts and tags defined in the
+     * <a href="https://www.w3.org/TR/mathml4/">W3C MathML standard</a>. An accessibility service
+     * can use this information to provide a richer experience for users interacting with
+     * mathematical content. For example, a screen reader could use the tag and attributes to
+     * correctly pronounce a fraction and allow the user to navigate between the numerator and
+     * the denominator.
+     * <p>
+     * To add math information to a node, create an instance of {@link MathInfo}, set its attributes
+     * using {@link #addAttribute(String, String)}, and then call {@link
+     * #setStructuredDataInfo(StructuredDataInfo)} on the {@link AccessibilityNodeInfo}.
+     */
+    @FlaggedApi(Flags.FLAG_A11Y_MATH_API)
+    public static final class MathInfo extends StructuredDataInfo implements Parcelable {
+        /** @hide */
+        @StringDef({
+                MATH_TAG_MATH,
+                MATH_TAG_FRACTION,
+                MATH_TAG_IDENTIFIER,
+                MATH_TAG_MULTISCRIPTS,
+                MATH_TAG_NONE_SCRIPT,
+                MATH_TAG_NUMBER,
+                MATH_TAG_OPERATOR,
+                MATH_TAG_OVER,
+                MATH_TAG_PRESCRIPT_DELIMITER,
+                MATH_TAG_ROOT,
+                MATH_TAG_ROW,
+                MATH_TAG_SQUARE_ROOT,
+                MATH_TAG_STRING_LITERAL,
+                MATH_TAG_SUB,
+                MATH_TAG_SUB_SUP,
+                MATH_TAG_SUP,
+                MATH_TAG_TABLE,
+                MATH_TAG_TABLE_CELL,
+                MATH_TAG_TABLE_ROW,
+                MATH_TAG_TEXT,
+                MATH_TAG_UNDER,
+                MATH_TAG_UNDER_OVER,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface MathTag {}
+
+        /** The top-level root element that encapsulates a MathML expression. */
+        public static final String MATH_TAG_MATH = "math";
+        /** An element for creating fractions. */
+        public static final String MATH_TAG_FRACTION = "mfrac";
+        /** An element for symbolic names or arbitrary text to be rendered as an identifier. */
+        public static final String MATH_TAG_IDENTIFIER = "mi";
+        /**
+         * An element for attaching any number of prescripts and postscripts to a base
+         * expression.
+         */
+        public static final String MATH_TAG_MULTISCRIPTS = "mmultiscripts";
+        /**
+         * Represents an empty element, often used as a placeholder in elements like
+         * {@code mmultiscripts}.
+         */
+        public static final String MATH_TAG_NONE_SCRIPT = "none";
+        /** An element for a numeric literal. */
+        public static final String MATH_TAG_NUMBER = "mn";
+        /** An element for an operator, fence, separator, or accent. */
+        public static final String MATH_TAG_OPERATOR = "mo";
+        /** An element that attaches an accent or a limit over a base expression. */
+        public static final String MATH_TAG_OVER = "mover";
+        /**
+         * An empty element used within {@code mmultiscripts} to separate postscripts from
+         * prescripts.
+         */
+        public static final String MATH_TAG_PRESCRIPT_DELIMITER = "mprescripts";
+        /** An element for radicals with an explicit index, such as a cube root. */
+        public static final String MATH_TAG_ROOT = "mroot";
+        /** An element for grouping sub-expressions horizontally. */
+        public static final String MATH_TAG_ROW = "mrow";
+        /** An element for a square root. */
+        public static final String MATH_TAG_SQUARE_ROOT = "msqrt";
+        /** An element for representing string literals, often for computer algebra systems. */
+        public static final String MATH_TAG_STRING_LITERAL = "ms";
+        /** An element that attaches a subscript to a base expression. */
+        public static final String MATH_TAG_SUB = "msub";
+        /** An element that attaches both a subscript and a superscript to a base expression. */
+        public static final String MATH_TAG_SUB_SUP = "msubsup";
+        /** An element that attaches a superscript to a base expression. */
+        public static final String MATH_TAG_SUP = "msup";
+        /** An element for creating tables or matrices. */
+        public static final String MATH_TAG_TABLE = "mtable";
+        /** An element representing a single cell in a table or matrix. */
+        public static final String MATH_TAG_TABLE_CELL = "mtd";
+        /** An element representing a single row in a a table or matrix. */
+        public static final String MATH_TAG_TABLE_ROW = "mtr";
+        /** An element for arbitrary text to be rendered as itself, often used for commentary. */
+        public static final String MATH_TAG_TEXT = "mtext";
+        /** An element that attaches an accent or a limit under a base expression. */
+        public static final String MATH_TAG_UNDER = "munder";
+        /** An element that attaches scripts both under and over a base expression. */
+        public static final String MATH_TAG_UNDER_OVER = "munderover";
+
+        /** @hide */
+        @StringDef({
+                MATH_ATTRIBUTE_INTENT,
+                MATH_ATTRIBUTE_ARG,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface MathAttribute {}
+
+        /**
+         * An attribute that provides a semantic annotation for the element on which it is
+         * specified.
+         *
+         * <p>
+         * The {@code intent} attribute's value is a string that can be parsed to determine
+         * the meaning of the element and its children. An {@code intent} value is a string
+         * consisting of a single token, or a function-like expression.
+         *
+         * <p>
+         * Use this attribute on a container node to disambiguate mathematical notation. For
+         * example, the expression {@code (a, b)} is ambiguous; it could be a point, an open
+         * interval, or the greatest common divisor. By setting
+         * {@code intent="open-interval($1, $2)"} on the parent node, you provide a precise,
+         * machine-readable meaning that accessibility services can use to provide a better
+         * experience. The {@code $1} and {@code $2} are placeholders for the arguments, which are
+         * identified on child nodes using the {@link #MATH_ATTRIBUTE_ARG} attribute.
+         */
+        public static final String MATH_ATTRIBUTE_INTENT = "intent";
+
+        /**
+         * An attribute used to associate a child element with one of the arguments in its parent's
+         * {@link #MATH_ATTRIBUTE_INTENT} value.
+         *
+         * <p>
+         * The value of the {@code arg} attribute is a token that must match one of the argument
+         * names in the parent's {@code intent} value.
+         *
+         * <p>
+         * Use this attribute on a child node to explicitly link it to one of the argument
+         * placeholders in its parent's {@code intent} string. For example, if a parent node has
+         * {@code intent="gcd($1, $2)"}, the child node representing the first parameter of the
+         * function should have its {@code arg} attribute set to "1".
+         */
+        public static final String MATH_ATTRIBUTE_ARG = "arg";
+
+        /**
+         * Creates a new MathInfo.
+         *
+         * @param tag The MathML tag for this node.
+         */
+        public MathInfo(@MathTag @NonNull String tag) {
+            super(tag);
+        }
+
+        /**
+         * Creates a new MathInfo from an existing MathInfo object.
+         *
+         * @param other The existing MathInfo object to copy from.
+         */
+        private MathInfo(@NonNull MathInfo other) {
+            this(other.getTag());
+            setAttributesBundle(new Bundle(other.getAttributesBundle()));
+        }
+
+        private MathInfo(Parcel in) {
+            this(in.readString8());
+            setAttributesBundle(in.readBundle());
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        @NonNull
+        @MathTag
+        public String getTag() {
+            return super.getTag();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void addAttribute(@MathAttribute @NonNull String attributeKey,
+                @NonNull String value) {
+            super.addAttribute(attributeKey, value);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void removeAttribute(@MathAttribute @NonNull String attributeKey) {
+            super.removeAttribute(attributeKey);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        @Nullable
+        public String getAttribute(@MathAttribute @NonNull String attributeKey) {
+            return super.getAttribute(attributeKey);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeString8(getTag());
+            dest.writeBundle(getAttributesBundle());
+        }
+
+        /**
+         * @see android.os.Parcelable.Creator
+         */
+        @NonNull
+        public static final Parcelable.Creator<MathInfo> CREATOR =
+                new Parcelable.Creator<MathInfo>() {
+                    @Override
+                    public MathInfo createFromParcel(Parcel in) {
+                        return new MathInfo(in);
+                    }
+
+                    @Override
+                    public MathInfo[] newArray(int size) {
+                        return new MathInfo[size];
+                    }
+                };
     }
 
     /**
