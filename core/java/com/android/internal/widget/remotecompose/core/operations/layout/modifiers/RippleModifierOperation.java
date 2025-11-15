@@ -26,7 +26,6 @@ import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
-import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.TouchHandler;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 import com.android.internal.widget.remotecompose.core.operations.utilities.ColorUtils;
@@ -76,14 +75,6 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
     @Override
     public String toString() {
         return "RippleModifier";
-    }
-
-    @Override
-    public void apply(@NonNull RemoteContext context) {
-        RootLayoutComponent root = context.getDocument().getRootLayoutComponent();
-        if (root != null) {
-            root.setHasTouchListeners(true);
-        }
     }
 
     @NonNull

@@ -39,6 +39,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.Containe
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.LoopOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
+import com.android.internal.widget.remotecompose.core.operations.layout.TouchOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentModifiers;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.utilities.IntMap;
@@ -75,7 +76,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.3f;
+    static final float BUILD = 0.4f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
@@ -854,6 +855,7 @@ public class CoreDocument implements Serializable {
     public void initFromBuffer(@NonNull RemoteComposeBuffer buffer) {
         mOperations = new ArrayList<Operation>();
         buffer.inflateFromBuffer(mOperations);
+        boolean hasTouchOperations = false;
         for (Operation op : mOperations) {
             if (op instanceof Header) {
                 // Make sure we parse the version at init time...
@@ -868,6 +870,9 @@ public class CoreDocument implements Serializable {
                 FloatExpression expression = (FloatExpression) op;
                 mFloatExpressions.put(expression.mId, expression);
             }
+            if (op instanceof TouchOperation) {
+                hasTouchOperations = true;
+            }
         }
         mBitmapMemory = 0;
         mOperations = inflateComponents(mOperations);
@@ -880,6 +885,7 @@ public class CoreDocument implements Serializable {
             }
         }
         if (mRootLayoutComponent != null) {
+            mRootLayoutComponent.setHasTouchListeners(hasTouchOperations);
             mRootLayoutComponent.assignIds(mLastId);
         }
     }
@@ -1445,7 +1451,6 @@ public class CoreDocument implements Serializable {
         context.clearLastOpCount();
         assert context.getPaintContext() != null;
         context.getPaintContext().clearNeedsRepaint();
-        context.loadFloat(RemoteContext.ID_DENSITY, context.getDensity());
         context.mMode = RemoteContext.ContextMode.UNSET;
         // current theme starts as UNSPECIFIED, until a Theme setter
         // operation gets executed and modify it.
@@ -1453,6 +1458,10 @@ public class CoreDocument implements Serializable {
 
         context.mRemoteComposeState = mRemoteComposeState;
         context.mRemoteComposeState.setContext(context);
+
+        // Load density after context.mRemoteComposeState is replaced, otherwise it won't be
+        // available in the current context.mRemoteComposeState when expressions are evaluated.
+        context.loadFloat(RemoteContext.ID_DENSITY, context.getDensity());
 
         if (UPDATE_VARIABLES_BEFORE_LAYOUT) {
             // Update any dirty variables

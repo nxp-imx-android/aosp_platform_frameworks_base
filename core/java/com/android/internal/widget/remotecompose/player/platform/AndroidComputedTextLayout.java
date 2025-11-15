@@ -18,9 +18,9 @@ package com.android.internal.widget.remotecompose.player.platform;
 import android.annotation.NonNull;
 import android.text.StaticLayout;
 
-import com.android.internal.widget.remotecompose.core.Platform;
+import com.android.internal.widget.remotecompose.core.RcPlatformServices;
 
-public class AndroidComputedTextLayout implements Platform.ComputedTextLayout {
+public class AndroidComputedTextLayout implements RcPlatformServices.ComputedTextLayout {
     StaticLayout mStaticLayout;
     float mWidth;
     float mHeight;

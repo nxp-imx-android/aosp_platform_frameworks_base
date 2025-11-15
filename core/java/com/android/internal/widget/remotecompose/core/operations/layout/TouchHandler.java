@@ -21,7 +21,7 @@ import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 
 /** Interface to represent operations that can handle touch events */
-public interface TouchHandler {
+public interface TouchHandler extends TouchOperation {
 
     /**
      * callback for a touch down event

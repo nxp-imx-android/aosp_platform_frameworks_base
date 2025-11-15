@@ -22,14 +22,14 @@ import android.graphics.Path;
 import android.graphics.PathIterator;
 import android.util.Log;
 
-import com.android.internal.widget.remotecompose.core.Platform;
+import com.android.internal.widget.remotecompose.core.RcPlatformServices;
 import com.android.internal.widget.remotecompose.core.operations.PathData;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
 /** Services that are needed to be provided by the platform during encoding. */
-public class AndroidPlatformServices implements Platform {
+public class AndroidRcPlatformServices implements RcPlatformServices {
     private static final String LOG_TAG = "RemoteCompose";
 
     @Override
