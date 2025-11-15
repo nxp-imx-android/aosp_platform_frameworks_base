@@ -1425,6 +1425,22 @@ public class AudioManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface PublicStreamTypes {}
 
+    /** @hide */
+    @IntDef(flag = false, value = {
+            USE_DEFAULT_STREAM_TYPE,
+            STREAM_VOICE_CALL,
+            STREAM_SYSTEM,
+            STREAM_RING,
+            STREAM_MUSIC,
+            STREAM_ALARM,
+            STREAM_NOTIFICATION,
+            STREAM_DTMF,
+            STREAM_ACCESSIBILITY,
+            STREAM_ASSISTANT }
+    )
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PublicStreamTypesWithDefault {}
+
     /**
      * Returns the volume in dB (decibel) for the given stream type at the given volume index, on
      * the given type of audio output device.
