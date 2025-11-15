@@ -482,6 +482,19 @@ public abstract class OomAdjuster {
 
         /** Enqueues the pending top app if necessary. */
         void enqueuePendingTopAppIfNecessaryLocked();
+
+        /**
+         * Sets the scheduling priority for the given application's UI-related threads.
+         * This typically involves switching between SCHED_FIFO for high-priority UI rendering
+         * and SCHED_OTHER for normal operation.
+         */
+        void setFifoPriority(@NonNull ProcessRecordInternal app, boolean enable);
+
+        /** Schedules the specified thread with SCHED_FIFO priority. */
+        boolean scheduleAsFifoPriority(int tid, boolean suppressLogs);
+
+        /** Returns the current percentage of free swap space available on the system. */
+        double getFreeSwapPercent();
     }
 
     /**
@@ -1265,10 +1278,6 @@ public abstract class OomAdjuster {
 
     private double mLastFreeSwapPercent = 1.00;
 
-    private static double getFreeSwapPercent() {
-        return CachedAppOptimizer.getFreeSwapPercent();
-    }
-
     @GuardedBy({"mService", "mProcLock"})
     private void updateAndTrimProcessLSP(final long now, final long nowElapsed,
             final long oldTime, @OomAdjReason int oomAdjReason,
@@ -1297,7 +1306,8 @@ public abstract class OomAdjuster {
 
         final boolean proactiveKillsEnabled = mOomConstants.mProactiveKillsEnabled;
         final double lowSwapThresholdPercent = mOomConstants.mLowSwapThresholdPercent;
-        final double freeSwapPercent = proactiveKillsEnabled ? getFreeSwapPercent() : 1.00;
+        final double freeSwapPercent = proactiveKillsEnabled
+                ? mCallback.getFreeSwapPercent() : 1.00;
         ProcessRecordInternal lruCachedApp = null;
 
         for (int i = numLru - 1; i >= 0; i--) {
@@ -2246,7 +2256,7 @@ public abstract class OomAdjuster {
                         if (state.useFifoUiScheduling()) {
                             // Switch UI pipeline for app to SCHED_FIFO
                             state.setSavedPriority(Process.getThreadPriority(state.getPid()));
-                            ActivityManagerService.setFifoPriority(state, true /* enable */);
+                            mCallback.setFifoPriority(state, true /* enable */);
                         } else {
                             // Boost priority for top app UI and render threads
                             mInjector.setThreadPriority(state.getPid(),
@@ -2266,7 +2276,7 @@ public abstract class OomAdjuster {
                     state.notifyTopProcChanged();
                     if (state.useFifoUiScheduling()) {
                         // Reset UI pipeline to SCHED_OTHER
-                        ActivityManagerService.setFifoPriority(state, false /* enable */);
+                        mCallback.setFifoPriority(state, false /* enable */);
                         mInjector.setThreadPriority(state.getPid(), state.getSavedPriority());
                     } else {
                         // Reset priority for top app UI and render threads
@@ -2370,7 +2380,7 @@ public abstract class OomAdjuster {
                 // is not ready when attaching.
                 app.notifyTopProcChanged();
                 if (app.useFifoUiScheduling()) {
-                    mService.scheduleAsFifoPriority(app.getPid(), true);
+                    mCallback.scheduleAsFifoPriority(app.getPid(), true);
                 } else {
                     mInjector.setThreadPriority(app.getPid(), THREAD_PRIORITY_TOP_APP_BOOST);
                 }

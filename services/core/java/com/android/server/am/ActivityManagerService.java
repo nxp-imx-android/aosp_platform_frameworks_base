@@ -19807,6 +19807,21 @@ public class ActivityManagerService extends IActivityManager.Stub
             mPendingStartActivityUids.enqueuePendingTopAppIfNecessaryLocked(
                     ActivityManagerService.this);
         }
+
+        @Override
+        public void setFifoPriority(@NonNull ProcessRecordInternal app, boolean enable) {
+            ActivityManagerService.setFifoPriority(app, enable);
+        }
+
+        @Override
+        public boolean scheduleAsFifoPriority(int tid, boolean suppressLogs) {
+            return ActivityManagerService.scheduleAsFifoPriority(tid, suppressLogs);
+        }
+
+        @Override
+        public double getFreeSwapPercent() {
+            return CachedAppOptimizer.getFreeSwapPercent();
+        }
     }
 
     @VisibleForTesting
