@@ -34,6 +34,7 @@ import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_
 import android.annotation.ElapsedRealtimeLong;
 import android.app.ActivityManager;
 import android.app.ApplicationExitInfo;
+import android.app.ProcessMemoryState.HostingComponentType;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
@@ -221,6 +222,12 @@ public abstract class ProcessRecordInternal {
 
     /** Returns the next scheduled time for PSS collection for this process. */
     public abstract long getNextPssTime();
+
+    /** Registers a hosting component type for this process. */
+    public abstract void addHostingComponentType(@HostingComponentType int type);
+
+    /** Unregisters a hosting component type for this process. */
+    public abstract void clearHostingComponentType(@HostingComponentType int type);
 
     /**
      * Kills the process with the given reason code, using the provided reason string

@@ -1065,22 +1065,22 @@ public class ProcessStateController {
      * used.
      */
     @GuardedBy("mLock")
-    public void noteBroadcastDeliveryStarted(@NonNull ProcessRecord proc, int schedGroup) {
+    public void noteBroadcastDeliveryStarted(@NonNull ProcessRecordInternal proc, int schedGroup) {
         proc.getReceivers().setIsReceivingBroadcast(true);
         proc.getReceivers().setBroadcastReceiverSchedGroup(schedGroup);
 
-        proc.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
+        proc.addHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
     }
 
     /**
      * Note that Broadcast delivery to a process has ended.
      */
     @GuardedBy("mLock")
-    public void noteBroadcastDeliveryEnded(@NonNull ProcessRecord proc) {
+    public void noteBroadcastDeliveryEnded(@NonNull ProcessRecordInternal proc) {
         proc.getReceivers().setIsReceivingBroadcast(false);
         proc.getReceivers().setBroadcastReceiverSchedGroup(SCHED_GROUP_UNDEFINED);
 
-        proc.mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
+        proc.clearHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
     }
 
     @GuardedBy("mLock")
