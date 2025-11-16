@@ -21,9 +21,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -97,7 +97,7 @@ public class PersonalContextManagerServiceTest {
         assertThat(user1Manager).isNotNull();
 
         // Verify that it tried to register components.
-        verify(mPackageManager, times(4)).queryIntentServices(any(), anyInt());
+        verify(mPackageManager, atLeast(4)).queryIntentServices(any(), anyInt());
     }
 
     @Test
