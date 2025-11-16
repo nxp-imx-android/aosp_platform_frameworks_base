@@ -106,7 +106,7 @@ public final class VirtualDisplay {
      */
     public void release() {
         if (mToken != null) {
-            mGlobal.releaseVirtualDisplay(mToken);
+            mGlobal.releaseVirtualDisplay(mToken, mDisplay.getDisplayId());
             mToken = null;
         }
     }

@@ -492,7 +492,8 @@ public class DisplayManagerServiceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        mIsDisplayListenerSnapshotFlagEnabled = Flags.displayListenerSnapshot();
+        mIsDisplayListenerSnapshotFlagEnabled = Flags.displayListenerSnapshot()
+                || Flags.displayIdsCache();
 
         mLocalServiceKeeperRule.overrideLocalService(
                 InputManagerInternal.class, mMockInputManagerInternal);
