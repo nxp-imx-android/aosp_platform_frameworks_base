@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Чување снимка екрана није успело"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Сачувај у"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Изабери фолдер"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Спољни екран"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Уређај мора да буде откључан да би снимак екрана могао да се сачува"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Пробајте да поново направите снимак екрана"</string>
@@ -708,8 +712,7 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"Обриши све"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"Управљај"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"Историја"</string>
-    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
-    <skip />
+    <string name="notification_dismiss_button_text" msgid="2443352751894142153">"Затвори"</string>
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Подешавања обавештења"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Историја обавештења"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Ново"</string>
@@ -905,8 +908,7 @@
     <string name="tuner_toast" msgid="3812684836514766951">"Честитамо! Тјунер за кориснички интерфејс система је додат у Подешавања"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"Уклони из Подешавања"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"Желите ли да уклоните Тјунер за кориснички интерфејс система из Подешавања и да престанете да користите све његове функције?"</string>
-    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
-    <skip />
+    <string name="qs_customize_remove" msgid="1840904349092819026">"Уклони"</string>
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Желите ли да укључите Bluetooth?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Да бисте повезали тастатуру са таблетом, прво морате да укључите Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Укључи"</string>
@@ -1166,7 +1168,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Не укључуј"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Укључи пречицу"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Тастерска пречица за <xliff:g id="ID_1">%1$s</xliff:g> је укључена"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"Икона"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> је тастерска пречица за коришћење функције приступачности за <xliff:g id="ID_4">^4</xliff:g>. То вам омогућава да брзо зумирате екран да би садржај био већи. Када је увећање укључено, притисните "<annotation id="action_key_icon">"икону"</annotation>" <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> и „+“ или „–“ да бисте прилагодили зумирање."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"icon"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> је тастерска пречица за коришћење функције приступачности за <xliff:g id="ID_4">^4</xliff:g>. То вам омогућава да брзо зумирате екран да би садржај био већи. Када је увећање укључено, притисните "<annotation id="action_key_icon">"icon"</annotation>" <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> и „+“ или „–“ да бисте прилагодили зумирање."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Искључи пречицу"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Не искључуј"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"Икона"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> је тастерска пречица за коришћење функције <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> је читач екрана који вам омогућава да чујете наглас изговорене називе ставки. Може да буде користан особама које слабо виде екран. Може да промени начин рада уређаја."</string>

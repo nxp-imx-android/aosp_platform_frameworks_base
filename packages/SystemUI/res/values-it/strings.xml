@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Impossibile salvare lo screenshot"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Salva in"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Seleziona cartella"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Display esterno"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"È necessario sbloccare il dispositivo per poter salvare lo screenshot"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Riprova ad acquisire lo screenshot"</string>
@@ -1745,7 +1749,7 @@
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"compila automaticamente"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"espandi"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Condividi la posizione esatta"</string>
-    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Usa posizione esatta"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Usa la posizione esatta"</string>
     <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Vicino alla posizione esatta"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Posizione esatta"</string>
 </resources>

@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"無法儲存螢幕截圖"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"儲存至"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"選取資料夾"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"外接螢幕"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"必須先解鎖裝置，才能儲存螢幕截圖"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"請再次嘗試拍攝螢幕截圖"</string>
@@ -1162,11 +1166,11 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要開啟「<xliff:g id="ID_1">%1$s</xliff:g>」嗎？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 是使用 <xliff:g id="ID_4">^4</xliff:g> 的鍵盤快速鍵，<xliff:g id="ID_5">^5</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"再次按下<xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> 鍵即可啟用 <xliff:g id="ID_4">%4$s</xliff:g>"</string>
-    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"要開啟 <xliff:g id="ID_1">%1$s</xliff:g> 的鍵盤快速鍵嗎？"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"是否要開啟 <xliff:g id="ID_1">%1$s</xliff:g> 的鍵盤快速鍵？"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"不要開啟"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"開啟快速鍵"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"「<xliff:g id="ID_1">%1$s</xliff:g>」鍵盤快速鍵已開啟"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 是使用<xliff:g id="ID_4">^4</xliff:g> (無障礙功能) 的鍵盤快速鍵，可以快速放大畫面內容。這項功能開啟後，請同時按下<xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> 鍵，再按「+」或「-」鍵調整縮放比例。"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_4">^4</xliff:g>是一種無障礙功能，可透過 <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 啟用，畫面內容會快速放大。這項功能開啟後，請同時按下<xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> 鍵，再按「+」或「-」鍵調整縮放比例。"</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"停用快速鍵"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"保持開啟"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 是使用 <xliff:g id="ID_4">^4</xliff:g> 的鍵盤快速鍵，<xliff:g id="ID_5">^4</xliff:g> 是螢幕閱讀器，可朗讀畫面上的項目。如果使用者無法看清楚螢幕，這項功能就能派上用場。使用這項功能可能會改變裝置的運作方式。"</string>

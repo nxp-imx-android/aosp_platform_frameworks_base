@@ -19,6 +19,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="media_projection_entry_generic_permission_dialog_warning_single_app" msgid="3454859977888159495">"Lorsque vous partagez, enregistrez ou diffusez une appli, Android a accès à tout ce qui est visible sur votre écran ou lu sur cette appli. Par conséquent, soyez prudent·e avec les mots de passe, les détails du paiement, les messages, les photos et les contenus audio et vidéo."</string>
     <string name="accessibility_quick_settings_user" msgid="505821942882668619">"Personne connectée en tant que <xliff:g id="ID_1">%s</xliff:g>"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Choisir l\'utilisateur·trice"</string>
 </resources>

@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Det gick inte att spara skärmbilden"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Spara i"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Välj mapp"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Extern skärm"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Skärmbilden kan bara sparas om enheten är upplåst"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Testa att ta en skärmbild igen"</string>
@@ -1168,7 +1172,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Kortkommandot <xliff:g id="ID_1">%1$s</xliff:g> har aktiverats"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"Ikonen"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> är kortkommandot för att använda <xliff:g id="ID_4">^4</xliff:g>, en tillgänglighetsfunktion. Med åtgärden kan du snabbt zooma in så att innehåll på skärmen förstoras. När förstoring är aktiverat kan du trycka på "<annotation id="action_key_icon">"ikonen"</annotation>" <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> och + eller – för att justera zoomnivån."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Inaktivera kortkommandot"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Behåll aktiverade"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Behåll aktiverat"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"Ikonen"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> är kortkommandot för att använda <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> är en skärmläsare som gör att du kan få objekt upplästa. Det kan vara till hjälp för personer som har svårt att se skärmen. Det kan leda till att enheten fungerar annorlunda."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Genom att aktivera kortkommandot tillåter du att TalkBack får fullständig kontroll över enheten."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Fullständig kontroll lämpar sig för appar med tillgänglighetsfunktioner, men är inte lämplig för de flesta appar."</string>
