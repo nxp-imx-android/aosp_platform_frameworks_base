@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Huruhusu programu kusoma faili za video kutoka kwenye hifadhi unayoshiriki."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"soma faili za picha kutoka kwenye hifadhi iliyoshirikiwa"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Huruhusu programu kusoma faili za picha kutoka kwenye hifadhi yako iliyoshirikiwa."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"soma faili za picha na video alizochagua mtumiaji kutoka kwenye hifadhi inayoshirikiwa"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Huruhusu programu kusoma faili za picha na video unazochagua kutoka kwenye hifadhi yako inayoshirikiwa."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"irekebishe au ifute maudhui ya hifadhi unayoshiriki"</string>

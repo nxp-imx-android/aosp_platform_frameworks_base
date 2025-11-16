@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"మీ షేర్ చేయబడిన స్టోరేజ్ నుండి వీడియో ఫైల్‌లను చదవడానికి యాప్‌ను అనుమతిస్తుంది."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"షేర్ చేయబడిన స్టోరేజ్ నుండి ఇమేజ్ ఫైల్‌లను చదవండి"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"మీ షేర్ చేయబడిన స్టోరేజ్ నుండి ఇమేజ్ ఫైల్‌లను చదవడానికి యాప్‌ను అనుమతిస్తుంది."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"షేర్ చేయబడిన స్టోరేజ్ నుండి యూజర్ ఎంచుకున్న ఇమేజ్ ఫైల్స్‌ను, వీడియో ఫైల్స్‌ను చదువుతుంది"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"మీరు మీ షేర్ చేయబడిన స్టోరేజ్ నుండి ఎంచుకున్న ఇమేజ్, వీడియో ఫైల్స్‌ను చదవడానికి యాప్‌ను అనుమతిస్తుంది."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"మీ షేర్ చేసిన స్టోరేజ్‌ యొక్క కంటెంట్‌లను ఎడిట్ చేయండి లేదా తొలగించండి"</string>

@@ -825,6 +825,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Permite aplicației să citească fișiere video din spațiul de stocare comun."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"să citească fișiere imagine din spațiul de stocare comun"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Permite aplicației să citească fișiere imagine din spațiul de stocare comun."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"să citească fișierele imagine și video selectate de utilizator din spațiul de stocare comun"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Permite aplicației să citească fișierele imagine și video pe care le selectezi din spațiul de stocare comun."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"să modifice sau să șteargă conținutul spațiului de stocare comun"</string>

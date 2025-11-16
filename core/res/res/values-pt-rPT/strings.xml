@@ -825,6 +825,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Permite que a app leia ficheiros de vídeo do armazenamento partilhado."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"ler ficheiros de imagem do armazenamento partilhado"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Permite que a app leia ficheiros de imagem do armazenamento partilhado."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"ler ficheiros de imagem e vídeo do armazenamento partilhado selecionados pelo utilizador"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Permite que a app leia ficheiros de imagem e vídeo que selecionar no seu armazenamento partilhado."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"modif./elim. os conteúdos do armazenam. partilhado"</string>
@@ -1113,7 +1117,7 @@
     <string name="lockscreen_access_pattern_cleared" msgid="7493849102641167049">"Sequência apagada"</string>
     <string name="lockscreen_access_pattern_cell_added" msgid="6746676335293144163">"Célula adicionada"</string>
     <string name="lockscreen_access_pattern_cell_added_verbose" msgid="2931364927622563465">"Célula <xliff:g id="CELL_INDEX">%1$s</xliff:g> adicionada"</string>
-    <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Sequência concluída"</string>
+    <string name="lockscreen_access_pattern_detected" msgid="3931150554035194012">"Padrão concluído"</string>
     <string name="lockscreen_access_pattern_area" msgid="1288780416685002841">"Área da sequência."</string>
     <string name="keyguard_accessibility_widget_changed" msgid="7298011259508200234">"%1$s. Widget %2$d de %3$d."</string>
     <string name="keyguard_accessibility_add_widget" msgid="8245795023551343672">"Adicionar widget."</string>
