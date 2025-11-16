@@ -158,6 +158,9 @@ public abstract class Policy implements Parcelable {
      * @param <B> the concrete builder implementation
      * @hide
      */
+    @SuppressLint("StaticFinalBuilder")
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     public abstract static class Builder<P extends Policy, B extends Builder<P, B>> {
         long mVersion;
         private boolean mVersionSet = false;

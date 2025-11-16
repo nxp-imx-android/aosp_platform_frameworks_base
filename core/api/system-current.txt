@@ -3098,19 +3098,22 @@ package android.app.supervision {
     field public static final int TYPE_BLOCKED = 1; // 0x1
   }
 
-  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public static final class PackageUsagePolicy.Builder {
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public static final class PackageUsagePolicy.Builder extends android.app.supervision.Policy.Builder<android.app.supervision.PackageUsagePolicy,android.app.supervision.PackageUsagePolicy.Builder> {
     ctor public PackageUsagePolicy.Builder();
     ctor public PackageUsagePolicy.Builder(@NonNull android.app.supervision.PackageUsagePolicy);
-    method @NonNull public android.app.supervision.PackageUsagePolicy build();
     method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setPackageName(@NonNull String);
     method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setType(int);
-    method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setVersion(long);
   }
 
   @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public abstract class Policy implements android.os.Parcelable {
     method public long getVersion();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.Policy> CREATOR;
+  }
+
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public abstract static class Policy.Builder<P extends android.app.supervision.Policy, B extends android.app.supervision.Policy.Builder<P, B>> {
+    method @NonNull public P build();
+    method @NonNull public B setVersion(long);
   }
 
   @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public class SupervisionAppService extends android.app.Service {
