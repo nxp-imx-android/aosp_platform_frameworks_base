@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.TaskInfo;
@@ -332,6 +334,91 @@ public class BubbleTest extends ShellTestCase {
 
         BubbleInfo bubbleInfo = b.asBubbleBarBubble();
         assertThat(bubbleInfo.getParcelableFlyoutMessage()).isNotNull();
+    }
+
+    @Test
+    public void testCategoryLauncher_falseForChat_backUp() {
+        ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(mContext)
+                .setId("mockShortcutId")
+                .build();
+        Bubble b = new Bubble("mockKey", shortcutInfo, 10, Resources.ID_NULL,
+                "mockTitle", 0 /* taskId */, "mockLocus", true /* isDismissible */,
+                mBubbleMetadataFlagListener);
+        assertThat(b.isHasLauncherCategory()).isFalse();
+    }
+
+    @Test
+    public void testCategoryLauncher_falseForChat_notifEntry() {
+        Bubble b = new Bubble(mBubbleEntry, mBubbleMetadataFlagListener, null, mMainExecutor);
+        assertThat(b.isHasLauncherCategory()).isFalse();
+    }
+
+    @Test
+    public void testCategoryLauncher_falseForShortcut() {
+        ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(mContext)
+                .setId("mockShortcutId")
+                .build();
+        Bubble b = Bubble.createShortcutBubble(shortcutInfo);
+        assertThat(b.isHasLauncherCategory()).isFalse();
+    }
+
+    @Test
+    public void testCategoryLauncher_falseForIntent() {
+        Intent intent = new Intent(mContext, BubblesTestActivity.class);
+        intent.setPackage("pkg");
+        Bubble b = Bubble.createAppBubble(intent, UserHandle.of(10), null /* icon */);
+        assertThat(b.isHasLauncherCategory()).isFalse();
+    }
+
+    @Test
+    public void testCategoryLauncher_trueForIntent() {
+        Intent intent = new Intent(mContext, BubblesTestActivity.class);
+        intent.setPackage("pkg");
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        Bubble b = Bubble.createAppBubble(intent, UserHandle.of(10), null /* icon */);
+        assertThat(b.isHasLauncherCategory()).isTrue();
+    }
+
+    @Test
+    public void testCategoryLauncher_falseForPendingIntent() {
+        Intent intent = new Intent(mContext, BubblesTestActivity.class);
+        intent.setPackage("pkg");
+        PendingIntent pi = PendingIntent.getActivity(mContext, 0, intent, FLAG_IMMUTABLE, null);
+        Bubble b = Bubble.createAppBubble(pi, UserHandle.of(10));
+        assertThat(b.isHasLauncherCategory()).isFalse();
+    }
+
+    @Test
+    public void testCategoryLauncher_trueForPendingIntent() {
+        Intent intent = new Intent(mContext, BubblesTestActivity.class);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.setPackage("pkg");
+        PendingIntent pi = PendingIntent.getActivity(mContext, 0, intent, FLAG_IMMUTABLE, null);
+        Bubble b = Bubble.createAppBubble(pi, UserHandle.of(10));
+        assertThat(b.isHasLauncherCategory()).isTrue();
+    }
+
+    @Test
+    public void testCategoryLauncher_falseForTaskInfo() {
+        Intent intent = new Intent(mContext, BubblesTestActivity.class);
+        intent.setPackage("pkg");
+        TaskInfo info = new ActivityManager.RunningTaskInfo();
+        info.baseIntent = intent;
+        info.baseActivity = new ComponentName(mContext, BubblesTestActivity.class);
+        Bubble b = Bubble.createTaskBubble(info, UserHandle.of(10), null);
+        assertThat(b.isHasLauncherCategory()).isFalse();
+    }
+
+    @Test
+    public void testCategoryLauncher_trueForTaskInfo() {
+        Intent intent = new Intent(mContext, BubblesTestActivity.class);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.setPackage("pkg");
+        TaskInfo info = new ActivityManager.RunningTaskInfo();
+        info.baseIntent = intent;
+        info.baseActivity = new ComponentName(mContext, BubblesTestActivity.class);
+        Bubble b = Bubble.createTaskBubble(info, UserHandle.of(10), null);
+        assertThat(b.isHasLauncherCategory()).isTrue();
     }
 
     private Bubble.FlyoutMessage createFlyoutMessage() {

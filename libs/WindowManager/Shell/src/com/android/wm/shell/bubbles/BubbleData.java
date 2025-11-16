@@ -38,6 +38,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubbles.DismissReason;
 import com.android.wm.shell.bubbles.logging.BubbleLogger;
@@ -1003,15 +1004,14 @@ public class BubbleData {
         if (bubble.getPendingIntentCanceled() || !isOverflowReason) {
             return;
         }
+
         BubbleLog.d("BubbleData.doOverflow() overflowBubble=%s reason=%s", bubble.getKey(),
                 dismissReasonToString(reason));
         mLogger.logOverflowAdd(bubble, mPositioner.isShowingInBubbleBar(), reason);
         if (mOverflowBubbles.isEmpty()) {
             mStateChange.showOverflowChanged = true;
         }
-        mOverflowBubbles.remove(bubble);
-        mOverflowBubbles.add(0, bubble);
-        mStateChange.addedOverflowBubble = bubble;
+        reallyDoOverflow(bubble);
         bubble.stopInflation();
         if (mOverflowBubbles.size() == mMaxOverflowBubbles + 1) {
             // Remove oldest bubble.
@@ -1024,6 +1024,61 @@ public class BubbleData {
             }
             mOverflowBubbles.remove(oldest);
             mStateChange.removedOverflowBubble = oldest;
+        }
+    }
+
+    private void reallyDoOverflow(Bubble overflowedBubble) {
+        Bubble bubbleToRemove = null;
+        Bubble bubbleToAdd = null;
+        Bubble bubbleToReorder = null;
+        // Overflowed app bubbles only show the app icon, if there are multiple bubbles for an app,
+        // a user can't distinguish between them. Per UX we only show 1 app bubble in
+        // the overflow and it will use the launch intent for the app so remove others.
+        if (Flags.removeAppBubbleOverflowDupes()
+                && overflowedBubble.isApp()) {
+            for (Bubble bubble : mOverflowBubbles) {
+                if (!bubble.isApp()) continue;
+                if (bubble.getPackageName().equals(overflowedBubble.getPackageName())
+                        && bubble.getUser().getIdentifier()
+                        == overflowedBubble.getUser().getIdentifier()) {
+                    // We already have an app bubble in the overflow for this user, lets figure
+                    // out which bubble stays in the overflow.
+                    if (bubble.isHasLauncherCategory()
+                            && !overflowedBubble.isHasLauncherCategory()) {
+                        // Reorder launcher category to front, we won't use the new one
+                        bubbleToReorder = bubble;
+                    } else if (overflowedBubble.isHasLauncherCategory()
+                            && !bubble.isHasLauncherCategory()) {
+                        // New one is launcher category, keep it and remove older one
+                        bubbleToRemove = bubble;
+                        bubbleToAdd = overflowedBubble;
+                    } else if (overflowedBubble.isHasLauncherCategory()
+                            && bubble.isHasLauncherCategory()) {
+                        // Both launcher category, remove the older one
+                        bubbleToRemove = bubble;
+                        bubbleToAdd = overflowedBubble;
+                    } else if (!overflowedBubble.isHasLauncherCategory()
+                            && !bubble.isHasLauncherCategory()) {
+                        // Neither are launcher category, remove the older one
+                        bubbleToRemove = bubble;
+                        bubbleToAdd = overflowedBubble;
+                    }
+                }
+            }
+        }
+        if (bubbleToRemove != null && bubbleToAdd != null) {
+            mOverflowBubbles.remove(bubbleToRemove);
+            mOverflowBubbles.add(0, bubbleToAdd);
+            mStateChange.addedOverflowBubble = bubbleToAdd;
+            mStateChange.removedOverflowBubble = bubbleToRemove;
+        } else if (bubbleToReorder != null) {
+            mOverflowBubbles.remove(bubbleToReorder);
+            mOverflowBubbles.add(0, bubbleToReorder);
+        } else  {
+            // normal case
+            mOverflowBubbles.remove(overflowedBubble);
+            mOverflowBubbles.add(0, overflowedBubble);
+            mStateChange.addedOverflowBubble = overflowedBubble;
         }
     }
 

@@ -481,9 +481,10 @@ class BubbleBarLayerViewTest {
         val handleView = bubbleBarLayerView.findViewById<View>(R.id.bubble_bar_handle_view)
         assertThat(handleView).isNotNull()
 
-        val dragZones = dragZoneFactory.createSortedDragZones(
-            DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
-        )
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(
+                DraggedObject.ExpandedView(BubbleBarLocation.LEFT)
+            )
         val rightDragZone = dragZones.filterIsInstance<DragZone.Bubble.Right>().first().bounds.rect
         val rightPoint = PointF(rightDragZone.exactCenterX(), rightDragZone.exactCenterY())
         val leftDragZone = dragZones.filterIsInstance<DragZone.Bubble.Left>().first().bounds.rect
@@ -660,6 +661,22 @@ class BubbleBarLayerViewTest {
 
         // Verify scrim is hidden
         assertThat(scrimView.alpha).isEqualTo(0f)
+    }
+
+    @Test
+    fun testRemoveBubbleCleansUpBubbleViews() {
+        val bubble = createBubble("first")
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.showExpandedView(bubble) }
+        waitForExpandedViewAnimation()
+
+        assertThat(bubble.bubbleBarExpandedView).isNotNull()
+        assertThat(bubble.icon).isNotNull()
+
+        val endAction = Runnable {}
+        getInstrumentation().runOnMainSync { bubbleBarLayerView.removeBubble(bubble, endAction) }
+        waitForCollapseViewAnimation()
+        assertThat(bubble.bubbleBarExpandedView).isNull()
+        assertThat(bubble.getIconView()).isNull()
     }
 
     private fun createBubble(key: String): Bubble {

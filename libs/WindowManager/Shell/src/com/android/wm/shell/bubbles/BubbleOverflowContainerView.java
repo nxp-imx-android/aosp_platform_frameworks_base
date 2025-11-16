@@ -259,7 +259,9 @@ public class BubbleOverflowContainerView extends LinearLayout {
 
             Bubble toRemove = update.removedOverflowBubble;
             if (toRemove != null) {
-                toRemove.cleanupViews();
+                if (!Flags.removeAppBubbleOverflowDupes()) {
+                    toRemove.cleanupViews();
+                }
                 final int indexToRemove = mOverflowBubbles.indexOf(toRemove);
                 mOverflowBubbles.remove(toRemove);
                 mAdapter.notifyItemRemoved(indexToRemove);
