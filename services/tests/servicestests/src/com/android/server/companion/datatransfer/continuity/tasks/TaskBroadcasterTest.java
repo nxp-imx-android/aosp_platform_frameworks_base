@@ -21,7 +21,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.app.ActivityManager.RunningTaskInfo;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
@@ -73,15 +72,8 @@ public class TaskBroadcasterTest {
     }
 
     @Test
-    public void testOnTaskCreated_sendTaskStackBroadcastMessage() throws RemoteException {
-        mTaskBroadcaster.onTaskCreated(100, null);
-        verify(mMockTaskContinuityMessenger, times(1))
-                .sendMessage(eq(new TaskStackBroadcastMessage(REMOTE_TASKS)));
-    }
-
-    @Test
-    public void testOnTaskRemoved_sendTaskStackBroadcastMessage() throws RemoteException {
-        mTaskBroadcaster.onTaskRemoved(100);
+    public void testOnTaskStackChanged_sendsMessageToDevice() throws RemoteException {
+        mTaskBroadcaster.onTaskStackChanged();
         verify(mMockTaskContinuityMessenger, times(1))
                 .sendMessage(eq(new TaskStackBroadcastMessage(REMOTE_TASKS)));
     }
@@ -89,15 +81,6 @@ public class TaskBroadcasterTest {
     @Test
     public void testOnHandoffEnabledChanged_sendTaskStackBroadcastMessage() throws RemoteException {
         mTaskBroadcaster.onHandoffEnabledChanged(100, true);
-        verify(mMockTaskContinuityMessenger, times(1))
-                .sendMessage(eq(new TaskStackBroadcastMessage(REMOTE_TASKS)));
-    }
-
-    @Test
-    public void testOnTaskMovedToFront_sendTaskStackBroadcastMessage() throws RemoteException {
-        RunningTaskInfo taskInfo = new RunningTaskInfo();
-        taskInfo.taskId = 100;
-        mTaskBroadcaster.onTaskMovedToFront(taskInfo);
         verify(mMockTaskContinuityMessenger, times(1))
                 .sendMessage(eq(new TaskStackBroadcastMessage(REMOTE_TASKS)));
     }
