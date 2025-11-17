@@ -57,8 +57,8 @@ class StringPolicyHandlerTest {
                 key,
                 /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
                 /*affectedResource=*/ RESOURCE_PER_USER,
-                /*requiredPermission=*/ null,
-                /*requiredCrossUserPermission=*/ null,
+                /*requiredPermission=*/ "testPermission",
+                /*requiredCrossUserPermission=*/ "testCrossUserPermission",
                 /*allowedDpcTypes=*/ setOf(),
                 /*emptyStringAllowed=*/ false,
             )
