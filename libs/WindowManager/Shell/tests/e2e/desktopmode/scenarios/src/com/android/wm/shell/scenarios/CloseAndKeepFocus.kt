@@ -17,7 +17,9 @@
 package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.EnableFlags
+import android.tools.traces.ConditionsFactory
 import android.tools.traces.parsers.WindowManagerStateHelper
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.META_META_ON
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -40,7 +42,7 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
  */
 @Ignore("Test Base Class")
 @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
-abstract class CloseThenMoveFocus() : TestScenarioBase() {
+abstract class CloseAndKeepFocus() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
     private val device = UiDevice.getInstance(getInstrumentation())
 
@@ -59,7 +61,7 @@ abstract class CloseThenMoveFocus() : TestScenarioBase() {
     }
 
     @Test
-    open fun closeThenMoveFocus() {
+    open fun closeAndKeepFocus() {
         testAppInExternalDisplay.clickCaption(
             wmHelper,
             device,
@@ -68,6 +70,17 @@ abstract class CloseThenMoveFocus() : TestScenarioBase() {
         testAppInExternalDisplay.closeDesktopApp(wmHelper, device)
         // Send minimize via keyboard and observe window to check display focus.
         keyEventHelper.press(KEYCODE_MINUS, META_META_ON)
+
+        val externalDisplayId = connectedDisplayRule.addedDisplays.first()
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
+            .add(
+                ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId)
+                    .negate()
+            )
+            .waitForAndVerify()
     }
 
     @After
