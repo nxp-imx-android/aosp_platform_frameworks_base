@@ -6510,13 +6510,9 @@ class DesktopTasksController(
         }
         // A freeform drag-move ended, remove the indicator immediately.
         releaseVisualIndicator()
-        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-            doesAnyTaskRequireTaskbarRounding(
-                displayId = taskInfo.displayId,
-                userId = taskInfo.userId,
-            ),
-            taskInfo.displayId,
-        )
+
+        // We don't update the taskbar corner rounding of the new display as it's done each resize
+        // operation method (e.g., [toggleDesktopTaskSize]) accordingly.
         if (taskInfo.displayId != motionEvent.displayId) {
             // The window has moved to a new display, both of the display needs to receive the
             // callback.
