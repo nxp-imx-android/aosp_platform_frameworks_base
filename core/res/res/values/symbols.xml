@@ -1427,6 +1427,8 @@
   <java-symbol type="drawable" name="expander_open_holo_dark" />
   <java-symbol type="drawable" name="ic_audio_alarm" />
   <java-symbol type="drawable" name="ic_audio_alarm_mute" />
+  <java-symbol type="drawable" name="ic_volume_voice_chat" />
+  <java-symbol type="drawable" name="ic_volume_voice_chat_mute" />
   <java-symbol type="drawable" name="ic_audio_media" />
   <java-symbol type="drawable" name="ic_audio_media_mute" />
   <java-symbol type="drawable" name="ic_audio_notification" />
