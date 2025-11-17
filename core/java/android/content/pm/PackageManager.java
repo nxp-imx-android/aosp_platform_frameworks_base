@@ -5097,6 +5097,17 @@ public abstract class PackageManager {
 
     /**
      * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}: This device
+     * has protected virtual machine for AI applications processing personal data.
+     *
+     * @hide
+     */
+    @FlaggedApi(android.aiseal.Flags.FLAG_AISEAL_HOST_APIS)
+    @SystemApi
+    @SdkConstant(SdkConstantType.FEATURE)
+    public static final String FEATURE_AISEAL = "android.software.aiseal";
+
+    /**
+     * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}: This device
      * has a NPU (Neural Processing Unit) or similar hardware for accelerating AI workloads.
      */
     @FlaggedApi(com.android.npumanager.Flags.FLAG_NPUMANAGER_ENABLED)

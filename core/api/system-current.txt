@@ -4684,6 +4684,7 @@ package android.content.pm {
     field public static final String EXTRA_REQUEST_PERMISSIONS_LEGACY_ACCESS_PERMISSION_NAMES = "android.content.pm.extra.REQUEST_PERMISSIONS_LEGACY_ACCESS_PERMISSION_NAMES";
     field public static final String EXTRA_REQUEST_PERMISSIONS_NAMES = "android.content.pm.extra.REQUEST_PERMISSIONS_NAMES";
     field public static final String EXTRA_REQUEST_PERMISSIONS_RESULTS = "android.content.pm.extra.REQUEST_PERMISSIONS_RESULTS";
+    field @FlaggedApi("android.aiseal.aiseal_host_apis") public static final String FEATURE_AISEAL = "android.software.aiseal";
     field public static final String FEATURE_BROADCAST_RADIO = "android.hardware.broadcastradio";
     field public static final String FEATURE_CONTEXT_HUB = "android.hardware.context_hub";
     field public static final String FEATURE_EROFS = "android.software.erofs";
