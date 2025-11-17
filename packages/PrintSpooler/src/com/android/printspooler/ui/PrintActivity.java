@@ -1870,6 +1870,10 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
             }
         }
 
+        if (Flags.grayscalePreview()) {
+            mColorModeSpinner.setEnabled(mColorModeSpinnerAdapter.getCount() > 1);
+        }
+
         // Duplex mode.
         mDuplexModeSpinner.setEnabled(true);
         final int duplexModes = capabilities.getDuplexModes();
