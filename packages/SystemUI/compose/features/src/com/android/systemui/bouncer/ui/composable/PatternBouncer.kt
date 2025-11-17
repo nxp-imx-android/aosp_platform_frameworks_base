@@ -47,11 +47,13 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.integerResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -66,6 +68,7 @@ import com.android.systemui.bouncer.ui.viewmodel.PatternBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.PatternDotViewModel
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.kairos.internal.util.fastForEach
+import com.android.systemui.res.R.dimen.biometric_auth_pattern_view_size
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -218,24 +221,16 @@ fun PatternBouncer(
     var gridCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
     var offset: Offset by remember { mutableStateOf(Offset.Zero) }
     var scale: Float by remember { mutableFloatStateOf(1f) }
+
+    val maxWidth: Dp = dimensionResource(biometric_auth_pattern_view_size)
+    val maxHeight: Dp = dimensionResource(biometric_auth_pattern_view_size)
     // This is the size of the drawing area, in dips.
     val dotDrawingArea =
-        remember(colCount, rowCount) {
-            DpSize(
-                // Because the width also includes spacing to the left and right of the leftmost and
-                // rightmost dots in the grid and because UX mocks specify the width without that
-                // spacing, the actual width needs to be defined slightly bigger than the UX mock
-                // width.
-                width = (262 * colCount / 2).dp,
-                // Because the height also includes spacing above and below the topmost and
-                // bottommost dots in the grid and because UX mocks specify the height without that
-                // spacing, the actual height needs to be defined slightly bigger than the UX mock
-                // height.
-                height = (262 * rowCount / 2).dp,
-            )
-        }
+        remember(colCount, rowCount) { DpSize(width = maxWidth, height = maxHeight) }
 
-    Box(modifier = modifier.fillMaxWidth()) {
+    // Consume pointer events on the sides of the pattern area to avoid the bouncer from being
+    // dismissed.
+    Box(modifier = modifier.fillMaxWidth().consumeAllPointerEvents()) {
         Canvas(
             Modifier.sysuiResTag("bouncer_pattern_root")
                 .width(dotDrawingArea.width)
@@ -555,6 +550,21 @@ private fun offset(
         default / 2
     } else {
         default
+    }
+}
+
+/**
+ * Helper modifier that consumes all pointer events and prevents it from being propagated further up
+ * the hierarchy.
+ */
+private fun Modifier.consumeAllPointerEvents(): Modifier {
+    return this.pointerInput(Unit) {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent()
+                event.changes.fastForEach { it.consume() }
+            }
+        }
     }
 }
 
