@@ -66,8 +66,8 @@ object PerfettoSdkTracer : RecompositionStateTracingObserver.Tracer {
         terminatingFlowIds: LongArray,
         debugInfo: String,
     ): PerfettoTrackEventExtra.Builder {
-        flowIds.forEach { setFlow(it) }
-        terminatingFlowIds.forEach { setTerminatingFlow(it) }
+        flowIds.forEach { addFlow(it) }
+        terminatingFlowIds.forEach { addTerminatingFlow(it) }
         addArg("debugInfo", debugInfo)
         return this
     }
