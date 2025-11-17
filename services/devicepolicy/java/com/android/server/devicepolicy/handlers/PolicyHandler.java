@@ -223,7 +223,7 @@ public class PolicyHandler<T> {
             @Nullable PolicyValueTransport transportValue) {
         validateScope(scope);
 
-        T value = convertValue(caller, transportValue);
+        T value = convertValue(transportValue);
 
         checkPermissions(caller, scope);
         validateValue(caller, value);
@@ -240,7 +240,7 @@ public class PolicyHandler<T> {
 
         T value = getPolicyValue(caller, scope);
 
-        return convertValue(caller, value);
+        return convertValue(value);
     }
 
     /**
@@ -265,8 +265,7 @@ public class PolicyHandler<T> {
      * stored.
      */
     @Nullable
-    protected T convertValue(
-            @NonNull CallerIdentity caller, @Nullable PolicyValueTransport transportValue) {
+    protected T convertValue(@Nullable PolicyValueTransport transportValue) {
         if (transportValue == null) {
             return null;
         }
@@ -275,7 +274,7 @@ public class PolicyHandler<T> {
 
     /** Converts the given value to the corresponding {@link PolicyValueTransport}. */
     @Nullable
-    protected PolicyValueTransport convertValue(@NonNull CallerIdentity caller, @Nullable T value) {
+    protected PolicyValueTransport convertValue(@Nullable T value) {
         if (value == null) {
             return null;
         }
