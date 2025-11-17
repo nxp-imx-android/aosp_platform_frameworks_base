@@ -2775,17 +2775,6 @@ public class UserManager {
     }
 
     /**
-     * Returns whether the device supports Private Profile
-     * @hide
-     */
-    public static boolean isPrivateProfileEnabled() {
-        if (android.multiuser.Flags.blockPrivateSpaceCreation()) {
-            return !ActivityManager.isLowRamDeviceStatic();
-        }
-        return true;
-    }
-
-    /**
      * Returns whether multiple admins are enabled on the device
      * @hide
      */
