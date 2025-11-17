@@ -358,6 +358,13 @@ class Task extends TaskFragment {
     boolean isPersistable = false;
     int maxRecents;
 
+    /**
+     * Whether the package update for this task is handled outside of the system. When a package
+     * update is initiated system can either let the task to be handled by Shell or handle it.
+     * By default it is set to false and the task is handled by the system during the process.
+     */
+    boolean mHandlePackageUpdate = false;
+
     /** Only used for persistable tasks, otherwise 0. The last time this task was moved. Used for
      *  determining the order when restoring. */
     long mLastTimeMoved;
