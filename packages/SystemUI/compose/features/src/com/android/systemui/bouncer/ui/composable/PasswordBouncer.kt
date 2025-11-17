@@ -81,7 +81,7 @@ internal fun ContentScope.PasswordBouncer(
     val isPasswordRevealed by viewModel.isPasswordRevealed.collectAsStateWithLifecycle()
     val selectedUserId by viewModel.selectedUserId.collectAsStateWithLifecycle()
 
-    DisposableEffect(Unit) { onDispose { viewModel.onHidden() } }
+    DisposableEffect(Unit) { onDispose { viewModel.resetTextFieldFocus() } }
 
     LaunchedEffect(animateFailure) {
         if (animateFailure) {

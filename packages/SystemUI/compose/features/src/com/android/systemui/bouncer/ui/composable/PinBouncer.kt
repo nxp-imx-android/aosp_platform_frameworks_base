@@ -40,7 +40,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -82,8 +81,6 @@ import kotlinx.coroutines.launch
 /** Renders the PIN button pad. */
 @Composable
 fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifier = Modifier) {
-    DisposableEffect(Unit) { onDispose { viewModel.onHidden() } }
-
     val isInputEnabled: Boolean by viewModel.isInputEnabled.collectAsStateWithLifecycle()
     val backspaceButtonAppearance by
         viewModel.backspaceButtonAppearance.collectAsStateWithLifecycle()
@@ -166,9 +163,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
                 ),
             isInputEnabled = isInputEnabled,
             onClicked = viewModel::onAuthenticateButtonClicked,
-            onPointerDown = {
-                viewModel.onDown()
-            },
+            onPointerDown = { viewModel.onDown() },
             appearance = confirmButtonAppearance,
             scaling = buttonScaleAnimatables[11]::value,
             elementId = "key_enter",
