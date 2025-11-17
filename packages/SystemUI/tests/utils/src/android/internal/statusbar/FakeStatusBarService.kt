@@ -17,6 +17,7 @@ package android.internal.statusbar
 
 import android.annotation.EnforcePermission
 import android.app.Notification
+import android.app.motioncues.MotionCuesSettings
 import android.content.ComponentName
 import android.graphics.Rect
 import android.graphics.drawable.Icon
@@ -445,6 +446,13 @@ class FakeStatusBarService : IStatusBarService.Stub() {
     override fun showGlobalActionsFromApp(future: AndroidFuture<*>) {
         showGlobalActionsFromApp_enforcePermission()
     }
+
+    override fun startMotionCuesSession(
+        componentName: ComponentName?,
+        motionCuesSettings: MotionCuesSettings,
+    ) {}
+
+    override fun endMotionCuesSession() {}
 
     companion object {
         const val DEFAULT_DISPLAY_ID = Display.DEFAULT_DISPLAY

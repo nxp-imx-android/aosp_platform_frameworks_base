@@ -9839,6 +9839,24 @@
         android:protectionLevel="internal|privileged"
         android:featureFlag="android.app.statusbar_api_show_power_menu" />
 
+    <!-- @SystemApi Allows an application to draw motion cues.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(android.app.Flags.FLAG_ENABLE_MOTION_CUES)
+         @hide -->
+    <permission
+        android:name="android.permission.DRAW_MOTION_CUES"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.app.enable_motion_cues" />
+
+    <!-- @SystemApi Allows the holder to bind to the motion cues service
+         <p>Protection level: signature|privileged
+         @FlaggedApi(android.app.Flags.FLAG_ENABLE_MOTION_CUES)
+         @hide -->
+    <permission
+        android:name="android.permission.BIND_MOTION_CUES_SERVICE"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.app.enable_motion_cues" />
+
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
     <!-- Attribution for Country Detector. -->
