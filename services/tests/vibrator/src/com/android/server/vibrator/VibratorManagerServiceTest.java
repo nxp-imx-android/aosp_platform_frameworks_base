@@ -175,6 +175,7 @@ public class VibratorManagerServiceTest {
     // Time to allow for a cancellation to complete and the vibrators to become idle.
     private static final int CLEANUP_TIMEOUT_MILLIS = 100;
     private static final int TEST_PCM_SAMPLE_RATE = 48_000;
+    private static final float TOLERANCE = 1e-3f;
     private static final int UID = Process.ROOT_UID;
     private static final int VIRTUAL_DEVICE_ID = 1;
     private static final String PACKAGE_NAME = "package";
@@ -3967,7 +3968,7 @@ public class VibratorManagerServiceTest {
     public void startHapticGeneratorSession_success_createsAndReadsFromStream() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
         // Use a VINTF stable parcelable as a fake vendor parcelable for testing.
         CompositeEffect vendorParcelable = new CompositeEffect();
@@ -3978,7 +3979,7 @@ public class VibratorManagerServiceTest {
         HapticGeneratorSession.Config config = new HapticGeneratorSession.Config(
                 createPcmHapticAudioFormat(),
                 createParcelableHolder(PARCELABLE_STABILITY_VINTF, vendorParcelable));
-        IHapticGeneratorSession session = startHapticGeneratorSession(1, config);
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1, config);
         assertThat(session).isNotNull();
         assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(1);
 
@@ -3999,13 +4000,9 @@ public class VibratorManagerServiceTest {
 
         // Validate effect is converted successfully.
         assertThat(mHalHelper.getAllHapticGeneratorEffects()).hasSize(1);
-        VibrationEffectContent halEffect = mHalHelper.getAllHapticGeneratorEffects().get(0);
-        assertThat(halEffect.getTag()).isEqualTo(VibrationEffectContent.Tag.oneShotPrimitive);
-        // Default vibraiton amplitude resolved before effect was sent to the HAL
-        assertThat(halEffect.getOneShotPrimitive().amplitude)
-                .isWithin(1e-3f)
-                .of(mVibrationConfig.getDefaultVibrationAmplitude() / 255f);
-        assertThat(halEffect.getOneShotPrimitive().timeMillis).isEqualTo(10);
+        // Default vibration amplitude resolved before effect was sent to the HAL
+        assertOneShotEffectContent(mHalHelper.getAllHapticGeneratorEffects().get(0),
+                mVibrationConfig.getDefaultVibrationAmplitude(), 10);
 
         // Read from the stream
         byte[] buffer = new byte[20];
@@ -4026,12 +4023,82 @@ public class VibratorManagerServiceTest {
 
     @Test
     @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void startHapticGeneratorSession_differentEffects_resolvesAndAdaptsEffects()
+            throws Exception {
+        mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHalHelper.setVibratorIds(new int[]{1});
+        mHalHelper.getVibratorHelper(1).setCapabilities(
+                IVibrator.CAP_AMPLITUDE_CONTROL, IVibrator.CAP_COMPOSE_EFFECTS);
+        mHalHelper.getVibratorHelper(1).setSupportedEffects(EFFECT_CLICK);
+        mHalHelper.getVibratorHelper(1).setSupportedPrimitives(PRIMITIVE_CLICK, PRIMITIVE_TICK);
+        VibratorManagerService service = createSystemReadyService();
+
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1,
+                createPcmHapticGeneratorSessionConfig());
+        assertThat(session).isNotNull();
+        assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(1);
+
+        session.generateHapticChannelStream(VibrationEffect.createOneShot(1, DEFAULT_AMPLITUDE));
+        session.generateHapticChannelStream(VibrationEffect.createWaveform(
+                new long[] { 10, 20, 30 }, new int[] { 50, 75, 100 }, -1));
+        session.generateHapticChannelStream(VibrationEffect.createPredefined(EFFECT_CLICK));
+        session.generateHapticChannelStream(
+                VibrationEffect.startComposition()
+                        .addPrimitive(PRIMITIVE_CLICK, 0.5f, 10)
+                        .addPrimitive(PRIMITIVE_TICK, 0.8f, 20)
+                        .compose());
+        assertThat(mHalHelper.getHapticGeneratorStreamStartCount()).isEqualTo(4);
+
+        // 1 one-shot + 3 waveform + 1 predefined + 2 primitives
+        List<VibrationEffectContent> effects = mHalHelper.getAllHapticGeneratorEffects();
+        assertThat(effects).hasSize(7);
+        assertOneShotEffectContent(effects.get(0),
+                mVibrationConfig.getDefaultVibrationAmplitude(), 1);
+        assertOneShotEffectContent(effects.get(1), 50, 10);
+        assertOneShotEffectContent(effects.get(2), 75, 20);
+        assertOneShotEffectContent(effects.get(3), 100, 30);
+        assertPredefinedEffectContent(effects.get(4), EFFECT_CLICK, EFFECT_STRENGTH_MEDIUM);
+        assertPrimitiveEffectContent(effects.get(5), PRIMITIVE_CLICK, 0.5f, 10);
+        assertPrimitiveEffectContent(effects.get(6), PRIMITIVE_TICK, 0.8f, 20);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void startHapticGeneratorSession_unsupportedEffect_usesFallbackOrFails()
+            throws Exception {
+        mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHalHelper.setVibratorIds(new int[]{1});
+        VibratorManagerService service = createSystemReadyService();
+
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1,
+                createPcmHapticGeneratorSessionConfig());
+        assertThat(session).isNotNull();
+        assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(1);
+
+        // Predefined effects have fallbacks.
+        session.generateHapticChannelStream(VibrationEffect.createPredefined(EFFECT_CLICK));
+        // Primitive effects fail.
+        assertThrows(IllegalArgumentException.class,
+                () -> session.generateHapticChannelStream(
+                        VibrationEffect.startComposition().addPrimitive(PRIMITIVE_CLICK).compose())
+        );
+        assertThat(mHalHelper.getHapticGeneratorStreamStartCount()).isEqualTo(1);
+
+        // legacy waveform used as fallback for the click effect.
+        assertThat(mHalHelper.getAllHapticGeneratorEffects()).isNotEmpty();
+        for (VibrationEffectContent content : mHalHelper.getAllHapticGeneratorEffects()) {
+            assertThat(content.getTag()).isEqualTo(VibrationEffectContent.Tag.oneShotPrimitive);
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
     public void startHapticGeneratorSession_halUnsupported_returnsError() throws Exception {
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
         IHapticGeneratorSessionCallback callback = mock(IHapticGeneratorSessionCallback.class);
-        mService.startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig(), callback);
+        service.startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig(), callback);
         mTestLooper.dispatchAll();
 
         assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(0);
@@ -4046,9 +4113,9 @@ public class VibratorManagerServiceTest {
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
-        IHapticGeneratorSession session = startHapticGeneratorSession(1,
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1,
                 createPcmHapticGeneratorSessionConfig());
         assertThat(session).isNotNull();
         VibrationEffect effect = VibrationEffect.createOneShot(10, DEFAULT_AMPLITUDE);
@@ -4072,13 +4139,13 @@ public class VibratorManagerServiceTest {
     public void startHapticGeneratorSession_invalidConfig_returnsError() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
         // Cannot construct an invalid config, use a mock to check that validate() will be called.
         HapticGeneratorSession.Config config = mock(HapticGeneratorSession.Config.class);
         doThrow(IllegalArgumentException.class).when(config).validate();
         IHapticGeneratorSessionCallback callback = mock(IHapticGeneratorSessionCallback.class);
-        mService.startHapticGeneratorSession(1, config, callback);
+        service.startHapticGeneratorSession(1, config, callback);
         mTestLooper.dispatchAll();
 
         assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(0);
@@ -4093,7 +4160,7 @@ public class VibratorManagerServiceTest {
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
         // Invalid channel will fail conversion.
         HapticGeneratorSession.Config config = new HapticGeneratorSession.Config(
@@ -4104,7 +4171,7 @@ public class VibratorManagerServiceTest {
                         .build(),
                 null);
         IHapticGeneratorSessionCallback callback = mock(IHapticGeneratorSessionCallback.class);
-        mService.startHapticGeneratorSession(1, config, callback);
+        service.startHapticGeneratorSession(1, config, callback);
         mTestLooper.dispatchAll();
 
         assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(0);
@@ -4118,7 +4185,7 @@ public class VibratorManagerServiceTest {
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
         // VibrationEffect is not a VINTF stable parcelable.
         Parcelable vendorParcelable = VibrationEffect.createOneShot(100, 100);
@@ -4126,7 +4193,7 @@ public class VibratorManagerServiceTest {
                 createPcmHapticAudioFormat(),
                 createParcelableHolder(PARCELABLE_STABILITY_LOCAL, vendorParcelable));
         IHapticGeneratorSessionCallback callback = mock(IHapticGeneratorSessionCallback.class);
-        mService.startHapticGeneratorSession(1, config, callback);
+        service.startHapticGeneratorSession(1, config, callback);
         mTestLooper.dispatchAll();
 
         assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(0);
@@ -4139,10 +4206,10 @@ public class VibratorManagerServiceTest {
     public void startHapticGeneratorSession_nullConfig_returnsError() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
         IHapticGeneratorSessionCallback callback = mock(IHapticGeneratorSessionCallback.class);
-        mService.startHapticGeneratorSession(1, /* config= */ null, callback);
+        service.startHapticGeneratorSession(1, /* config= */ null, callback);
         mTestLooper.dispatchAll();
 
         assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(0);
@@ -4156,10 +4223,10 @@ public class VibratorManagerServiceTest {
         mHalHelper.setStartHapticSessionShouldFail(true);
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
         IHapticGeneratorSessionCallback callback = mock(IHapticGeneratorSessionCallback.class);
-        mService.startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig(), callback);
+        service.startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig(), callback);
         mTestLooper.dispatchAll();
 
         assertThat(mHalHelper.getHapticGeneratorSessionStartCount()).isEqualTo(0);
@@ -4172,7 +4239,7 @@ public class VibratorManagerServiceTest {
     public void startHapticGeneratorSession_clientDies_sessionIsCleanedUp() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
         // Use a real binder token so we can simulate its death
         Binder clientToken = spy(new Binder());
@@ -4180,7 +4247,7 @@ public class VibratorManagerServiceTest {
                 ArgumentCaptor.forClass(IBinder.DeathRecipient.class);
         CountDownLatch latch = new CountDownLatch(1);
 
-        mService.startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig(),
+        service.startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig(),
                 new IHapticGeneratorSessionCallback.Stub() {
                     @Override
                     public void onSessionStarted(IHapticGeneratorSession session) {
@@ -4220,18 +4287,17 @@ public class VibratorManagerServiceTest {
         // Setup
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
-        IHapticGeneratorSession session =
-                startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig());
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1,
+                createPcmHapticGeneratorSessionConfig());
         assertThat(session).isNotNull();
 
         // Attempting to generate a stream with a repeating effect should throw an
         // IllegalArgumentException.
         VibrationEffect repeatingEffect = VibrationEffect.createWaveform(new long[]{100, 100}, 0);
-        assertThrows(IllegalArgumentException.class, () -> {
-            session.generateHapticChannelStream(repeatingEffect);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> session.generateHapticChannelStream(repeatingEffect));
 
         assertThat(mHalHelper.getHapticGeneratorStreamStartCount()).isEqualTo(0);
     }
@@ -4241,18 +4307,17 @@ public class VibratorManagerServiceTest {
     public void generateHapticChannelInputStream_rejectsVendorEffect() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
-        IHapticGeneratorSession session =
-                startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig());
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1,
+                createPcmHapticGeneratorSessionConfig());
         assertThat(session).isNotNull();
 
         PersistableBundle vendorData = new PersistableBundle();
         vendorData.putString("key", "value");
         VibrationEffect vendorEffect = VibrationEffect.createVendorEffect(vendorData);
-        assertThrows(IllegalArgumentException.class, () -> {
-            session.generateHapticChannelStream(vendorEffect);
-        });
+        assertThrows(IllegalArgumentException.class,
+                () -> session.generateHapticChannelStream(vendorEffect));
 
         assertThat(mHalHelper.getHapticGeneratorStreamStartCount()).isEqualTo(0);
     }
@@ -4263,10 +4328,10 @@ public class VibratorManagerServiceTest {
             throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
-        IHapticGeneratorSession session =
-                startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig());
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1,
+                createPcmHapticGeneratorSessionConfig());
         assertThat(session).isNotNull();
 
         mHalHelper.setStartHapticStreamShouldFail(true);
@@ -4283,10 +4348,10 @@ public class VibratorManagerServiceTest {
     public void hapticChannelInputStream_readAfterStreamClosed_returnsError() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
-        IHapticGeneratorSession session =
-                startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig());
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1,
+                createPcmHapticGeneratorSessionConfig());
         assertThat(session).isNotNull();
 
         VibrationEffect effect = VibrationEffect.createOneShot(10, DEFAULT_AMPLITUDE);
@@ -4307,10 +4372,10 @@ public class VibratorManagerServiceTest {
     public void hapticChannelInputStream_readAfterSessionClosed_returnsError() throws Exception {
         mHalHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
         mHalHelper.setVibratorIds(new int[]{1});
-        createService();
+        VibratorManagerService service = createSystemReadyService();
 
-        IHapticGeneratorSession session =
-                startHapticGeneratorSession(1, createPcmHapticGeneratorSessionConfig());
+        IHapticGeneratorSession session = startHapticGeneratorSession(service, 1,
+                createPcmHapticGeneratorSessionConfig());
         assertThat(session).isNotNull();
 
         VibrationEffect effect = VibrationEffect.createOneShot(10, DEFAULT_AMPLITUDE);
@@ -4327,12 +4392,12 @@ public class VibratorManagerServiceTest {
         assertThat(bytesRead).isEqualTo(HalVibratorManagerHelper.READ_STATUS_ERROR_CLOSED);
     }
 
-    private IHapticGeneratorSession startHapticGeneratorSession(int vibratorId,
-            HapticGeneratorSession.Config config) throws InterruptedException {
+    private IHapticGeneratorSession startHapticGeneratorSession(VibratorManagerService service,
+            int vibratorId, HapticGeneratorSession.Config config) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<IHapticGeneratorSession> sessionRef = new AtomicReference<>();
 
-        mService.startHapticGeneratorSession(vibratorId, config,
+        service.startHapticGeneratorSession(vibratorId, config,
                 new IHapticGeneratorSessionCallback.Stub() {
                     @Override
                     public void onSessionStarted(IHapticGeneratorSession session) {
@@ -4376,6 +4441,32 @@ public class VibratorManagerServiceTest {
         assertEquals(
                 expectedCanApplyBypassFlags,
                 attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY));
+    }
+
+    private void assertOneShotEffectContent(VibrationEffectContent content, int amplitude,
+            int duration) {
+        assertNotNull(content);
+        assertThat(content.getTag()).isEqualTo(VibrationEffectContent.Tag.oneShotPrimitive);
+        assertThat(content.getOneShotPrimitive().amplitude)
+                .isWithin(TOLERANCE).of(amplitude / 255f);
+        assertThat(content.getOneShotPrimitive().timeMillis).isEqualTo(duration);
+    }
+
+    private void assertPredefinedEffectContent(VibrationEffectContent content, int effectId,
+            int effectStrength) {
+        assertNotNull(content);
+        assertThat(content.getTag()).isEqualTo(VibrationEffectContent.Tag.predefined);
+        assertThat(content.getPredefined().effect).isEqualTo(effectId);
+        assertThat(content.getPredefined().strength).isEqualTo(effectStrength);
+    }
+
+    private void assertPrimitiveEffectContent(VibrationEffectContent content, int primitiveId,
+            float scale, int delay) {
+        assertNotNull(content);
+        assertThat(content.getTag()).isEqualTo(VibrationEffectContent.Tag.composite);
+        assertThat(content.getComposite().primitive).isEqualTo(primitiveId);
+        assertThat(content.getComposite().scale).isWithin(TOLERANCE).of(scale);
+        assertThat(content.getComposite().delayMs).isEqualTo(delay);
     }
 
     private VibrationEffectSegment expectedPrebaked(int effectId) {

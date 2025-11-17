@@ -114,10 +114,11 @@ public class HapticGeneratorSession extends IHapticGeneratorSession.Stub impleme
         Preconditions.checkArgument(effect.getDuration() < Long.MAX_VALUE,
                 "Can't generate haptic channel stream for an indefinitely repeating effect.");
         effect.validate();
-
         VibrationEffect resolvedEffect =
                 effect.resolve(mVibrationConfig.getDefaultVibrationAmplitude());
         VibrationEffect adaptedEffect = mDeviceAdapter.adaptToVibrator(mVibratorId, resolvedEffect);
+        Preconditions.checkArgument(adaptedEffect != null,
+                "Haptic channel stream can only be generated for supported effects.");
 
         //TODO(437846004) create a pathway for VendorEffects
         if (!(adaptedEffect instanceof VibrationEffect.Composed composed)) {
