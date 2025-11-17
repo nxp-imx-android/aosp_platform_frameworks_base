@@ -3322,7 +3322,7 @@
          since then the main user is a permanent admin. -->
     <bool name="config_disallowRemovingLastAdminUser">true</bool>
 
-    <!-- Whether all secondary users (and the system user) are eligible to have profiles.
+    <!-- Whether all secondary users (and a full system user) are eligible to have profiles.
          If false, only the MainUser is eligible to have profiles.
           NOTE: this feature not supported yet, and CTS will fail if it's set to
           true.
@@ -3355,11 +3355,13 @@
          This config is only relevant on Headless System User Mode (HSUM) devices. -->
     <bool name="config_canSwitchToHeadlessSystemUser">false</bool>
 
-    <!-- Whether UI for multi user should be shown.
+    <!-- Whether this device supports multiple switchable users.
+         Note that, even if false, multiple users such as profiles can still be supported since
+         they are not switchable.
          Note: If true, it is expected that secondary users are supported on the device (at least
          for testing purposes, even if in practice the UI really only allows other switchable
          types, such as restricted profiles or guests, to be created).
-         @deprecated  Use config_multiuserMaximumUsers instead.
+         @deprecated  Rely on config_multiuserMaximumUsers instead. For now, OEMs must set both.
          This config will likely be removed in the future; config_multiuserMaximumUsers, which now
          only applies to full users, not profiles, should be updated accordingly as needed.
          TODO(b/435521983): Remove this since it's now made redundant by config_multiuserMaximumUsers
