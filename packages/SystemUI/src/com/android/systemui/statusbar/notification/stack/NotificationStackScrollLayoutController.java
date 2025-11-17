@@ -1500,7 +1500,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     private void updateAlpha() {
         if (mView != null) {
             float newAlpha = Math.min(mMaxAlphaForRebind,
-                    Math.min(Math.min(mMaxAlphaFromView, mMaxAlphaForKeyguard),
+                    Math.min(Math.min(mMaxAlphaFromView,
+                                    mView.onKeyguard() ? mMaxAlphaForKeyguard : 1f),
                             Math.min(mMaxAlphaForUnhide, mMaxAlphaForGlanceableHub)));
             mView.setAlpha(newAlpha);
         }
