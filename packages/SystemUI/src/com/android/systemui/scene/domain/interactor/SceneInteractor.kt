@@ -28,6 +28,7 @@ import com.android.systemui.authentication.domain.interactor.AuthenticationInter
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
+import com.android.systemui.deviceentry.domain.interactor.RestrictedModeInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.scenetransition.LockscreenSceneTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -77,6 +78,7 @@ constructor(
     private val sceneFamilyResolvers: Lazy<Map<SceneKey, @JvmSuppressWildcards SceneResolver>>,
     private val deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
     private val keyguardEnabledInteractor: Lazy<KeyguardEnabledInteractor>,
+    private val restrictedModeInteractor: RestrictedModeInteractor,
     private val disabledContentInteractor: DisabledContentInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val authenticationInteractor: Lazy<AuthenticationInteractor>,
@@ -600,6 +602,18 @@ constructor(
             return false
         }
 
+        if (!restrictedModeInteractor.isSceneChangeAllowed(toScene = to)) {
+            logger.logContentChangeRejection(
+                from = from,
+                to = to,
+                originalChangeReason = loggingReason,
+                rejectionReason =
+                    "Only scene changes to Lockscreen and Occluded are allowed " +
+                        "when the device is in restricted mode",
+            )
+            return false
+        }
+
         val inMidTransitionFromGone =
             (transitionState.value as? ObservableTransitionState.Transition)?.fromContent ==
                 Scenes.Gone
@@ -707,6 +721,17 @@ constructor(
                 false
             }
 
+            !restrictedModeInteractor.isOverlayChangeAllowed(to) -> {
+                logger.logContentChangeRejection(
+                    from = from,
+                    to = to,
+                    originalChangeReason = loggingReason,
+                    rejectionReason =
+                        "Cannot show any other overlays when device is in restricted mode.",
+                )
+                false
+            }
+
             else -> true
         }
     }
@@ -718,7 +743,9 @@ constructor(
     fun filteredUserActions(
         unfiltered: Flow<Map<UserAction, UserActionResult>>
     ): Flow<Map<UserAction, UserActionResult>> {
-        return disabledContentInteractor.filteredUserActions(unfiltered)
+        return restrictedModeInteractor.filteredUserActions(
+            disabledContentInteractor.filteredUserActions(unfiltered)
+        )
     }
 
     /**
