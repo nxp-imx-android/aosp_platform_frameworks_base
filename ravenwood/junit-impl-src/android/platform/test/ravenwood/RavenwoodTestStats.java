@@ -17,8 +17,10 @@ package android.platform.test.ravenwood;
 
 import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.platform.test.annotations.internal.InnerRunner;
+import android.platform.test.ravenwood.RavenwoodEnablementChecker.DisabledOnRavenwoodAssumptionException;
 import android.util.Log;
 
 import com.android.ravenwood.common.RavenwoodInternalUtils;
@@ -43,8 +45,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
@@ -61,9 +65,9 @@ import java.util.regex.Pattern;
 public class RavenwoodTestStats {
     private static final String TAG = RavenwoodInternalUtils.TAG;
     private static final String HEADER =
-            "Type,Module,Class,Method,RawMethodName,Reason,Annotations,Passed,Failed,Skipped,"
-            + "DurationMillis";
-    private static final String FORMAT = "%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%f\n";
+            "Type,Label,Module,Class,Method,RawMethodName,AtestTarget,Reason,Annotations,"
+            + "Source,Line,Passed,Failed,Skipped,DurationMillis";
+    private static final String FORMAT = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%f\n";
 
     private static RavenwoodTestStats sInstance;
 
@@ -89,6 +93,9 @@ public class RavenwoodTestStats {
     private static String getCaller(Throwable throwable) {
         var caller = throwable.getStackTrace()[0];
         return caller.getClassName() + "#" + caller.getMethodName();
+    }
+
+    record SourceLocation(Description testDescription, String filename, int line) {
     }
 
     record Outcome(Description testDescription, Result result, Duration duration, Failure failure) {
@@ -136,6 +143,13 @@ public class RavenwoodTestStats {
                             // The test hit a stub API
                             return getCaller(ex);
                         }
+                        if (ex instanceof AssertionError) {
+                            if (ex.getMessage() == null) {
+                                return "AssertionError: [No message]";
+                            } else {
+                                return "AssertionError: " + ex.getMessage();
+                            }
+                        }
                         // We don't actually know what's up, just report the exception class name.
                         return ex.getClass().getName();
                     } else {
@@ -145,12 +159,44 @@ public class RavenwoodTestStats {
             }
             return "-";
         }
+
+        /**
+         * If the result is a failure (skip or fail), return the source file information of
+         * the failed line in the test class file.
+         */
+        @NonNull
+        public SourceLocation failureSourceLocation() {
+            // Bail early if it doesn't have an exception.
+            if (failure == null || failure.getException() == null) {
+                return new SourceLocation(testDescription, "", 0);
+            }
+            var testClass = testDescription.getTestClass();
+            var testClassName = testClass.getName();
+
+            // Iterate over stack frames of the exception and its causes, and find the
+            // first frame from the test class.
+            for (var e = failure.getException(); e != null; e = e.getCause()) {
+                for (var frame : e.getStackTrace()) {
+                    if (frame.getClassName().equals(testClassName)) {
+                        // Test class found, return the filename and the line number.
+                        var pkg = testClass.getPackageName().replace('.', '/');
+                        return new SourceLocation(
+                                testDescription,
+                                pkg + "/" + frame.getFileName(),
+                                frame.getLineNumber());
+                    }
+                }
+            }
+
+            return new SourceLocation(testDescription, "[Unable to find source file]", 0);
+        }
     }
 
     private final String mTestModuleName;
     private final File mOutputSymlinkFile;
     private final PrintWriter mOutputWriter;
     private final Map<String, Map<String, Outcome>> mStats = new LinkedHashMap<>();
+    private final Set<Class<?>> mDisabledClasses = new HashSet<>();
 
     /** Ctor */
     public RavenwoodTestStats() {
@@ -194,9 +240,21 @@ public class RavenwoodTestStats {
     }
 
     /**
+     * Called by the test runner when skipping a whole test class to propagate when a test
+     * is skipped for @DisabledOnRavenwood via a side channel. (Because the normal notifier
+     * flow doesn't have a place for us to put this information.)
+     */
+    public void onTestDisabled(@NonNull Class<?> clazz) {
+        mDisabledClasses.add(clazz);
+    }
+
+    /**
      * Make sure the string properly escapes commas for CSV fields.
      */
-    private static String normalize(String s) {
+    private static String escape(@Nullable String s) {
+        if (s == null || s.isEmpty()) {
+            return "";
+        }
         return '"' + s.replace("\"", "\"\"") + '"';
     }
 
@@ -295,22 +353,32 @@ public class RavenwoodTestStats {
 
                 testClass = outcome.testDescription.getTestClass();
 
+                var loc = outcome.failureSourceLocation();
+
                 mOutputWriter.printf(FORMAT,
                         "m", // Type: method
+                        // Method label: "P"assed, "F"ailed, "S"kipped, "D"isabled
+                        buildMethodLabel(outcome),
                         mTestModuleName, className,
-                        normalize(method), normalize(rawMethodName),
-                        normalize(outcome.reason()),
-                        normalize(getAnnotations(outcome.testDescription)),
+                        escape(method), escape(rawMethodName),
+                        escape(buildAtestTarget(testClass, method)),
+                        escape(outcome.reason()),
+                        escape(getAnnotations(outcome.testDescription)),
+                        escape(loc.filename()),
+                        loc.line(),
                         outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
                         outcome.duration.toMillis() / 1000f);
             }
-
             mOutputWriter.printf(FORMAT,
                     "c", // Type: class
+                    buildClassLabel(testClass, passed, failed, skipped),
                     mTestModuleName, className,
-                    "-", "-", // method name / row method name.
+                    "-", // method name
+                    "-", // raw method name
+                    escape(buildAtestTarget(testClass, null)),
                     "-", // reason.
-                    normalize(getAnnotations(testClass)),
+                    escape(getAnnotations(testClass)),
+                    "", 0, // Source info
                     passed, failed, skipped,
                     totalDuration.toMillis() / 1000f);
         });
@@ -319,6 +387,67 @@ public class RavenwoodTestStats {
         Log.i(TAG, "Added result to stats file: file://" + mOutputSymlinkFile);
 
         copyToArtifactsDir();
+    }
+
+    /** Generate a label for a method row. */
+    private String buildMethodLabel(Outcome outcome) {
+        var label = "[Unknown]";
+        if (outcome.passedCount() > 0) {
+            label = "P"; // Passed
+        } else if (outcome.skippedCount() > 0) {
+            // Special case @DisabledOnRavenwood.
+            var isDisabledOnRavenwood =
+                    mDisabledClasses.contains(outcome.testDescription.getTestClass())
+                    || outcome.failure != null && outcome.failure.getException()
+                        instanceof DisabledOnRavenwoodAssumptionException;
+            if (isDisabledOnRavenwood) {
+                label = "D"; // Disabled (normally @DisabledOnRavenwood)
+            } else {
+                label = "S"; // Skipped (normally @Ignore or assumption failure)
+            }
+        } else if (outcome.failedCount() > 0) {
+            label = "F"; // Failed
+        }
+        return label;
+    }
+
+    /** Generate a label for a class row. */
+    private StringBuilder buildClassLabel(
+            @Nullable Class<?> clazz, int passed, int failed, int skipped) {
+        var label = new StringBuilder();
+        if (passed > 0) {
+            label.append("P"); // Passed
+        }
+        if (failed > 0) {
+            label.append("F"); // Failed
+        }
+        if (skipped > 0) {
+            if (mDisabledClasses.contains(clazz)) {
+                label.append("D"); // Disabled (normally @DisabledOnRavenwood)
+            } else {
+                label.append("S"); // Skipped (normally @Ignore)
+            }
+        }
+        // Fallback
+        if (label.isEmpty()) {
+            label.append("[Unknown]");
+        }
+        return label;
+    }
+
+    private String buildAtestTarget(@Nullable Class<?> clazz, @Nullable String method) {
+        if (clazz == null) { // Shouldn't happen, but just in case.
+            return mTestModuleName;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(mTestModuleName);
+        sb.append(":");
+        sb.append(clazz.getName());
+        if (method != null && !"<init>".equals(method)) {
+            sb.append("#");
+            sb.append(extractMethodName(method));
+        }
+        return sb.toString();
     }
 
     private void copyToArtifactsDir() {
@@ -451,7 +580,7 @@ public class RavenwoodTestStats {
             var description = failure.getDescription();
             addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    createOutcome(description, Result.Skipped),
+                    createOutcome(description, Result.Skipped, failure),
                     "  testAssumptionFailure: ",
                     failure);
         }

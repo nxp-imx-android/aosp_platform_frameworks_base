@@ -34,7 +34,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple
     testSuiteFinished: classes
@@ -185,7 +185,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
     testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
     testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled
     testSuiteFinished: classes
@@ -223,10 +223,10 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled
     testSuiteFinished: classes
@@ -471,7 +471,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
@@ -510,10 +510,10 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testSuiteStarted: classes
     testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)

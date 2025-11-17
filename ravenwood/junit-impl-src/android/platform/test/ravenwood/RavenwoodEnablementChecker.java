@@ -31,6 +31,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
 
 import java.io.BufferedReader;
@@ -64,6 +65,15 @@ import java.util.regex.Pattern;
  */
 public abstract class RavenwoodEnablementChecker {
     private static final String TAG = RavenwoodInternalUtils.TAG;
+
+    /**
+     * AssumptionViolatedException subclass specifically used for "disabled on ravenwood tests".
+     */
+    public static class DisabledOnRavenwoodAssumptionException extends AssumptionViolatedException {
+        public DisabledOnRavenwoodAssumptionException(String message) {
+            super(message);
+        }
+    }
 
     /**
      * How we want to run each test class / method.
@@ -190,6 +200,17 @@ public abstract class RavenwoodEnablementChecker {
                     runMode, parser.getResult(), overridingPattern);
         } catch (IOException e) {
             SneakyThrow.sneakyThrow(e); // IOException shouldn't happen, but just in case
+        }
+    }
+
+    /**
+     * Throws {@link DisabledOnRavenwoodAssumptionException} if a test method is not supposed
+     * to be executed on Ravenwood.
+     */
+    public final void assumeShouldRunTestMethod(Description description) {
+        if (!shouldEnableOnRavenwood(description)) {
+            throw new DisabledOnRavenwoodAssumptionException(
+                    "This test is disabled on Ravenwood: " + description);
         }
     }
 
