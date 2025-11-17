@@ -31,7 +31,7 @@ import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.ActivityStarter
-import com.android.systemui.privacy.OngoingPrivacyChip
+import com.android.systemui.privacy.AbstractOngoingPrivacyChip
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.scene.domain.interactor.DualShadeEducationInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -230,7 +230,7 @@ constructor(
     }
 
     /** Notifies that the privacy chip was clicked. */
-    fun onPrivacyChipClicked(privacyChip: OngoingPrivacyChip) {
+    fun onPrivacyChipClicked(privacyChip: AbstractOngoingPrivacyChip) {
         privacyChipInteractor.onPrivacyChipClicked(privacyChip)
     }
 
