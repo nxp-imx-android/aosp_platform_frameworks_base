@@ -18,6 +18,7 @@ package com.android.settingslib.widget
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -145,7 +146,11 @@ class ListSwitcherDialogFragment : DialogFragment() {
             val item = items[position]
             holder.bind(item, itemListener)
             val v = holder.itemView
-            v.setBackgroundResource(getBackgroundResource(position))
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                v.setBackgroundResource(getBackgroundResource(position))
+            }
+
             v.setPaddingRelative(listItemStartEndPadding, v.paddingTop, listItemStartEndPadding, v.paddingBottom)
         }
 
