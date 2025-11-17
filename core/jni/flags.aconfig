@@ -3,7 +3,7 @@ container: "system"
 
 flag {
   name: "zygote_set_no_swap_system_server"
-  namespace: "watch_performance"
+  namespace: "watch_software_performance"
   description: "Whether system server after fork is applied a no swap profile"
   bug: "454054088"
 }
