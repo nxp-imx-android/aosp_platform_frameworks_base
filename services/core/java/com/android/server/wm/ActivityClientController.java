@@ -62,6 +62,7 @@ import static com.android.server.wm.ActivityTaskManagerService.RELAUNCH_REASON_N
 import static com.android.server.wm.ActivityTaskManagerService.TAG_SWITCH;
 import static com.android.server.wm.ActivityTaskManagerService.enforceNotIsolatedCaller;
 import static com.android.window.flags.Flags.allowDisableActivityRecordInputSink;
+import static com.android.window.flags.Flags.alwaysMoveTaskToBackOnBackPressedFeatureFlag;
 
 import android.Manifest;
 import android.annotation.ColorInt;
@@ -87,6 +88,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManagerInternal;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
@@ -1901,6 +1903,16 @@ class ActivityClientController extends IActivityClientController.Stub {
                 r.getTask().realActivity);
         final Intent baseActivityIntent = isBaseActivity ? rootActivity.intent : null;
 
+        final boolean alwaysMoveTaskToBackOnBackPressed = Resources.getSystem().getBoolean(
+                com.android.internal.R.bool.config_alwaysMoveTaskToBackOnBackPressed);
+
+        if (alwaysMoveTaskToBackOnBackPressedFeatureFlag() && alwaysMoveTaskToBackOnBackPressed) {
+            // Should move the task to back if the config flag is set to true and the activity is
+            // the last running activity in the task and the current activity is the base activity
+            // for the task.
+            return baseActivityIntent != null
+                    && isTopActivityInTaskFragment(r);
+        }
         // If the activity was launched directly from the home screen, then we should
         // refrain from finishing the activity and instead move it to the back to keep it in
         // memory. The requirements for this are:
