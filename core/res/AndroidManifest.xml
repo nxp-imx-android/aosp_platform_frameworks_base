@@ -1304,7 +1304,9 @@
 
    <!-- Allows an application to read document files from external storage.
          <p>Protection level: signature|privileged
-         @FlaggedApi(android.permission.flags.Flags.FLAG_READ_MEDIA_DOCUMENTS_PERMISSION_ENABLED) -->
+         @FlaggedApi(android.permission.flags.Flags.FLAG_READ_MEDIA_DOCUMENTS_PERMISSION_ENABLED)
+         @SystemApi
+         @hide -->
     <permission android:name="android.permission.READ_MEDIA_DOCUMENTS"
                 android:label="@string/permlab_readMediaDocuments"
                 android:description="@string/permdesc_readMediaDocuments"

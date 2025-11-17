@@ -350,6 +350,7 @@ package android {
     field public static final String READ_INSTALL_SESSIONS = "android.permission.READ_INSTALL_SESSIONS";
     field @FlaggedApi("android.security.afl_api") public static final String READ_INTRUSION_DETECTION_STATE = "android.permission.READ_INTRUSION_DETECTION_STATE";
     field @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public static final String READ_LOCATION_BYPASS_ALLOWLIST = "android.permission.READ_LOCATION_BYPASS_ALLOWLIST";
+    field @FlaggedApi("android.permission.flags.read_media_documents_permission_enabled") public static final String READ_MEDIA_DOCUMENTS = "android.permission.READ_MEDIA_DOCUMENTS";
     field public static final String READ_NETWORK_USAGE_HISTORY = "android.permission.READ_NETWORK_USAGE_HISTORY";
     field public static final String READ_OEM_UNLOCK_STATE = "android.permission.READ_OEM_UNLOCK_STATE";
     field public static final String READ_PEOPLE_DATA = "android.permission.READ_PEOPLE_DATA";
