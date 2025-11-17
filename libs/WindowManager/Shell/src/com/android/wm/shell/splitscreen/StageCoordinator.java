@@ -33,6 +33,7 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
+
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
@@ -3028,8 +3029,9 @@ public class StageCoordinator extends StageCoordinatorAbstract {
      */
     public void onDisplayChange(int displayId, int fromRotation, int toRotation,
             @Nullable DisplayAreaInfo newDisplayAreaInfo, WindowContainerTransaction wct) {
-        boolean splitDisplayRotationAllowed =
-                !enableNonDefaultDisplaySplitBugfix() || mSplitRootTaskInfo.displayId == displayId;
+        if (mSplitRootTaskInfo == null) return;
+        boolean splitDisplayRotationAllowed = !enableNonDefaultDisplaySplitBugfix()
+                || mSplitRootTaskInfo.displayId == displayId;
         if (displayId != DEFAULT_DISPLAY || !isSplitActive() || !splitDisplayRotationAllowed) {
             return;
         }
