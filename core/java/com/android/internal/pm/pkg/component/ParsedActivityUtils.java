@@ -81,7 +81,11 @@ public class ParsedActivityUtils {
      * Bit mask of all the valid bits that can be set in recreateOnConfigChanges.
      */
     private static final int RECREATE_ON_CONFIG_CHANGES_MASK =
-            ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC;
+            com.android.window.flags.Flags.enableLessActivityRecreationOnConfigChange() ?
+                    ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC | ActivityInfo.CONFIG_KEYBOARD
+                            | ActivityInfo.CONFIG_KEYBOARD_HIDDEN | ActivityInfo.CONFIG_NAVIGATION
+                            | ActivityInfo.CONFIG_TOUCHSCREEN | ActivityInfo.CONFIG_COLOR_MODE
+                    : ActivityInfo.CONFIG_MCC | ActivityInfo.CONFIG_MNC;
 
     @NonNull
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
