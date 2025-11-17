@@ -1,13 +1,14 @@
 # Background
 
-As general background, `OWNERS` files expedite code reviews by helping code
-authors quickly find relevant reviewers, and they also ensure that stakeholders
-are involved in code changes in their areas.
+As general background, `OWNERS` (especially `<TEAM>_OWNERS`) files expedite code
+reviews by helping code authors quickly find relevant reviewers, and they also
+ensure that stakeholders are involved in code changes in their areas.
 
 The structure of `frameworks/base/` is unique among Android repositories, and
 it's evolved into a complex interleaved structure over the years.  Because of
-this structure, the best place to authoritatively define `OWNERS` can vary
-wildly, but here are some common patterns:
+this structure, we recommend `<TEAM>_OWNERS` files at the root of
+frameworks/base, but for some common teams, these authorative places can be
+used:
 
 * `core/java/` contains source that is included in the base classpath, and as
 such it's where most APIs are defined:
@@ -29,13 +30,22 @@ main `services/core/` project:
   * `media/`
   * `wifi/`
 
+# Bug component
+
+Always include an up-to-date bug component in the top-level `<TEAM>_OWNERS` files:
+
+```
+# Bug component: XXX
+```
+
 # Design
 
 Area maintainers are strongly encouraged to list people in a single
-authoritative `OWNERS` file in **exactly one** location.  Then, other paths
-should reference that single authoritative `OWNERS` file using an include
-directive.  This approach ensures that updates are applied consistently across
-the tree, reducing maintenance burden.
+authoritative `OWNERS` file in **exactly one** location, preferably at the
+`frameworks/base` root directory. Then, other paths should reference that
+single authoritative `OWNERS` file using an include directive. This approach
+ensures that updates are applied consistently across the tree, reducing
+maintenance burden.
 
 # Examples
 
