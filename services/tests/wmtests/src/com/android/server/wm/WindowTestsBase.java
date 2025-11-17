@@ -344,6 +344,12 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         if (addAll || ArrayUtils.contains(requestedWindows, W_INPUT_METHOD)) {
             mImeWindow = createCommonWindow(null, TYPE_INPUT_METHOD, "mImeWindow");
             mDisplayContent.setImeWindowForTesting(mImeWindow);
+            if (android.view.inputmethod.Flags.warmWorkProfileIme()) {
+                final var parent = mImeWindow.getParent();
+                if (parent != null && parent.asImeToken() != null) {
+                    mDisplayContent.getImeContainer().setImeWindowToken(parent.asImeToken());
+                }
+            }
         }
         if (addAll || ArrayUtils.contains(requestedWindows, W_INPUT_METHOD_DIALOG)) {
             mImeDialogWindow = createCommonWindow(null, TYPE_INPUT_METHOD_DIALOG,
@@ -476,6 +482,9 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         if (type == TYPE_WALLPAPER) {
             return createWallpaperToken(dc);
         }
+        if (android.view.inputmethod.Flags.warmWorkProfileIme() && type == TYPE_INPUT_METHOD) {
+            return createImeWindowToken(dc);
+        }
         if (type < FIRST_APPLICATION_WINDOW || type > LAST_APPLICATION_WINDOW) {
             return createTestWindowToken(type, dc);
         }
@@ -489,6 +498,20 @@ public class WindowTestsBase extends SystemServiceTestsBase {
                 null /* options */);
         dc.addWindowToken(wallpaperWindowToken);
         return wallpaperWindowToken;
+    }
+
+    /**
+     * Creates an {@link ImeWindowToken} and adds it to the given display content.
+     *
+     * @param dc the display content to create and add the IME window token to.
+     * @return the new IME window token.
+     */
+    @NonNull
+    static ImeWindowToken createImeWindowToken(@NonNull DisplayContent dc) {
+        final var imeWindowToken = new ImeWindowToken(dc.mWmService, mock(IBinder.class),
+                0 /* targetUserId */, null /* options */);
+        dc.addWindowToken(imeWindowToken);
+        return imeWindowToken;
     }
 
     WindowState createNavBarWithProvidedInsets(DisplayContent dc) {

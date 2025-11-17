@@ -52,6 +52,8 @@ import static com.android.server.EventLogTags.IMF_SHOW_IME;
 import static com.android.server.inputmethod.ImeProtoLogGroup.IMMS_DEBUG;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeTargetWindowState;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeVisibilityResult;
+import static com.android.server.inputmethod.InputMethodBindingController.IME_BACKGROUND_BIND_FLAGS;
+import static com.android.server.inputmethod.InputMethodBindingController.IME_CONNECTION_BIND_FLAGS;
 import static com.android.server.inputmethod.InputMethodBindingController.TIME_TO_RECONNECT;
 import static com.android.server.inputmethod.InputMethodSettings.INVALID_SUBTYPE_HASHCODE;
 import static com.android.server.inputmethod.InputMethodSubtypeSwitchingController.MODE_AUTO;
@@ -930,18 +932,26 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     private static final class UserSwitchHandlerTask implements Runnable {
-        final InputMethodManagerService mService;
 
+        @NonNull
+        private final InputMethodManagerService mService;
+
+        /** The ID of the new user. */
         @UserIdInt
-        final int mToUserId;
+        final int mNewUserId;
 
+        /** Whether this is a switch between user profiles or full users. */
+        final boolean mProfileSwitch;
+
+        /** The IME client for which to reset the input connection. */
         @Nullable
         IInputMethodClientInvoker mClientToBeReset;
 
-        UserSwitchHandlerTask(InputMethodManagerService service, @UserIdInt int toUserId,
-                @Nullable IInputMethodClientInvoker clientToBeReset) {
+        UserSwitchHandlerTask(@NonNull InputMethodManagerService service, @UserIdInt int newUserId,
+                boolean profileSwitch, @Nullable IInputMethodClientInvoker clientToBeReset) {
             mService = service;
-            mToUserId = toUserId;
+            mNewUserId = newUserId;
+            mProfileSwitch = profileSwitch;
             mClientToBeReset = clientToBeReset;
         }
 
@@ -952,8 +962,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     // This task was already canceled before it is handled here. So do nothing.
                     return;
                 }
-                mService.switchUserOnHandlerLocked(mService.mUserSwitchHandlerTask.mToUserId,
-                        mClientToBeReset);
+                mService.switchUserOnHandlerLocked(mNewUserId, mProfileSwitch, mClientToBeReset);
                 mService.mUserSwitchHandlerTask = null;
             }
         }
@@ -1047,7 +1056,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     return;
                 }
                 mService.scheduleSwitchUserTaskLocked(to.getUserIdentifier(),
-                        /* clientToBeReset= */ null);
+                        false /* profileSwitch */, null /* clientToBeReset */);
             }
         }
 
@@ -1078,14 +1087,19 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             mService.mUserDataRepository.remove(userId);
             synchronized (ImfLock.class) {
                 final int nextOrCurrentUser = mService.mUserSwitchHandlerTask != null
-                        ? mService.mUserSwitchHandlerTask.mToUserId : mService.mCurrentImeUserId;
+                        ? mService.mUserSwitchHandlerTask.mNewUserId : mService.mCurrentImeUserId;
                 if (!mService.mConcurrentMultiUserModeEnabled && userId == nextOrCurrentUser) {
                     // The current user was removed without an ongoing switch, or the user targeted
                     // by the ongoing switch was removed. Switch to the current non-profile user
                     // to allow starting input on it or one of its profile users later.
                     // Note: non-profile users cannot be removed while they are the current user.
                     final int currentUserId = mService.mActivityManagerInternal.getCurrentUserId();
-                    mService.scheduleSwitchUserTaskLocked(currentUserId,
+                    // For the ongoing switch case, we cannot determine whether this would lead to
+                    // a profile switch between the current IMMS and ActivityManager users, fallback
+                    // to non-profile switch.
+                    final boolean profileSwitch = mService.mUserSwitchHandlerTask == null
+                            && user.isProfile() && user.profileGroupId == currentUserId;
+                    mService.scheduleSwitchUserTaskLocked(currentUserId, profileSwitch,
                             null /* clientToBeReset */);
                 }
             }
@@ -1189,11 +1203,18 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
     }
 
+    /**
+     * Schedules a switch to the given user.
+     *
+     * @param userId          the ID of the new user.
+     * @param profileSwitch   whether this is switch between user profiles or full users.
+     * @param clientToBeReset the IME client for which to reset the input connection.
+     */
     @GuardedBy("ImfLock.class")
-    void scheduleSwitchUserTaskLocked(@UserIdInt int userId,
+    private void scheduleSwitchUserTaskLocked(@UserIdInt int userId, boolean profileSwitch,
             @Nullable IInputMethodClientInvoker clientToBeReset) {
         if (mUserSwitchHandlerTask != null) {
-            if (mUserSwitchHandlerTask.mToUserId == userId) {
+            if (mUserSwitchHandlerTask.mNewUserId == userId) {
                 mUserSwitchHandlerTask.mClientToBeReset = clientToBeReset;
                 return;
             }
@@ -1207,8 +1228,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         hideCurrentInputLocked(userData.mImeBindingState.mFocusedWindow,
                 false /* updateTargetWindow */, statsToken,
                 SoftInputShowHideReason.HIDE_SWITCH_USER, mCurrentImeUserId);
-        final UserSwitchHandlerTask task = new UserSwitchHandlerTask(this, userId,
-                clientToBeReset);
+        final var task = new UserSwitchHandlerTask(this, userId, profileSwitch, clientToBeReset);
         mUserSwitchHandlerTask = task;
         mIoHandler.post(task);
     }
@@ -1241,12 +1261,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             ProtoLog.init(ImeProtoLogGroup.values());
 
             mCurrentImeUserId = mActivityManagerInternal.getCurrentUserId();
-            final IntFunction<InputMethodBindingController>
-                    bindingControllerFactory = userId -> new InputMethodBindingController(userId,
-                    InputMethodManagerService.this);
-            final IntFunction<ImeVisibilityStateComputer> visibilityStateComputerFactory =
-                    userId -> new ImeVisibilityStateComputer(InputMethodManagerService.this,
-                            userId);
+            final IntFunction<InputMethodBindingController> bindingControllerFactory = userId ->
+                    new InputMethodBindingController(userId, this, IME_CONNECTION_BIND_FLAGS,
+                            IME_BACKGROUND_BIND_FLAGS);
+            final IntFunction<ImeVisibilityStateComputer> visibilityStateComputerFactory = userId ->
+                    new ImeVisibilityStateComputer(this, userId);
             mUserDataRepository = new UserDataRepository(
                     bindingControllerForTesting != null ? bindingControllerForTesting
                             : bindingControllerFactory, visibilityStateComputerFactory);
@@ -1327,9 +1346,16 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         .getPackageManager();
     }
 
+    /**
+     * Handles switching to the given user.
+     *
+     * @param newUserId       the ID of the new user.
+     * @param profileSwitch   whether this is a switch between user profiles or full users.
+     * @param clientToBeReset the IME client for which to reset the input connection.
+     */
     @GuardedBy("ImfLock.class")
-    private void switchUserOnHandlerLocked(@UserIdInt int newUserId,
-            IInputMethodClientInvoker clientToBeReset) {
+    private void switchUserOnHandlerLocked(@UserIdInt int newUserId, boolean profileSwitch,
+            @Nullable IInputMethodClientInvoker clientToBeReset) {
         final int prevUserId = mCurrentImeUserId;
         ProtoLog.v(IMMS_DEBUG, "Switching user stage 1/3. newUserId=%s prevUserId=%s", newUserId,
                 prevUserId);
@@ -1339,7 +1365,19 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         // Note that in b/197848765 we want to see if we can keep the binding alive for better
         // profile switching.
         final var bindingController = getInputMethodBindingController(prevUserId);
-        bindingController.unbindCurrentMethod();
+        if (Flags.warmWorkProfileIme() && profileSwitch && !mPreventImeStartupUnlessTextEditor) {
+            bindingController.setInactive();
+        } else if (Flags.warmWorkProfileIme() && !mPreventImeStartupUnlessTextEditor) {
+            // Unbind the IMEs of all profiles of the previous user, if still bound.
+            for (final int profileId : getProfileIds(prevUserId)) {
+                final var controller = getInputMethodBindingController(profileId);
+                if (controller.getCurToken() != null) {
+                    controller.unbindCurrentMethod();
+                }
+            }
+        } else {
+            bindingController.unbindCurrentMethod();
+        }
 
         unbindCurrentClientLocked(UnbindReason.SWITCH_USER, prevUserId);
 
@@ -1401,6 +1439,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 return;
             }
             cs.mClient.scheduleStartInputIfNecessary(newUserData.mInFullscreenMode);
+        }
+
+        if (Flags.warmWorkProfileIme() && profileSwitch) {
+            newUserData.mBindingController.setActive();
         }
     }
 
@@ -3666,15 +3708,17 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     // Verify if IMMS is in the process of switching user.
                     if (!mConcurrentMultiUserModeEnabled && mUserSwitchHandlerTask != null) {
                         // There is already an on-going pending user switch task.
-                        final int nextUserId = mUserSwitchHandlerTask.mToUserId;
+                        final int nextUserId = mUserSwitchHandlerTask.mNewUserId;
                         if (userId == nextUserId) {
-                            scheduleSwitchUserTaskLocked(userId, cs.mClient);
+                            scheduleSwitchUserTaskLocked(userId,
+                                    mUserSwitchHandlerTask.mProfileSwitch, cs.mClient);
                             return InputBindResult.USER_SWITCHING;
                         }
                         final int[] profileIdsWithDisabled = getProfileIds(mCurrentImeUserId);
                         for (int profileId : profileIdsWithDisabled) {
                             if (profileId == userId) {
-                                scheduleSwitchUserTaskLocked(userId, cs.mClient);
+                                scheduleSwitchUserTaskLocked(userId, true /* profileSwitch */,
+                                        cs.mClient);
                                 return InputBindResult.USER_SWITCHING;
                             }
                         }
@@ -3686,7 +3730,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         if (ArrayUtils.contains(getProfileIds(mCurrentImeUserId), userId)) {
                             // cross-profile access is always allowed here to allow
                             // profile-switching.
-                            scheduleSwitchUserTaskLocked(userId, cs.mClient);
+                            scheduleSwitchUserTaskLocked(userId, true /* profileSwitch */,
+                                    cs.mClient);
                             return InputBindResult.USER_SWITCHING;
                         }
                         Slog.w(TAG, "A background user is requesting window. Hiding IME.");
@@ -4815,18 +4860,28 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @GuardedBy("ImfLock.class")
     private void hideMySoftInputLocked(@NonNull ImeTracker.Token statsToken,
             @NonNull UserData userData) {
-        userData.mCurClient.mClient.setImeVisibility(false, statsToken);
-        // TODO(b/322992891) we will loose the flags here: Deprecate IMM.HideFlags
-        setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
+        if (userData.mCurClient != null) {
+            userData.mCurClient.mClient.setImeVisibility(false, statsToken);
+            // TODO(b/322992891) we will loose the flags here: Deprecate IMM.HideFlags
+            setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
+        } else {
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_SERVER_SET_VISIBILITY_ON_FOCUSED_WINDOW);
+        }
     }
 
     @BinderThread
     @GuardedBy("ImfLock.class")
     private void showMySoftInputLocked(@NonNull ImeTracker.Token statsToken,
             @NonNull UserData userData) {
-        userData.mCurClient.mClient.setImeVisibility(true, statsToken);
-        // TODO(b/322992891) we will loose the flags here: Deprecate IMM.ShowFlags
-        setImeVisibilityOnFocusedWindowClient(true, userData, statsToken);
+        if (userData.mCurClient != null) {
+            userData.mCurClient.mClient.setImeVisibility(true, statsToken);
+            // TODO(b/322992891) we will loose the flags here: Deprecate IMM.ShowFlags
+            setImeVisibilityOnFocusedWindowClient(true, userData, statsToken);
+        } else {
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_SERVER_SET_VISIBILITY_ON_FOCUSED_WINDOW);
+        }
     }
 
     @GuardedBy("ImfLock.class")
@@ -6267,6 +6322,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         @SuppressWarnings("GuardedBy") Consumer<UserData> userDataDump = u -> {
             p.println("    userId=" + u.mUserId);
             p.println("      unlocked=" + u.mIsUnlockingOrUnlocked.get());
+            if (Flags.warmWorkProfileIme()) {
+                p.println("      hasBackgroundConnection="
+                        + u.mBindingController.hasBackgroundConnection());
+            }
             p.println("      hasMainConnection=" + u.mBindingController.hasMainConnection());
             p.println("      isVisibleBound=" + u.mBindingController.isVisibleBound());
             p.println("      boundToMethod=" + u.mBoundToMethod);
@@ -6726,6 +6785,11 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 @NonNull UserData userData) {
             Objects.requireNonNull(token, "token must not be null");
             final var bindingController = userData.mBindingController;
+            if (!bindingController.isActive()) {
+                Slog.e(TAG, "Ignoring " + Debug.getCaller() + " due to inactive binding controller."
+                        + " uid: " + Binder.getCallingUid() + " token: " + token);
+                return false;
+            }
             if (token != bindingController.getCurToken()) {
                 Slog.e(TAG, "Ignoring " + Debug.getCaller() + " due to an invalid token."
                         + " uid:" + Binder.getCallingUid() + " token:" + token);

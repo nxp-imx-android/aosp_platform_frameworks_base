@@ -1745,11 +1745,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     /**
      * Returns {@code true} if {@link WindowToken#isVisibleRequested()} should be considered
      * before dispatching the latest configuration. Currently only {@link
-     * ActivityRecord#isVisibleRequested()} and {@link WallpaperWindowToken#isVisibleRequested()}
-     * implement explicit visible-requested.
+     * ActivityRecord#isVisibleRequested()}, {@link WallpaperWindowToken#isVisibleRequested()} and
+     * {@link ImeWindowToken#isVisibleRequested()} implement explicit visible-requested.
      */
     boolean shouldCheckTokenVisibleRequested() {
-        return mActivityRecord != null || mToken.asWallpaperToken() != null;
+        return mActivityRecord != null || mToken.asWallpaperToken() != null
+                || mToken.asImeToken() != null;
     }
 
     /**

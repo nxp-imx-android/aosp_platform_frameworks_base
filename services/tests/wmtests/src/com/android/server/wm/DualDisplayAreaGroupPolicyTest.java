@@ -562,6 +562,12 @@ public class DualDisplayAreaGroupPolicyTest extends WindowTestsBase {
                 mDisplay).build();
         imeWindow.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
         mDisplay.setImeWindowForTesting(imeWindow);
+        if (android.view.inputmethod.Flags.warmWorkProfileIme()) {
+            final var parent = imeWindow.getParent();
+            if (parent != null && parent.asImeToken() != null) {
+                mDisplayContent.getImeContainer().setImeWindowToken(parent.asImeToken());
+            }
+        }
     }
 
     @NonNull
