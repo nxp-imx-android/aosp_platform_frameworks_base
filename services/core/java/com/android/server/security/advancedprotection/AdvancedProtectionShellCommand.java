@@ -49,6 +49,12 @@ class AdvancedProtectionShellCommand extends ShellCommand {
                     return setUsbDataProtectedEnabled();
                 case "is-usb-data-protection-enabled":
                     return isUsbDataProtectedEnabled(pw);
+                case "set-feature-provisioned":
+                    return setFeatureProvisioned(true);
+                case "set-feature-deprovisioned":
+                    return setFeatureProvisioned(false);
+                case "remove-feature-provisioning":
+                    return removeFeatureProvisioning();
             }
         } catch (RemoteException e) {
             pw.println("Remote exception: " + e);
@@ -68,9 +74,14 @@ class AdvancedProtectionShellCommand extends ShellCommand {
         pw.println("      Print this help text.");
         pw.println("  set-protection-enabled [true|false]");
         pw.println("  is-protection-enabled");
-        if(android.security.Flags.aapmFeatureUsbDataProtection()) {
+        if (android.security.Flags.aapmFeatureUsbDataProtection()) {
             pw.println("  set-usb-data-protection-enabled [true|false]");
             pw.println("  is-usb-data-protection-enabled");
+        }
+        if (android.security.Flags.aapmApiV2()) {
+            pw.println("  set-feature-provisioned [featureId]");
+            pw.println("  set-feature-deprovisioned [featureId]");
+            pw.println("  remove-feature-provisioning [featureId]");
         }
     }
 
@@ -90,7 +101,7 @@ class AdvancedProtectionShellCommand extends ShellCommand {
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
     private int setUsbDataProtectedEnabled() throws RemoteException {
-        if(android.security.Flags.aapmFeatureUsbDataProtection()) {
+        if (android.security.Flags.aapmFeatureUsbDataProtection()) {
             String protectionMode = getNextArgRequired();
             mService.setUsbDataProtectionEnabled(Boolean.parseBoolean(protectionMode));
         }
@@ -99,9 +110,27 @@ class AdvancedProtectionShellCommand extends ShellCommand {
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
     private int isUsbDataProtectedEnabled(@NonNull PrintWriter pw) throws RemoteException {
-        if(android.security.Flags.aapmFeatureUsbDataProtection()) {
+        if (android.security.Flags.aapmFeatureUsbDataProtection()) {
             boolean protectionMode = mService.isUsbDataProtectionEnabled();
             pw.println(protectionMode);
+        }
+        return 0;
+    }
+
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    private int setFeatureProvisioned(boolean isProvisioned) throws RemoteException {
+        if (android.security.Flags.aapmApiV2()) {
+            String featureId = getNextArgRequired();
+            mService.setAdbProvisioned(Integer.parseInt(featureId), isProvisioned);
+        }
+        return 0;
+    }
+
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    private int removeFeatureProvisioning() throws RemoteException {
+        if (android.security.Flags.aapmApiV2()) {
+            String featureId = getNextArgRequired();
+            mService.removeAdbProvisioning(Integer.parseInt(featureId));
         }
         return 0;
     }
