@@ -34,6 +34,7 @@ import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.Surface.FRAME_RATE_COMPATIBILITY_AT_LEAST;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_UNDEFINED;
+import static android.view.accessibility.Flags.a11yExtraRenderingInfoColorAdditions;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.FLAG_DEPRECATE_ACCESSIBILITY_ANNOUNCEMENT_APIS;
 import static android.view.accessibility.Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE;
@@ -11763,8 +11764,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         if (canAcceptAccessibilityDrop()) {
             info.addAction(AccessibilityAction.ACTION_DRAG_DROP);
         }
-    }
 
+        if (a11yExtraRenderingInfoColorAdditions()) {
+            info.setAvailableExtraData(
+                    Collections.singletonList(AccessibilityNodeInfo.EXTRA_DATA_RENDERING_INFO_KEY));
+        }
+    }
 
     /**
      * Adds extra data to an {@link AccessibilityNodeInfo} based on an explicit request for the
@@ -11783,9 +11788,22 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      *
      * @see AccessibilityNodeInfo#setAvailableExtraData(List)
      */
+    @FlaggedApi(android.view.accessibility.Flags.FLAG_A11Y_EXTRA_RENDERING_INFO_COLOR_ADDITIONS)
+    @CallSuper
     public void addExtraDataToAccessibilityNodeInfo(
             @NonNull AccessibilityNodeInfo info, @NonNull String extraDataKey,
             @Nullable Bundle arguments) {
+        if (extraDataKey.equals(AccessibilityNodeInfo.EXTRA_DATA_RENDERING_INFO_KEY)
+                && a11yExtraRenderingInfoColorAdditions()) {
+            final AccessibilityNodeInfo.ExtraRenderingInfo.Builder builder =
+                    new AccessibilityNodeInfo.ExtraRenderingInfo.Builder();
+            Drawable background = getBackground();
+            if (background instanceof ColorDrawable backgroundColorDrawable) {
+                builder.setBackgroundColor(backgroundColorDrawable.getColor());
+            }
+            builder.setAlpha(getAlpha());
+            info.setExtraRenderingInfo(builder.build());
+        }
     }
 
     /**

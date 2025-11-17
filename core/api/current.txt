@@ -54248,7 +54248,7 @@ package android.view {
     ctor public View(android.content.Context, @Nullable android.util.AttributeSet, int);
     ctor public View(android.content.Context, @Nullable android.util.AttributeSet, int, int);
     method public void addChildrenForAccessibility(java.util.ArrayList<android.view.View>);
-    method public void addExtraDataToAccessibilityNodeInfo(@NonNull android.view.accessibility.AccessibilityNodeInfo, @NonNull String, @Nullable android.os.Bundle);
+    method @FlaggedApi("android.view.accessibility.a11y_extra_rendering_info_color_additions") @CallSuper public void addExtraDataToAccessibilityNodeInfo(@NonNull android.view.accessibility.AccessibilityNodeInfo, @NonNull String, @Nullable android.os.Bundle);
     method public void addFocusables(java.util.ArrayList<android.view.View>, int);
     method public void addFocusables(java.util.ArrayList<android.view.View>, int, int);
     method public void addKeyboardNavigationClusters(@NonNull java.util.Collection<android.view.View>, int);
