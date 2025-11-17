@@ -220,6 +220,14 @@ public class TelephonyManager {
     public static final String PHONE_PROCESS_NAME = "com.android.phone";
 
     /**
+     * The AOSP activity responsible for placing emergency calls from, for example, a locked
+     * keyguard.
+     * @hide
+     */
+    public static final ComponentName EMERGENCY_DIALER_COMPONENT =
+            ComponentName.createRelative(PHONE_PROCESS_NAME, ".EmergencyDialer");
+
+    /**
      * The allowed states of Wi-Fi calling.
      *
      * @hide
