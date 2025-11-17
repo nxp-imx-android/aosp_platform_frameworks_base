@@ -448,16 +448,6 @@ flag {
 }
 
 flag {
-    name: "private_space_file_limit_check_timeout"
-    namespace: "profile_experiences"
-    description: "Add a timeout for file limit checks during file transfer to private space"
-    bug: "421920538"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
      name: "user_filter_refactoring"
      namespace: "multiuser"
      description: "Refactored some getUsers() methods to use a UserFilter object"
