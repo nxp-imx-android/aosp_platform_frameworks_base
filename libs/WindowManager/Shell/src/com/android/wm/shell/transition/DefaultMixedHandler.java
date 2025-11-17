@@ -1111,9 +1111,6 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             return null;
         }
         final TransitionInfo.Change change = mBubbleHelper.getEnterBubbleTask(info);
-        if (!com.android.wm.shell.Flags.fixTaskViewRotationAnimation()) {
-            return change;
-        }
         return change != null && TransitionUtil.isOpeningMode(change.getMode()) ? change : null;
     }
 
