@@ -38,6 +38,7 @@
 
 #include "ColorFilter.h"
 #include "GraphicsJNI.h"
+#include "Path.h"
 #include "SkBlendMode.h"
 #include "SkColorFilter.h"
 #include "SkColorSpace.h"
@@ -331,7 +332,7 @@ namespace PaintGlue {
             jcharArray text, jint index, jint count, jfloat x, jfloat y, jlong pathHandle) {
         Paint* paint = reinterpret_cast<Paint*>(paintHandle);
         const Typeface* typeface = paint->getAndroidTypeface();
-        SkPath* path = reinterpret_cast<SkPath*>(pathHandle);
+        SkPath* path = AsSkPath(pathHandle);
         const jchar* textArray = env->GetCharArrayElements(text, nullptr);
         getTextPath(env, paint, typeface, textArray + index, count, bidiFlags, x, y, path);
         env->ReleaseCharArrayElements(text, const_cast<jchar*>(textArray), JNI_ABORT);
@@ -341,7 +342,7 @@ namespace PaintGlue {
             jstring text, jint start, jint end, jfloat x, jfloat y, jlong pathHandle) {
         Paint* paint = reinterpret_cast<Paint*>(paintHandle);
         const Typeface* typeface = paint->getAndroidTypeface();
-        SkPath* path = reinterpret_cast<SkPath*>(pathHandle);
+        SkPath* path = AsSkPath(pathHandle);
         const jchar* textArray = env->GetStringChars(text, nullptr);
         getTextPath(env, paint, typeface, textArray + start, end - start, bidiFlags, x, y, path);
         env->ReleaseStringChars(text, textArray);
@@ -858,8 +859,8 @@ namespace PaintGlue {
 
     static jboolean getFillPath(CRITICAL_JNI_PARAMS_COMMA jlong objHandle, jlong srcHandle, jlong dstHandle) {
         Paint* obj = reinterpret_cast<Paint*>(objHandle);
-        SkPath* src = reinterpret_cast<SkPath*>(srcHandle);
-        SkPath* dst = reinterpret_cast<SkPath*>(dstHandle);
+        SkPath* src = AsSkPath(srcHandle);
+        SkPath* dst = AsSkPath(dstHandle);
         return skpathutils::FillPathWithPaint(*src, *obj, dst) ? JNI_TRUE : JNI_FALSE;
     }
 
