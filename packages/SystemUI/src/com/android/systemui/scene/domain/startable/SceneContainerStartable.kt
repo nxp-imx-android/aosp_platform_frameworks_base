@@ -67,6 +67,7 @@ import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.DisabledContentInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.domain.startable.SceneContainerStartable.HideOverlayCommand.HideSome
 import com.android.systemui.scene.session.shared.SessionStorage
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.logger.SceneLogger
@@ -410,6 +411,14 @@ constructor(
                         switchToScene(
                             targetSceneKey = Scenes.Lockscreen,
                             loggingReason = "SIM unlock required",
+                            hideOverlays =
+                                HideSome(
+                                    overlays =
+                                        listOf(
+                                            Overlays.NotificationsShade,
+                                            Overlays.QuickSettingsShade,
+                                        )
+                                ),
                         )
                         sceneInteractor.showOverlay(
                             overlay = Overlays.Bouncer,
@@ -538,7 +547,7 @@ constructor(
                                             // Only hide the bouncer overlay, leaving any other
                                             // overlay (right now the only other overlays are
                                             // shades) visible.
-                                            HideOverlayCommand.HideSome(Overlays.Bouncer)
+                                            HideSome(Overlays.Bouncer)
                                         } else {
                                             HideOverlayCommand.HideAll
                                         },
@@ -1140,7 +1149,7 @@ constructor(
         hideOverlays: HideOverlayCommand = HideOverlayCommand.HideAll,
         instantlySnapScenes: Boolean = false,
     ) {
-        if (hideOverlays is HideOverlayCommand.HideSome) {
+        if (hideOverlays is HideSome) {
             hideOverlays.overlays.fastForEach { overlay ->
                 sceneInteractor.hideOverlay(overlay, loggingReason)
             }
