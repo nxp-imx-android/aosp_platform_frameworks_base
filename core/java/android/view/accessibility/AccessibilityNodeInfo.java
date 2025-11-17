@@ -2754,8 +2754,10 @@ public class AccessibilityNodeInfo implements Parcelable {
         if (mSelection != null) {
             mSelection.getStart().setWindowId(mWindowId);
             mSelection.getStart().setConnectionId(mConnectionId);
+            mSelection.getStart().setAttachedToSealedNode(mSealed);
             mSelection.getEnd().setWindowId(mWindowId);
             mSelection.getEnd().setConnectionId(mConnectionId);
+            mSelection.getEnd().setAttachedToSealedNode(mSealed);
         }
         return mSelection;
     }
@@ -4704,6 +4706,10 @@ public class AccessibilityNodeInfo implements Parcelable {
     @UnsupportedAppUsage
     public void setSealed(boolean sealed) {
         mSealed = sealed;
+        if (mSelection != null) {
+            mSelection.getStart().setAttachedToSealedNode(mSealed);
+            mSelection.getEnd().setAttachedToSealedNode(mSealed);
+        }
     }
 
     /**
@@ -5931,6 +5937,7 @@ public class AccessibilityNodeInfo implements Parcelable {
         private final long mSourceNodeId;
         private int mConnectionId;
         private int mWindowId;
+        private boolean mAttachedToSealedNode;
 
         /**
          * Instantiates a new SelectionPosition.
@@ -5952,10 +5959,7 @@ public class AccessibilityNodeInfo implements Parcelable {
          *     which should be a value between 0 and the length of {@code view}'s text.
          */
         public SelectionPosition(@NonNull View view, int offset) {
-            this(
-                    makeNodeId(
-                            view.getAccessibilityViewId(), AccessibilityNodeProvider.HOST_VIEW_ID),
-                    offset);
+            this(view, AccessibilityNodeProvider.HOST_VIEW_ID, offset);
         }
 
         /**
@@ -5975,6 +5979,15 @@ public class AccessibilityNodeInfo implements Parcelable {
         private SelectionPosition(long sourceNodeId, int offset) {
             mOffset = offset;
             mSourceNodeId = sourceNodeId;
+
+            // This member gets used to enforce this instance in several states:
+            // 1. when it is attached to a sealed {@link AccessibilityNodeInfo} via unparceling or
+            // {@link AccessibilityNodeInfo#setSelection}. In this state, we expect an {@link
+            // AccessibilityService} to be the caller.
+            //
+            // 2. when it is unparceled as part of an action or directly instantiated. In this
+            // state, we expect an app to be the caller.
+            mAttachedToSealedNode = false;
         }
 
         private SelectionPosition(Parcel in) {
@@ -5991,13 +6004,16 @@ public class AccessibilityNodeInfo implements Parcelable {
         }
 
         /**
-         * Gets the node for {@code this} {@link SelectionPosition}
-         * <br>
+         * Gets the node for {@code this} {@link SelectionPosition} <br>
          * <strong>Note:</strong> This api can only be called from {@link AccessibilityService}.
          *
          * @return The node associated with {@code this} {@link SelectionPosition}
+         * @throws IllegalStateException If not called from an accessibility service.
          */
         public @Nullable AccessibilityNodeInfo getNode() {
+            if (!usingDirectConnection(mConnectionId) && !mAttachedToSealedNode) {
+                throw new IllegalStateException("Cannot perform this action on this instance.");
+            }
             return getNodeForAccessibilityId(mConnectionId, mWindowId, mSourceNodeId);
         }
 
@@ -6009,6 +6025,47 @@ public class AccessibilityNodeInfo implements Parcelable {
          */
         public int getOffset() {
             return mOffset;
+        }
+
+        /**
+         * Gets the view for {@code this} {@link SelectionPosition}
+         *
+         * <p><strong>Note:</strong> Cannot be called from an {@link
+         * android.accessibilityservice.AccessibilityService}.
+         *
+         * @return The view associated with {@code this} {@link SelectionPosition}. Will return null
+         *     if the view is not attached to a window.
+         * @throws IllegalStateException If called from an accessibility service.
+         */
+        @FlaggedApi(Flags.FLAG_A11Y_SELECTION_POSITION_APP_GETTERS_API)
+        public @Nullable View getView() {
+            if (mAttachedToSealedNode) {
+                throw new IllegalStateException("Cannot perform this action on this instance.");
+            }
+            int viewId = AccessibilityNodeInfo.getAccessibilityViewId(mSourceNodeId);
+            return AccessibilityNodeIdManager.getInstance().findView(viewId);
+        }
+
+        /**
+         * Gets the virtual descendant id for {@code this} {@link SelectionPosition}.
+         *
+         * <p><strong>Note:</strong> Cannot be called from an {@link
+         * android.accessibilityservice.AccessibilityService}.
+         *
+         * @return A value representing the virtual descendant id of the {@link SelectionPosition}
+         * @throws IllegalStateException If called from an accessibility service.
+         */
+        @FlaggedApi(Flags.FLAG_A11Y_SELECTION_POSITION_APP_GETTERS_API)
+        public int getVirtualDescendantId() {
+            if (mAttachedToSealedNode) {
+                throw new IllegalStateException("Cannot perform this action on this instance.");
+            }
+            return AccessibilityNodeInfo.getVirtualDescendantId(mSourceNodeId);
+        }
+
+        /** @hide */
+        public void setAttachedToSealedNode(boolean sealed) {
+            mAttachedToSealedNode = sealed;
         }
 
         private boolean usesNode(@NonNull AccessibilityNodeInfo node) {
