@@ -4095,9 +4095,9 @@ public final class ProcessList extends ProcessListInternal
         final ProcessProviderRecord ppr = app.getProviders();
         for (int j = ppr.numberOfProviderConnections() - 1; j >= 0; j--) {
             ContentProviderRecord cpr = ppr.getProviderConnectionAt(j).provider;
-            if (cpr.proc != null && cpr.proc.getLruSeq() != getLruSeqLOSP()
-                    && !cpr.proc.isPersistent()) {
-                indices.append(offerLruProcessInternalLSP(cpr.proc, now,
+            if (cpr.mProc != null && cpr.mProc.getLruSeq() != getLruSeqLOSP()
+                    && !cpr.mProc.isPersistent()) {
+                indices.append(offerLruProcessInternalLSP(cpr.mProc, now,
                         "provider reference", cpr, app), false);
             }
         }

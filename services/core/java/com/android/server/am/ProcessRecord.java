@@ -1831,7 +1831,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         }
         for (int i = mProviders.numberOfProviderConnections() - 1; i >= 0; i--) {
             ContentProviderConnection cpc = mProviders.getProviderConnectionAt(i);
-            ProcessRecord provider = cpc.provider.proc;
+            ProcessRecord provider = cpc.provider.mProc;
             consumer.accept(provider);
         }
     }

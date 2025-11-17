@@ -104,7 +104,7 @@ final class ProcessProviderRecord extends ProcessProviderRecordInternal {
         // Remove published content providers.
         for (int i = mPubProviders.size() - 1; i >= 0; i--) {
             final ContentProviderRecord cpr = mPubProviders.valueAt(i);
-            if (cpr.proc != mApp) {
+            if (cpr.mProc != mApp) {
                 // If the hosting process record isn't really us, bail out
                 continue;
             }
@@ -117,7 +117,7 @@ final class ProcessProviderRecord extends ProcessProviderRecordInternal {
                 restart = true;
             }
 
-            cpr.provider = null;
+            cpr.mProvider = null;
             cpr.setProcess(null);
         }
         mPubProviders.clear();
@@ -132,10 +132,10 @@ final class ProcessProviderRecord extends ProcessProviderRecordInternal {
         if (!mConProviders.isEmpty()) {
             for (int i = mConProviders.size() - 1; i >= 0; i--) {
                 final ContentProviderConnection conn = mConProviders.get(i);
-                conn.provider.connections.remove(conn);
-                mService.stopAssociationLocked(mApp.uid, mApp.processName, conn.provider.uid,
-                        conn.provider.appInfo.longVersionCode, conn.provider.name,
-                        conn.provider.info.processName);
+                conn.provider.mConnections.remove(conn);
+                mService.stopAssociationLocked(mApp.uid, mApp.processName, conn.provider.mUid,
+                        conn.provider.mAppInfo.longVersionCode, conn.provider.name,
+                        conn.provider.mProviderInfo.processName);
             }
             mConProviders.clear();
         }
