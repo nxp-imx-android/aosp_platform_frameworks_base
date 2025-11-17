@@ -296,11 +296,9 @@ public class NotificationShadeWindowViewController implements Dumpable {
             mView.setConfigurationForwarder(configurationForwarder.get());
         }
         bindWindowRootView(windowRootViewModelFactory, blurChoreographer);
-        if (com.android.systemui.Flags.allowDozeTouchesForLockIcon()) {
-            mAodInterceptingTouches = javaAdapter.stateInApp(
-                    dozeTouchInteractor.getShouldInterceptTouches(),
-                    false);
-        }
+        mAodInterceptingTouches = javaAdapter.stateInApp(
+                dozeTouchInteractor.getShouldInterceptTouches(),
+                false);
 
         dumpManager.registerDumpable(this);
     }
@@ -550,33 +548,20 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 // "aodDefermentState". In this state we:
                 //     - don't want touches to get sent to underlying views, except the lockIcon
                 //     - handle the tap to wake gesture via the PulsingGestureListener
-                if (com.android.systemui.Flags.allowDozeTouchesForLockIcon()) {
-                    if (mAodInterceptingTouches.getValue()) {
-                        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-                            mShadeLogger.d("NSWVC: capture all touch events in always-on"
-                                    + " excluding aodDeferment with interactive lock icon");
+                if (mAodInterceptingTouches.getValue()) {
+                    if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+                        mShadeLogger.d("NSWVC: capture all touch events in always-on"
+                                + " excluding aodDeferment with interactive lock icon");
 
-                        }
-                        return true;
-                    } else if (mStatusBarStateController.isDozing()
-                            && !mDozeServiceHost.isPulsing()
-                            && !mDockManager.isDocked()
-                            && ev.getAction() == MotionEvent.ACTION_DOWN
-                    ) {
-                        mShadeLogger.d("NSWVC: skip capturing this touch event in"
-                                + " always-on; mAodInterceptingTouches=false");
                     }
-                } else {
-                    if (mStatusBarStateController.isDozing()
-                            && !mDozeServiceHost.isPulsing()
-                            && !mDockManager.isDocked()
-                    ) {
-                        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-                            mShadeLogger.d("NSWVC: capture all touch events in always-on");
-
-                        }
-                        return true;
-                    }
+                    return true;
+                } else if (mStatusBarStateController.isDozing()
+                        && !mDozeServiceHost.isPulsing()
+                        && !mDockManager.isDocked()
+                        && ev.getAction() == MotionEvent.ACTION_DOWN
+                ) {
+                    mShadeLogger.d("NSWVC: skip capturing this touch event in"
+                            + " always-on; mAodInterceptingTouches=false");
                 }
 
                 boolean bouncerShowing = mPrimaryBouncerInteractor.isBouncerShowing()
