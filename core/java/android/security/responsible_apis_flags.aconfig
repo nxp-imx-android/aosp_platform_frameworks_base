@@ -247,6 +247,13 @@ flag {
 }
 
 flag {
+    name: "strict_mode_violation_for_implicit_uri_grants_enabled"
+    namespace: "permissions"
+    description: "Flag for strict mode violation for implicit uri grants"
+    bug: "295238578"
+}
+
+flag {
    name: "uprobestats_bridge_service"
    namespace: "responsible_apis"
    description: "Flag that enables the uprobestats bridge system service"
