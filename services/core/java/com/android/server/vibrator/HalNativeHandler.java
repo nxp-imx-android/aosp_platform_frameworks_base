@@ -20,13 +20,13 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.hardware.vibrator.CompositeEffect;
 import android.hardware.vibrator.CompositePwleV2;
+import android.hardware.vibrator.HapticGeneratorConfig;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
 import android.hardware.vibrator.PrimitivePwle;
 import android.hardware.vibrator.VendorEffect;
 import android.hardware.vibrator.VibrationEffectContent;
-import android.os.vibrator.HapticGeneratorSession;
 
 /** Handles interactions with vibrator HAL services through native. */
 interface HalNativeHandler {
@@ -133,7 +133,7 @@ interface HalNativeHandler {
      * @return true if successfully, false otherwise.
      */
     boolean startHapticGeneratorSessionWithCallback(long sessionId, int vibratorId,
-            @NonNull HapticGeneratorSession.Config config);
+            @NonNull HapticGeneratorConfig config);
 
     /**
      * Closes a haptic generator session using the session id.
