@@ -64,28 +64,52 @@ constructor(
             val foregroundTaskId1 = foregroundGroup?.taskInfo1?.taskId
             val foregroundTaskId2 = foregroundGroup?.taskInfo2?.taskId
             val foregroundTaskIds = listOfNotNull(foregroundTaskId1, foregroundTaskId2)
-            groupedTasks.flatMap {
-                val task1 =
-                    if (it.taskInfo1 != null) {
-                        RecentTask(
-                            it.taskInfo1!!,
-                            it.taskInfo1!!.taskId in foregroundTaskIds && it.taskInfo1!!.isVisible,
-                            userManager.getUserInfo(it.taskInfo1!!.userId).toUserType(),
-                            it.splitBounds,
-                        )
-                    } else null
 
-                val task2 =
-                    if (it.taskInfo2 != null) {
-                        RecentTask(
-                            it.taskInfo2!!,
-                            it.taskInfo2!!.taskId in foregroundTaskIds && it.taskInfo2!!.isVisible,
-                            userManager.getUserInfo(it.taskInfo2!!.userId).toUserType(),
-                            it.splitBounds,
-                        )
-                    } else null
+            groupedTasks.flatMap { groupedTaskInfo ->
+                val recentTasks = mutableListOf<RecentTask>()
+                when (groupedTaskInfo.type) {
+                    GroupedTaskInfo.TYPE_DESK -> {
+                        groupedTaskInfo.taskInfoList.forEach { taskInfo ->
+                            recentTasks.add(
+                                RecentTask(
+                                    taskInfo,
+                                    taskInfo.taskId in foregroundTaskIds && taskInfo.isVisible,
+                                    userManager.getUserInfo(taskInfo.userId).toUserType(),
+                                    groupedTaskInfo.splitBounds,
+                                )
+                            )
+                        }
+                    }
+                    else -> {
+                        val task1 =
+                            if (groupedTaskInfo.taskInfo1 != null) {
+                                RecentTask(
+                                    groupedTaskInfo.taskInfo1!!,
+                                    groupedTaskInfo.taskInfo1!!.taskId in foregroundTaskIds &&
+                                        groupedTaskInfo.taskInfo1!!.isVisible,
+                                    userManager
+                                        .getUserInfo(groupedTaskInfo.taskInfo1!!.userId)
+                                        .toUserType(),
+                                    groupedTaskInfo.splitBounds,
+                                )
+                            } else null
 
-                listOfNotNull(task1, task2)
+                        val task2 =
+                            if (groupedTaskInfo.taskInfo2 != null) {
+                                RecentTask(
+                                    groupedTaskInfo.taskInfo2!!,
+                                    groupedTaskInfo.taskInfo2!!.taskId in foregroundTaskIds &&
+                                        groupedTaskInfo.taskInfo2!!.isVisible,
+                                    userManager
+                                        .getUserInfo(groupedTaskInfo.taskInfo2!!.userId)
+                                        .toUserType(),
+                                    groupedTaskInfo.splitBounds,
+                                )
+                            } else null
+                        recentTasks.addAll(listOfNotNull(task1, task2))
+                    }
+                }
+                recentTasks
             }
         }
 
