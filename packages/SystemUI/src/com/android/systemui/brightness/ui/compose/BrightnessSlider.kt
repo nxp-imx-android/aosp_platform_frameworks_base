@@ -122,6 +122,7 @@ fun BrightnessSlider(
     onStop: (Int) -> Unit,
     overriddenByAppState: Boolean,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     showToast: () -> Unit = {},
     hapticsViewModelFactory: SliderHapticsViewModel.Factory,
     dimensions: BrightnessSliderDimensions = BrightnessSliderDimensions.Default,
@@ -131,7 +132,6 @@ fun BrightnessSlider(
         animateFloatAsState(targetValue = value.toFloat(), label = "BrightnessSliderAnimatedValue")
     val floatValueRange = valueRange.first.toFloat()..valueRange.last.toFloat()
     val isRestricted = restriction is PolicyRestriction.Restricted
-    val enabled = !isRestricted
     val contentDescription = stringResource(R.string.accessibility_brightness)
     val interactionSource = remember { MutableInteractionSource() }
     val hapticsViewModel: SliderHapticsViewModel =
@@ -368,11 +368,14 @@ fun BrightnessSliderContainer(
         )
     val overriddenByAppState by viewModel.brightnessOverriddenByWindow.collectAsStateWithLifecycle()
     var dragging by remember { mutableStateOf(false) }
+    var enabled by remember { mutableStateOf(false) }
 
     DisposableEffectWithLifecycle(Unit) {
+        enabled = true
         onDispose {
             dragging = false
             viewModel.setIsDragging(false)
+            enabled = false
         }
     }
 
@@ -385,6 +388,7 @@ fun BrightnessSliderContainer(
         )
 
     val backgroundFrameHeight = dimensions.verticalPadding
+    val isRestricted = restriction is PolicyRestriction.Restricted
     Box(
         modifier =
             modifier
@@ -393,6 +397,7 @@ fun BrightnessSliderContainer(
                 .sysuiResTag("brightness_slider")
     ) {
         BrightnessSlider(
+            enabled = enabled && !isRestricted,
             gammaValue = gamma,
             valueRange = viewModel.minBrightness.value..viewModel.maxBrightness.value,
             iconResProvider = BrightnessSliderViewModel::getIconForPercentage,
