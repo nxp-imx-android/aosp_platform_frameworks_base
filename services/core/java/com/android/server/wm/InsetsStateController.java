@@ -229,14 +229,13 @@ class InsetsStateController {
         final var aboveInsetsState = new InsetsState();
         aboveInsetsState.set(mState,
                 displayCutout() | systemGestures() | mandatorySystemGestures());
-        final var localInsetsSourcesFromParent = new SparseArray<InsetsSource>();
         final var insetsChangedWindows = new ArraySet<WindowState>();
 
         // This method will iterate on the entire hierarchy in top to bottom z-order manner. The
         // aboveInsetsState will be modified as per the insets provided by the WindowState being
         // visited.
-        mDisplayContent.updateAboveInsetsState(aboveInsetsState, localInsetsSourcesFromParent,
-                insetsChangedWindows);
+        mDisplayContent.updateAboveInsetsState(aboveInsetsState,
+                null /* localInsetsSourcesFromParent */, insetsChangedWindows);
 
         if (notifyInsetsChange) {
             for (int i = insetsChangedWindows.size() - 1; i >= 0; i--) {

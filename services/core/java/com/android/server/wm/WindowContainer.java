@@ -326,7 +326,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * @param insetsChangedWindows         The windows which the insets changed have changed for.
      */
     void updateAboveInsetsState(InsetsState aboveInsetsState,
-            SparseArray<InsetsSource> localInsetsSourcesFromParent,
+            @Nullable SparseArray<InsetsSource> localInsetsSourcesFromParent,
             ArraySet<WindowState> insetsChangedWindows) {
         final SparseArray<InsetsSource> mergedLocalInsetsSources =
                 createMergedSparseArray(localInsetsSourcesFromParent, mLocalInsetsSources);
@@ -337,9 +337,13 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
     }
 
+    @Nullable
     static <T> SparseArray<T> createMergedSparseArray(SparseArray<T> sa1, SparseArray<T> sa2) {
         final int size1 = sa1 != null ? sa1.size() : 0;
         final int size2 = sa2 != null ? sa2.size() : 0;
+        if (size1 == 0 && size2 == 0) {
+            return null;
+        }
         final SparseArray<T> mergedArray = new SparseArray<>(size1 + size2);
         if (size1 > 0) {
             for (int i = 0; i < size1; i++) {
