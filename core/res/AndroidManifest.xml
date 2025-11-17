@@ -9681,6 +9681,17 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.companion.task_continuity" />
 
+    <!-- @SystemApi Allows an app to manage AiSeal Virtual Machine.
+         {@see android.aiseal.AiSealManager}
+         <p>Protection level: signature|privileged
+         @FlaggedApi(android.aiseal.Flags.FLAG_AISEAL_HOST_APIS)
+         @SystemApi
+         @hide
+    -->
+    <permission android:name="android.permission.MANAGE_AISEAL_VIRTUAL_MACHINE"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.aiseal.aiseal_host_apis" />
+
     <!-- Allows an application to read Handoff settings on the device (such as if it is enabled).
          <p>Protection level: signature|privileged
          @FlaggedApi(android.companion.Flags.FLAG_TASK_CONTINUITY)
