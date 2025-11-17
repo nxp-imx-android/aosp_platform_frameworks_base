@@ -32,6 +32,7 @@ import com.android.systemui.communal.domain.interactor.communalSettingsInteracto
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
+import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.dock.DockManager
 import com.android.systemui.dock.dockManager
 import com.android.systemui.dock.fakeDockManager
@@ -39,6 +40,8 @@ import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -48,6 +51,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
+import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChangeCallback
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -126,6 +130,7 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 { communalSceneInteractor },
                 { deviceEntryInteractor },
                 { occlusionInteractor },
+                { deviceUnlockedInteractor },
             )
         }
 
@@ -544,6 +549,20 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             // Session ends.
             verify(falsingDataProvider).onSessionEnd()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun deviceUnlockedAndDismissing_updates() =
+        kosmos.runTest {
+            // Device is unlocked and dismissing (by fingerprint)
+            biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+
+            // verify unlocked and dismissing updated
+            verify(falsingDataProvider).setUnlockedAndDismissing(true)
         }
 
     companion object {
