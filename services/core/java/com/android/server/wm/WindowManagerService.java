@@ -119,6 +119,7 @@ import static android.window.WindowProviderService.isWindowProviderService;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_LOCK;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BOOT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
@@ -1266,6 +1267,9 @@ public class WindowManagerService extends IWindowManager.Stub
     @GuardedBy("mGlobalLock")
     private final SparseArray<ArraySet<String>> mAppLockLockedPackages = new SparseArray<>();
 
+    final AppLockOverlayController mAppLockOverlayController;
+
+    // TODO(b/463115071): Move mAppLockLockedPackageStateListener to a separate class.
     /**
      * Listener for changes in the App Lock locked state of packages from {@link AppLockInternal}.
      * This is used to keep {@link #mAppLockLockedPackages} in sync.
@@ -1279,10 +1283,8 @@ public class WindowManagerService extends IWindowManager.Stub
                     Objects.requireNonNull(packageName);
 
                     synchronized (mGlobalLock) {
-                        if (DEBUG) {
-                            Slog.d(TAG, "onPackageLockedStateChanged: " + packageName + ", locked="
-                                    + locked);
-                        }
+                        ProtoLog.d(WM_DEBUG_APP_LOCK, "onPackageLockedByAppLockStateChanged: %s,"
+                                + " userId=%d, locked=%b", packageName, userId, locked);
 
                         ArraySet<String> lockedPackages = mAppLockLockedPackages.get(userId);
                         if (locked) {
@@ -1291,6 +1293,9 @@ public class WindowManagerService extends IWindowManager.Stub
                                 mAppLockLockedPackages.put(userId, lockedPackages);
                             }
                             lockedPackages.add(packageName);
+
+                            mAppLockOverlayController.lockActivitiesTasksForAppLockLocked(
+                                    packageName, userId);
                         } else {
                             if (lockedPackages == null) {
                                 // The package is not locked, so there is nothing to do.
@@ -1300,6 +1305,10 @@ public class WindowManagerService extends IWindowManager.Stub
                             if (lockedPackages.isEmpty()) {
                                 mAppLockLockedPackages.remove(userId);
                             }
+
+                            // When a package is unlocked, there is no need to explicitly remove any
+                            // overlays. The LockedAppActivity is responsible for finishing itself
+                            // when it detects that the package is no longer locked.
                         }
                     }
                 }
@@ -1468,6 +1477,7 @@ public class WindowManagerService extends IWindowManager.Stub
         mRotationWatcherController = new RotationWatcherController(this);
         mDisplayNotificationController = new DisplayWindowListenerController(this);
         mTaskSystemBarsListenerController = new TaskSystemBarsListenerController();
+        mAppLockOverlayController = new AppLockOverlayController(this);
 
         mActivityManager = ActivityManager.getService();
         mAmInternal = LocalServices.getService(ActivityManagerInternal.class);

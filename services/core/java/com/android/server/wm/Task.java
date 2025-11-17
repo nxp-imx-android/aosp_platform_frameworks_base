@@ -727,6 +727,10 @@ class Task extends TaskFragment {
         mIsTrimmableFromRecents = true;
         mIsForceOpaque = isForceOpaque;
         EventLogTags.writeWmTaskCreated(mTaskId);
+
+        if (android.security.Flags.appLockCore()) {
+            mWmService.mAppLockOverlayController.registerTask(this);
+        }
     }
 
     static Task fromWindowContainerToken(WindowContainerToken token) {

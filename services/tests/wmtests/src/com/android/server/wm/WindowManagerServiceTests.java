@@ -168,11 +168,6 @@ import java.util.stream.Stream;
 @RunWith(WindowTestRunner.class)
 public class WindowManagerServiceTests extends WindowTestsBase {
 
-    private static final String TEST_PACKAGE_1 = "com.android.test1";
-    private static final String TEST_PACKAGE_2 = "com.android.test2";
-    private static final int TEST_USER_ID_1 = 0;
-    private static final int TEST_USER_ID_2 = 1;
-
     private final IApplicationThread mAppThread = ActivityThread.currentActivityThread()
             .getApplicationThread();
 
@@ -269,6 +264,35 @@ public class WindowManagerServiceTests extends WindowTestsBase {
 
         when(mMockAppLockInternal.getAppLockEnabledPackages())
                 .thenReturn(appLockEnabledPackages);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testOnPackageLockedStateChanged_packageLocked_callsLockActivitiesTasks() {
+        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockOverlayController appLockOverlayController = mWm.mAppLockOverlayController;
+        spyOn(appLockOverlayController);
+
+        listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, true);
+
+        verify(appLockOverlayController).lockActivitiesTasksForAppLockLocked(
+                DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1);
+    }
+
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void testOnPackageLockedStateChanged_packageUnlocked_doesNotCallLockActivitiesTasks() {
+        final AppLockInternal.PackageLockedStateListener listener = captureAppLockListener();
+        final AppLockOverlayController appLockOverlayController = mWm.mAppLockOverlayController;
+        listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, true);
+        spyOn(appLockOverlayController);
+
+        listener.onPackageLockedStateChanged(DEFAULT_COMPONENT_PACKAGE_NAME, TEST_USER_ID_1, false);
+
+        verify(appLockOverlayController, never()).lockActivitiesTasksForAppLockLocked(anyString(),
+                anyInt());
     }
 
     @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
