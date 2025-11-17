@@ -314,21 +314,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FrameworksCoreTests_inputmethod",
-    base: "FrameworksCoreTests",
-    test_suites: [
-        "automotive-tests",
-        "device-platinum-tests",
-        "device-tests",
-    ],
-    include_filters: [
-        "android.view.inputmethod",
-        "com.android.internal.inputmethod",
-    ],
-    exclude_annotations: ["androidx.test.filters.FlakyTest"],
-}
-
-test_module_config {
     name: "FrameworksCoreTests_context",
     base: "FrameworksCoreTests",
     test_suites: [
