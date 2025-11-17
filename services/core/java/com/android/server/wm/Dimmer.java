@@ -47,8 +47,6 @@ class Dimmer {
 
     @Nullable
     DimState mDimState;
-    @NonNull
-    final DimmerAnimationHelper.AnimationAdapterFactory mAnimationAdapterFactory;
 
     /**
      * Controls the dim behaviour
@@ -73,7 +71,7 @@ class Dimmer {
 
         DimState() {
             mHostContainer = mHost;
-            mAnimationHelper = new DimmerAnimationHelper(mHost, mAnimationAdapterFactory);
+            mAnimationHelper = new DimmerAnimationHelper(mHost.mWmService.mSurfaceAnimationRunner);
             try {
                 mDimSurface = makeDimLayer();
                 EventLogTags.writeWmDimCreated(mHost.getName(), mDimSurface.getLayerId());
@@ -177,14 +175,7 @@ class Dimmer {
     }
 
     protected Dimmer(@NonNull WindowContainer<?> host) {
-        this(host, new DimmerAnimationHelper.AnimationAdapterFactory());
-    }
-
-    @VisibleForTesting
-    Dimmer(@NonNull WindowContainer<?> host,
-            @NonNull DimmerAnimationHelper.AnimationAdapterFactory animationFactory) {
         mHost = host;
-        mAnimationAdapterFactory = animationFactory;
     }
 
     public boolean hostIsTask() {

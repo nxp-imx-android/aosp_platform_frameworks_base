@@ -101,15 +101,11 @@ public class DimmerAnimationHelper {
 
     @NonNull
     private final SurfaceAnimationRunner mSurfaceAnimationRunner;
-    @NonNull
-    private final AnimationAdapterFactory mAnimationAdapterFactory;
     @Nullable
-    private AnimationAdapter mLocalAnimationAdapter;
+    private LocalAnimationAdapter mLocalAnimationAdapter;
 
-    DimmerAnimationHelper(@NonNull WindowContainer<?> host,
-            @NonNull AnimationAdapterFactory animationFactory) {
-        mAnimationAdapterFactory = animationFactory;
-        mSurfaceAnimationRunner = host.mWmService.mSurfaceAnimationRunner;
+    DimmerAnimationHelper(@NonNull SurfaceAnimationRunner surfaceAnimationRunner) {
+        mSurfaceAnimationRunner = surfaceAnimationRunner;
     }
 
     void setExitParameters() {
@@ -201,7 +197,7 @@ public class DimmerAnimationHelper {
             @NonNull Change from, @NonNull Change to) {
         ProtoLog.v(WM_DEBUG_DIMMER, "Starting animation on %s", dim);
         mAlphaAnimationSpec = getRequestedAnimationSpec(from, to);
-        mLocalAnimationAdapter = mAnimationAdapterFactory.get(mAlphaAnimationSpec,
+        mLocalAnimationAdapter = new LocalAnimationAdapter(mAlphaAnimationSpec,
                 mSurfaceAnimationRunner);
 
         float targetAlpha = to.mAlpha;
@@ -405,14 +401,6 @@ public class DimmerAnimationHelper {
             proto.write(TO, mAlpha.mFinishValue);
             proto.write(DURATION_MS, mDuration);
             proto.end(token);
-        }
-    }
-
-    static class AnimationAdapterFactory {
-        @NonNull
-        public AnimationAdapter get(@NonNull LocalAnimationAdapter.AnimationSpec alphaAnimationSpec,
-                @NonNull SurfaceAnimationRunner runner) {
-            return new LocalAnimationAdapter(alphaAnimationSpec, runner);
         }
     }
 }
