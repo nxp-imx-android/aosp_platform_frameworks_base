@@ -4004,6 +4004,7 @@
 
   <!-- com.android.server.autofill -->
   <java-symbol type="layout" name="autofill_save"/>
+  <java-symbol type="layout" name="autofill_save_dialog_expressive"/>
   <java-symbol type="layout" name="autofill_dataset_picker"/>
   <java-symbol type="layout" name="autofill_dataset_picker_fullscreen"/>
   <java-symbol type="layout" name="autofill_dataset_picker_header_footer"/>
