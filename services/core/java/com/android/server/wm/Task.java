@@ -646,6 +646,8 @@ class Task extends TaskFragment {
     /** @see #isDisablePip() */
     private boolean mDisablePip;
 
+    private final boolean mIsForceOpaque;
+
     private Task(ActivityTaskManagerService atmService, int _taskId, Intent _intent,
             Intent _affinityIntent, String _affinity, String _rootAffinity,
             ComponentName _realActivity, ComponentName _origActivity, boolean _rootWasReset,
@@ -657,7 +659,8 @@ class Task extends TaskFragment {
             boolean _realActivitySuspended, boolean userSetupComplete, int minWidth, int minHeight,
             @Nullable ActivityInfo info, @Nullable IVoiceInteractionSession _voiceSession,
             IVoiceInteractor _voiceInteractor, boolean _createdByOrganizer, IBinder _launchCookie,
-            boolean _deferTaskAppear, boolean _removeWithTaskOrganizer) {
+            boolean _deferTaskAppear, boolean _removeWithTaskOrganizer,
+            boolean isForceOpaque) {
         super(atmService, null /* fragmentToken */, _createdByOrganizer, false /* isEmbedded */);
 
         mTaskId = _taskId;
@@ -705,6 +708,7 @@ class Task extends TaskFragment {
         mDeferTaskAppear = _deferTaskAppear;
         mRemoveWithTaskOrganizer = _removeWithTaskOrganizer;
         mIsTrimmableFromRecents = true;
+        mIsForceOpaque = isForceOpaque;
         EventLogTags.writeWmTaskCreated(mTaskId);
     }
 
@@ -6512,6 +6516,28 @@ class Task extends TaskFragment {
         proto.end(token);
     }
 
+    /**
+     * Indicates whether this task should be force opaque when it contains any running activities.
+     *
+     * @see #getVisibility(ActivityRecord)
+     * @see #hasFillingContent()
+     * @see ActivityTaskSupervisor.OpaqueContainerHelper#isOpaque
+     */
+    boolean isForceOpaque() {
+        return mIsForceOpaque && mCreatedByOrganizer
+                && getTopNonFinishingActivity() != null;
+    }
+
+    // TODO(b/448600132): Consolidate the usage to
+    //  ActivityTaskSupervisor.OpaqueContainerHelper#isOpaque.
+    @Override
+    public boolean hasFillingContent() {
+        if (isForceOpaque()) {
+            return true;
+        }
+        return super.hasFillingContent();
+    }
+
     static class Builder {
         private final ActivityTaskManagerService mAtmService;
         private WindowContainer mParent;
@@ -6557,6 +6583,8 @@ class Task extends TaskFragment {
         private boolean mReparentOnDisplayRemoval;
         @Nullable
         private String mName;
+
+        private boolean mIsForceOpaque;
 
         /**
          * Records the source task that requesting to build a new task, used to determine which of
@@ -6687,6 +6715,15 @@ class Task extends TaskFragment {
 
         Builder setReparentOnDisplayRemoval(boolean reparentOnDisplayRemoval) {
             mReparentOnDisplayRemoval = reparentOnDisplayRemoval;
+            return this;
+        }
+
+        /**
+         * Sets whether to force opaque.
+         * @see Task#isForceOpaque()
+         */
+        Builder setForceOpaque(boolean forceOpaque) {
+            mIsForceOpaque = forceOpaque;
             return this;
         }
 
@@ -6925,7 +6962,8 @@ class Task extends TaskFragment {
                     mCallingPackage, mCallingFeatureId, mResizeMode, mSupportsPictureInPicture,
                     mRealActivitySuspended, mUserSetupComplete, mMinWidth, mMinHeight,
                     mActivityInfo, mVoiceSession, mVoiceInteractor, mCreatedByOrganizer,
-                    mLaunchCookie, mDeferTaskAppear, mRemoveWithTaskOrganizer);
+                    mLaunchCookie, mDeferTaskAppear, mRemoveWithTaskOrganizer,
+                    mIsForceOpaque);
         }
     }
 

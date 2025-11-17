@@ -463,12 +463,14 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         mMSDLPlayer = msdlPlayer;
         mBubbleController = bubbleController;
 
-        taskOrganizer.createRootTask(
-                new TaskOrganizer.CreateRootTaskRequest()
-                        .setName("SplitRoot")
-                        .setDisplayId(displayId)
-                        .setWindowingMode(WINDOWING_MODE_FULLSCREEN),
-                this);
+        final var request = new TaskOrganizer.CreateRootTaskRequest()
+                .setName("SplitRoot")
+                .setDisplayId(displayId)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        if (com.android.window.flags.Flags.enableForceOpaque()) {
+            request.setForceOpaque(true);
+        }
+        taskOrganizer.createRootTask(request, this);
 
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Creating main/side root task");
         if (enableFlexibleSplit()) {

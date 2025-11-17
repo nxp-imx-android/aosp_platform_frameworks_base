@@ -866,7 +866,8 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
     public void testMovedRootTaskToFront() {
         final TaskDisplayArea tda = mDefaultDisplay.getDefaultTaskDisplayArea();
         final Task rootTask = createTask(tda, WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD,
-                true /* onTop */, true /* createActivity */, true /* twoLevelTask */);
+                true /* onTop */, true /* createActivity */, true /* twoLevelTask */,
+                false /* forceOpaque */);
         final Task leafTask = rootTask.getTopLeafTask();
 
         clearInvocations(tda);

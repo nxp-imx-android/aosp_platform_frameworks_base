@@ -887,7 +887,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     @Override
     public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie,
             boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval,
-            @Nullable String name) {
+            @Nullable String name, boolean isForceOpaque) {
         enforceTaskPermission("createRootTask()");
         final long origId = Binder.clearCallingIdentity();
         try {
@@ -900,7 +900,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 }
 
                 createRootTask(display, windowingMode, launchCookie, removeWithTaskOrganizer,
-                        reparentOnDisplayRemoval, name);
+                        reparentOnDisplayRemoval, name, isForceOpaque);
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
@@ -911,12 +911,12 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     Task createRootTask(DisplayContent display, int windowingMode, @Nullable IBinder launchCookie) {
         return createRootTask(display, windowingMode, launchCookie,
                 false /* removeWithTaskOrganizer */, false /* reparentOnDisplayRemoval */,
-                "test");
+                "test", false /* isForceOpaque */);
     }
 
     private Task createRootTask(DisplayContent display, int windowingMode,
             @Nullable IBinder launchCookie, boolean removeWithTaskOrganizer,
-            boolean reparentOnDisplayRemoval, @Nullable String name) {
+            boolean reparentOnDisplayRemoval, @Nullable String name, boolean isForceOpaque) {
         ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Create root task displayId=%d winMode=%d",
                 display.mDisplayId, windowingMode);
         // We want to defer the task appear signal until the task is fully created and attached to
@@ -932,6 +932,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 .setParent(display.getDefaultTaskDisplayArea())
                 .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
                 .setReparentOnDisplayRemoval(reparentOnDisplayRemoval)
+                .setForceOpaque(isForceOpaque)
                 .build();
         task.setDeferTaskAppear(false /* deferTaskAppear */);
         return task;

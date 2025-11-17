@@ -3148,6 +3148,11 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             final boolean isActivity = container.asActivityRecord() != null;
             final boolean isLeafTaskFragment = container.asTaskFragment() != null
                     && ((TaskFragment) container).isLeafTaskFragment();
+            final boolean isForceOpaque = container.asTask() != null
+                    && container.asTask().isForceOpaque();
+            if (isForceOpaque) {
+                return true;
+            }
             if (isActivity || isLeafTaskFragment) {
                 // When it is an activity or leaf task fragment, then opacity is calculated based
                 // on itself or its activities.

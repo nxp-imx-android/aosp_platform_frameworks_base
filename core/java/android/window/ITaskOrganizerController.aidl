@@ -48,7 +48,7 @@ interface ITaskOrganizerController {
     */
     void createRootTask(int displayId, int windowingMode, IBinder launchCookie,
             boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval,
-            in @nullable String name);
+            in @nullable String name, boolean isForceOpaque);
 
     /** Deletes a persistent root task in WM */
     boolean deleteRootTask(in WindowContainerToken task);
