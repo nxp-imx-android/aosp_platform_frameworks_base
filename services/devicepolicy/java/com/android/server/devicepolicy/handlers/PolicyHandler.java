@@ -40,6 +40,7 @@ import com.android.server.devicepolicy.PolicyDefinition;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -295,12 +296,25 @@ public class PolicyHandler<T> {
     protected void checkPermissions(CallerIdentity caller, @PolicyScope int scope) {
         var permissionChecker = getPermissionChecker();
 
+        // Check for the permission here to catch any issues early.
+        var requiredPermission = getPolicyMetadata().getRequiredPermission();
+        if (requiredPermission == null) {
+            throw new IllegalStateException(
+                    "Policy "
+                            + getKey().getId()
+                            + " has no requiredPermission, either add one or override"
+                            + " checkPermissions in the handler");
+        }
+
         if (!isPolicyAllowedForDpc(mDelegate.getDpcType(caller))) {
-            permissionChecker.enforce(getPolicyMetadata().getRequiredPermission(), caller);
+            permissionChecker.enforce(requiredPermission, caller);
         }
 
         if (scope != POLICY_SCOPE_USER) {
-            permissionChecker.enforce(getPolicyMetadata().getRequiredCrossUserPermission(), caller);
+            var requiredCrossUserPermission = getPolicyMetadata().getRequiredCrossUserPermission();
+            if (requiredCrossUserPermission != null) {
+                permissionChecker.enforce(requiredCrossUserPermission, caller);
+            }
         }
     }
 
