@@ -173,7 +173,7 @@ flag {
 }
 
 flag {
-    name: "enable_pip_box_shadows"
+    name: "enable_pip_box_shadows_v2"
     namespace: "multitasking"
     description: "Enables box shadows for PiP"
     bug: "367464660"

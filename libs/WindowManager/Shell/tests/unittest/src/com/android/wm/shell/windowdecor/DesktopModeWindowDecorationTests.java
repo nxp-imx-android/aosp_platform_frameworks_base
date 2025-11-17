@@ -365,7 +365,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreSetForFreeform() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -377,7 +377,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForFullscreen() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -389,7 +389,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForSplit() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
@@ -401,7 +401,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersSetForFreeform() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -413,7 +413,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_windowBoxShadowsAreSetForFreeform() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -430,7 +430,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowBoxShadowsAreNotSetForFullscreen() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -443,7 +443,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS_V2)
     public void updateRelayoutParams_noSysPropFlagsSet_windowBoxShadowsAreNotSetForSplit() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);

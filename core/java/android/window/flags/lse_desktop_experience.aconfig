@@ -848,7 +848,7 @@ flag {
 }
 
 flag {
-    name: "enable_freeform_box_shadows"
+    name: "enable_freeform_box_shadows_v2"
     namespace: "lse_desktop_experience"
     description: "Enables box shadows for freeform windows."
     bug: "367464660"
