@@ -1888,6 +1888,10 @@ public class NotificationChildrenContainer extends ViewGroup
         return isBundle() ? mBundleHeaderWrapper : mGroupHeaderWrapper;
     }
 
+    public void setBundleHeaderOnClickListener(OnClickListener l) {
+        mBundleHeaderView.setOnClickListener(l);
+    }
+
     public NotificationHeaderViewWrapper getNotificationHeaderWrapper() {
         return mGroupHeaderWrapper;
     }
