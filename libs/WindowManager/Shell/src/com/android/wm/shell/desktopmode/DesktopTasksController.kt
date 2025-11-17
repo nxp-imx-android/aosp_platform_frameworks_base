@@ -21,7 +21,6 @@ import android.app.ActivityManager
 import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
-import android.app.ActivityTaskManager
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.AppOpsManager
 import android.app.KeyguardManager
@@ -849,11 +848,7 @@ class DesktopTasksController(
         try {
             userRepositories.current.getExpandedTasksOrdered(disconnectedDisplayId).forEach {
                 logD("addOnDisplayDisconnect: taking a snapshot of=$it before disconnect")
-                if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                    taskSnapshotManager.takeTaskSnapshot(it, true)
-                } else {
-                    ActivityTaskManager.getService().getTaskSnapshot(it, false)
-                }
+                taskSnapshotManager.takeTaskSnapshot(it, true)
             }
         } catch (e: RemoteException) {
             logE("addOnDisplayDisconnect: failed to take task snapshot", e)

@@ -4654,15 +4654,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 return null;
             }
             // Try to load snapshot from cache first, and add reference if the snapshot is in cache.
-            final TaskSnapshot snapshot;
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(isLowResolution);
-                snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
-                        taskId, retrieveFlag, usage);
-            } else {
-                snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(taskId,
-                        isLowResolution, usage);
-            }
+            final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(isLowResolution);
+            final TaskSnapshot snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
+                    taskId, retrieveFlag, usage);
             if (snapshot != null) {
                 return snapshot;
             }
@@ -4685,16 +4679,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     Slog.w(TAG, "getTaskSnapshot: taskId=" + taskId + " not found");
                     return null;
                 }
-                final TaskSnapshot snapshot;
-                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                    final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(
-                            isLowResolution);
-                    snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
-                                    taskId, retrieveFlag, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                } else {
-                    snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
-                            taskId, isLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                }
+                final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(
+                        isLowResolution);
+                final TaskSnapshot snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
+                        taskId, retrieveFlag, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                 if (snapshot != null) {
                     return snapshot;
                 }

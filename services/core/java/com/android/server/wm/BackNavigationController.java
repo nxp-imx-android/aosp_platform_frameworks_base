@@ -72,7 +72,6 @@ import android.window.TaskSnapshotManager;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
-import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -2206,13 +2205,8 @@ class BackNavigationController {
         TaskSnapshot snapshot = null;
         if (w.asTask() != null) {
             final Task task = w.asTask();
-            if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                snapshot = task.mRootWindowContainer.mWindowManager.mTaskSnapshotController
-                        .getSnapshot(task.mTaskId, TaskSnapshotManager.RESOLUTION_ANY);
-            } else {
-                snapshot = task.mRootWindowContainer.mWindowManager.mTaskSnapshotController
-                        .getSnapshot(task.mTaskId, false /* isLowResolution */);
-            }
+            snapshot = task.mRootWindowContainer.mWindowManager.mTaskSnapshotController
+                    .getSnapshot(task.mTaskId, TaskSnapshotManager.RESOLUTION_ANY);
         } else {
             ActivityRecord ar = w.asActivityRecord();
             if (ar == null && w.asTaskFragment() != null) {

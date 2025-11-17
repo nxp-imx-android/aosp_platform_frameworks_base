@@ -1960,10 +1960,8 @@ public final class ActivityThread extends ClientTransactionHandler
             }
 
             // Task Snapshot
-            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                if (TaskSnapshotManager.isUsed()) {
-                    TaskSnapshotManager.getInstance().dump(pw);
-                }
+            if (TaskSnapshotManager.isUsed()) {
+                TaskSnapshotManager.getInstance().dump(pw);
             }
 
             // Unreachable native memory

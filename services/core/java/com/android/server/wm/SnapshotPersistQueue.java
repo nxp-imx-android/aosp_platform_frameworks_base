@@ -26,7 +26,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import android.annotation.NonNull;
 import android.app.ActivityTaskManager;
 import android.graphics.Bitmap;
-import android.hardware.HardwareBuffer;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
@@ -524,16 +523,8 @@ class SnapshotPersistQueue {
                 return true;
             }
 
-            final int width;
-            final int height;
-            if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                width = mSnapshot.getHardwareBufferWidth();
-                height = mSnapshot.getHardwareBufferHeight();
-            } else {
-                final HardwareBuffer hwBuffer = mSnapshot.getHardwareBuffer();
-                width = hwBuffer.getWidth();
-                height = hwBuffer.getHeight();
-            }
+            final int width = mSnapshot.getHardwareBufferWidth();
+            final int height = mSnapshot.getHardwareBufferHeight();
             final Bitmap lowResBitmap = Bitmap.createScaledBitmap(swBitmap,
                     (int) (width * mPersistInfoProvider.lowResScaleFactor()),
                     (int) (height * mPersistInfoProvider.lowResScaleFactor()),

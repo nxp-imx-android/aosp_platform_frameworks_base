@@ -52,7 +52,6 @@ import android.window.TaskSnapshot;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.ColorUtils;
 import com.android.server.wm.utils.InsetUtils;
-import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -251,35 +250,20 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
     }
 
     private static TaskSnapshot validateSnapshot(@NonNull TaskSnapshot snapshot) {
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            if (!snapshot.isBufferValid()) {
-                return null;
-            }
-            final int width = snapshot.getHardwareBufferWidth();
-            final int height = snapshot.getHardwareBufferHeight();
-            if (width == 0 || height == 0) {
-                snapshot.closeBuffer();
-                Slog.e(TAG, "Invalid snapshot dimensions " + width + "x" + height);
-                return null;
-            }
-            if (snapshot.getDensityDpi() <= 0) {
-                snapshot.closeBuffer();
-                Slog.e(TAG, "Invalid snapshot density " + snapshot.getDensityDpi());
-                return null;
-            }
-        } else {
-            final HardwareBuffer buffer = snapshot.getHardwareBuffer();
-            if (buffer.getWidth() == 0 || buffer.getHeight() == 0) {
-                buffer.close();
-                Slog.e(TAG, "Invalid snapshot dimensions " + buffer.getWidth() + "x"
-                        + buffer.getHeight());
-                return null;
-            }
-            if (snapshot.getDensityDpi() <= 0) {
-                buffer.close();
-                Slog.e(TAG, "Invalid snapshot density " + snapshot.getDensityDpi());
-                return null;
-            }
+        if (!snapshot.isBufferValid()) {
+            return null;
+        }
+        final int width = snapshot.getHardwareBufferWidth();
+        final int height = snapshot.getHardwareBufferHeight();
+        if (width == 0 || height == 0) {
+            snapshot.closeBuffer();
+            Slog.e(TAG, "Invalid snapshot dimensions " + width + "x" + height);
+            return null;
+        }
+        if (snapshot.getDensityDpi() <= 0) {
+            snapshot.closeBuffer();
+            Slog.e(TAG, "Invalid snapshot density " + snapshot.getDensityDpi());
+            return null;
         }
         return snapshot;
     }
@@ -346,14 +330,10 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
     }
 
     static boolean isInvalidHardwareBuffer(TaskSnapshot snapshot) {
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            // TODO (b/428811458) Remove redundant check for buffer size.
-            return snapshot == null || !snapshot.isBufferValid()
-                    || snapshot.getHardwareBufferWidth() <= 1
-                    || snapshot.getHardwareBufferHeight() <= 1;
-        }
-        final HardwareBuffer buffer = snapshot != null ? snapshot.getHardwareBuffer() : null;
-        return isInvalidHardwareBuffer(buffer);
+        // TODO (b/428811458) Remove redundant check for buffer size.
+        return snapshot == null || !snapshot.isBufferValid()
+                || snapshot.getHardwareBufferWidth() <= 1
+                || snapshot.getHardwareBufferHeight() <= 1;
     }
 
     /**
@@ -489,11 +469,9 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         final int taskWidth = taskBounds.width();
         final int taskHeight = taskBounds.height();
         float scale = mHighResSnapshotScale;
-        if (Flags.reduceTaskSnapshotMemoryUsage()) {
-            final int minLength = Math.min(taskWidth, taskHeight);
-            if (THEME_SNAPSHOT_MIN_Length < minLength) {
-                scale = Math.min(THEME_SNAPSHOT_MIN_Length / minLength, scale);
-            }
+        final int minLength = Math.min(taskWidth, taskHeight);
+        if (THEME_SNAPSHOT_MIN_Length < minLength) {
+            scale = Math.min(THEME_SNAPSHOT_MIN_Length / minLength, scale);
         }
         final SnapshotDrawerUtils.SystemBarBackgroundPainter
                 decorPainter = new SnapshotDrawerUtils.SystemBarBackgroundPainter(attrs.flags,

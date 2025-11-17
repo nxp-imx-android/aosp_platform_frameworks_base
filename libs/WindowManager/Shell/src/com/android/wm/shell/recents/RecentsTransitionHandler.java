@@ -596,13 +596,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "[%d] RecentsController.sendCancel: Snapshotting task=%d",
                                 mInstanceId, state.mTaskInfo.taskId);
-                        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
-                            snapshots[i] = TaskSnapshotManager.getInstance().takeTaskSnapshot(
-                                    state.mTaskInfo.taskId, true /* updateCache */);
-                        } else {
-                            snapshots[i] = ActivityTaskManager.getService().takeTaskSnapshot(
-                                    state.mTaskInfo.taskId, true /* updateCache */);
-                        }
+                        snapshots[i] = TaskSnapshotManager.getInstance().takeTaskSnapshot(
+                                state.mTaskInfo.taskId, true /* updateCache */);
                     }
                 } catch (RemoteException e) {
                     taskIds = null;
