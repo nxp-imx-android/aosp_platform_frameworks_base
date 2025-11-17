@@ -173,6 +173,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_UID_OBSER
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.CachedAppOptimizer.getUnfreezeReasonCodeFromOomAdjReason;
+import static com.android.server.am.Flags.FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID;
 import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
 import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
 import static com.android.server.am.MemoryStatUtil.hasMemcg;
@@ -224,6 +225,7 @@ import static com.android.systemui.shared.Flags.enableHomeDelay;
 import android.Manifest;
 import android.Manifest.permission;
 import android.annotation.EnforcePermission;
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.PermissionMethod;
@@ -16871,6 +16873,23 @@ public class ActivityManagerService extends IActivityManager.Stub
                 String processName, BindServiceFlags flags) throws RemoteException {
             return bindSdkSandboxServiceInternal(service, conn, clientAppUid,
                     clientApplicationThread, clientAppPackage, processName, flags.getValue());
+        }
+
+        @Override
+        @FlaggedApi(FLAG_ENABLE_GET_PACKAGE_NAMES_FOR_PID)
+        @NonNull
+        public String[] getPackageNamesForPid(int pid, int uid) {
+            synchronized (mPidsSelfLocked) {
+                ProcessRecord proc = mPidsSelfLocked.get(pid);
+                if (proc == null || proc.uid != uid) {
+                    return new String[0];
+                }
+                String[] packageNames = proc.getProcessPackageNames();
+                if (packageNames == null || packageNames.length == 0) {
+                    return new String[0];
+                }
+                return Arrays.copyOf(packageNames, packageNames.length);
+            }
         }
 
         private boolean bindSdkSandboxServiceInternal(Intent service, ServiceConnection conn,
