@@ -682,6 +682,9 @@ class DragZoneFactory @JvmOverloads constructor(
     }
 
     private fun createHorizontalSplitDragZonesForExpandedView(): List<DragZone> {
+        if (splitScreenModeChecker.getSplitScreenMode() == SplitScreenMode.UNSUPPORTED) {
+            return emptyList()
+        }
         // horizontal split drag zones for expanded view appear on the edges of the screen from the
         // top down until the dismiss drag zone height
         val bottomY = windowBounds.bottom - dismissDragZoneBottomMargin - dismissDragZoneRadius * 2
