@@ -37,6 +37,7 @@ import static android.view.contentcapture.ContentCaptureManager.RESULT_CODE_SECU
 import static android.view.contentcapture.ContentCaptureManager.RESULT_CODE_TRUE;
 import static android.view.contentcapture.ContentCaptureSession.STATE_DISABLED;
 import static android.view.contentprotection.flags.Flags.setContentProtectionAllowlistEnabled;
+import static android.view.contentprotection.flags.Flags.tryCallbackOnCallingUserEnabled;
 
 import static com.android.internal.util.FrameworkStatsLog.CONTENT_CAPTURE_SERVICE_EVENTS__EVENT__ACCEPT_DATA_SHARE_REQUEST;
 import static com.android.internal.util.FrameworkStatsLog.CONTENT_CAPTURE_SERVICE_EVENTS__EVENT__DATA_SHARE_ERROR_CLIENT_PIPE_FAIL;
@@ -997,13 +998,16 @@ public class ContentCaptureManagerService extends
     @NonNull
     protected ContentCaptureServiceInfo createContentProtectionServiceInfo(
             @NonNull ComponentName componentName) throws PackageManager.NameNotFoundException {
+        // Calling user's identity was already cleared, but use it here regardless. Propagating the
+        // original one can cause NameNotFoundException to be thrown by ContentCaptureServiceInfo.
         return new ContentCaptureServiceInfo(
                 getContext(), componentName, /* isTemp= */ false, getCallingUserId());
     }
 
     /** @hide */
     @Nullable
-    public RemoteContentProtectionService createRemoteContentProtectionService() {
+    public RemoteContentProtectionService createRemoteContentProtectionService(
+            @UserIdInt int userId) {
         ComponentName componentName;
         long autoDisconnectTimeoutMs;
         synchronized (mLock) {
@@ -1023,18 +1027,35 @@ public class ContentCaptureManagerService extends
             return null;
         }
 
-        return createRemoteContentProtectionService(componentName, autoDisconnectTimeoutMs);
+        if (tryCallbackOnCallingUserEnabled()) {
+            try {
+                return createRemoteContentProtectionService(componentName, autoDisconnectTimeoutMs,
+                        userId);
+            } catch (Exception ex) {
+                if (userId == getCallingUserId()) {
+                    throw ex;
+                }
+                // Swallow and retry the default one
+                Slog.e(TAG, "Failed to create remote service for user id: " + userId, ex);
+            }
+        }
+
+        // Default, calling user's identity was already cleared
+        return createRemoteContentProtectionService(componentName, autoDisconnectTimeoutMs,
+                getCallingUserId());
     }
 
     /** @hide */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     @NonNull
     protected RemoteContentProtectionService createRemoteContentProtectionService(
-            @NonNull ComponentName componentName, long autoDisconnectTimeoutMs) {
+            @NonNull ComponentName componentName,
+            long autoDisconnectTimeoutMs,
+            @UserIdInt int userId) {
         return new RemoteContentProtectionService(
                 getContext(),
                 componentName,
-                getCallingUserId(),
+                userId,
                 isBindInstantServiceAllowed(),
                 autoDisconnectTimeoutMs);
     }
@@ -1337,10 +1358,11 @@ public class ContentCaptureManagerService extends
 
         @Override
         public void onLoginDetected(@NonNull ParceledListSlice<ContentCaptureEvent> events) {
+            int userId = getCallingUserId();
             Binder.withCleanCallingIdentity(
                     () -> {
                         RemoteContentProtectionService service =
-                                createRemoteContentProtectionService();
+                                createRemoteContentProtectionService(userId);
                         if (service == null) {
                             return;
                         }

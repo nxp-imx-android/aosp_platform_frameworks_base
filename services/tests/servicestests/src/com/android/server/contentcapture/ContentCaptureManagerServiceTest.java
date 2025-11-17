@@ -18,6 +18,7 @@ package com.android.server.contentcapture;
 
 import static android.Manifest.permission.SET_CONTENT_PROTECTION_ALLOWLIST;
 import static android.view.contentprotection.flags.Flags.FLAG_SET_CONTENT_PROTECTION_ALLOWLIST_ENABLED;
+import static android.view.contentprotection.flags.Flags.FLAG_TRY_CALLBACK_ON_CALLING_USER_ENABLED;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -593,7 +594,8 @@ public class ContentCaptureManagerServiceTest {
     }
 
     @Test
-    public void onLoginDetected_disabledAfterConstructor() {
+    @DisableFlags(FLAG_TRY_CALLBACK_ON_CALLING_USER_ENABLED)
+    public void onLoginDetected_disabledAfterConstructor_userFlagDisabled() {
         mDevCfgEnableContentProtectionReceiver = true;
         mContentCaptureManagerService = new TestContentCaptureManagerService();
         mContentCaptureManagerService.mDevCfgEnableContentProtectionReceiver = false;
@@ -608,7 +610,24 @@ public class ContentCaptureManagerServiceTest {
     }
 
     @Test
-    public void onLoginDetected_invalidPermissions() {
+    @EnableFlags(FLAG_TRY_CALLBACK_ON_CALLING_USER_ENABLED)
+    public void onLoginDetected_disabledAfterConstructor_userFlagEnabled() {
+        mDevCfgEnableContentProtectionReceiver = true;
+        mContentCaptureManagerService = new TestContentCaptureManagerService();
+        mContentCaptureManagerService.mDevCfgEnableContentProtectionReceiver = false;
+
+        mContentCaptureManagerService
+                .getContentCaptureManagerServiceStub()
+                .onLoginDetected(PARCELED_EVENTS);
+
+        assertThat(mContentProtectionServiceInfosCreated).isEqualTo(0);
+        assertThat(mRemoteContentProtectionServicesCreated).isEqualTo(0);
+        verifyNoMoreInteractions(mMockRemoteContentProtectionService);
+    }
+
+    @Test
+    @DisableFlags(FLAG_TRY_CALLBACK_ON_CALLING_USER_ENABLED)
+    public void onLoginDetected_invalidPermissions_userFlagDisabled() {
         mDevCfgEnableContentProtectionReceiver = true;
         mContentProtectionServiceInfoConstructorShouldThrow = true;
         mContentCaptureManagerService = new TestContentCaptureManagerService();
@@ -623,7 +642,39 @@ public class ContentCaptureManagerServiceTest {
     }
 
     @Test
-    public void onLoginDetected_enabled() {
+    @EnableFlags(FLAG_TRY_CALLBACK_ON_CALLING_USER_ENABLED)
+    public void onLoginDetected_invalidPermissions_userFlagEnabled() {
+        mDevCfgEnableContentProtectionReceiver = true;
+        mContentProtectionServiceInfoConstructorShouldThrow = true;
+        mContentCaptureManagerService = new TestContentCaptureManagerService();
+
+        mContentCaptureManagerService
+                .getContentCaptureManagerServiceStub()
+                .onLoginDetected(PARCELED_EVENTS);
+
+        assertThat(mContentProtectionServiceInfosCreated).isEqualTo(1);
+        assertThat(mRemoteContentProtectionServicesCreated).isEqualTo(0);
+        verifyNoMoreInteractions(mMockRemoteContentProtectionService);
+    }
+
+    @Test
+    @DisableFlags(FLAG_TRY_CALLBACK_ON_CALLING_USER_ENABLED)
+    public void onLoginDetected_running_userFlagDisabled() {
+        mDevCfgEnableContentProtectionReceiver = true;
+        mContentCaptureManagerService = new TestContentCaptureManagerService();
+
+        mContentCaptureManagerService
+                .getContentCaptureManagerServiceStub()
+                .onLoginDetected(PARCELED_EVENTS);
+
+        assertThat(mContentProtectionServiceInfosCreated).isEqualTo(1);
+        assertThat(mRemoteContentProtectionServicesCreated).isEqualTo(1);
+        verify(mMockRemoteContentProtectionService).onLoginDetected(PARCELED_EVENTS);
+    }
+
+    @Test
+    @EnableFlags(FLAG_TRY_CALLBACK_ON_CALLING_USER_ENABLED)
+    public void onLoginDetected_running_userFlagEnabled() {
         mDevCfgEnableContentProtectionReceiver = true;
         mContentCaptureManagerService = new TestContentCaptureManagerService();
 
@@ -1118,7 +1169,10 @@ public class ContentCaptureManagerServiceTest {
 
         @Override
         protected RemoteContentProtectionService createRemoteContentProtectionService(
-                @NonNull ComponentName componentName, long autoDisconnectTimeoutMs) {
+                @NonNull ComponentName componentName,
+                long autoDisconnectTimeoutMs,
+                @UserIdInt int userId) {
+            assertThat(userId).isEqualTo(mFakeCallingUserId);
             mRemoteContentProtectionServicesCreated++;
             return mMockRemoteContentProtectionService;
         }

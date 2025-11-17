@@ -154,8 +154,9 @@ public class ContentProtectionAllowlistManager {
             return;
         }
 
+        int userId = UserHandle.getCallingUserId();
         RemoteContentProtectionService remoteContentProtectionService =
-                mContentCaptureManagerService.createRemoteContentProtectionService();
+                mContentCaptureManagerService.createRemoteContentProtectionService(userId);
         if (remoteContentProtectionService == null) {
             return;
         }
