@@ -16,11 +16,13 @@
 
 package com.android.server.display.mode
 
+import android.platform.test.flag.junit.SetFlagsRule
 import android.view.Display
 import androidx.test.filters.SmallTest
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -29,6 +31,10 @@ private const val FLOAT_TOLERANCE = 0.001f
 @SmallTest
 @RunWith(TestParameterInjector::class)
 class VoteSummaryTest {
+
+    @get:Rule
+    val checkFlagsRule = SetFlagsRule()
+
     enum class SupportedRefreshRatesTestCase(
             val supportedModesVoteEnabled: Boolean,
             internal val summaryRefreshRates: List<SupportedRefreshRatesVote.RefreshRates>?,
@@ -271,16 +277,66 @@ class VoteSummaryTest {
 
         assertThat(result.map {it.modeId}).containsExactlyElementsIn(testCase.expectedModeIds)
     }
+
+    enum class HdrPreferenceVoteTestCase(
+        val isUserPreferredHdrModeAllowed: Boolean,
+        val allowHdr: Boolean,
+        val modesToFilter: Array<Display.Mode>,
+        val expectedModeIds: List<Int>
+    ) {
+        // User-preferred HDR disallowed: allowHdr is ignored, all pass
+        FEATURE_DISABLED(
+            isUserPreferredHdrModeAllowed = false, allowHdr = true, modesToFilter = arrayOf(
+                createMode(1, 60f, 60f), createMode(2, 60f, 60f, intArrayOf(1))
+            ), expectedModeIds = listOf(1, 2)
+        ),
+
+        // HDR disallowed: Only SDR passes
+        FEATURE_ENABLED_ALLOW_HDR_FALSE(
+            isUserPreferredHdrModeAllowed = true, allowHdr = false, modesToFilter = arrayOf(
+                createMode(1, 60f, 60f), // SDR
+                createMode(2, 60f, 60f, intArrayOf(1)), createMode(3, 60f, 60f, intArrayOf(2))
+            ), expectedModeIds = listOf(1)
+        ),
+
+        // HDR allowed: all pass
+        FEATURE_ENABLED_ALLOW_HDR_TRUE(
+            isUserPreferredHdrModeAllowed = true, allowHdr = true, modesToFilter = arrayOf(
+                createMode(1, 60f, 60f), createMode(2, 60f, 60f, intArrayOf(1))
+            ), expectedModeIds = listOf(1, 2)
+        ),
+    }
+
+    @Test
+    fun testFiltersModes_hdrTypes(@TestParameter testCase: HdrPreferenceVoteTestCase) {
+        val summary = createSummary(
+            isUserPreferredHdrModeAllowed = testCase.isUserPreferredHdrModeAllowed
+        )
+        summary.allowHdr = testCase.allowHdr
+
+        val result = summary.filterModes(testCase.modesToFilter)
+
+        assertThat(result.map { it.modeId }).containsExactlyElementsIn(testCase.expectedModeIds)
+    }
 }
 
-
-private fun createMode(modeId: Int, refreshRate: Float, vsyncRate: Float): Display.Mode {
-    return Display.Mode(modeId, -1, 0, 600, 800, refreshRate, vsyncRate,
-            FloatArray(0), IntArray(0))
+private fun createMode(
+    modeId: Int, refreshRate: Float, vsyncRate: Float, hdrTypes: IntArray = IntArray(0)
+): Display.Mode {
+    return Display.Mode(
+        modeId, -1, 0, 600, 800, refreshRate, vsyncRate, FloatArray(0), hdrTypes
+    )
 }
 
-private fun createSummary(supportedModesVoteEnabled: Boolean = false): VoteSummary {
-    val summary = createVotesSummary(supportedModesVoteEnabled = supportedModesVoteEnabled)
+private fun createSummary(
+    supportedModesVoteEnabled: Boolean = false,
+    isUserPreferredHdrModeAllowed: Boolean = false
+): VoteSummary {
+    val summary =
+        createVotesSummary(
+            supportedModesVoteEnabled = supportedModesVoteEnabled,
+            isUserPreferredHdrModeAllowed = isUserPreferredHdrModeAllowed
+        )
     summary.width = 600
     summary.height = 800
     summary.maxPhysicalRefreshRate = Float.POSITIVE_INFINITY

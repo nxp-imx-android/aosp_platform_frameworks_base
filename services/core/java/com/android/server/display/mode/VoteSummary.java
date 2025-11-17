@@ -42,6 +42,10 @@ final class VoteSummary {
     public int minWidth;
     public int minHeight;
     public boolean disableRefreshRateSwitching;
+    // True: Allow both HDR+SDR modes, False: Only allow SDR modes.
+    // If other vote has set this to be false (e.g. battery, performance reasons), other vote
+    // (e.g. user preference) should not override this to true
+    public boolean allowHdr;
     /**
      *  available modes should have mode with specific refresh rate
      */
@@ -64,15 +68,20 @@ final class VoteSummary {
 
     private final boolean mSupportedModesVoteEnabled;
     private final boolean mSupportsFrameRateOverride;
+    private final boolean mIsUserPreferredHdrModeAllowed;
     private final boolean mLoggingEnabled;
 
     public SurfaceControl.WorkDuration workDurationsData = null;
 
-    VoteSummary(boolean supportedModesVoteEnabled,
-            boolean loggingEnabled, boolean supportsFrameRateOverride) {
+    VoteSummary(
+            boolean supportedModesVoteEnabled,
+            boolean loggingEnabled,
+            boolean supportsFrameRateOverride,
+            boolean isUserPreferredHdrModeAllowed) {
         mSupportedModesVoteEnabled = supportedModesVoteEnabled;
         mLoggingEnabled = loggingEnabled;
         mSupportsFrameRateOverride = supportsFrameRateOverride;
+        mIsUserPreferredHdrModeAllowed = isUserPreferredHdrModeAllowed;
         reset();
     }
 
@@ -156,6 +165,9 @@ final class VoteSummary {
             if (!validateModeRenderRateAchievable(mode)) {
                 continue;
             }
+            if (!validateSupportedHdrTypes(mode)) {
+                continue;
+            }
             availableModes.add(mode);
             if (equalsWithinFloatTolerance(mode.getRefreshRate(), appRequestBaseModeRefreshRate)) {
                 missingBaseModeRefreshRate = false;
@@ -169,6 +181,8 @@ final class VoteSummary {
     }
 
     Display.Mode selectBaseMode(List<Display.Mode> availableModes, Display.Mode defaultMode) {
+        // TODO(b/460304742): Select base mode based on user HDR preferred mode
+
         // The base mode should be as close as possible to the app requested mode. Since all the
         // available modes already have the same size, we just need to look for a matching refresh
         // rate. If the summary doesn't include an app requested refresh rate, we'll use the default
@@ -280,6 +294,33 @@ final class VoteSummary {
             return false;
         }
         return true;
+    }
+
+    private boolean validateSupportedHdrTypes(Display.Mode mode) {
+        if (!mIsUserPreferredHdrModeAllowed) {
+            return true;
+        }
+        // Default state, allow all modes.
+        // When switching from SDR-only to HDR-allowed, base mode selection might or might not
+        // change. The basic principle is HDR is a best effort basis, so HDR-capable mode will only
+        // be selected if there is a matching resolution-refreshRate pair for that SDR-only mode.
+        // Hence, if there is no matching mode that supports HDR, the current mode will be kept.
+        // For example, if SDR-only mode is capable of 4k@30fps, but there is only 2k@60fps for
+        // HDR-capable mode, allowing HDR here won't trigger mode change.
+        if (allowHdr) {
+            return true;
+        }
+        // SDR only
+        // This relies on the config_hdrModeSplittingEnabled. If this is true, this ensures
+        // all HDR-capable display modes, will have a SDR-only (supportedHdrTypes.length = 0) mode
+        // counterpart, ensuring that the check here always result in a mode selected.
+        if (mode.getSupportedHdrTypes().length == 0) {
+            return true;
+        }
+        if (mLoggingEnabled) {
+            Slog.w(TAG, "Discarding mode " + mode.getModeId() + ", SDR-only vote is requested");
+        }
+        return false;
     }
 
     private boolean validateModeSupported(Display.Mode mode) {
@@ -425,6 +466,7 @@ final class VoteSummary {
         appRequestBaseModeRefreshRate = 0f;
         requestedRefreshRates.clear();
         supportedRefreshRates = null;
+        allowHdr = true;
         supportedModeIds = null;
         rejectedModeIds.clear();
         if (mLoggingEnabled) {
@@ -450,6 +492,7 @@ final class VoteSummary {
                 + ", appRequestBaseModeRefreshRate=" + appRequestBaseModeRefreshRate
                 + ", requestRefreshRates=" + requestedRefreshRates
                 + ", supportedRefreshRates=" + supportedRefreshRates
+                + ", allowHdr=" + allowHdr
                 + ", supportedModeIds=" + supportedModeIds
                 + ", rejectedModeIds=" + rejectedModeIds
                 + ", mSupportedModesVoteEnabled=" + mSupportedModesVoteEnabled
