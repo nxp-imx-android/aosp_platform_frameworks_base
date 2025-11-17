@@ -3320,6 +3320,9 @@
     <!-- Text for media projection privacy type [CHAR LIMIT=20]-->
     <string name="privacy_type_media_projection">screen recording</string>
 
+    <!-- Text showing leading the privacy chips container in some screen configurations [CHAR LIMIT=12] -->
+    <string name="privacy_chip_container_leading_title">Privacy</string>
+
     <!-- What to show on the ambient display player when song doesn't have a title. [CHAR LIMIT=20] -->
     <string name="music_controls_no_title">No title</string>
 

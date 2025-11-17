@@ -1391,6 +1391,13 @@ flag {
 }
 
 flag {
+    name: "grouped_privacy_chip"
+    namespace: "systemui"
+    description: "New UI for privacy chips with grouped indicator and caret"
+    bug: "446923994"
+}
+
+flag {
     name: "desktop_av_controls_popup"
     namespace: "systemui"
     description: "AV Popup on Large Screen"
