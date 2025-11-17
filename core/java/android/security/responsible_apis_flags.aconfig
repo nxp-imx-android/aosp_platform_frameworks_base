@@ -15,6 +15,7 @@ flag {
     name: "aapm_api_v2"
     namespace: "responsible_apis"
     description: "Flag for V2 of Advanced Protection Manager changes"
+    is_exported: true
     bug: "419508351"
 }
 
