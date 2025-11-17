@@ -129,9 +129,9 @@ import com.android.internal.util.Preconditions;
 import com.android.internal.widget.IRemoteViewsFactory;
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
-import com.android.internal.widget.remotecompose.player.RemoteComposeDocument;
 import com.android.internal.widget.remotecompose.player.RemoteComposePlayer;
 import com.android.internal.widget.remotecompose.player.RemoteComposePlayer.PreparedDocument;
+import com.android.internal.widget.remotecompose.player.RemoteDocument;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -6048,7 +6048,7 @@ public class RemoteViews implements Parcelable, Filter {
         }
 
         private Action applyAction(
-                View root, BiFunction<RemoteComposePlayer, RemoteComposeDocument, Action> block) {
+                View root, BiFunction<RemoteComposePlayer, RemoteDocument, Action> block) {
             if (drawDataParcel() && mInstructions != null
                     && root instanceof RemoteComposePlayer player) {
                 final List<byte[]> bytes = mInstructions.mInstructions;
@@ -6056,7 +6056,7 @@ public class RemoteViews implements Parcelable, Filter {
                     return ACTION_NOOP;
                 }
                 try (ByteArrayInputStream is = new ByteArrayInputStream(bytes.get(0))) {
-                    return block.apply(player, new RemoteComposeDocument(is));
+                    return block.apply(player, new RemoteDocument(is));
                 } catch (IOException e) {
                     Log.e(LOG_TAG, "Failed to parse draw instructions", e);
                 }

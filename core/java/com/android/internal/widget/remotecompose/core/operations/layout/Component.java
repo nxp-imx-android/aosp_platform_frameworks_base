@@ -28,6 +28,7 @@ import com.android.internal.widget.remotecompose.core.TouchListener;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.operations.BitmapData;
+import com.android.internal.widget.remotecompose.core.operations.ComponentData;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
 import com.android.internal.widget.remotecompose.core.operations.TextData;
 import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
@@ -56,20 +57,26 @@ public class Component extends PaintOperation
     protected float mY;
     protected float mWidth;
     protected float mHeight;
-    @Nullable protected Component mParent;
+    @Nullable
+    protected Component mParent;
     protected int mAnimationId = -1;
     public int mVisibility = Visibility.VISIBLE;
     public int mScheduledVisibility = Visibility.VISIBLE;
-    @NonNull public ArrayList<Operation> mList = new ArrayList<>();
+    @NonNull
+    public ArrayList<Operation> mList = new ArrayList<>();
     public @Nullable PaintOperation
             mPreTranslate; // todo, can we initialize this here and make it NonNull?
     public boolean mNeedsMeasure = true;
     public boolean mNeedsRepaint = false;
-    @Nullable public AnimateMeasure mAnimateMeasure;
-    @NonNull public AnimationSpec mAnimationSpec = AnimationSpec.DEFAULT;
+    @Nullable
+    public AnimateMeasure mAnimateMeasure;
+    @NonNull
+    public AnimationSpec mAnimationSpec = AnimationSpec.DEFAULT;
     public boolean mFirstLayout = true;
-    @NonNull PaintBundle mPaint = new PaintBundle();
-    @NonNull protected HashSet<ComponentValue> mComponentValues = new HashSet<>();
+    @NonNull
+    PaintBundle mPaint = new PaintBundle();
+    @NonNull
+    protected HashSet<ComponentValue> mComponentValues = new HashSet<>();
 
     protected float mZIndex = 0f;
 
@@ -168,7 +175,7 @@ public class Component extends PaintOperation
      *
      * @param context the current context
      */
-    private void updateComponentValues(@NonNull RemoteContext context) {
+    protected void updateComponentValues(@NonNull RemoteContext context) {
         if (DEBUG) {
             System.out.println(
                     "UPDATE COMPONENT VALUES ("
@@ -298,8 +305,6 @@ public class Component extends PaintOperation
 
     /**
      * Add a component value to the component
-     *
-     * @param v
      */
     public void addComponentValue(@NonNull ComponentValue v) {
         mComponentValues.add(v);
@@ -308,7 +313,6 @@ public class Component extends PaintOperation
     /**
      * Returns the min intrinsic width of the layout
      *
-     * @param context
      * @return the width in pixels
      */
     public float minIntrinsicWidth(@Nullable RemoteContext context) {
@@ -318,7 +322,6 @@ public class Component extends PaintOperation
     /**
      * Returns the max intrinsic width of the layout
      *
-     * @param context
      * @return the width in pixels
      */
     public float maxIntrinsicWidth(@Nullable RemoteContext context) {
@@ -328,7 +331,6 @@ public class Component extends PaintOperation
     /**
      * Returns the min intrinsic height of the layout
      *
-     * @param context
      * @return the height in pixels
      */
     public float minIntrinsicHeight(@Nullable RemoteContext context) {
@@ -338,7 +340,6 @@ public class Component extends PaintOperation
     /**
      * Returns the max intrinsic height of the layout
      *
-     * @param context
      * @return the height in pixels
      */
     public float maxIntrinsicHeight(@Nullable RemoteContext context) {
@@ -369,11 +370,34 @@ public class Component extends PaintOperation
 
     /**
      * If the component contains variables beside mList, make sure to register them here
-     *
-     * @param context
      */
     public void registerVariables(@NonNull RemoteContext context) {
         // Nothing here
+    }
+
+    /**
+     * Returns the value for the given alignment line
+     *
+     * @param line type of line
+     */
+    public float getAlignValue(@NonNull PaintContext context, float line) {
+        return 0f;
+    }
+
+    /**
+     * Returns true if the component contains computed modifiers
+     */
+    public boolean hasComputedLayout() {
+        return false;
+    }
+
+    /**
+     * Apply computed modifiers
+     */
+    public boolean applyComputedLayout(int type, @NonNull PaintContext context,
+            @NonNull ComponentMeasure m, @NonNull ComponentMeasure parent) {
+        // nothing here
+        return false;
     }
 
     public static class Visibility {
@@ -386,13 +410,11 @@ public class Component extends PaintOperation
         public static final int OVERRIDE_INVISIBLE = 64;
         public static final int CLEAR_OVERRIDE = 128;
 
-        private Visibility() {}
+        private Visibility() {
+        }
 
         /**
          * Returns a string representation of the field
-         *
-         * @param value
-         * @return
          */
         public static @NonNull String toString(int value) {
             switch (value) {
@@ -419,9 +441,6 @@ public class Component extends PaintOperation
 
         /**
          * Returns true if gone
-         *
-         * @param value
-         * @return
          */
         public static boolean isGone(int value) {
             if ((value >> 4) > 0) {
@@ -432,9 +451,6 @@ public class Component extends PaintOperation
 
         /**
          * Returns true if visible
-         *
-         * @param value
-         * @return
          */
         public static boolean isVisible(int value) {
             if ((value >> 4) > 0) {
@@ -445,9 +461,6 @@ public class Component extends PaintOperation
 
         /**
          * Returns true if invisible
-         *
-         * @param value
-         * @return
          */
         public static boolean isInvisible(int value) {
             if ((value >> 4) > 0) {
@@ -458,9 +471,6 @@ public class Component extends PaintOperation
 
         /**
          * Returns true if the field has an override
-         *
-         * @param value
-         * @return
          */
         public static boolean hasOverride(int value) {
             return (value >> 4) > 0;
@@ -468,9 +478,6 @@ public class Component extends PaintOperation
 
         /**
          * Clear the override values
-         *
-         * @param value
-         * @return
          */
         public static int clearOverride(int value) {
             return value & 15;
@@ -478,10 +485,6 @@ public class Component extends PaintOperation
 
         /**
          * Add an override value
-         *
-         * @param value
-         * @param visibility
-         * @return
          */
         public static int add(int value, int visibility) {
             int v = value & 15;
@@ -495,8 +498,6 @@ public class Component extends PaintOperation
 
     /**
      * Returns true if the component is visible
-     *
-     * @return
      */
     public boolean isVisible() {
         if (mParent == null || !Visibility.isVisible(mVisibility)) {
@@ -507,8 +508,6 @@ public class Component extends PaintOperation
 
     /**
      * Returns true if the component is gone
-     *
-     * @return
      */
     public boolean isGone() {
         return Visibility.isGone(mVisibility);
@@ -516,8 +515,6 @@ public class Component extends PaintOperation
 
     /**
      * Returns true if the component is invisible
-     *
-     * @return
      */
     public boolean isInvisible() {
         return Visibility.isInvisible(mVisibility);
@@ -577,6 +574,7 @@ public class Component extends PaintOperation
         if (!mFirstLayout
                 && context.isAnimationEnabled()
                 && mAnimationSpec.isAnimationEnabled()
+                && m.getAllowsAnimation()
                 && !(this instanceof LayoutComponentContent)) {
             if (mAnimateMeasure == null) {
                 ComponentMeasure origin =
@@ -648,10 +646,6 @@ public class Component extends PaintOperation
 
     /**
      * Hit detection -- returns true if the point (x, y) is inside the component
-     *
-     * @param x
-     * @param y
-     * @return
      */
     public boolean contains(float x, float y) {
         locationInWindow[0] = 0f;
@@ -685,10 +679,10 @@ public class Component extends PaintOperation
     /**
      * Click handler
      *
-     * @param context the current context
+     * @param context  the current context
      * @param document the current document
-     * @param x x location on screen or -1 if unconditional click
-     * @param y y location on screen or -1 if unconditional click
+     * @param x        x location on screen or -1 if unconditional click
+     * @param y        y location on screen or -1 if unconditional click
      */
     public void onClick(
             @NonNull RemoteContext context, @NonNull CoreDocument document, float x, float y) {
@@ -711,10 +705,8 @@ public class Component extends PaintOperation
     /**
      * Touch down handler
      *
-     * @param context the current context
+     * @param context  the current context
      * @param document the current document
-     * @param x
-     * @param y
      */
     public void onTouchDown(
             @NonNull RemoteContext context, @NonNull CoreDocument document, float x, float y) {
@@ -741,14 +733,6 @@ public class Component extends PaintOperation
 
     /**
      * Touch Up handler
-     *
-     * @param context
-     * @param document
-     * @param x
-     * @param y
-     * @param dx
-     * @param dy
-     * @param force
      */
     public void onTouchUp(
             @NonNull RemoteContext context,
@@ -780,12 +764,6 @@ public class Component extends PaintOperation
 
     /**
      * Touch Cancel handler
-     *
-     * @param context
-     * @param document
-     * @param x
-     * @param y
-     * @param force
      */
     public void onTouchCancel(
             @NonNull RemoteContext context,
@@ -815,12 +793,6 @@ public class Component extends PaintOperation
 
     /**
      * Touch Drag handler
-     *
-     * @param context
-     * @param document
-     * @param x
-     * @param y
-     * @param force
      */
     public void onTouchDrag(
             @NonNull RemoteContext context,
@@ -851,10 +823,11 @@ public class Component extends PaintOperation
     /**
      * Returns the location of the component relative to the root component
      *
-     * @param value a 2 dimension float array that will receive the horizontal and vertical position
-     *     of the component.
+     * @param value   a 2 dimension float array that will receive the horizontal and vertical
+     *                position
+     *                of the component.
      * @param forSelf whether the location is for this container or a child, relevant for scrollable
-     *     items.
+     *                items.
      */
     public void getLocationInWindow(@NonNull float [] value, boolean forSelf) {
         value[0] += mX;
@@ -868,7 +841,7 @@ public class Component extends PaintOperation
      * Returns the location of the component relative to the root component
      *
      * @param value a 2 dimension float array that will receive the horizontal and vertical position
-     *     of the component.
+     *              of the component.
      */
     public void getLocationInWindow(@NonNull float [] value) {
         getLocationInWindow(value, true);
@@ -1001,8 +974,6 @@ public class Component extends PaintOperation
 
     /**
      * Returns a string containing the text operations if any
-     *
-     * @return
      */
     @NonNull
     public String textContent() {
@@ -1019,9 +990,6 @@ public class Component extends PaintOperation
 
     /**
      * Utility debug function
-     *
-     * @param component
-     * @param context
      */
     public void debugBox(@NonNull Component component, @NonNull PaintContext context) {
         float width = component.mWidth;
@@ -1054,8 +1022,6 @@ public class Component extends PaintOperation
 
     /**
      * The vertical position of this component relative to its parent
-     *
-     * @return
      */
     public float getTranslateX() {
         if (mParent != null) {
@@ -1066,8 +1032,6 @@ public class Component extends PaintOperation
 
     /**
      * The horizontal position of this component relative to its parent
-     *
-     * @return
      */
     public float getTranslateY() {
         if (mParent != null) {
@@ -1078,8 +1042,6 @@ public class Component extends PaintOperation
 
     /**
      * Paint the component itself.
-     *
-     * @param context
      */
     public void paintingComponent(@NonNull PaintContext context) {
         if (mPreTranslate != null) {
@@ -1111,9 +1073,6 @@ public class Component extends PaintOperation
 
     /**
      * If animation is turned on and we need to be animated, we'll apply it.
-     *
-     * @param context
-     * @return
      */
     public boolean applyAnimationAsNeeded(@NonNull PaintContext context) {
         if (context.isAnimationEnabled() && mAnimateMeasure != null) {
@@ -1179,7 +1138,9 @@ public class Component extends PaintOperation
      */
     public void getData(@NonNull ArrayList<Operation> data) {
         for (Operation op : mList) {
-            if (op instanceof TextData || op instanceof BitmapData) {
+            if (op instanceof TextData
+                    || op instanceof BitmapData
+                    || op instanceof ComponentData) {
                 data.add(op);
             }
         }
@@ -1187,8 +1148,6 @@ public class Component extends PaintOperation
 
     /**
      * Returns the number of children components
-     *
-     * @return
      */
     public int getComponentCount() {
         int count = 0;
@@ -1203,8 +1162,6 @@ public class Component extends PaintOperation
     /**
      * Return the id used for painting the component -- either its component id or its animation id
      * (if set)
-     *
-     * @return
      */
     public int getPaintId() {
         if (mAnimationId != -1) {
@@ -1215,8 +1172,6 @@ public class Component extends PaintOperation
 
     /**
      * Return true if the needsRepaint flag is set on this component
-     *
-     * @return
      */
     public boolean doesNeedsRepaint() {
         return mNeedsRepaint;
@@ -1224,9 +1179,6 @@ public class Component extends PaintOperation
 
     /**
      * Utility function to return a component from its id
-     *
-     * @param cid
-     * @return
      */
     @Nullable
     public Component getComponent(int cid) {
@@ -1259,10 +1211,6 @@ public class Component extends PaintOperation
 
     /**
      * Return ourself or a matching modifier. Used by the semantics / accessibility layer.
-     *
-     * @param operationClass
-     * @return
-     * @param <T>
      */
     public <T> @Nullable T selfOrModifier(@NonNull Class<T> operationClass) {
         if (operationClass.isInstance(this)) {

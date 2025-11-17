@@ -138,6 +138,7 @@ public class RootLayoutComponent extends Component {
         if (!mNeedsMeasure) {
             return;
         }
+        mNeedsMeasure = false;
         context.mLastComponent = this;
         setWidth(context.mWidth);
         setHeight(context.mHeight);
@@ -151,7 +152,6 @@ public class RootLayoutComponent extends Component {
                 m.layout(context, measurePass);
             }
         }
-        mNeedsMeasure = false;
     }
 
     @Override

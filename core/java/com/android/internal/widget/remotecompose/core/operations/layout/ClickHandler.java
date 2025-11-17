@@ -21,7 +21,7 @@ import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 
 /** Interface to represent operations that can handle click events */
-public interface ClickHandler {
+public interface ClickHandler extends TouchOperation {
 
     /**
      * callback for a click event

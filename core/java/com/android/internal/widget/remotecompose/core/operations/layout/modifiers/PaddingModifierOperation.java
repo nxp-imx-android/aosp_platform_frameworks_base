@@ -22,8 +22,10 @@ import android.annotation.NonNull;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.SerializeTags;
@@ -34,7 +36,8 @@ import java.util.List;
  * Represents a padding modifier. Padding modifiers can be chained and will impact following
  * modifiers.
  */
-public class PaddingModifierOperation extends Operation implements ModifierOperation {
+public class PaddingModifierOperation extends Operation implements ModifierOperation,
+        VariableSupport {
     private static final int OP_CODE = Operations.MODIFIER_PADDING;
     public static final String CLASS_NAME = "PaddingModifierOperation";
     float mLeft;
@@ -42,43 +45,52 @@ public class PaddingModifierOperation extends Operation implements ModifierOpera
     float mRight;
     float mBottom;
 
+    float mLeftValue;
+    float mTopValue;
+    float mRightValue;
+    float mBottomValue;
+
     public PaddingModifierOperation(float left, float top, float right, float bottom) {
         this.mLeft = left;
         this.mTop = top;
         this.mRight = right;
         this.mBottom = bottom;
+        this.mLeftValue = left;
+        this.mTopValue = top;
+        this.mRightValue = right;
+        this.mBottomValue = bottom;
     }
 
     public float getLeft() {
-        return mLeft;
+        return mLeftValue;
     }
 
     public float getTop() {
-        return mTop;
+        return mTopValue;
     }
 
     public float getRight() {
-        return mRight;
+        return mRightValue;
     }
 
     public float getBottom() {
-        return mBottom;
+        return mBottomValue;
     }
 
     public void setLeft(float left) {
-        this.mLeft = left;
+        this.mLeftValue = mLeft = left;
     }
 
     public void setTop(float top) {
-        this.mTop = top;
+        this.mTopValue = mTop = top;
     }
 
     public void setRight(float right) {
-        this.mRight = right;
+        this.mRightValue = mRight = right;
     }
 
     public void setBottom(float bottom) {
-        this.mBottom = bottom;
+        this.mBottomValue = mBottom = bottom;
     }
 
     @Override
@@ -89,11 +101,13 @@ public class PaddingModifierOperation extends Operation implements ModifierOpera
     @Override
     public void serializeToString(int indent, @NonNull StringSerializer serializer) {
         serializer.append(
-                indent, "PADDING = [" + mLeft + ", " + mTop + ", " + mRight + ", " + mBottom + "]");
+                indent, "PADDING = [" + mLeftValue + ", " + mTopValue + ", " + mRightValue + ", "
+                        + mBottomValue + "]");
     }
 
     @Override
-    public void apply(@NonNull RemoteContext context) {}
+    public void apply(@NonNull RemoteContext context) {
+    }
 
     @NonNull
     @Override
@@ -105,13 +119,13 @@ public class PaddingModifierOperation extends Operation implements ModifierOpera
     @Override
     public String toString() {
         return "PaddingModifierOperation("
-                + mLeft
+                + mLeftValue
                 + ", "
-                + mTop
+                + mTopValue
                 + ", "
-                + mRight
+                + mRightValue
                 + ", "
-                + mBottom
+                + mBottomValue
                 + ")";
     }
 
@@ -138,9 +152,9 @@ public class PaddingModifierOperation extends Operation implements ModifierOpera
      * Write operation to the buffer
      *
      * @param buffer a WireBuffer
-     * @param left left padding
-     * @param top top padding
-     * @param right right padding
+     * @param left   left padding
+     * @param top    top padding
+     * @param right  right padding
      * @param bottom bottom padding
      */
     public static void apply(
@@ -155,7 +169,7 @@ public class PaddingModifierOperation extends Operation implements ModifierOpera
     /**
      * Read this operation and add it to the list of operations
      *
-     * @param buffer the buffer to read
+     * @param buffer     the buffer to read
      * @param operations the list of operations that will be added to
      */
     public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
@@ -185,9 +199,36 @@ public class PaddingModifierOperation extends Operation implements ModifierOpera
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("PaddingModifierOperation")
-                .add("left", mLeft)
-                .add("top", mTop)
-                .add("right", mRight)
-                .add("bottom", mBottom);
+                .add("left", mLeftValue)
+                .add("top", mTopValue)
+                .add("right", mRightValue)
+                .add("bottom", mBottomValue);
+    }
+
+    @Override
+    public void registerListening(@NonNull RemoteContext context) {
+        if (Float.isNaN(mLeft)) {
+            context.listensTo(Utils.idFromNan(mLeft), this);
+        }
+        if (Float.isNaN(mTop)) {
+            context.listensTo(Utils.idFromNan(mTop), this);
+        }
+        if (Float.isNaN(mRight)) {
+            context.listensTo(Utils.idFromNan(mRight), this);
+        }
+        if (Float.isNaN(mBottom)) {
+            context.listensTo(Utils.idFromNan(mBottom), this);
+        }
+    }
+
+    @Override
+    public void updateVariables(@NonNull RemoteContext context) {
+        mLeftValue = Float.isNaN(mLeft) ? context.getFloat(Utils.idFromNan(mLeft))
+                : mLeft;
+        mTopValue = Float.isNaN(mTop) ? context.getFloat(Utils.idFromNan(mTop)) : mTop;
+        mRightValue = Float.isNaN(mRight) ? context.getFloat(Utils.idFromNan(mRight))
+                : mRight;
+        mBottomValue = Float.isNaN(mBottom) ? context.getFloat(Utils.idFromNan(mBottom))
+                : mBottom;
     }
 }

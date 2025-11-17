@@ -46,7 +46,9 @@ public class ThemeSupport {
         if (!found) {
             return;
         }
-
+        if (null == mContext.getApplicationContext()) {
+            return;
+        }
         for (int i = 0; i < name.length; i++) {
             String s = name[i];
             if (!s.startsWith("android.")) {
@@ -226,8 +228,10 @@ public class ThemeSupport {
     }
 
     private void setRColor(String name, int id) {
-        int color = getColorFromResource(id);
-        mInner.setColor(name, color);
+        if (null != mContext.getApplicationContext()) {
+            int color = getColorFromResource(id);
+            mInner.setColor(name, color);
+        }
     }
 
     private int getColorFromResource(int id) {

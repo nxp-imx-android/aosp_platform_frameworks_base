@@ -18,13 +18,15 @@ package com.android.internal.widget.remotecompose.core.operations.utilities;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.operations.utilities.easing.CubicEasing;
 import com.android.internal.widget.remotecompose.core.operations.utilities.easing.MonotonicSpline;
 
 import java.util.Random;
 
 /** high performance floating point expression evaluator used in animation */
 public class AnimatedFloatExpression {
-    @NonNull static IntMap<String> sNames = new IntMap<>();
+    @NonNull
+    static IntMap<String> sNames = new IntMap<>();
     private float mR0, mR1, mR2, mR3;
     /** The START POINT in the float NaN space for operators */
     public static final int OFFSET = 0x310_000;
@@ -220,11 +222,11 @@ public class AnimatedFloatExpression {
 
     /** Command reserved for operator use such as particles */
     public static final float CMD1 = asNan(OFFSET + 64);
-    /** Command reserved for operator use such as particles  */
+    /** Command reserved for operator use such as particles */
     public static final float CMD2 = asNan(OFFSET + 65);
-    /** Command reserved for operator use such as particles  */
+    /** Command reserved for operator use such as particles */
     public static final float CMD3 = asNan(OFFSET + 66);
-    /** Command reserved for operator use such as particles  */
+    /** Command reserved for operator use such as particles */
     public static final float CMD4 = asNan(OFFSET + 67);
 
     /** LAST valid operator */
@@ -239,6 +241,15 @@ public class AnimatedFloatExpression {
     /** VAR2 operator */
     public static final float VAR3 = asNan(OFFSET + 72);
 
+    /** CHANGE_SIGN operator x -> -x */
+    public static final float CHANGE_SIGN = asNan(OFFSET + 73);
+
+    /** CUBIC operator  x1,y1,x2,y2,x, -> y */
+    public static final float CUBIC = asNan(OFFSET + 74);
+
+    /** CUBIC operator  A_SPLINE_LOOP is A_SPLINE but the array is assumed to be a loop */
+    public static final float A_SPLINE_LOOP = asNan(OFFSET + 75);
+
     // TODO SQUARE, DUP, HYPOT, SWAP
     //    private static final float FP_PI = (float) Math.PI;
     private static final float FP_TO_RAD = 57.29578f; // 180/PI
@@ -247,15 +258,15 @@ public class AnimatedFloatExpression {
     @NonNull float [] mStack = new float[0];
     @NonNull float [] mLocalStack = new float[128];
     @NonNull float [] mVar = new float[0];
-    @Nullable CollectionsAccess mCollectionsAccess;
+    @Nullable
+    CollectionsAccess mCollectionsAccess;
+    @Nullable
+    CubicEasing mEasing = null;
     IntMap<MonotonicSpline> mSplineMap = new IntMap<>();
     private static Random sRandom;
 
     /**
      * Get the max op for a given API level
-     *
-     * @param level
-     * @return
      */
     public static int getMaxOpForLevel(int level) {
         if (level == 7) {
@@ -282,9 +293,6 @@ public class AnimatedFloatExpression {
 
     /**
      * is float a math operator
-     *
-     * @param v
-     * @return
      */
     public static boolean isMathOperator(float v) {
         if (Float.isNaN(v)) {
@@ -310,10 +318,6 @@ public class AnimatedFloatExpression {
      * supports variables allowing expressions like. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y) Where x & y
      * are passe as parameters Examples: (1+2) (1, 2, ADD) adds two numbers returns 3 eval(new
      * float[]{ Var1, Var * }
-     *
-     * @param exp
-     * @param var
-     * @return
      */
     public float eval(@NonNull float [] exp, @NonNull float ... var) {
         mStack = exp;
@@ -333,7 +337,7 @@ public class AnimatedFloatExpression {
     /**
      * Evaluate a float expression
      *
-     * @param ca Access to float array collections
+     * @param ca  Access to float array collections
      * @param exp the expressions
      * @param len the length of the expression array
      * @param var variables if the expression contains VAR tags
@@ -366,7 +370,7 @@ public class AnimatedFloatExpression {
     /**
      * Evaluate a float expression
      *
-     * @param ca The access to float arrays
+     * @param ca  The access to float arrays
      * @param exp the expression
      * @param len the length of the expression sections
      * @return the value the expression evaluated to
@@ -400,11 +404,6 @@ public class AnimatedFloatExpression {
 
     /**
      * Evaluate a float expression
-     *
-     * @param exp
-     * @param len
-     * @param var
-     * @return
      */
     public float eval(@NonNull float [] exp, int len, @NonNull float ... var) {
         System.arraycopy(exp, 0, mLocalStack, 0, len);
@@ -424,10 +423,6 @@ public class AnimatedFloatExpression {
 
     /**
      * Evaluate a float expression
-     *
-     * @param exp
-     * @param var
-     * @return
      */
     public float evalDB(@NonNull float [] exp, @NonNull float ... var) {
         mStack = exp;
@@ -516,13 +511,13 @@ public class AnimatedFloatExpression {
         sNames.put(k++, "a[0]");
         sNames.put(k++, "a[1]");
         sNames.put(k++, "a[2]");
+        sNames.put(k++, "change_sign");
+        sNames.put(k++, "cubic");
+        sNames.put(k++, "a_spline_loop");
     }
 
     /**
      * given a float command return its math name (e.g sin, cos etc.)
-     *
-     * @param f
-     * @return
      */
     @Nullable
     public static String toMathName(float f) {
@@ -531,11 +526,7 @@ public class AnimatedFloatExpression {
     }
 
     /**
-     * Convert an expression encoded as an array of floats int ot a string
-     *
-     * @param exp
-     * @param labels
-     * @return
+     * Convert an expression encoded as an array of floats int to a string
      */
     @NonNull
     public static String toString(@NonNull float [] exp, @Nullable String[] labels) {
@@ -618,26 +609,25 @@ public class AnimatedFloatExpression {
     }
 
     static final int[] NO_OF_OPS = {
-        -1, // no op
-        2, 2, 2, 2, 2, // + - * / %
-        2, 2, 2, // min max, power
-        1, 1, 1, 1, 1, 1, 1, 1, // sqrt,abs,CopySign,exp,floor,log,ln
-        1, 1, 1, 1, 1, 1, 1, 2, // round,sin,cos,tan,asin,acos,atan,atan2
-        3, 3, 3, 1, 1, 1, 1, 0, 0, 0, // mad, ?:, clamp, cbrt, deg, rad, ceil , a[0],a[1],a[2]
-        1, // log2
-        1, // inv
-        1, // fract
-        2, // ping_pong
-        1, // nop
-        1, 1, 1, 1, // store
-        0, 0, 0, 0, // load
+            -1, // no op
+            2, 2, 2, 2, 2, // + - * / %
+            2, 2, 2, // min max, power
+            1, 1, 1, 1, 1, 1, 1, 1, // sqrt,abs,CopySign,exp,floor,log,ln
+            1, 1, 1, 1, 1, 1, 1, 2, // round,sin,cos,tan,asin,acos,atan,atan2
+            3, 3, 3, 1, 1, 1, 1, 0, 0, 0, // mad, ?:, clamp, cbrt, deg, rad, ceil , a[0],a[1],a[2]
+            1, // log2
+            1, // inv
+            1, // fract
+            2, // ping_pong
+            1, // nop
+            1, 1, 1, 1, // store
+            0, 0, 0, 0, // load
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 5, 2 // change_sign, cubic, a_spline_loop
     };
 
     /**
      * to be used by parser to determine if command is infix
-     *
-     * @param n
-     * @return
      */
     static boolean infix(int n) {
         return ((n < 6) || (n == 25) || (n == 26));
@@ -645,9 +635,6 @@ public class AnimatedFloatExpression {
 
     /**
      * Convert an id into a NaN object
-     *
-     * @param v
-     * @return
      */
     public static float asNan(int v) {
         return Float.intBitsToFloat(v | -0x800000);
@@ -655,9 +642,6 @@ public class AnimatedFloatExpression {
 
     /**
      * Get ID from a NaN float
-     *
-     * @param v
-     * @return
      */
     public static int fromNaN(float v) {
         int b = Float.floatToRawIntBits(v);
@@ -734,6 +718,10 @@ public class AnimatedFloatExpression {
     private static final int OP_FIRST_VAR = OFFSET + 70;
     private static final int OP_SECOND_VAR = OFFSET + 71;
     private static final int OP_THIRD_VAR = OFFSET + 72;
+
+    private static final int OP_CHANGE_SIGN = OFFSET + 73;
+    private static final int OP_CUBIC = OFFSET + 74;
+    private static final int OP_A_SPLINE_LOOP = OFFSET + 75;
 
     int opEval(int sp, int id) {
         float[] array;
@@ -952,7 +940,7 @@ public class AnimatedFloatExpression {
                 mStack[sp] =
                         (1.0f
                                 - ((x * (x * x * 15731 + 789221) + 1376312589) & 0x7fffffff)
-                                        / 1.0737418E+9f);
+                                / 1.0737418E+9f);
                 return sp;
 
             case OP_RAND_IN_RANGE:
@@ -1049,6 +1037,28 @@ public class AnimatedFloatExpression {
             case OP_THIRD_VAR:
                 mStack[sp + 1] = mVar[2];
                 return sp + 1;
+            case OP_CHANGE_SIGN:
+                mStack[sp] = -mStack[sp];
+                return sp;
+            case OP_CUBIC:
+                float x1 = mStack[sp - 4];
+                float y1 = mStack[sp - 3];
+                float x2 = mStack[sp - 2];
+                float y2 = mStack[sp - 1];
+                float pos = mStack[sp];
+                if (mEasing == null) {
+                    mEasing = new CubicEasing();
+                }
+                mEasing.setup(x1, y1, x2, y2);
+                mStack[sp - 4] = mEasing.get(pos);
+                return sp - 4;
+            case OP_A_SPLINE_LOOP:
+                id = fromNaN(mStack[sp - 1]);
+                int i = (int) mStack[sp];
+                float r = mStack[sp] - i;
+                r = (r < 0.0f) ? r + 1.0f : r; // mStack[sp] - (float) Math.floor(mStack[sp]
+                mStack[sp - 1] = getSplineValue(id, r);
+                return sp - 1;
         }
         return sp;
     }

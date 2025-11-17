@@ -31,25 +31,25 @@ import java.time.Clock;
 import java.util.Map;
 
 /** Public API to create a new RemoteComposeDocument coming from an input stream */
-public class RemoteComposeDocument {
+public class RemoteDocument {
 
     private @NonNull CoreDocument mDocument;
 
-    public RemoteComposeDocument(@NonNull byte[] inputStream) {
+    public RemoteDocument(@NonNull byte[] inputStream) {
         this(new ByteArrayInputStream(inputStream), new SystemClock());
     }
 
-    public RemoteComposeDocument(@NonNull InputStream inputStream) {
+    public RemoteDocument(@NonNull InputStream inputStream) {
         this(inputStream, new SystemClock());
     }
 
-    public RemoteComposeDocument(@NonNull InputStream inputStream, @NonNull Clock clock) {
+    public RemoteDocument(@NonNull InputStream inputStream, @NonNull Clock clock) {
         mDocument = new CoreDocument(clock);
         RemoteComposeBuffer buffer = RemoteComposeBuffer.fromInputStream(inputStream);
         mDocument.initFromBuffer(buffer);
     }
 
-    public RemoteComposeDocument(@NonNull CoreDocument document) {
+    public RemoteDocument(@NonNull CoreDocument document) {
         mDocument = document;
     }
 

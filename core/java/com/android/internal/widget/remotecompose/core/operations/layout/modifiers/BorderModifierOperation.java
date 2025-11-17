@@ -23,8 +23,10 @@ import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
@@ -34,7 +36,7 @@ import com.android.internal.widget.remotecompose.core.serialize.SerializeTags;
 import java.util.List;
 
 /** Component size-aware border draw */
-public class BorderModifierOperation extends DecoratorModifierOperation {
+public class BorderModifierOperation extends DecoratorModifierOperation implements VariableSupport {
     private static final int OP_CODE = Operations.MODIFIER_BORDER;
     public static final String CLASS_NAME = "BorderModifierOperation";
 
@@ -43,6 +45,7 @@ public class BorderModifierOperation extends DecoratorModifierOperation {
     float mWidth;
     float mHeight;
     float mBorderWidth;
+    float mBorderWidthValue;
     float mRoundedCorner;
     float mR;
     float mG;
@@ -69,6 +72,9 @@ public class BorderModifierOperation extends DecoratorModifierOperation {
         this.mWidth = width;
         this.mHeight = height;
         this.mBorderWidth = borderWidth;
+        if (!Float.isNaN(mBorderWidth)) {
+            mBorderWidthValue = mBorderWidth;
+        }
         this.mRoundedCorner = roundedCorner;
         this.mR = r;
         this.mG = g;
@@ -253,7 +259,11 @@ public class BorderModifierOperation extends DecoratorModifierOperation {
         context.savePaint();
         paint.reset();
         paint.setColor(mR, mG, mB, mA);
-        paint.setStrokeWidth(mBorderWidth * context.getContext().getDensity());
+        if (isAtLeastVersion7(context.getContext())) {
+            paint.setStrokeWidth(mBorderWidthValue);
+        } else {
+            paint.setStrokeWidth(mBorderWidth * context.getContext().getDensity());
+        }
         paint.setStyle(PaintBundle.STYLE_STROKE);
         context.replacePaint(paint);
         if (mShapeType == ShapeType.RECTANGLE) {
@@ -302,5 +312,30 @@ public class BorderModifierOperation extends DecoratorModifierOperation {
                 .add("roundedCornerRadius", mRoundedCorner)
                 .add("color", mA, mR, mG, mB)
                 .add("shapeType", ShapeType.getString(mShapeType));
+    }
+
+    @Override
+    public void registerListening(@NonNull RemoteContext context) {
+        if (isAtLeastVersion7(context)) {
+            if (Float.isNaN(mBorderWidth)) {
+                context.listensTo(Utils.idFromNan(mBorderWidth), this);
+            }
+        }
+    }
+
+    @Override
+    public void updateVariables(@NonNull RemoteContext context) {
+        if (isAtLeastVersion7(context)) {
+            mBorderWidthValue =
+                    Float.isNaN(mBorderWidth)
+                            ? context.getFloat(Utils.idFromNan(mBorderWidth))
+                            : mBorderWidth;
+        } else {
+            mBorderWidthValue = mBorderWidth;
+        }
+    }
+
+    private static boolean isAtLeastVersion7(@NonNull RemoteContext context) {
+        return context.supportsVersion(1, 1, 0);
     }
 }
