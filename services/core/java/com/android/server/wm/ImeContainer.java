@@ -99,7 +99,7 @@ final class ImeContainer extends DisplayArea.Tokens {
 
     @Override
     void updateAboveInsetsState(@NonNull InsetsState aboveInsetsState,
-            @NonNull SparseArray<InsetsSource> localInsetsSourcesFromParent,
+            @Nullable SparseArray<InsetsSource> localInsetsSourcesFromParent,
             @NonNull ArraySet<WindowState> insetsChangedWindows) {
         if (skipImeContainerDuringTraversal(mDisplayContent)) {
             return;
