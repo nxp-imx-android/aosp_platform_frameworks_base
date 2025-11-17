@@ -193,7 +193,17 @@ class DesktopTilingWindowDecoration(
         windowDecoration.addDragResizeListener(this)
         val callback: () -> Unit = {
             initTilingForDisplayIfNeeded(taskInfo.configuration, isFirstTiledApp)
-            moveTiledPairToFront(taskInfo.taskId, taskInfo.isFocused)
+            if (
+                DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
+                    focusTransitionObserver.isDisplayLocalIsFocusedMigrationEnabled()
+            ) {
+                moveTiledPairToFront(
+                    taskInfo.taskId,
+                    focusTransitionObserver.isFocusedOnDisplay(taskInfo),
+                )
+            } else {
+                moveTiledPairToFront(taskInfo.taskId, taskInfo.isFocused)
+            }
         }
         updateDesktopRepository(taskInfo.taskId, snapPosition = position)
         logD(
@@ -685,7 +695,17 @@ class DesktopTilingWindowDecoration(
     override fun onFocusTaskChanged(taskInfo: RunningTaskInfo?) {
         if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) return
         if (taskInfo != null) {
-            moveTiledPairToFront(taskInfo.taskId, taskInfo.isFocused)
+            if (
+                DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
+                    focusTransitionObserver.isDisplayLocalIsFocusedMigrationEnabled()
+            ) {
+                moveTiledPairToFront(
+                    taskInfo.taskId,
+                    focusTransitionObserver.isFocusedOnDisplay(taskInfo),
+                )
+            } else {
+                moveTiledPairToFront(taskInfo.taskId, taskInfo.isFocused)
+            }
         }
     }
 
