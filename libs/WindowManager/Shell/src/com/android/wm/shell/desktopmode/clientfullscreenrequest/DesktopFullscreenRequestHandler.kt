@@ -144,7 +144,11 @@ open class DesktopFullscreenRequestHandler(
         return EnterResult.Approved(
             wct = wct,
             handler = this,
-            restorableState = RestorableState.Desktop(requireNotNull(activeDesk)),
+            restorableState =
+                RestorableState.Desktop(
+                    originalDeskId = requireNotNull(activeDesk),
+                    bounds = task.configuration.windowConfiguration.bounds,
+                ),
         )
     }
 
@@ -195,9 +199,10 @@ open class DesktopFullscreenRequestHandler(
                 transition = transition,
                 targetDisplayId = targetDisplayId,
                 suggestedTargetDeskId = targetDeskId,
-                requestedTaskBounds = null,
+                requestedTaskBounds = restorableState.bounds,
                 requestType = TRANSIT_CHANGE,
                 enterReason = EnterReason.CLIENT_REQUEST_EXIT_FULLSCREEN,
+                forceBringTaskToFront = true,
             )
         if (wct == null) {
             logI("handleExitFullscreen but placement failed, rejecting")

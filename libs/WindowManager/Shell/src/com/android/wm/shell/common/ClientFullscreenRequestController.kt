@@ -27,6 +27,7 @@ import android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_IN_FULLSCREEN_WITH
 import android.app.FullscreenRequestHandler.RESULT_FAILED_NOT_SUPPORTED
 import android.app.FullscreenRequestHandler.requestResultToString
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.IBinder
 import android.os.IRemoteCallback
@@ -224,7 +225,10 @@ class ClientFullscreenRequestController(
                 }
 
                 sealed class RestorableState {
-                    data class Desktop(val originalDeskId: Int) : RestorableState()
+                    data class Desktop(
+                        val originalDeskId: Int,
+                        val bounds: Rect,
+                    ) : RestorableState()
                     // TODO: b/296268915 - add pip and split states.
                 }
             }

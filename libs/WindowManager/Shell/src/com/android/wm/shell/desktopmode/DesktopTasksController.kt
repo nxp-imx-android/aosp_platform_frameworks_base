@@ -4321,6 +4321,7 @@ class DesktopTasksController(
         requestedTaskBounds: Rect?,
         @WindowManager.TransitionType requestType: Int,
         enterReason: EnterReason,
+        forceBringTaskToFront: Boolean = false,
     ): WindowContainerTransaction? {
         val userId = task.userId
         val repository = userRepositories.getProfile(userId)
@@ -4341,7 +4342,10 @@ class DesktopTasksController(
             }
 
         val isKnownDesktopTask = repository.isActiveTask(task.taskId)
-        val bringTaskToFront = sourceDisplayId != targetDisplayId || requestedTaskBounds == null
+        val bringTaskToFront =
+            forceBringTaskToFront ||
+                sourceDisplayId != targetDisplayId ||
+                requestedTaskBounds == null
         val shouldForceEnterDesktop =
             shouldForceEnterDesktopByDesktopFirstPolicy(task, requestType, targetDisplayId)
 
