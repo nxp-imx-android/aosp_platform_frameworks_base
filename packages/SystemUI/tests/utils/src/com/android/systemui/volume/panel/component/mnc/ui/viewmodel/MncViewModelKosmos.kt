@@ -17,5 +17,11 @@
 package com.android.systemui.volume.panel.component.mnc.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.desktopEffectInteractor
+import com.android.systemui.user.data.repository.userRepository
 
-val Kosmos.mncViewModel by Kosmos.Fixture { MncViewModel() }
+val Kosmos.mncViewModel by
+    Kosmos.Fixture {
+        MncViewModel(applicationCoroutineScope, userRepository, desktopEffectInteractor)
+    }

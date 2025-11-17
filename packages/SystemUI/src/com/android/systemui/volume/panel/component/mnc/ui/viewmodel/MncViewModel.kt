@@ -18,24 +18,46 @@ package com.android.systemui.volume.panel.component.mnc.ui.viewmodel
 
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.quickactions.av.domain.interactor.DesktopEffectInteractor
+import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.volume.panel.component.button.ui.viewmodel.ButtonViewModel
 import com.android.systemui.volume.panel.dagger.scope.VolumePanelScope
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /** Volume Panel mic noise cancellation UI model. */
 @VolumePanelScope
-class MncViewModel @Inject constructor() {
-    // TODO(b/460536046): Implement the actual view model of the mic noise cancellation button.
+class MncViewModel
+@Inject
+constructor(
+    @VolumePanelScope private val coroutineScope: CoroutineScope,
+    private val userRepository: UserRepository,
+    private val desktopEffectInteractor: DesktopEffectInteractor,
+) {
     val buttonViewModel: StateFlow<ButtonViewModel?> =
-        MutableStateFlow(
-            ButtonViewModel(
-                isActive = true,
-                icon = Icon.Resource(R.drawable.ic_spatial_audio, null),
-                label = "Mic Noise Cancellation",
-            )
-        )
+        userRepository.selectedUserInfo
+            .flatMapLatest { userInfo -> desktopEffectInteractor.effectsForUser(userInfo.id) }
+            .map { effects ->
+                ButtonViewModel(
+                    isActive = effects.studioMic,
+                    // TODO(b/460536046): Replace the placeholder with the correct icon and label.
+                    icon = Icon.Resource(R.drawable.ic_spatial_audio, null),
+                    label = "Mic Noise Cancellation",
+                )
+            }
+            .stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
-    fun setIsMncEnabled(enabled: Boolean) {}
+    fun setIsMncEnabled(enabled: Boolean) {
+        coroutineScope.launch {
+            val userId = userRepository.selectedUserInfo.first().id
+            desktopEffectInteractor.setStudioMic(userId = userId, newValue = enabled)
+        }
+    }
 }
