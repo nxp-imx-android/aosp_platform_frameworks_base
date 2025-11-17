@@ -209,7 +209,10 @@ constructor(
                                     state.toContent == Scenes.Gone)
                         ) {
                             HeightSuppressionState.All
-                        } else if (state.isTransitioningFromOrTo(Scenes.QuickSettings)) {
+                        } else if (
+                            state.isTransitioningFromOrTo(Scenes.QuickSettings) &&
+                                !state.isTransitioning(to = Scenes.Shade)
+                        ) {
                             HeightSuppressionState.EndHeightOnly
                         } else HeightSuppressionState.None
                     }
@@ -256,6 +259,9 @@ constructor(
             }
             .distinctUntilChanged()
             .dumpWhileCollecting("expandFraction")
+
+    val animationsEnabled
+        get() = shadeInteractor.isShadeTouchable.dumpWhileCollecting("animationsEnabled")
 
     val isOccluded: Flow<Boolean> =
         bouncerInteractor.bouncerExpansion

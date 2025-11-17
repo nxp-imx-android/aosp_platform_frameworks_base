@@ -64,12 +64,15 @@ import org.junit.runners.MethodSorters
     Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
     com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION,
     com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_LAUNCH_TWICE,
-    com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
+)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class ExpandTaskTrampolineBubbleAfterSecondLaunchTest : BubbleFlickerTrampolineTestBase(),
-    ExpandBubbleFromHomeTestCases, TaskTrampolineBecomesExpandedTestCases {
+class ExpandTaskTrampolineBubbleAfterSecondLaunchTest :
+    BubbleFlickerTrampolineTestBase(),
+    ExpandBubbleFromHomeTestCases,
+    TaskTrampolineBecomesExpandedTestCases {
 
     companion object {
         private val recordTraceWithTransitionRule =
@@ -94,9 +97,7 @@ class ExpandTaskTrampolineBubbleAfterSecondLaunchTest : BubbleFlickerTrampolineT
                     )
                     collapseBubbleAppViaTouchOutside(runningApp, wmHelper)
                 },
-                transition = {
-                    expandCollapsedBubbleApp(runningApp, tapl, uiDevice, wmHelper)
-                },
+                transition = { expandCollapsedBubbleApp(runningApp, tapl, uiDevice, wmHelper) },
                 tearDownAfterTransition = {
                     runningApp.exit(wmHelper)
                     // Clean up the app icon that might have been added to the home screen during
@@ -110,10 +111,11 @@ class ExpandTaskTrampolineBubbleAfterSecondLaunchTest : BubbleFlickerTrampolineT
     }
 
     @get:Rule(order = 1)
-    val setUpRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-    )
+    val setUpRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

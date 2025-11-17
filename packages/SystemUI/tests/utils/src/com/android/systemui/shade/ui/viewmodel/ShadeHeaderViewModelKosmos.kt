@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalKairosApi::class)
-
 package com.android.systemui.shade.ui.viewmodel
 
 import com.android.systemui.battery.batteryMeterViewControllerFactory
 import com.android.systemui.clock.domain.interactor.clockInteractor
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.kairos
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter
@@ -33,6 +30,7 @@ import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.shadeDarkIconInteractor
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelAlwaysShowPercentFactory
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.carrierTextInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.mobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.mobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.mobileIconsViewModelKairos
@@ -46,6 +44,7 @@ private val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             activityStarter = activityStarter,
             sceneInteractor = sceneInteractor,
             shadeInteractor = shadeInteractor,
+            carrierTextInteractor = carrierTextInteractor,
             shadeModeInteractor = shadeModeInteractor,
             shadeDarkIconInteractor = shadeDarkIconInteractor,
             mobileIconsInteractor = mobileIconsInteractor,

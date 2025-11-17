@@ -153,7 +153,7 @@ constructor(
      */
     fun setWmNotifiedShowWhenLockedActivityOnTop(
         showWhenLockedActivityOnTop: Boolean,
-        taskInfo: RunningTaskInfo? = null,
+        taskInfo: RunningTaskInfo? = showWhenLockedActivityInfo.value.taskInfo,
     ) {
         repository.setShowWhenLockedActivityInfo(showWhenLockedActivityOnTop, taskInfo)
     }

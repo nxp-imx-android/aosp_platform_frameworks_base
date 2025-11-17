@@ -1894,24 +1894,8 @@ class DesktopTasksController(
                 minimizeMultiActivityRunnable =
                     minimizeMultiActivityPipTask(wct = wct, deskId = deskId, task = taskInfo)
             }
-
-            // If the task minimizing to PiP is the last task, modify wct to perform Desktop cleanup
-            var desktopExitRunnable: RunOnTransitStart? = null
-            if (isLastTask) {
-                desktopExitRunnable =
-                    performDesktopExitCleanUp(
-                        wct = wct,
-                        deskId = deskId,
-                        displayId = displayId,
-                        userId = userId,
-                        willExitDesktop = true,
-                        removingLastTaskId = null,
-                        exitReason = ExitReason.TASK_MINIMIZED,
-                    )
-            }
             val transition = freeformTaskTransitionStarter.startPipTransition(wct)
             minimizeMultiActivityRunnable?.invoke(transition)
-            desktopExitRunnable?.invoke(transition)
         } else {
             val willExitDesktop =
                 if (
@@ -3788,6 +3772,7 @@ class DesktopTasksController(
             logV("skipping handleRequest reason=%s", "triggerTask is null")
             return null
         }
+        val windowingLayerChange = request.windowingLayerChange
         val recentsAnimationRunning =
             RecentsTransitionStateListener.isAnimating(recentsTransitionState)
         val shouldHandleMidRecentsFreeformLaunch =
@@ -3840,6 +3825,11 @@ class DesktopTasksController(
                 // Only handle fullscreen or freeform tasks
                 !triggerTask.isFullscreen && !triggerTask.isFreeform -> {
                     reason = "windowingMode not handled (${triggerTask.windowingMode})"
+                    false
+                }
+                // Ignore windowing layer requests.
+                windowingLayerChange != null -> {
+                    reason = "windowing lauyer requests are handled by other handlers"
                     false
                 }
                 // Otherwise process it
@@ -6771,23 +6761,16 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         wct.sendPendingIntent(launchIntent, null, opts.toBundle())
         if (windowingMode == WINDOWING_MODE_FREEFORM) {
-            if (
-                DesktopModeFlags.ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX.isTrue ||
-                    DesktopExperienceFlags.ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION.isTrue
-            ) {
-                val deskId = getOrCreateDefaultDeskId(destinationDisplay, userId) ?: return false
-                startLaunchTransition(
-                    TRANSIT_OPEN,
-                    wct,
-                    launchingTaskId = null,
-                    deskId = deskId,
-                    displayId = destinationDisplay,
-                    userId = userId,
-                    dragEvent = dragEvent,
-                )
-            } else {
-                desktopModeDragAndDropTransitionHandler.handleDropEvent(wct, dragEvent)
-            }
+            val deskId = getOrCreateDefaultDeskId(destinationDisplay, userId) ?: return false
+            startLaunchTransition(
+                TRANSIT_OPEN,
+                wct,
+                launchingTaskId = null,
+                deskId = deskId,
+                displayId = destinationDisplay,
+                userId = userId,
+                dragEvent = dragEvent,
+            )
         } else {
             transitions.startTransition(TRANSIT_OPEN, wct, null)
         }

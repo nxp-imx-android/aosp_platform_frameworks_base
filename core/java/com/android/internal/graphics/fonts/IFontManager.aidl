@@ -36,4 +36,6 @@ interface IFontManager {
     int insertFontFamilyBefore(in List<FontUpdateRequest> request,
                                String fontFamilyNameToInsertBefore,
                                int baseVersion);
+
+    int updateFontFallbacks(in List<FontUpdateRequest> fallbackRequests);
 }

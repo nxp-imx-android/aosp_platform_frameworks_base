@@ -79,6 +79,8 @@ constructor(
             AudioManager.STREAM_SYSTEM to { it.policy.priorityCategorySystem == STATE_DISALLOW },
         )
 
+    val hasNextAlarm: StateFlow<Boolean> = zenModeRepository.hasNextAlarm
+
     val isZenAvailable: Flow<Boolean> =
         combine(
             deviceProvisioningRepository.isDeviceProvisioned,
@@ -228,6 +230,10 @@ constructor(
 
     fun deactivateMode(zenMode: ZenMode) {
         zenModeRepository.deactivateMode(zenMode)
+    }
+
+    fun setHasNextAlarm(hasNextAlarm: Boolean) {
+        zenModeRepository.hasNextAlarm.value = hasNextAlarm
     }
 
     fun deactivateAllModes() {

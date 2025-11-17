@@ -23,11 +23,31 @@ import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.dagger.MediaLog
 import javax.inject.Inject
 
+interface MediaLogger {
+    fun logMediaNotificationEnteredPipeline(packageName: String, title: CharSequence?)
+
+    fun logMediaNotificationExitedPipeline(packageName: String, title: CharSequence?)
+
+    fun logMediaLoaded(instanceId: InstanceId, active: Boolean, reason: String)
+
+    fun logMediaRemoved(instanceId: InstanceId, reason: String)
+
+    fun logMediaCarouselSize(size: Int)
+
+    fun logDuplicateMediaNotification(key: String)
+
+    fun logMedia3UnsupportedCommand(command: String)
+
+    fun logCreateFailed(pkg: String, method: String)
+
+    fun logReleaseFailed(pkg: String, cause: String)
+}
+
 /** A buffered log for media loading events. */
 @SysUISingleton
-class MediaLogger @Inject constructor(@MediaLog private val buffer: LogBuffer) {
+class MediaLoggerImpl @Inject constructor(@MediaLog private val buffer: LogBuffer) : MediaLogger {
 
-    fun logMediaNotificationEnteredPipeline(packageName: String, title: CharSequence?) {
+    override fun logMediaNotificationEnteredPipeline(packageName: String, title: CharSequence?) {
         buffer.log(
             TAG,
             LogLevel.DEBUG,
@@ -39,7 +59,7 @@ class MediaLogger @Inject constructor(@MediaLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logMediaNotificationExitedPipeline(packageName: String, title: CharSequence?) {
+    override fun logMediaNotificationExitedPipeline(packageName: String, title: CharSequence?) {
         buffer.log(
             TAG,
             LogLevel.DEBUG,
@@ -51,7 +71,7 @@ class MediaLogger @Inject constructor(@MediaLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logMediaLoaded(instanceId: InstanceId, active: Boolean, reason: String) {
+    override fun logMediaLoaded(instanceId: InstanceId, active: Boolean, reason: String) {
         buffer.log(
             TAG,
             LogLevel.DEBUG,
@@ -64,7 +84,7 @@ class MediaLogger @Inject constructor(@MediaLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logMediaRemoved(instanceId: InstanceId, reason: String) {
+    override fun logMediaRemoved(instanceId: InstanceId, reason: String) {
         buffer.log(
             TAG,
             LogLevel.DEBUG,
@@ -76,25 +96,11 @@ class MediaLogger @Inject constructor(@MediaLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logMediaCardAdded(instanceId: InstanceId) {
-        buffer.log(
-            TAG,
-            LogLevel.DEBUG,
-            { str1 = instanceId.toString() },
-            { "adding media card $str1 to carousel" },
-        )
+    override fun logMediaCarouselSize(size: Int) {
+        buffer.log(TAG, LogLevel.DEBUG, { int1 = size }, { "media carousel size: $int1 " })
     }
 
-    fun logMediaCardRemoved(instanceId: InstanceId) {
-        buffer.log(
-            TAG,
-            LogLevel.DEBUG,
-            { str1 = instanceId.toString() },
-            { "removing media card $str1 from carousel" },
-        )
-    }
-
-    fun logDuplicateMediaNotification(key: String) {
+    override fun logDuplicateMediaNotification(key: String) {
         buffer.log(
             TAG,
             LogLevel.DEBUG,
@@ -103,28 +109,11 @@ class MediaLogger @Inject constructor(@MediaLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logMediaControlIsBound(
-        instanceId: InstanceId,
-        artistName: CharSequence,
-        title: CharSequence,
-    ) {
-        buffer.log(
-            TAG,
-            LogLevel.DEBUG,
-            {
-                str1 = instanceId.toString()
-                str2 = artistName.toString()
-                str3 = title.toString()
-            },
-            { "binding media control, instance id= $str1, artist= $str2, title= $str3" },
-        )
-    }
-
-    fun logMedia3UnsupportedCommand(command: String) {
+    override fun logMedia3UnsupportedCommand(command: String) {
         buffer.log(TAG, LogLevel.DEBUG, { str1 = command }, { "Unsupported media3 command $str1" })
     }
 
-    fun logCreateFailed(pkg: String, method: String) {
+    override fun logCreateFailed(pkg: String, method: String) {
         buffer.log(
             TAG,
             LogLevel.DEBUG,
@@ -136,7 +125,7 @@ class MediaLogger @Inject constructor(@MediaLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logReleaseFailed(pkg: String, cause: String) {
+    override fun logReleaseFailed(pkg: String, cause: String) {
         buffer.log(
             TAG,
             LogLevel.DEBUG,

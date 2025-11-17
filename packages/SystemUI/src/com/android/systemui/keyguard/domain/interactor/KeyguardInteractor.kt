@@ -53,6 +53,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.data.repository.ShadeConfigRepository
 import com.android.systemui.shade.data.repository.ShadeRepository
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import javax.inject.Inject
@@ -104,6 +105,7 @@ constructor(
     private val fromAlternateBouncerTransitionInteractor:
         Provider<FromAlternateBouncerTransitionInteractor>,
     private val lockPatternUtils: LockPatternUtils,
+    private val shadeInteractor: Provider<ShadeInteractor>,
     @Application applicationScope: CoroutineScope,
 ) {
     // TODO(b/296118689): move to a repository
@@ -414,35 +416,37 @@ constructor(
             .distinctUntilChanged()
 
     val keyguardTranslationY: Flow<Float> =
-        configurationInteractor
-            .dimensionPixelSize(R.dimen.keyguard_translate_distance_on_swipe_up)
-            .flatMapLatest { translationDistance ->
-                // TODO: b/441274212 - Update this to use the correct signals when SceneContainer is
-                //  turned on.
-                combineTransform(
-                    shadeRepository.legacyShadeExpansion.onStart { emit(0f) },
-                    keyguardTransitionInteractor.transitionValue(GONE).onStart { emit(0f) },
-                ) { legacyShadeExpansion, goneValue ->
-                    val isLegacyShadeInResetPosition =
-                        legacyShadeExpansion == 0f || legacyShadeExpansion == 1f
-                    if (goneValue == 1f || (goneValue == 0f && isLegacyShadeInResetPosition)) {
-                        // Reset the translation value
-                        emit(0f)
-                    } else if (!isLegacyShadeInResetPosition) {
-                        // On swipe up, translate the keyguard to reveal the bouncer, OR a GONE
-                        // transition is running, which means this is a swipe to dismiss. Values of
-                        // 0f and 1f need to be ignored in the legacy shade expansion. These can
-                        // flip arbitrarily as the legacy shade is reset, and would cause the
-                        // translation value to jump around unexpectedly.
-                        emit(MathUtils.lerp(translationDistance, 0, legacyShadeExpansion))
+        if (SceneContainerFlag.isEnabled) flowOf(0f)
+        else {
+            configurationInteractor
+                .dimensionPixelSize(R.dimen.keyguard_translate_distance_on_swipe_up)
+                .flatMapLatest { translationDistance ->
+                    combineTransform(
+                        shadeRepository.legacyShadeExpansion.onStart { emit(0f) },
+                        keyguardTransitionInteractor.transitionValue(GONE).onStart { emit(0f) },
+                    ) { legacyShadeExpansion, goneValue ->
+                        val isLegacyShadeInResetPosition =
+                            legacyShadeExpansion == 0f || legacyShadeExpansion == 1f
+                        if (goneValue == 1f || (goneValue == 0f && isLegacyShadeInResetPosition)) {
+                            // Reset the translation value
+                            emit(0f)
+                        } else if (!isLegacyShadeInResetPosition) {
+                            // On swipe up, translate the keyguard to reveal the bouncer, OR a GONE
+                            // transition is running, which means this is a swipe to dismiss. Values
+                            // of
+                            // 0f and 1f need to be ignored in the legacy shade expansion. These can
+                            // flip arbitrarily as the legacy shade is reset, and would cause the
+                            // translation value to jump around unexpectedly.
+                            emit(MathUtils.lerp(translationDistance, 0, legacyShadeExpansion))
+                        }
                     }
                 }
-            }
-            .stateIn(
-                scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = 0f,
-            )
+                .stateIn(
+                    scope = applicationScope,
+                    started = SharingStarted.WhileSubscribed(),
+                    initialValue = 0f,
+                )
+        }
 
     /** Whether to animate the next doze mode transition. */
     val animateDozingTransitions: Flow<Boolean> by lazy {

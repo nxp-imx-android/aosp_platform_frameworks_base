@@ -16,6 +16,7 @@
 
 package com.android.server.wm;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
@@ -23,13 +24,20 @@ import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.content.pm.ActivityInfo.OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
-import static com.android.window.flags.Flags.FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.window.flags.Flags.FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import android.compat.testing.PlatformCompatChangeRule;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
@@ -39,6 +47,7 @@ import androidx.test.filters.MediumTest;
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +69,12 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
 
     private static final int CONFIG_MASK_FOR_DISPLAY_MOVE =
             ~(CONFIG_DENSITY | CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE | CONFIG_RESOURCES_UNUSED);
+
+    private enum SelfKillType {
+        FINISH_ACTIVITY,
+        FINISH_AND_REMOVE_TASK,
+        KILL_PROCESS
+    }
 
     @Rule
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
@@ -128,7 +143,6 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         });
     }
 
-    @EnableFlags(FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE)
     @EnableCompatChanges(OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE)
     @Test
     public void testAutoRestartOnDisplayMove_enabled_restartsApp() {
@@ -144,7 +158,6 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         });
     }
 
-    @EnableFlags(FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE)
     @DisableCompatChanges(OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE)
     @Test
     public void testAutoRestartOnDisplayMove_compatChangeDisabled_doesNotRestartApp() {
@@ -160,6 +173,80 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
         });
     }
 
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_finishActivity() {
+        testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
+                true /* moveDisplays */,
+                true /* relaunchActivity */,
+                SelfKillType.FINISH_ACTIVITY);
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_finishAndRemoveTask() {
+        testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
+                true /* moveDisplays */,
+                true /* relaunchActivity */,
+                SelfKillType.FINISH_AND_REMOVE_TASK);
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_killProcess() {
+        testSelfKillOnDisplayMoveInner(true /* shouldRecoverFromSelfKill */,
+                true /* moveDisplays */,
+                true /* relaunchActivity */,
+                SelfKillType.KILL_PROCESS /* selfKillType */);
+    }
+
+    @DisableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_flagDisabled() {
+        testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
+                true /* moveDisplays */,
+                true /* relaunchActivity */,
+                SelfKillType.FINISH_ACTIVITY);
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryNotOnDisplayMove() {
+        testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
+                false /* moveDisplays */,
+                true /* relaunchActivity */,
+                SelfKillType.FINISH_ACTIVITY);
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RECOVERY_FROM_SELF_KILL)
+    @Test
+    public void testSelfKillRecoveryOnDisplayMove_noActivityRelaunch() {
+        testSelfKillOnDisplayMoveInner(false /* shouldRecoverFromSelfKill */,
+                true /* moveDisplays */,
+                false /* relaunchActivity */,
+                SelfKillType.FINISH_ACTIVITY);
+    }
+
+    private void testSelfKillOnDisplayMoveInner(boolean shouldRecoverFromSelfKill,
+            boolean moveDisplays, boolean relaunchActivity, SelfKillType selfKillType) {
+        runTestScenario((robot) -> {
+            robot.activity().createSecondaryDisplay();
+            robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityResumed();
+            robot.activity().setTopActivityConfigChanges(
+                    relaunchActivity ? 0 : CONFIG_RESOURCES_UNUSED);
+            robot.activity().clearInvocationsForActivity();
+
+            if (moveDisplays) {
+                robot.activity().moveTaskToSecondaryDisplay();
+            } else {
+                robot.activity().setTaskWindowingMode(WINDOWING_MODE_FREEFORM);
+            }
+
+            robot.emulateAndVerifySelfKill(selfKillType, shouldRecoverFromSelfKill);
+        });
+    }
+
     void runTestScenario(@NonNull Consumer<DisplayCompatRobotTest> consumer) {
         final DisplayCompatRobotTest robot = new DisplayCompatRobotTest(this);
         consumer.accept(robot);
@@ -169,12 +256,61 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
 
         DisplayCompatRobotTest(@NonNull WindowTestsBase windowTestBase) {
             super(windowTestBase);
+            windowTestBase.registerTestTransitionPlayer();
+        }
+
+        @Override
+        void onPostActivityCreation(@android.annotation.NonNull ActivityRecord activity) {
+            super.onPostActivityCreation(activity);
+
+            final ActivityStartController startController =
+                    activity.mAtmService.getActivityStartController();
+            spyOn(startController);
+            doReturn(0).when(startController).startActivityInPackage(anyInt(), anyInt(), anyInt(),
+                    any(), any(), any(), any(), any(), any(), anyInt(), anyInt(), any(), anyInt(),
+                    any(), any(), anyBoolean(), any(), anyBoolean());
         }
 
         void checkRestartMenuVisibility(boolean enabled) {
             activity().applyToTopActivity(activity -> assertEquals(enabled,
                     activity.getTask().getTaskInfo().appCompatTaskInfo
                             .isRestartMenuEnabledForDisplayMove()));
+        }
+
+        void checkSelfKillRecoveryExecuted(boolean executed) {
+            verify(activity().top().mAtmService.getActivityStartController(),
+                    times(executed ? 1 : 0)).startActivityInPackage(anyInt(), anyInt(), anyInt(),
+                    any(), any(), any(), any(), any(), any(), anyInt(), anyInt(), any(), anyInt(),
+                    any(), any(), anyBoolean(), any(), anyBoolean());
+        }
+
+        void emulateAndVerifySelfKill(SelfKillType selfKillType,
+                boolean shouldRecoverFromSelfKill) {
+            if (selfKillType == SelfKillType.KILL_PROCESS) {
+                activity().exitAppProcess();
+                completeTransition();
+                Assert.assertFalse(activity().top().finishing);
+            } else {
+                if (selfKillType == SelfKillType.FINISH_ACTIVITY) {
+                    activity().finishTopActivity();
+                } else { // SelfKillType.FINISH_AND_REMOVE_TASK
+                    activity().removeTopTask();
+                }
+                activity().top().mAppCompatController.getDisplayCompatModePolicy()
+                        .onActivityFinishing();
+                completeTransition();
+                checkSelfKillRecoveryExecuted(shouldRecoverFromSelfKill);
+            }
+        }
+
+        private void completeTransition() {
+            final Transition transition =
+                    activity().top().mTransitionController.getCollectingTransition();
+            Assert.assertNotNull(transition);
+            final ActionChain chain = ActionChain.testFinish(transition);
+            activity().top().mWmService.mSyncEngine.abort(transition.getSyncId());
+            transition.finishTransition(chain);
+            testBase().waitHandlerIdle(activity().top().mWmService.mAtmService.mH);
         }
     }
 }

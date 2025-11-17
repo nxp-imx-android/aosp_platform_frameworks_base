@@ -298,8 +298,11 @@ static jint android_media_AudioTrack_setup(JNIEnv *env, jobject thiz, jobject we
         // Invalid channel representations are caught by !audio_is_output_channel() below.
         audio_channel_mask_t nativeChannelMask = nativeChannelMaskFromJavaChannelMasks(
                 channelPositionMask, channelIndexMask);
-        if (!audio_is_output_channel(nativeChannelMask)) {
-            ALOGE("Error creating AudioTrack: invalid native channel mask %#x.", nativeChannelMask);
+        audio_channel_mask_t audioOutputChannelMask =
+                (audio_channel_mask_t)((uint32_t)nativeChannelMask & ~AUDIO_CHANNEL_HAPTIC_ALL);
+        if (!audio_is_output_channel(audioOutputChannelMask)) {
+            ALOGE("Error creating AudioTrack: invalid native output audio channel mask %#x.",
+                  audioOutputChannelMask);
             return (jint) AUDIOTRACK_ERROR_SETUP_INVALIDCHANNELMASK;
         }
 
@@ -1453,6 +1456,11 @@ static jint android_media_AudioTrack_setStartThresholdInFrames(JNIEnv *env, jobj
     return (jint)result; // this should be a positive value.
 }
 
+static jlong android_media_AudioTrack_flushFromFrame(JNIEnv * /*env*/, jobject /*thiz*/,
+                                                     jint /*accuracy*/, jlong positionInFrames) {
+    return positionInFrames;
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 static const JNINativeMethod gMethods[] = {
@@ -1538,6 +1546,7 @@ static const JNINativeMethod gMethods[] = {
          (void *)android_media_AudioTrack_setStartThresholdInFrames},
         {"native_getStartThresholdInFrames", "()I",
          (void *)android_media_AudioTrack_getStartThresholdInFrames},
+        {"native_flushFromFrame", "(IJ)J", (void *)android_media_AudioTrack_flushFromFrame},
 };
 
 // field names found in android/media/AudioTrack.java

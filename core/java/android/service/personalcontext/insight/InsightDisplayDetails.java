@@ -124,6 +124,7 @@ public final class InsightDisplayDetails implements Parcelable {
             };
 
     /** Builder for {@link InsightDisplayDetails}. */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private CharSequence mTitle;
         private Icon mIcon;

@@ -272,7 +272,7 @@ public interface TextClassifier {
      * Extra specifying a list of trusted packages which can receive or view the OTP.
      */
     @FlaggedApi(android.view.flags.Flags.FLAG_REDACT_OTP_APP_COMPAT_API)
-    String EXTRA_SMS_TRUSTED_PACKAGES = "android.view.textclassifier.extra.SMS_TRUSTED_PACKAGES";
+    String EXTRA_OTP_TRUSTED_PACKAGES = "android.view.textclassifier.extra.OTP_TRUSTED_PACKAGES";
 
     /**
      * Returns suggested text selection start and end indices, recognized entity types, and their

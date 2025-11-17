@@ -19,7 +19,6 @@ package com.android.server.dreams;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
 import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WITH_CHARGE_LIMIT;
-import static android.service.dreams.Flags.FLAG_DISALLOW_DREAM_ON_AUTO_PROJECTION;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 import static android.service.dreams.Flags.FLAG_WAKE_ON_STOPPING_DOZE;
 
@@ -282,7 +281,6 @@ public class DreamManagerServiceTest {
         assertThat(service.canStartDreamingInternal(/*isScreenOn=*/ true)).isTrue();
     }
 
-    @EnableFlags(FLAG_DISALLOW_DREAM_ON_AUTO_PROJECTION)
     @Test
     public void testCanStartDreaming_falseWithProjectedDisplay() {
         // Enable dreaming while charging only.

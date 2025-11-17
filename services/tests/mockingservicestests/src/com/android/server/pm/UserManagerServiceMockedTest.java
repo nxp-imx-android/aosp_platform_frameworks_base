@@ -54,8 +54,8 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_DEMOTE_MAIN_USER;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_PROMOTE_MAIN_USER;
-import static com.android.server.pm.UserManagerService.BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE;
-import static com.android.server.pm.UserManagerService.BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER;
+import static com.android.server.pm.UserManagerService.HSUM_BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE;
+import static com.android.server.pm.UserManagerService.HSUM_BOOT_STRATEGY_TO_PREVIOUS_FOREGROUND_USER;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -262,7 +262,7 @@ public final class UserManagerServiceMockedTest {
 
         mSpyResources = spy(mSpiedContext.getResources());
         when(mSpiedContext.getResources()).thenReturn(mSpyResources);
-        mockHsumBootStrategy(BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER);
+        mockHsumBootStrategy(HSUM_BOOT_STRATEGY_TO_PREVIOUS_FOREGROUND_USER);
         mockDisallowRemovingLastAdminUser(false);
 
         doReturn(mSpyResources).when(Resources::getSystem);
@@ -436,7 +436,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testSetBootUser_canBeHsu() throws Exception {
         mockCanSwitchToHeadlessSystemUser(true);
-        mockHsumBootStrategy(BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER);
+        mockHsumBootStrategy(HSUM_BOOT_STRATEGY_TO_PREVIOUS_FOREGROUND_USER);
         setSystemUserHeadless(true);
         addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, Long.MAX_VALUE);
@@ -925,7 +925,7 @@ public final class UserManagerServiceMockedTest {
         addSecondaryUser(USER_ID);
         addSecondaryUser(USER_ID2);
         mockProvisionedDevice(true);
-        mockHsumBootStrategy(BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE);
+        mockHsumBootStrategy(HSUM_BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE);
 
         assertThat(mUms.getBootUser()).isEqualTo(USER_SYSTEM);
     }
@@ -936,7 +936,7 @@ public final class UserManagerServiceMockedTest {
         addSecondaryUser(USER_ID);
         addSecondaryUser(USER_ID2);
         mockProvisionedDevice(false);
-        mockHsumBootStrategy(BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE);
+        mockHsumBootStrategy(HSUM_BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE);
         // Even if the headless system user switchable flag is true, the boot user should be the
         // first switchable full user.
         mockCanSwitchToHeadlessSystemUser(true);
@@ -950,7 +950,7 @@ public final class UserManagerServiceMockedTest {
         setSystemUserHeadless(true);
         removeNonSystemUsers();
         mockProvisionedDevice(false);
-        mockHsumBootStrategy(BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE);
+        mockHsumBootStrategy(HSUM_BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE);
 
         assertThrows(ServiceSpecificException.class,
                 () -> mUms.getBootUser());

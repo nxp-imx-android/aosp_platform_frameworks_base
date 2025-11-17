@@ -29,23 +29,17 @@ abstract class BubbleFlickerTrampolineTestBase : BubbleFlickerTestBase() {
     override val testApp = runningApp
 
     companion object {
-        /**
-         * Entry point for the app that is launching via trampoline
-         */
+        /** Entry point for the app that is launching via trampoline */
         val trampolineApp: StandardAppHelper =
             StandardAppHelper(
                 instrumentation,
                 appName = ActivityOptions.TrampolineStartActivity.LABEL,
-                componentMatcher = ActivityOptions.TrampolineStartActivity.COMPONENT.toFlickerComponent(),
+                componentMatcher =
+                    ActivityOptions.TrampolineStartActivity.COMPONENT.toFlickerComponent(),
             )
 
-        /**
-         * App that will actually be running after the trampoline finishes
-         */
+        /** App that will actually be running after the trampoline finishes */
         val runningApp: LaunchViaTrampolineAppHelper =
-            LaunchViaTrampolineAppHelper(
-                instrumentation,
-                trampolineApp = trampolineApp,
-            )
+            LaunchViaTrampolineAppHelper(instrumentation, trampolineApp = trampolineApp)
     }
 }

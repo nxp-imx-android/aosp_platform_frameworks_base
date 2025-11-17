@@ -77,7 +77,7 @@ internal class MuxDeferredNode<W, K, V, R>(
         depthTracker.propagateChanges(evalScope.compactor, this)
     }
 
-    override fun doDeactivate() {
+    override fun doDeactivate(evalScope: EvalScope) {
         check(downstreamSet.isEmpty()) { "cannot deactivate a node with downstreams" }
         // Update lifecycle
         if (lifecycle.lifecycleState !is MuxLifecycleState.Active) return
@@ -85,10 +85,16 @@ internal class MuxDeferredNode<W, K, V, R>(
         lifecycle.lifecycleState = MuxLifecycleState.Inactive(spec)
         // Process branch nodes
         switchedIn.forEach { _, branchNode ->
-            branchNode.upstream.removeDownstreamAndDeactivateIfNeeded(branchNode.schedulable)
+            branchNode.upstream.removeDownstreamAndDeactivateIfNeeded(
+                downstream = branchNode.schedulable,
+                evalScope = evalScope,
+            )
         }
         // Process patch node
-        patches?.removeDownstreamAndDeactivateIfNeeded(schedulable)
+        patches?.removeDownstreamAndDeactivateIfNeeded(
+            downstream = schedulable,
+            evalScope = evalScope,
+        )
     }
 
     // MOVE phase

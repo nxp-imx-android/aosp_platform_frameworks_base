@@ -22,21 +22,32 @@ object SurfaceEffectColors {
     @JvmStatic
     fun surfaceEffect0(context: Context): Int {
         return context.resources.getColor(
-            com.android.internal.R.color.surface_effect_0, context.theme)
+            com.android.internal.R.color.customColorSurfaceEffect0,
+            context.theme,
+        )
     }
+
     @JvmStatic
     fun surfaceEffect1(context: Context): Int {
         return context.resources.getColor(
-            com.android.internal.R.color.surface_effect_1, context.theme)
+            com.android.internal.R.color.customColorSurfaceEffect1,
+            context.theme,
+        )
     }
+
     @JvmStatic
     fun surfaceEffect2(context: Context): Int {
         return context.resources.getColor(
-            com.android.internal.R.color.surface_effect_2, context.theme)
+            com.android.internal.R.color.customColorSurfaceEffect2,
+            context.theme,
+        )
     }
+
     @JvmStatic
     fun surfaceEffect3(context: Context): Int {
         return context.resources.getColor(
-            com.android.internal.R.color.surface_effect_3, context.theme)
+            com.android.internal.R.color.customColorSurfaceEffect3,
+            context.theme,
+        )
     }
 }

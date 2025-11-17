@@ -53,7 +53,7 @@ public class AdbRestoreFinishedLatch implements BackupRestoreTask {
                 "Timeout parameters cannot be null");
     }
 
-    void await() {
+    public void await() {
         boolean latched = false;
         long fullBackupAgentTimeoutMillis =
                 mAgentTimeoutParameters.getFullBackupAgentTimeoutMillis();

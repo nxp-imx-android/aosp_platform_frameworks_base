@@ -19,12 +19,14 @@ package com.android.server.vibrator;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
 import android.os.test.TestLooper;
 import android.os.vibrator.Flags;
+import android.os.vibrator.VibrationEffectSegment;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
@@ -366,4 +368,143 @@ public abstract class HalVibratorManagerTestCase {
 
         verify(mHalCallbackMock).onVibrationSessionComplete(eq(sessionId));
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void startHapticGeneratorSession_withCapability_returnsTrue() {
+        mHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 1,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+
+        assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 2,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void startHapticGeneratorSession_withoutCapability_returnsFalse() {
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 1,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isFalse();
+
+        assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 2,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void closeHapticGeneratorSession_withActiveSession_returnsTrue() {
+        mHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        assertThat(manager.startHapticGeneratorSession(/* sessionId= */ 1, /* vibratorId= */ 1,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+        assertThat(manager.closeHapticGeneratorSession(/* sessionId= */ 1)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void closeHapticGeneratorSession_noActiveSession_returnsFalse() {
+        mHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        assertThat(manager.closeHapticGeneratorSession(/* sessionId= */ 1)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void closeHapticGeneratorSession_afterClear_returnsFalse() {
+        mHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+        long sessionId = 1;
+
+        assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+        manager.clearHapticGeneratorSession(sessionId);
+        // Close after a clear should fail
+        assertThat(manager.closeHapticGeneratorSession(sessionId)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void hapticGeneratorSessionEndsFromHal_callsSessionCompleteCallback() throws Exception {
+        mHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        long sessionId = 1;
+        assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+
+        // Simulate the HAL ending the session from its side
+        mHelper.endHapticGeneratorSessionFromHal(sessionId);
+        mTestLooper.dispatchAll();
+
+        verify(mHalCallbackMock).onHapticGeneratorSessionComplete(eq(sessionId));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void startHapticGeneratorStream_withCapability_returnsTrue() {
+        mHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1});
+        HalVibratorManager manager = newInitializedVibratorManager();
+        long sessionId = 1;
+
+        assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+
+        assertThat(manager.startHapticGeneratorStream(sessionId, /* vibratorId= */ 1,
+                new VibrationEffectSegment[0])).isTrue();
+
+        assertThat(mHelper.getHapticGeneratorStreamStartCount()).isEqualTo(1);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void readHapticGeneratorStream_withCapability_doesNotReturnError() {
+        mHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1});
+        HalVibratorManager manager = newInitializedVibratorManager();
+        long sessionId = 1;
+
+        assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+        assertThat(manager.startHapticGeneratorStream(sessionId, /* vibratorId= */ 1,
+                new VibrationEffectSegment[0])).isTrue();
+
+        int bytesRead = manager.readHapticGeneratorStream(sessionId, /* vibratorId= */ 1,
+                new byte[10]);
+
+        assertThat(mHelper.getHapticGeneratorStreamReadCount()).isEqualTo(1);
+        assertThat(bytesRead).isGreaterThan(0);
+    }
+
+
+    @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void stopHapticGeneratorStream_withCapability_returnsTrue() {
+        mHelper.setCapabilities(IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1});
+        HalVibratorManager manager = newInitializedVibratorManager();
+        long sessionId = 1;
+
+        assertThat(manager.startHapticGeneratorSession(sessionId, /* vibratorId= */ 1,
+                mock(android.os.vibrator.HapticGeneratorSession.Config.class))).isTrue();
+        assertThat(manager.startHapticGeneratorStream(sessionId, /* vibratorId= */ 1,
+                new VibrationEffectSegment[0])).isTrue();
+
+        assertThat(manager.stopHapticGeneratorStream(sessionId, /* vibratorId= */ 1)).isTrue();
+
+        assertThat(mHelper.getHapticGeneratorStreamStopCount()).isEqualTo(1);
+    }
+
 }

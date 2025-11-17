@@ -119,8 +119,13 @@ class MobileDataTileMapperTest : SysuiTestCase() {
     ): QSTileState {
         val label = context.getString(R.string.quick_settings_cellular_detail_title)
         val enabledState = QSTileState.EnabledState.ENABLED
-        val supportedActions =
-            setOf(QSTileState.UserAction.CLICK, QSTileState.UserAction.LONG_CLICK)
+        val supportedActions = buildSet {
+            add(QSTileState.UserAction.CLICK)
+            add(QSTileState.UserAction.LONG_CLICK)
+            if (activationState != QSTileState.ActivationState.UNAVAILABLE) {
+                add(QSTileState.UserAction.TOGGLE_CLICK)
+            }
+        }
 
         return QSTileState(
             icon = icon,

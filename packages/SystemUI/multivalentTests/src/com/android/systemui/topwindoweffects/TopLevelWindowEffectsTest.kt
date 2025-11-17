@@ -125,7 +125,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             val expectedDelay = 100L
             setInvocationEffectEnabled(true)
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
             underTest.start()
@@ -141,7 +140,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     fun testSqueezeEffectNotStarted_beforeInitialDelay() =
         kosmos.runTest {
             val expectedDelay = 100L
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
@@ -160,7 +158,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             val expectedDelay = 100L
             setInvocationEffectEnabled(true)
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
             underTest.start()
@@ -181,7 +178,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     fun testSqueezeEffectStarted_whenUpEventReceivedAfter100Millis() =
         kosmos.runTest {
             val expectedDelay = 100L
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
@@ -201,7 +197,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             val expectedDelay =
                 DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
@@ -228,7 +223,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             val expectedDelay =
                 DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
@@ -251,7 +245,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             val expectedDelay =
                 DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
             setInvocationEffectEnabled(false)
 
@@ -269,7 +262,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     fun animationContinuesAndCompletes_whenPowerButtonReleased_afterLongPressDetected() =
         kosmos.runTest {
             val initialDelay = 100L
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             underTest.start()
@@ -313,48 +305,9 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         }
 
     @Test
-    fun hapticsNotPlayed_whenHapticsDisabledInRepository_butAnimationRuns() =
-        kosmos.runTest {
-            val initialDelay = 50L
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled =
-                false // Haptics explicitly disabled
-            fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
-
-            underTest.start()
-            setInvocationEffectEnabled(true)
-            runCurrent()
-
-            advanceTime((initialDelay + 1).milliseconds)
-            val totalVibrationsBefore = vibratorHelper.totalVibrations
-            val timesCancelledBefore = vibratorHelper.timesCancelled
-
-            // Complete inward animation
-            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION_MILLIS)
-            runCurrent()
-            assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(1f) // Animation proceeds
-
-            // Assert no new haptics were played or cancelled
-            assertThat(vibratorHelper.totalVibrations).isEqualTo(totalVibrationsBefore)
-            assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore)
-
-            // Complete outward animation
-            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
-            runCurrent()
-            assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
-
-            assertThat(vibratorHelper.totalVibrations).isEqualTo(totalVibrationsBefore)
-            assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore)
-
-            // Release power button (should not change anything as animation is finished)
-            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
-            runCurrent()
-        }
-
-    @Test
     fun fullAnimationCycle_completesSuccessfully_withoutInterruption() =
         kosmos.runTest {
             val initialDelay = 50L
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             underTest.start()
@@ -388,7 +341,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     fun animationInterruptsMidway_andHapticsAreCorrectlyCancelled() =
         kosmos.runTest {
             val initialDelay = 50L
-            fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             underTest.start()

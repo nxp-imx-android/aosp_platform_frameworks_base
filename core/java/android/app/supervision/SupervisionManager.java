@@ -383,12 +383,16 @@ public class SupervisionManager {
     }
 
     /**
-     * Returns a list of all policies that have been set by supervision apps.
+     * Returns a list of all policies that have been set.
      *
-     * @return The list of policies
+     * @return the list of policies
      * @see Policy
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.app.role.RoleManager#ROLE_SUPERVISION} or {@link
+     *     android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} roles
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     @NonNull
     public List<Policy> getPolicies() {
@@ -404,11 +408,17 @@ public class SupervisionManager {
     }
 
     /**
-     * Sets a policy.
+     * Sets a supervision policy.
      *
-     * @param policy The policy to set.
+     * @param policy the supervision policy to set
+     * @see Policy
+     * @throws IllegalStateException if the policy is invalid
+     * @throws SecurityException if the caller does not hold the {@link
+     *     android.app.role.RoleManager#ROLE_SUPERVISION} or {@link
+     *     android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} roles
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     public void setPolicy(@NonNull Policy policy) {
         if (mService != null) {

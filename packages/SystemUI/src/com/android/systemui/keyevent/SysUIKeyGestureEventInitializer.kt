@@ -21,6 +21,7 @@ import android.content.res.Resources
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
@@ -38,6 +39,7 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboar
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.statusbar.CommandQueue
 import com.android.window.flags.Flags.enableKeyGestureHandlerForSysui
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
@@ -53,6 +55,7 @@ constructor(
     @Main private val resources: Resources,
     private val inputManager: InputManager,
     private val commandQueue: CommandQueue,
+    private val desktopState: DesktopState,
     private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
     private val screenCaptureKeyboardShortcutInteractor: ScreenCaptureKeyboardShortcutInteractor,
     private val launcherProxyService: LauncherProxyService,
@@ -74,6 +77,7 @@ constructor(
         // devices.
         if (enablePartialScreenshotKeyboardShortcut()) {
             supportedGestures.add(KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT)
+            supportedGestures.add(KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT)
         }
         if (enableContextualSearchDesktopEntrypoints()) {
             supportedGestures.add(KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH)
@@ -86,12 +90,23 @@ constructor(
                 KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT -> {
                     screenCaptureKeyboardShortcutInteractor.attemptPartialRegionScreenshot()
                 }
+                KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT -> {
+                    screenCaptureKeyboardShortcutInteractor.attemptAppWindowScreenshot()
+                }
                 KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL -> {
-                    shadeExpansionTargetDisplayInteractor.onNotificationPanelKeyboardShortcut()
+                    if (desktopState.canEnterDesktopMode) {
+                        // If device supports desktop windowing/connected displays, then
+                        // reparent the shade to focused display, else open it where it is
+                        shadeExpansionTargetDisplayInteractor.onNotificationPanelKeyboardShortcut()
+                    }
                     commandQueue.toggleNotificationsPanel()
                 }
                 KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL -> {
-                    shadeExpansionTargetDisplayInteractor.onQSPanelKeyboardShortcut()
+                    if (desktopState.canEnterDesktopMode) {
+                        // If device supports desktop windowing/connected displays, then
+                        // reparent the shade to focused display, else open it where it is
+                        shadeExpansionTargetDisplayInteractor.onQSPanelKeyboardShortcut()
+                    }
                     commandQueue.toggleQuickSettingsPanel()
                 }
                 KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH -> {

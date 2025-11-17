@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:OptIn(ExperimentalKairosApi::class)
 
 package com.android.app.concurrent.benchmark.event
 
 import com.android.app.concurrent.benchmark.util.ThreadBuilder
 import com.android.systemui.kairos.BuildScope
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.MutableState as KairosMutableState
 import com.android.systemui.kairos.State as KairosState
 import com.android.systemui.kairos.TransactionScope
@@ -67,7 +65,7 @@ class KairosWritableEventBuilder(val scope: CoroutineScope) :
     val kairosNetwork = scope.launchKairosNetwork()
 
     override fun <T> createWritableEvent(value: T): EventBox<T, KairosMutableState<T>> {
-        return KairosStateBoxImpl(KairosMutableState(kairosNetwork, value))
+        return KairosStateBoxImpl(KairosMutableState(value))
     }
 
     override fun <T1, T2, T3> combineEvents(

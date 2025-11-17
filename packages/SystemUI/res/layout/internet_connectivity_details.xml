@@ -83,7 +83,7 @@
                             android:layout_gravity="center"
                             android:autoMirrored="true"
                             android:src="@drawable/stat_sys_ethernet_fully"
-                            android:tint="@color/connected_network_primary_color" />
+                            android:tint="@androidprv:color/materialColorOnPrimary" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -276,7 +276,7 @@
                     android:layout_height="@dimen/internet_dialog_wifi_network_height"
                     android:paddingStart="20dp"
                     android:paddingEnd="24dp"
-                    android:background="@drawable/settingslib_switch_bar_bg_on"
+                    android:background="@drawable/settingslib_entry_bg_on"
                     android:visibility="gone">
 
                     <FrameLayout
@@ -291,7 +291,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="fitCenter"
-                            android:layout_gravity="center" />
+                            android:layout_gravity="center"
+                            android:tint="@androidprv:color/materialColorOnPrimary" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -326,7 +327,8 @@
                             android:src="@drawable/ic_settings_24dp"
                             android:layout_width="24dp"
                             android:layout_gravity="end|center_vertical"
-                            android:layout_height="wrap_content" />
+                            android:layout_height="wrap_content"
+                            android:tint="@androidprv:color/materialColorOnPrimary" />
                     </FrameLayout>
                 </LinearLayout>
 

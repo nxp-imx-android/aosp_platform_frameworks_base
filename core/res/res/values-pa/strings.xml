@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"ਸੁਣਨ ਵਾਲਾ ਡੀਵਾਈਸ"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"ਪਹੁੰਚਯੋਗਤਾ ਵਰਤੋਂ"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"ਡਿਸਪਲੇ"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"ਮਾਪਿਆਂ ਦੇ ਕੰਟਰੋਲ"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਵੱਲੋਂ ਬੈਟਰੀ ਦੀ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> ਐਪਾਂ ਬੈਟਰੀ ਦੀ ਵਰਤੋਂ ਕਰ ਰਹੀਆਂ ਹਨ"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"ਬੈਟਰੀ ਅਤੇ ਡਾਟਾ ਵਰਤੋਂ ਸਬੰਧੀ ਵੇਰਵਿਆਂ ਲਈ ਟੈਪ ਕਰੋ"</string>
@@ -771,7 +770,7 @@
     <string name="face_acquired_too_right" msgid="6245286514593540859">"ਫ਼ੋਨ ਨੂੰ ਆਪਣੇ ਖੱਬੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
     <string name="face_acquired_too_left" msgid="9201762240918405486">"ਫ਼ੋਨ ਨੂੰ ਆਪਣੇ ਸੱਜੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
     <string name="face_acquired_poor_gaze" msgid="4427153558773628020">"ਕਿਰਪਾ ਕਰਕੇ ਸਿੱਧਾ ਆਪਣੇ ਡੀਵਾਈਸ ਵੱਲ ਦੇਖੋ।"</string>
-    <string name="face_acquired_not_detected" msgid="1057966913397548150">"ਤੁਹਾਡਾ ਚਿਹਰਾ ਨਹੀਂ ਦਿਸ ਰਿਹਾ। ਆਪਣੇ ਫ਼ੋਨ ਨੂੰ ਅੱਖਾਂ ਦੀ ਸੀਧ ਵਿੱਚ ਰੱਖੋ।"</string>
+    <string name="face_acquired_not_detected" msgid="1057966913397548150">"ਤੁਹਾਡਾ ਚਿਹਰਾ ਨਹੀਂ ਦਿਖ ਰਿਹਾ। ਆਪਣੇ ਫ਼ੋਨ ਨੂੰ ਅੱਖਾਂ ਦੀ ਸੇਧ ਵਿੱਚ ਰੱਖੋ।"</string>
     <string name="face_acquired_too_much_motion" msgid="8199691445085189528">"ਬਹੁਤ ਜ਼ਿਆਦਾ ਹਿਲਜੁਲ। ਫ਼ੋਨ ਨੂੰ ਸਥਿਰ ਰੱਖੋ।"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਚਿਹਰਾ ਦੁਬਾਰਾ ਦਰਜ ਕਰੋ।"</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"ਚਿਹਰੇ ਦੀ ਪਛਾਣ ਨਹੀਂ ਹੋਈ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"ਅਣਲਾਕ ਕਰਨ ਲਈ ਪਿੰਨ ਟਾਈਪ ਕਰੋ"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ਗਲਤ ਪਿੰਨ ਕੋਡ।"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"ਅਣਲਾਕ ਕਰਨ ਲਈ, ਪਹਿਲਾਂ ਮੀਨੂ ਫਿਰ 0 ਦਬਾਓ।"</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"ਐਮਰਜੈਂਸੀ ਨੰਬਰ"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"ਕੋਈ ਸੇਵਾ ਨਹੀਂ"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"ਸਕ੍ਰੀਨ  ਲਾਕ  ਕੀਤੀ।"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"ਅਣਲਾਕ ਕਰਨ ਲਈ ਮੀਨੂ ਦਬਾਓ ਜਾਂ ਸੰਕਟਕਾਲੀਨ ਕਾਲ ਕਰੋ।"</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ਸਿਸਟਮ ਸਰੋਤ ਸੰਬੰਧੀ ਅਲਰਟ"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ਸਰੋਤ ਦੀ ਜ਼ਿਆਦਾ ਵਰਤੋਂ"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"ਐਪ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> ਬਹੁਤ ਸਾਰੇ ਸਰੋਤਾਂ ਦੀ ਵਰਤੋਂ ਕਰ ਰਹੀ ਹੈ।\""</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਅੱਪਡੇਟ"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਫ਼ਿਲਹਾਲ ਹਟਾਇਆ ਗਿਆ"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਹੁਣ ਉਪਲਬਧ ਹੈ"</string>
 </resources>

@@ -39,8 +39,8 @@ import android.annotation.BinderThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
-import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.UserIdInt;
 import android.os.Binder;
 import android.os.IBinder;
@@ -63,6 +63,7 @@ import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
+import com.android.internal.inputmethod.InputMethodSubtypeSafeList;
 import com.android.internal.inputmethod.StartInputFlags;
 import com.android.internal.inputmethod.StartInputReason;
 import com.android.internal.util.FunctionalUtils.ThrowingRunnable;
@@ -140,19 +141,9 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
         return mInner.getEnabledInputMethodList(userId);
     }
 
+    @NonNull
     @Override
-    public List<InputMethodInfo> getInputMethodListLegacy(
-            int userId, @DirectBootAwareness int directBootAwareness) {
-        return mInner.getInputMethodListLegacy(userId, directBootAwareness);
-    }
-
-    @Override
-    public List<InputMethodInfo> getEnabledInputMethodListLegacy(int userId) {
-        return mInner.getEnabledInputMethodListLegacy(userId);
-    }
-
-    @Override
-    public List<InputMethodSubtype> getEnabledInputMethodSubtypeList(String imiId,
+    public InputMethodSubtypeSafeList getEnabledInputMethodSubtypeList(String imiId,
             boolean allowsImplicitlyEnabledSubtypes, int userId) {
         return mInner.getEnabledInputMethodSubtypeList(imiId, allowsImplicitlyEnabledSubtypes,
                 userId);

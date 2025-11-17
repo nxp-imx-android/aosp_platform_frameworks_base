@@ -738,13 +738,11 @@ public class GroupHelper {
             }
 
             // scenario 3: sparse/singleton groups
-            if (Flags.notificationForceGroupSingletons()) {
-                try {
-                    groupSparseGroups(record, notificationList, summaryByGroupKey, sectioner,
-                            fullAggregateGroupKey);
-                } catch (Throwable e) {
-                    Slog.wtf(TAG, "Failed to group sparse groups", e);
-                }
+            try {
+                groupSparseGroups(record, notificationList, summaryByGroupKey, sectioner,
+                        fullAggregateGroupKey);
+            } catch (Throwable e) {
+                Slog.wtf(TAG, "Failed to group sparse groups", e);
             }
         }
     }
@@ -993,13 +991,11 @@ public class GroupHelper {
             }
 
             // Check if notification removal turned this group into a sparse/singleton group
-            if (Flags.notificationForceGroupSingletons()) {
-                try {
-                    groupSparseGroups(summaryRecord, notificationList, summaryByGroupKey, sectioner,
-                            fullAggregateGroupKey);
-                } catch (Throwable e) {
-                    Slog.wtf(TAG, "Failed to group sparse groups", e);
-                }
+            try {
+                groupSparseGroups(summaryRecord, notificationList, summaryByGroupKey, sectioner,
+                        fullAggregateGroupKey);
+            } catch (Throwable e) {
+                Slog.wtf(TAG, "Failed to group sparse groups", e);
             }
         }
     }
@@ -1887,7 +1883,6 @@ public class GroupHelper {
      * @param id original summary notification id
      * @param userId original summary userId
      */
-    @FlaggedApi(Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS)
     public void maybeCancelGroupChildrenForCanceledSummary(String pkgName, String tag, int id,
             int userId, int cancelReason) {
         synchronized (mAggregatedNotifications) {

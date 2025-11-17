@@ -54,6 +54,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.IntArray;
 import android.util.PrintWriterPrinter;
@@ -87,6 +88,8 @@ final class BroadcastRecord extends Binder {
     @ChangeId
     @VisibleForTesting
     static final long LIMIT_PRIORITY_SCOPE = 371307720L;
+
+    static final int UNSPECIFIED_QUEUE_INDEX = -1;
 
     final @NonNull Intent intent;    // the original intent that generated us
     final @Nullable ComponentName targetComp; // original component name set on the intent
@@ -140,6 +143,7 @@ final class BroadcastRecord extends Binder {
     @UptimeMillisLong       long finishTime;         // when broadcast finished
     final @UptimeMillisLong long[] scheduledTime;    // when each receiver was scheduled
     final @UptimeMillisLong long[] terminalTime;     // when each receiver was terminal
+    final int[] queueSlot; // Which queue handled the receiver
     final boolean timeoutExempt;  // true if this broadcast is not subject to receiver timeouts
     int resultCode;         // current result code value.
     @Nullable String resultData;      // current result data value.
@@ -420,6 +424,9 @@ final class BroadcastRecord extends Binder {
             if (deliveryReasons[i] != null) {
                 pw.print(p2); pw.print("reason: "); pw.println(deliveryReasons[i]);
             }
+            if (queueSlot[i] != UNSPECIFIED_QUEUE_INDEX) {
+                pw.print(p2); pw.print("queue idx: "); pw.println(queueSlot[i]);
+            }
         }
     }
 
@@ -482,6 +489,7 @@ final class BroadcastRecord extends Binder {
         receivers = (_receivers != null) ? _receivers : EMPTY_RECEIVERS;
         delivery = new int[_receivers != null ? _receivers.size() : 0];
         deliveryReasons = new String[delivery.length];
+        queueSlot = new int[delivery.length];
         urgent = calculateUrgent(_intent, _options);
         deferUntilActive = calculateDeferUntilActive(_callingUid,
                 _options, _resultTo, _serialized, urgent);
@@ -543,6 +551,7 @@ final class BroadcastRecord extends Binder {
         receivers = from.receivers;
         delivery = from.delivery;
         deliveryReasons = from.deliveryReasons;
+        queueSlot = from.queueSlot;
         deferUntilActive = from.deferUntilActive;
         blockedUntilBeyondCount = from.blockedUntilBeyondCount;
         scheduledTime = from.scheduledTime;
@@ -588,9 +597,9 @@ final class BroadcastRecord extends Binder {
      *         indicating that other events may be unblocked.
      */
     @CheckResult
-    boolean setDeliveryState(int index, @DeliveryState int newDeliveryState,
-            @NonNull String reason) {
-        final int oldDeliveryState = delivery[index];
+    boolean setDeliveryState(int receiverIdx, @DeliveryState int newDeliveryState,
+            @NonNull String reason, int queueIdx) {
+        final int oldDeliveryState = delivery[receiverIdx];
         if (isDeliveryStateTerminal(oldDeliveryState)
                 || newDeliveryState == oldDeliveryState) {
             // We've already arrived in terminal or requested state, so leave
@@ -605,10 +614,10 @@ final class BroadcastRecord extends Binder {
         }
         switch (newDeliveryState) {
             case DELIVERY_PENDING:
-                scheduledTime[index] = 0;
+                scheduledTime[receiverIdx] = 0;
                 break;
             case DELIVERY_SCHEDULED:
-                scheduledTime[index] = SystemClock.uptimeMillis();
+                scheduledTime[receiverIdx] = SystemClock.uptimeMillis();
                 break;
             case DELIVERY_DEFERRED:
                 deferredCount++;
@@ -617,18 +626,19 @@ final class BroadcastRecord extends Binder {
             case DELIVERY_SKIPPED:
             case DELIVERY_TIMEOUT:
             case DELIVERY_FAILURE:
-                terminalTime[index] = SystemClock.uptimeMillis();
+                terminalTime[receiverIdx] = SystemClock.uptimeMillis();
                 terminalCount++;
                 break;
         }
 
-        delivery[index] = newDeliveryState;
-        deliveryReasons[index] = reason;
+        delivery[receiverIdx] = newDeliveryState;
+        deliveryReasons[receiverIdx] = reason;
+        queueSlot[receiverIdx] = queueIdx;
 
         // If this state change might bring us to a new high-water mark, bring
         // ourselves as high as we possibly can
         final int oldBeyondCount = beyondCount;
-        if (index >= beyondCount) {
+        if (receiverIdx >= beyondCount) {
             for (int i = beyondCount; i < delivery.length; i++) {
                 if (isDeliveryStateBeyond(getDeliveryState(i))) {
                     beyondCount = i + 1;
@@ -1296,8 +1306,11 @@ final class BroadcastRecord extends Binder {
     public String toShortString() {
         if (mCachedToShortString == null) {
             final String label = intentToString(intent);
-            mCachedToShortString = Integer.toHexString(System.identityHashCode(this))
-                    + " " + label + "/u" + userId;
+            mCachedToShortString = TextUtils.formatSimple("%x %s/u%d/0x%x",
+                    System.identityHashCode(this),
+                    label,
+                    userId,
+                    calculateTypeForLogging());
         }
         return mCachedToShortString;
     }

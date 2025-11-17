@@ -26,7 +26,92 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * RefreshRates config for display
+ * RefreshRates configuration for display
+ * <pre>
+ * {@code
+ *  <displayConfiguration>
+ *   ...
+ *   <refreshRateConfigs>
+ *      <defaultRefreshRate>120</defaultRefreshRate>
+ *      <defaultPeakRefreshRate">75</defaultPeakRefreshRate>
+ *      <refreshRateZoneProfiles>
+ *          <refreshRateZone id="zone1">
+ *              <refreshRateRange>
+ *                  <minimum>60</minimum>
+ *                  <maximum>60</maximum>
+ *              </refreshRateRange>
+ *          </refreshRateZone>
+ *          <refreshRateZone id="zone2">
+ *               <refreshRateRange>
+ *                   <minimum>30</minimum>
+ *                   <maximum>30</maximum>
+ *               </refreshRateRange>
+ *           </refreshRateZone>
+ *      </refreshRateZoneProfiles>
+ *
+ *      <defaultRefreshRateInHbmHdr>90</defaultRefreshRateInHbmHdr>
+ *      <defaultRefreshRateInHbmSunlight>60</defaultRefreshRateInHbmSunlight>
+ *      <defaultWorkDurations>
+ *          <lateWorkDuration>10500000</lateWorkDuration>
+ *          <earlyWorkDuration>16600000</earlyWorkDuration>
+ *          <appWorkDuration>16600000</appWorkDuration>
+ *      </defaultWorkDurations>
+ *
+ *      <lowerBlockingZoneConfigs>
+ *          <!-- optional supportedModes for lowerBlockingZoneConfigs -->
+ *          <supportedModes>
+ *              <point>
+ *                  <first>30</first>   <!-- refreshRate -->
+ *                  <second>30</second> <!-- vsyncRate -->
+ *              </point>
+ *          </supportedModes>
+ *          <defaultRefreshRate>60</defaultRefreshRate>
+ *          <refreshRateThermalThrottlingId>block_rr_thermal_low</refreshRateThermalThrottlingId>
+ *          <blockingZoneThreshold>
+ *              <displayBrightnessPoint>
+ *                  <lux>0</lux>
+ *                  <nits>2.0</nits>
+ *              </displayBrightnessPoint>
+ *              <displayBrightnessPoint>
+ *                  <lux>10</lux>
+ *                  <nits>5.0</nits>
+ *              </displayBrightnessPoint>
+ *          </blockingZoneThreshold>
+ *      </lowerBlockingZoneConfigs>
+ *      <higherBlockingZoneConfigs>
+ *          <!-- supportedModes is NOT supported for higherBlockingZoneConfigs -->
+ *          <defaultRefreshRate>120</defaultRefreshRate>
+ *          <refreshRateThermalThrottlingId>block_rr_thermal_high</refreshRateThermalThrottlingId>
+ *          <blockingZoneThreshold>
+ *              <displayBrightnessPoint>
+ *                  <lux>800</lux>
+ *                  <nits>400.0</nits>
+ *              </displayBrightnessPoint>
+ *              <displayBrightnessPoint>
+ *                  <lux>1200</lux>
+ *                  <nits>500.0</nits>
+ *              </displayBrightnessPoint>
+ *          </blockingZoneThreshold>
+ *      </higherBlockingZoneConfigs>
+ *      <lowPowerSupportedModes>
+ *          <point>
+ *              <first>60</first>   <!-- refreshRate -->
+ *              <second>60</second> <!-- vsyncRate -->
+ *          </point>
+ *          <point>
+ *              <first>30</first>   <!-- refreshRate -->
+ *              <second>30</second> <!-- vsyncRate -->
+ *          </point>
+ *      </lowPowerSupportedModes>
+ *      <lowPowerWorkDurations>
+ *          <lateWorkDuration>10500000</lateWorkDuration>
+ *          <earlyWorkDuration>16600000</earlyWorkDuration>
+ *          <appWorkDuration>16600000</appWorkDuration>
+ *      </lowPowerWorkDurations>
+ *   </refreshRateConfigs>
+ *  </displayConfiguration>
+ * }
+ * </pre>
  */
 public class RefreshRateData {
     public static RefreshRateData DEFAULT_REFRESH_RATE_DATA = loadRefreshRateData(null, null);
@@ -62,22 +147,30 @@ public class RefreshRateData {
      */
     public final int defaultRefreshRateInHbmSunlight;
 
+    public final WorkDurationsData defaultWorkDurations;
+
     public final List<SupportedModeData> lowPowerSupportedModes;
 
     public final List<SupportedModeData> lowLightBlockingZoneSupportedModes;
 
+    public final WorkDurationsData lowPowerWorkDurations;
+
     @VisibleForTesting
     public RefreshRateData(int defaultRefreshRate, int defaultPeakRefreshRate,
             int defaultRefreshRateInHbmHdr, int defaultRefreshRateInHbmSunlight,
+            WorkDurationsData defaultWorkDurations,
             List<SupportedModeData> lowPowerSupportedModes,
-            List<SupportedModeData> lowLightBlockingZoneSupportedModes) {
+            List<SupportedModeData> lowLightBlockingZoneSupportedModes,
+                           WorkDurationsData lowPowerWorkDurations) {
         this.defaultRefreshRate = defaultRefreshRate;
         this.defaultPeakRefreshRate = defaultPeakRefreshRate;
         this.defaultRefreshRateInHbmHdr = defaultRefreshRateInHbmHdr;
         this.defaultRefreshRateInHbmSunlight = defaultRefreshRateInHbmSunlight;
+        this.defaultWorkDurations = defaultWorkDurations;
         this.lowPowerSupportedModes = Collections.unmodifiableList(lowPowerSupportedModes);
         this.lowLightBlockingZoneSupportedModes =
                 Collections.unmodifiableList(lowLightBlockingZoneSupportedModes);
+        this.lowPowerWorkDurations = lowPowerWorkDurations;
     }
 
     @Override
@@ -87,8 +180,10 @@ public class RefreshRateData {
                 + ", defaultPeakRefreshRate: " + defaultPeakRefreshRate
                 + ", defaultRefreshRateInHbmHdr: " + defaultRefreshRateInHbmHdr
                 + ", defaultRefreshRateInHbmSunlight: " + defaultRefreshRateInHbmSunlight
+                + ", defaultWorkDurations=" + defaultWorkDurations
                 + ", lowPowerSupportedModes=" + lowPowerSupportedModes
                 + ", lowLightBlockingZoneSupportedModes=" + lowLightBlockingZoneSupportedModes
+                + ", lowPowerWorkDurations=" + lowPowerWorkDurations
                 + "} ";
     }
 
@@ -104,7 +199,8 @@ public class RefreshRateData {
         int defaultRefreshRateInHbmHdr = loadDefaultRefreshRateInHbm(refreshRateConfigs, resources);
         int defaultRefreshRateInHbmSunlight = loadDefaultRefreshRateInHbmSunlight(
                 refreshRateConfigs, resources);
-
+        WorkDurationsData defaultWorkDurations = refreshRateConfigs == null ? null
+                : WorkDurationsData.loadDefaultWorkDurations(refreshRateConfigs);
         NonNegativeFloatToFloatMap lowPowerModes =
                 refreshRateConfigs == null ? null : refreshRateConfigs.getLowPowerSupportedModes();
         List<SupportedModeData> lowPowerSupportedModes = SupportedModeData.load(lowPowerModes);
@@ -114,10 +210,11 @@ public class RefreshRateData {
         NonNegativeFloatToFloatMap lowerZoneModes =
                 lowerZoneConfig == null ? null : lowerZoneConfig.getSupportedModes();
         List<SupportedModeData> lowLightSupportedModes = SupportedModeData.load(lowerZoneModes);
-
+        WorkDurationsData lowPowerWorkDurations = refreshRateConfigs == null ? null
+                : WorkDurationsData.loadLowPowerWorkDurations(refreshRateConfigs);
         return new RefreshRateData(defaultRefreshRate, defaultPeakRefreshRate,
-                defaultRefreshRateInHbmHdr, defaultRefreshRateInHbmSunlight,
-                lowPowerSupportedModes, lowLightSupportedModes);
+                defaultRefreshRateInHbmHdr, defaultRefreshRateInHbmSunlight, defaultWorkDurations,
+                lowPowerSupportedModes, lowLightSupportedModes, lowPowerWorkDurations);
     }
 
     private static int loadDefaultRefreshRate(

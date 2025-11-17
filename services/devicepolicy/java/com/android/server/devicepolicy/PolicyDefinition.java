@@ -83,6 +83,11 @@ public final class PolicyDefinition<V> {
     // callback in other cases such as device reboots.
     static final int POLICY_FLAG_SKIP_ENFORCEMENT_IF_UNCHANGED = 1 << 5;
 
+    // Add this flag to any policy that is a package policy and whose enforcement callback only
+    // takes effect on installed packages. This flag will cause the enforcement callback to be
+    // re-applied when the package is installed.
+    private static final int POLICY_FLAG_PACKAGE_POLICY = 1 << 6;
+
     private static final MostRestrictive<Boolean> FALSE_MORE_RESTRICTIVE = new MostRestrictive<>(
             List.of(new BooleanPolicyValue(false), new BooleanPolicyValue(true)));
 
@@ -247,7 +252,8 @@ public final class PolicyDefinition<V> {
                     //  never used, but might need some refactoring to not always assume a non-null
                     //  mechanism.
                     TRUE_MORE_RESTRICTIVE,
-                    POLICY_FLAG_LOCAL_ONLY_POLICY | POLICY_FLAG_INHERITABLE,
+                    POLICY_FLAG_LOCAL_ONLY_POLICY | POLICY_FLAG_INHERITABLE
+                            | POLICY_FLAG_PACKAGE_POLICY,
                     PolicyEnforcerCallbacks::setApplicationHidden,
                     new BooleanPolicySerializer());
 
@@ -370,12 +376,6 @@ public final class PolicyDefinition<V> {
             PolicyEnforcerCallbacks::setAutoTimePolicy,
             new IntegerPolicySerializer());
 
-    // The policies that are not yet supported by DevicePolicyEngine, thus don't have definition.
-    static final Set<String> LEGACY_POLICIES = Set.of(
-            DevicePolicyIdentifiers.MANAGED_PROFILE_CALLER_ID_ACCESS_POLICY,
-            DevicePolicyIdentifiers.MANAGED_PROFILE_CONTACTS_ACCESS_POLICY,
-            DevicePolicyIdentifiers.MAX_TIME_TO_LOCK_POLICY);
-
     static PolicyDefinition<Set<String>> CROSS_PROFILE_WIDGET_PROVIDER =
             new PolicyDefinition<>(
                     new NoArgsPolicyKey(
@@ -460,6 +460,10 @@ public final class PolicyDefinition<V> {
 
     boolean shouldSkipEnforcementIfNotChanged() {
         return (mPolicyFlags & POLICY_FLAG_SKIP_ENFORCEMENT_IF_UNCHANGED) != 0;
+    }
+
+    boolean shouldReapplyOnPackageInstall() {
+        return (mPolicyFlags & POLICY_FLAG_PACKAGE_POLICY) != 0;
     }
 
     @Nullable

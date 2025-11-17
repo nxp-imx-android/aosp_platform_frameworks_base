@@ -706,7 +706,7 @@ void FilterClientCallbackImpl::getMediaEvent(const jobjectArray& arr, const int 
     }
     uint64_t avSharedMemSize = mFilterClient->getAvSharedHandleInfo().size;
     if (mediaEvent.avMemory.fds.size() > 0 || mediaEvent.avDataId != 0 ||
-        (dataLength > 0 && (dataLength + offset) < avSharedMemSize)) {
+        (dataLength > 0 && (dataLength + offset) <= avSharedMemSize)) {
         sp<MediaEvent> mediaEventSp =
                 new MediaEvent(mFilterClient, dupFromAidl(mediaEvent.avMemory),
                                mediaEvent.avDataId, dataLength + offset, obj.get());

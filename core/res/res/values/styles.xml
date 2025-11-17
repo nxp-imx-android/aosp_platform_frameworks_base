@@ -1607,6 +1607,33 @@ please see styles_device_defaults.xml.
         <item name="textColor">?attr/textColorPrimary</item>
         <item name="background">@drawable/btn_outlined</item>
     </style>
+    <!-- @hide The style for Autofill half sheet expressive dialog button -->
+    <style name="AutofillExpressiveButton" parent="Widget.Material.Button">
+        <item name="fontFamily">variable-label-large</item>
+        <item name="textSize">14sp</item>
+        <item name="lineHeight">20dp</item>
+        <item name="textStyle">normal</item>
+        <item name="textFontWeight">500</item>
+        <item name="letterSpacing">0</item>
+        <item name="textAllCaps">false</item>
+        <item name="minWidth">48dp</item>
+        <item name="paddingStart">16dp</item>
+        <item name="paddingEnd">16dp</item>
+        <item name="paddingTop">10dp</item>
+        <item name="paddingBottom">10dp</item>
+        <item name="background">@drawable/autofill_expressive_button</item>
+        <item name="stateListAnimator">@null</item>
+    </style>
+    <!-- @hide Filled button for Autofill half screen expressive dialog -->
+    <style name="AutofillExpressiveFilledButton" parent="AutofillExpressiveButton">
+        <item name="textColor">@color/materialColorOnPrimary</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="backgroundTintMode">src_over</item>
+    </style>
+    <!-- @hide The style for Autofill text button -->
+    <style name="AutofillExpressiveTextButton" parent="AutofillExpressiveButton">
+        <item name="textColor">?attr/colorPrimary</item>
+    </style>
 
     <!-- @hide Divider for Autofill half screen dialog -->
     <style name="AutofillHalfSheetDivider">
@@ -1624,6 +1651,17 @@ please see styles_device_defaults.xml.
         <item name="textColor">?attr/textColorPrimary</item>
         <item name="fontFamily">google-sans</item>
         <item name="textSize">24sp</item>
+    </style>
+
+    <!-- @hide Autofill dialog title expressive style -->
+    <style name="AutofillExpressiveDialogTitle" parent="TextAppearance.DeviceDefault.Headline">
+        <item name="textColor">@color/materialColorOnSurface</item>
+        <item name="fontFamily">variable-headline-small</item>
+        <item name="textSize">24sp</item>
+        <item name="letterSpacing">0</item>
+        <item name="lineHeight">32sp</item>
+        <item name="textAllCaps">false</item>
+        <item name="textFontWeight">400</item>
     </style>
 
     <!--@hide -->

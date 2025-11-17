@@ -39,11 +39,11 @@ public final class MemcgProcMemoryUtil {
     private static final int MEMCG_STAT_SHMEM_IDX = 3;
     private static final int MEMCG_STAT_FILE_MAPPED_IDX = 4;
     private static final String[] MEMCG_STAT_FIELDS = new String[] {
-            "anon",
-            "file",
-            "kernel",
-            "shmem",
-            "file_mapped",
+            "anon ",
+            "file ",
+            "kernel ",
+            "shmem ",
+            "file_mapped "
     };
 
     private MemcgProcMemoryUtil() {}

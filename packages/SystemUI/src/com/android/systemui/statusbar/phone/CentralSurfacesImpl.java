@@ -1490,9 +1490,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                     @Override
                     public void onModeChanged(int mode) {
                         switch (mode) {
-                            case BiometricUnlockController.MODE_WAKE_AND_UNLOCK_FROM_DREAM:
-                            case BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING:
-                            case BiometricUnlockController.MODE_WAKE_AND_UNLOCK:
+                            case BiometricUnlockController.MODE_WAKE_AND_DISMISS_FROM_DREAM:
+                            case BiometricUnlockController.MODE_WAKE_AND_DISMISS_PULSING:
+                            case BiometricUnlockController.MODE_WAKE_AND_DISMISS:
                                 setWakeAndUnlocking(true);
                         }
                         notifyBiometricAuthModeChanged();
@@ -1592,7 +1592,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 }
             }
         });
-        mHeadsUpManager.releaseAllImmediately();
+        mHeadsUpManager.releaseAllImmediately("CentralSurfacesImpl");
     }
 
     private void onExpandedInvisible() {
@@ -2036,7 +2036,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     private void updatePanelExpansionForKeyguard() {
         if (mState == StatusBarState.KEYGUARD && mBiometricUnlockController.getMode()
-                != BiometricUnlockController.MODE_WAKE_AND_UNLOCK && !mBouncerShowing) {
+                != BiometricUnlockController.MODE_WAKE_AND_DISMISS && !mBouncerShowing) {
             mShadeController.instantExpandShade();
         }
     }
@@ -2457,7 +2457,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 mWakeUpCoordinator.setWakingUp(true);
                 updateIsKeyguard();
                 // TODO(b/301913237): can't delay transition if config_displayBlanksAfterDoze=true,
-                // otherwise, the clock will flicker during LOCKSCREEN_TRANSITION_FROM_AOD
+                // otherwise, the clock will flicker during KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN
                 mShouldDelayLockscreenTransitionFromAod = mDozeParameters.getAlwaysOn()
                         && !mDozeParameters.getDisplayNeedsBlanking();
                 if (!mShouldDelayLockscreenTransitionFromAod) {
@@ -2468,11 +2468,11 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         }
 
         /**
-         * Private helper for starting the LOCKSCREEN_TRANSITION_FROM_AOD animation - only necessary
+         * Private helper for starting the KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN animation - only necessary
          * so we can start it from either onFinishedWakingUp() or onFinishedWakingUp().
          */
         private void startLockscreenTransitionFromAod() {
-            // stopDozing() starts the LOCKSCREEN_TRANSITION_FROM_AOD animation.
+            // stopDozing() starts the KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN animation.
             mDozeServiceHost.stopDozing();
             updateNotificationPanelTouchState();
             mShadeTouchableRegionManager.updateTouchableRegion();
@@ -3079,7 +3079,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     private boolean shouldAnimateDozeWakeup() {
         return mDozeServiceHost.shouldAnimateWakeup()
                 && mBiometricUnlockController.getMode()
-                != BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
+                != BiometricUnlockController.MODE_WAKE_AND_DISMISS;
     }
 
     @Override

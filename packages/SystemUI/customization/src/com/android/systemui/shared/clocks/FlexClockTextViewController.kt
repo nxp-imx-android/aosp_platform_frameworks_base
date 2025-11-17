@@ -20,7 +20,6 @@ import android.icu.util.TimeZone
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
-import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.DigitalFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
@@ -53,7 +52,7 @@ data class LayerConfig(
 )
 
 class FlexClockTextViewController(
-    private val clockCtx: ClockContext,
+    private val clockCtx: FlexClockContext,
     layerCfg: LayerConfig,
     isLargeClock: Boolean,
 ) : FlexClockViewController {

@@ -380,6 +380,11 @@ public interface UserSettingsProxy : SettingsProxy {
     /** See [getString]. */
     public fun getStringForUser(name: String, userHandle: Int): String?
 
+    /** See [getString]. */
+    public fun getStringForUser(name: String, defaultValue: String?, userHandle: Int): String? {
+        return getStringForUser(name, userHandle) ?: defaultValue
+    }
+
     /**
      * Store a name/value pair into the database. Values written by this method will be overridden
      * if a restore happens in the future.

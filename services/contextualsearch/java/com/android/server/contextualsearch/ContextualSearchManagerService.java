@@ -426,20 +426,16 @@ public class ContextualSearchManagerService extends SystemService {
 
     private IMediaProjection getMediaProjection(final int uid, final String packageName,
             final int displayId) {
-        if (Flags.contextualSearchMediaProjection()) {
-            return Binder.withCleanCallingIdentity(() -> {
-                final IBinder binder = ServiceManager.getService(Context.MEDIA_PROJECTION_SERVICE);
-                final IMediaProjectionManager mediaProjectionManager =
-                        IMediaProjectionManager.Stub.asInterface(binder);
-                final IMediaProjection mediaProjection = mediaProjectionManager.createProjection(
-                        uid, packageName, MediaProjectionManager.TYPE_SCREEN_CAPTURE, false,
-                        displayId);
-                mediaProjection.setRecordingOverlay(true);
-                return mediaProjection;
-            });
-        } else {
-            return null;
-        }
+        return Binder.withCleanCallingIdentity(() -> {
+            final IBinder binder = ServiceManager.getService(Context.MEDIA_PROJECTION_SERVICE);
+            final IMediaProjectionManager mediaProjectionManager =
+                    IMediaProjectionManager.Stub.asInterface(binder);
+            final IMediaProjection mediaProjection = mediaProjectionManager.createProjection(
+                    uid, packageName, MediaProjectionManager.TYPE_SCREEN_CAPTURE, false,
+                    displayId);
+            mediaProjection.setRecordingOverlay(true);
+            return mediaProjection;
+        });
     }
 
     @RequiresPermission(START_TASKS_FROM_RECENTS)

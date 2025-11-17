@@ -292,7 +292,9 @@ static inline audio_channel_mask_t nativeChannelMaskFromJavaChannelMasks(
     // To convert to a native channel mask, the Java channel position mask
     // requires a shift by 2 to skip the two deprecated channel
     // configurations "default" and "mono".
-    return (audio_channel_mask_t)((uint32_t)channelPositionMask >> 2);
+    uint32_t audioChannels = (channelPositionMask & ~AUDIO_CHANNEL_HAPTIC_ALL);
+    uint32_t hapticChannels = (channelPositionMask & AUDIO_CHANNEL_HAPTIC_ALL);
+    return (audio_channel_mask_t)((audioChannels >> 2) | hapticChannels);
 }
 
 static inline audio_channel_mask_t outChannelMaskToNative(int channelMask)

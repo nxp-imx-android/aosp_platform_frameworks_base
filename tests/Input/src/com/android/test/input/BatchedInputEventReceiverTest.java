@@ -98,7 +98,8 @@ public class BatchedInputEventReceiverTest {
     private final InputChannel[] mChannels = InputChannel.openInputChannelPair("TestChannel");
 
     // Use the custom class that exposes the Handler for posting Runnables
-    private final HandlerThread mHandlerThread = new HandlerThread("Process input events");
+    private final HandlerThread mReceiverThread = new HandlerThread("Process input events");
+    private final HandlerThread mSenderThread = new HandlerThread("Send input events");
     private SpyInputEventSender mSender;
     private TestBatchedInputEventReceiver mBatchedReceiver;
 
@@ -121,12 +122,13 @@ public class BatchedInputEventReceiverTest {
     public void setUp() {
         // Mocking Choreographer to run the posted callback immediately on the HandlerThread.
         doAnswer(invocation -> {
-            mHandlerThread.getThreadHandler().post((Runnable) invocation.getArgument(1));
+            mReceiverThread.getThreadHandler().post((Runnable) invocation.getArgument(1));
             return null;
         }).when(mMockChoreographer).postCallback(anyInt(), any(), any());
 
         doAnswer(invocation -> {
-            mHandlerThread.getThreadHandler().removeCallbacks((Runnable) invocation.getArgument(1));
+            mReceiverThread.getThreadHandler()
+                    .removeCallbacks((Runnable) invocation.getArgument(1));
             return null;
         }).when(mMockChoreographer).removeCallbacks(anyInt(), any(), any());
 
@@ -139,20 +141,24 @@ public class BatchedInputEventReceiverTest {
             return lastChoreographerFrameTimeMs * 1000000L;
         });
 
-        mHandlerThread.start();
+        mReceiverThread.start();
+        mSenderThread.start();
 
-        Looper looper = mHandlerThread.getLooper();
-        mSender = new SpyInputEventSender(mChannels[0], looper);
+        Looper senderLooper = mSenderThread.getLooper();
+        mSender = new SpyInputEventSender(mChannels[0], senderLooper);
+
+        Looper receiverLooper = mReceiverThread.getLooper();
         mBatchedReceiver = new TestBatchedInputEventReceiver(
                 mChannels[1],
-                looper,
+                receiverLooper,
                 mMockChoreographer
         );
     }
 
     @After
     public void tearDown() throws Exception {
-        mHandlerThread.quitSafely();
+        mReceiverThread.quitSafely();
+        mSenderThread.quitSafely();
     }
 
     // Consumption of batched input events should continue if batching is disabled, and then enabled

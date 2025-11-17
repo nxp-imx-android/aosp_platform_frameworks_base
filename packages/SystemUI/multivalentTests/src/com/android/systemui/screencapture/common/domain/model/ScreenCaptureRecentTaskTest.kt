@@ -52,6 +52,7 @@ class ScreenCaptureRecentTaskTest : SysuiTestCase() {
                 userId = 3,
                 topActivityComponent = fakeTopComponent,
                 baseIntentComponent = fakeBaseComponent,
+                baseIntent = null,
                 colorBackground = 0x99123456.toInt(),
                 isForegroundTask = true,
                 userType = RecentTask.UserType.STANDARD,

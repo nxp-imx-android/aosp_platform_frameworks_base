@@ -27,7 +27,6 @@ import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
 import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.KeyedEvents
 import com.android.systemui.kairos.State
@@ -61,7 +60,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 /** This repository vends out data based on demo mode commands */
-@ExperimentalKairosApi
 class DemoMobileConnectionsRepositoryKairos
 @AssistedInject
 constructor(

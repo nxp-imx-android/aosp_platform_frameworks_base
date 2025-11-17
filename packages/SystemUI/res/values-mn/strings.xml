@@ -81,6 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Дэлгэцийн агшныг хаалттай профайлд хадгалж байна"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Дэлгэцээс дарсан зургийг хадгалсан"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Дэлгэцээс дарсан зургийг хадгалж чадсангүй"</string>
+    <string name="screenshot_save_to" msgid="3294574417295882864">"Хадгалах"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"Фолдер сонгох"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Гадаад дэлгэц"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Дэлгэцийн агшныг хадгалах боломжтой болохоос өмнө төхөөрөмжийн түгжээг тайлах ёстой"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Дэлгэцийн зургийг дахин дарж үзнэ үү"</string>
@@ -171,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Аудио хуваалцах"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Аппын цонхыг хуваалцах"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Таб хуваалцах"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Дэлгэцийг бүхэлд нь хуваалцах"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Таныг апп хуваалцах үед тухайн аппад харуулж, тоглуулж буй зүйл [APP NAME]-д харагдана. Тиймээс нууц үг, төлбөрийн дэлгэрэнгүй, мессеж, зураг, аудио, видео зэрэг зүйлд болгоомжтой хандаарай."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Таныг дэлгэцээ бүхэлд нь хуваалцаж байхад дэлгэц дээр тань байгаа аливаа зүйл [APP NAME]-д харагдана. Тиймээс нууц үг, төлбөрийн дэлгэрэнгүй, мессеж, зураг, аудио, видео зэрэг зүйлд болгоомжтой хандаарай."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Цонхны дэлгэцийн агшныг авах"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Цонхыг бичих"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Сонгосон хэсгийн дэлгэцийн агшныг авах"</string>
@@ -442,8 +441,8 @@
     <string name="quick_settings_audio_input_disclaimer_text" msgid="442891508001590727">"Микрофоны дууны түвшнийг автоматаар тохируулна"</string>
     <string name="quick_settings_audio_effects_section_title" msgid="6770520531879816578">"Эффект"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"Тодрол"</string>
-    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Өнгө хувиргалт"</string>
-    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Өнгө тохируулга"</string>
+    <string name="quick_settings_inversion_label" msgid="3501527749494755688">"Өнгө урвуулах"</string>
+    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"Өнгө засах"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"Фонтын хэмжээ"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"Хэрэглэгчдийг удирдах"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"Дууссан"</string>
@@ -709,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"Бүгдийг арилгах"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"Удирдах"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"Түүх"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Мэдэгдлийн тохиргоо"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Мэдэгдлийн түүх"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Шинэ"</string>
@@ -727,7 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Таныг хэт олон мэдэгдэл нэг дор авахад таны төхөөрөмжийн дууны түвшин болон дохиог 2 хүртэлх минутын турш автоматаар багасгадаг."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Унтраах"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Хуучин мэдэгдлийг харах бол түгжээг тайл"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Энэ төхөөрөмжийг таны эцэг эх удирддаг"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"Зарим тохиргоог таны эцэг эх удирддаг"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Энэ төхөөрөмжийг таны эцэг эх удирддаг"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Төхөөрөмжийн зарим тохиргоог ПИН ашиглан хамгаалсан."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Танай байгууллага энэ төхөөрөмжийг эзэмшдэг бөгөөд сүлжээний ачааллыг хянаж болно"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> энэ төхөөрөмжийг эзэмшдэг бөгөөд сүлжээний ачааллыг хянаж болно"</string>
@@ -903,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"Баяр хүргэе! Системийн UI Tохируулагчийг тохиргоонд нэмлээ"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"Тохиргооноос устгах"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"Системийн UI Тохируулагчийг тохиргооноос устгаж, үүнтэй холбоотой бүх тохиргоог ашиглахаа болих уу?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Bluetooth-г асаах уу?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Компьютерийн гараа таблетад холбохын тулд эхлээд Bluetooth-г асаана уу."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Асаах"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Дуудлагын мэдэгдлийг өөрчлөх боломжгүй."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Энэ бүлэг мэдэгдлийг энд тохируулах боломжгүй байна"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Прокси хийсэн мэдэгдэл"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g>-с хураангуйлсан"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g>-н бүх мэдэгдэл"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Дэлгэрэнгүй үзэх"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Энэ мэдэгдлийг систем автоматаар &lt;b&gt;Өгөгдмөл болгож дэвшүүлсэн&lt;/b&gt; байна."</string>
@@ -1410,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Санал болгосон"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Оролт"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Гаралт"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Өөр төхөөрөмж рүү медиа зөөхийн тулд хуваалцсан харилцан үйлдлээ зогсооно уу"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Зогсоох"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Хуваалцахыг зогсоох"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Аудио хуваалцаж байна"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Аудио хуваалцах"</string>
@@ -1736,12 +1737,15 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Мэдэгдлийг нээхийн тулд зүүн дээд талаас шударна уу"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Шуурхай тохиргоог нээхийн тулд баруун дээд талаас шударна уу"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Буцах"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Нэвтрэх"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Хандалт"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Өмнөх"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Дараах"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"дараагийн хуудас руу шилжих"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"автоматаар бөглөх"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"дэлгэх"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Нарийвчилсан байршлыг хуваалцах"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Нарийвчилсан байршлыг ашиглах"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Нарийвчилсан байршлын ойролцоо"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"Нарийвчилсан байршил"</string>
 </resources>

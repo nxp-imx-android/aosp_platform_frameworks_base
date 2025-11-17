@@ -40,6 +40,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerAlwaysOnDisplayViewModel
+import com.android.systemui.statusbar.policy.domain.interactor.ZenModeInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsProxy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +62,7 @@ constructor(
     aodNotificationIconViewModel: NotificationIconContainerAlwaysOnDisplayViewModel,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val systemBarUtils: SystemBarUtilsProxy,
+    private val zenModeInteractor: ZenModeInteractor,
     @ShadeDisplayAware configurationInteractor: ConfigurationInteractor,
     // TODO: b/374267505 - Use ShadeDisplayAware resources here.
     @Main private val resources: Resources,
@@ -200,32 +202,32 @@ constructor(
 
     val shouldDateWeatherBeBelowLargeClock: StateFlow<Boolean> =
         combine(
-            shadeModeInteractor.isFullWidthShade,
-            configurationInteractor.configurationValues,
-            keyguardClockInteractor.currentClock,
-        ) { isFullWidthShade, configurationValues, currentClock ->
-            val screenWidthDp = configurationValues.screenWidthDp
-            val fontScale = configurationValues.fontScale
+                shadeModeInteractor.isFullWidthShade,
+                configurationInteractor.configurationValues,
+                keyguardClockInteractor.currentClock,
+            ) { isFullWidthShade, configurationValues, currentClock ->
+                val screenWidthDp = configurationValues.screenWidthDp
+                val fontScale = configurationValues.fontScale
 
-            var belowLargeClock =
-                !isFontAndDisplaySizeBreaking(
-                    currentClock = currentClock,
-                    screenWidthDp = screenWidthDp,
-                    fontScale = fontScale,
-                    isFullWidthShade = isFullWidthShade,
+                var belowLargeClock =
+                    !isFontAndDisplaySizeBreaking(
+                        currentClock = currentClock,
+                        screenWidthDp = screenWidthDp,
+                        fontScale = fontScale,
+                        isFullWidthShade = isFullWidthShade,
+                    )
+                largeClockLogBuffer.log(
+                    TAG,
+                    LogLevel.INFO,
+                    {
+                        int1 = screenWidthDp
+                        double1 = fontScale.toDouble()
+                        bool1 = belowLargeClock
+                    },
+                    { "belowLargeClock:$bool1, Width:$int1, FontScale:$double1" },
                 )
-            largeClockLogBuffer.log(
-                TAG,
-                LogLevel.INFO,
-                {
-                    int1 = screenWidthDp
-                    double1 = fontScale.toDouble()
-                    bool1 = belowLargeClock
-                },
-                { "belowLargeClock:$bool1, Width:$int1, FontScale:$double1" },
-            )
-            belowLargeClock
-        }
+                belowLargeClock
+            }
             .stateIn(
                 scope = backgroundScope,
                 started = SharingStarted.Eagerly,
@@ -234,55 +236,60 @@ constructor(
 
     val shouldDateWeatherBeBelowSmallClock: StateFlow<Boolean> =
         combine(
-            hasCustomWeatherDataDisplay,
-            shadeModeInteractor.isFullWidthShade,
-            configurationInteractor.configurationValues,
-            keyguardClockInteractor.currentClock,
-        ) { hasCustomWeatherDataDisplay, isFullWidthShade, configurationValues, currentClock
-            ->
-            val isRtlLayout = configurationValues.layoutDirection == LayoutDirection.RTL
+                hasCustomWeatherDataDisplay,
+                shadeModeInteractor.isFullWidthShade,
+                configurationInteractor.configurationValues,
+                keyguardClockInteractor.currentClock,
+                zenModeInteractor.hasNextAlarm,
+            ) {
+                hasCustomWeatherDataDisplay,
+                isFullWidthShade,
+                configurationValues,
+                currentClock,
+                hasNextAlarm ->
+                val isRtlLayout = configurationValues.layoutDirection == LayoutDirection.RTL
 
-            if (hasCustomWeatherDataDisplay || isRtlLayout) {
-                return@combine true
-            }
-
-            keyguardClockInteractor.currentClockFontAxesWidth?.let { fontWidth ->
-                if (fontWidth >= FONT_WIDTH_MAX_CUTOFF) {
-                    smallClockLogBuffer.log(
-                        TAG,
-                        LogLevel.INFO,
-                        { int1 = FONT_WIDTH_MAX_CUTOFF },
-                        { "fallBelowClock:true, FontAxesWidth:$int1" },
-                    )
+                if (hasCustomWeatherDataDisplay || isRtlLayout || hasNextAlarm) {
                     return@combine true
                 }
-            }
 
-            val screenWidthDp = configurationValues.screenWidthDp
-            val fontScale = configurationValues.fontScale
-            var fallBelow =
-                isFontAndDisplaySizeBreaking(
-                    currentClock = currentClock,
-                    screenWidthDp = screenWidthDp,
-                    fontScale = fontScale,
-                    isFullWidthShade = isFullWidthShade,
+                keyguardClockInteractor.currentClockFontAxesWidth?.let { fontWidth ->
+                    if (fontWidth >= FONT_WIDTH_MAX_CUTOFF) {
+                        smallClockLogBuffer.log(
+                            TAG,
+                            LogLevel.INFO,
+                            { int1 = FONT_WIDTH_MAX_CUTOFF },
+                            { "fallBelowClock:true, FontAxesWidth:$int1" },
+                        )
+                        return@combine true
+                    }
+                }
+
+                val screenWidthDp = configurationValues.screenWidthDp
+                val fontScale = configurationValues.fontScale
+                var fallBelow =
+                    isFontAndDisplaySizeBreaking(
+                        currentClock = currentClock,
+                        screenWidthDp = screenWidthDp,
+                        fontScale = fontScale,
+                        isFullWidthShade = isFullWidthShade,
+                    )
+                smallClockLogBuffer.log(
+                    TAG,
+                    LogLevel.INFO,
+                    {
+                        int1 = screenWidthDp
+                        double1 = fontScale.toDouble()
+                        bool1 = fallBelow
+                        bool2 = !isFullWidthShade
+                    },
+                    {
+                        "fallBelowClock:$bool1, isShadeWide:$bool2, " +
+                            "Width:$int1, FontScale:$double1"
+                    },
                 )
-            smallClockLogBuffer.log(
-                TAG,
-                LogLevel.INFO,
-                {
-                    int1 = screenWidthDp
-                    double1 = fontScale.toDouble()
-                    bool1 = fallBelow
-                    bool2 = !isFullWidthShade
-                },
-                {
-                    "fallBelowClock:$bool1, isShadeWide:$bool2, " +
-                        "Width:$int1, FontScale:$double1"
-                },
-            )
-            fallBelow
-        }
+                fallBelow
+            }
             .stateIn(scope = backgroundScope, started = SharingStarted.Eagerly, initialValue = true)
 
     private fun isFontAndDisplaySizeBreaking(
@@ -327,8 +334,7 @@ constructor(
                 0.85f to 320, // tiny font size but large display size
                 1f to 346,
                 1.15f to 346,
-                1.5f to 376,
-                1.8f to 411, // large font size but tiny display size
+                1.5f to 411, // large font size but tiny display size
             )
 
         private const val NUMBER_OVERLAP_CLOCK_ID = "DIGITAL_CLOCK_NUMBEROVERLAP"

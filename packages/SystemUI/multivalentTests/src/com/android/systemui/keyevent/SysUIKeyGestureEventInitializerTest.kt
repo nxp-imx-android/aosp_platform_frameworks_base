@@ -24,6 +24,7 @@ import android.hardware.input.InputManager.KeyGestureEventListener
 import android.hardware.input.KeyGestureEvent
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
@@ -40,6 +41,7 @@ import com.android.systemui.screencapture.domain.interactor.ScreenCaptureKeyboar
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
 import com.android.systemui.shared.recents.ILauncherProxy
 import com.android.systemui.statusbar.CommandQueue
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -76,11 +78,13 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     private lateinit var keyGestureEventHandlerCaptor: ArgumentCaptor<KeyGestureEventHandler>
     @Captor
     private lateinit var keyGestureEventListenerCaptor: ArgumentCaptor<KeyGestureEventListener>
+    private val desktopState = FakeDesktopState()
 
     private lateinit var underTest: SysUIKeyGestureEventInitializer
 
     @Before
     fun setup() {
+        desktopState.canEnterDesktopMode = true
         whenever(launcherProxyService.proxy).thenReturn(launcherProxy)
         underTest =
             SysUIKeyGestureEventInitializer(
@@ -88,6 +92,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                 resources,
                 inputManager,
                 commandQueue,
+                desktopState,
                 shadeExpansionTargetDisplayInteractor,
                 screenCaptureKeyboardShortcutInteractor,
                 launcherProxyService,
@@ -111,6 +116,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                     KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
                     KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
                     KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                    KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT,
                     KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
                 )
         }
@@ -148,6 +154,25 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    fun handleKeyGestureEvent_eventTypeToggleNotificationPanel_shadeNotMoved() {
+        desktopState.canEnterDesktopMode = false
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(shadeExpansionTargetDisplayInteractor, never()).onNotificationPanelKeyboardShortcut()
+        verify(commandQueue).toggleNotificationsPanel()
+    }
+
+    @Test
     @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT)
     fun handleKeyGestureEvent_eventTypeToggleQuickSettingsPanel_toggleQuickSettingsPanel() {
         underTest.start()
@@ -166,6 +191,25 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT)
+    fun handleKeyGestureEvent_eventTypeToggleQuickSettingsPanel_shadeNotMoved() {
+        desktopState.canEnterDesktopMode = false
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(shadeExpansionTargetDisplayInteractor, never()).onQSPanelKeyboardShortcut()
+        verify(commandQueue).toggleQuickSettingsPanel()
+    }
+
+    @Test
     @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
     fun handleKeyGestureEvent_eventTypeTakePartialScreenshot_callsScreenCaptureInteractor() {
         underTest.start()
@@ -180,6 +224,23 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
         )
 
         verify(screenCaptureKeyboardShortcutInteractor).attemptPartialRegionScreenshot()
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
+    fun handleKeyGestureEvent_eventTypeTakeAppWindowScreenshot_callsScreenCaptureInteractor() {
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(screenCaptureKeyboardShortcutInteractor).attemptAppWindowScreenshot()
     }
 
     @Test

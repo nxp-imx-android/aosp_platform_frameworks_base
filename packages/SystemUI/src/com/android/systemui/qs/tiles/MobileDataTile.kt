@@ -31,6 +31,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.plugins.qs.QSTile
+import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
@@ -39,6 +40,7 @@ import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigProvider
 import com.android.systemui.qs.tiles.base.shared.model.QSTileState
+import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileDataInteractor
 import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
@@ -63,6 +65,7 @@ constructor(
     private val dataInteractor: MobileDataTileDataInteractor,
     private val tileMapper: MobileDataTileMapper,
     private val userActionInteractor: MobileDataTileUserActionInteractor,
+    private val internetDetailsViewModelFactory: InternetDetailsViewModel.Factory,
 ) :
     QSTileImpl<QSTile.State?>(
         host,
@@ -97,6 +100,10 @@ constructor(
         lifecycle.coroutineScope.launch { userActionInteractor.handleClick(expandable) }
     }
 
+    override fun handleSecondaryClick(expandable: Expandable?) {
+        lifecycle.coroutineScope.launch { userActionInteractor.handleSecondaryClick(expandable) }
+    }
+
     override fun getLongClickIntent(): Intent = userActionInteractor.longClickIntent
 
     override fun handleUpdateState(state: QSTile.State?, arg: Any?) {
@@ -115,9 +122,18 @@ constructor(
                         DrawableIcon(signalDrawableInstance)
                     }
             label = tileState.label
+            secondaryLabel = tileState.secondaryLabel
             contentDescription = tileState.contentDescription
             expandedAccessibilityClassName = tileState.expandedAccessibilityClassName
+            handlesSecondaryClick =
+                tileState.supportedActions.contains(QSTileState.UserAction.TOGGLE_CLICK)
+            handlesLongClick =
+                tileState.supportedActions.contains(QSTileState.UserAction.LONG_CLICK)
         }
+    }
+
+    override fun getDetailsViewModel(): TileDetailsViewModel {
+        return internetDetailsViewModelFactory.create()
     }
 
     override fun isAvailable(): Boolean {

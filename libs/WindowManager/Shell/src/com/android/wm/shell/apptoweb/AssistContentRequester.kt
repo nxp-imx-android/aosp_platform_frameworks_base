@@ -37,7 +37,7 @@ import java.util.concurrent.Executor
 class AssistContentRequester(
     context: Context,
     private val callBackExecutor: Executor,
-    private val systemInteractionExecutor: Executor
+    private val systemInteractionExecutor: Executor,
 ) {
     fun interface Callback {
         // Called when the [AssistContent] of the requested task is available.
@@ -61,13 +61,14 @@ class AssistContentRequester(
         // ActivityTaskManager interaction here is synchronous, so call off the main thread.
         systemInteractionExecutor.execute {
             try {
-                val success = activityTaskManager.requestAssistDataForTask(
-                    AssistDataReceiver(callback, this),
-                    taskId,
-                    packageName,
-                    attributionTag,
-                    false /* fetchStructure */
-                )
+                val success =
+                    activityTaskManager.requestAssistDataForTask(
+                        AssistDataReceiver(callback, this),
+                        taskId,
+                        packageName,
+                        attributionTag,
+                        false, /* fetchStructure */
+                    )
                 if (!success) {
                     executeOnMainExecutor { callback.onAssistContentAvailable(null) }
                 }
@@ -81,10 +82,8 @@ class AssistContentRequester(
         callBackExecutor.execute(callback)
     }
 
-    private class AssistDataReceiver(
-            callback: Callback,
-            parent: AssistContentRequester
-    ) : IAssistDataReceiver.Stub() {
+    private class AssistDataReceiver(callback: Callback, parent: AssistContentRequester) :
+        IAssistDataReceiver.Stub() {
         // The AssistDataReceiver binder callback object is passed to a system server, that may
         // keep hold of it for longer than the lifetime of the AssistContentRequester object,
         // potentially causing a memory leak. In the callback passed to the system server, only

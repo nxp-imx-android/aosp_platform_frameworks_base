@@ -21,18 +21,18 @@ import com.android.compose.animation.scene.TransitionKey
 /**
  * Defines all known named transitions.
  *
- * These are the subset of transitions that can be referenced by key when asking for a scene change.
+ * This is the subset of transitions that can be referenced by key when a scene change is requested.
  */
 object TransitionKeys {
-    /** Reference to the gone/lockscreen to shade transition with split shade enabled. */
+    /** The Gone/Lockscreen-to-Shade transition with Split Shade enabled. */
     val ToSplitShade = TransitionKey("GoneToSplitShade")
 
-    /**
-     * Reference to a scene transition that can expand/collapse the shade scene slightly faster than
-     * a normal transition would.
-     */
+    /** A scene transition that can collapse the Shade slightly faster than a normal collapse. */
     val SlightlyFasterShadeTransition = TransitionKey("SlightlyFasterShadeTransition")
 
-    /** Reference to a content transition that should happen instantly, i.e. without animation. */
+    /** A scene transition that should happen instantly, i.e. without animation. */
     val Instant = TransitionKey("Instant")
+
+    /** Reference to a transition in or out of communal scene triggered by the system. */
+    val SystemCommunalTransition = TransitionKey("SystemCommunalTransition")
 }

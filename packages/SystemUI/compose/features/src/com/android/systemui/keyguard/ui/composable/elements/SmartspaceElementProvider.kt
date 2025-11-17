@@ -23,10 +23,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.doOnLayout
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.MovableElementContentScope
 import com.android.compose.animation.scene.MovableElementKey
@@ -149,9 +155,15 @@ constructor(
 
             val clockPadding = dimensionResource(clocksR.dimen.clock_padding_start)
 
+            // If the AndroidView resizes, the Lookahead pass might remain in an old state.
+            // TODO(b/460044592) We track this to force Lookahead to update to the new size.
+            var lookaheadInvalidationTrigger by remember { mutableIntStateOf(0) }
+
             AndroidView(
                 factory = { ctx ->
                     val view = smartspaceController.buildAndConnectView(ctx)!!
+                    lookaheadInvalidationTrigger = view.height
+                    view.doOnLayout { lookaheadInvalidationTrigger = it.height }
                     keyguardUnlockAnimationController.lockscreenSmartspace = view
                     view
                 },
@@ -168,6 +180,17 @@ constructor(
                             end = clockPadding,
                             bottom = dimensionResource(R.dimen.keyguard_status_view_bottom_margin),
                         )
+                        .layout { measurable, constraints ->
+                            if (isLookingAhead) {
+                                // If the AndroidView resizes, this state changes, forcing Compose
+                                // to re-run this Lookahead measure block with the correct size.
+                                @Suppress("UNUSED_EXPRESSION") lookaheadInvalidationTrigger
+                            }
+
+                            measurable.measure(constraints).run {
+                                layout(width, height) { place(IntOffset.Zero) }
+                            }
+                        }
                         .then(context.burnInModifier)
                         .then(context.nonAuthUIModifier),
             )

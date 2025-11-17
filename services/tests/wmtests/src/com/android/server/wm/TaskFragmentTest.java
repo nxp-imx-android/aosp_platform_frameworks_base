@@ -1245,6 +1245,7 @@ public class TaskFragmentTest extends WindowTestsBase {
 
     @Test
     public void testGetDimBounds() {
+        doReturn(true).when(mTaskFragment).isVisible();
         final Task task = mTaskFragment.getTask();
         final Rect taskBounds = task.getBounds();
         mTaskFragment.setBounds(taskBounds.left, taskBounds.top, taskBounds.left + 10,

@@ -56,8 +56,20 @@ public class NativeZygoteProcess implements IZygoteProcess {
         mSocketAddress = socketAddress;
     }
 
-    private void connectToZygote() throws IOException {
+    private static native void nativePrewarmNativeZygote();
+
+    /** Prewarm the native zygote daemon before actually using it. */
+    public static void prewarmNativeZygote() {
+        nativePrewarmNativeZygote();
+    }
+
+    private static native boolean nativeEnsureNativeZygoteReadyBlocking();
+
+    private synchronized void connectToZygote() throws IOException {
         if (mSocket == null) {
+            if (!nativeEnsureNativeZygoteReadyBlocking()) {
+                throw new IOException("Timed out to start zygote_next");
+            }
             mSocket = new LocalSocket(LocalSocket.SOCKET_SEQPACKET);
             try {
                 mSocket.connect(mSocketAddress);

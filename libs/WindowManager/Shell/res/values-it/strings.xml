@@ -88,12 +88,12 @@
     <string name="bubbles_user_education_manage" msgid="3460756219946517198">"Tocca Gestisci per disattivare le bolle dall\'app"</string>
     <string name="bubbles_user_education_got_it" msgid="3382046149225428296">"Ok"</string>
     <string name="bubble_overflow_empty_title" msgid="2397251267073294968">"Nessuna bolla recente"</string>
-    <string name="bubble_overflow_empty_subtitle" msgid="2627417924958633713">"Le bolle recenti e ignorate appariranno qui"</string>
+    <string name="bubble_overflow_empty_subtitle" msgid="2627417924958633713">"Le bolle recenti e le bolle ignorate appariranno qui"</string>
     <string name="bubble_bar_education_stack_title" msgid="2486903590422497245">"Chatta utilizzando le bolle"</string>
     <string name="bubble_bar_education_stack_text" msgid="2446934610817409820">"Le nuove conversazioni vengono visualizzate sotto forma di icone in un angolo inferiore dello schermo. Tocca per espanderle o trascina per chiuderle."</string>
     <string name="bubble_bar_education_manage_title" msgid="6148404487810835924">"Controlla le bolle quando vuoi"</string>
     <string name="bubble_bar_education_manage_text" msgid="3199732148641842038">"Tocca qui per gestire le app e le conversazioni per cui mostrare le bolle"</string>
-    <string name="notification_bubble_title" msgid="6082910224488253378">"Fumetto"</string>
+    <string name="notification_bubble_title" msgid="6082910224488253378">"Bolla"</string>
     <string name="manage_bubbles_text" msgid="7730624269650594419">"Gestisci"</string>
     <string name="accessibility_bubble_dismissed" msgid="8367471990421247357">"Fumetto ignorato."</string>
     <string name="restart_button_description" msgid="4564728020654658478">"Tocca per riavviare l\'app e migliorare la visualizzazione"</string>
@@ -176,4 +176,5 @@
     <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"Memorizza la mia scelta"</string>
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Apri nel browser"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Rimani nell\'app"</string>
+    <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"Ricordamelo più tardi"</string>
 </resources>

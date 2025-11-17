@@ -22,11 +22,7 @@ import android.view.Display
 import android.view.Window
 import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
@@ -44,8 +40,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
@@ -137,39 +131,13 @@ constructor(
             SideEffect { dialog.dismissWithoutAnimation() }
         }
 
-        val useLargeScreenShareAnimations = isLargeScreen && type == ScreenCaptureType.SHARE_SCREEN
-        val density = LocalDensity.current
-        val emphasizedDecelerate = remember { CubicBezierEasing(0.05f, 0.7f, 0.1f, 1.0f) }
-        val standardEasing = remember { CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f) }
-        val initialOffsetPx = with(density) { 40.dp.roundToPx() }
-        val standardAccelerate = remember { CubicBezierEasing(0.3f, 0.0f, 1.0f, 1.0f) }
-        val targetOffsetPx = with(density) { 20.dp.roundToPx() }
-
         AnimatedVisibility(
             visibleState = visibleState,
-            // TODO(b/449826486): make each capture type (screenshots, recording, sharing) control
-            // their own animations.
-            enter =
-                if (useLargeScreenShareAnimations) {
-                    slideInVertically(
-                        animationSpec = tween(durationMillis = 300, easing = emphasizedDecelerate),
-                        initialOffsetY = { initialOffsetPx },
-                    ) + fadeIn(animationSpec = tween(durationMillis = 300, easing = standardEasing))
-                } else {
-                    scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically()
-                },
-            exit =
-                if (useLargeScreenShareAnimations) {
-                    slideOutVertically(
-                        animationSpec = tween(durationMillis = 150, easing = standardAccelerate),
-                        targetOffsetY = { targetOffsetPx },
-                    ) +
-                        fadeOut(
-                            animationSpec = tween(durationMillis = 150, easing = standardAccelerate)
-                        )
-                } else {
-                    scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically()
-                },
+            // TODO(b/458745633) Let each capture type (screenshots, recording) control their own
+            // animations. Note, for screen sharing, which should be fine here, as it will not go
+            // through the logic here.
+            enter = scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically(),
+            exit = scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically(),
         ) {
             val builder: ScreenCaptureUiComponent.Builder =
                 componentBuilders.getValue(parameters.screenCaptureType)

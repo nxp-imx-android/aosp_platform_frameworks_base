@@ -608,6 +608,17 @@ public interface Computer extends PackageDataSnapshot {
     int getPackageUid(@NonNull String packageName, @PackageManager.PackageInfoFlagsBits long flags,
             @UserIdInt int userId);
 
+    /**
+     * Returns the UID associated with the given package name. This could be either app uid
+     * or pcc uid based on {@code  forPcc}
+     * @param packageName The full name of the desired package.
+     * @param flags Additional option flags to modify the data returned.
+     * @param userId The user handle identifier to look up the package under.
+     * @param forPcc Whether app uid or pcc uid is needed
+     */
+    int getPackageUid(@NonNull String packageName, @PackageManager.PackageInfoFlagsBits long flags,
+            @UserIdInt int userId, boolean forPcc);
+
     boolean canAccessComponent(int callingUid, @NonNull ComponentName component,
             @UserIdInt int userId);
 

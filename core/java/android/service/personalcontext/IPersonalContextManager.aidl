@@ -19,6 +19,7 @@ package android.service.personalcontext;
 import android.content.ComponentName;
 import android.os.ParcelUuid;
 import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.Token;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsightWrapper;
@@ -40,4 +41,6 @@ interface IPersonalContextManager {
             int userId);
 
     oneway void unregisterInsightSurfaceClient(in ParcelUuid id, int userId);
+
+    Token mintToken();
 }

@@ -27,6 +27,7 @@ import static com.android.server.am.BroadcastRecord.DELIVERY_PENDING;
 import static com.android.server.am.BroadcastRecord.DELIVERY_SKIPPED;
 import static com.android.server.am.BroadcastRecord.DELIVERY_TIMEOUT;
 import static com.android.server.am.BroadcastRecord.LIMIT_PRIORITY_SCOPE;
+import static com.android.server.am.BroadcastRecord.UNSPECIFIED_QUEUE_INDEX;
 import static com.android.server.am.BroadcastRecord.calculateBlockedUntilBeyondCount;
 import static com.android.server.am.BroadcastRecord.calculateDeferUntilActive;
 import static com.android.server.am.BroadcastRecord.calculateUrgent;
@@ -360,25 +361,25 @@ public class BroadcastRecordTest {
         assertBlocked(r, false);
         assertTerminalDeferredBeyond(r, 0, 0, 0);
 
-        r.setDeliveryState(0, DELIVERY_DEFERRED, TAG);
+        r.setDeliveryState(0, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertEquals(DELIVERY_DEFERRED, r.getDeliveryState(0));
         assertBlocked(r, false);
         assertTerminalDeferredBeyond(r, 0, 1, 1);
 
         // Identical state change has no effect
-        r.setDeliveryState(0, DELIVERY_DEFERRED, TAG);
+        r.setDeliveryState(0, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertEquals(DELIVERY_DEFERRED, r.getDeliveryState(0));
         assertBlocked(r, false);
         assertTerminalDeferredBeyond(r, 0, 1, 1);
 
         // Moving to terminal state updates counters
-        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertEquals(DELIVERY_DELIVERED, r.getDeliveryState(0));
         assertBlocked(r, false);
         assertTerminalDeferredBeyond(r, 1, 0, 1);
 
         // Trying to change terminal state has no effect
-        r.setDeliveryState(0, DELIVERY_TIMEOUT, TAG);
+        r.setDeliveryState(0, DELIVERY_TIMEOUT, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertEquals(DELIVERY_DELIVERED, r.getDeliveryState(0));
         assertBlocked(r, false);
         assertTerminalDeferredBeyond(r, 1, 0, 1);
@@ -396,15 +397,15 @@ public class BroadcastRecordTest {
 
         // Even though we finish a middle item in the tranche, we're not
         // "beyond" it because there is still unfinished work before it
-        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false);
         assertTerminalDeferredBeyond(r, 1, 0, 0);
 
-        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false);
         assertTerminalDeferredBeyond(r, 2, 0, 2);
 
-        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false);
         assertTerminalDeferredBeyond(r, 3, 0, 3);
     }
@@ -419,15 +420,15 @@ public class BroadcastRecordTest {
         assertBlocked(r, false, true, true);
         assertTerminalDeferredBeyond(r, 0, 0, 0);
 
-        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, true);
         assertTerminalDeferredBeyond(r, 1, 0, 1);
 
-        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false);
         assertTerminalDeferredBeyond(r, 2, 0, 2);
 
-        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false);
         assertTerminalDeferredBeyond(r, 3, 0, 3);
     }
@@ -448,15 +449,15 @@ public class BroadcastRecordTest {
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 0, 0, 0);
 
-        r.setDeliveryState(0, DELIVERY_PENDING, TAG);
-        r.setDeliveryState(1, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(2, DELIVERY_PENDING, TAG);
-        r.setDeliveryState(3, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(4, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(5, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(6, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(7, DELIVERY_PENDING, TAG);
-        r.setDeliveryState(8, DELIVERY_DEFERRED, TAG);
+        r.setDeliveryState(0, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(1, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(2, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(3, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(4, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(5, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(6, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(7, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(8, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
 
         // Verify deferred counts ratchet up, but we're not "beyond" the first
         // still-pending receiver
@@ -465,38 +466,38 @@ public class BroadcastRecordTest {
 
         // We're still not "beyond" the first still-pending receiver, even when
         // we finish a receiver later in the first tranche
-        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 1, 6, 0);
 
         // Completing that last item in first tranche means we now unblock the
         // second tranche, and since it's entirely deferred, the third traunche
         // is unblocked too
-        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 2, 6, 7);
 
         // Moving a deferred item in an earlier tranche back to being pending
         // doesn't change the fact that we've already moved beyond it
-        r.setDeliveryState(1, DELIVERY_PENDING, TAG);
+        r.setDeliveryState(1, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 2, 5, 7);
-        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 3, 5, 7);
 
         // Completing middle pending item is enough to fast-forward to end
-        r.setDeliveryState(7, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(7, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 4, 5, 9);
 
         // Moving everyone else directly into a finished state updates all the
         // terminal counters
-        r.setDeliveryState(3, DELIVERY_SKIPPED, TAG);
-        r.setDeliveryState(4, DELIVERY_SKIPPED, TAG);
-        r.setDeliveryState(5, DELIVERY_SKIPPED, TAG);
-        r.setDeliveryState(6, DELIVERY_SKIPPED, TAG);
-        r.setDeliveryState(8, DELIVERY_SKIPPED, TAG);
+        r.setDeliveryState(3, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(4, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(5, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(6, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(8, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 9, 0, 9);
     }
@@ -519,15 +520,15 @@ public class BroadcastRecordTest {
         assertBlocked(r, false, false, false, true, true, true, true, true, true);
         assertTerminalDeferredBeyond(r, 0, 0, 0);
 
-        r.setDeliveryState(0, DELIVERY_PENDING, TAG);
-        r.setDeliveryState(1, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(2, DELIVERY_PENDING, TAG);
-        r.setDeliveryState(3, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(4, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(5, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(6, DELIVERY_DEFERRED, TAG);
-        r.setDeliveryState(7, DELIVERY_PENDING, TAG);
-        r.setDeliveryState(8, DELIVERY_DEFERRED, TAG);
+        r.setDeliveryState(0, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(1, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(2, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(3, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(4, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(5, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(6, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(7, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(8, DELIVERY_DEFERRED, TAG, UNSPECIFIED_QUEUE_INDEX);
 
         // Verify deferred counts ratchet up, but we're not "beyond" the first
         // still-pending receiver
@@ -536,38 +537,38 @@ public class BroadcastRecordTest {
 
         // We're still not "beyond" the first still-pending receiver, even when
         // we finish a receiver later in the first tranche
-        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(2, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, true, true, true, true, true, true);
         assertTerminalDeferredBeyond(r, 1, 6, 0);
 
         // Completing that last item in first tranche means we now unblock the
         // second tranche, and since it's entirely deferred, the third traunche
         // is unblocked too
-        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(0, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 2, 6, 7);
 
         // Moving a deferred item in an earlier tranche back to being pending
         // doesn't change the fact that we've already moved beyond it
-        r.setDeliveryState(1, DELIVERY_PENDING, TAG);
+        r.setDeliveryState(1, DELIVERY_PENDING, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 2, 5, 7);
-        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(1, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 3, 5, 7);
 
         // Completing middle pending item is enough to fast-forward to end
-        r.setDeliveryState(7, DELIVERY_DELIVERED, TAG);
+        r.setDeliveryState(7, DELIVERY_DELIVERED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 4, 5, 9);
 
         // Moving everyone else directly into a finished state updates all the
         // terminal counters
-        r.setDeliveryState(3, DELIVERY_SKIPPED, TAG);
-        r.setDeliveryState(4, DELIVERY_SKIPPED, TAG);
-        r.setDeliveryState(5, DELIVERY_SKIPPED, TAG);
-        r.setDeliveryState(6, DELIVERY_SKIPPED, TAG);
-        r.setDeliveryState(8, DELIVERY_SKIPPED, TAG);
+        r.setDeliveryState(3, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(4, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(5, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(6, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
+        r.setDeliveryState(8, DELIVERY_SKIPPED, TAG, UNSPECIFIED_QUEUE_INDEX);
         assertBlocked(r, false, false, false, false, false, false, false, false, false);
         assertTerminalDeferredBeyond(r, 9, 0, 9);
     }
@@ -1009,6 +1010,25 @@ public class BroadcastRecordTest {
     @EnableFlags(Flags.FLAG_LOG_BROADCAST_PROCESSED_EVENT)
     public void testLogBroadcastProcessedEventRecord_flagEnabled_allBroadcastProcessedEventLogged() {
         testLogBroadcastProcessedEventRecord(1);
+    }
+
+    @Test
+    public void testToShortString() {
+        final Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        final BroadcastRecord record = createBroadcastRecord(
+                List.of(createResolveInfo(PACKAGE1, APP_UID)),
+                UserHandle.USER_ALL, intent);
+        final String actualShortString = record.toShortString();
+        assertTrue("Missing identity hashcode in " + actualShortString,
+                actualShortString.contains(Integer.toHexString(System.identityHashCode(record))));
+        assertTrue("Missing intent action in " + actualShortString,
+                actualShortString.contains(intent.getAction()));
+        assertTrue("Missing userId in " + actualShortString,
+                actualShortString.contains("u" + UserHandle.USER_ALL));
+        assertTrue("Missing broadcast type in " + actualShortString,
+                actualShortString.contains("0x" + Integer.toHexString(
+                        record.calculateTypeForLogging())));
     }
 
     private void testLogBroadcastProcessedEventRecord(int times) {

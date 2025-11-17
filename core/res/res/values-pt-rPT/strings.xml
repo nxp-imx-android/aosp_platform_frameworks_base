@@ -327,8 +327,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"Dispositivo auditivo"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"Utilização da acessibilidade"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"Ecrã"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"Controlos parentais"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> está a consumir bateria."</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> aplicações estão a consumir bateria."</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Toque para obter detalhes acerca da utilização da bateria e dos dados"</string>
@@ -1048,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Escreva o PIN para desbloquear"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Código PIN incorreto."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Para desbloquear, prima Menu e, em seguida, 0."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Número de emergência"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Sem dados"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Ecrã bloqueado."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Prima Menu para desbloquear ou efectuar uma chamada de emergência."</string>

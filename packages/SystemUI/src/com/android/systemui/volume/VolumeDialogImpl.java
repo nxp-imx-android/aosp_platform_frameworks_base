@@ -284,7 +284,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private final Accessibility mAccessibility = new Accessibility();
     private final ConfigurationController mConfigurationController;
     private final MediaOutputDialogManager mMediaOutputDialogManager;
-    private final CsdWarningDialogDelegate.Factory mCsdWarningDialogFactory;
+    private final CsdWarningDialog.Factory mCsdWarningDialogFactory;
     private final VolumePanelNavigationInteractor mVolumePanelNavigationInteractor;
     private final VolumeNavigator mVolumeNavigator;
     private boolean mShowing;
@@ -298,7 +298,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     @GuardedBy("mSafetyWarningLock")
     private SystemUIDialog mSafetyWarning;
     @GuardedBy("mSafetyWarningLock")
-    private SystemUIDialog mCsdDialog;
+    private CsdWarningDialog mCsdDialog;
     private boolean mHovering = false;
     private final boolean mIsTv;
     private boolean mConfigChanged = false;
@@ -347,7 +347,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             VolumePanelNavigationInteractor volumePanelNavigationInteractor,
             VolumeNavigator volumeNavigator,
             @Named(VOLUME_DIALOG_JANK) boolean shouldListenForJank,
-            CsdWarningDialogDelegate.Factory csdWarningDialogFactory,
+            CsdWarningDialog.Factory csdWarningDialogFactory,
             DevicePostureController devicePostureController,
             SafetyWarningDialogDelegate.Factory safetyWarningDialogDelegateFactory,
             @Main Looper looper,
@@ -2263,10 +2263,9 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
                 recheckH(null);
             };
 
-            CsdWarningDialogDelegate delegate = mCsdWarningDialogFactory
-                    .create(csdWarning, cleanUp, mCsdWarningNotificationActions);
-            mCsdDialog = delegate.createDialog();
-            delegate.maybeShow(mCsdDialog);
+            mCsdDialog = mCsdWarningDialogFactory.create(
+                    csdWarning, cleanUp, mCsdWarningNotificationActions);
+            mCsdDialog.show();
         }
         recheckH(null);
         if (durationMs > 0) {

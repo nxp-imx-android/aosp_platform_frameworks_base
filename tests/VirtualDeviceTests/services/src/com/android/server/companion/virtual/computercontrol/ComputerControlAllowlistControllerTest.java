@@ -39,6 +39,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
+import android.content.res.Resources;
 import android.os.Process;
 import android.os.SystemClock;
 import android.platform.test.annotations.DisableFlags;
@@ -79,11 +80,14 @@ public class ComputerControlAllowlistControllerTest {
 
     private static final long TIMEOUT_MILLIS = 1000L;
     private static final Random RANDOM = new Random();
+    private static final String SUPER_AGENT_PACKAGE = "com.super.agent";
 
     @Rule
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private PackageManager mPackageManager;
+    @Mock
+    private Resources mResources;
 
     private AutoCloseable mMockitoSession;
     private ComputerControlAllowlistController mAllowlistController;
@@ -100,6 +104,8 @@ public class ComputerControlAllowlistControllerTest {
         mMockitoSession = MockitoAnnotations.openMocks(this);
         mSpyContext = spy(new ContextWrapper(mContext));
         when(mSpyContext.getPackageManager()).thenReturn(mPackageManager);
+        when(mSpyContext.getResources()).thenReturn(mResources);
+        when(mResources.getStringArray(anyInt())).thenReturn(new String[]{SUPER_AGENT_PACKAGE});
         // Use a separate folder for each test case, for better isolation.
         final String folderName = String.valueOf(RANDOM.nextInt() & Integer.MAX_VALUE);
         mSessionOwnerAllowlistFile =
@@ -108,7 +114,7 @@ public class ComputerControlAllowlistControllerTest {
                 new File(new File(mContext.getFilesDir(), folderName), "automatable_apps.txt");
         mAutomatableAppDenylistFile =
                 new File(new File(mContext.getFilesDir(), folderName), "blocked_apps.txt");
-        createAllowlistController(true);
+        createAllowlistController(/* buildIsDebuggable */ true);
     }
 
     @After
@@ -132,16 +138,17 @@ public class ComputerControlAllowlistControllerTest {
     @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
     @Test
     public void isPackageAutomatable_anyPackageName_returnsTrue() {
-        assertTrue(mAllowlistController.isPackageAutomatable("hello"));
-        assertTrue(mAllowlistController.isPackageAutomatable(mContext.getPackageName()));
-        assertTrue(mAllowlistController.isPackageAutomatable(null));
+        assertTrue(mAllowlistController.isPackageAutomatable("hello", "goodbye"));
+        assertTrue(mAllowlistController.isPackageAutomatable(mContext.getPackageName(),
+                mContext.getPackageName()));
+        assertTrue(mAllowlistController.isPackageAutomatable(null, null));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
     @Test
     public void isPackageAllowedToCreateSession_preInstalledPackageName_returnsTrue()
             throws Exception {
-        createAllowlistController(false);
+        createAllowlistController(/* buildIsDebuggable */ false);
         final String packageName = "com.hello.app3";
         final Signature signature = generateSignature((byte) 2);
         final String certificateDigest = preparePackage(packageName, signature);
@@ -164,7 +171,7 @@ public class ComputerControlAllowlistControllerTest {
     @Test
     public void isPackageAllowedToCreateSession_notPreInstalledPackageName_returnsFalse()
             throws Exception {
-        createAllowlistController(false);
+        createAllowlistController(/* buildIsDebuggable */ false);
         final String packageName = "com.hello.app3";
         final Signature signature = generateSignature((byte) 2);
         final String certificateDigest = preparePackage(packageName, signature);
@@ -258,6 +265,37 @@ public class ComputerControlAllowlistControllerTest {
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
     @Test
+    public void isPackageAllowedToCreateSession_superAgent_debuggableBuild_returnsTrue()
+            throws Exception {
+        final Signature signature = generateSignature((byte) 2);
+        preparePackage(SUPER_AGENT_PACKAGE, signature);
+        // Make PackageManager infer that the given package is associated with the calling uid.
+        when(mPackageManager.getPackageUidAsUser(eq(SUPER_AGENT_PACKAGE), anyInt()))
+                .thenReturn(Process.myUid());
+
+        assertTrue(mAllowlistController.isPackageAllowedToCreateSession(SUPER_AGENT_PACKAGE));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAllowedToCreateSession_superAgent_nonDebuggableBuild_returnsFalse()
+            throws Exception {
+        createAllowlistController(/* buildIsDebuggable */ false);
+        final Signature signature = generateSignature((byte) 2);
+        preparePackage(SUPER_AGENT_PACKAGE, signature);
+        // Make PackageManager infer that the given package is associated with the calling uid.
+        when(mPackageManager.getPackageUidAsUser(eq(SUPER_AGENT_PACKAGE), anyInt()))
+                .thenReturn(Process.myUid());
+        // Make PackageManager infer that the given package is not pre-installed.
+        final ApplicationInfo applicationInfo = new ApplicationInfo();
+        when(mPackageManager.getApplicationInfo(eq(SUPER_AGENT_PACKAGE), anyInt()))
+                .thenReturn(applicationInfo);
+
+        assertFalse(mAllowlistController.isPackageAllowedToCreateSession(SUPER_AGENT_PACKAGE));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
     public void isPackageAutomatable_allowlistedApp_returnsTrue() throws Exception {
         final String packageName = "com.hello.good";
         final Signature signature = generateSignature((byte) 1);
@@ -266,7 +304,7 @@ public class ComputerControlAllowlistControllerTest {
         mDeviceConfigWriter.allowlistAutomatableApp(packageName, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
     }
 
     @Test
@@ -286,13 +324,15 @@ public class ComputerControlAllowlistControllerTest {
         mDeviceConfigWriter.allowlistAutomatableApps(apps);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName1));
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName2));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName1, "com.some.owner1"));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName2, "com.some.owner2"));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
     @Test
-    public void isPackageAutomatable_allAppsAllowlisted_returnsTrue() throws Exception {
+    @Parameters(method = "getAllowlistStringsIncludingEverything")
+    public void isPackageAutomatable_allAppsAllowlisted_returnsTrue(
+            String allowlistStringIncludingEverything) throws Exception {
         final String packageName1 = "com.hello.foo";
         final Signature signature1 = generateSignature((byte) 1);
         preparePackage(packageName1, signature1);
@@ -300,11 +340,12 @@ public class ComputerControlAllowlistControllerTest {
         final Signature signature2 = generateSignature((byte) 5);
         preparePackage(packageName2, signature2);
 
-        mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY, "*");
+        mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY,
+                allowlistStringIncludingEverything);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName1));
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName2));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName1, "com.some.owner1"));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName2, "com.some.owner2"));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
@@ -314,7 +355,30 @@ public class ComputerControlAllowlistControllerTest {
         final Signature signature = generateSignature((byte) 1);
         preparePackage(packageName, signature);
 
-        assertFalse(mAllowlistController.isPackageAutomatable(packageName));
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAutomatable_sessionOwnedBySuperAgent_debuggableBuild_returnsTrue()
+            throws Exception {
+        final String packageName = "com.hello.app1";
+        final Signature signature = generateSignature((byte) 1);
+        preparePackage(packageName, signature);
+
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName, SUPER_AGENT_PACKAGE));
+    }
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
+    @Test
+    public void isPackageAutomatable_sessionOwnedBySuperAgent_nonDebuggableBuild_returnsFalse()
+            throws Exception {
+        createAllowlistController(/* buildIsDebuggable */ false);
+        final String packageName = "com.hello.app1";
+        final Signature signature = generateSignature((byte) 1);
+        preparePackage(packageName, signature);
+
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName, SUPER_AGENT_PACKAGE));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
@@ -341,9 +405,9 @@ public class ComputerControlAllowlistControllerTest {
         mDeviceConfigWriter.allowlistAutomatableApps(apps);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName1));
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName2));
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName3));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName1, "com.some.owner1"));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName2, "com.some.owner2"));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName3, "com.some.owner3"));
 
         final List<ComputerControlAllowlistController.SignedPackage> blocked = List.of(
                 new ComputerControlAllowlistController.SignedPackage(
@@ -353,26 +417,28 @@ public class ComputerControlAllowlistControllerTest {
         mDeviceConfigWriter.denylistAutomatableApps(blocked);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
-        assertFalse(mAllowlistController.isPackageAutomatable(packageName1));
-        assertFalse(mAllowlistController.isPackageAutomatable(packageName2));
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName3));
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName1, "com.some.owner1"));
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName2, "com.some.owner2"));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName3, "com.some.owner3"));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
     @Test
-    public void isPackageAutomatable_allAppsAllowlisted_denylistedApp_returnsFalse()
-            throws Exception {
+    @Parameters(method = "getAllowlistStringsIncludingEverything")
+    public void isPackageAutomatable_allAppsAllowlisted_denylistedApp_returnsFalse(
+            String allowlistStringIncludingEverything) throws Exception {
         final String packageName = "com.hello.fun";
         final Signature signature = generateSignature((byte) 7);
         final String certificateDigest = preparePackage(packageName, signature);
 
         // Allowlist all packages via DeviceConfig.
-        mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY, "*");
+        mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY,
+                allowlistStringIncludingEverything);
         // Denylist the given package via DeviceConfig.
         mDeviceConfigWriter.denylistAutomatableApp(packageName, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
-        assertFalse(mAllowlistController.isPackageAutomatable(packageName));
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
@@ -453,7 +519,7 @@ public class ComputerControlAllowlistControllerTest {
         final Path filePath = Paths.get(mAutomatableAppAllowlistFile.getAbsolutePath());
         final String expectedFileContent = packageName + ":" + certificateDigest;
         assertEquals(expectedFileContent, Files.readString(filePath));
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
 
         // Write malformed value via DeviceConfig.
         mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY,
@@ -462,7 +528,7 @@ public class ComputerControlAllowlistControllerTest {
 
         // Verify that the package is still allowlisted, based on the last persisted allowlist.
         assertEquals(expectedFileContent, Files.readString(filePath));
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
@@ -480,7 +546,7 @@ public class ComputerControlAllowlistControllerTest {
         final Path filePath = Paths.get(mAutomatableAppAllowlistFile.getAbsolutePath());
         final String expectedFileContent = packageName + ":" + certificateDigest;
         assertEquals(expectedFileContent, Files.readString(filePath));
-        assertTrue(mAllowlistController.isPackageAutomatable(packageName));
+        assertTrue(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
 
         // Write empty value via DeviceConfig.
         mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY, "");
@@ -488,7 +554,7 @@ public class ComputerControlAllowlistControllerTest {
 
         // Verify that the allowlist is cleared.
         assertEquals("", Files.readString(filePath));
-        assertFalse(mAllowlistController.isPackageAutomatable(packageName));
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
@@ -510,7 +576,7 @@ public class ComputerControlAllowlistControllerTest {
         final Path filePath = Paths.get(mAutomatableAppDenylistFile.getAbsolutePath());
         final String expectedFileContent = packageName + ":" + certificateDigest;
         assertEquals(expectedFileContent, Files.readString(filePath));
-        assertFalse(mAllowlistController.isPackageAutomatable(packageName));
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
 
         // Write malformed value via DeviceConfig.
         mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_AUTOMATABLE_APP_DENYLIST_KEY,
@@ -519,7 +585,7 @@ public class ComputerControlAllowlistControllerTest {
 
         // Verify that the package is still denylisted, based on the last persisted allowlist.
         assertEquals(expectedFileContent, Files.readString(filePath));
-        assertFalse(mAllowlistController.isPackageAutomatable(packageName));
+        assertFalse(mAllowlistController.isPackageAutomatable(packageName, "com.some.owner"));
     }
 
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ALLOWLISTS)
@@ -577,13 +643,33 @@ public class ComputerControlAllowlistControllerTest {
     }
 
     @SuppressWarnings("unused") // Parameter for parametrized tests
-    private static String[] getMalformedValues() {
-        return new String[] {
-                null,
-                "garbage",
-                "1234",
-                "com.android.app",
-                "@#$%^&*",
+    private static Object[][] getMalformedValues() {
+        return new Object[][]{
+                {null},
+                {"garbage"},
+                {"1234"},
+                {"**"},
+                {","},
+                {",,,,,,"},
+                {" , "},
+                {"This is a sentence."},
+                {"Hello,Goodbye"},
+                {"com.android.app"},
+                {"com.android.app:123456QWERTY,#"},
+                {"@#$%^&*"}
+        };
+    }
+
+    @SuppressWarnings("unused") // Parameter for parametrized tests
+    private static Object[][] getAllowlistStringsIncludingEverything() {
+        return new Object[][]{
+                {"*"},
+                {"*,"},
+                {"*,*,"},
+                {"com.android.app:123456QWERTY,*,"},
+                {"*,com.android.app:123456QWERTY,"},
+                {"*,com.android.app:123456QWERTY,*,"},
+                {"com.android.app1:98765QWERTY,*,com.android.app2:123456QWERTY,"}
         };
     }
 

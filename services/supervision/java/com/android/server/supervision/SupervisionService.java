@@ -45,7 +45,7 @@ import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.app.supervision.ISupervisionListener;
 import android.app.supervision.ISupervisionManager;
-import android.app.supervision.PackagePolicy;
+import android.app.supervision.PackageUsagePolicy;
 import android.app.supervision.Policy;
 import android.app.supervision.PolicyKey;
 import android.app.supervision.SupervisionManager;
@@ -369,11 +369,13 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public List<Policy> getPolicies(@UserIdInt int userId) {
+        enforceCallerCanGetPolicies();
         return mSupervisionSettings.getUserData(userId).policies.getPolicies();
     }
 
     @Override
     public void setPolicy(@UserIdInt int userId, @NonNull Policy policy) {
+        enforceCallerCanSetPolicy();
         synchronized (getLockObject()) {
             validatePolicyLocked(userId, policy);
             policy.incrementVersion();
@@ -389,8 +391,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     /**
-     * Returns true if the user has a verified recovery email or if there exist alternative
-     * recovery methods.
+     * Returns true if the user has a verified recovery email or if there exist alternative recovery
+     * methods.
      */
     @Override
     public boolean hasValidRecoveryMethod(int userId) {
@@ -420,31 +422,39 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     private void applyPolicy(@UserIdInt int userId, @NonNull Policy policy) {
         switch (policy) {
-            case PackagePolicy pp -> applyPackagePolicy(userId, pp);
+            case PackageUsagePolicy pp -> applyPackageUsagePolicy(userId, pp);
             default -> Slogf.w(SupervisionLog.TAG, "Unsupported policy type.");
         }
     }
 
-    private void applyPackagePolicy(@UserIdInt int userId, PackagePolicy policy) {
+    private void applyPackageUsagePolicy(@UserIdInt int userId, PackageUsagePolicy policy) {
         String packageName = policy.getPackageName();
-        int restrictionType = policy.getRestrictionType();
-        switch (restrictionType) {
-            case PackagePolicy.RESTRICTION_TYPE_BLOCKED -> {
-                setApplicationHiddenForUser(userId, packageName, policy.isEnabled());
-                synchronized (getLockObject()) {
-                    PolicyData policyData =
-                            getUserDataLocked(userId).policies.get(policy.getPolicyKey());
-                    if (policyData != null) {
-                        policyData.hasPendingNotification = true;
-                    }
-                }
+        int type = policy.getType();
+        switch (type) {
+            case PackageUsagePolicy.TYPE_BLOCKED -> {
+                setApplicationHiddenForUser(userId, packageName, true);
+                enablePendingNotificationStateLocked(userId, policy);
+            }
+            case PackageUsagePolicy.TYPE_ALLOWED -> {
+                setApplicationHiddenForUser(userId, packageName, false);
+                enablePendingNotificationStateLocked(userId, policy);
             }
             default ->
                     Slogf.w(
                             SupervisionLog.TAG,
                             "Unsupported restriction type: %s for package: %s",
-                            restrictionType,
+                            type,
                             packageName);
+        }
+    }
+
+    private void enablePendingNotificationStateLocked(
+            @UserIdInt int userId, PackageUsagePolicy policy) {
+        synchronized (getLockObject()) {
+            PolicyData policyData = getUserDataLocked(userId).policies.get(policy.getPolicyKey());
+            if (policyData != null) {
+                policyData.hasPendingNotification = true;
+            }
         }
     }
 
@@ -494,7 +504,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     private void validatePolicyLocked(@UserIdInt int userId, @NonNull Policy policy) {
         switch (policy) {
-            case PackagePolicy pp -> validatePackagePolicy(pp);
+            case PackageUsagePolicy pp -> validatePackageUsagePolicy(pp);
             default -> {
                 throw new IllegalArgumentException(
                         "Unsupported policy type: " + policy.getClass().getSimpleName());
@@ -507,10 +517,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
     }
 
-    private void validatePackagePolicy(@NonNull PackagePolicy policy) {
+    private void validatePackageUsagePolicy(@NonNull PackageUsagePolicy policy) {
         if (policy.getPackageName().isEmpty()
                 || policy.getPackageName().length() > MAX_PACKAGE_NAME_LENGTH
-                || policy.getRestrictionType() != PackagePolicy.RESTRICTION_TYPE_BLOCKED) {
+                || (policy.getType() != PackageUsagePolicy.TYPE_BLOCKED
+                        && policy.getType() != PackageUsagePolicy.TYPE_ALLOWED)) {
             throw new IllegalArgumentException("Invalid package policy");
         }
     }
@@ -1022,6 +1033,35 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return UserHandle.isSameApp(mInjector.getCallingUid(), Process.SYSTEM_UID);
     }
 
+    private void enforceCallerCanSetPolicy() {
+        checkCallAuthorization(isCallerSystem() || doesCallerHoldAnySupervisionRole());
+    }
+
+    private void enforceCallerCanGetPolicies() {
+        checkCallAuthorization(isCallerSystem() || doesCallerHoldAnySupervisionRole());
+    }
+
+    private boolean doesCallerHoldAnySupervisionRole() {
+        UserHandle userHandle = Binder.getCallingUserHandle();
+        int callingUid = Binder.getCallingUid();
+
+        List<String> roleHolders =
+                new ArrayList<String>(
+                        mInjector.getRoleHoldersAsUser(ROLE_SYSTEM_SUPERVISION, userHandle));
+        roleHolders.addAll(mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, userHandle));
+
+        String[] packages = mInjector.getPackageManager().getPackagesForUid(callingUid);
+        if (packages != null) {
+            for (var packageName : packages) {
+                if (roleHolders.contains(packageName)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Updates the cache of supervision role holders for a given user and returns the ones that were
      * removed.
@@ -1207,10 +1247,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     return;
                 }
 
-                if (policyData.policy instanceof PackagePolicy pp) {
-                    if (policyData.hasPendingNotification
-                            && pp.getRestrictionType() == PackagePolicy.RESTRICTION_TYPE_BLOCKED
-                            && pp.isEnabled() == isHidden) {
+                if (policyData.policy instanceof PackageUsagePolicy pp) {
+                    boolean shouldBeHidden = pp.getType() == PackageUsagePolicy.TYPE_BLOCKED;
+                    if (policyData.hasPendingNotification && shouldBeHidden == isHidden) {
                         shouldPostNotification = true;
                         policyData.hasPendingNotification = false;
                     }

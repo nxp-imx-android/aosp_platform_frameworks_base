@@ -81,6 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"ဖန်သားပြင်ဓာတ်ပုံကို သီးသန့်ပရိုဖိုင်တွင် သိမ်းနေသည်"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"ဖန်သားပြင်ဓာတ်ပုံကို သိမ်းပြီးပါပြီ"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"မျက်နှာပြင်ပုံကို သိမ်း၍မရပါ"</string>
+    <string name="screenshot_save_to" msgid="3294574417295882864">"သိမ်းမည့်နေရာ"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"ဖိုင်တွဲရွေးရန်"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ပြင်ပဖန်သားပြင်"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ဖန်သားပြင်ဓာတ်ပုံကို မသိမ်းမီ စက်ပစ္စည်းကို လော့ခ်ဖွင့်ထားရမည်"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"မျက်နှာပြင်ပုံကို ထပ်ရိုက်ကြည့်ပါ"</string>
@@ -171,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"အသံမျှဝေရန်"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"အက်ပ်ဝင်းဒိုးကို မျှဝေခြင်း"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"တဘ်မျှဝေခြင်း"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"စခရင်တစ်ခုလုံး မျှဝေပါ"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"အက်ပ်မျှဝေနေချိန် ၎င်းအက်ပ်၌ ပြထား/ဖွင့်ထားသော အရာအားလုံးကို [APP NAME] က မြင်နိုင်သည်။ စကားဝှက်၊ ငွေချေအချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံ၊ ဗီဒီယိုလိုအရာများကို ဂရုစိုက်ပါ။"</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"သင့်စခရင်တစ်ခုလုံးကို မျှဝေနေချိန်တွင် စခရင်ပေါ်ရှိ အရာအားလုံးကို [APP NAME] က မြင်နိုင်သည်။ စကားဝှက်၊ ငွေပေးချေမှု အချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံနှင့် ဗီဒီယိုကဲ့သို့သော အရာများကို ဂရုစိုက်ပါ။"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ဝင်ဒိုးကို ဖန်သားပြင်ဓာတ်ပုံ ရိုက်ရန်"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ဝင်းဒိုးကို ရိုက်ကူးရန်"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ရွေးထားသောနေရာကို ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်"</string>
@@ -443,7 +442,7 @@
     <string name="quick_settings_audio_effects_section_title" msgid="6770520531879816578">"အထူးပြုလုပ်ချက်များ"</string>
     <string name="quick_settings_brightness_dialog_title" msgid="4980669966716685588">"အလင်းတောက်ပမှု"</string>
     <string name="quick_settings_inversion_label" msgid="3501527749494755688">"အရောင်ပြောင်းပြန်ပြုလုပ်ရန်"</string>
-    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"အရောင် အမှန်ပြင်ခြင်း"</string>
+    <string name="quick_settings_color_correction_label" msgid="5636617913560474664">"အရောင်အမှန်ပြင်ရန်"</string>
     <string name="quick_settings_font_scaling_label" msgid="5289001009876936768">"ဖောင့်အရွယ်"</string>
     <string name="quick_settings_more_user_settings" msgid="7634653308485206306">"အသုံးပြုသူများ စီမံရန်"</string>
     <string name="quick_settings_done" msgid="2163641301648855793">"ပြီးပါပြီ"</string>
@@ -709,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"အားလုံးရှင်းရန်"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"စီမံရန်"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"မှတ်တမ်း"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"အကြောင်းကြားချက် ဆက်တင်များ"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"အကြောင်းကြားချက် မှတ်တမ်း"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"အသစ်"</string>
@@ -727,7 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"အကြောင်းကြားချက်များစွာ တစ်ပြိုင်နက်ရပါက သင့်စက်၏ အသံနှင့် သတိပေးချက်ကို ၂ မိနစ်ကြာသည်အထိ အလိုအလျောက်လျှော့ချသည်။"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ပိတ်ရန်"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"အကြောင်းကြားချက်ဟောင်းကြည့်ရန် လော့ခ်ဖွင့်ပါ"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"ဤစက်ပစ္စည်းကို သင့်မိဘက စီမံခန့်ခွဲသည်"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"ဆက်တင်အချို့ကို သင့်မိဘက စီမံသည်"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ဤစက်ကို သင့်မိဘက စီမံသည်"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"စက်ဆက်တင်အချို့ကို ပင်နံပါတ်ဖြင့် ကာကွယ်ထားသည်။"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ဤစက်ကို သင့်အဖွဲ့အစည်းကပိုင်ဆိုင်ပြီး ကွန်ရက်ဒေတာ စီးဆင်းမှုကို စောင့်ကြည့်နိုင်ပါသည်"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"ဤစက်ကို <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> က ပိုင်ဆိုင်ပြီး ကွန်ရက်ဒေတာ စီးဆင်းမှုကို စောင့်ကြည့်နိုင်ပါသည်"</string>
@@ -903,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"ဂုဏ်ပြုပါရစေ! စနစ် UI ဖမ်းစက်ကို ဆက်တင်ထဲသို့ ထည့်ပြီးပြီ။"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"ဆက်တင် အထဲမှ ဖယ်ရှားရန်"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"ဆက်တင် အထဲမှ စနစ် UI ဖမ်းစက်ကို ဖယ်ရှားလျက် ၎င်း၏ အင်္ဂါရပ်များ အားလုံး အသုံးပြုမှု ရပ်တန့်ရမလား?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"ဘလူးတုသ် ဖွင့်ရမလား။"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ကီးဘုတ်ကို တပ်ဘလက်နှင့် ချိတ်ဆက်ရန်၊ ပမထဦးစွာ ဘလူးတုသ်ကို ဖွင့်ပါ။"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ဖွင့်ပါ"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ခေါ်ဆိုမှုအကြောင်းကြားချက်များကို ပြင်၍မရပါ။"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ဤအကြောင်းကြားချက်အုပ်စုကို ဤနေရာတွင် စီစဉ်သတ်မှတ်၍ မရပါ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ပရောက်စီထည့်ထားသော အကြောင်းကြားချက်"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> က အကျဉ်းချုပ်ထားသည်"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g> အကြောင်းကြားချက်များ အားလုံး"</string>
     <string name="see_more_title" msgid="7409317011708185729">"ပိုကြည့်ရန်"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ဤအကြောင်းကြားချက်ကို စနစ်က အလိုအလျောက် &lt;b&gt;မူရင်းသို့ ချိန်ညှိထားသည်&lt;/b&gt;။"</string>
@@ -1410,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"အကြံပြုထားသည်များ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ထည့်သွင်းချက်"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ထုတ်လုပ်ချက်"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"အခြားစက်သို့ မီဒီယာရွှေ့ပြောင်းရန် သင်၏မျှဝေထားသောစက်ရှင်ကို ရပ်ပါ"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ရပ်ရန်"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"မျှဝေခြင်း ရပ်ရန်"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"အသံမျှဝေနေသည်"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"အသံမျှဝေရန်"</string>
@@ -1736,12 +1737,15 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"အကြောင်းကြားချက်များ ဖွင့်ရန် ဘယ်ဘက်ထိပ်မှ ပွတ်ဆွဲပါ"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"‘အမြန်ဆက်တင်များ’ ဖွင့်ရန်အတွက် ညာဘက်ထိပ်မှ ပွတ်ဆွဲပါ"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"နောက်သို့"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"လက်မှတ်ထိုးဝင်ရန်"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"အများသုံးနိုင်မှု"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ယခင်"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ရှေ့သို့"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"နောက်စာမျက်နှာသို့ သွားရန်"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"အော်တိုဖြည့်"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ချဲ့ရန်"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"နေရာအတိအကျကို မျှဝေရန်"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"နေရာအတိအကျကို သုံးရန်"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"နေရာအတိအကျအနီး"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"နေရာအတိအကျ"</string>
 </resources>

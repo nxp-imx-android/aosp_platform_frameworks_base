@@ -52,6 +52,10 @@ class android.content.Context  # no-pta
 class android.text.ClipboardManager keep  # no-pta
     method <init> ()V keep
 
+# Audio
+# AIDL generated parcel
+class com.android.media.permission.UidPackageState keepclass  # no-pta
+
 #####################
 # Experimental APIs
 #####################
@@ -125,13 +129,6 @@ class android.os.VibrationEffect exp
 class android.os.UserManager exp
 class android.os.UserManagerCache exp
 class android.os.GraphicsEnvironment exp
-class android.os.StrictMode
-    method trackActivity exp
-    method assertConfigurationContext exp
-    method vmRegistrationLeaksEnabled ignore
-    method vmUnsafeIntentLaunchEnabled ignore
-
-class android.os.StrictMode$InstanceTracker exp
 
 class android.content.res.AssetManager
     method getLoaders exp # let it return an empty loader

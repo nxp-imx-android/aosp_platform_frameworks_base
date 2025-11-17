@@ -17,6 +17,8 @@
 package com.android.systemui.statusbar.phone;
 
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_DIALOG_SHOWING;
+import static com.android.systemui.statusbar.phone.SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK;
+import static com.android.systemui.statusbar.phone.SystemUIDialog.DEFAULT_THEME;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -81,6 +83,10 @@ public class SystemUIDialogTest extends SysuiTestCase {
     private BroadcastDispatcher mBroadcastDispatcher;
     @Mock
     private SystemUIDialog.Delegate mDelegate;
+    @Mock
+    private SystemUIDialogManager mSystemUIDialogManager;
+    @Mock
+    private DialogTransitionAnimator mDialogTransiationAnimator;
     private SysUiState mSysUiState;
     private FakeDisplayRepository mDisplayRepository;
     private SysUiState mConnectedDisplaySysUiState;
@@ -128,7 +134,13 @@ public class SystemUIDialogTest extends SysuiTestCase {
 
     @Test
     public void testRegisterReceiver() {
-        final SystemUIDialog dialog = new SystemUIDialog(mContext);
+        final SystemUIDialog dialog = new SystemUIDialog.Factory(
+                mContext,
+                mSystemUIDialogManager,
+                mBroadcastDispatcher,
+                mDialogTransiationAnimator,
+                null)
+                .create();
         final ArgumentCaptor<BroadcastReceiver> broadcastReceiverCaptor =
                 ArgumentCaptor.forClass(BroadcastReceiver.class);
         final ArgumentCaptor<IntentFilter> intentFilterCaptor =
@@ -177,7 +189,13 @@ public class SystemUIDialogTest extends SysuiTestCase {
 
     @Test
     public void usePredictiveBackAnimFlag() {
-        final SystemUIDialog dialog = new SystemUIDialog(mContext);
+        final SystemUIDialog dialog = new SystemUIDialog.Factory(
+                mContext,
+                mSystemUIDialogManager,
+                mBroadcastDispatcher,
+                mDialogTransiationAnimator,
+                null)
+                .create();
 
         dialog.show();
 
@@ -191,7 +209,16 @@ public class SystemUIDialogTest extends SysuiTestCase {
     public void startAndStopAreCalled() {
         AtomicBoolean calledStart = new AtomicBoolean(false);
         AtomicBoolean calledStop = new AtomicBoolean(false);
-        SystemUIDialog dialog = new SystemUIDialog(mContext) {
+        SystemUIDialog dialog = new SystemUIDialog(
+                mContext,
+                DEFAULT_THEME,
+                DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                mSystemUIDialogManager,
+                mBroadcastDispatcher,
+                mDialogTransiationAnimator,
+                null,
+                mDelegate,
+                true) {
             @Override
             protected void start() {
                 calledStart.set(true);

@@ -81,6 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Salvataggio screenshot nel profilo privato in corso…"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Screenshot salvato"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Impossibile salvare lo screenshot"</string>
+    <string name="screenshot_save_to" msgid="3294574417295882864">"Salva in"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"Seleziona cartella"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Display esterno"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"È necessario sbloccare il dispositivo per poter salvare lo screenshot"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Riprova ad acquisire lo screenshot"</string>
@@ -171,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Condividi audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Condividi finestra dell\'app"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Condividi scheda"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Condividi schermo intero"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Quando condividi un\'app, tutto ciò che viene mostrato o riprodotto al suo interno è visibile a [APP NAME]. Presta quindi attenzione a password, dati di pagamento, messaggi, foto, audio e video."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Quando condividi lo schermo intero, tutto ciò che è nella schermata è visibile a [APP NAME]. Presta quindi attenzione a password, dati di pagamento, messaggi, foto, audio e video."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Acquisisci screenshot della finestra"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Registra la finestra"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Acquisisci screenshot dell\'area selezionata"</string>
@@ -709,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"Cancella tutto"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"Gestisci"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"Cronologia"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Impostazioni di notifica"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Cronologia delle notifiche"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Nuove"</string>
@@ -727,7 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Volume e avvisi vengono ridotti automaticamente per un massimo di 2 minuti quando ricevi troppe notifiche contemporaneamente."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Disattiva"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Sblocca per vedere le notifiche meno recenti"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Questo dispositivo è gestito dai tuoi genitori"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"Alcune impostazioni sono gestite da uno dei tuoi genitori"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Questo dispositivo è gestito da uno dei tuoi genitori"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Alcune impostazioni del dispositivo sono protette da un PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Questo dispositivo appartiene alla tua organizzazione, che potrebbe monitorare il traffico di rete"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Questo dispositivo appartiene a <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>, che potrebbe monitorare il traffico di rete"</string>
@@ -903,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"Complimenti! L\'Ottimizzatore UI di sistema è stato aggiunto alle impostazioni."</string>
     <string name="remove_from_settings" msgid="633775561782209994">"Rimuovi dalle impostazioni"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"Vuoi rimuovere l\'Ottimizzatore UI di sistema dalle impostazioni e smettere di utilizzare tutte le sue funzioni?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Attivare il Bluetooth?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Per connettere la tastiera al tablet, devi prima attivare il Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Attiva"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Impossibile modificare gli avvisi di chiamata."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Qui non è possibile configurare questo gruppo di notifiche"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Notifica inviata al proxy"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"Riepilogo di <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Tutte le notifiche di <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Altro"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Questa notifica è stata &lt;b&gt;promossa automaticamente a Predefinita&lt;/b&gt; dal sistema."</string>
@@ -1410,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suggeriti"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Input"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Output"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Interrompi la sessione condivisa per spostare i contenuti multimediali su un altro dispositivo"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Interrompi"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Interrompi condivisione"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Condivisione audio in corso…"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Condividi audio"</string>
@@ -1589,7 +1590,7 @@
     <string name="start_mirroring" msgid="3611044878130481882">"Mirroring"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Display collegato"</string>
     <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Connessione al display esterno effettuata"</string>
-    <string name="privacy_dialog_title" msgid="5201413527644766025">"Mic., fotocamera e posizione"</string>
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Micro, fotocamera e posizione"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Uso recente da app"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Vedi accesso recente"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Fine"</string>
@@ -1736,12 +1737,15 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Scorri dall\'angolo in alto a sinistra per aprire le notifiche"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Scorri dall\'angolo in alto a destra per aprire le Impostazioni rapide"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Indietro"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Accedi"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Accessibilità"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Indietro"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Avanti"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"vai alla pagina successiva"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"compila automaticamente"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"espandi"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Condividi la posizione esatta"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Usa posizione esatta"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Vicino alla posizione esatta"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"Posizione esatta"</string>
 </resources>

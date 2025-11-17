@@ -81,6 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"يتم حاليًا حفظ لقطة الشاشة في الملف الشخصي الخاص"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"تم حفظ لقطة الشاشة."</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"تعذّر حفظ لقطة الشاشة"</string>
+    <string name="screenshot_save_to" msgid="3294574417295882864">"حفظ في"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"اختيار مجلد"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"الشاشة الخارجية"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"يجب أن يتم فتح قفل الجهاز قبل حفظ لقطة الشاشة."</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"جرّب أخذ لقطة الشاشة مرة أخرى"</string>
@@ -171,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"مشاركة الصوت"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"نافذة \"مشاركة التطبيق\""</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"مشاركة علامة التبويب"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"مشاركة الشاشة بأكملها"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"‏بعد مشاركة تطبيق، سيتمكّن \"[APP NAME]\" من رؤية أي محتوى معروض أو مشغَّل عليه، لذا يُرجى توخي الحذر بشأن معلوماتك الخاصة، مثل كلمات المرور وتفاصيل الدفع والرسائل والصور والمقاطع الصوتية والفيديوهات."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"‏بعد مشاركة شاشتك بأكملها، سيتمكّن \"[APP NAME]\" من رؤية أي محتوى معروض عليها، لذا يُرجى توخي الحذر بشأن معلوماتك الخاصة، مثل كلمات المرور وتفاصيل الدفع والرسائل والصور والمقاطع الصوتية والفيديوهات."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"أخْذ لقطة شاشة للنافذة"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"تسجيل النافذة"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"أخْذ لقطة شاشة للمنطقة المحدّدة"</string>
@@ -709,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"محو الكل"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"إدارة"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"السجلّ"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"إعدادات الإشعارات"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"سجلّ الإشعارات"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"الإشعارات الجديدة"</string>
@@ -727,7 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"يتم تلقائيًا خفض مستوى صوت جهازك والتنبيهات لمدة تصل إلى دقيقتين عند تلقّي إشعارات كثيرة في آنٍ واحد."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"إيقاف"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"افتَح قفل الشاشة لعرض الإشعارات الأقدم."</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"يتولّى أحد الوالدين إدارة هذا الجهاز."</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"يدير أحد والدَيك بعض الإعدادات"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"يدير أحد والدَيك هذا الجهاز"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"بعض إعدادات الجهاز محمية برقم تعريف شخصي."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"تملك مؤسستك هذا الجهاز ويمكنها تتبّع حركة بيانات الشبكة."</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"تملك مؤسسة <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> هذا الجهاز ويمكنها تتبّع حركة بيانات الشبكة"</string>
@@ -903,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"تهانينا! تمت إضافة أداة ضبط واجهة مستخدم النظام إلى الإعدادات"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"إزالة من الإعدادات"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"هل تريد إزالة أداة ضبط واجهة مستخدم النظام من الإعدادات وإيقاف استخدام كل ميزاتها؟"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"تفعيل البلوتوث؟"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"لتوصيل لوحة المفاتيح بالجهاز اللوحي، يلزمك تفعيل بلوتوث أولاً."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"تفعيل"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"لا يمكن تعديل إشعارات المكالمات."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"يتعذّر ضبط مجموعة الإشعارات هذه هنا."</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"إشعار مستند إلى خادم وكيل"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"تم التلخيص بواسطة \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"جميع إشعارات <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"عرض المزيد"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"‏تم تلقائيًا &lt;b&gt;ترقية الإشعار إلى إعداد تلقائي&lt;/b&gt; من خلال النظام."</string>
@@ -1166,7 +1169,7 @@
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"‏‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> هو اختصار لوحة المفاتيح لاستخدام \"<xliff:g id="ID_4">^4</xliff:g>\"، وهي إحدى ميزات تسهيل الاستخدام. يتيح لك هذا الإجراء تكبير الشاشة بسرعة لعرض المحتوى بحجم أكبر. بعد تفعيل تكبير الشاشة، يمكنك الضغط على <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> والرمز \"+\" أو \"-\" لضبط التكبير أو التصغير."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"إيقاف الاختصار"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"عدم الإيقاف"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"‏‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> هو اختصار لوحة المفاتيح لاستخدام <xliff:g id="ID_4">^4</xliff:g>. ‫<xliff:g id="ID_5">^4</xliff:g> هو قارئ شاشة يقرأ العناصر المعروضة عليها بصوتٍ عالٍ، ما يجعله مفيدًا للأشخاص الذين يجدون صعوبة في النظر إلى الشاشة. وقد يؤدي ذلك إلى تغيير طريقة عمل جهازك."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"‏‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> هو اختصار لوحة المفاتيح لاستخدام <xliff:g id="ID_4">^4</xliff:g>. ‫<xliff:g id="ID_5">^4</xliff:g> هو قارئ شاشة يقرأ العناصر المعروضة عليها بصوتٍ عالٍ، ما يجعله مفيدًا للأشخاص الذين يجدون صعوبة في رؤية ما على الشاشة. وقد يؤدي ذلك إلى تغيير طريقة عمل جهازك."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"‏عند تفعيل اختصار لوحة المفاتيح، يتم السماح لميزة TalkBack بالتحكّم الكامل في جهازك."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"أذونات التحكم الكامل مناسبة لتطبيقات تسهيل الاستخدام، وليس لكل التطبيقات."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"عرض محتوى الشاشة والتحكّم فيه"</string>
@@ -1410,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"الاقتراحات"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"الإدخال"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"الإخراج"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"أوقِف الجلسة المشتركة لنقل الوسائط إلى جهاز آخر."</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"إيقاف"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"إيقاف المشاركة"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"جارٍ مشاركة الصوت"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"مشاركة الصوت"</string>
@@ -1736,12 +1737,15 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"لفتح الإشعارات، عليك التمرير سريعًا من أعلى يمين الشاشة"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"لفتح \"الإعدادات السريعة\"، عليك التمرير سريعًا من أعلى يسار الشاشة"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"رجوع"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"تسجيل الدخول"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"تسهيل الاستخدام"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"السابق"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"التالي"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"الانتقال إلى الصفحة التالية"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"الملء التلقائي"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"توسيع"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"مشاركة الموقع الجغرافي الدقيق"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"استخدام الموقع الجغرافي الدقيق"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"بالقرب من الموقع الجغرافي الدقيق"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"الموقع الجغرافي الدقيق"</string>
 </resources>

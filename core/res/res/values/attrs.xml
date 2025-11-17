@@ -4250,6 +4250,13 @@
              {@link android.view.inputmethod.InputMethodSubtype#getLayoutDisplayName} returns the
              value specified in this attribute. -->
         <attr name="layoutLabel" format="reference" />
+        <!-- The short label of the subtype. This is a non-localized string used to represent the
+             subtype in compact UI elements where the full display name is too long. It may be used
+             in place of an icon in some UI surfaces if a subtype icon is not specified. It is
+             recommended that the short label contains up to two glyphs to avoid visual truncation
+             in limited-space UI surfaces. Examples include an abbreviation, a locale code, a
+             symbol, or an emoji. -->
+        <attr name="shortLabel" format="string" />
         <!-- The icon of the subtype. -->
         <attr name="icon" />
         <!-- The locale of the subtype. This string should be a locale (for example en_US and fr_FR)
@@ -9654,6 +9661,18 @@
         <!-- The service that provides {@link android.service.voice.VisualQueryDetectionService}.
              Expect a component name to be provided. @hide @SystemApi -->
         <attr name="visualQueryDetectionService" format="string" />
+        <!-- Flag indicating whether this voice interaction service uses assist data when
+             available. By default, this value is false. -->
+        <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+        <attr name="usesAssistData" format="boolean" />
+        <!-- Flag indicating whether this voice interaction service uses assist screenshots
+             when available. By default, this value is false. -->
+        <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+        <attr name="usesAssistScreenshots" format="boolean" />
+        <!-- Flag indicating whether this voice interaction service uses the assist
+             structure screen content when available. By default, this value is false. -->
+        <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+        <attr name="usesAssistStructureScreenContent" format="boolean" />
 
     </declare-styleable>
 

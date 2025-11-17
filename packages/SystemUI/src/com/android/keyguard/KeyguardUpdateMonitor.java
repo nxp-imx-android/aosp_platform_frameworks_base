@@ -2523,7 +2523,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         mBroadcastDispatcher.registerReceiverWithHandler(mBroadcastAllReceiver, allUserFilter,
                 mHandler, UserHandle.ALL);
 
-        mSubscriptionManager.addOnSubscriptionsChangedListener(mSubscriptionListener);
+        mSubscriptionManager.addOnSubscriptionsChangedListener(mMainExecutor,
+                mSubscriptionListener);
         mUserTracker.addCallback(mUserChangedCallback, mMainExecutor);
 
         mTrustManager.registerTrustListener(this);

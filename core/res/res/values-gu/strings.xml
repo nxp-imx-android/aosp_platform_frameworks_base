@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"સાંભળવામાં મદદ આપતા ડિવાઇસ"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"ઍક્સેસિબિલિટી વપરાશ"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"ડિસ્પ્લે"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"માતાપિતાના યોગ્ય નિયંત્રણો"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> બૅટરીનો ઉપયોગ કરી રહ્યું છે"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> ઍપ બૅટરીનો ઉપયોગ કરી રહ્યાં છે"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"બૅટરી અને ડેટા વપરાશ વિશેની વિગતો માટે ટૅપ કરો"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"અનલૉક કરવા માટે પિન લખો"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ખોટો પિન કોડ."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"અનલૉક કરવા માટે, મેનૂ દબાવો તે પછી 0."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"ઇમર્જન્સી નંબર"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"કોઈ સેવા નથી"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"સ્ક્રીન લૉક કરી."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"અનલૉક કરવા માટે અથવા કટોકટીનો કૉલ કરવા માટે મેનૂ દબાવો."</string>
@@ -2277,7 +2277,7 @@
     <string name="bluetooth_airplane_mode_toast" msgid="2066399056595768554">"એરપ્લેન મોડ દરમિયાન બ્લૂટૂથ ચાલુ રહેશે"</string>
     <string name="car_loading_profile" msgid="8219978381196748070">"લોડિંગ"</string>
     <string name="file_count" msgid="3220018595056126969">"{count,plural, =1{{file_name} + # ફાઇલ}one{{file_name} + # ફાઇલ}other{{file_name} + # ફાઇલો}}"</string>
-    <string name="chooser_no_direct_share_targets" msgid="1511722103987329028">"શેર કરવા માટે સુઝાવ આપવામાં આવેલા કોઈ લોકો નથી"</string>
+    <string name="chooser_no_direct_share_targets" msgid="1511722103987329028">"શેર કરવા માટે સુઝાવ આપવામાં આવેલી કોઈ વ્યક્તિ નથી"</string>
     <string name="chooser_all_apps_button_label" msgid="3230427756238666328">"ઍપની સૂચિ"</string>
     <string name="usb_device_resolve_prompt_warn" msgid="325871329788064199">"આ ઍપને રેકૉર્ડ કરવાની પરવાનગી આપવામાં આવી નથી પરંતુ તે આ USB ડિવાઇસ મારફતે ઑડિયો કૅપ્ચર કરી શકે છે."</string>
     <string name="accessibility_system_action_home_label" msgid="3234748160850301870">"હોમ"</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"સિસ્ટમ સંસાધન સંબંધિત અલર્ટ"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"સંસાધનનો વધુ પડતો ઉપયોગ"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"ઍપ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> ઘણા બધા સંસાધનોનો ઉપયોગ કરી રહી છે.\""</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"તમારા માતાપિતા તરફથી અપડેટ"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> હાલ પૂરતી કાઢી નાખવામાં આવી હતી"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> હવે ઉપલબ્ધ છે"</string>
 </resources>

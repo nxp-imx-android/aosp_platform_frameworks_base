@@ -244,8 +244,8 @@ private class KeyguardTransitionAnimationCallbackImpl(
     @CujType
     private fun cujOrNull(from: KeyguardState, to: KeyguardState): Int? {
         return when {
-            from == KeyguardState.AOD -> Cuj.CUJ_LOCKSCREEN_TRANSITION_FROM_AOD
-            to == KeyguardState.AOD -> Cuj.CUJ_LOCKSCREEN_TRANSITION_TO_AOD
+            from == KeyguardState.AOD -> Cuj.CUJ_KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN
+            to == KeyguardState.AOD -> Cuj.CUJ_KEYGUARD_TRANSITION_LOCKSCREEN_TO_AOD
             else -> null
         }
     }

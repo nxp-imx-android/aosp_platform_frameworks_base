@@ -19,8 +19,6 @@ package com.android.systemui.qs.panels.ui.compose.toolbar
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,7 +58,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupPositionProvider
-import com.android.systemui.Flags
 import com.android.systemui.common.ui.icons.Edit
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.SpacingBetweenTooltipAndAnchor
@@ -159,7 +156,7 @@ fun EditModeButton(
                         ),
             ) {
                 Icon(
-                    imageVector = if (Flags.iconRefresh2025()) Edit else Icons.Default.Edit,
+                    imageVector = Edit,
                     contentDescription =
                         stringResource(id = R.string.accessibility_quick_settings_edit),
                 )

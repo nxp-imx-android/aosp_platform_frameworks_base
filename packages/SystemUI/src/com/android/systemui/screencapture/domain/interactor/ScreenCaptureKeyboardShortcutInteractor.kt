@@ -26,6 +26,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters.Record.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.LargeScreenCaptureFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion as LargeScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
 import com.android.systemui.user.data.repository.UserRepository
@@ -45,19 +46,32 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     private val userRepository: UserRepository,
     private val hsum: HeadlessSystemUserMode,
+    private val featuresInteractor: LargeScreenCaptureFeaturesInteractor,
 ) {
     fun attemptPartialRegionScreenshot() {
         backgroundScope.launch {
             launchPreCaptureUi(
-                defaultCaptureType = LargeScreenCaptureType.SCREENSHOT,
-                defaultCaptureRegion = LargeScreenCaptureRegion.PARTIAL,
+                captureType = LargeScreenCaptureType.SCREENSHOT,
+                captureRegion = LargeScreenCaptureRegion.PARTIAL,
+            )
+        }
+    }
+
+    fun attemptAppWindowScreenshot() {
+        if (!featuresInteractor.appWindowRegionSupported) {
+            return
+        }
+        backgroundScope.launch {
+            launchPreCaptureUi(
+                captureType = LargeScreenCaptureType.SCREENSHOT,
+                captureRegion = LargeScreenCaptureRegion.APP_WINDOW,
             )
         }
     }
 
     private suspend fun launchPreCaptureUi(
-        defaultCaptureType: LargeScreenCaptureType,
-        defaultCaptureRegion: LargeScreenCaptureRegion,
+        captureType: LargeScreenCaptureType,
+        captureRegion: LargeScreenCaptureRegion,
     ) {
         // TODO(b/420714826) Check if the large-screen screen capture UI is supported on this device
         // device's display (i.e. the focused display or external display). If not supported,
@@ -81,15 +95,33 @@ constructor(
             return
         }
 
-        uiEventLogger.log(
-            ScreenCaptureEvent.SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT
-        )
+        logEventForType(captureRegion)
+
         screenCaptureUiInteractor.show(
             ScreenCaptureUiParameters.Record(
-                largeScreenParameters =
-                    LargeScreenCaptureUiParameters(defaultCaptureType, defaultCaptureRegion)
+                largeScreenParameters = LargeScreenCaptureUiParameters(captureType, captureRegion)
             )
         )
+    }
+
+    private fun logEventForType(captureRegion: LargeScreenCaptureRegion) {
+        when (captureRegion) {
+            LargeScreenCaptureRegion.PARTIAL -> {
+                uiEventLogger.log(
+                    ScreenCaptureEvent
+                        .SCREEN_CAPTURE_LARGE_SCREEN_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT
+                )
+            }
+            LargeScreenCaptureRegion.APP_WINDOW -> {
+                uiEventLogger.log(
+                    ScreenCaptureEvent
+                        .SCREEN_CAPTURE_LARGE_SCREEN_APP_WINDOW_SCREENSHOT_KEYBOARD_SHORTCUT
+                )
+            }
+            else -> {
+                // Do nothing.
+            }
+        }
     }
 
     private companion object {

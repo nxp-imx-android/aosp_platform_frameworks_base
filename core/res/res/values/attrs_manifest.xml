@@ -983,10 +983,17 @@
 
     <!-- Specify the configuration changes that trigger the system to recreate the
          current activity if any of these configuration changes happen in the system.
-         The valid configuration changes include mcc and mnc which are the same with
-         those in configChanges. By default from Android O, we don't recreate the activity
-         even the app doesn't specify mcc or mnc in configChanges. If the app wants to
-         be recreated, specify them in recreateOnConfigChanges. -->
+         The valid configuration changes include mcc, mnc, touchscreen, keyboard,
+         keyboardHidden, navigation and colorMode, which are the same with those in
+         configChanges. By default from Android O, we don't recreate the activity
+         even the app doesn't specify mcc or mnc in configChanges. Similarly, by
+         default from Android 17, we don't recreate the activity even the app
+         doesn't specify touchscreen, keyboard, keyboardHidden, navigation and
+         colorMode in configChanges. If the app wants the activity to be recreated,
+         it should specify the corresponding flag in recreateOnConfigChanges and
+         not specify it in configChanges. Please note that if a flag is specified
+         in both attributes, the activity will not be recreated on that config
+         changes.-->
     <attr name="recreateOnConfigChanges">
         <!-- The IMSI MCC has changed, that is a SIM has been detected and
              updated the Mobile Country Code. -->
@@ -994,6 +1001,21 @@
         <!-- The IMSI MNC has changed, that is a SIM has been detected and
              updated the Mobile Network Code. -->
         <flag name="mnc" value="0x0002" />
+        <!-- The touchscreen has changed, for example the user has moved the
+             app across displays with different touchscreen abilities. -->
+        <flag name="touchscreen" value="0x0004" />
+        <!-- The keyboard type has changed, for example the user has plugged
+             in an external keyboard. -->
+        <flag name="keyboard" value="0x0008" />
+        <!-- The keyboard or navigation accessibility has changed, for example
+             the user has slid the keyboard out to expose it.  Note that
+             despite its name, this applied to any accessibility: keyboard
+             or navigation. -->
+        <flag name="keyboardHidden" value="0x0010" />
+        <!-- The navigation type has changed.  Should never normally happen. -->
+        <flag name="navigation" value="0x0020" />
+        <!-- The color mode of the screen has changed (color gamut or dynamic range). -->
+        <flag name="colorMode" value="0x0040" />
     </attr>
 
     <!-- Specify one or more configuration changes that the activity will
@@ -1027,17 +1049,32 @@
         <!-- The locale has changed, that is the user has selected a new
              language that text should be displayed in. -->
         <flag name="locale" value="0x0004" />
-        <!-- The touchscreen has changed.  Should never normally happen. -->
+        <!-- The touchscreen has changed, for example the user has moved the
+             app across displays with different touchscreen abilities. By
+             default from Android 17, we don't recreate the activity even the
+             app doesn't specify touchscreen in configChanges. If the app wants
+             to recreate the activity, specify touchscreen in
+             recreateOnConfigChanges. -->
         <flag name="touchscreen" value="0x0008" />
         <!-- The keyboard type has changed, for example the user has plugged
-             in an external keyboard. -->
+             in an external keyboard. By default from Android 17, we don't
+             recreate the activity even the app doesn't specify keyboard in
+             configChanges. If the app wants to recreate the activity, specify
+             keyboard in recreateOnConfigChanges. -->
         <flag name="keyboard" value="0x0010" />
         <!-- The keyboard or navigation accessibility has changed, for example
              the user has slid the keyboard out to expose it.  Note that
              despite its name, this applied to any accessibility: keyboard
-             or navigation. -->
+             or navigation. By default from Android 17, we don't recreate
+             the activity even the app doesn't specify keyboardHidden in
+             configChanges. If the app wants to recreate the activity,
+             specify keyboardHidden in recreateOnConfigChanges. -->
         <flag name="keyboardHidden" value="0x0020" />
-        <!-- The navigation type has changed.  Should never normally happen. -->
+        <!-- The navigation type has changed.  Should never normally happen.
+             By default from Android 17, we don't recreate the activity
+             even the app doesn't specify navigation in configChanges. If the
+             app wants to recreate the activity, specify navigation in
+             recreateOnConfigChanges. -->
         <flag name="navigation" value="0x0040" />
         <!-- The screen orientation has changed, that is the user has
              rotated the device. -->
@@ -1069,7 +1106,11 @@
         <flag name="density" value="0x1000" />
         <!-- The layout direction has changed. For example going from LTR to RTL. -->
         <flag name="layoutDirection" value="0x2000" />
-        <!-- The color mode of the screen has changed (color gamut or dynamic range). -->
+        <!-- The color mode of the screen has changed (color gamut or dynamic range).
+             By default from Android 17, we don't recreate the activity even
+             the app doesn't specify colorMode in configChanges. If the app
+             wants to recreate the activity, specify colorMode in
+             recreateOnConfigChanges. -->
         <flag name="colorMode" value="0x4000" />
         <!-- The grammatical gender has changed, for example the user set the grammatical gender
              from the UI. -->
@@ -3387,8 +3428,8 @@
              the process and then starts the service from a function named
              <code>ANativeService_onCreate</code> in the library. The library and function names
              can be configured by setting the properties
-             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_LIB_NAME} and
-             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_FUNC_NAME}
+             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_LIBRARY_NAME} and
+             {@link android.content.pm.PackageManager#PROPERTY_NATIVE_SERVICE_FUNCTION_NAME}
              respectively.
              <p>
              Attempts to start services that enable this attribute may fail in system running older

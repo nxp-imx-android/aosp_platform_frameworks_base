@@ -6048,11 +6048,6 @@ public class WindowManagerService extends IWindowManager.Stub
         public static final int REPARENT_TASK_TO_DEFAULT_DISPLAY = 65;
         public static final int INSETS_CHANGED = 66;
 
-        /**
-         * Used to denote that an integer field in a message will not be used.
-         */
-        public static final int UNUSED = 0;
-
         @Override
         public void handleMessage(Message msg) {
             if (DEBUG_WINDOW_TRACE) {
@@ -8559,7 +8554,7 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
-        public SurfaceControl createMirrorForDisplayContent(int displayId) {
+        public DisplayMirror createMirrorForDisplayContent(int displayId) {
             synchronized (mGlobalLock) {
                 final DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (dc == null) {
@@ -8567,14 +8562,34 @@ public class WindowManagerService extends IWindowManager.Stub
                             + displayId + " - DisplayContent not found.");
                     return null;
                 }
-                final SurfaceControl sc = dc.getSurfaceControl();
-                if (sc == null) {
-                    Slog.e(TAG, "Failed to create mirror for display: " + displayId
-                            + " - SurfaceControl is not initialized.");
+                final var mirror = dc.createMirrorForDisplay();
+                if (mirror == null) {
+                    Slog.e(TAG, "Failed to create mirror for display: "
+                            + displayId + " - DisplayContent failed to mirror.");
                     return null;
                 }
-                // Return the mirror surface to avoid leaking the display surface outside of WM.
-                return SurfaceControl.mirrorSurface(sc);
+                // Wrap the API surface to ensure we call into WM with the lock.
+                // Expose a copy of the mirror SurfaceControl that is owned by the impl so that the
+                // returned copy's lifecycle is tied to this wrapper.
+                final var mirrorSurfaceControlCopy = makeSurfaceBuilder()
+                        .setName("mirrorSurfaceControlCopy")
+                        .build();
+                mirrorSurfaceControlCopy.copyFrom(mirror.getMirrorSurfaceControl(),
+                        "WMS#createMirrorForDisplayContent");
+                return new DisplayMirror() {
+                    @Override
+                    public SurfaceControl getMirrorSurfaceControl() {
+                        return mirrorSurfaceControlCopy;
+                    }
+
+                    @Override
+                    public void close() throws Exception {
+                        synchronized (mGlobalLock) {
+                            mirror.close();
+                        }
+                        mirrorSurfaceControlCopy.release();
+                    }
+                };
             }
         }
 

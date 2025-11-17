@@ -81,6 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"ପ୍ରାଇଭେଟରେ ସ୍କ୍ରିନସଟକୁ ସେଭ କରାଯାଉଛି"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"ସ୍କ୍ରୀନଶଟ୍ ସେଭ୍ ହୋଇଛି"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"ସ୍କ୍ରୀନ୍‍ଶଟ୍ ସେଭ୍ କରିହେବ ନାହିଁ"</string>
+    <string name="screenshot_save_to" msgid="3294574417295882864">"ଏଥିରେ ସେଭ କରନ୍ତୁ"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"ଫୋଲ୍ଡର ଚୟନ କରନ୍ତୁ"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ଏକ୍ସଟର୍ନଲ ଡିସପ୍ଲେ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ସ୍କ୍ରିନସଟ୍ ସେଭ୍ କରିବା ପୂର୍ବରୁ ଡିଭାଇସକୁ ଅନଲକ୍ କରାଯିବା ଆବଶ୍ୟକ"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ପୁଣିଥରେ ସ୍କ୍ରୀନ୍‌ଶଟ୍ ନେବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ"</string>
@@ -171,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ଅଡିଓ ସେୟାର କରନ୍ତୁ"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ଆପ ୱିଣ୍ଡୋ ସେୟାର କରନ୍ତୁ"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ଟାବ ସେୟାର କରନ୍ତୁ"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ ସେୟାର କରନ୍ତୁ"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"ଆପଣ ଏକ ଆପ ସେୟାର କରିଲେ, ସେହି ଆପରେ ଦେଖାଯାଉଥିବା ବା ଚାଲୁଥିବା ସବୁକିଛି [APP NAME]କୁ ଦେଖାଯାଏ। ତେଣୁ ପାସୱାର୍ଡ, ପେମେଣ୍ଟ ବିବରଣୀ, ମେସେଜ, ଫଟୋ ଓ ଅଡିଓ ଓ ଭିଡିଓ ପରି ବିଷୟ ପ୍ରତି ସତର୍କ ରୁହନ୍ତୁ।"</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"ଆପଣ ଆପଣଙ୍କ ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନକୁ ସେୟାର କରିଲେ ଆପଣଙ୍କ ସ୍କ୍ରିନର ସବୁକିଛି [APP NAME]କୁ ଦେଖାଯାଏ। ତେଣୁ ପାସୱାର୍ଡ, ପେମେଣ୍ଟ ବିବରଣୀ, ମେସେଜ, ଫଟୋ ଓ ଅଡିଓ ଓ ଭିଡିଓ ପରି ବିଷୟ ପ୍ରତି ସତର୍କ ରୁହନ୍ତୁ।"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ୱିଣ୍ଡୋର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ୱିଣ୍ଡୋ ରେକର୍ଡ କରନ୍ତୁ"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ଚୟନିତ ଏରିଆର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
@@ -709,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"ସବୁ ଖାଲି କରନ୍ତୁ"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"ପରିଚାଳନା କରନ୍ତୁ"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"ଇତିହାସ"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"ବିଜ୍ଞପ୍ତି ସେଟିଂସ"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"ବିଜ୍ଞପ୍ତି ଇତିହାସ"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"ନୂଆ"</string>
@@ -727,7 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ଆପଣ ଥରକେ ଏକାଧିକ ବିଜ୍ଞପ୍ତି ପ୍ରାପ୍ତ କଲେ ଆପଣଙ୍କ ଡିଭାଇସର ଭଲ୍ୟୁମ ଓ ଆଲର୍ଟ ସ୍ୱତଃ 2 ମିନିଟ ପର୍ଯ୍ୟନ୍ତ କମ ହୁଏ।"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ପୁରୁଣା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଦେଖିବାକୁ ଅନଲକ କରନ୍ତୁ"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"ଏହି ଡିଭାଇସ୍ ଆପଣଙ୍କ ବାପାମାଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"କିଛି ସେଟିଂସ ତୁମ ବାପାମାଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"ଏହି ଡିଭାଇସ ତୁମ ବାପାମାଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"କିଛି ଡିଭାଇସ ସେଟିଂସ PIN ଦ୍ୱାରା ସୁରକ୍ଷିତ ଅଟେ।"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ଏହି ଡିଭାଇସର ମାଲିକାନା ଆପଣଙ୍କ ସଂସ୍ଥା ପାଖରେ ଅଛି ଏବଂ ଏହା ନେଟୱାର୍କ ଟ୍ରାଫିକର ନିରୀକ୍ଷଣ କରିପାରେ"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"ଏହି ଡିଭାଇସଟି <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>ର ଅଟେ ଏବଂ ଏହା ନେଟୱାର୍କ ଟ୍ରାଫିକକୁ ନିରୀକ୍ଷଣ କରିପାରେ"</string>
@@ -903,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"ଅଭିନନ୍ଦନ! ସିଷ୍ଟମ୍‍ UI ଟ୍ୟୁନର୍‍କୁ ସେଟିଙ୍ଗରେ ଯୋଡ଼ାଯାଇଛି"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"ସେଟିଙ୍ଗରୁ ବାହାର କରିଦିଅନ୍ତୁ"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"ସେଟିଙ୍ଗରୁ ସିଷ୍ଟମ୍‍ UI ଟ୍ୟୁନର୍‍କୁ ବାହାର କରି ତାହାର ସମସ୍ତ ସୁବିଧା ବ୍ୟବହାର କରିବା ବନ୍ଦ କରିବେ?"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"ବ୍ଲୁଟୂଥ୍‍‍ ଚାଲୁ କରିବେ?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ଆପଣଙ୍କ ଟାବଲେଟ୍‌ରେ କୀ’ବୋର୍ଡ ସଂଯୋଗ କରିବା ପାଇଁ ଆପଣଙ୍କୁ ପ୍ରଥମେ ବ୍ଲୁଟୂଥ୍‍‍ ଅନ୍‍ କରିବାକୁ ହେବ।"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ଚାଲୁ କରନ୍ତୁ"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"କଲ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପରିବର୍ତ୍ତନ କରାଯାଇପାରିବ ନାହିଁ।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ଏଠାରେ ଏହି ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକର ଗ୍ରୁପ୍ କନଫ୍ୟୁଗର୍ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"ବିଜ୍ଞପ୍ତି ପ୍ରକ୍ସୀ ହୋଇଛି"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> ଦ୍ୱାରା ସାରାଂଶ ତିଆରି କରାଯାଇଛି"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"ସମସ୍ତ <xliff:g id="APP_NAME">%1$s</xliff:g>ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ"</string>
     <string name="see_more_title" msgid="7409317011708185729">"ଅଧିକ ଦେଖନ୍ତୁ"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ସିଷ୍ଟମ୍ ଏହି ବିଜ୍ଞପ୍ତିକୁ ସ୍ୱଚାଳିତ ଭାବେ &lt;b&gt;ଡିଫଲ୍ଟକୁ ପ୍ରମୋଟ୍ କରିଛି&lt;/b&gt;।"</string>
@@ -1410,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ପ୍ରସ୍ତାବିତ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ଇନପୁଟ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ଆଉଟପୁଟ"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ଅନ୍ୟ ଏକ ଡିଭାଇସକୁ ମିଡିଆ ମୁଭ କରିବା ପାଇଁ ଆପଣଙ୍କ ସେୟାର କରାଯାଇଥିବା ସେସନକୁ ବନ୍ଦ କରନ୍ତୁ"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"ସେୟାର କରିବା ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"ଅଡିଓ ସେୟାର କରାଯାଉଛି"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"ଅଡିଓ ସେୟାର କରନ୍ତୁ"</string>
@@ -1736,12 +1737,15 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ଖୋଲିବା ପାଇଁ ଉପର ବାମ ପଟରୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"କୁଇକ ସେଟିଂସ ଖୋଲିବାକୁ ଉପର ଡାହାଣ ପଟରୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ପଛକୁ ଫେରନ୍ତୁ"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"ସାଇନ ଇନ କରନ୍ତୁ"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"ଆକ୍ସେସିବିଲିଟୀ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ପୂର୍ବବର୍ତ୍ତୀ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ପରବର୍ତ୍ତୀ"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ପରବର୍ତ୍ତୀ ପୃଷ୍ଠାକୁ ନାଭିଗେଟ କରନ୍ତୁ"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ଅଟୋଫିଲ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ବିସ୍ତାର କରନ୍ତୁ"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"ସଠିକ ଲୋକେସନ ସେୟାର କରନ୍ତୁ"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ସଠିକ ଲୋକେସନ ବ୍ୟବହାର କରନ୍ତୁ"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"ସଠିକ ଲୋକେସନ ପାଖରେ"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"ସଠିକ ଲୋକେସନ"</string>
 </resources>

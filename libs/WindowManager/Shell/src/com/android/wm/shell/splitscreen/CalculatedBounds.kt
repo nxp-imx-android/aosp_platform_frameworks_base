@@ -19,12 +19,12 @@ package com.android.wm.shell.splitscreen
 import android.graphics.Rect
 
 /**
- * Holds the calculated bounds for all elements in a split-screen layout.
- * This is the output of the RecursiveSplitLayout calculation.
+ * Holds the calculated bounds for all elements in a split-screen layout. This is the output of the
+ * RecursiveSplitLayout calculation.
  */
 data class CalculatedBounds(
     val leafNodeBounds: Map<LeafNode, Rect>,
-    val dividerBounds: Map<Pair<LayoutNode, LayoutNode>, Rect>
+    val dividerBounds: Map<Pair<LayoutNode, LayoutNode>, Rect>,
 ) {
     override fun toString(): String {
         val sb = StringBuilder("LayoutResult:\n")
@@ -43,9 +43,7 @@ data class CalculatedBounds(
     }
 }
 
-/**
- * Listener for receiving updates when the layout changes.
- */
+/** Listener for receiving updates when the layout changes. */
 interface OnLayoutChangeListener {
     fun onLayoutChanged(result: CalculatedBounds)
 }

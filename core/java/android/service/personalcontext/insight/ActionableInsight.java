@@ -22,12 +22,12 @@ import android.annotation.Nullable;
 import android.content.Intent;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.android.internal.util.Preconditions;
+
 import java.util.Objects;
 
 /** An insight that contains information about an action and how to invoke it. */
@@ -41,10 +41,10 @@ public final class ActionableInsight extends ContextInsight {
 
     /** Private constructor. Used by the builder. */
     private ActionableInsight(
-            @NonNull List<ContextHintWithSignature> originHints,
+            @NonNull ContextInsight.ConstructorParams baseParams,
             @NonNull InsightActionDetails actionDetails,
             @NonNull InsightDisplayDetails displayDetails) {
-        super(originHints);
+        super(baseParams);
         mActionDetails = actionDetails;
         mDisplayDetails = displayDetails;
     }
@@ -52,18 +52,15 @@ public final class ActionableInsight extends ContextInsight {
     /**
      * Internal constructor only for use by {@link ContextInsight#createInsightFromBundle(Bundle)}.
      */
-    ActionableInsight(@NonNull Bundle b) {
-        super(b);
-
-        final Bundle insightData = b.getBundle(KEY_INSIGHT_DATA);
-        Objects.requireNonNull(insightData, "Bundle must contain insight data");
-
-        mActionDetails = insightData.getParcelable(KEY_ACTION_DETAILS, InsightActionDetails.class);
-        mDisplayDetails =
-                insightData.getParcelable(KEY_DISPLAY_DETAILS, InsightDisplayDetails.class);
+    ActionableInsight(@NonNull ContextInsight.ConstructorParams baseParams, @NonNull Bundle b) {
+        this(
+                baseParams,
+                b.getParcelable(KEY_ACTION_DETAILS, InsightActionDetails.class),
+                b.getParcelable(KEY_DISPLAY_DETAILS, InsightDisplayDetails.class));
     }
 
     @Override
+    @NonNull
     Bundle toBundleImpl() {
         final Bundle b = new Bundle();
         b.putParcelable(KEY_ACTION_DETAILS, mActionDetails);
@@ -135,57 +132,55 @@ public final class ActionableInsight extends ContextInsight {
     }
 
     /** Builder for {@link ActionableInsight}. */
+    @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
-        private final List<ContextHintWithSignature> mOriginHints = new ArrayList<>();
+        private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private final InsightActionDetails mActionDetails;
         private final InsightDisplayDetails mDisplayDetails;
 
         /**
          * Creates a new builder for an actionable insight.
          *
-         * @param actionDetails the action details of the actionable insight.
-         * @param displayDetails the display details of the actionable insight.
+         * @param actionDetails the action details of the actionable insight
+         * @param displayDetails the display details of the actionable insight
          */
         public Builder(
                 @NonNull InsightActionDetails actionDetails,
                 @NonNull InsightDisplayDetails displayDetails) {
-            Objects.requireNonNull(actionDetails, "actionDetails is null");
-            Objects.requireNonNull(displayDetails, "displayDetails is null");
-
-            mActionDetails = actionDetails;
-            mDisplayDetails = displayDetails;
+            mActionDetails = Preconditions.checkNotNull(actionDetails, "actionDetails is null");
+            mDisplayDetails = Preconditions.checkNotNull(displayDetails, "displayDetails is null");
         }
 
         /**
          * Adds an origin {@link ContextHint} to the resulting {@link BundleInsight}.
          *
-         * @param hint the origin {@link ContextHint} to add.
+         * @param hint the origin {@link ContextHint} to add
          */
         @NonNull
         public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
-            mOriginHints.add(hint);
+            mBaseBuilder.addOriginHint(hint);
             return this;
         }
 
         /**
-         * Adds origin {@link ContextHint}s to the resulting {@link BundleInsight}.
+         * Adds a token to the resulting {@link ContextInsight}.
          *
-         * @param hints the origin {@link ContextHint}s to add.
+         * @param token the token to add
          */
         @NonNull
-        public Builder addOriginHints(@NonNull Collection<ContextHintWithSignature> hints) {
-            mOriginHints.addAll(hints);
+        public Builder addToken(@NonNull Token token) {
+            mBaseBuilder.addToken(token);
             return this;
         }
 
         /**
          * Builds the actionable insight.
          *
-         * @return the actionable insight.
+         * @return the actionable insight
          */
         @NonNull
         public ActionableInsight build() {
-            return new ActionableInsight(mOriginHints, mActionDetails, mDisplayDetails);
+            return new ActionableInsight(mBaseBuilder.build(), mActionDetails, mDisplayDetails);
         }
     }
 }

@@ -124,8 +124,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
-        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION
     )
     fun onDrag_boundsIntersectWithStartDisplay_showIndicator() {
         controller.onDragMove(
@@ -153,8 +152,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
-        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION
     )
     fun onDrag_boundsIntersectWithDesktopModeUnsupportedDisplay_noIndicatorOnThatDisplay() {
         shellDesktopState.overrideWindowDropTargetEligibility[1] = false
@@ -174,8 +172,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
-        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION
     )
     fun onDrag_boundsIntersectWithNonStartDisplayAndMoveAway_showHideAndDisposeIndicator() {
         controller.onDragMove(
@@ -242,8 +239,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
-        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION
     )
     fun disposeAllIndicators_verifyAllIndicatorsDisposed() {
         // Drag a first task to create indicators on two displays

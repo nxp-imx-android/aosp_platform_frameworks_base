@@ -20,7 +20,9 @@ import android.annotation.StringRes;
 import android.app.Activity;
 import android.app.AppOpsManager;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -43,6 +45,9 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
 
     private static final String ARG_AGENT_PACKAGE_NAME = "argAgentPackageName";
     private static final String ARG_RESULT_RECEIVER = "argResultReceiver";
+    private static final String PREF_COMPUTER_CONTROL_ACCESS_COUNTER =
+            "computer_control_access_counter";
+    private static final int MAX_DENIALS = 3;
 
     private String mAgentPackageName;
     private ResultReceiver mResultReceiver;
@@ -87,11 +92,11 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
         View view = activity.getLayoutInflater()
                 .inflate(R.layout.request_computer_control_access_dialog, null);
 
-        view.findViewById(R.id.allow_button).setOnClickListener(this::onAllow);
-        view.findViewById(R.id.dont_allow_button).setOnClickListener(v -> getDialog().cancel());
-        view.findViewById(R.id.always_allow_button).setOnClickListener(this::onAlwaysAllow);
+        view.requireViewById(R.id.allow_button).setOnClickListener(this::onAllow);
+        view.requireViewById(R.id.dont_allow_button).setOnClickListener(this::onDenied);
+        view.requireViewById(R.id.always_allow_button).setOnClickListener(this::onAlwaysAllow);
 
-        TextView titleView = view.findViewById(R.id.title);
+        TextView titleView = view.requireViewById(R.id.title);
         Spanned title = getHtmlFromResources(
                 R.string.request_computer_control_access_dialog_title, mAgentAppLabel);
         titleView.setText(title);
@@ -120,14 +125,44 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
     }
 
     private void onAllow(View view) {
+        resetDenialCount();
         finish(Activity.RESULT_OK);
     }
 
     private void onAlwaysAllow(View view) {
+        resetDenialCount();
+        setComputerControlOp(AppOpsManager.MODE_ALLOWED);
+        finish(Activity.RESULT_OK);
+    }
+
+    private void setComputerControlOp(int mode) {
         AppOpsManager appOpsManager = requireActivity().getSystemService(AppOpsManager.class);
         appOpsManager.setMode(AppOpsManager.OP_COMPUTER_CONTROL, mAgentUid, mAgentPackageName,
-                AppOpsManager.MODE_ALLOWED);
-        finish(Activity.RESULT_OK);
+                mode);
+    }
+
+    private void onDenied(View v) {
+        if (increaseDenialCount() >= MAX_DENIALS) {
+            setComputerControlOp(AppOpsManager.MODE_IGNORED);
+        }
+        if (getDialog() != null) {
+            getDialog().cancel();
+        }
+    }
+
+    private int increaseDenialCount() {
+        SharedPreferences preferences = getContext().getSharedPreferences(
+                "computer_control_access_counter", Context.MODE_PRIVATE);
+        int deniedCount = preferences.getInt(mAgentPackageName, 0);
+        deniedCount++;
+        preferences.edit().putInt(mAgentPackageName, deniedCount).apply();
+        return deniedCount;
+    }
+
+    private void resetDenialCount() {
+        SharedPreferences preferences = getContext().getSharedPreferences(
+                PREF_COMPUTER_CONTROL_ACCESS_COUNTER, Context.MODE_PRIVATE);
+        preferences.edit().remove(mAgentPackageName).apply();
     }
 
     private Spanned getHtmlFromResources(@StringRes int resId, CharSequence... formatArgs) {

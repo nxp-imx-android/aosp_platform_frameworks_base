@@ -32,7 +32,6 @@ import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fake
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kairos.ActivatedKairosFixture
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosTestScope
 import com.android.systemui.kairos.kairos
 import com.android.systemui.kairos.map
@@ -74,7 +73,6 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 
-@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileIconViewModelKairosTest : SysuiTestCase() {
@@ -100,7 +98,7 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
     }
     private val Kosmos.repository: FakeMobileConnectionRepositoryKairos by
         Kosmos.Fixture {
-            FakeMobileConnectionRepositoryKairos(SUB_1_ID, kairos, tableLogBuffer)
+            FakeMobileConnectionRepositoryKairos(SUB_1_ID, tableLogBuffer)
                 .also {
                     mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(
                         SUB_1_ID

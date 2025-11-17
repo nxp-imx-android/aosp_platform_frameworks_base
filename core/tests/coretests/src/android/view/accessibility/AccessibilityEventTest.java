@@ -93,6 +93,24 @@ public class AccessibilityEventTest {
     }
 
     @Test
+    public void testContentChangeTypes_getSetWorkAcrossParceling() {
+        final int contentChangeTypes = AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE
+                | AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT;
+        AccessibilityEvent event = new AccessibilityEvent();
+        event.setContentChangeTypes(contentChangeTypes);
+        assertEquals(contentChangeTypes, copyEventViaParcel(event).getContentChangeTypes());
+    }
+
+    @Test
+    public void testSpeechStateChangeTypes_getSetWorkAcrossParceling() {
+        final int speechStateChangeTypes = AccessibilityEvent.SPEECH_STATE_SPEAKING_START
+                | AccessibilityEvent.SPEECH_STATE_LISTENING_START;
+        AccessibilityEvent event = new AccessibilityEvent();
+        event.setSpeechStateChangeTypes(speechStateChangeTypes);
+        assertEquals(speechStateChangeTypes, copyEventViaParcel(event).getSpeechStateChangeTypes());
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_A11Y_TEXT_CHANGE_TYPES_API)
     public void testTextChangeTypes_getSetWorkAcrossParceling() {
         final int textChangeTypes = AccessibilityEvent.TEXT_CHANGE_TYPE_IN_COMPOSITION

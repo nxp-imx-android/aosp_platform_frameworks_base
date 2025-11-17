@@ -73,7 +73,6 @@ import com.android.keyguard.BouncerPanelExpansionCalculator;
 import com.android.systemui.ExpandHelper;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.dump.DumpManager;
-import com.android.systemui.flags.BrokenWithSceneContainer;
 import com.android.systemui.flags.DisableSceneContainer;
 import com.android.systemui.flags.EnableSceneContainer;
 import com.android.systemui.flags.FakeFeatureFlags;
@@ -115,7 +114,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -1269,6 +1267,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.setIsBeingDragged(false);
         mStackScroller.setIsBeingDragged(true);
 
+        clearInvocations(mStackScrollLayoutController);
         long downTime = SystemClock.uptimeMillis() - 100;
         MotionEvent moveEvent1 = MotionEvent.obtain(
                 /* downTime= */ downTime,
@@ -1278,11 +1277,19 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
                 201,
                 0
         );
+        // When a MOVE event is received without a prior DOWN, NSSL synthesizes a DOWN event
+        // to send to the Scene Framework, so that it receives a valid gesture start.
         MotionEvent syntheticDownEvent = moveEvent1.copy();
         syntheticDownEvent.setAction(MotionEvent.ACTION_DOWN);
+
+        // Use doAnswer instead of Captor to avoid test failures due to MotionEvent#recyle
+        doAnswer(input -> {
+            MotionEvent ev = input.getArgument(0);
+            assertThat(syntheticDownEvent.getAction()).isEqualTo(ev.getAction());
+            return null;
+        }).when(mStackScrollLayoutController).sendTouchToSceneFramework(any(MotionEvent.class));
         mStackScroller.dispatchTouchEvent(moveEvent1);
 
-        assertThatMotionEvent(captureTouchSentToSceneFramework()).matches(syntheticDownEvent);
         assertTrue(mStackScroller.getIsBeingDragged());
         clearInvocations(mStackScrollLayoutController);
 
@@ -1295,9 +1302,13 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
                 0
         );
 
+        doAnswer(input -> {
+            MotionEvent ev = input.getArgument(0);
+            assertThat(moveEvent2.getAction()).isEqualTo(ev.getAction());
+            return null;
+        }).when(mStackScrollLayoutController).sendTouchToSceneFramework(any(MotionEvent.class));
         mStackScroller.dispatchTouchEvent(moveEvent2);
 
-        assertThatMotionEvent(captureTouchSentToSceneFramework()).matches(moveEvent2);
         assertTrue(mStackScroller.getIsBeingDragged());
         clearInvocations(mStackScrollLayoutController);
 
@@ -1310,9 +1321,13 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
                 0
         );
 
+        doAnswer(input -> {
+            MotionEvent ev = input.getArgument(0);
+            assertThat(upEvent.getAction()).isEqualTo(ev.getAction());
+            return null;
+        }).when(mStackScrollLayoutController).sendTouchToSceneFramework(any(MotionEvent.class));
         mStackScroller.dispatchTouchEvent(upEvent);
 
-        assertThatMotionEvent(captureTouchSentToSceneFramework()).matches(upEvent);
         assertFalse(mStackScroller.getIsBeingDragged());
     }
 
@@ -1333,6 +1348,77 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.dispatchTouchEvent(upEvent);
         verify(mStackScrollLayoutController, never()).sendTouchToSceneFramework(any());
         assertFalse(mStackScroller.getIsBeingDragged());
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void testDispatchTouchEvent_sceneContainerEnabled_sendLastActionUp() {
+        mStackScroller.setIsBeingDragged(false);
+        mStackScroller.setIsExpandingNotification(true);
+
+        long downTime = SystemClock.uptimeMillis() - 100;
+        MotionEvent moveEvent1 = MotionEvent.obtain(
+                /* downTime= */ downTime,
+                /* eventTime= */ SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_MOVE,
+                101,
+                201,
+                0
+        );
+        // When a MOVE event is received without a prior DOWN, NSSL synthesizes a DOWN event
+        // to send to the Scene Framework, so that it receives a valid gesture start.
+        MotionEvent syntheticDownEvent = MotionEvent.obtain(moveEvent1);
+        syntheticDownEvent.setAction(MotionEvent.ACTION_DOWN);
+
+        // Use doAnswer instead of Captor to avoid test failures due to MotionEvent#recyle
+        doAnswer(input -> {
+            MotionEvent ev = input.getArgument(0);
+            assertThat(syntheticDownEvent.getAction()).isEqualTo(ev.getAction());
+            return null;
+        }).when(mStackScrollLayoutController).sendTouchToSceneFramework(any(MotionEvent.class));
+        mStackScroller.dispatchTouchEvent(moveEvent1);
+
+        assertTrue(mStackScroller.isExpandingNotification());
+        clearInvocations(mStackScrollLayoutController);
+
+        MotionEvent moveEvent2 = MotionEvent.obtain(
+                /* downTime= */ downTime,
+                /* eventTime= */ SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_MOVE,
+                102,
+                202,
+                0
+        );
+
+        doAnswer(input -> {
+            MotionEvent ev = input.getArgument(0);
+            assertThat(moveEvent2.getAction()).isEqualTo(ev.getAction());
+            return null;
+        }).when(mStackScrollLayoutController).sendTouchToSceneFramework(any(MotionEvent.class));
+        mStackScroller.dispatchTouchEvent(moveEvent2);
+
+        assertTrue(mStackScroller.isExpandingNotification());
+        clearInvocations(mStackScrollLayoutController);
+
+        mStackScroller.setIsExpandingNotification(false);
+
+        MotionEvent upEvent = MotionEvent.obtain(
+                /* downTime= */ downTime,
+                /* eventTime= */ SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_UP,
+                103,
+                203,
+                0
+        );
+
+        doAnswer(input -> {
+            MotionEvent ev = input.getArgument(0);
+            assertThat(upEvent.getAction()).isEqualTo(ev.getAction());
+            return null;
+        }).when(mStackScrollLayoutController).sendTouchToSceneFramework(any(MotionEvent.class));
+        mStackScroller.dispatchTouchEvent(upEvent);
+
+        assertFalse(mStackScroller.isExpandingNotification());
     }
 
 
@@ -1440,7 +1526,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationThrottleHun.FLAG_NAME)
-    @BrokenWithSceneContainer(bugId = 332732878) // because NSSL#mAnimationsEnabled is always true
     public void testGenerateHeadsUpAnimation_isSeenInShade_noAnimation() {
         // GIVEN NSSL is ready for HUN animations
         Consumer<Boolean> headsUpAnimatingAwayListener = mock(BooleanConsumer.class);
@@ -2204,12 +2289,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // THEN null is sent
         verify(scroller).accept(null);
-    }
-
-    private MotionEvent captureTouchSentToSceneFramework() {
-        ArgumentCaptor<MotionEvent> captor = ArgumentCaptor.forClass(MotionEvent.class);
-        verify(mStackScrollLayoutController).sendTouchToSceneFramework(captor.capture());
-        return captor.getValue();
     }
 
     private void setBarStateForTest(int state) {

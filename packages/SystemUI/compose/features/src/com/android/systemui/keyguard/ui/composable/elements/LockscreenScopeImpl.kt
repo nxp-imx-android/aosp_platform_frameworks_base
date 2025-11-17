@@ -31,6 +31,7 @@ import com.android.compose.animation.scene.ValueKey
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementFactory
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenScope.LockscreenScopeFactory
 
 @Immutable
 class LockscreenScopeImpl<TScope : BaseContentScope>(
@@ -38,8 +39,8 @@ class LockscreenScopeImpl<TScope : BaseContentScope>(
     override val factory: LockscreenElementFactory,
     override val context: LockscreenElementContext,
 ) : LockscreenScope<TScope> {
-    override fun <T : BaseContentScope> createChildScope(scope: T): LockscreenScope<T> {
-        return LockscreenScopeImpl(scope, factory, context)
+    override val scopeFactory: LockscreenScopeFactory by lazy {
+        LockscreenScopeFactoryImpl(factory, context)
     }
 
     @Composable
@@ -85,12 +86,22 @@ class LockscreenScopeImpl<TScope : BaseContentScope>(
 
         @Composable
         override fun content(content: @Composable LockscreenScope<TInnerScope>.() -> Unit) {
-            elementScope.content { createChildScope(this).content() }
+            val scopeFactory = this@LockscreenScopeImpl.scopeFactory
+            elementScope.content { scopeFactory.create(this).content() }
         }
     }
 
     @Composable
     override fun LockscreenElement(key: Key, modifier: Modifier) {
         factory.LockscreenElement(this, key, modifier)
+    }
+
+    private class LockscreenScopeFactoryImpl(
+        private val factory: LockscreenElementFactory,
+        private val context: LockscreenElementContext,
+    ) : LockscreenScopeFactory {
+        override fun <T : BaseContentScope> create(scope: T): LockscreenScope<T> {
+            return LockscreenScopeImpl(scope, factory, context)
+        }
     }
 }

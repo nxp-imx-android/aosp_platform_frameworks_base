@@ -138,7 +138,7 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final int MSG_APP_TRANSITION_FINISHED           = 31 << MSG_SHIFT;
     private static final int MSG_DISMISS_KEYBOARD_SHORTCUTS        = 32 << MSG_SHIFT;
     private static final int MSG_HANDLE_SYSTEM_KEY                 = 33 << MSG_SHIFT;
-    private static final int MSG_SHOW_GLOBAL_ACTIONS               = 34 << MSG_SHIFT;
+    private static final int MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS       = 34 << MSG_SHIFT;
     private static final int MSG_TOGGLE_NOTIFICATION_PANEL         = 35 << MSG_SHIFT;
     private static final int MSG_SHOW_SHUTDOWN_UI                  = 36 << MSG_SHIFT;
     private static final int MSG_SET_TOP_APP_HIDES_STATUS_BAR      = 37 << MSG_SHIFT;
@@ -189,6 +189,7 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final int MSG_WALLET_ACTION_LAUNCH_GESTURE = 83 << MSG_SHIFT;
     private static final int MSG_DISPLAY_REMOVE_SYSTEM_DECORATIONS = 85 << MSG_SHIFT;
     private static final int MSG_DISABLE_ALL  = 86 << MSG_SHIFT;
+    private static final int MSG_SHOW_GLOBAL_ACTIONS = 87 << MSG_SHIFT;
 
     public static final int FLAG_EXCLUDE_NONE = 0;
     public static final int FLAG_EXCLUDE_SEARCH_PANEL = 1 << 0;
@@ -378,6 +379,7 @@ public class CommandQueue extends IStatusBar.Stub implements
         default void showPinningEnterExitToast(boolean entering) { }
         default void showPinningEscapeToast() { }
         default void handleShowGlobalActionsMenu() { }
+        default void handleShowOrHideGlobalActionsMenu() { }
         default void handleShowShutdownUi(boolean isReboot, String reason) { }
 
         default void showWirelessChargingAnimation(int batteryLevel) {  }
@@ -1081,9 +1083,20 @@ public class CommandQueue extends IStatusBar.Stub implements
 
     @Override
     public void showGlobalActionsMenu() {
+        if (!android.app.Flags.statusbarApiShowPowerMenu()) {
+            return;
+        }
         synchronized (mLock) {
             mHandler.removeMessages(MSG_SHOW_GLOBAL_ACTIONS);
             mHandler.obtainMessage(MSG_SHOW_GLOBAL_ACTIONS).sendToTarget();
+        }
+    }
+
+    @Override
+    public void showOrHideGlobalActionsMenu() {
+        synchronized (mLock) {
+            mHandler.removeMessages(MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS);
+            mHandler.obtainMessage(MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS).sendToTarget();
         }
     }
 
@@ -1767,6 +1780,11 @@ public class CommandQueue extends IStatusBar.Stub implements
                 case MSG_SHOW_GLOBAL_ACTIONS:
                     for (Callbacks callback : mCallbacks) {
                         callback.handleShowGlobalActionsMenu();
+                    }
+                    break;
+                case MSG_SHOW_OR_HIDE_GLOBAL_ACTIONS:
+                    for (Callbacks callback : mCallbacks) {
+                        callback.handleShowOrHideGlobalActionsMenu();
                     }
                     break;
                 case MSG_SHOW_SHUTDOWN_UI:

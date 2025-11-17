@@ -18,7 +18,6 @@ package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -52,7 +51,7 @@ class RegionBoxStateTest : SysuiTestCase() {
     @Test
     fun startDrag_withNoRect_setsDrawingMode() {
         val pointerPosition = Offset(100f, 150f)
-        state.startDrag(PointerType.Mouse, pointerPosition)
+        state.startDrag(pointerPosition)
 
         assertThat(state.dragMode).isEqualTo(DragMode.DRAWING)
         assertThat(state.rect).isNull()
@@ -66,7 +65,7 @@ class RegionBoxStateTest : SysuiTestCase() {
         val pointerPosition = Offset(500f, 500f)
 
         // Start drag far outside the existing rect and its touch zones
-        state.startDrag(PointerType.Mouse, pointerPosition)
+        state.startDrag(pointerPosition)
 
         assertThat(state.dragMode).isEqualTo(DragMode.DRAWING)
         assertThat(state.resizeZone).isNull()
@@ -78,7 +77,7 @@ class RegionBoxStateTest : SysuiTestCase() {
         val currentRect = Rect(100f, 100f, 300f, 300f)
         // Start drag inside the existing rect, away from edges
         state.rect = currentRect
-        state.startDrag(PointerType.Mouse, currentRect.center)
+        state.startDrag(currentRect.center)
 
         assertThat(state.dragMode).isEqualTo(DragMode.MOVING)
         assertThat(state.resizeZone).isNull()
@@ -94,7 +93,7 @@ class RegionBoxStateTest : SysuiTestCase() {
 
         // Start drag on the specified point (corner or edge)
         val dragStartPoint = getDragPoint(currentRect)
-        state.startDrag(PointerType.Mouse, dragStartPoint)
+        state.startDrag(dragStartPoint)
 
         assertThat(state.dragMode).isEqualTo(DragMode.RESIZING)
         assertThat(state.resizeZone).isEqualTo(expectedZone)
@@ -165,21 +164,23 @@ class RegionBoxStateTest : SysuiTestCase() {
     }
 
     @Test
-    fun startDrag_withMousePointerType_hasSmallerTargetSize() {
+    fun startDrag_hasSmallerTargetSize_forPreciseDevices() {
         val currentRect = Rect(100f, 100f, 300f, 300f)
         state.rect = currentRect
 
         val pointerPosition =
             currentRect.topLeft + Offset(TOUCH_TARGET_SIZE_PX / 2f, TOUCH_TARGET_SIZE_PX / 2f)
 
-        // Demonstrate that touch type for the position is treated as resizing.
-        state.startDrag(PointerType.Touch, pointerPosition)
+        // Demonstrate that imprecise device pointer positions is treated as resizing.
+        state.pointerDevice = PointerDevice.Touchscreen
+        state.startDrag(pointerPosition)
 
         assertThat(state.dragMode).isEqualTo(DragMode.RESIZING)
         assertThat(state.resizeZone).isEqualTo(ResizeZone.Corner.TopLeft)
 
-        // Demonstrate that touch type for same position is not treated as resizing.
-        state.startDrag(PointerType.Mouse, pointerPosition)
+        // Demonstrate that the same position for a precise device is not treated as resizing.
+        state.pointerDevice = PointerDevice.Touchpad
+        state.startDrag(pointerPosition)
 
         assertThat(state.dragMode).isEqualTo(DragMode.MOVING)
         assertThat(state.resizeZone).isNull()
@@ -187,7 +188,7 @@ class RegionBoxStateTest : SysuiTestCase() {
 
     @Test
     fun drag_inDrawingMode_createsCorrectRect() {
-        state.startDrag(PointerType.Mouse, Offset(100f, 100f))
+        state.startDrag(Offset(100f, 100f))
         val endOffset = Offset(200f, 250f)
         assertThat(state.dragMode).isEqualTo(DragMode.DRAWING)
         state.drag(endOffset, Offset.Zero)
@@ -204,7 +205,7 @@ class RegionBoxStateTest : SysuiTestCase() {
 
     @Test
     fun drag_inDrawingMode_constrainsToScreenBounds() {
-        state.startDrag(PointerType.Mouse, Offset(50f, 50f))
+        state.startDrag(Offset(50f, 50f))
 
         // Drag outside screen boundaries
         val endOffset = Offset(SCREEN_WIDTH + 100f, SCREEN_HEIGHT + 100f)
@@ -221,7 +222,7 @@ class RegionBoxStateTest : SysuiTestCase() {
         state.rect = initialRect
         val dragStartPoint = initialRect.center
 
-        state.startDrag(PointerType.Mouse, dragStartPoint)
+        state.startDrag(dragStartPoint)
         assertThat(state.dragMode).isEqualTo(DragMode.MOVING)
 
         val dragAmount = Offset(50f, 70f)
@@ -241,7 +242,7 @@ class RegionBoxStateTest : SysuiTestCase() {
         state.rect = initialRect
 
         val dragStartPoint = initialRect.center
-        state.startDrag(PointerType.Mouse, dragStartPoint)
+        state.startDrag(dragStartPoint)
         assertThat(state.dragMode).isEqualTo(DragMode.MOVING)
 
         val currentDragPosition = dragStartPoint + dragAmount
@@ -396,7 +397,7 @@ class RegionBoxStateTest : SysuiTestCase() {
             }
 
         val screenDragStartOffset = initialRect.topLeft + dragStartOffsetInBox
-        state.startDrag(PointerType.Mouse, screenDragStartOffset)
+        state.startDrag(screenDragStartOffset)
         assertThat(state.dragMode).isEqualTo(DragMode.RESIZING)
         assertThat(state.resizeZone).isEqualTo(resizeZone)
 

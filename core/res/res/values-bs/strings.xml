@@ -327,8 +327,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"Slušni aparat"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"Korištenje pristupačnosti"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"Ekran"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"Roditeljski nadzor"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> troši bateriju"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"Broj aplikacija koje troše bateriju: <xliff:g id="NUMBER">%1$d</xliff:g>"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"Dodirnite za detalje o potrošnji baterije i prenosa podataka"</string>
@@ -1026,7 +1025,7 @@
     <string name="relationTypeDomesticPartner" msgid="7825306887697559238">"Nevjenčani partner"</string>
     <string name="relationTypeFather" msgid="3856225062864790596">"Otac"</string>
     <string name="relationTypeFriend" msgid="3192092625893980574">"Prijatelj"</string>
-    <string name="relationTypeManager" msgid="2272860813153171857">"Šef"</string>
+    <string name="relationTypeManager" msgid="2272860813153171857">"Upravitelj"</string>
     <string name="relationTypeMother" msgid="2331762740982699460">"Majka"</string>
     <string name="relationTypeParent" msgid="4177920938333039882">"Roditelj"</string>
     <string name="relationTypePartner" msgid="4018017075116766194">"Partner"</string>
@@ -1048,6 +1047,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"Unesite PIN za otključavanje tipkovnice"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"Pogrešan PIN."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"Za otključavanje telefona pritisnite dugme Meni, pa dugme 0."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"Broj za hitne slučajeve"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"Nema mreže"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"Ekran zaključan."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"Pritisnite dugme Meni kako biste otključali uređaj ili obavili hitni poziv."</string>
@@ -2612,10 +2612,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Upozorenja o resursima sistema"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Prekomjerno korištenje resursa"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> koristi previše resursa."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Roditelj je izvršio ažuriranje"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je uklonjena zasad"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je sada dostupna"</string>
 </resources>

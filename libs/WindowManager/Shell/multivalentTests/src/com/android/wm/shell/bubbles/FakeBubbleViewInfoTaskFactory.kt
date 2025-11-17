@@ -41,7 +41,7 @@ class FakeBubbleViewInfoTaskFactory(
         layerView: BubbleBarLayerView?,
         iconFactory: BubbleIconFactory,
         skipInflation: Boolean,
-        callback: BubbleViewInfoTask.Callback?
+        callback: BubbleViewInfoTask.Callback?,
     ): BubbleViewInfoTask =
         BubbleViewInfoTask(
             b,
@@ -57,6 +57,6 @@ class FakeBubbleViewInfoTaskFactory(
             appInfoProvider,
             mainExecutor,
             backgroundExecutor,
-            userResolver
+            userResolver,
         )
 }

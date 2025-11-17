@@ -566,40 +566,29 @@ public class DesktopModeTouchEventListener
                 }
                 final int dragPointerIdx = e.findPointerIndex(mDragPointerId);
 
-                if (DesktopExperienceFlags
-                        .ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX.isTrue()) {
-                    final boolean inDesktopModeDisplay = mShellDesktopState
-                            .isEligibleWindowDropTarget(e.getDisplayId());
-                    // TODO: b/418651425 - Use a more specific pointer icon when available.
-                    final IBinder inputToken = v.getViewRootImpl() != null
-                            ? v.getViewRootImpl().getInputToken() : null;
-                    updatePointerIcon(e, dragPointerIdx, inputToken,
-                            inDesktopModeDisplay ? PointerIcon.TYPE_ARROW
-                                    : PointerIcon.TYPE_NO_DROP);
-                    // Allow bounds update only when cursor is on desktop-mode displays.
-                    // Otherwise, ignore the MOVE event and the window holds its current bounds.
-                    if (inDesktopModeDisplay) {
-                        mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
-                                e.getDisplayId(),
-                                e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
-                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                        + "inDesktopModeDisplay=%b dispatched "
-                                        + "|onDragPositioningMove| mCurrentBounds=%s",
-                                viewName, MotionEvent.actionToString(e.getAction()),
-                                inDesktopModeDisplay, mCurrentBounds);
-                    } else {
-                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                        + "not a desktop mode display, ignore",
-                                viewName, MotionEvent.actionToString(e.getAction()));
-                    }
-                } else {
+                final boolean inDesktopModeDisplay = mShellDesktopState
+                        .isEligibleWindowDropTarget(e.getDisplayId());
+                // TODO: b/418651425 - Use a more specific pointer icon when available.
+                final IBinder inputToken = v.getViewRootImpl() != null
+                        ? v.getViewRootImpl().getInputToken() : null;
+                updatePointerIcon(e, dragPointerIdx, inputToken,
+                        inDesktopModeDisplay ? PointerIcon.TYPE_ARROW
+                                : PointerIcon.TYPE_NO_DROP);
+                // Allow bounds update only when cursor is on desktop-mode displays.
+                // Otherwise, ignore the MOVE event and the window holds its current bounds.
+                if (inDesktopModeDisplay) {
                     mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s dispatched "
+                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                    + "inDesktopModeDisplay=%b dispatched "
                                     + "|onDragPositioningMove| mCurrentBounds=%s",
                             viewName, MotionEvent.actionToString(e.getAction()),
-                            mCurrentBounds);
+                            inDesktopModeDisplay, mCurrentBounds);
+                } else {
+                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                    + "not a desktop mode display, ignore",
+                            viewName, MotionEvent.actionToString(e.getAction()));
                 }
 
                 mDesktopTasksController.onDragPositioningMove(taskInfo,
@@ -644,14 +633,10 @@ public class DesktopModeTouchEventListener
                                 + "|onDragPositioningEnd| newTaskBounds=%s",
                         viewName, MotionEvent.actionToString(e.getAction()), newTaskBounds);
 
-                if (DesktopExperienceFlags
-                        .ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX.isTrue()) {
-                    final IBinder inputToken = v.getViewRootImpl() != null
-                            ? v.getViewRootImpl().getInputToken() : null;
-                    updatePointerIcon(e, dragPointerIdx, inputToken,
-                            PointerIcon.TYPE_ARROW);
-                }
-
+                final IBinder inputToken = v.getViewRootImpl() != null
+                        ? v.getViewRootImpl().getInputToken() : null;
+                updatePointerIcon(e, dragPointerIdx, inputToken,
+                        PointerIcon.TYPE_ARROW);
                 // Tasks bounds haven't actually been updated (only its leash), so pass to
                 // DesktopTasksController to allow secondary transformations (i.e. snap resizing
                 // or transforming to fullscreen) before setting new task bounds.

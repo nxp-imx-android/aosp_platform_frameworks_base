@@ -138,6 +138,7 @@ public final class KeyGestureEvent {
     public static final int KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT = 83;
     public static final int KEY_GESTURE_TYPE_REJECT_HOME_ON_EXTERNAL_DISPLAY = 84;
     public static final int KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH = 85;
+    public static final int KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT = 86;
 
     public static final int FLAG_CANCELLED = 1 << 0;
     public static final int FLAG_LONG_PRESS = 1 << 1;

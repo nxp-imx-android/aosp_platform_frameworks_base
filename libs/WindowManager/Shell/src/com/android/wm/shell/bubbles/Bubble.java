@@ -216,6 +216,11 @@ public class Bubble implements BubbleViewProvider {
     private Intent mIntent;
 
     /**
+     * Whether this bubble is based on the typical launch intent of the app.
+     */
+    private boolean mHasLauncherCategory;
+
+    /**
      * Sets the transition that is currently animating this Bubble. This should be set when
      * preparing the transition for animation.
      * Several steps are needed before animation actually starts, so this is used to detect and
@@ -263,6 +268,7 @@ public class Bubble implements BubbleViewProvider {
         mBubbleMetadataFlagListener = listener;
         // TODO (b/394085999) read/write type to xml
         mType = BubbleType.TYPE_CHAT;
+        mHasLauncherCategory = false;
     }
 
     /**
@@ -274,6 +280,7 @@ public class Bubble implements BubbleViewProvider {
             final Bubbles.PendingIntentCanceledListener intentCancelListener,
             @ShellMainThread Executor mainExecutor) {
         mType = BubbleType.TYPE_CHAT;
+        mHasLauncherCategory = false;
         mKey = entry.getKey();
         mGroupKey = entry.getGroupKey();
         mLocusId = entry.getLocusId();
@@ -302,6 +309,8 @@ public class Bubble implements BubbleViewProvider {
         mUser = user;
         mIcon = icon;
         mType = type;
+        mHasLauncherCategory = mType == BubbleType.TYPE_APP
+                && intent.hasCategory(Intent.CATEGORY_LAUNCHER);
         mKey = key;
         mShowBubbleUpdateDot = false;
         mTaskId = INVALID_TASK_ID;
@@ -320,6 +329,8 @@ public class Bubble implements BubbleViewProvider {
         mUser = user;
         mIcon = null;
         mType = BubbleType.TYPE_APP;
+        mHasLauncherCategory = intent.getIntent() != null
+                && intent.getIntent().hasCategory(Intent.CATEGORY_LAUNCHER);
         mKey = key;
         mShowBubbleUpdateDot = false;
         mTaskId = INVALID_TASK_ID;
@@ -336,6 +347,7 @@ public class Bubble implements BubbleViewProvider {
         mUser = info.getUserHandle();
         mIcon = info.getIcon();
         mType = BubbleType.TYPE_SHORTCUT;
+        mHasLauncherCategory = false;
         mKey = getBubbleKeyForShortcut(info);
         mShowBubbleUpdateDot = false;
         mTaskId = INVALID_TASK_ID;
@@ -360,6 +372,7 @@ public class Bubble implements BubbleViewProvider {
         mShowBubbleUpdateDot = false;
         mTaskId = task.taskId;
         mIntent = task.baseIntent;
+        mHasLauncherCategory = mIntent != null && mIntent.hasCategory(Intent.CATEGORY_LAUNCHER);
         mDesiredHeight = Integer.MAX_VALUE;
         mPackageName = task.baseActivity.getPackageName();
     }
@@ -1192,6 +1205,11 @@ public class Bubble implements BubbleViewProvider {
      */
     public boolean isApp() {
         return mType == BubbleType.TYPE_APP;
+    }
+
+    /** Returns whether this bubble is based on the app launch intent. **/
+    public boolean isHasLauncherCategory() {
+        return mHasLauncherCategory;
     }
 
     /** Creates open app settings intent */

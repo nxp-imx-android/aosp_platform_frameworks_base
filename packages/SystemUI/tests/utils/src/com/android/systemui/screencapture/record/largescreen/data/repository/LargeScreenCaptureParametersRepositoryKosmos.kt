@@ -16,20 +16,14 @@
 
 package com.android.systemui.screencapture.record.largescreen.data.repository
 
-import com.android.systemui.common.data.datastore.dataStoreWrapperFactory
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundCoroutineContext
-import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.user.data.repository.userRepository
+import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 
 val Kosmos.largeScreenCaptureParametersRepository by
     Kosmos.Fixture<LargeScreenCaptureParametersRepository> {
         LargeScreenCaptureParametersRepository(
-            dataStoreWrapperFactory = dataStoreWrapperFactory,
-            backgroundDispatcher = testDispatcher,
-            backgroundContext = backgroundCoroutineContext,
-            backgroundScope = backgroundScope,
+            secureSettingsRepository = userAwareSecureSettingsRepository,
             userRepository = userRepository,
         )
     }

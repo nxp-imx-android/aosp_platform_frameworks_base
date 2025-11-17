@@ -89,6 +89,7 @@ constructor(
                     .collectTraced { view.setClippingShape(it) }
             }
 
+            launch { viewModel.animationsEnabled.collectTraced { view.setAnimationsEnabled(it) } }
             launch { viewModel.isOccluded.collectTraced { view.setOccluded(it) } }
 
             launch { viewModel.maxAlpha.collectTraced { view.setMaxAlpha(it) } }

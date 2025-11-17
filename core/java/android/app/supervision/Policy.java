@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.StringDef;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.app.supervision.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -29,11 +30,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Generic, base class for supervision policies. All specific policies (e.g., app blocking, time
- * limits) should extend this class.
+ * Base class for supervision policies.
  *
  * @hide
  */
+@SystemApi
 @SuppressLint({"ParcelNotFinal", "ParcelCreator"})
 @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
 public abstract class Policy implements Parcelable {
@@ -55,62 +56,34 @@ public abstract class Policy implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     public @interface PolicyIdentifier {}
 
-    /**
-     * The version of this policy. The version is managed by the system and indicates the policy's
-     * freshness.
-     */
     private long mVersion;
-
-    /**
-     * Whether the policy is enabled.
-     *
-     * <p>Default is true.
-     */
-    private boolean mIsEnabled = true;
 
     /**
      * Increments the version of this policy.
      *
      * @hide
      */
-    public final void incrementVersion() { mVersion++; }
+    public final void incrementVersion() {
+        mVersion++;
+    }
 
     /**
-     * Retrieves the version of this policy.
+     * Returns the version of the policy.
      *
-     * @return The policy's version as a long.
+     * @return the policy version
      */
     public long getVersion() {
         return mVersion;
     }
 
     /**
-     * Retrieves the enabled state of this policy.
+     * Constructs a new policy.
      *
-     * @return Whether the policy is enabled.
+     * @param version the version of the policy
+     * @hide
      */
-    public boolean isEnabled() {
-        return mIsEnabled;
-    }
-
-    /**
-     * Sets the version of this policy.
-     *
-     * @param version The new version of the policy.
-     */
-    public void setVersion(long version) {
+    Policy(long version) {
         mVersion = version;
-    }
-
-    /**
-     * Constructs a new policy with the given key and version.
-     *
-     * @param version The version of the policy.
-     * @param isEnabled Whether the policy is enabled.
-     */
-    public Policy(long version, boolean isEnabled) {
-        mVersion = version;
-        mIsEnabled = isEnabled;
     }
 
     /**
@@ -119,12 +92,11 @@ public abstract class Policy implements Parcelable {
      * <p>This method is used to create a policy from a parcel. It is called by the {@link Creator}
      * when unmarshalling a parcel.
      *
-     * @param in The parcel to read from.
+     * @param in the source parcel
      * @hide
      */
-    public Policy(@NonNull Parcel in) {
+    Policy(@NonNull Parcel in) {
         mVersion = in.readLong();
-        mIsEnabled = in.readBoolean();
     }
 
     /**
@@ -135,7 +107,7 @@ public abstract class Policy implements Parcelable {
     @NonNull
     public @PolicyIdentifier String getIdentifier() {
         return switch (this) {
-            case PackagePolicy pp -> Policy.PACKAGE_POLICY_IDENTIFIER;
+            case PackageUsagePolicy pp -> Policy.PACKAGE_POLICY_IDENTIFIER;
             default ->
                     throw new IllegalArgumentException(
                             "Unsupported policy type: " + this.getClass().getSimpleName());
@@ -146,9 +118,14 @@ public abstract class Policy implements Parcelable {
     public void writeToParcel(@NonNull Parcel parcel, @WriteFlags int flags) {
         parcel.writeString8(getIdentifier());
         parcel.writeLong(mVersion);
-        parcel.writeBoolean(mIsEnabled);
     }
 
+    /**
+     * Returns the key of the policy.
+     *
+     * @hide
+     */
+    @NonNull
     public PolicyKey getPolicyKey() {
         return PolicyKey.builder().setType(getIdentifier()).build();
     }
@@ -161,7 +138,7 @@ public abstract class Policy implements Parcelable {
                     String policyIdentifier = in.readString8();
 
                     return switch (policyIdentifier) {
-                        case PACKAGE_POLICY_IDENTIFIER -> new PackagePolicy(in);
+                        case PACKAGE_POLICY_IDENTIFIER -> new PackageUsagePolicy(in);
                         default ->
                                 throw new IllegalArgumentException(
                                         "Unsupported policy identifier value: " + policyIdentifier);
@@ -169,8 +146,65 @@ public abstract class Policy implements Parcelable {
                 }
 
                 @Override
-                public PackagePolicy[] newArray(int size) {
-                    return new PackagePolicy[size];
+                public Policy[] newArray(int size) {
+                    return new Policy[size];
                 }
             };
+
+    /**
+     * Builder for {@link Policy} objects.
+     *
+     * @param <P> the type of {@link Policy} this builder builds
+     * @param <B> the concrete builder implementation
+     * @hide
+     */
+    @SuppressLint("StaticFinalBuilder")
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    public abstract static class Builder<P extends Policy, B extends Builder<P, B>> {
+        long mVersion;
+        private boolean mVersionSet = false;
+
+        /** Constructs a new builder. */
+        Builder() {}
+
+        /**
+         * Constructs a new builder from an existing policy.
+         *
+         * @param policy the policy to copy from
+         */
+        Builder(@NonNull Policy policy) {
+            setVersion(policy.mVersion);
+        }
+
+        /**
+         * Sets the version of this policy.
+         *
+         * @param version the version to set
+         * @return this builder
+         */
+        @NonNull
+        public B setVersion(long version) {
+            mVersion = version;
+            mVersionSet = true;
+            return (B) this;
+        }
+
+        /**
+         * Builds the {@link Policy} object.
+         *
+         * @return the built {@link Policy}
+         * @throws IllegalStateException if the required fields have not been set
+         */
+        @NonNull
+        public P build() {
+            if (!mVersionSet) {
+                throw new IllegalStateException("Version must be set");
+            }
+            return performBuild();
+        }
+
+        /** @hide */
+        abstract P performBuild();
+    }
 }

@@ -18,8 +18,10 @@ package android.media;
 
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
 import static android.media.audio.Flags.FLAG_ROUTED_DEVICE_IDS;
+import static android.media.audio.Flags.FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD;
 
 import android.annotation.CallbackExecutor;
+import android.annotation.CheckResult;
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.IntDef;
@@ -498,6 +500,33 @@ public class AudioTrack extends PlayerBase
      * to accommodate a deeper buffer.
      */
     public static final int PERFORMANCE_MODE_POWER_SAVING = 2;
+
+    /**
+     * Accuracy mode for {@link #flushFromFrame(long, int)} to indicate the framework will flush the
+     * data as close as possible, but not below, to the requested position.
+     *
+     * @see #flushFromFrame(long, int)
+     */
+    @FlaggedApi(FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD)
+    public static final int FLUSH_FROM_ACCURACY_BEST_EFFORT = 0;
+
+    /**
+     * Accuracy mode for {@link #flushFromFrame(long, int)} to indicate the AudioTrack must be
+     * flushed from the requested position. If it is not possible to flush from the requested
+     * position, the AudioTrack must not be flushed.
+     *
+     * @see #flushFromFrame(long, int)
+     */
+    @FlaggedApi(FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD)
+    public static final int FLUSH_FROM_ACCURACY_EXACT = 1;
+
+    /** @hide */
+    @IntDef({
+            FLUSH_FROM_ACCURACY_BEST_EFFORT,
+            FLUSH_FROM_ACCURACY_EXACT
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FlushFromAccuracy {}
 
     // keep in sync with system/media/audio/include/system/audio-base.h
     private static final int AUDIO_OUTPUT_FLAG_FAST = 0x4;
@@ -1780,7 +1809,9 @@ public class AudioTrack extends PlayerBase
             AudioFormat.CHANNEL_OUT_BOTTOM_FRONT_RIGHT |
             AudioFormat.CHANNEL_OUT_LOW_FREQUENCY_2 |
             AudioFormat.CHANNEL_OUT_FRONT_WIDE_LEFT |
-            AudioFormat.CHANNEL_OUT_FRONT_WIDE_RIGHT;
+            AudioFormat.CHANNEL_OUT_FRONT_WIDE_RIGHT |
+            AudioFormat.CHANNEL_OUT_HAPTIC_B |
+            AudioFormat.CHANNEL_OUT_HAPTIC_A;
 
     // Returns a boolean whether the attributes, format, bufferSizeInBytes, mode allow
     // power saving to be automatically enabled for an AudioTrack. Returns false if
@@ -1988,6 +2019,20 @@ public class AudioTrack extends PlayerBase
         if (channelCount > channelCountLimit) {
             loge("Channel configuration contains too many channels for encoding "
                     + encoding + "(" + channelCount + " > " + channelCountLimit + ")");
+            return false;
+        }
+        // Check if a haptics channel is configured
+        if ((channelConfig & AudioFormat.CHANNEL_OUT_HAPTIC_B) != 0
+                || (channelConfig & AudioFormat.CHANNEL_OUT_HAPTIC_A) != 0) {
+            // Check that there is at least one other (non haptic) channel set
+            int nonHapticChannelCount = Integer.bitCount(channelConfig
+                    & ~(AudioFormat.CHANNEL_OUT_HAPTIC_B | AudioFormat.CHANNEL_OUT_HAPTIC_A));
+            if (nonHapticChannelCount >= 1) {
+                logd("Haptic channel configuration detected, Audio Channels: "
+                        + nonHapticChannelCount);
+                return true;
+            }
+            loge("Bad haptic channel config, nonhapticchannels: " + nonHapticChannelCount);
             return false;
         }
         // check for unsupported multichannel combinations:
@@ -3123,6 +3168,51 @@ public class AudioTrack extends PlayerBase
             mAvSyncBytesRemaining = 0;
         }
 
+    }
+
+    /**
+     * Flush all data from the given position.
+     * <p> If this operation returns successfully, {@link #write} after a call to this method will
+     * be written from frame position returned by this method.
+     *
+     * <p> This method is only allowed in offload mode ((i.e. tracks created with
+     * {@link Builder#setOffloadedPlayback(boolean)} set to {@code true})). Applications can call
+     * this function to flush data while it is actively playing.
+     *
+     * <p> When clients request to flush from a certain position, the audio system will return the
+     * actual flushed position based on the requested position, the requested flush accuracy, and
+     * how much it was able to discard. All data behind actual flushed position will be discarded.
+     * When the stream is flushed, the stream end (if set by {@link #setOffloadEndOfStream()}) will
+     * be reset.
+     *
+     * <p> The client must not write any data before this function returns. Otherwise, the data may
+     * be corrupted. When the method returns successfully and the stream is active, the client must
+     * write data immediately if little audio data remains, otherwise the playback may underrun.
+     *
+     * @param accuracy the accuracy requirement when flushing. Use
+     *     {@link #FLUSH_FROM_ACCURACY_BEST_EFFORT} to indicate flush as close as possible to the
+     *     requested position. Use {@link #FLUSH_FROM_ACCURACY_EXACT} to indicate mush flush from
+     *     requested position.
+     * @param positionInFrames the start point in frames to flush. The value must be between 0 and
+     *     total written frames.
+     * @return the actual flushed position or {@link #ERROR_BAD_VALUE} if the requested accuracy is
+     *     {@link #FLUSH_FROM_ACCURACY_EXACT} and cannot flush from the requested position.
+     * @throws IllegalStateException if the AudioTrack is not initialized or
+     *     it is not an offload track.
+     * @throws IllegalArgumentException if it is not an offload track or {@code accuracy} is not
+     *     valid or {@code positionInFrames} is less than 0 or greater than the written frames.
+     */
+    @CheckResult
+    @FlaggedApi(FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD)
+    public long flushFromFrame(long positionInFrames, @FlushFromAccuracy int accuracy) {
+        if (!mOffloaded) {
+            throw new IllegalStateException(
+                    "flushFromFrame is only supported for offload track");
+        }
+        if (mState != STATE_INITIALIZED) {
+            throw new IllegalStateException("The track is not initialized");
+        }
+        return native_flushFromFrame(accuracy, positionInFrames);
     }
 
     /**
@@ -4574,6 +4664,8 @@ public class AudioTrack extends PlayerBase
     private native void native_setLogSessionId(@Nullable String logSessionId);
     private native int native_setStartThresholdInFrames(int startThresholdInFrames);
     private native int native_getStartThresholdInFrames();
+
+    private native long native_flushFromFrame(int accuracy, long positionInFrames);
 
     /**
      * Sets the audio service Player Interface Id.

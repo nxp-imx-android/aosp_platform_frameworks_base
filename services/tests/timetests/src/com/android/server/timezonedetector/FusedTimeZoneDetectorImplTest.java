@@ -144,6 +144,28 @@ public class FusedTimeZoneDetectorImplTest {
     }
 
     @Test
+    public void onTelephonyTimeZoneDetected_resistsDisagreeingLocationSuggestion() {
+        String initialZoneId = "America/New_York";
+        String disagreeingZoneId = "Europe/London";
+
+        // 1. Set initial time zone via location.
+        LocationAlgorithmEvent locationEvent = createLocationEvent(initialZoneId);
+        mScript.simulateLocationEvent(locationEvent).verifyTimeZoneSuggested(initialZoneId);
+
+        // 2. Send an agreeing telephony suggestion. The time zone should not change.
+        // This internally strengthens the current time zone by adding a second origin.
+        QualifiedTelephonyTimeZoneSuggestion telephonySuggestion =
+                createTelephonySuggestion(initialZoneId, TELEPHONY_SCORE_HIGH, "310", "us");
+        mScript.simulateTelephonySuggestion(telephonySuggestion).verifyTimeZoneNotChanged();
+
+        // 3. Send a disagreeing location suggestion. Because the current zone is supported by
+        // both location and telephony, it should not be immediately overridden. A disagreement
+        // process should start instead.
+        mScript.simulateLocationEvent(createLocationEvent(disagreeingZoneId))
+                .verifyTimeZoneNotChanged();
+    }
+
+    @Test
     public void onLocationTimeZoneDetected_setsInitialTimeZone() {
         String timeZoneId = "Europe/London";
         LocationAlgorithmEvent event = createLocationEvent(timeZoneId);

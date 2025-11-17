@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowInsetsCompat
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.OverlayKey
@@ -54,13 +55,13 @@ import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
-import com.android.compose.rememberSystemUiController
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
 import com.android.systemui.keyguard.ui.composable.rememberBurnIn
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.ribbon.ui.composable.BottomRightCornerRibbon
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.view.SceneJankMonitor
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneTransitionBlurViewModel
@@ -176,7 +177,7 @@ fun SceneContainer(
         remember {
             mutableStateMapOf()
         }
-    val systemUiController = rememberSystemUiController()
+    val windowInsetsController = view.windowInsetsController
     LaunchedEffect(actionableContentKey) {
         try {
             val actionableContent: ActionableContent =
@@ -189,9 +190,12 @@ fun SceneContainer(
                 userActionsByContentKey[actionableContentKey] =
                     viewModel.resolveSceneFamilies(userActions)
 
-                val isNavigationBarVisible = userActions.containsKey(Back)
-                if (systemUiController.isNavigationBarVisible != isNavigationBarVisible) {
-                    systemUiController.isNavigationBarVisible = isNavigationBarVisible
+                val isNavigationBarVisible =
+                    userActions.containsKey(Back) || actionableContentKey == Scenes.Gone
+                if (isNavigationBarVisible) {
+                    windowInsetsController?.show(WindowInsetsCompat.Type.navigationBars())
+                } else {
+                    windowInsetsController?.hide(WindowInsetsCompat.Type.navigationBars())
                 }
             }
         } finally {

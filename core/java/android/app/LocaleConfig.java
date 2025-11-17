@@ -214,13 +214,11 @@ public class LocaleConfig implements Parcelable {
             AttributeSet attrs = Xml.asAttributeSet(parser);
 
             String defaultLocale = null;
-            if (android.content.res.Flags.defaultLocale()) {
-                // Read the defaultLocale attribute of the LocaleConfig element
-                try (TypedArray att = res.obtainAttributes(
-                        attrs, com.android.internal.R.styleable.LocaleConfig)) {
-                    defaultLocale = att.getString(
-                            R.styleable.LocaleConfig_defaultLocale);
-                }
+            // Read the defaultLocale attribute of the LocaleConfig element
+            try (TypedArray att = res.obtainAttributes(
+                    attrs, com.android.internal.R.styleable.LocaleConfig)) {
+                defaultLocale = att.getString(
+                        R.styleable.LocaleConfig_defaultLocale);
             }
 
             Set<String> localeNames = new HashSet<>();

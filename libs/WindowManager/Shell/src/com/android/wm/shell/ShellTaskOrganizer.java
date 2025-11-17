@@ -66,6 +66,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.compatui.CompatUIController;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUIInfo;
+import com.android.wm.shell.compatui.api.CompatUITypeUtils;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonAppeared;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonClicked;
 import com.android.wm.shell.recents.RecentTasksController;
@@ -344,15 +345,17 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         mShellCommandHandler.addDumpCallback(this::dump, this);
         if (mCompatUI != null) {
             mCompatUI.setCallback(compatUIEvent -> {
-                switch(compatUIEvent.getEventId()) {
+                switch (compatUIEvent.getEventId()) {
                     case SIZE_COMPAT_RESTART_BUTTON_APPEARED:
-                        onSizeCompatRestartButtonAppeared(compatUIEvent.asType());
+                        onSizeCompatRestartButtonAppeared(
+                                CompatUITypeUtils.asTypeJava(compatUIEvent,
+                                        SizeCompatRestartButtonAppeared.class));
                         break;
                     case SIZE_COMPAT_RESTART_BUTTON_CLICKED:
-                        onSizeCompatRestartButtonClicked(compatUIEvent.asType());
+                        onSizeCompatRestartButtonClicked(CompatUITypeUtils.asTypeJava(compatUIEvent,
+                                SizeCompatRestartButtonClicked.class));
                         break;
                     default:
-
                 }
             });
         }

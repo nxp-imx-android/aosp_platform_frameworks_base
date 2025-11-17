@@ -24,7 +24,6 @@ import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
 import static android.service.dreams.Flags.allowDreamWhenPostured;
 import static android.service.dreams.Flags.allowDreamWithChargeLimit;
 import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
-import static android.service.dreams.Flags.disallowDreamOnAutoProjection;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.wakeOnStoppingDoze;
@@ -620,9 +619,8 @@ public final class DreamManagerService extends SystemService {
                 return false;
             }
 
-            if (disallowDreamOnAutoProjection()
-                    && (mUiModeManager.getActiveProjectionTypes()
-                        & UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) != 0) {
+            if ((mUiModeManager.getActiveProjectionTypes()
+                    & UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) != 0) {
                 // Don't dream when connected to Android Auto unit as dreams can't start anyways.
                 return false;
             }

@@ -101,7 +101,7 @@ flag {
 flag {
     name: "enable_sync_state"
     is_exported: true
-    namespace: "documentscontract"
+    namespace: "documentsui"
     description: "This flag will enable the content sync state document column"
     bug: "415947063"
 }

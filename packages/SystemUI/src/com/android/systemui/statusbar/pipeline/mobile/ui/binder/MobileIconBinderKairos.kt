@@ -29,7 +29,6 @@ import com.android.systemui.Flags
 import com.android.systemui.common.ui.binder.IconViewBinder
 import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.BuildSpec
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.kairos.MutableState
 import com.android.systemui.kairos.combine
@@ -54,7 +53,6 @@ import kotlinx.coroutines.launch
 
 object MobileIconBinderKairos {
 
-    @ExperimentalKairosApi
     fun bind(
         subId: Int,
         view: ViewGroup,
@@ -65,8 +63,7 @@ object MobileIconBinderKairos {
         scope: CoroutineScope,
         kairosNetwork: KairosNetwork,
     ): Pair<ModernStatusBarViewBinding, Job> {
-        val binding =
-            ModernStatusBarViewBindingKairosImpl(subId, kairosNetwork, initialVisibilityState)
+        val binding = ModernStatusBarViewBindingKairosImpl(subId, initialVisibilityState)
         val mobileDrawable = SignalDrawable(view.context)
         return binding to
             scope.launch {
@@ -84,12 +81,8 @@ object MobileIconBinderKairos {
             }
     }
 
-    @ExperimentalKairosApi
-    private class ModernStatusBarViewBindingKairosImpl(
-        subId: Int,
-        kairosNetwork: KairosNetwork,
-        initialVisibilityState: Int,
-    ) : ModernStatusBarViewBinding {
+    private class ModernStatusBarViewBindingKairosImpl(subId: Int, initialVisibilityState: Int) :
+        ModernStatusBarViewBinding {
 
         @JvmField var shouldIconBeVisible: Boolean = false
         @JvmField var isCollecting: Boolean = false
@@ -97,13 +90,11 @@ object MobileIconBinderKairos {
         // TODO(b/238425913): We should log this visibility state.
         val visibility =
             MutableState(
-                kairosNetwork,
                 initialVisibilityState,
                 nameTag { "ModernStatusBarViewBindingKairosImpl(subId=$subId).visibility" },
             )
         val iconTint =
             MutableState(
-                kairosNetwork,
                 MobileIconColors(
                     tint = DarkIconDispatcher.DEFAULT_ICON_TINT,
                     contrast = DarkIconDispatcher.DEFAULT_INVERSE_ICON_TINT,
@@ -112,7 +103,6 @@ object MobileIconBinderKairos {
             )
         val decorTint =
             MutableState(
-                kairosNetwork,
                 Color.WHITE,
                 nameTag { "ModernStatusBarViewBindingKairosImpl(subId=$subId).decorTint" },
             )
@@ -134,7 +124,6 @@ object MobileIconBinderKairos {
         override fun isCollecting(): Boolean = isCollecting
     }
 
-    @ExperimentalKairosApi
     private fun BuildScope.bind(
         view: ViewGroup,
         mobileDrawable: SignalDrawable,

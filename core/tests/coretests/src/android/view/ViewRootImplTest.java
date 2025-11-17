@@ -90,6 +90,7 @@ import android.view.WindowInsets.Side;
 import android.view.WindowInsets.Type;
 import android.view.accessibility.AccessibilityManager;
 import android.window.ClientWindowFrames;
+import android.window.OnBackInvokedDispatcher;
 
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -2004,6 +2005,25 @@ public class ViewRootImplTest {
         } finally {
             threadRunning.set(0);
         }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_PREDICTIVE_BACK_FIX_IME_EVENTS_SKIP_BACK_DISPATCHER)
+    public void imeDispatchesBack_eventGoesToTopBackCallback() throws Exception {
+        mView = new View(sContext);
+        attachViewToWindow(mView);
+        mViewRootImpl = mView.getViewRootImpl();
+        final CountDownLatch latch = new CountDownLatch(1);
+        mViewRootImpl.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_DEFAULT, latch::countDown);
+
+        KeyEvent downEvent = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
+        sInstrumentation.runOnMainSync(() -> mViewRootImpl.dispatchKeyFromIme(downEvent));
+        KeyEvent upEvent = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+        sInstrumentation.runOnMainSync(() -> mViewRootImpl.dispatchKeyFromIme(upEvent));
+
+        assertTrue("OnBackInvokedCallback not called for IME back key event",
+                latch.await(5, TimeUnit.SECONDS));
     }
 
     private void setUpViewAndApplyFocusStates(boolean windowFocused, boolean viewFocused)

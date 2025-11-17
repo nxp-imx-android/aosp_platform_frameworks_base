@@ -156,7 +156,7 @@ public class ExpandableNotificationRowDragController {
             }
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             if (enr.isPinned()) {
-                mHeadsUpManager.releaseAllImmediately();
+                mHeadsUpManager.releaseAllImmediately("ExpandableNotificationRowDragController");
             } else {
                 dismissShade();
             }

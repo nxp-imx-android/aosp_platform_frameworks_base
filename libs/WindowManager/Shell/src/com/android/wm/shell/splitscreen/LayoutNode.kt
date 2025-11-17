@@ -19,8 +19,8 @@ package com.android.wm.shell.splitscreen
 import android.graphics.Rect
 
 /**
- * Represents a node in the layout tree. A node can be a container for other nodes (BranchNode)
- * or a container for a single app task (LeafNode).
+ * Represents a node in the layout tree. A node can be a container for other nodes (BranchNode) or a
+ * container for a single app task (LeafNode).
  */
 interface LayoutNode {
     /** The proportional weight of this node within its parent. */

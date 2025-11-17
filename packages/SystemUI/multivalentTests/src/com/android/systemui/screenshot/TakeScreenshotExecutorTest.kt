@@ -538,7 +538,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
 
             screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
 
-            verify(notificationsController0).notifyScreenshotError(any())
+            verify(notificationsController0).notifyScreenshotError(any<Int>())
             screenshotExecutor.onDestroy()
         }
 
@@ -551,7 +551,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
 
             screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
 
-            verify(notificationsController0).notifyScreenshotError(any())
+            verify(notificationsController0).notifyScreenshotError(any<Int>())
             screenshotExecutor.onDestroy()
         }
 
@@ -648,8 +648,8 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
 
             screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
 
-            verify(notificationsController0).notifyScreenshotError(any())
-            verify(notificationsController1).notifyScreenshotError(any())
+            verify(notificationsController0).notifyScreenshotError(any<Int>())
+            verify(notificationsController1).notifyScreenshotError(any<Int>())
             screenshotExecutor.onDestroy()
         }
 
@@ -664,7 +664,7 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
 
             screenshotExecutor.executeScreenshots(createScreenshotRequest(), onSaved, callback)
 
-            verify(notificationsController0).notifyScreenshotError(any())
+            verify(notificationsController0).notifyScreenshotError(any<Int>())
             screenshotExecutor.onDestroy()
         }
 

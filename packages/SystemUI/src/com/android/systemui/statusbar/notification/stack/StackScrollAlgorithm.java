@@ -84,6 +84,8 @@ public class StackScrollAlgorithm {
     private float mSmallCornerRadius;
     private float mLargeCornerRadius;
     private int mHeadsUpCyclingPadding;
+    // mFullQsHeadsUpTop is only valid when SceneContainerFlag is on.
+    private float mFullQsHeadsUpTop = -1;
 
     public StackScrollAlgorithm(
             Context context,
@@ -291,6 +293,12 @@ public class StackScrollAlgorithm {
 
     public static void debugLog(String s) {
         android.util.Log.i(TAG, s);
+    }
+
+    public static void debugRow(View view, String s) {
+        if (view instanceof ExpandableNotificationRow row) {
+            debugLog(row.getKey() + " " + s);
+        }
     }
 
     public static void debugLogView(View view, String s) {
@@ -932,10 +940,23 @@ public class StackScrollAlgorithm {
 
         // Move the tracked heads up into position during the appear animation, by interpolating
         // between the HUN inset (where it will appear as a HUN) and the end position in the shade
-        float headsUpTranslation =
-                SceneContainerFlag.isEnabled()
-                        ? ambientState.getHeadsUpTop()
-                        : mHeadsUpInset - ambientState.getStackTopMargin();
+        float headsUpTranslation;
+        if (SceneContainerFlag.isEnabled()) {
+            headsUpTranslation = ambientState.getHeadsUpTop();
+            // During the transition from (fullscreen) QuickSettingsScene to the ShadeScene,
+            // headsUpTop source changes to ShadeScene's HUNPlaceholder, which causes a jump unless
+            // we clamp to the last known headsUpTop in QuickSettingsScene to ensure that the HUN
+            // waits at its current position until the new headsUpTop catches up visually.
+            if (ambientState.getQsExpansionFraction() == 1.0f) {
+                mFullQsHeadsUpTop = headsUpTranslation;
+            } else if (ambientState.getQsExpansionFraction() == 0f) {
+                mFullQsHeadsUpTop = -1;
+            } else if (mFullQsHeadsUpTop != -1 && headsUpTranslation > mFullQsHeadsUpTop) {
+                headsUpTranslation = mFullQsHeadsUpTop;
+            }
+        } else {
+            headsUpTranslation = mHeadsUpInset - ambientState.getStackTopMargin();
+        }
         ExpandableNotificationRow trackedHeadsUpRow = ambientState.getTrackedHeadsUpRow();
         if (trackedHeadsUpRow != null) {
             ExpandableViewState childState = trackedHeadsUpRow.getViewState();

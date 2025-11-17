@@ -105,6 +105,7 @@ class BouncerContentTest : SysuiTestCase() {
                     layout = BouncerOverlayLayout.BESIDE_USER_SWITCHER,
                     modifier = Modifier.fillMaxSize().testTag("BouncerContent"),
                     dialogFactory = bouncerDialogFactory,
+                    alphaOnEntry = { 1.0F },
                 )
             }
         }

@@ -26,7 +26,6 @@ import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppCompatTaskInfo;
-import android.app.CameraCompatTaskInfo;
 import android.app.TaskInfo;
 import android.app.WindowConfiguration.WindowingMode;
 import android.content.Context;
@@ -237,13 +236,6 @@ final class AppCompatUtils {
                 !info.isTopActivityTransparent && !appCompatTaskInfo.isTopActivityInSizeCompat()
                         && aspectRatioOverrides.shouldEnableUserAspectRatioSettings();
         appCompatTaskInfo.setEligibleForUserAspectRatioButton(eligibleForAspectRatioButton);
-        // Obsolete way of sending camera compat mode data to CameraManager.
-        if (!Flags.enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
-            appCompatTaskInfo.cameraCompatTaskInfo.cameraCompatMode =
-                    AppCompatCameraPolicy.getCameraCompatSimReqOrientationMode(top);
-            appCompatTaskInfo.cameraCompatTaskInfo.displayRotation =
-                    AppCompatCameraPolicy.getCameraDeviceRotation(top);
-        }
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
         appCompatTaskInfo.setOptOutEdgeToEdge(top.mOptOutEdgeToEdge);
@@ -373,8 +365,6 @@ final class AppCompatUtils {
         info.topActivityLetterboxHeight = TaskInfo.PROPERTY_VALUE_UNSET;
         info.topActivityAppBounds.setEmpty();
         info.topActivityLetterboxBounds = null;
-        info.cameraCompatTaskInfo.cameraCompatMode =
-                CameraCompatTaskInfo.CAMERA_COMPAT_UNSPECIFIED;
         info.topNonResizableActivityAspectRatio = TaskInfo.PROPERTY_VALUE_UNSET;
         info.clearTopActivityFlags();
     }

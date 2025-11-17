@@ -789,10 +789,7 @@ public class DeviceIdleControllerTest {
         mDeviceIdleController.becomeActiveLocked("testing", 0);
         verifyStateConditions(STATE_ACTIVE);
 
-        setAlarmSoon(false);
-        setChargingOn(false);
-        setScreenOn(false);
-        setEmergencyCallActive(false);
+        prepareForInactivity();
 
         mDeviceIdleController.becomeInactiveIfAppropriateLocked();
         verifyStateConditions(STATE_INACTIVE);
@@ -814,10 +811,7 @@ public class DeviceIdleControllerTest {
         mDeviceIdleController.becomeActiveLocked("testing", 0);
         verifyStateConditions(STATE_ACTIVE);
 
-        setAlarmSoon(false);
-        setChargingOn(false);
-        setScreenOn(false);
-        setEmergencyCallActive(false);
+        prepareForInactivity();
 
         mDeviceIdleController.becomeInactiveIfAppropriateLocked();
         verifyStateConditions(STATE_INACTIVE);
@@ -904,6 +898,98 @@ public class DeviceIdleControllerTest {
 
         verifyStateConditions(STATE_IDLE_PENDING);
         verify(mDeviceIdleController).scheduleAlarmLocked(0);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_NON_WAKE_UP_DEEP_ALARMS)
+    public void testUseNonWakeUpDeepAlarms_disabledForNonWatch() {
+        setupBoolResource(
+                com.android.internal.R.bool.device_idle_use_non_wakeup_deep_alarms,
+                true);
+        setupPackageManagerFeature(PackageManager.FEATURE_WATCH, false);
+        resetDeviceIdleController();
+
+        assertFalse(mConstants.USE_NON_WAKE_UP_DEEP_ALARMS);
+
+        mDeviceIdleController.becomeActiveLocked("testing", 0);
+        verifyStateConditions(STATE_ACTIVE);
+        prepareForInactivity();
+        mDeviceIdleController.becomeInactiveIfAppropriateLocked();
+
+        verifyStateConditions(STATE_INACTIVE);
+        verify(mDeviceIdleController).scheduleAlarmLocked(eq(mConstants.INACTIVE_TIMEOUT));
+        verify(mAlarmManager).setWindow(
+                eq(AlarmManager.ELAPSED_REALTIME_WAKEUP), anyLong(), anyLong(),
+                eq("DeviceIdleController.deep"), any(), any(Handler.class));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_NON_WAKE_UP_DEEP_ALARMS)
+    public void testUseNonWakeUpDeepAlarms_watch_enabledWhenConfigEnabled() {
+        setupBoolResource(
+                com.android.internal.R.bool.device_idle_use_non_wakeup_deep_alarms,
+                true);
+        setupPackageManagerFeature(PackageManager.FEATURE_WATCH, true);
+        resetDeviceIdleController();
+
+        assertTrue(mConstants.USE_NON_WAKE_UP_DEEP_ALARMS);
+
+        mDeviceIdleController.becomeActiveLocked("testing", 0);
+        verifyStateConditions(STATE_ACTIVE);
+        prepareForInactivity();
+        mDeviceIdleController.becomeInactiveIfAppropriateLocked();
+
+        verifyStateConditions(STATE_INACTIVE);
+        verify(mDeviceIdleController).scheduleAlarmLocked(eq(mConstants.INACTIVE_TIMEOUT));
+        verify(mAlarmManager).setWindow(
+                eq(AlarmManager.ELAPSED_REALTIME), anyLong(), anyLong(),
+                eq("DeviceIdleController.deep"), any(), any(Handler.class));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_NON_WAKE_UP_DEEP_ALARMS)
+    public void testUseNonWakeUpDeepAlarms_watch_disabledWhenConfigDisabled() {
+        setupBoolResource(
+                com.android.internal.R.bool.device_idle_use_non_wakeup_deep_alarms,
+                false);
+        setupPackageManagerFeature(PackageManager.FEATURE_WATCH, true);
+        resetDeviceIdleController();
+
+        assertFalse(mConstants.USE_NON_WAKE_UP_DEEP_ALARMS);
+
+        mDeviceIdleController.becomeActiveLocked("testing", 0);
+        verifyStateConditions(STATE_ACTIVE);
+        prepareForInactivity();
+        mDeviceIdleController.becomeInactiveIfAppropriateLocked();
+
+        verifyStateConditions(STATE_INACTIVE);
+        verify(mDeviceIdleController).scheduleAlarmLocked(eq(mConstants.INACTIVE_TIMEOUT));
+        verify(mAlarmManager).setWindow(
+                eq(AlarmManager.ELAPSED_REALTIME_WAKEUP), anyLong(), anyLong(),
+                eq("DeviceIdleController.deep"), any(), any(Handler.class));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ALLOW_NON_WAKE_UP_DEEP_ALARMS)
+    public void testUseNonWakeUpDeepAlarms_watch_disabledWhenFlagDisabled() {
+        setupBoolResource(
+                com.android.internal.R.bool.device_idle_use_non_wakeup_deep_alarms,
+                true);
+        setupPackageManagerFeature(PackageManager.FEATURE_WATCH, true);
+        resetDeviceIdleController();
+
+        assertFalse(mConstants.USE_NON_WAKE_UP_DEEP_ALARMS);
+
+        mDeviceIdleController.becomeActiveLocked("testing", 0);
+        verifyStateConditions(STATE_ACTIVE);
+        prepareForInactivity();
+        mDeviceIdleController.becomeInactiveIfAppropriateLocked();
+
+        verifyStateConditions(STATE_INACTIVE);
+        verify(mDeviceIdleController).scheduleAlarmLocked(eq(mConstants.INACTIVE_TIMEOUT));
+        verify(mAlarmManager).setWindow(
+                eq(AlarmManager.ELAPSED_REALTIME_WAKEUP), anyLong(), anyLong(),
+                eq("DeviceIdleController.deep"), any(), any(Handler.class));
     }
 
     @Test
@@ -3045,9 +3131,26 @@ public class DeviceIdleControllerTest {
         when(getContext().getResources().getInteger(resId)).thenReturn(value);
     }
 
+    private void setupBoolResource(int resId, boolean value) {
+        when(getContext().getResources().getBoolean(resId)).thenReturn(value);
+    }
+
     private void setupPackageManagerFeature(String feature, boolean isFeaturePresent) {
         when(getContext().getPackageManager().hasSystemFeature(feature))
                 .thenReturn(isFeaturePresent);
+    }
+
+    private void resetDeviceIdleController() {
+        mInjector = new InjectorForTest(getContext());
+        cleanupDeviceIdleController();
+        setupDeviceIdleController();
+    }
+
+    private void prepareForInactivity() {
+        setAlarmSoon(false);
+        setChargingOn(false);
+        setScreenOn(false);
+        setEmergencyCallActive(false);
     }
 
     private void verifyStateConditions(int expectedState) {

@@ -237,6 +237,15 @@ constructor(
                             when (it) {
                                 is Idle ->
                                     when {
+                                        // If idle on Dream, report that the keyguard is not visible
+                                        // if the device is unlocked. This allows the dream to go
+                                        // directly to the gone state when dismissed.
+                                        it.currentScene == Scenes.Dream ->
+                                            deviceEntryInteractor.get().isUnlocked.map { isUnlocked
+                                                ->
+                                                !isUnlocked to
+                                                    "Idle on Dream, isUnlocked=$isUnlocked"
+                                            }
                                         // If idle on one of the keyguard scenes, report that the
                                         // keyguard is visible.
                                         it.currentScene in keyguardScenes ->
@@ -258,6 +267,11 @@ constructor(
 
                                 is Transition.ChangeScene ->
                                     when {
+                                        // If transitioning from Dream, report that the keyguard is
+                                        // not visible if the device is unlocked. This allows the
+                                        // dream to go directly to the gone state when dismissed.
+                                        it.fromScene == Scenes.Dream && it.toScene == Scenes.Gone ->
+                                            flowOf(false to "ChangeScene from dream to gone")
                                         // If transitioning between keyguard and another scene, keep
                                         // lockscreen visible until the transition ends.
                                         it.fromScene in keyguardScenes ->
@@ -290,6 +304,16 @@ constructor(
 
                                 is Transition.OverlayTransition ->
                                     when {
+                                        // If showing an overlay on Dream, only consider the
+                                        // keyguard showing if the device is locked. This is needed
+                                        // since dreams can display while the device is unlocked
+                                        // and keyguard is disabled.
+                                        it.currentScene == Scenes.Dream ->
+                                            deviceEntryInteractor.get().isUnlocked.map { isUnlocked
+                                                ->
+                                                !isUnlocked to
+                                                    "Overlay on Dream, isUnlocked=$isUnlocked"
+                                            }
                                         // If showing, hiding, or replacing an overlay and the
                                         // current scene under those overlays is one of the keyguard
                                         // scenes, report that the keyguard is showing.

@@ -31,6 +31,11 @@ internal object PinnedLayerLogs {
     }
 
     @JvmStatic
+    internal fun logD(message: String, vararg args: Any?) {
+        ProtoLog.d(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
+    }
+
+    @JvmStatic
     internal fun logW(message: String, vararg args: Any?) {
         ProtoLog.w(WM_SHELL_WINDOWING_LAYER, "%s: $message", TAG, *args)
     }

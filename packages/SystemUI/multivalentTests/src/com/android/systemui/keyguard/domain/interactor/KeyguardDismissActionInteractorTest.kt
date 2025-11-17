@@ -199,7 +199,7 @@ class KeyguardDismissActionInteractorTest : SysuiTestCase() {
             assertThat(wasDismissActionInvoked).isFalse()
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             setSceneTransition(Idle(Scenes.Gone))
@@ -341,26 +341,29 @@ class KeyguardDismissActionInteractorTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Gone)
 
             assertThat(wasDismissActionInvoked).isTrue()
-            assertThat(wasCancelActionInvoked).isFalse()
+            assertThat(wasCancelActionInvoked).isTrue()
         }
 
     @Test
-    fun clearDismissAction() =
+    fun clearDismissAction_dismissActionSetToNoneAndPreviousCancelActionTriggered() =
         kosmos.runTest {
             val dismissAction by collectLastValue(fakeKeyguardRepository.dismissAction)
+            var wasCancelActionInvoked = false
             fakeKeyguardRepository.setDismissAction(
                 DismissAction.RunImmediately(
                     onDismissAction = { KeyguardDone.IMMEDIATE },
-                    onCancelAction = {},
+                    onCancelAction = { wasCancelActionInvoked = true },
                     message = "",
                     willAnimateOnLockscreen = true,
                 )
             )
             assertThat(dismissAction).isNotEqualTo(DismissAction.None)
+            assertThat(wasCancelActionInvoked).isFalse()
 
             underTest.clearDismissAction()
 
             assertThat(dismissAction).isEqualTo(DismissAction.None)
+            assertThat(wasCancelActionInvoked).isTrue()
         }
 
     private fun Kosmos.startInteractor() {

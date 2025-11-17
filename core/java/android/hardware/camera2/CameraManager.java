@@ -25,7 +25,6 @@ import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.content.Context.DEVICE_ID_INVALID;
 import static android.hardware.devicestate.feature.flags.Flags.deviceStatePropertyMigration;
 import static android.view.Surface.ROTATION_0;
-import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
 import android.annotation.CallbackExecutor;
@@ -36,9 +35,6 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
-import android.app.ActivityManager;
-import android.app.CameraCompatTaskInfo;
-import android.app.TaskInfo;
 import android.app.compat.CompatChanges;
 import android.companion.virtual.VirtualDeviceManager;
 import android.compat.annotation.ChangeId;
@@ -74,7 +70,6 @@ import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.ServiceSpecificException;
@@ -86,7 +81,6 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.Size;
 import android.view.Display;
-import android.view.Surface;
 
 import com.android.internal.camera.flags.Flags;
 import com.android.internal.util.ArrayUtils;
@@ -580,31 +574,49 @@ public final class CameraManager {
                 : mVirtualDeviceManager.getDevicePolicy(context.getDeviceId(), POLICY_TYPE_CAMERA);
     }
 
-    // TODO(b/147726300): Investigate how to support foldables/multi-display devices.
     private Size getDisplaySize() {
         Size ret = new Size(0, 0);
+        DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
 
-        try {
-            DisplayManager displayManager =
-                    (DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
-            Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
-            if (display != null) {
-                Point sz = new Point();
-                display.getRealSize(sz);
-                int width = sz.x;
-                int height = sz.y;
-
-                if (height > width) {
-                    height = width;
-                    width = sz.y;
+        if (Flags.capMandatoryPreviewSizeToAllDisplays()) {
+            Display[] builtinDisplays = displayManager.getDisplays(
+                    DisplayManager.DISPLAY_CATEGORY_BUILT_IN_DISPLAYS);
+            for (Display display : builtinDisplays) {
+                Display.Mode[] supportedModes = display.getSupportedModes();
+                for (Display.Mode mode : supportedModes) {
+                    int width = mode.getPhysicalWidth();
+                    int height = mode.getPhysicalHeight();
+                    if (height > width) {
+                        width = height;
+                        height = mode.getPhysicalWidth();
+                    }
+                    if (width * height
+                                    > ret.getWidth() * ret.getHeight()) {
+                        ret = new Size(width, height);
+                    }
                 }
-
-                ret = new Size(width, height);
-            } else {
-                Log.e(TAG, "Invalid default display!");
             }
-        } catch (Exception e) {
-            Log.e(TAG, "getDisplaySize Failed. " + e);
+        } else {
+            try {
+                Display display = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
+                if (display != null) {
+                    Point sz = new Point();
+                    display.getRealSize(sz);
+                    int width = sz.x;
+                    int height = sz.y;
+
+                    if (height > width) {
+                        height = width;
+                        width = sz.y;
+                    }
+
+                    ret = new Size(width, height);
+                } else {
+                    Log.e(TAG, "Invalid default display!");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "getDisplaySize Failed. " + e);
+            }
         }
 
         return ret;
@@ -1656,34 +1668,9 @@ public final class CameraManager {
     @TestApi
     public static CameraCompatibilityInfo getRotationOverride(@Nullable Context context,
             @Nullable PackageManager packageManager, @Nullable String packageName) {
-        if (com.android.window.flags.Flags
-                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()
-                && isCameraCompatibilityInfoRequested()) {
+        if (isCameraCompatibilityInfoRequested()) {
             return CompatibilityInfo.getCameraCompatibilityInfo();
-        } else {
-            // Isolated process does not have access to ActivityTaskManager service, which is used
-            // indirectly in `ActivityManager.getAppTasks()`.
-            if (context != null && !Process.isIsolated()) {
-                final ActivityManager activityManager = context.getSystemService(
-                        ActivityManager.class);
-                if (activityManager != null) {
-                    for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
-                        final TaskInfo taskInfo = appTask.getTaskInfo();
-                        final int cameraCompatMode = taskInfo.appCompatTaskInfo
-                                .cameraCompatTaskInfo.cameraCompatMode;
-                        if (isInCameraCompatibilityInfo(cameraCompatMode)
-                                && taskInfo.topActivity != null
-                                && taskInfo.topActivity.getPackageName().equals(packageName)) {
-                            // WindowManager has requested rotation override.
-                            return getCameraCompatibilityInfoForCompatFreeform(cameraCompatMode,
-                                    taskInfo.appCompatTaskInfo.cameraCompatTaskInfo
-                                            .displayRotation);
-                        }
-                    }
-                }
-            }
         }
-
         if (!CameraManagerGlobal.sLandscapeToPortrait) {
             // No override and crop, and no change to sensor orientation.
             return new CameraCompatibilityInfo.Builder().build();
@@ -1716,54 +1703,6 @@ public final class CameraManager {
                 && compatInfo.getRotateAndCropRotation() != ROTATION_0)
                 || compatInfo.shouldOverrideSensorOrientation()
                 || !compatInfo.shouldAllowTransformInverseDisplay();
-    }
-
-    // TODO(b/430274604): remove once refactoring is launched.
-    private static boolean isInCameraCompatibilityInfo(@CameraCompatTaskInfo.CameraCompatMode int
-            cameraCompatMode) {
-        return (cameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_UNSPECIFIED)
-                && (cameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_NONE);
-    }
-
-    // TODO(b/430274604): remove once refactoring is launched.
-    private static CameraCompatibilityInfo getCameraCompatibilityInfoForCompatFreeform(
-            @CameraCompatTaskInfo.CameraCompatMode int freeformCameraCompatMode,
-            @Surface.Rotation int displayRotation) {
-        int rotateAndCrop = Surface.ROTATION_0;
-        // Only rotate-and-crop if the app and device orientations do not match.
-        if (freeformCameraCompatMode
-                == CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT
-                || freeformCameraCompatMode
-                    == CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE) {
-            // Rotate-and-crop compensates for changes in camera preview calculations (sandboxing).
-            // Recommended calculation of camera preview is:
-            // rotation = (sensorOrientationDegrees - deviceOrientationDegrees * sign + 360) % 360
-            // (camera-facing - sign - is accounted for later).
-            // If any of the parameters above are changed, rotate-and-crop should be applied to
-            // equal the changed amount.
-            // For example, with real display rotation 90 sandboxed to 0, rotate-and-crop by 270
-            // degrees (-90) for back camera, and 90 for front camera.
-            // Use `displayRotation` param, sent by WindowManager, as the display rotation in the
-            // app process might be sandboxed.
-            if (displayRotation == ROTATION_90) {
-                // The actual rotate and crop will be decided later, taking camera facing into
-                // account: back camera: 270 degrees, front camera: 90 degrees.
-                rotateAndCrop = Surface.ROTATION_270;
-            } else if (displayRotation == ROTATION_270) {
-                // The actual rotate and crop will be decided later, taking camera facing into
-                // account: back camera: 90 degrees, front camera: 270 degrees.
-                rotateAndCrop = Surface.ROTATION_90;
-            } else {
-                // TODO(b/390183440): differentiate between LANDSCAPE and REVERSE_LANDSCAPE
-                //  requested orientation for landscape apps. 'displayRotation` is 0 or 180 (rare)
-                //  in either case.
-                // The actual rotate and crop will be decided later, taking camera facing into
-                // account: back camera: 90 degrees, front camera: 270 degrees.
-                rotateAndCrop = Surface.ROTATION_90;
-            }
-        }
-        return new CameraCompatibilityInfo.Builder().setRotateAndCropRotation(rotateAndCrop)
-                .setShouldOverrideSensorOrientation(false).build();
     }
 
     /**
@@ -2005,6 +1944,28 @@ public final class CameraManager {
         @TestApi
         @RequiresPermission(android.Manifest.permission.CAMERA_OPEN_CLOSE_LISTENER)
         public void onCameraClosed(@NonNull String cameraId) {
+            // default empty implementation
+        }
+
+        /**
+         * A camera device has been physically removed or is no longer available to the system.
+         *
+         * <p>This callback is invoked when a previously available camera, such as a removable
+         * external camera, is disconnected. The camera ID will no longer be included in the list
+         * returned by {@link CameraManager#getCameraIdList()} and any attempt to open it will
+         * result in an {@link IllegalArgumentException}.</p>
+         *
+         * <p>If an application has an active {@link CameraDevice} instance for the removed camera
+         * that the client did not {@link CameraDevice#close() close}, then the application will
+         * receive a {@link CameraDevice.StateCallback#onDisconnected disconnection error}.</p>
+         *
+         * <p>When a camera is removed, {@link #onCameraUnavailable(String)} will be invoked
+         * for the given {@code cameraId} before this callback is triggered.</p>
+         *
+         * @param cameraId The unique identifier of the camera that has been removed.
+         */
+        @FlaggedApi(Flags.FLAG_DEVICE_REMOVED_CALLBACK)
+        public void onCameraRemoved(@NonNull String cameraId) {
             // default empty implementation
         }
     }
@@ -2987,6 +2948,18 @@ public final class CameraManager {
                                 } else {
                                     callback.onPhysicalCameraUnavailable(id, physicalId);
                                 }
+                            });
+                } finally {
+                    Binder.restoreCallingIdentity(ident);
+                }
+            }
+            if (Flags.deviceRemovedCallback() && (physicalId == null) &&
+                    (status == STATUS_NOT_PRESENT)) {
+                final long ident = Binder.clearCallingIdentity();
+                try {
+                    executor.execute(
+                            () -> {
+                                callback.onCameraRemoved(id);
                             });
                 } finally {
                     Binder.restoreCallingIdentity(ident);

@@ -31,6 +31,7 @@ import android.os.ServiceManager;
 import android.os.ServiceManager.ServiceNotFoundException;
 import android.platform.test.ravenwood.RavenwoodDriver;
 import android.platform.test.ravenwood.RavenwoodEnvironment;
+import android.platform.test.ravenwood.RavenwoodErrorHandler;
 import android.platform.test.ravenwood.RavenwoodProxyHelper;
 import android.platform.test.ravenwood.RavenwoodSystemServer;
 import android.platform.test.ravenwood.RavenwoodUnsupportedApiException;
@@ -171,6 +172,12 @@ public final class RavenwoodAppDriver {
                 // That's what ActivityThread does in handleBindApplication() too.
                 /*instrumentation=*/ null
         );
+        // AndroidX's test runner will override the default handler, in makeApplication(),
+        // so we override it again.
+        // We could have HostStubGen redirect `Thread.setDefaultUncaughtExceptionHandler()`,
+        // but currently we exclude all androidx.* classes from HSG processing, and
+        // changing that could impact the build time, so let's just go with this hacky solution.
+        RavenwoodErrorHandler.setDefaultUncaughtExceptionHandler();
 
         mActivityThread.mInitialApplication = application;
         mTargetContext = appContext;

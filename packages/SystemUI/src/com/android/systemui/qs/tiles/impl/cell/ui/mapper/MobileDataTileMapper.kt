@@ -62,6 +62,7 @@ constructor(
             }
 
             contentDescription = "$label".toString()
+            secondaryLabel = data.secondaryLabel
             activationState =
                 if (data.isSimActive) {
                     if (data.isEnabled) {
@@ -72,7 +73,12 @@ constructor(
                 } else {
                     QSTileState.ActivationState.UNAVAILABLE
                 }
-            supportedActions =
-                setOf(QSTileState.UserAction.CLICK, QSTileState.UserAction.LONG_CLICK)
+            supportedActions = buildSet {
+                add(QSTileState.UserAction.CLICK)
+                add(QSTileState.UserAction.LONG_CLICK)
+                if (data.isSimActive) {
+                    add(QSTileState.UserAction.TOGGLE_CLICK)
+                }
+            }
         }
 }

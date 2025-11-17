@@ -46,7 +46,6 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.kairos.BuildSpec
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.StateSelector
@@ -106,7 +105,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 
-@ExperimentalKairosApi
 @SysUISingleton
 class MobileConnectionsRepositoryKairosImpl
 @Inject
@@ -642,7 +640,6 @@ constructor(
     }
 }
 
-@ExperimentalKairosApi
 class MobileConnectionRepositoryKairosFactoryImpl
 @Inject
 constructor(

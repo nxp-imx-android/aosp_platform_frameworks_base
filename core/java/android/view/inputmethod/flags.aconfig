@@ -45,17 +45,6 @@ flag {
 }
 
 flag {
-    name: "use_input_method_info_safe_list"
-    namespace: "input_method"
-    description: "Use InputMethodInfoSafeList for more reliable binder IPCs"
-    bug: "339761278"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "ime_switcher_revamp"
     is_exported: true
     namespace: "input_method"
@@ -135,6 +124,13 @@ flag {
   bug: "331730488"
   is_fixed_read_only: true
   is_exported: true
+}
+
+flag {
+  name: "back_disposition_controls_back_interception"
+  namespace: "input_method"
+  description: "Setting ADJUST_NOTHING as back disposition causes back events to bypass IME"
+  bug: "454542168"
 }
 
 flag {
@@ -264,4 +260,12 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
+}
+
+flag {
+  name: "ime_subtype_short_label"
+  namespace: "input_method"
+  description: "Feature flag for supporting IME subtype short labels"
+  bug: "443854916"
+  is_exported: true
 }

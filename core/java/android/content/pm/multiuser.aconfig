@@ -230,13 +230,6 @@ flag {
 }
 
 flag {
-    name: "enable_hiding_profiles"
-    namespace: "profile_experiences"
-    description: "Allow the use of a profileApiAvailability user property to exclude HIDDEN profiles in API results"
-    bug: "316362775"
-}
-
-flag {
     name: "reorder_wallpaper_during_user_switch"
     namespace: "multiuser"
     description: "Reorder loading home and lock screen wallpapers during a user switch."
@@ -511,4 +504,11 @@ flag {
      namespace: "multiuser"
      description: "Flag to enable the OneTimeInitializer package singleton refactoring"
      bug: "453792165"
+}
+
+flag {
+     name: "credential_capture"
+     namespace: "multiuser"
+     description: "Perform authentication in the login app on desktop before switching to a user"
+     bug: "448603243"
 }

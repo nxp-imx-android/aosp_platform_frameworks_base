@@ -68,8 +68,8 @@ import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
-import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.UiThread;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
@@ -97,6 +97,7 @@ import android.hardware.input.InputManager;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.InputMethodService.BackDispositionMode;
 import android.inputmethodservice.InputMethodService.ImeWindowVisibility;
+import android.internal.perfetto.protos.Inputmethodeditor.InputMethodManagerServiceTraceFileProto;
 import android.internal.perfetto.protos.Inputmethodeditor.InputMethodManagerServiceTraceProto;
 import android.media.AudioManagerInternal;
 import android.net.Uri;
@@ -142,7 +143,6 @@ import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethod;
-import android.view.inputmethod.InputMethodEditorTraceProto.InputMethodManagerServiceTraceFileProto;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -173,6 +173,7 @@ import com.android.internal.inputmethod.InputMethodDebug;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
 import com.android.internal.inputmethod.InputMethodNavButtonFlags;
 import com.android.internal.inputmethod.InputMethodSubtypeHandle;
+import com.android.internal.inputmethod.InputMethodSubtypeSafeList;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.inputmethod.StartInputFlags;
 import com.android.internal.inputmethod.StartInputReason;
@@ -1235,7 +1236,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             mImePlatformCompatUtils = new ImePlatformCompatUtils();
             mInputMethodDeviceConfigs = new InputMethodDeviceConfigs();
             mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
-
             mSlotIme = mContext.getString(com.android.internal.R.string.status_bar_ime);
 
             ProtoLog.init(ImeProtoLogGroup.values());
@@ -1544,7 +1544,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
         }
         if (!mUserManagerInternal.exists(userId)) {
-            return InputMethodInfoSafeList.empty();
+            return InputMethodInfoSafeList.create(null);
         }
         final int callingUid = Binder.getCallingUid();
         final long ident = Binder.clearCallingIdentity();
@@ -1573,54 +1573,13 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
         }
         if (!mUserManagerInternal.exists(userId)) {
-            return InputMethodInfoSafeList.empty();
+            return InputMethodInfoSafeList.create(null);
         }
         final int callingUid = Binder.getCallingUid();
         final long ident = Binder.clearCallingIdentity();
         try {
             return InputMethodInfoSafeList.create(
                     getEnabledInputMethodListInternal(userId, callingUid));
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @BinderThread
-    @NonNull
-    @Override
-    public List<InputMethodInfo> getInputMethodListLegacy(@UserIdInt int userId,
-            @DirectBootAwareness int directBootAwareness) {
-        if (UserHandle.getCallingUserId() != userId) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
-        }
-        if (!mUserManagerInternal.exists(userId)) {
-            return Collections.emptyList();
-        }
-        final int callingUid = Binder.getCallingUid();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return getInputMethodListInternal(userId, directBootAwareness, callingUid);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @BinderThread
-    @NonNull
-    @Override
-    public List<InputMethodInfo> getEnabledInputMethodListLegacy(@UserIdInt int userId) {
-        if (UserHandle.getCallingUserId() != userId) {
-            mContext.enforceCallingOrSelfPermission(
-                    Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
-        }
-        if (!mUserManagerInternal.exists(userId)) {
-            return Collections.emptyList();
-        }
-        final int callingUid = Binder.getCallingUid();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return getEnabledInputMethodListInternal(userId, callingUid);
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
@@ -1697,9 +1656,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      *                                        subtypes
      * @param userId                          the user ID to be queried about
      */
+    @NonNull
     @Override
     @PermissionManuallyEnforced
-    public List<InputMethodSubtype> getEnabledInputMethodSubtypeList(String imiId,
+    public InputMethodSubtypeSafeList getEnabledInputMethodSubtypeList(String imiId,
             boolean allowsImplicitlyEnabledSubtypes, @UserIdInt int userId) {
         if (Flags.guardInputMethodListApis()
                 && CompatChanges.isChangeEnabled(INPUT_METHOD_LIST_API_PERMISSION_ENABLED)) {
@@ -1716,8 +1676,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final int callingUid = Binder.getCallingUid();
         final long ident = Binder.clearCallingIdentity();
         try {
-            return getEnabledInputMethodSubtypeListInternal(imiId,
-                    allowsImplicitlyEnabledSubtypes, userId, callingUid);
+            return InputMethodSubtypeSafeList.create(
+                    getEnabledInputMethodSubtypeListInternal(imiId,
+                        allowsImplicitlyEnabledSubtypes, userId, callingUid));
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
@@ -5253,7 +5214,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             ServiceInfo si = ri.serviceInfo;
             final String imeId = InputMethodInfo.computeId(ri);
             if (!android.Manifest.permission.BIND_INPUT_METHOD.equals(si.permission)) {
-                Slog.w(TAG, "Skipping input method " + imeId
+                Slog.w(TAG, "Skipping an input method " + imeId
                         + ": it does not require the permission "
                         + android.Manifest.permission.BIND_INPUT_METHOD);
                 continue;
@@ -5261,26 +5222,26 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
             ProtoLog.v(IMMS_DEBUG, "Checking %s", imeId);
 
+            // The number of service is at most MAX_IMES_PER_PACKAGE for each package unless
+            // it's a system app or it's explicitly enabled.
+            final String packageName = si.packageName;
+            final int imiCountInPkg = imiPackageCount.getOrDefault(packageName, 0);
+            if (!si.applicationInfo.isSystemApp() && !enabledInputMethodList.contains(imeId)
+                    && imiCountInPkg >= InputMethodInfo.MAX_IMES_PER_PACKAGE) {
+                Slog.w(TAG,
+                        "Skipping an input method " + imeId + ": too many services in a package.");
+                continue;
+            }
+
             try {
                 final InputMethodInfo imi = new InputMethodInfo(userAwareContext, ri,
                         Collections.emptyList());
                 if (imi.isVrOnly()) {
                     continue;  // Skip VR-only IME, which isn't supported for now.
                 }
-                final String packageName = si.packageName;
-                // only include IMEs which are from the system, enabled, or below the threshold
-                if (si.applicationInfo.isSystemApp() || enabledInputMethodList.contains(imi.getId())
-                        || imiPackageCount.getOrDefault(packageName, 0)
-                        < InputMethodInfo.MAX_IMES_PER_PACKAGE) {
-                    imiPackageCount.put(packageName,
-                            1 + imiPackageCount.getOrDefault(packageName, 0));
-
-                    methodMap.put(imi.getId(), imi);
-                    ProtoLog.v(IMMS_DEBUG, "Found an input method %s", imi);
-                } else {
-                    ProtoLog.v(IMMS_DEBUG, "Found an input method, but ignored due threshold: %s",
-                            imi);
-                }
+                methodMap.put(imi.getId(), imi);
+                imiPackageCount.put(packageName, imiCountInPkg + 1);
+                ProtoLog.v(IMMS_DEBUG, "Found an input method %s", imi);
             } catch (Exception e) {
                 Slog.wtf(TAG, "Unable to load input method " + imeId, e);
             }
@@ -5356,13 +5317,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final List<InputMethodInfo> inputMethodList = settings.getMethodList();
         mHandler.obtainMessage(MSG_DISPATCH_ON_INPUT_METHOD_LIST_UPDATED,
                 userId, 0 /* unused */, inputMethodList).sendToTarget();
-    }
-
-    @GuardedBy("ImfLock.class")
-    void sendOnNavButtonFlagsChangedToAllImesLocked() {
-        for (int userId : mUserManagerInternal.getUserIds()) {
-            sendOnNavButtonFlagsChangedLocked(getUserData(userId));
-        }
     }
 
     @GuardedBy("ImfLock.class")
@@ -6434,16 +6388,15 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     ImeTracker.Token createStatsTokenForFocusedClient(boolean show,
             @SoftInputShowHideReason int reason, @UserIdInt int userId) {
         final var userData = getUserData(userId);
-        final int uid = userData.mImeBindingState.mFocusedWindowClient != null
-                ? userData.mImeBindingState.mFocusedWindowClient.mUid
-                : -1;
+        final var client = userData.mImeBindingState.mFocusedWindowClient;
+        final int uid = client != null ? client.mUid : -1;
         final var packageName = userData.mImeBindingState.mFocusedWindowEditorInfo != null
                 ? userData.mImeBindingState.mFocusedWindowEditorInfo.packageName
                 : "uid(" + uid + ")";
-
         return ImeTracker.forLogging().onStart(packageName, uid,
                 show ? ImeTracker.TYPE_SHOW : ImeTracker.TYPE_HIDE, ImeTracker.ORIGIN_SERVER,
-                reason, false /* fromUser */);
+                reason, false /* fromUser */, userId,
+                client != null ? client.mSelfReportedDisplayId : INVALID_DISPLAY);
     }
 
     private static final class InputMethodPrivilegedOperationsImpl

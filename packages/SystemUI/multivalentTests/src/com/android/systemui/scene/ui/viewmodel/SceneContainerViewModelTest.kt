@@ -165,7 +165,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
                 .filter { it != currentScene }
                 .filter {
                     // These scenes are not currently falsing protected.
-                    it != Scenes.Communal && it != Scenes.Dream && it != Scenes.Occluded
+                    it != Scenes.Dream && it != Scenes.Occluded
                 }
                 .forEach { toScene ->
                     assertWithMessage("Protected scene $toScene not properly protected")
@@ -185,7 +185,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             sceneContainerConfig.sceneKeys
                 .filter {
                     // Moving to the Communal scene is not currently falsing protected.
-                    it == Scenes.Communal
+                    it == Scenes.Dream || it == Scenes.Occluded
                 }
                 .forEach { toScene ->
                     assertWithMessage("Unprotected scene $toScene is incorrectly protected")
@@ -226,7 +226,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
     fun canChangeScene_toGone_whenUnlocked_returnsTrue() =
         kosmos.runTest {
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(currentValue(deviceUnlockedInteractor.deviceUnlockStatus).isUnlocked)

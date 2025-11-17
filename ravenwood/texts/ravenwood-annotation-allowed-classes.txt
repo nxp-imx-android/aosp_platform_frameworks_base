@@ -236,6 +236,7 @@ android.graphics.drawable.shapes.RectShape
 android.graphics.drawable.shapes.RoundRectShape
 android.graphics.drawable.shapes.Shape
 
+android.graphics.fonts.FallbackFontUpdateRequest
 android.graphics.fonts.Font
 android.graphics.fonts.FontCustomizationParser
 android.graphics.fonts.FontFamily
@@ -252,6 +253,29 @@ android.graphics.text.LineBreaker
 android.graphics.text.MeasuredText
 android.graphics.text.PositionedGlyphs
 android.graphics.text.TextRunShaper
+
+android.media.AudioAttributes
+android.media.AudioDescriptor
+android.media.AudioDeviceAttributes
+android.media.AudioDeviceInfo
+android.media.AudioDevicePort
+android.media.AudioDevicePortConfig
+android.media.AudioFocusInfo
+android.media.AudioFocusRequest
+android.media.AudioFormat
+android.media.AudioGain
+android.media.AudioGainConfig
+android.media.AudioHandle
+android.media.AudioManager
+android.media.AudioPort
+android.media.AudioPortConfig
+android.media.AudioProfile
+android.media.AudioRoutesInfo
+android.media.AudioSystem
+android.media.BluetoothProfileConnectionInfo
+android.media.MediaMetrics
+android.media.Utils
+android.media.VolumeInfo
 
 android.metrics.LogMaker
 
@@ -506,6 +530,7 @@ android.util.EventLog
 android.util.FloatMath
 android.util.FloatProperty
 android.util.Half
+android.util.ImmutableIntArray
 android.util.IndentingPrintWriter
 android.util.IntArray
 android.util.IntProperty
@@ -696,12 +721,12 @@ com.android.server.ServiceThread
 com.android.server.SystemService
 com.android.server.SystemServiceManager
 
-com.android.server.am.BinderSession
 com.android.server.am.ConnectionRecord
 com.android.server.am.OomAdjuster
 
 com.android.server.am.psc.AsyncBatchSession
 com.android.server.am.psc.BatchSession
+com.android.server.am.psc.BinderSession
 com.android.server.am.psc.ConnectionRecordInternal
 com.android.server.am.psc.SyncBatchSession
 

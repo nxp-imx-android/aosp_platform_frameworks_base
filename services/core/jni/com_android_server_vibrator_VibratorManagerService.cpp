@@ -39,6 +39,8 @@
 
 namespace android {
 
+namespace audio_common = aidl::android::media::audio::common;
+
 using BnVibratorCallback = aidl::android::hardware::vibrator::BnVibratorCallback;
 using CompositeEffect = aidl::android::hardware::vibrator::CompositeEffect;
 using CompositePwleV2 = aidl::android::hardware::vibrator::CompositePwleV2;
@@ -59,6 +61,7 @@ static JavaVM* sJvm = nullptr;
 static jmethodID sMethodIdOnSyncedVibrationComplete;
 static jmethodID sMethodIdOnVibrationSessionComplete;
 static jmethodID sMethodIdOnVibrationComplete;
+static jmethodID sMethodIdOnHapticGeneratorSessionComplete;
 
 // TODO(b/409002423): remove this once remove_hidl_support flag removed
 static std::mutex gManagerMutex;
@@ -717,10 +720,19 @@ static jboolean nativeStartHapticGeneratorSessionWithCallback(JNIEnv* env, jclas
     }
 
     std::vector<int32_t> ids = {vibratorId};
-    // TODO(434631745) setup config properly
-    const HapticGeneratorConfig nativeConfig = {};
-    // TODO(434631745) Add callback support
-    std::shared_ptr<::aidl::android::hardware::vibrator::IVibratorCallback> callback = nullptr;
+    // TODO(434631745) setup config properly, using default for now.
+    HapticGeneratorConfig nativeConfig;
+    nativeConfig.audioFormat.sampleRate = 48000;
+    nativeConfig.audioFormat.channelMask = audio_common::AudioChannelLayout::make<
+            audio_common::AudioChannelLayout::Tag::layoutMask>(
+            audio_common::AudioChannelLayout::CHANNEL_HAPTIC_A);
+    nativeConfig.audioFormat.format.type = audio_common::AudioFormatType::PCM;
+    nativeConfig.audioFormat.format.pcm = audio_common::PcmType::INT_16_BIT;
+
+    auto callback =
+            ndk::SharedRefBase::make<VibratorCallback>(sJvm, service->managerCallbacks(),
+                                                       sMethodIdOnHapticGeneratorSessionComplete,
+                                                       sessionId);
 
     HapticGeneratorSession halSession;
     auto status = hal->startHapticGeneratorSession(ids, nativeConfig, callback, &halSession);
@@ -746,7 +758,7 @@ static jboolean nativeStartHapticGeneratorSessionWithCallback(JNIEnv* env, jclas
 }
 
 static jboolean nativeCloseHapticGeneratorSession(JNIEnv* env, jclass /* clazz */, jlong servicePtr,
-                                                  jlong nativeSessionPtr, jlong sessionId) {
+                                                  jlong sessionId) {
     if (DEBUG) {
         ALOGD("%s(sessionId=%lld)", __func__, static_cast<long long>(sessionId));
     }
@@ -829,14 +841,14 @@ static jint nativeReadHapticGeneratorStream(JNIEnv* env, jclass /* clazz */, jlo
     auto* service = toNativeService(servicePtr, __func__);
     if (service == nullptr) {
         ALOGE("%s: native service was not initialized.", __func__);
-        return -1;
+        return -EIO;
     }
 
     ScopedByteArrayRW pcmBuffer(env, buffer);
     if (pcmBuffer.get() == nullptr) {
         ALOGE("%s: nativeReadHapticStream failed to get byte array elements for read buffer.",
               __func__);
-        return -1;
+        return -EIO;
     }
 
     size_t bufferSize = pcmBuffer.size();
@@ -848,7 +860,7 @@ static jint nativeReadHapticGeneratorStream(JNIEnv* env, jclass /* clazz */, jlo
     if (session == nullptr) {
         ALOGE("%s: Haptic session %lld not found or has been closed.", __func__,
               static_cast<long long>(sessionId));
-        return -1;
+        return -EPIPE; // Closed session
     }
 
     std::span<int8_t> bufferSpan(reinterpret_cast<int8_t*>(pcmBuffer.get()), pcmBuffer.size());
@@ -858,10 +870,15 @@ static jint nativeReadHapticGeneratorStream(JNIEnv* env, jclass /* clazz */, jlo
     if (!result.ok()) {
         ALOGE("%s: Error reading from haptic stream: %s", __func__,
               result.error().message().c_str());
-        return -1;
+        return -EIO;
     }
 
     size_t totalBytesRead = result.value();
+
+    // TODO: Add this check inside the vibrationflinger
+    if (totalBytesRead == 0) {
+        return -1; // Corresponds to READ_STATUS_EOF
+    }
 
     return static_cast<jint>(totalBytesRead);
 }
@@ -951,6 +968,9 @@ int register_android_server_vibrator_VibratorManagerService(JavaVM* jvm, JNIEnv*
             GetMethodIDOrDie(env, managerCallbacksClass, "onVibrationSessionComplete", "(J)V");
     sMethodIdOnVibrationComplete =
             GetMethodIDOrDie(env, vibratorCallbacksClass, "onVibrationStepComplete", "(IJJ)V");
+    sMethodIdOnHapticGeneratorSessionComplete =
+            GetMethodIDOrDie(env, managerCallbacksClass, "onHapticGeneratorSessionComplete",
+                             "(J)V");
     return jniRegisterNativeMethods(env, "com/android/server/vibrator/VibratorManagerService",
                                     method_table, NELEM(method_table));
 }

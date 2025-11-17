@@ -123,6 +123,22 @@ public interface TableLogBuffer : Dumpable {
     public fun logChange(prefix: String = "", columnName: String, value: Int?, isInitial: Boolean)
 
     /**
+     * Logs a Float change.
+     *
+     * For Java overloading.
+     */
+    public fun logChange(prefix: String = "", columnName: String, value: Float) {
+        logChange(prefix, columnName, value, isInitial = false)
+    }
+
+    /**
+     * Logs a Float change.
+     *
+     * @param isInitial see [TableLogBuffer.logChange(String, Boolean, (TableRowLogger) -> Unit].
+     */
+    public fun logChange(prefix: String = "", columnName: String, value: Float, isInitial: Boolean)
+
+    /**
      * Log the differences between [prevVal] and [newVal].
      *
      * The [newVal] object's method [Diffable.logDiffs] will be used to fetch the diffs.

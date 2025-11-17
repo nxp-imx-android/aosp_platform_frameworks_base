@@ -17,12 +17,14 @@
 package com.android.systemui.topwindoweffects
 
 import android.os.Handler
+import android.util.TimeUtils
 import android.view.Choreographer
-import android.view.animation.PathInterpolator
 import androidx.annotation.VisibleForTesting
+import androidx.compose.ui.input.pointer.util.VelocityTracker1D
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.Interpolator
+import androidx.core.animation.PathInterpolator
 import androidx.core.animation.ValueAnimator
 import com.android.app.animation.InterpolatorsAndroidX
 import com.android.systemui.CoreStartable
@@ -40,6 +42,7 @@ import com.android.wm.shell.appzoomout.AppZoomOut
 import java.io.PrintWriter
 import java.util.Optional
 import javax.inject.Inject
+import kotlin.math.sqrt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -58,8 +61,6 @@ constructor(
     @Main private val mainHandler: Handler,
 ) : CoreStartable {
 
-    private val gestureInterpolator = PathInterpolator(0.1f, 0.1f, 0f, 1f)
-
     // The main animation is interruptible until power button long press has been detected. At this
     // point the default assistant is invoked, and since this invocation cannot be interrupted by
     // lifting the power button the animation shouldn't be interruptible either.
@@ -77,12 +78,10 @@ constructor(
 
     private var animator: ValueAnimator? = null
 
-    private val hapticPlayer: SqueezeEffectHapticPlayer? by lazy {
-        if (squeezeEffectInteractor.isSqueezeEffectHapticEnabled) {
-            squeezeEffectHapticPlayerFactory.create()
-        } else {
-            null
-        }
+    private val velocityTracker = VelocityTracker1D(false)
+
+    private val hapticPlayer: SqueezeEffectHapticPlayer by lazy {
+        squeezeEffectHapticPlayerFactory.create()
     }
 
     override fun start() {
@@ -90,10 +89,24 @@ constructor(
             squeezeEffectInteractor.powerButtonSemantics.collectLatest { semantics ->
                 when (semantics) {
                     PowerButtonSemantics.START_SQUEEZE_WITH_RUMBLE ->
-                        startSqueeze(useHapticRumble = true)
+                        startSqueeze(
+                            useHapticRumble = true,
+                            inwardsAnimationDuration =
+                                squeezeEffectInteractor
+                                    .getLppInvocationEffectInAnimationDurationMillis(),
+                            delayMs =
+                                squeezeEffectInteractor.getLppInvocationEffectInitialDelayMillis(),
+                        )
 
                     PowerButtonSemantics.START_SQUEEZE_WITHOUT_RUMBLE ->
-                        startSqueeze(useHapticRumble = false)
+                        startSqueeze(
+                            useHapticRumble = false,
+                            inwardsAnimationDuration =
+                                squeezeEffectInteractor
+                                    .getLppInvocationEffectInAnimationDurationMillis(),
+                            delayMs =
+                                squeezeEffectInteractor.getLppInvocationEffectInitialDelayMillis(),
+                        )
 
                     PowerButtonSemantics.CANCEL_SQUEEZE -> cancelSqueeze()
                     PowerButtonSemantics.PLAY_DEFAULT_ASSISTANT_HAPTICS ->
@@ -114,12 +127,16 @@ constructor(
                                 setRequestTopUi(false)
                             } else if (gestureProgress.progress > 0f) {
                                 if (!isGestureOngoing) {
+                                    velocityTracker.resetTracking()
                                     isGestureOngoing = true
                                     setRequestTopUi(true)
                                 }
-                                squeezeProgress =
-                                    gestureInterpolator.getInterpolation(gestureProgress.progress) *
-                                        GESTURE_MAX_EFFECT
+                                squeezeProgress = gestureProgress.progress * GESTURE_MAX_EFFECT
+                                velocityTracker.addDataPoint(
+                                    Choreographer.getInstance().lastFrameTimeNanos /
+                                        TimeUtils.NANOS_PER_MS,
+                                    squeezeProgress,
+                                )
                             }
                         }
                     COMPLETED ->
@@ -128,10 +145,10 @@ constructor(
                             isGestureOngoing = false
                             startSqueeze(
                                 useHapticRumble = false,
-                                delayMs = 0L,
                                 inwardsAnimationDuration =
                                     squeezeEffectInteractor
                                         .getGestureInvocationEffectInAnimationDurationMillis(),
+                                velocityPerMs = velocityTracker.calculateVelocity() / 1000,
                             )
                         }
                     HIDDEN -> {
@@ -146,23 +163,23 @@ constructor(
 
     private suspend fun startSqueeze(
         useHapticRumble: Boolean,
-        delayMs: Long = squeezeEffectInteractor.getLppInvocationEffectInitialDelayMillis(),
-        inwardsAnimationDuration: Long =
-            squeezeEffectInteractor.getLppInvocationEffectInAnimationDurationMillis(),
+        inwardsAnimationDuration: Long,
+        delayMs: Long = 0L,
+        velocityPerMs: Float = 0f,
     ) {
         delay(delayMs)
         setRequestTopUi(true)
         val outwardsAnimationDuration =
             squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis()
         if (useHapticRumble) {
-            hapticPlayer?.playRumble(inwardsAnimationDuration.toInt())
+            hapticPlayer.playRumble(inwardsAnimationDuration.toInt())
         }
         animateSqueezeProgressTo(
             targetProgress = 1f,
             duration = inwardsAnimationDuration,
-            interpolator = InterpolatorsAndroidX.LEGACY,
+            interpolator = getInwardsInterpolator(velocityPerMs, inwardsAnimationDuration),
         ) {
-            hapticPlayer?.startZoomOutEffect(
+            hapticPlayer.startZoomOutEffect(
                 durationMillis =
                     (HAPTIC_OUTWARD_EFFECT_DURATION_SCALE * outwardsAnimationDuration).toInt()
             )
@@ -177,14 +194,27 @@ constructor(
         squeezeEffectInteractor.isPowerButtonLongPressed.collectLatest { isLongPressed ->
             if (isLongPressed) {
                 isAnimationInterruptible = false
-                hapticPlayer?.playLppIndicator()
+                hapticPlayer.playLppIndicator()
             }
         }
     }
 
+    // Creates a new interpolator based on the LEGACY interpolator but matching the initial velocity
+    // provided
+    private fun getInwardsInterpolator(velocityPerMs: Float, durationMs: Long) =
+        if (velocityPerMs > 0f) {
+            val slope = (velocityPerMs * durationMs) / (1f - squeezeProgress)
+            val length = 0.4f
+            val x1 = length / sqrt(1 + slope * slope)
+            val y1 = slope * x1
+            PathInterpolator(x1, y1, 0.2f, 1f)
+        } else {
+            InterpolatorsAndroidX.LEGACY
+        }
+
     private fun cancelSqueeze() {
         if (isAnimationInterruptible && animator != null) {
-            hapticPlayer?.cancel()
+            hapticPlayer.cancel()
             animateSqueezeProgressTo(
                 targetProgress = 0f,
                 duration = squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis(),
@@ -223,7 +253,7 @@ constructor(
         topUiController.setRequestTopUi(requestTopUi, TAG)
     }
 
-    private fun playDefaultAssistantHaptic() = hapticPlayer?.playDefaultAssistantEffect()
+    private fun playDefaultAssistantHaptic() = hapticPlayer.playDefaultAssistantEffect()
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("$TAG:")

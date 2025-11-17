@@ -31,7 +31,7 @@ import androidx.collection.MutableIntObjectMap;
 
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.systemui.demomode.DemoMode;
-import com.android.systemui.kairos.ExperimentalKairosApi;
+
 import com.android.systemui.kairos.KairosNetwork;
 import com.android.systemui.plugins.DarkIconDispatcher;
 import com.android.systemui.plugins.DarkIconDispatcher.DarkReceiver;
@@ -60,7 +60,6 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 
 //TODO: This should be a controller, not its own view
-@OptIn(markerClass = ExperimentalKairosApi.class)
 public class DemoStatusIcons extends StatusIconContainer implements DemoMode, DarkReceiver {
     private static final String TAG = "DemoStatusIcons";
 

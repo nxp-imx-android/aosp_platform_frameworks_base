@@ -64,13 +64,15 @@ import org.junit.runners.Parameterized.Parameters
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
     Flags.FLAG_ENABLE_BUBBLE_BAR,
-    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION)
+    com.android.window.flags.Flags.FLAG_FIX_BUBBLE_TRAMPOLINE_ANIMATION,
+)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @RunWith(Parameterized::class)
 class EnterBubbleViaDragToBubbleBarTrampolineTest(navBar: NavBar) :
-    BubbleFlickerTrampolineTestBase(), EnterBubbleViaDragToBubbleBarTestCases,
+    BubbleFlickerTrampolineTestBase(),
+    EnterBubbleViaDragToBubbleBarTestCases,
     ColdLaunchTaskTrampolineTestCases {
 
     companion object {
@@ -80,33 +82,28 @@ class EnterBubbleViaDragToBubbleBarTrampolineTest(navBar: NavBar) :
                     SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, trampolineApp.appName)
                 },
                 transition = {
-                    launchBubbleViaDragToBubbleBar(
-                        runningApp,
-                        tapl,
-                        wmHelper,
-                        trampolineApp,
-                    )
+                    launchBubbleViaDragToBubbleBar(runningApp, tapl, wmHelper, trampolineApp)
                 },
                 tearDownAfterTransition = { runningApp.exit(wmHelper) },
             )
 
-        @Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = NavBar.entries
+        @Parameters(name = "{0}") @JvmStatic fun data(): List<NavBar> = NavBar.entries
     }
 
     @get:Rule(order = 1)
-    val assumptionRule = AssumptionRule(
-        condition = { tapl.isTablet },
-        message = "Bubble and task bar are not available on phone",
-    )
+    val assumptionRule =
+        AssumptionRule(
+            condition = { tapl.isTablet },
+            message = "Bubble and task bar are not available on phone",
+        )
 
     @get:Rule(order = 2)
-    val setUpRule: TestRule = RunOncePerParameterRule(
-        testClass = this::class,
-        wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
-        params = arrayOf(navBar),
-    )
+    val setUpRule: TestRule =
+        RunOncePerParameterRule(
+            testClass = this::class,
+            wrappedRule = testSetupRule(navBar).around(recordTraceWithTransitionRule),
+            params = arrayOf(navBar),
+        )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

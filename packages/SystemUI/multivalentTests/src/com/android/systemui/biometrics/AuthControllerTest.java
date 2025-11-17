@@ -1003,7 +1003,7 @@ public class AuthControllerTest extends SysuiTestCase {
     @Test
     public void testCloseDialog_whenGlobalActionsMenuShown() throws Exception {
         showDialog(new int[]{1} /* sensorIds */, false /* credentialAllowed */);
-        mAuthController.handleShowGlobalActionsMenu();
+        mAuthController.handleShowOrHideGlobalActionsMenu();
         verify(mReceiver).onDialogDismissed(
                 eq(BiometricPrompt.DISMISSED_REASON_USER_CANCEL),
                 eq(null) /* credentialAttestation */);

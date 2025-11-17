@@ -19,6 +19,7 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Environment
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -96,11 +97,19 @@ constructor(
         }
     }
 
-    val currentSaveLocation: String by derivedStateOf {
+    val currentSaveLocationString: String by derivedStateOf {
         if (!isCustomSaveLocationActive) {
             Environment.DIRECTORY_SCREENSHOTS
         } else {
             customSaveLocationDisplayName ?: Environment.DIRECTORY_SCREENSHOTS
+        }
+    }
+
+    val currentSaveLocationUri: Uri? by derivedStateOf {
+        if (isCustomSaveLocationActive && customSaveLocationUriString.isNotEmpty()) {
+            customSaveLocationUriString.toUri()
+        } else {
+            null
         }
     }
 

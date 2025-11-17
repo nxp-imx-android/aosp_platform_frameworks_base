@@ -17,19 +17,18 @@
 package com.android.server.companion.datatransfer.continuity.settings;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import android.platform.test.annotations.Presubmit;
-import android.companion.datatransfer.continuity.TaskContinuityManager;
 import android.companion.datatransfer.continuity.IHandoffFeatureStateListener;
+import android.companion.datatransfer.continuity.TaskContinuityManager;
+import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-import org.junit.runner.RunWith;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Mock;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -99,6 +98,18 @@ public class HandoffSettingsManagerTest {
         when(mHandoffPreferenceStore.isHandoffEnabledForUser(USER_ID)).thenReturn(false);
         mHandoffSettingsManager.setHandoffEnabledForUser(USER_ID, true);
         assertThat(mHandoffSettingsManager.isHandoffActiveForUser(USER_ID)).isFalse();
+        assertThat(listener.mCallCount).isEqualTo(2);
+        assertThat(listener.mAvailability)
+                .isEqualTo(TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY);
+        assertThat(listener.mEnabled).isFalse();
+    }
+
+    @Test
+    public void onHandoffPolicyChanged_notifiesListeners() {
+        FakeHandoffEnabledListener listener = new FakeHandoffEnabledListener();
+        mHandoffSettingsManager.registerHandoffFeatureStateListener(USER_ID, listener);
+        when(mHandoffPolicyManager.isHandoffAllowedForUser(USER_ID)).thenReturn(false);
+        mHandoffSettingsManager.onHandoffPolicyChanged(USER_ID);
         assertThat(listener.mCallCount).isEqualTo(2);
         assertThat(listener.mAvailability)
                 .isEqualTo(TaskContinuityManager.HANDOFF_AVAILABILITY_STATUS_DISABLED_BY_POLICY);

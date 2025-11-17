@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.api
 
+import android.content.res.Configuration
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTaskOrganizer
@@ -53,7 +54,9 @@ class CompatUISharedRepositoryCleanUpTest : ShellTestCase() {
     @Test
     fun `When Task vanishes the related item it is removed from repository`() {
         runTestScenario { r ->
-            r.useShareComponentRepository { repo -> repo.insert(key = 10, CompatUISharedState()) }
+            r.useShareComponentRepository { repo ->
+                repo.insert(key = 10, CompatUISharedState(taskConfiguration = Configuration()))
+            }
             testTaskVanishedListener(r.getCompatUISharedRepositoryCleanUp()) {
                 runningTaskInfo { ti -> ti.taskId = 10 }
                 validateOnTaskVanished { r.validateItem(10) { item -> assertNull(item) } }
@@ -64,7 +67,9 @@ class CompatUISharedRepositoryCleanUpTest : ShellTestCase() {
     @Test
     fun `Only information for the vanishing Task are removed`() {
         runTestScenario { r ->
-            r.useShareComponentRepository { repo -> repo.insert(key = 20, CompatUISharedState()) }
+            r.useShareComponentRepository { repo ->
+                repo.insert(key = 20, CompatUISharedState(taskConfiguration = Configuration()))
+            }
             testTaskVanishedListener(r.getCompatUISharedRepositoryCleanUp()) {
                 runningTaskInfo { ti -> ti.taskId = 10 }
                 validateOnTaskVanished { r.validateItem(20) { item -> assertNotNull(item) } }

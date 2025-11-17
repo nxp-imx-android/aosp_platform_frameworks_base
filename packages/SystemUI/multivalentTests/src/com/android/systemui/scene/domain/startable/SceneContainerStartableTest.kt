@@ -1810,6 +1810,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 )
             runCurrent()
             verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(false)
+            verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(true)
 
             fakeSceneDataSource.unpause(expectedScene = Scenes.Shade)
             transitionStateFlow.value = ObservableTransitionState.Idle(Scenes.Shade)
@@ -1875,7 +1876,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             // window should be focusable.
             runCurrent()
             verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(false)
-            verify(notificationShadeWindowController, times(2)).setNotificationShadeFocusable(true)
+            verify(notificationShadeWindowController, times(1)).setNotificationShadeFocusable(true)
         }
 
     @Test
@@ -2495,9 +2496,10 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             assertThat(currentScene).isEqualTo(Scenes.Gone)
             assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
-            assertThat(uiEventLoggerFake[0].eventId)
+
+            assertThat(uiEventLoggerFake.numLogs()).isAtLeast(1)
+            assertThat(uiEventLoggerFake[uiEventLoggerFake.numLogs() - 1].eventId)
                 .isEqualTo(BouncerUiEvent.BOUNCER_DISMISS_EXTENDED_ACCESS.id)
-            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(1)
         }
 
     @Test
@@ -2807,7 +2809,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             // Trigger a fingerprint unlock.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -2836,7 +2838,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             // Unlock device.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(isUnlocked).isTrue()
@@ -2876,7 +2878,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
 
             // Unlock device.
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(isUnlocked).isTrue()
@@ -3320,7 +3322,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
     ): MutableStateFlow<ObservableTransitionState> {
         if (isDeviceUnlocked) {
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
         }
@@ -3443,7 +3445,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
         fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
             if (isSuccess) {
                 kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                    unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                    unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                     biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
                 )
                 SuccessFingerprintAuthenticationStatus(0, true)
@@ -3459,7 +3461,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             setAuthenticationStatus(
                 if (isSuccess) {
                     kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                        unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                        unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                         biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
                     )
                     SuccessFaceAuthenticationStatus(

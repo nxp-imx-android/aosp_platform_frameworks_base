@@ -1443,16 +1443,22 @@ public class UsbPortManager implements IBinder.DeathRecipient {
 
         PortInfo(@NonNull UsbManager usbManager, @NonNull String portId, int supportedModes,
                 int supportedContaminantProtectionModes,
-                boolean supportsEnableContaminantPresenceDetection,
                 boolean supportsEnableContaminantPresenceProtection,
+                boolean supportsEnableContaminantPresenceDetection,
                 boolean supportsComplianceWarnings,
                 int supportedAltModes) {
-            mUsbPort = new UsbPort(usbManager, portId, supportedModes,
-                    supportedContaminantProtectionModes,
-                    supportsEnableContaminantPresenceDetection,
-                    supportsEnableContaminantPresenceProtection,
-                    supportsComplianceWarnings,
-                    supportedAltModes);
+            UsbPort.Builder builder = new UsbPort.Builder();
+            builder.setId(portId);
+            builder.setUsbManager(usbManager);
+            builder.setSupportedModes(supportedModes);
+            builder.setSupportedContaminantProtectionModes(supportedContaminantProtectionModes);
+            builder.setSupportsEnableContaminantPresenceProtection(
+                    supportsEnableContaminantPresenceProtection);
+            builder.setSupportsEnableContaminantPresenceDetection(
+                    supportsEnableContaminantPresenceDetection);
+            builder.setSupportsComplianceWarnings(supportsComplianceWarnings);
+            builder.setSupportedAltModes(supportedAltModes);
+            mUsbPort = builder.build();
             mComplianceWarningChange = COMPLIANCE_WARNING_UNCHANGED;
             mDisplayPortAltModeChange = ALTMODE_INFO_UNCHANGED;
         }

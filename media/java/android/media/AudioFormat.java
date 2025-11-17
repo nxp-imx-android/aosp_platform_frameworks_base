@@ -29,6 +29,8 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.vibrator.Flags;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -263,6 +265,7 @@ import java.util.Objects;
  * For the purposes of {@link AudioFormat#getFrameSizeInBytes()}, a compressed data format
  * returns a frame size of 1 byte.
  */
+@RavenwoodKeepWholeClass
 public final class AudioFormat implements Parcelable {
 
     //---------------------------------------------------------
@@ -656,8 +659,12 @@ public final class AudioFormat implements Parcelable {
     /** @hide
      * Haptic channels can be used by internal framework code. Use the same values as in native.
      */
+    @FlaggedApi(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    @TestApi
     public static final int CHANNEL_OUT_HAPTIC_B = 0x10000000;
     /** @hide */
+    @FlaggedApi(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    @TestApi
     public static final int CHANNEL_OUT_HAPTIC_A = 0x20000000;
 
     public static final int CHANNEL_OUT_MONO = CHANNEL_OUT_FRONT_LEFT;

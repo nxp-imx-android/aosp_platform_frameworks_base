@@ -20,6 +20,7 @@ import android.animation.ValueAnimator
 import android.util.Log
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -28,10 +29,9 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.data.repository.DeviceEntryRepository
-import com.android.systemui.Flags
 import com.android.systemui.keyguard.KeyguardWmStateRefactor
 import com.android.systemui.keyguard.data.repository.KeyguardTransitionRepository
-import com.android.systemui.keyguard.shared.model.BiometricUnlockMode.Companion.isWakeAndUnlock
+import com.android.systemui.keyguard.shared.model.BiometricUnlockMode.Companion.isWakeAndDismiss
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
 import com.android.systemui.power.domain.interactor.PowerInteractor
@@ -80,7 +80,7 @@ constructor(
     }
 
     private fun canDismissLockscreen(): Boolean {
-        return isWakeAndUnlock(keyguardInteractor.biometricUnlockState.value.mode) ||
+        return isWakeAndDismiss(keyguardInteractor.biometricUnlockState.value.mode) ||
             (!keyguardInteractor.isKeyguardShowing.value &&
                 keyguardInteractor.isKeyguardDismissible.value)
     }
@@ -104,7 +104,9 @@ constructor(
                         flow
                     }
                 }
-                .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwakeForAnimations() }
+                .filterRelevantKeyguardStateAnd { wakefulness ->
+                    wakefulness.isAwakeForAnimations()
+                }
                 .sample(wakeToGoneInteractor.canWakeDirectlyToGone, ::Pair)
                 .collect {
                     (
@@ -126,10 +128,12 @@ constructor(
                                 // completes.
                                 !maybeStartTransitionToOccludedOrInsecureCamera { state, reason ->
                                     startTransitionTo(state, ownerReason = reason)
-                                } && !isWakeAndUnlock(biometricUnlockMode) && !primaryBouncerShowing
+                                } &&
+                                    !isWakeAndDismiss(biometricUnlockMode) &&
+                                    !primaryBouncerShowing
                             } else {
                                 !isKeyguardOccludedLegacy &&
-                                    !isWakeAndUnlock(biometricUnlockMode) &&
+                                    !isWakeAndDismiss(biometricUnlockMode) &&
                                     !primaryBouncerShowing
                             }
 
@@ -224,7 +228,7 @@ constructor(
         scope.launch("$TAG#listenForAodToPrimaryBouncer") {
             keyguardInteractor.primaryBouncerShowing
                 .filterRelevantKeyguardStateAnd { primaryBouncerShowing ->
-                    !isWakeAndUnlock(keyguardInteractor.biometricUnlockState.value.mode) &&
+                    !isWakeAndDismiss(keyguardInteractor.biometricUnlockState.value.mode) &&
                         primaryBouncerShowing
                 }
                 .collect { startTransitionTo(KeyguardState.PRIMARY_BOUNCER) }

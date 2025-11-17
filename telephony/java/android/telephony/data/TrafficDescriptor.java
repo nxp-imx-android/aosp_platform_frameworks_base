@@ -443,9 +443,19 @@ public final class TrafficDescriptor implements Parcelable {
 
     /**
      * Get the connection capability of the traffic.
-     * This follows the values defined in 3GPP TS 124.526 table 5.2.1.
      *
-     * @return The connection capability constant.
+     * <p>The connection capability indicates the type of traffic. The values are defined in
+     * 3GPP TS 24.526, Table 5.2.1. This is used by the network for UE Route Selection
+     * Policy (URSP) traffic matching.
+     *
+     * <p>When used to request a data connection, the framework may only use one specific
+     * connection capability to match a network capability, even if the underlying APN supports
+     * multiple (e.g., both internet and MMS). In such cases, only the single matched
+     * connection capability from the network request will be sent to the modem.
+     *
+     * @return The connection capability, as one of the {@code CONNECTION_CAPABILITY_*} constants.
+     *         Returns {@link #CONNECTION_CAPABILITY_UNKNOWN} if not specified.
+     * @see Builder#setConnectionCapability(int)
      */
     @FlaggedApi(Flags.FLAG_ENABLE_TRAFFIC_DESCRIPTOR_CONNECTION_CAPABILITY)
     public @ConnectionCapability int getConnectionCapability() {

@@ -31,6 +31,7 @@ pub struct SysfsUtils {
     tbt_devices_path: PathBuf,
     pci_devices_path: PathBuf,
     typec_path: PathBuf,
+    root: PathBuf,
 }
 
 impl SysfsUtils {
@@ -45,7 +46,23 @@ impl SysfsUtils {
             tbt_devices_path: root.join("sys/bus/thunderbolt/devices"),
             pci_devices_path: root.join("sys/bus/pci/devices"),
             typec_path: root.join("sys/class/typec"),
+            root,
         }
+    }
+
+    /// Prepends the root path and "sys" in front of the given path.
+    pub fn add_sysfs_prefix(&self, dev_path: &Path) -> PathBuf {
+        self.root.join("sys").join(dev_path)
+    }
+
+    /// Checks whether USB4/Thunderbolt is supported by checking for the existence
+    /// of the thunderbolt sysfs path and whether there are any devices within.
+    /// If there are no devices, there is no current support for USB4/TBT.
+    pub fn check_pci_tunnels_supported(&self) -> bool {
+        self.tbt_devices_path.exists()
+            && fs::read_dir(&self.tbt_devices_path)
+                .map(|mut rd| rd.any(|dir| dir.map(|d| d.path().is_dir()).unwrap_or(false)))
+                .unwrap_or(false)
     }
 
     /// Sets the "authorized" attribute for a given device path.

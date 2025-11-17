@@ -68,10 +68,12 @@ public class ContextUnderstanderServiceTest {
     public void testOnUnderstandList() throws RemoteException, GeneralSecurityException {
         final ContextHintWithSignature hint1 =
                 new ContextHintWithSignature.Builder(
-                        new BundleHint(), ContextHintTestUtils.generateSignedHintKey()).build();
+                        new BundleHint.Builder().build(),
+                        ContextHintTestUtils.generateSignedHintKey()).build();
         final ContextHintWithSignature hint2 =
                 new ContextHintWithSignature.Builder(
-                        new BundleHint(), ContextHintTestUtils.generateSignedHintKey()).build();
+                        new BundleHint.Builder().build(),
+                        ContextHintTestUtils.generateSignedHintKey()).build();
 
         final List<ContextHintWithSignature> hints = Arrays.asList(hint1, hint2);
         IRefineCallback callback = mock(IRefineCallback.Stub.class);

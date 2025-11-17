@@ -26,6 +26,7 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TestApi;
 import android.media.audio.Flags;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.SparseIntArray;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -39,6 +40,7 @@ import java.util.TreeSet;
 /**
  * Provides information about an audio device.
  */
+@RavenwoodKeepWholeClass
 public final class AudioDeviceInfo {
 
     /**

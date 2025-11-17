@@ -263,7 +263,7 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagChunk) {
   ASSERT_TRUE(output.contains(expected2));
 }
 
-TEST_F(FlaggedResourcesTest, ReadWriteFlagsOnOverlayFails) {
+TEST_F(FlaggedResourcesTest, ReadWriteFlagsOnOverlaySucceeds) {
   const std::string compiled_files_dir = GetTestPath("compiled");
   ASSERT_TRUE(CompileFile(GetTestPath("res/values/strings.xml"),
                           R"(<resources  xmlns:android="http://schemas.android.com/apk/res/android">
@@ -286,7 +286,6 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagsOnOverlayFails) {
   };
 
   test::TestDiagnosticsImpl diag;
-  ASSERT_FALSE(Link(link_args, compiled_files_dir, &diag));
-  ASSERT_TRUE(diag.GetLog().contains("Read/Write flags not allowed in overlay packages"));
+  ASSERT_TRUE(Link(link_args, compiled_files_dir, &diag));
 }
 }  // namespace aapt

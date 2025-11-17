@@ -24,8 +24,12 @@ import static android.hardware.serial.SerialPort.OPEN_FLAG_SYNC;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_WRITE_ONLY;
 import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 
+import android.Manifest;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.annotation.RequiresPermission;
+import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.hardware.serial.ISerialManager;
@@ -34,6 +38,7 @@ import android.hardware.serial.ISerialPortResponseCallback;
 import android.hardware.serial.ISerialPortResponseCallback.ErrorCode;
 import android.hardware.serial.SerialPortInfo;
 import android.os.Binder;
+import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -86,16 +91,21 @@ public class SerialManagerService extends ISerialManager.Stub {
 
     private final String[] mPortsInConfig;
 
+    private final String mDialogComponent;
+
     private final Supplier<android.hardware.serialservice.ISerialManager> mNativeServiceSupplier;
 
     private final Predicate<android.hardware.serialservice.SerialPortInfo> mSerialDeviceFilter;
+
+    private final SerialUserAccessManagerFactory mAccessManagerFactory;
 
     // Binder proxy for the native serial service.
     @GuardedBy("mLock")
     private android.hardware.serialservice.ISerialManager mNativeService;
 
     @GuardedBy("mLock")
-    private final SparseArray<SerialUserAccessManager> mAccessManagerPerUser = new SparseArray<>();
+    private final SparseArray<SerialUserAccessManagerInterface> mAccessManagerPerUser =
+            new SparseArray<>();
 
     @GuardedBy("mLock")
     private final RemoteCallbackList<ISerialPortListener> mListeners = new RemoteCallbackList<>();
@@ -106,19 +116,24 @@ public class SerialManagerService extends ISerialManager.Stub {
     private SerialManagerService(Context context) {
         this(context,
                 context.getResources().getStringArray(R.array.config_serialPorts),
+                context.getResources().getString(R.string.config_portAccessDialogComponent),
                 new SerialDeviceFilter(),
                 () -> android.hardware.serialservice.ISerialManager.Stub.asInterface(
-                        ServiceManager.getService(NATIVE_SERIAL_SERVICE_NAME)));
+                        ServiceManager.getService(NATIVE_SERIAL_SERVICE_NAME)),
+                SerialUserAccessManager::new);
     }
 
     @VisibleForTesting
-    SerialManagerService(Context context, String[] portsInConfig,
+    SerialManagerService(Context context, String[] portsInConfig, String dialogComponent,
             Predicate<android.hardware.serialservice.SerialPortInfo> serialDeviceFilter,
-            Supplier<android.hardware.serialservice.ISerialManager> nativeServiceSupplier) {
+            Supplier<android.hardware.serialservice.ISerialManager> nativeServiceSupplier,
+            SerialUserAccessManagerFactory accessManagerFactory) {
         mContext = context;
+        mDialogComponent = dialogComponent;
         mPortsInConfig = stripDevPrefix(portsInConfig);
         mNativeServiceSupplier = nativeServiceSupplier;
         mSerialDeviceFilter = serialDeviceFilter;
+        mAccessManagerFactory = accessManagerFactory;
     }
 
     private static String[] stripDevPrefix(String[] portPaths) {
@@ -164,6 +179,53 @@ public class SerialManagerService extends ISerialManager.Stub {
     }
 
     @Override
+    @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    public void grantSerialPortAccess(
+            @NonNull String serialPort, int uid, @Nullable IBinder token) {
+        mContext.enforceCallingPermission(
+                Manifest.permission.MANAGE_SERIAL_PORTS,
+                "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
+        synchronized (mLock) {
+            if (!mSerialPorts.containsKey(serialPort)) {
+                Slog.w(TAG, "Not granting access to missing port " + serialPort);
+                return;
+            }
+
+            final @UserIdInt int userId = UserHandle.getUserId(uid);
+            final SerialUserAccessManagerInterface accessManager =
+                    mAccessManagerPerUser.get(userId);
+            if (accessManager == null) {
+                Slog.e(TAG, "Didn't find the access manager for user " + userId);
+                return;
+            }
+            accessManager.grantAccess(serialPort, uid, token);
+        }
+    }
+
+    @Override
+    @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    public void revokeSerialPortAccess(
+            @NonNull String serialPort, int uid, @Nullable IBinder token) {
+        mContext.enforceCallingPermission(
+                Manifest.permission.MANAGE_SERIAL_PORTS,
+                "The caller doesn't have MANAGE_SERIAL_PORTS permission.");
+        synchronized (mLock) {
+            // We always allow to revoke access to a port, even if it is unplugged.
+
+            final @UserIdInt int userId = UserHandle.getUserId(uid);
+            final SerialUserAccessManagerInterface accessManager =
+                    mAccessManagerPerUser.get(userId);
+            if (accessManager == null) {
+                Slog.i(TAG, "Didn't find the access manager for user " + userId);
+                return;
+            }
+            accessManager.revokeAccess(serialPort, uid, token);
+        }
+    }
+
+    @Override
     public void requestOpen(@NonNull String portName, int flags, boolean exclusive,
             @NonNull String packageName, @NonNull ISerialPortResponseCallback callback) {
         final int callingPid = Binder.getCallingPid();
@@ -182,10 +244,11 @@ public class SerialManagerService extends ISerialManager.Stub {
             }
             if (!mAccessManagerPerUser.contains(userId)) {
                 mAccessManagerPerUser.put(userId,
-                        new SerialUserAccessManager(mContext, mPortsInConfig));
+                        mAccessManagerFactory.create(mContext, mPortsInConfig, mDialogComponent));
             }
-            final SerialUserAccessManager accessManager = mAccessManagerPerUser.get(userId);
-            accessManager.requestAccess(portName, callingPid, callingUid,
+            final SerialUserAccessManagerInterface accessManager =
+                    mAccessManagerPerUser.get(userId);
+            accessManager.requestAccess(portName, callingPid, callingUid, packageName,
                     (resultPort, pid, uid, granted) -> {
                         if (!granted) {
                             deliverErrorToCallback(callback, ErrorCode.ERROR_ACCESS_DENIED,
@@ -361,6 +424,11 @@ public class SerialManagerService extends ISerialManager.Stub {
         public void onSerialPortDisconnected(android.hardware.serialservice.SerialPortInfo info) {
             removeSerialDevice(info.name);
         }
+    }
+
+    interface SerialUserAccessManagerFactory {
+        SerialUserAccessManagerInterface create(Context context, String[] portsInConfig,
+                String dialogComponent);
     }
 
     public static class Lifecycle extends SystemService {

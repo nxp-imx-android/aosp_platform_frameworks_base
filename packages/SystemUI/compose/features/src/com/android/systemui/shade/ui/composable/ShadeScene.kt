@@ -40,6 +40,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -163,15 +164,20 @@ constructor(
             rememberViewModel("ShadeScene-notifPlaceholderViewModel") {
                 notificationsPlaceholderViewModelFactory.create()
             }
-        val isShadeBlurred = viewModel.isShadeBlurred
-        val shadeBlurRadius = with(LocalDensity.current) { viewModel.shadeBlurRadius.toDp() }
+        val targetBlur by
+            remember(layoutState) {
+                derivedStateOf { viewModel.calculateBlur(layoutState.transitionState) }
+            }
+        val animatedBlurRadiusPx: Float by
+            animateFloatAsState(targetValue = targetBlur, label = "Shade-blurRadius")
+
         ShadeScene(
             notificationStackScrollView.get(),
             viewModel = viewModel,
             headerViewModel = headerViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
             jankMonitor = jankMonitor,
-            modifier = modifier.thenIf(isShadeBlurred) { Modifier.blur(shadeBlurRadius) },
+            modifier = modifier.blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() }),
             shadeSession = shadeSession,
         )
     }
@@ -257,7 +263,7 @@ private fun ContentScope.SingleShade(
 
     LaunchedEffectWithLifecycle(Unit) { viewModel.detectShadeModeChanges() }
 
-    val shouldPunchHoleBehindScrim =
+    val onlyPunchHolesInThisScene =
         layoutState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
             layoutState.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Shade)
     val mediaInRow = viewModel.showMediaInRow
@@ -269,9 +275,10 @@ private fun ContentScope.SingleShade(
 
     Box(
         modifier =
-            modifier.thenIf(shouldPunchHoleBehindScrim) {
+            modifier.thenIf(onlyPunchHolesInThisScene) {
                 // Render the scene to an offscreen buffer so that BlendMode.DstOut only clears this
-                // scene (and not the one under it) during a scene transition.
+                // scene (and not the one under it). It is used to saves the LS content from being
+                // cut out during the LS -> Shade transition.
                 Modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
             }
     ) {
@@ -366,7 +373,7 @@ private fun ContentScope.SingleShade(
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
-                    shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
+                    shouldPunchHoleBehindScrim = true,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = navBarHeight,

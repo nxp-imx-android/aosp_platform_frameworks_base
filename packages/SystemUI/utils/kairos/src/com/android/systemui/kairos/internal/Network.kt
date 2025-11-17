@@ -196,7 +196,7 @@ internal class Network(
         epoch++
         // Perform deferred switches
         logDuration({ "deferred moves" }, trace = true) {
-            runThenDrainDeferrals { evalMuxMovers(currentLogIndent, evalScope) }
+            runThenDrainDeferrals { evalMuxMovers(evalScope) }
         }
         // Compact depths
         logDuration({ "compact depths" }, trace = true) {
@@ -205,7 +205,7 @@ internal class Network(
         }
 
         // Deactivate nodes with no downstream
-        logDuration({ "deactivations" }, trace = true) { evalDeactivations() }
+        logDuration({ "deactivations" }, trace = true) { evalDeactivations(evalScope) }
     }
 
     private fun evalFastOutputs(evalScope: EvalScope): Boolean {
@@ -233,27 +233,28 @@ internal class Network(
         outputsByDispatcher.clear()
     }
 
-    private fun evalMuxMovers(logIndent: Int, evalScope: EvalScope) {
+    private fun evalMuxMovers(evalScope: EvalScope) {
         while (muxMovers.isNotEmpty()) {
             val toMove = muxMovers.removeFirst()
             toMove.performMove(evalScope)
         }
     }
 
-    private fun evalDeactivations() {
+    private fun evalDeactivations(evalScope: EvalScope) {
         while (deactivations.isNotEmpty()) {
             // traverse in reverse order
             //   - deactivations are added in depth-order during the node traversal phase
             //   - perform deactivations in reverse order, in case later ones propagate to
             //     earlier ones
             val toDeactivate = deactivations.removeLast()
-            toDeactivate.deactivateIfNeeded()
+            toDeactivate.deactivateIfNeeded(evalScope)
         }
 
         while (outputDeactivations.isNotEmpty()) {
             val toDeactivate = outputDeactivations.removeFirst()
             toDeactivate.upstream?.removeDownstreamAndDeactivateIfNeeded(
-                downstream = toDeactivate.schedulable
+                downstream = toDeactivate.schedulable,
+                evalScope = evalScope,
             )
         }
         check(deactivations.isEmpty()) { "unexpected lingering deactivations" }

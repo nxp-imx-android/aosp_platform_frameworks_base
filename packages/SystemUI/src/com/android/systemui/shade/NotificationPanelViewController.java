@@ -2394,7 +2394,6 @@ public final class NotificationPanelViewController implements
             }
             notifyExpandingFinished();
         }
-        // TODO(b/332732878): replace this call when scene container is enabled
         mNotificationStackScrollLayoutController.setAnimationsEnabled(!disabled);
     }
 

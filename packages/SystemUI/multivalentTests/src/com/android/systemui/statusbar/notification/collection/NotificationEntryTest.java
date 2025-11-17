@@ -245,7 +245,6 @@ public class NotificationEntryTest extends SysuiTestCase {
                 .setKey(sbn.getKey())
                 .setSmartActions(systemGeneratedSmartActions)
                 .setChannel(NOTIFICATION_CHANNEL)
-                .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
                 .setSnoozeCriteria(snoozeCriterions)
                 .build();
 
@@ -254,7 +253,6 @@ public class NotificationEntryTest extends SysuiTestCase {
 
         assertEquals(systemGeneratedSmartActions, entry.getSmartActions());
         assertEquals(NOTIFICATION_CHANNEL, entry.getChannel());
-        assertEquals(Ranking.USER_SENTIMENT_NEGATIVE, entry.getUserSentiment());
         assertEquals(snoozeCriterions, entry.getSnoozeCriteria());
     }
 

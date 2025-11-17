@@ -15,10 +15,3 @@ flag {
     description: "If enabled, the rotary encoder scroll haptic implementation in the View class will be used, and the HapticScrollFeedbackProvider logic for rotary encoder haptic will be muted."
     bug: "299587011"
 }
-
-flag {
-    namespace: "wear_frameworks"
-    name: "dynamic_view_rotary_haptics_configuration"
-    description: "Whether ScrollFeedbackProvider dynamically disables View-based rotary haptics."
-    bug: "377998870"
-}

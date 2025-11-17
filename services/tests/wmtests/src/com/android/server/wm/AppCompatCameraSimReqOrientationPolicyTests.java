@@ -16,12 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_LANDSCAPE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_NONE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
-import static android.app.CameraCompatTaskInfo.CameraCompatMode;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
@@ -43,6 +37,7 @@ import static android.hardware.camera2.CameraMetadata.SCALER_ROTATE_AND_CROP_NON
 import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.view.Surface.ROTATION_0;
+import static android.view.Surface.ROTATION_180;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
@@ -67,6 +62,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -270,7 +266,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertNotInCameraCompatMode();
+            robot.assertCompatibilityInfoNeverUpdated();
         });
     }
 
@@ -285,7 +281,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE);
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_270);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
         });
     }
 
@@ -299,7 +299,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertNotInCameraCompatMode();
+            robot.assertCompatibilityInfoNoCameraCompatMode();
             robot.assertActivityRefreshRequested(false);
             robot.assertActivityRefreshed(false);
         });
@@ -312,7 +312,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
 
-            robot.assertNotInCameraCompatMode();
+            robot.assertCompatibilityInfoNeverUpdated();
         });
     }
 
@@ -326,7 +326,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT);
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
             robot.assertActivityRefreshRequested(/* refreshRequested */ true);
         });
     }
@@ -341,7 +345,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE);
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_90);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
             robot.assertActivityRefreshRequested(/* refreshRequested */ true);
         });
     }
@@ -356,7 +364,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT);
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_90);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_90);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
             robot.assertActivityRefreshRequested(/* refreshRequested */ true);
         });
     }
@@ -371,7 +383,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_LANDSCAPE);
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_90);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_180);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
             robot.assertActivityRefreshRequested(/* refreshRequested */ true);
         });
     }
@@ -385,7 +401,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_2);
 
-            robot.assertNotInCameraCompatMode();
+            robot.assertCompatibilityInfoNeverUpdated();
         });
     }
 
@@ -897,14 +913,6 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
                     /* delta= */ 0.001);
         }
 
-        private void assertInCameraCompatMode(@CameraCompatMode int mode) {
-            assertEquals(mode, cameraCompatFreeformPolicy().getCameraCompatMode(activity().top()));
-        }
-
-        private void assertNotInCameraCompatMode() {
-            assertInCameraCompatMode(CAMERA_COMPAT_NONE);
-        }
-
         private void assertActivityRefreshRequested(boolean refreshRequested) {
             verify(activity().top().mAppCompatController.getCameraOverrides(),
                     times(refreshRequested ? 1 : 0)).setActivityRefreshState(REQUESTED);
@@ -978,6 +986,15 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         void assertCompatibilityInfoNoCameraCompatMode() {
             final CompatibilityInfo compatInfo = gerCompatibilityInfo();
             assertFalse(compatInfo.isOverrideCameraCompatibilityInfoRequired());
+        }
+
+        void assertCompatibilityInfoNeverUpdated() {
+            try {
+                verify(activity().top().app.getThread(), never())
+                        .updatePackageCompatibilityInfo(eq(activity().top().packageName), any());
+            } catch (RemoteException e) {
+                fail(e.getMessage());
+            }
         }
 
         private CompatibilityInfo gerCompatibilityInfo() {

@@ -40,6 +40,7 @@ import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyState;
 import android.app.admin.IntentFilterPolicyKey;
+import android.app.admin.PackagePolicyKey;
 import android.app.admin.PolicyKey;
 import android.app.admin.PolicyUpdateReceiver;
 import android.app.admin.PolicyValue;
@@ -1551,6 +1552,56 @@ final class DevicePolicyEngine {
                 }
             }
         }
+    }
+
+    /**
+     * Re-applies policies to a package. This is necessary for policies that can only be enforced
+     * after the package is installed.
+     *
+     * @param packageName The package name of the newly installed application.
+     * @param userId The user for which the package was installed.
+     */
+    public void reapplyPoliciesForPackage(@NonNull String packageName, @UserIdInt int userId) {
+        final List<PolicyState<?>> policiesToReapply = new ArrayList<>();
+        synchronized (mLock) {
+            collectPackagePoliciesToReapply(
+                    mLocalPolicies.get(userId), packageName, policiesToReapply);
+            collectPackagePoliciesToReapply(mGlobalPolicies, packageName, policiesToReapply);
+        }
+
+        for (PolicyState<?> policyState : policiesToReapply) {
+            Slogf.i(TAG, "Re-applying policy %s for package %s on user %d",
+                    policyState.getPolicyDefinition().getPolicyKey().getIdentifier(),
+                    packageName, userId);
+            reapplyPolicy(policyState, userId);
+        }
+    }
+
+    private void collectPackagePoliciesToReapply(
+            @Nullable Map<PolicyKey, PolicyState<?>> policies,
+            @NonNull String packageName,
+            @NonNull List<PolicyState<?>> outList) {
+        if (policies == null) {
+            return;
+        }
+        for (PolicyKey policyKey : policies.keySet()) {
+            if (policyKey instanceof PackagePolicyKey
+                    && packageName.equals(((PackagePolicyKey) policyKey).getPackageName())) {
+                final PolicyState<?> policyState = policies.get(policyKey);
+                if (policyState != null) {
+                    final PolicyDefinition<?> policyDefinition =
+                            policyState.getPolicyDefinition();
+                    if (policyDefinition.shouldReapplyOnPackageInstall()) {
+                        outList.add(policyState);
+                    }
+                }
+            }
+        }
+    }
+
+    private <V> void reapplyPolicy(PolicyState<V> policyState, int userId) {
+        enforcePolicy(
+                policyState.getPolicyDefinition(), policyState.getCurrentResolvedPolicy(), userId);
     }
 
     private void enforcePoliciesOnInheritableProfilesIfApplicable(UserInfo user) {

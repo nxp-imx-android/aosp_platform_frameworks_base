@@ -5328,61 +5328,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
-    fun onPipTaskMinimize_isLastTask_deactivatesDesk() {
-        val deskId = DEFAULT_DISPLAY
-        val task = setUpPipTask(autoEnterEnabled = true, deskId = deskId)
-        val transition = Binder()
-        whenever(freeformTaskTransitionStarter.startPipTransition(any())).thenReturn(transition)
-
-        minimizePipTask(task)
-
-        verify(desksOrganizer).deactivateDesk(any(), eq(deskId), skipReorder = eq(false))
-        verify(desksTransitionsObserver)
-            .addPendingTransition(
-                DeskTransition.DeactivateDesk(
-                    transition,
-                    userId = taskRepository.userId,
-                    deskId = deskId,
-                    displayId = DEFAULT_DISPLAY,
-                    switchingUser = false,
-                    exitReason = ExitReason.TASK_MINIMIZED,
-                )
-            )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
-        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
-    )
-    fun onPipTaskMinimize_isLastTask_removesWallpaper() {
-        val task = setUpPipTask(autoEnterEnabled = true)
-
-        minimizePipTask(task)
-
-        val arg = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
-        // Wallpaper is moved to the back
-        arg.lastValue.assertReorder(wallpaperToken, /* toTop= */ false)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
-    fun onPipTaskMinimize_isLastTask_launchesHome() {
-        val task = setUpPipTask(autoEnterEnabled = true)
-
-        minimizePipTask(task)
-
-        val arg = argumentCaptor<WindowContainerTransaction>()
-        verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
-        arg.lastValue.assertPendingIntent(launchHomeIntent(DEFAULT_DISPLAY))
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onPipTaskMinimize_multiActivity_reordersParentToBack() {
@@ -10894,304 +10839,44 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-    )
-    fun onUnhandledDrag_newWindowFromTabIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
-            PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-    )
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
-    fun onUnhandledDrag_newWindowFromTabIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
-            PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = false,
-        )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-    )
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newWindowFromTabIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
-            PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS)
-    @DisableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun onUnhandledDrag_newWindowFromTabIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
+    fun onUnhandledDrag_newWindowFromTabIntent() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = false,
+            Rect(1100, 700, 1300, 900)
         )
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-    )
-    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
-            PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-    )
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
-    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
-            PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = false,
-        )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-        Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
-    )
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
-            PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS)
-    @DisableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun onUnhandledDrag_newFreeformIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
-            PointF(1200f, 700f),
-            Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = false,
-        )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
+    fun onUnhandledDrag_newFreeformIntentSplitLeft() {
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
             PointF(50f, 700f),
-            Rect(0, 0, 500, 1000),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = true,
+            Rect(0, 0, 500, 1000)
         )
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
-    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
+    fun onUnhandledDrag_newFreeformIntentSplitRight() {
         testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
-            PointF(50f, 700f),
-            Rect(0, 0, 500, 1000),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = false,
+            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
+            PointF(2500f, 700f),
+            Rect(500, 0, 1000, 1000)
         )
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
+    fun onUnhandledDrag_newFullscreenIntent() {
         testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
-            PointF(50f, 700f),
-            Rect(0, 0, 500, 1000),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun onUnhandledDrag_newFreeformIntentSplitLeft_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
-            PointF(50f, 700f),
-            Rect(0, 0, 500, 1000),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = false,
+            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
+            PointF(1200f, 50f),
+            Rect()
         )
     }
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
-            PointF(2500f, 700f),
-            Rect(500, 0, 1000, 1000),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
-    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
-            PointF(2500f, 700f),
-            Rect(500, 0, 1000, 1000),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = false,
-        )
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
-    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
-            PointF(2500f, 700f),
-            Rect(500, 0, 1000, 1000),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun onUnhandledDrag_newFreeformIntentSplitRight_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR,
-            PointF(2500f, 700f),
-            Rect(500, 0, 1000, 1000),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = false,
-        )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagEnabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
-            PointF(1200f, 50f),
-            Rect(),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
-    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagEnabled_tabTearingLaunchAnimationFlagDisabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
-            PointF(1200f, 50f),
-            Rect(),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = false,
-        )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION)
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX)
-    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagEnabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
-            PointF(1200f, 50f),
-            Rect(),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = true,
-        )
-    }
-
-    @Test
-    @DisableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
-    )
-    fun onUnhandledDrag_newFullscreenIntent_tabTearingAnimationBugfixFlagDisabled_tabTearingLaunchAnimationFlagDisabled() {
-        testOnUnhandledDrag(
-            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
-            PointF(1200f, 50f),
-            Rect(),
-            tabTearingMinimizeAnimationFlagEnabled = false,
-            tabTearingLaunchAnimationFlagEnabled = false,
-        )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_INTERACTION_DEPENDENT_TAB_TEARING_BOUNDS,
@@ -11204,15 +10889,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
             Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
         )
     }
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
@@ -11228,15 +10910,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
             Rect(1100, 700, 1300, 900),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
         )
     }
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
         Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
     )
@@ -11248,8 +10927,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
             Rect(279, 700, 2122, 1852),
-            tabTearingMinimizeAnimationFlagEnabled = true,
-            tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
             verifyNoOp = true,
         )
@@ -12942,8 +12619,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         indicatorType: DesktopModeVisualIndicator.IndicatorType,
         inputCoordinate: PointF,
         expectedBounds: Rect,
-        tabTearingMinimizeAnimationFlagEnabled: Boolean,
-        tabTearingLaunchAnimationFlagEnabled: Boolean,
         destinationDisplayId: Int = DEFAULT_DISPLAY,
         verifyNoOp: Boolean = false,
     ) {
@@ -13008,8 +12683,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             verify(transitions, times).startTransition(any(), arg.capture(), anyOrNull())
         } else {
             expectedWindowingMode = WINDOWING_MODE_FREEFORM
-            if (tabTearingMinimizeAnimationFlagEnabled || tabTearingLaunchAnimationFlagEnabled) {
-                verify(desktopMixedTransitionHandler, times)
+            verify(desktopMixedTransitionHandler, times)
                     .startLaunchTransition(
                         eq(TRANSIT_OPEN),
                         arg.capture(),
@@ -13019,11 +12693,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         anyOrNull(),
                         eq(mockDragEvent),
                     )
-            } else {
-                // All other launches use a special handler.
-                verify(dragAndDropTransitionHandler, times)
-                    .handleDropEvent(arg.capture(), eq(mockDragEvent))
-            }
         }
         if (verifyNoOp) return
         assertThat(

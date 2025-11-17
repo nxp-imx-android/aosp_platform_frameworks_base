@@ -17,23 +17,24 @@
 package com.android.systemui.screencapture.sharescreen.domain.interactor
 
 import android.app.ActivityOptions
-import android.app.ActivityTaskManager
 import android.media.projection.IMediaProjection
 import android.media.projection.ReviewGrantedConsentResult
 import android.os.UserHandle
 import android.util.Log
 import com.android.systemui.mediaprojection.MediaProjectionServiceHelper
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
+import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.util.AsyncActivityLauncher
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 
 @ScreenCaptureUiScope
 class ShareScreenUiInteractor
 @Inject
 constructor(
-    private val activityTaskManager: ActivityTaskManager,
+    private val recentTaskInteractor: ScreenCaptureRecentTaskInteractor,
     private val asyncActivityLauncher: AsyncActivityLauncher,
 ) {
 
@@ -72,7 +73,7 @@ constructor(
         // TODO(b/423708479) Finish the flow to support app content sharing.
     }
 
-    fun onAppSharingApproved(taskId: Int) {
+    suspend fun onAppSharingApproved(taskId: Int) {
         try {
             val projection =
                 MediaProjectionServiceHelper.createOrReuseProjection(
@@ -82,13 +83,10 @@ constructor(
                     initialDisplayId,
                 )
 
-            // TODO(b/455916256) Check whether [ScreenCaptureRecentTaskInteractor] can be used
-            // instead.
-            // Get the task info for the selected task.
-            val recentTasks = activityTaskManager.getTasks(RUNNING_TASKS_NUM_MAX)
-            val taskInfo = recentTasks.firstOrNull { it.taskId == taskId }
+            val recentTasks = recentTaskInteractor.recentTasks.first()
+            val task = recentTasks.firstOrNull { it.taskId == taskId }
 
-            if (taskInfo == null) {
+            if (task == null || task.baseIntent == null) {
                 // The task is no longer running, so we can't share it.
                 Log.w(TAG, "Task info not found for taskId: $taskId")
                 _sharingState.value = SharingState.Denied
@@ -103,7 +101,7 @@ constructor(
             // Bring the task to be captured to the front using the new cookie, and finish this
             // activity in the callback once the app is started.
             asyncActivityLauncher.startActivityAsUser(
-                taskInfo.baseIntent,
+                task.baseIntent,
                 hostUserHandle,
                 options.toBundle(),
             ) {
@@ -146,7 +144,6 @@ constructor(
 
     companion object {
         private const val TAG = "ShareScreenUiInteractor"
-        private const val RUNNING_TASKS_NUM_MAX = 100
         private const val MEDIA_PROJECTION_LAUNCH_TOKEN = "media_projection_launch_token"
     }
 }

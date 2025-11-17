@@ -25,7 +25,6 @@ import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RECOVERY_FROM_SELF_KILL;
-import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_COMPAT_MODE;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
@@ -34,6 +33,7 @@ import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.Binder;
+import android.util.SparseArray;
 
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
@@ -72,17 +72,12 @@ class AppCompatDisplayCompatModePolicy {
     @NonNull
     private final ActivityRecord mActivityRecord;
 
+    private final SelfKillStateMachine mSelfKillStateMachine;
+
     /**
      * {@code true} if the activity has moved to a different display and has not been restarted yet.
      */
     private boolean mDisplayChangedWithoutRestart;
-
-    /**
-     * {@code true} if the activity was destroyed during an activity relaunch caused by display
-     * move. This needs to be stored here as we need to wait for the activity to be fully destroyed
-     * asynchronously before relaunching it.
-     */
-    private boolean mDestroyedDuringDisplayMoveActivityRelaunch;
 
     private boolean mDisplayChangedForComputerControlWithoutRestart;
 
@@ -90,6 +85,7 @@ class AppCompatDisplayCompatModePolicy {
 
     AppCompatDisplayCompatModePolicy(@NonNull ActivityRecord activityRecord) {
         mActivityRecord = activityRecord;
+        mSelfKillStateMachine = new SelfKillStateMachine(mActivityRecord);
     }
 
     /**
@@ -130,6 +126,9 @@ class AppCompatDisplayCompatModePolicy {
             // thus are less likely to cause compat issues.
             return;
         }
+
+        mSelfKillStateMachine.onMovedToDisplay(newDisplay.getDisplayId());
+
         mDisplayChangedWithoutRestart = true;
 
         if (android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
@@ -146,7 +145,7 @@ class AppCompatDisplayCompatModePolicy {
             }
         }
 
-        if (ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue() && shouldRestartOnDisplayMove()) {
+        if (shouldRestartOnDisplayMove()) {
             // At this point, a transition for moving the app between displays should be running, so
             // the restarting logic below will be queued as a new transition, which means the
             // configuration change for the display move has been processed when the process is
@@ -169,43 +168,23 @@ class AppCompatDisplayCompatModePolicy {
     void onProcessRestarted() {
         mDisplayChangedWithoutRestart = false;
         mDisplayChangedForComputerControlWithoutRestart = false;
+        mSelfKillStateMachine.onProcessRestarted();
     }
 
     /**
      * Called when the activity is finishing itself.
      */
     void onActivityFinishing() {
-        if (shouldRecoverFromSelfKillOnDisplayMove()) {
-            mDestroyedDuringDisplayMoveActivityRelaunch = true;
-        }
+        mSelfKillStateMachine.onActivityFinishing();
     }
 
     /**
-     * Called when the activity has been destroyed.
+     * Called when the activity is relaunching.
+     *
+     * @param configChangeFlags the config change flags that caused the activity to be relaunched.
      */
-    void onActivityDestroyed() {
-        if (!ENABLE_AUTO_RECOVERY_FROM_SELF_KILL.isTrue()) {
-            return;
-        }
-
-        if (mDestroyedDuringDisplayMoveActivityRelaunch) {
-            // Posting to the handler to wait for the activity to be fully destroyed and to use the
-            // system default identity (not app's identity) because the app process may already be
-            // in background at this point, and relaunching itself can be blocked by BAL.
-            mActivityRecord.mAtmService.mH.post(() -> {
-                final int callingPid = Binder.getCallingPid();
-                final int callingUid = Binder.getCallingUid();
-                final Intent restartIntent = new Intent(mActivityRecord.intent);
-                final SafeActivityOptions options = new SafeActivityOptions(
-                        ActivityOptions.makeBasic().setLaunchDisplayId(mLastDisplayId),
-                        callingPid, callingUid);
-                mActivityRecord.mAtmService.getActivityStartController().startActivityInPackage(
-                        mActivityRecord.getUid(), callingPid, callingUid,
-                        mActivityRecord.packageName, null, restartIntent, null, null, null, 0, 0,
-                        options, mActivityRecord.mUserId, null, "onActivityDestroyed", false, null,
-                        /* allowBalExemptionForSystemProcess */ true);
-            });
-        }
+    void onActivityRelaunching(int configChangeFlags) {
+        mSelfKillStateMachine.onActivityRelaunching(configChangeFlags);
     }
 
     private boolean isInDisplayCompatMode() {
@@ -265,13 +244,7 @@ class AppCompatDisplayCompatModePolicy {
      * display move.
      */
     boolean shouldRecoverFromSelfKillOnDisplayMove() {
-        if (!ENABLE_AUTO_RECOVERY_FROM_SELF_KILL.isTrue()) {
-            return false;
-        }
-        // TODO(b/446998828):  Make sure that this returns true only when we're sure it's needed.
-        //  For example, once an app has moved between displays, this returns true for any activity
-        //  relaunch (not necessarily the one associated to display move).
-        return mActivityRecord.isRelaunching() && mDisplayChangedWithoutRestart;
+        return mSelfKillStateMachine.shouldRecoverFromSelfKillOnDisplayMove();
     }
 
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
@@ -286,6 +259,179 @@ class AppCompatDisplayCompatModePolicy {
         }
         if (mDisplayChangedForComputerControlWithoutRestart) {
             pw.println(prefix + "displayChangedForComputerControlWithoutRestart=true");
+        }
+        mSelfKillStateMachine.dump(pw, prefix);
+    }
+
+    /**
+     * State machine for the self-kill recovery heuristics.
+     *
+     * <p>The state machine is designed to detect when an app is likely to be unintentionally
+     * killing itself on display move, and to recover from it by relaunching the activity.
+     *
+     * <p>The state machine transitions through the following states:
+     * <ol>
+     *     <li>{@link SelfKillState#UNDEFINED}: The initial state.
+     *     <li>{@link SelfKillState#DISPLAY_MOVING}: The activity is moving to a different display.
+     *     <li>{@link SelfKillState#RELAUNCHING_ON_DISPLAY_MOVE}: The activity is relaunching due to
+     *     a config change caused by the display move.
+     *     <li>{@link SelfKillState#SELF_KILLING_ON_RELAUNCH}: The activity is finishing itself
+     *     during the relaunch.
+     * </ol>
+     */
+    private static class SelfKillStateMachine {
+
+        // This needs to be set longer than the transition timeout (5s).
+        private static final int DISPLAY_MOVE_TRANSITION_TIMEOUT_MS = 7 * 1000;
+
+        @NonNull
+        private final ActivityRecord mActivityRecord;
+
+        // Only one directional from top to bottom. Reset to |UNDEFINED| when
+        // |mDisplayMoveTransitions| becomes empty.
+        //
+        // Possible transitions:
+        //
+        // 1. UNDEFINED -> DISPLAY_MOVING
+        // 2. DISPLAY_MOVING -> RELAUNCHING_ON_DISPLAY_MOVE
+        // 3. RELAUNCHING_ON_DISPLAY_MOVE -> SELF_KILLING_ON_RELAUNCH
+        // 4. {DISPLAY_MOVING|RELAUNCHING_ON_DISPLAY_MOVE|SELF_KILLING_ON_RELAUNCH} -> UNDEFINED
+        private enum SelfKillState {
+            UNDEFINED,
+            DISPLAY_MOVING,
+            RELAUNCHING_ON_DISPLAY_MOVE,
+            SELF_KILLING_ON_RELAUNCH
+        }
+
+        @NonNull
+        private SelfKillState mSelfKillState = SelfKillState.UNDEFINED;
+
+        // A set of sync IDs of active transitions that caused display move to this activity.
+        // The runnable value is a timeout callback.
+        private final SparseArray<Runnable> mDisplayMoveTransitions = new SparseArray<>();
+
+        SelfKillStateMachine(@NonNull ActivityRecord activityRecord) {
+            mActivityRecord = activityRecord;
+        }
+
+        private boolean isInState(SelfKillState state) {
+            return mSelfKillState == state;
+        }
+
+        private void moveToState(SelfKillState state) {
+            mSelfKillState = state;
+        }
+
+        void onMovedToDisplay(int newDisplayId) {
+            if (mActivityRecord.mTransitionController.isCollecting(mActivityRecord.getTask())) {
+                final Transition displayMoveTransition =
+                        mActivityRecord.mTransitionController.getCollectingTransition();
+                if (displayMoveTransition != null) {
+                    final Runnable timeoutCallback = () -> {
+                        synchronized (mActivityRecord.mWmService.mGlobalLock) {
+                            mDisplayMoveTransitions.remove(displayMoveTransition.getSyncId());
+                            if (mDisplayMoveTransitions.size() == 0) {
+                                mSelfKillState = SelfKillState.UNDEFINED;
+                            }
+                        }
+                    };
+                    if (isInState(SelfKillState.UNDEFINED)) {
+                        moveToState(SelfKillState.DISPLAY_MOVING);
+                    }
+                    mDisplayMoveTransitions.put(displayMoveTransition.getSyncId(), timeoutCallback);
+                    mActivityRecord.mWmService.mH.postDelayed(timeoutCallback,
+                            DISPLAY_MOVE_TRANSITION_TIMEOUT_MS);
+
+                    displayMoveTransition.addTransitionEndedListener(() -> {
+                        final Runnable callback =
+                                mDisplayMoveTransitions.get(displayMoveTransition.getSyncId());
+                        mDisplayMoveTransitions.remove(displayMoveTransition.getSyncId());
+                        if (callback != null) {
+                            mActivityRecord.mWmService.mH.removeCallbacks(callback);
+                        }
+
+                        startActivityForSelfKillRecoveryIfNeeded(newDisplayId);
+
+                        if (mDisplayMoveTransitions.size() == 0) {
+                            moveToState(SelfKillState.UNDEFINED);
+                        }
+                    });
+                }
+            }
+        }
+
+        void onActivityRelaunching(int configChangeFlags) {
+            if ((configChangeFlags & DISPLAY_COMPAT_MODE_CONFIG_MASK) == 0) {
+                // For now, we apply sel-kill recovery only when the activity gets restarted by
+                // display-related config changes.
+                // TODO(b/446998828): Consider expanding this to more config changes.
+                return;
+            }
+
+            if (mActivityRecord.mTransitionController.isCollecting(mActivityRecord.getTask())) {
+                final Transition displayMoveTransition =
+                        mActivityRecord.mTransitionController.getCollectingTransition();
+                if (displayMoveTransition != null
+                        && mDisplayMoveTransitions.get(displayMoveTransition.getSyncId()) != null
+                        && isInState(SelfKillState.DISPLAY_MOVING)) {
+                    moveToState(SelfKillState.RELAUNCHING_ON_DISPLAY_MOVE);
+                }
+            }
+        }
+
+        void onActivityFinishing() {
+            if (isInState(SelfKillState.RELAUNCHING_ON_DISPLAY_MOVE)) {
+                moveToState(SelfKillState.SELF_KILLING_ON_RELAUNCH);
+            }
+        }
+
+        void onProcessRestarted() {
+            mDisplayMoveTransitions.clear();
+        }
+
+        boolean shouldRecoverFromSelfKillOnDisplayMove() {
+            if (!ENABLE_AUTO_RECOVERY_FROM_SELF_KILL.isTrue()) {
+                return false;
+            }
+
+            return isInState(SelfKillState.RELAUNCHING_ON_DISPLAY_MOVE)
+                    || isInState(SelfKillState.SELF_KILLING_ON_RELAUNCH);
+        }
+
+        private void startActivityForSelfKillRecoveryIfNeeded(int displayId) {
+            if (!ENABLE_AUTO_RECOVERY_FROM_SELF_KILL.isTrue()) {
+                return;
+            }
+
+            if (isInState(SelfKillState.SELF_KILLING_ON_RELAUNCH)) {
+                // Posting to the handler to wait for the activity to be fully destroyed and to use
+                // the system default identity (not app\'s identity) because the app process may
+                // already be in background at this point, and relaunching itself can be blocked by
+                // BAL.
+                mActivityRecord.mAtmService.mH.post(() -> {
+                    final int callingPid = Binder.getCallingPid();
+                    final int callingUid = Binder.getCallingUid();
+                    final Intent restartIntent = new Intent(mActivityRecord.intent);
+                    final SafeActivityOptions options = new SafeActivityOptions(
+                            ActivityOptions.makeBasic().setLaunchDisplayId(displayId),
+                            callingPid, callingUid);
+                    mActivityRecord.mAtmService.getActivityStartController().startActivityInPackage(
+                            mActivityRecord.getUid(), callingPid, callingUid,
+                            mActivityRecord.packageName, null, restartIntent, null, null, null, 0,
+                            0, options, mActivityRecord.mUserId, null, "display-app-compat", false,
+                            null, /* allowBalExemptionForSystemProcess */ true);
+                });
+            }
+        }
+
+        void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
+            if (!isInState(SelfKillState.UNDEFINED)) {
+                pw.println(prefix + "mSelfKillState=" + mSelfKillState);
+            }
+            if (mDisplayMoveTransitions.size() > 0) {
+                pw.println(prefix + "mDisplayMoveTransitions.size()="
+                        + mDisplayMoveTransitions.size());
+            }
         }
     }
 }

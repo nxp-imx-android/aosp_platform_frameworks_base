@@ -97,22 +97,22 @@ class BubbleSessionTrackerImplTest {
 
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(4)
 
-        with (uiEventLoggerFake.logs[0]) {
+        with(uiEventLoggerFake.logs[0]) {
             assertThat(eventId).isEqualTo(BUBBLE_BAR_SESSION_STARTED.id)
             assertThat(packageName).isEqualTo("initial.package")
         }
 
-        with (uiEventLoggerFake.logs[1]) {
+        with(uiEventLoggerFake.logs[1]) {
             assertThat(eventId).isEqualTo(BUBBLE_BAR_SESSION_SWITCHED_FROM.id)
             assertThat(packageName).isEqualTo("initial.package")
         }
 
-        with (uiEventLoggerFake.logs[2]) {
+        with(uiEventLoggerFake.logs[2]) {
             assertThat(eventId).isEqualTo(BUBBLE_BAR_SESSION_SWITCHED_TO.id)
             assertThat(packageName).isEqualTo("new.package")
         }
 
-        with (uiEventLoggerFake.logs[3]) {
+        with(uiEventLoggerFake.logs[3]) {
             assertThat(eventId).isEqualTo(BUBBLE_BAR_SESSION_ENDED.id)
             assertThat(packageName).isEqualTo("new.package")
         }
@@ -148,7 +148,7 @@ class BubbleSessionTrackerImplTest {
                 BUBBLE_SESSION_STARTED.id,
                 BUBBLE_SESSION_SWITCHED_FROM.id,
                 BUBBLE_SESSION_SWITCHED_TO.id,
-                BUBBLE_SESSION_ENDED.id
+                BUBBLE_SESSION_ENDED.id,
             )
             .inOrder()
     }
@@ -177,7 +177,8 @@ class BubbleSessionTrackerImplTest {
         )
 
         // Without ending the first session, start another one.
-        // This should log an error but still proceed to start a new session, overwriting the old one.
+        // This should log an error but still proceed to start a new session, overwriting the old
+        // one.
         bubbleSessionTracker.log(
             SessionEvent.Started(forBubbleBar = true, selectedBubblePackage = "app.package2")
         )

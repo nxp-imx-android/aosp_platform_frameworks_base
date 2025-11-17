@@ -44,7 +44,7 @@ import com.android.systemui.Flags.qsSplitInternetTile
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.flags.DisableSceneContainer
-import com.android.systemui.haptics.msdl.tileHapticsViewModelFactoryProvider
+import com.android.systemui.haptics.msdl.tileHapticsViewModelFactory
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -99,7 +99,7 @@ class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTe
                         }
                     },
                 textFeedbackContentViewModelFactory,
-                tileHapticsViewModelFactoryProvider,
+                tileHapticsViewModelFactory,
             )
         }
 

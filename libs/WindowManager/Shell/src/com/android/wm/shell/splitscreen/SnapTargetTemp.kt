@@ -24,8 +24,4 @@ package com.android.wm.shell.splitscreen
  * @param proportion The proportional position (between 0.0 and 1.0) of the snap target.
  * @param isDismissTarget Whether this snap target represents a dismiss action.
  */
-data class SnapTargetTemp(
-    val position: Int,
-    val proportion: Float,
-    val isDismissTarget: Boolean
-)
+data class SnapTargetTemp(val position: Int, val proportion: Float, val isDismissTarget: Boolean)

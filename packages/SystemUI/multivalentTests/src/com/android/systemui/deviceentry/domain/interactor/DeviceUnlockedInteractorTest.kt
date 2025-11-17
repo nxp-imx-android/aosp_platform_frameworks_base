@@ -95,7 +95,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -113,7 +113,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             kosmos.fakeBiometricSettingsRepository.setAuthenticationFlags(
@@ -137,7 +137,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Sim)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -182,7 +182,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             kosmos.powerInteractor.setAwakeForTest()
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
             runCurrent()
@@ -214,7 +214,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -249,7 +249,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -270,7 +270,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -292,7 +292,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -314,7 +314,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -337,7 +337,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -365,7 +365,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             assertThat(deviceUnlockStatus?.isUnlocked).isFalse()
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -676,7 +676,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -698,7 +698,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -722,7 +722,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             kosmos.fakeTrustRepository.setCurrentUserTrusted(true)
 
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             runCurrent()
@@ -847,7 +847,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             // Mock successful strong fingerprint auth
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -946,7 +946,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             // Mock successful strong face auth
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
             )
             runCurrent()
@@ -1079,7 +1079,7 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
         val deviceUnlockStatus by collectLastValue(underTest.deviceUnlockStatus)
 
         kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-            unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+            unlockStateInt = BiometricUnlockController.MODE_DISMISS,
             biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
         )
         assertThat(deviceUnlockStatus?.isUnlocked).isTrue()
@@ -1121,6 +1121,8 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
             } else {
                 assertThat(deviceEntryRestrictionReason).isEqualTo(expectedReason)
             }
+            assertThat(underTest.currentDeviceEntryRestrictionReason())
+                .isEqualTo(deviceEntryRestrictionReason)
         }
     }
 

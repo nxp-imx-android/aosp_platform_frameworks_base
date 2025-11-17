@@ -63,6 +63,7 @@ class RecentTasksViewModelImplTest : SysuiTestCase() {
                 userId = 3,
                 topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
                 baseIntentComponent = ComponentName("FakeBasePackage", "FakeBaseClass"),
+                baseIntent = null,
                 colorBackground = 0x99123456.toInt(),
                 isForegroundTask = true,
                 userType = UserType.STANDARD,

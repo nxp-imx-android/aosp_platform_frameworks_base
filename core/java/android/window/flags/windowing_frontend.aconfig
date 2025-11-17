@@ -415,6 +415,16 @@ flag {
 }
 
 flag {
+    name: "predictive_back_fix_ime_events_skip_back_dispatcher"
+    namespace: "windowing_frontend"
+    description: "Fixes a bug that prevented IMEs to send back events to the app's dispatcher"
+    bug: "460382604"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "transit_invisible_existence_change"
     namespace: "windowing_frontend"
     description: "Allow invisible containers to be in a transition if gone or created"
@@ -469,6 +479,26 @@ flag {
     namespace: "windowing_frontend"
     description: "Virtual display owners can create system application overlays"
     bug: "432521645"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "displayinfo_state_deferrable"
+    namespace: "windowing_frontend"
+    description: "Display state should be a deferrable WM property"
+    bug: "423701190"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "avoid_recreating_dim_surface_during_activity_transition"
+    namespace: "windowing_frontend"
+    description: "Fix dim layer flickering during activity transition"
+    bug: "456398458"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

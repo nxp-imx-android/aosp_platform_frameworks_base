@@ -645,9 +645,7 @@ class TransitionAnimator(
         var endBottomCornerRadius = endState.bottomCornerRadius
 
         fun maybeUpdateEndState() {
-            if (Flags.dialogAnimEndStateUpdate()) {
-                endState = calculateEndState()
-            }
+            endState = calculateEndState()
             if (
                 endTop != endState.top ||
                     endBottom != endState.bottom ||
@@ -662,10 +660,8 @@ class TransitionAnimator(
                 endRight = endState.right
                 endCenterX = (endLeft + endRight) / 2f
                 endWidth = endRight - endLeft
-                if (Flags.dialogAnimEndStateUpdate()) {
-                    endTopCornerRadius = endState.topCornerRadius
-                    endBottomCornerRadius = endState.bottomCornerRadius
-                }
+                endTopCornerRadius = endState.topCornerRadius
+                endBottomCornerRadius = endState.bottomCornerRadius
             }
         }
 
@@ -838,9 +834,7 @@ class TransitionAnimator(
          * springs.
          */
         fun maybeUpdateEndState() {
-            if (Flags.dialogAnimEndStateUpdate()) {
-                updateEndStateAndPivot()
-            }
+            updateEndStateAndPivot()
 
             val (newTargetX, newTargetY) = extractPivotAttributes(endState, pivot)
             if (newTargetX != targetX && newTargetY != targetY) {

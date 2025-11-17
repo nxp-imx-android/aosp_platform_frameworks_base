@@ -374,6 +374,8 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
 
     @Test
     public void testAbandonShouldCleanUpApexSession_AbandonDuringVerification() throws Exception {
+        // apexd --dump sessions may contain previous states
+        getDevice().reboot();
         String before = getDevice().executeShellCommand("apexd --dump sessions");
         getDevice().setProperty("apexd.test_hook.submit_staged_session", "sleep_ms 1000");
         try {
@@ -387,6 +389,8 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
 
     @Test
     public void testAbandonShouldCleanUpApexSession_AbandonAfterVerification() throws Exception {
+        // apexd --dump sessions may contain previous states
+        getDevice().reboot();
         String before = getDevice().executeShellCommand("apexd --dump sessions");
         runPhase("testAbandonShouldCleanUpApexSession_AbandonAfterVerification");
         String after = getDevice().executeShellCommand("apexd --dump sessions");
@@ -485,6 +489,10 @@ public class StagedInstallInternalTest extends BaseHostJUnit4Test {
 
     @Test
     public void testApexActivationFailureIsCapturedInSession() throws Exception {
+        final String apexdConfig = getDevice().executeShellCommand("apexd --dump config");
+        assumeTrue("When using pinned APEX, /data/app-staging is not checked after staging",
+                apexdConfig.contains("uses_pinned_apex=false"));
+
         // We initiate staging a normal apex update which passes pre-reboot verification.
         // Then we replace the valid apex waiting in /data/app-staging with something
         // that cannot be activated and reboot. The apex should fail to activate, which

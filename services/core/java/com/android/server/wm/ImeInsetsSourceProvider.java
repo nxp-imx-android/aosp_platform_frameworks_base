@@ -26,6 +26,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.UserHandle;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 import android.view.InsetsSource;
@@ -279,9 +280,10 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                                 + "Start new request");
                 // TODO(b/353463205) remove this later after fixing the race of two requests
                 //  that cancel each other (cf. b/383466954#comment19).
+                // TODO (b/459507475): get actual user ID (owner of display)
                 statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_SHOW,
                         ImeTracker.ORIGIN_SERVER, SoftInputShowHideReason.CONTROLS_CHANGED,
-                        false /* fromUser */);
+                        false /* fromUser */, UserHandle.USER_NULL, mDisplayContent.getDisplayId());
             }
             ImeTracker.forLogging().onProgress(statsToken,
                     ImeTracker.PHASE_WM_GET_CONTROL_WITH_LEASH);
@@ -435,12 +437,13 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             if (imeInputTarget != imeControlTarget) {
                 // TODO(b/353463205): check if fromUser=false is correct here
                 boolean imeVisible = imeInputTarget.isRequestedVisible(WindowInsets.Type.ime());
+                // TODO (b/459507475): get actual user ID (owner of display)
                 ImeTracker.Token statsToken = ImeTracker.forLogging().onStart(
                         imeVisible ? ImeTracker.TYPE_SHOW : ImeTracker.TYPE_HIDE,
                         ImeTracker.ORIGIN_SERVER,
                         imeVisible ? SoftInputShowHideReason.SHOW_INPUT_TARGET_CHANGED
                                 : SoftInputShowHideReason.HIDE_INPUT_TARGET_CHANGED,
-                        false /* fromUser */);
+                        false /* fromUser */, UserHandle.USER_NULL, mDisplayContent.getDisplayId());
                 boolean controlTargetRequestedVisible = imeControlTarget != null
                         && imeControlTarget.isRequestedVisible(WindowInsets.Type.ime());
                 if (imeVisible == controlTargetRequestedVisible && imeControlTarget != null) {
@@ -498,12 +501,14 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                     && (controlTarget.getAnimatingTypes() & WindowInsets.Type.ime()) != 0;
             final boolean imeVisible =
                     controlTarget.isRequestedVisible(WindowInsets.Type.ime()) || imeAnimating;
+            // TODO (b/459507475): get actual user ID (owner of display)
             final var finalStatsToken = statsToken != null ? statsToken
                     : ImeTracker.forLogging().onStart(
                             imeVisible ? ImeTracker.TYPE_SHOW : ImeTracker.TYPE_HIDE,
                             ImeTracker.ORIGIN_SERVER,
                             SoftInputShowHideReason.IME_REQUESTED_CHANGED_LISTENER,
-                            false /* fromUser */);
+                            false /* fromUser */, UserHandle.USER_NULL,
+                            mDisplayContent.getDisplayId());
 
             // If the RemoteInsetsControlTarget is the current controlTarget, pass the
             // windowToken of the imeInputTarget to IMMS.

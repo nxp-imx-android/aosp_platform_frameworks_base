@@ -902,6 +902,9 @@ class ActivityMetricsLogger {
         final TransitionInfoSnapshot infoSnapshot = new TransitionInfoSnapshot(info);
         if (info.mLoggedTransitionStarting || !r.mTransitionController.isCollecting(r)) {
             done(false /* abort */, info, "notifyWindowsDrawn", timestampNs);
+        } else if (!r.isVisibleRequested() && r.mDisplayContent.isSleeping()) {
+            done(true /* abort */, info, "drawnWhileSleeping", timestampNs);
+            return null;
         }
 
         final int pid = r.getPid();

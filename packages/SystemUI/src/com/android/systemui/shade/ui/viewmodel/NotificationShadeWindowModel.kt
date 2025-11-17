@@ -58,7 +58,9 @@ constructor(
                 keyguardTransitionInteractor.transitionValue(Scenes.Occluded, OCCLUDED).map {
                     it == 1f
                 },
-                keyguardTransitionInteractor.transitionValue(DREAMING).map { it == 1f },
+                keyguardTransitionInteractor.transitionValue(Scenes.Dream, DREAMING).map {
+                    it == 1f
+                },
                 keyguardTransitionInteractor.transitionValue(Scenes.Communal, GLANCEABLE_HUB).map {
                     it == 1f
                 },
@@ -81,11 +83,11 @@ constructor(
                     edgeWithoutSceneContainer = Edge.create(from = GLANCEABLE_HUB, to = OCCLUDED),
                 ),
                 keyguardTransitionInteractor.isInTransition(
-                    edge = Edge.create(from = DREAMING, to = Scenes.Communal),
+                    edge = Edge.INVALID,
                     edgeWithoutSceneContainer = Edge.create(from = DREAMING, to = GLANCEABLE_HUB),
                 ),
                 keyguardTransitionInteractor.isInTransition(
-                    edge = Edge.create(from = Scenes.Communal, to = DREAMING),
+                    edge = Edge.INVALID,
                     edgeWithoutSceneContainer = Edge.create(from = GLANCEABLE_HUB, to = DREAMING),
                 ),
             )

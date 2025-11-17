@@ -49,7 +49,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags.ROAMING_INDICATOR_VIA_DISPLAY_INFO
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.Transactional
 import com.android.systemui.kairos.awaitClose
@@ -95,7 +94,6 @@ import kotlinx.coroutines.withContext
  * A repository implementation for a typical mobile connection (as opposed to a carrier merged
  * connection -- see [CarrierMergedConnectionRepository]).
  */
-@ExperimentalKairosApi
 class MobileConnectionRepositoryKairosImpl
 @AssistedInject
 constructor(
@@ -144,7 +142,7 @@ constructor(
     private val callbackEvents: Events<TelephonyCallbackState> = buildEvents {
         coalescingEvents(
             initialValue = TelephonyCallbackState(),
-            coalesce = TelephonyCallbackState::applyEvent,
+            coalesce = { state, event -> state.applyEvent(event) },
         ) {
             val callback =
                 object :

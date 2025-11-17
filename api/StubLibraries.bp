@@ -1050,7 +1050,10 @@ droidstubs {
     defaults: ["api_versions_complete_defaults"],
     srcs: [":android_stubs_current_with_test_libs{.jar}"],
     api_levels_sdk_type: "public",
-    visibility: ["//frameworks/base"],
+    visibility: [
+        "//frameworks/base",
+        "//development/build",
+    ],
 
     // Use the compatibility check properties to supply the previously released API to which
     // flagged APIs can be reverted but disable the compatibility check as it is not required.

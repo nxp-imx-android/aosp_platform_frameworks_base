@@ -33,6 +33,7 @@ import java.util.Objects;
  */
 public abstract class FeatureController implements TaskContinuityMessenger.Listener {
 
+
     @GuardedBy("this")
     private boolean mEnabled = false;
 
@@ -86,10 +87,12 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
     }
 
     /** Override this method to perform any necessary setup when the feature is enabled. */
-    protected void onEnabled() {}
+    protected void onEnabled() {
+    }
 
     /** Override this method to perform any necessary cleanup when the feature is disabled. */
-    protected void onDisabled() {}
+    protected void onDisabled() {
+    }
 
     /** Override this method to return the tag to be used for logging. */
     @NonNull
@@ -98,29 +101,32 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
     /**
      * Called when a TaskStackBroadcastMessage message is received.
      *
-     * @param associationId The association ID of the device that sent the message.
+     * @param associationId             The association ID of the device that sent the message.
      * @param taskStackBroadcastMessage The TaskStackBroadcastMessage message.
      */
     protected void onTaskStackBroadcastMessageReceived(
-            int associationId, @NonNull TaskStackBroadcastMessage taskStackBroadcastMessage) {}
+            int associationId, @NonNull TaskStackBroadcastMessage taskStackBroadcastMessage) {
+    }
 
     /**
      * Called when a HandoffRequestMessage message is received.
      *
-     * @param associationId The association ID of the device that sent the message.
+     * @param associationId         The association ID of the device that sent the message.
      * @param handoffRequestMessage The HandoffRequestMessage message.
      */
     protected void onHandoffRequestMessageReceived(
-            int associationId, @NonNull HandoffRequestMessage handoffRequestMessage) {}
+            int associationId, @NonNull HandoffRequestMessage handoffRequestMessage) {
+    }
 
     /**
      * Called when a HandoffRequestResultMessage message is received.
      *
-     * @param associationId The association ID of the device that sent the message.
+     * @param associationId               The association ID of the device that sent the message.
      * @param handoffRequestResultMessage The HandoffRequestResultMessage message.
      */
     protected void onHandoffRequestResultMessageReceived(
-            int associationId, @NonNull HandoffRequestResultMessage handoffRequestResultMessage) {}
+            int associationId, @NonNull HandoffRequestResultMessage handoffRequestResultMessage) {
+    }
 
     /**
      * Called when an association is connected.
@@ -128,16 +134,17 @@ public abstract class FeatureController implements TaskContinuityMessenger.Liste
      * @param associationInfo The AssociationInfo of the connected device.
      */
     @Override
-    public void onAssociationConnected(@NonNull AssociationInfo associationInfo) {}
+    public void onAssociationConnected(@NonNull AssociationInfo associationInfo) {
+    }
 
     /**
      * Called when an association is disconnected.
      *
      * @param associationId The association ID of the disconnected device.
-     * @param connectedAssociations The list of all connected devices.
      */
     @Override
-    public void onAssociationDisconnected(int associationId) {}
+    public void onAssociationDisconnected(int associationId) {
+    }
 
     @Override
     public void onMessageReceived(

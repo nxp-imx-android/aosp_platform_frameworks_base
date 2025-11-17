@@ -16,11 +16,16 @@
 
 package android.hardware.serial;
 
+import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemService;
+import android.annotation.TestApi;
 import android.content.Context;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.ArrayMap;
 import android.util.Slog;
@@ -39,6 +44,34 @@ import java.util.concurrent.Executor;
 @SystemService(Context.SERIAL_SERVICE)
 @FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_WIRED_SERIAL_API)
 public final class SerialManager {
+    /**
+     * The request token for requesting serial port access.
+     *
+     * @hide
+     */
+    public static final String EXTRA_REQUEST_TOKEN = "android.hardware.serial.EXTRA_REQUEST_TOKEN";
+
+    /**
+     * The name of the serial port.
+     *
+     * @hide
+     */
+    public static final String EXTRA_PORT = "android.hardware.serial.EXTRA_PORT";
+
+    /**
+     * The package name of the application requesting serial port access.
+     *
+     * @hide
+     */
+    public static final String EXTRA_PACKAGE_NAME = "android.hardware.serial.EXTRA_PACKAGE_NAME";
+
+    /**
+     * The UID of the user requesting serial port access.
+     *
+     * @hide
+     */
+    public static final String EXTRA_UID = "android.hardware.serial.EXTRA_UID";
+
     private static final String TAG = "SerialManager";
 
     private final @NonNull Context mContext;
@@ -124,6 +157,46 @@ public final class SerialManager {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Grants a specific UID access to a serial port.
+     *
+     * @param serialPort The name of the serial port.
+     * @param uid The user ID to grant access to.
+     * @param token An optional token associated with the grant.
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
+    @TestApi
+    public void grantSerialPortAccess(@NonNull String serialPort, int uid,
+            @Nullable IBinder token) {
+        try {
+            mService.grantSerialPortAccess(serialPort, uid, token);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Revokes a specific UID's access to a serial port.
+     *
+     * @param serialPort The name of the serial port.
+     * @param uid The user ID to revoke access from.
+     * @param token An optional token associated with the revocation.
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MANAGE_SERIAL_PORTS)
+    @TestApi
+    public void revokeSerialPortAccess(@NonNull String serialPort, int uid,
+            @Nullable IBinder token) {
+        try {
+            mService.revokeSerialPortAccess(serialPort, uid, token);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 

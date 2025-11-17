@@ -78,15 +78,18 @@ constructor(
 
     // Show UMO on glanceable hub immediately on transition into glanceable hub
     private val showUmoFromOccludedToGlanceableHub: Flow<Boolean> =
-        keyguardTransitionInteractor
-            .transition(
-                Edge.create(from = KeyguardState.OCCLUDED, to = KeyguardState.GLANCEABLE_HUB)
-            )
-            .filter {
-                (it.transitionState == TransitionState.STARTED ||
-                    it.transitionState == TransitionState.CANCELED)
-            }
-            .map { it.transitionState == TransitionState.STARTED }
+        if (SceneContainerFlag.isEnabled) flowOf(true)
+        else {
+            keyguardTransitionInteractor
+                .transition(
+                    Edge.create(from = KeyguardState.OCCLUDED, to = KeyguardState.GLANCEABLE_HUB)
+                )
+                .filter {
+                    (it.transitionState == TransitionState.STARTED ||
+                        it.transitionState == TransitionState.CANCELED)
+                }
+                .map { it.transitionState == TransitionState.STARTED }
+        }
 
     private val showUmoFromGlanceableHubToOccluded: Flow<Boolean> =
         keyguardTransitionInteractor

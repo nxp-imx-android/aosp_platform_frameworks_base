@@ -18,8 +18,6 @@ package androidx.window.extensions.embedding;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
-import static com.android.window.flags.Flags.activityEmbeddingDelayTaskFragmentFinishForActivityLaunch;
-
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.WindowConfiguration.WindowingMode;
@@ -574,9 +572,7 @@ class TaskFragmentContainer {
             mAppearEmptyTimeout = null;
         }
 
-        if (activityEmbeddingDelayTaskFragmentFinishForActivityLaunch()) {
-            clearActivityLaunchHintIfNecessary(mInfo, info);
-        }
+        clearActivityLaunchHintIfNecessary(mInfo, info);
 
         mHasCrossProcessActivities = false;
         mInfo = info;

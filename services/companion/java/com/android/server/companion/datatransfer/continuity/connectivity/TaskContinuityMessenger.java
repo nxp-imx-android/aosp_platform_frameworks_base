@@ -20,22 +20,18 @@ import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTI
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.companion.CompanionDeviceManager;
 import android.companion.AssociationInfo;
-import android.content.Context;
+import android.companion.CompanionDeviceManager;
 import android.util.Slog;
-
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
-
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.concurrent.Executor;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
 
 /**
  * Facilitates communication between devices, including sending and receiving messages between
@@ -45,7 +41,6 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
     private static final String TAG = "TaskContinuityMessenger";
 
-    private final Context mContext;
     private final CompanionDeviceManager mCompanionDeviceManager;
     private final ConnectedAssociationStore mConnectedAssociationStore;
     private final Executor mExecutor;
@@ -63,15 +58,21 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
         void onMessageReceived(int associationId, @NonNull TaskContinuityMessage message);
     }
 
-    public TaskContinuityMessenger(@NonNull Context context) {
+    public TaskContinuityMessenger(
+            int userId,
+            @NonNull CompanionDeviceManager companionDeviceManager,
+            @NonNull Executor executor,
+            @NonNull AssociationProfileManager associationProfileManager) {
 
-        Objects.requireNonNull(context);
-
-        mContext = context;
-        mExecutor = context.getMainExecutor();
-        mCompanionDeviceManager = context.getSystemService(CompanionDeviceManager.class);
+        mCompanionDeviceManager = Objects.requireNonNull(companionDeviceManager);
+        mExecutor = Objects.requireNonNull(executor);
         mConnectedAssociationStore =
-                new ConnectedAssociationStore(mCompanionDeviceManager, mExecutor, this);
+                new ConnectedAssociationStore(
+                        userId,
+                        mCompanionDeviceManager,
+                        mExecutor,
+                        this,
+                        Objects.requireNonNull(associationProfileManager));
     }
 
     public void addListener(@NonNull Listener listener) {
@@ -144,7 +145,7 @@ public class TaskContinuityMessenger implements ConnectedAssociationStore.Listen
 
         Objects.requireNonNull(message);
 
-        return sendMessage(new int[] {associationId}, message);
+        return sendMessage(new int[]{associationId}, message);
     }
 
     public SendMessageResult sendMessage(

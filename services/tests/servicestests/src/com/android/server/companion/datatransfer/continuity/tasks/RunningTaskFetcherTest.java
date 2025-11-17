@@ -17,8 +17,6 @@
 package com.android.server.companion.datatransfer.continuity.tasks;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -27,9 +25,6 @@ import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityParams;
 import android.content.ComponentName;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
@@ -47,12 +42,10 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidTestingRunner.class)
 public class RunningTaskFetcherTest {
 
-    private static final String LAUNCHER_PACKAGE_NAME = "com.example.launcher";
     private static final int USER_ID = 0;
 
     @Mock private ActivityTaskManager mockActivityTaskManager;
     @Mock private ActivityTaskManagerInternal mockActivityTaskManagerInternal;
-    @Mock private PackageManager mockPackageManager;
     @Mock private AppOpsManager mockAppOps;
 
     private RunningTaskFetcher runningTaskFetcher;
@@ -60,18 +53,11 @@ public class RunningTaskFetcherTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-
-        ResolveInfo launcherResolveInfo = new ResolveInfo();
-        launcherResolveInfo.activityInfo = new ActivityInfo();
-        launcherResolveInfo.activityInfo.packageName = LAUNCHER_PACKAGE_NAME;
-        when(mockPackageManager.resolveActivity(any(), anyInt())).thenReturn(launcherResolveInfo);
-
         runningTaskFetcher =
                 new RunningTaskFetcher(
                         USER_ID,
                         mockActivityTaskManager,
                         mockActivityTaskManagerInternal,
-                        mockPackageManager,
                         mockAppOps);
     }
 
@@ -81,82 +67,43 @@ public class RunningTaskFetcherTest {
             new FakeTask(1, USER_ID, "com.example.app1", 100, new HandoffOptions(true, true), true),
             new FakeTask(
                     2, USER_ID, "com.example.app2", 200, new HandoffOptions(false, true), true),
-            new FakeTask(
-                    3, USER_ID, LAUNCHER_PACKAGE_NAME, 300, new HandoffOptions(true, true), true),
             new FakeTask(4, 1000, "com.example.app4", 400, new HandoffOptions(true, true), false),
         };
         setupRunningTasks(tasks);
-
-        List<RemoteTaskInfo> remoteTasks = runningTaskFetcher.getRunningTasks();
-
-        assertThat(remoteTasks).containsExactly(tasks[0].toRemoteTaskInfo());
+        assertThat(runningTaskFetcher.getRunningTasks())
+                .containsExactly(tasks[0].toRemoteTaskInfo());
     }
 
     @Test
-    public void testGetRunningTaskById_returnsRunningTask() {
+    public void testGetRunningTasks_returnsRunningTask() {
         FakeTask[] tasks = {
             new FakeTask(1, USER_ID, "com.example.app1", 100, new HandoffOptions(true, true), true),
             new FakeTask(
                     2, USER_ID, "com.example.app2", 200, new HandoffOptions(false, true), true),
         };
         setupRunningTasks(tasks);
-
-        RemoteTaskInfo remoteTask = runningTaskFetcher.getRunningTaskById(tasks[0].taskId());
-
-        assertThat(remoteTask).isEqualTo(tasks[0].toRemoteTaskInfo());
+        assertThat(runningTaskFetcher.getRunningTasks())
+                .containsExactly(tasks[0].toRemoteTaskInfo());
     }
 
     @Test
-    public void testGetRunningTaskById_doesNotReturnTaskWithHandoffDisabled() {
+    public void testGetRunningTasks_doesNotReturnTaskWithHandoffDisabled() {
         FakeTask[] tasks = {
             new FakeTask(
                     1, USER_ID, "com.example.app1", 100, new HandoffOptions(false, true), true),
         };
         setupRunningTasks(tasks);
-
-        RemoteTaskInfo remoteTask = runningTaskFetcher.getRunningTaskById(tasks[0].taskId());
-
-        assertThat(remoteTask).isNull();
+        assertThat(runningTaskFetcher.getRunningTasks()).isEmpty();
     }
 
     @Test
-    public void testGetRunningTaskById_taskNotFound_returnsNull() {
-        FakeTask[] tasks = {
-            new FakeTask(1, USER_ID, "com.example.app1", 100, new HandoffOptions(true, true), true),
-            new FakeTask(
-                    2, USER_ID, "com.example.app2", 200, new HandoffOptions(false, true), true),
-        };
-        setupRunningTasks(tasks);
-
-        RemoteTaskInfo remoteTask = runningTaskFetcher.getRunningTaskById(3);
-
-        assertThat(remoteTask).isNull();
-    }
-
-    @Test
-    public void testGetRunningTaskById_launcherPackage_returnsNull() {
-        FakeTask[] tasks = {
-            new FakeTask(
-                    1, USER_ID, LAUNCHER_PACKAGE_NAME, 200, new HandoffOptions(true, true), false),
-        };
-        setupRunningTasks(tasks);
-
-        RemoteTaskInfo remoteTask = runningTaskFetcher.getRunningTaskById(tasks[0].taskId());
-
-        assertThat(remoteTask).isNull();
-    }
-
-    @Test
-    public void testGetRunningTaskById_packageNotAllowedToContinueAcrossDevices_returnsNull() {
+    public void testGetRunningTasks_packageNotAllowedToContinueAcrossDevices_returnsNull() {
         FakeTask[] tasks = {
             new FakeTask(
                     1, USER_ID, "com.example.app1", 200, new HandoffOptions(true, true), false),
         };
         setupRunningTasks(tasks);
-
-        RemoteTaskInfo remoteTask = runningTaskFetcher.getRunningTaskById(tasks[0].taskId());
-
-        assertThat(remoteTask).isNull();
+        assertThat(runningTaskFetcher.getRunningTasks()).isEmpty();
     }
 
     private record FakeTask(

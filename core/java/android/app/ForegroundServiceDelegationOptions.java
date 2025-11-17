@@ -36,14 +36,25 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class ForegroundServiceDelegationOptions {
 
+    /**
+     * Used mainly for internal logging when a better type is not available or applicable.
+     */
     public static final int DELEGATION_SERVICE_DEFAULT = 0;
-    public static final int DELEGATION_SERVICE_PHONE_CALL = 1;
-    public static final int DELEGATION_SERVICE_SPECIAL_USE = 2;
+
+    /**
+     * Used when called through Shell Command.
+     */
+    public static final int DELEGATION_SERVICE_SPECIAL_USE = 1;
+
+    /**
+     * Used to identify delegation service related to a phone call.
+     */
+    public static final int DELEGATION_SERVICE_PHONE_CALL = 2;
 
     @IntDef(flag = false, prefix = { "DELEGATION_SERVICE_" }, value = {
             DELEGATION_SERVICE_DEFAULT,
-            DELEGATION_SERVICE_PHONE_CALL,
             DELEGATION_SERVICE_SPECIAL_USE,
+            DELEGATION_SERVICE_PHONE_CALL,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface DelegationService {}
@@ -105,6 +116,11 @@ public class ForegroundServiceDelegationOptions {
             @DelegationService int delegationService,
             int clientNotificationId,
             @Nullable Notification clientNotification) {
+        if (delegationService == DELEGATION_SERVICE_DEFAULT) {
+            throw new IllegalArgumentException(
+                "Default is not allowed to be passed in. "
+                + "Use a more specific Delegation Service Identifier!");
+        }
         mClientPid = clientPid;
         mClientUid = clientUid;
         mClientPackageName = clientPackageName;
@@ -170,10 +186,10 @@ public class ForegroundServiceDelegationOptions {
         switch (serviceCode) {
             case DELEGATION_SERVICE_DEFAULT:
                 return "DEFAULT";
-            case DELEGATION_SERVICE_PHONE_CALL:
-                return "PHONE_CALL";
             case DELEGATION_SERVICE_SPECIAL_USE:
                 return "SPECIAL_USE";
+            case DELEGATION_SERVICE_PHONE_CALL:
+                return "PHONE_CALL";
             default:
                 return "(unknown:" + serviceCode + ")";
         }

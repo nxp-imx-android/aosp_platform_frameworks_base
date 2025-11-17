@@ -313,6 +313,7 @@ package android {
     field public static final String PACKET_KEEPALIVE_OFFLOAD = "android.permission.PACKET_KEEPALIVE_OFFLOAD";
     field public static final String PEERS_MAC_ADDRESS = "android.permission.PEERS_MAC_ADDRESS";
     field public static final String PERFORM_CDMA_PROVISIONING = "android.permission.PERFORM_CDMA_PROVISIONING";
+    field @FlaggedApi("com.android.nfc.module.flags.tap_to_x") public static final String PERFORM_GESTURE_EXCHANGE = "android.permission.PERFORM_GESTURE_EXCHANGE";
     field public static final String PERFORM_IMS_SINGLE_REGISTRATION = "android.permission.PERFORM_IMS_SINGLE_REGISTRATION";
     field public static final String PERFORM_SIM_ACTIVATION = "android.permission.PERFORM_SIM_ACTIVATION";
     field @FlaggedApi("android.app.bridged_notifications_api") public static final String POST_BRIDGED_NOTIFICATIONS = "android.permission.POST_BRIDGED_NOTIFICATIONS";
@@ -327,6 +328,7 @@ package android {
     field public static final String QUERY_ADMIN_POLICY = "android.permission.QUERY_ADMIN_POLICY";
     field public static final String QUERY_CLONED_APPS = "android.permission.QUERY_CLONED_APPS";
     field @FlaggedApi("android.app.admin.flags.device_theft_api_enabled") public static final String QUERY_DEVICE_STOLEN_STATE = "android.permission.QUERY_DEVICE_STOLEN_STATE";
+    field @FlaggedApi("android.content.pm.enable_query_domain_verification") public static final String QUERY_DOMAIN_VERIFICATION = "android.permission.QUERY_DOMAIN_VERIFICATION";
     field @Deprecated public static final String QUERY_TIME_ZONE_RULES = "android.permission.QUERY_TIME_ZONE_RULES";
     field public static final String QUERY_USERS = "android.permission.QUERY_USERS";
     field public static final String RADIO_SCAN_WITHOUT_LOCATION = "android.permission.RADIO_SCAN_WITHOUT_LOCATION";
@@ -465,6 +467,7 @@ package android {
     field public static final String USE_COLORIZED_NOTIFICATIONS = "android.permission.USE_COLORIZED_NOTIFICATIONS";
     field public static final String USE_ON_DEVICE_INTELLIGENCE = "android.permission.USE_ON_DEVICE_INTELLIGENCE";
     field public static final String USE_RESERVED_DISK = "android.permission.USE_RESERVED_DISK";
+    field @FlaggedApi("android.os.vibrator.haptic_pcm_generation") public static final String USE_VIBRATOR_HAPTIC_GENERATOR = "android.permission.USE_VIBRATOR_HAPTIC_GENERATOR";
     field public static final String UWB_PRIVILEGED = "android.permission.UWB_PRIVILEGED";
     field @FlaggedApi("android.os.vibrator.vendor_vibration_effects") public static final String VIBRATE_VENDOR_EFFECTS = "android.permission.VIBRATE_VENDOR_EFFECTS";
     field public static final String WHITELIST_AUTO_REVOKE_PERMISSIONS = "android.permission.WHITELIST_AUTO_REVOKE_PERMISSIONS";
@@ -1530,6 +1533,7 @@ package android.app.admin {
     field public static final int STATUS_NONSYSTEM_USER_EXISTS = 5; // 0x5
     field public static final int STATUS_NOT_SYSTEM_USER = 7; // 0x7
     field public static final int STATUS_OK = 0; // 0x0
+    field @FlaggedApi("android.app.admin.flags.introduce_generic_provisioning_error") public static final int STATUS_OTHER_PROVISIONING_ERROR = 20; // 0x14
     field public static final int STATUS_PROVISIONING_NOT_ALLOWED_FOR_NON_DEVELOPER_USERS = 15; // 0xf
     field public static final int STATUS_SYSTEM_USER = 10; // 0xa
     field public static final int STATUS_UNKNOWN_ERROR = -1; // 0xffffffff
@@ -3085,16 +3089,46 @@ package android.app.smartspace.uitemplatedata {
 
 package android.app.supervision {
 
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public final class PackageUsagePolicy extends android.app.supervision.Policy {
+    method public int describeContents();
+    method @NonNull public String getPackageName();
+    method public int getType();
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.PackageUsagePolicy> CREATOR;
+    field public static final int TYPE_ALLOWED = 0; // 0x0
+    field public static final int TYPE_BLOCKED = 1; // 0x1
+  }
+
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public static final class PackageUsagePolicy.Builder extends android.app.supervision.Policy.Builder<android.app.supervision.PackageUsagePolicy,android.app.supervision.PackageUsagePolicy.Builder> {
+    ctor public PackageUsagePolicy.Builder();
+    ctor public PackageUsagePolicy.Builder(@NonNull android.app.supervision.PackageUsagePolicy);
+    method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setPackageName(@NonNull String);
+    method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setType(int);
+  }
+
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public abstract class Policy implements android.os.Parcelable {
+    method public long getVersion();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.Policy> CREATOR;
+  }
+
+  @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public abstract static class Policy.Builder<P extends android.app.supervision.Policy, B extends android.app.supervision.Policy.Builder<P, B>> {
+    method @NonNull public P build();
+    method @NonNull public B setVersion(long);
+  }
+
   @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public class SupervisionAppService extends android.app.Service {
     ctor public SupervisionAppService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public void onPolicyChanged(@NonNull android.app.supervision.Policy);
     method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onSupervisionDisabled();
     method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onSupervisionEnabled();
   }
 
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
     method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public android.content.Intent createConfirmSupervisionCredentialsIntent();
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") @NonNull public java.util.List<android.app.supervision.Policy> getPolicies();
     method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public boolean isSupervisionEnabled();
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public void setPolicy(@NonNull android.app.supervision.Policy);
     method @FlaggedApi("android.permission.flags.enable_system_supervision_role_behavior") @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public boolean shouldAllowBypassingSupervisionRoleQualification();
     field @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public static final String ACTION_DISABLE_SUPERVISION = "android.app.supervision.action.DISABLE_SUPERVISION";
     field @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public static final String ACTION_ENABLE_SUPERVISION = "android.app.supervision.action.ENABLE_SUPERVISION";
@@ -4116,6 +4150,7 @@ package android.content {
     field public static final String CONTENT_SUGGESTIONS_SERVICE = "content_suggestions";
     field public static final String CONTEXTHUB_SERVICE = "contexthub";
     field public static final String CONTEXTUAL_SEARCH_SERVICE = "contextual_search";
+    field @FlaggedApi("android.bettertogether.flags.enable_d2d_connectivity_service") public static final String D2D_CONNECTIVITY_SERVICE = "d2d_connectivity";
     field @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") public static final String ECM_ENHANCED_CONFIRMATION_SERVICE = "ecm_enhanced_confirmation";
     field public static final String ETHERNET_SERVICE = "ethernet";
     field public static final String EUICC_CARD_SERVICE = "euicc_card";
@@ -5237,6 +5272,20 @@ package android.debug {
 
 package android.graphics.fonts {
 
+  @FlaggedApi("com.android.text.flags.insert_font_family") public final class FallbackFontUpdateRequest {
+    method @NonNull public java.util.List<android.graphics.fonts.FontFamilyUpdateRequest.Font> getFonts();
+    method @NonNull public String getLanguages();
+    method public int getPriority();
+  }
+
+  public static final class FallbackFontUpdateRequest.Builder {
+    ctor public FallbackFontUpdateRequest.Builder();
+    method @NonNull public android.graphics.fonts.FallbackFontUpdateRequest.Builder addFont(@NonNull android.graphics.fonts.FontFamilyUpdateRequest.Font);
+    method @NonNull public android.graphics.fonts.FallbackFontUpdateRequest build();
+    method @NonNull public android.graphics.fonts.FallbackFontUpdateRequest.Builder setLanguages(@NonNull String);
+    method @NonNull public android.graphics.fonts.FallbackFontUpdateRequest.Builder setPriority(int);
+  }
+
   public final class FontFamilyUpdateRequest {
     method @NonNull public java.util.List<android.graphics.fonts.FontFamilyUpdateRequest.FontFamily> getFontFamilies();
     method @NonNull public java.util.List<android.graphics.fonts.FontFileUpdateRequest> getFontFileUpdateRequests();
@@ -5283,15 +5332,18 @@ package android.graphics.fonts {
   public class FontManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public android.text.FontConfig getFontConfig();
     method @FlaggedApi("com.android.text.flags.insert_font_family") @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public int insertFontFamilyBefore(@NonNull android.graphics.fonts.FontFamilyUpdateRequest, @NonNull String, @IntRange(from=0) int);
+    method @FlaggedApi("com.android.text.flags.insert_font_family") @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public int updateFontFallbacks(@NonNull java.util.List<android.graphics.fonts.FallbackFontUpdateRequest>);
     method @RequiresPermission(android.Manifest.permission.UPDATE_FONTS) public int updateFontFamily(@NonNull android.graphics.fonts.FontFamilyUpdateRequest, @IntRange(from=0) int);
     field public static final int RESULT_ERROR_DOWNGRADING = -5; // 0xfffffffb
     field public static final int RESULT_ERROR_FAILED_TO_WRITE_FONT_FILE = -1; // 0xffffffff
     field public static final int RESULT_ERROR_FAILED_UPDATE_CONFIG = -6; // 0xfffffffa
     field public static final int RESULT_ERROR_FONT_NOT_FOUND = -9; // 0xfffffff7
     field public static final int RESULT_ERROR_FONT_UPDATER_DISABLED = -7; // 0xfffffff9
+    field @FlaggedApi("com.android.text.flags.insert_font_family") public static final int RESULT_ERROR_INVALID_ARGUMENT = -11; // 0xfffffff5
     field @FlaggedApi("com.android.text.flags.insert_font_family") public static final int RESULT_ERROR_INVALID_FONT_FAMILY_NAME_TO_INSERT_BEFORE = -10; // 0xfffffff6
     field public static final int RESULT_ERROR_INVALID_FONT_FILE = -3; // 0xfffffffd
     field public static final int RESULT_ERROR_INVALID_FONT_NAME = -4; // 0xfffffffc
+    field @FlaggedApi("com.android.text.flags.insert_font_family") public static final int RESULT_ERROR_INVALID_PRIORITY = -12; // 0xfffffff4
     field public static final int RESULT_ERROR_VERIFICATION_FAILURE = -2; // 0xfffffffe
     field public static final int RESULT_ERROR_VERSION_MISMATCH = -8; // 0xfffffff8
     field public static final int RESULT_SUCCESS = 0; // 0x0
@@ -5403,6 +5455,10 @@ package android.hardware.camera2 {
     method @FlaggedApi("com.android.internal.camera.flags.camera_multi_client") public void onOpenedInSharedMode(@NonNull android.hardware.camera2.CameraDevice, boolean);
   }
 
+  public final class CameraExtensionCharacteristics {
+    field @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") public static final int EXTENSION_VENDOR_START = 16384; // 0x4000
+  }
+
   public final class CameraManager {
     method @FlaggedApi("com.android.internal.camera.flags.camera_multi_client") public boolean isCameraDeviceSharingSupported(@NonNull String) throws android.hardware.camera2.CameraAccessException;
     method @RequiresPermission(allOf={android.Manifest.permission.SYSTEM_CAMERA, android.Manifest.permission.CAMERA}) public void openCamera(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraDevice.StateCallback) throws android.hardware.camera2.CameraAccessException;
@@ -5451,7 +5507,9 @@ package android.hardware.camera2.extension {
   @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public final class CameraConfiguration {
     method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getPostViewOutputSurface();
     method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getPreviewOutputSurface();
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") @NonNull public java.util.Map<android.hardware.camera2.CaptureRequest.Key<?>,java.lang.Object> getSessionParams();
     method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getStillCaptureOutputSurface();
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") public void setSessionParameters(@NonNull java.util.Map<android.hardware.camera2.CaptureRequest.Key<?>,java.lang.Object>);
   }
 
   public abstract class CameraExtensionService extends android.app.Service {
@@ -12341,8 +12399,10 @@ package android.os {
     method @RequiresPermission(android.Manifest.permission.ACCESS_VIBRATOR_STATE) public void addVibratorStateListener(@NonNull java.util.concurrent.Executor, @NonNull android.os.Vibrator.OnVibratorStateChangedListener);
     method @FlaggedApi("android.os.vibrator.vendor_vibration_effects") public boolean areVendorEffectsSupported();
     method @FlaggedApi("android.os.vibrator.vendor_vibration_effects") public boolean areVendorSessionsSupported();
+    method @FlaggedApi("android.os.vibrator.haptic_pcm_generation") public boolean isHapticGeneratorSupported();
     method @RequiresPermission(android.Manifest.permission.ACCESS_VIBRATOR_STATE) public boolean isVibrating();
     method @RequiresPermission(android.Manifest.permission.ACCESS_VIBRATOR_STATE) public void removeVibratorStateListener(@NonNull android.os.Vibrator.OnVibratorStateChangedListener);
+    method @FlaggedApi("android.os.vibrator.haptic_pcm_generation") @RequiresPermission(android.Manifest.permission.USE_VIBRATOR_HAPTIC_GENERATOR) public void startHapticGeneratorSession(@NonNull android.os.vibrator.HapticGeneratorSession.Config, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.os.vibrator.HapticGeneratorSession,java.lang.Exception>);
     method @FlaggedApi("android.os.vibrator.vendor_vibration_effects") @RequiresPermission(allOf={android.Manifest.permission.VIBRATE, android.Manifest.permission.VIBRATE_VENDOR_EFFECTS, android.Manifest.permission.START_VIBRATION_SESSIONS}) public void startVendorSession(@NonNull android.os.VibrationAttributes, @Nullable String, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull android.os.vibrator.VendorVibrationSession.Callback);
   }
 
@@ -12496,6 +12556,25 @@ package android.os.storage {
 }
 
 package android.os.vibrator {
+
+  @FlaggedApi("android.os.vibrator.haptic_pcm_generation") public final class HapticGeneratorChannelStream implements java.io.Closeable {
+    method @RequiresPermission(android.Manifest.permission.USE_VIBRATOR_HAPTIC_GENERATOR) public void close() throws java.io.IOException;
+    method @RequiresPermission(android.Manifest.permission.USE_VIBRATOR_HAPTIC_GENERATOR) public int read(@NonNull byte[]) throws java.io.IOException;
+  }
+
+  @FlaggedApi("android.os.vibrator.haptic_pcm_generation") public final class HapticGeneratorSession implements java.lang.AutoCloseable {
+    method @RequiresPermission(android.Manifest.permission.USE_VIBRATOR_HAPTIC_GENERATOR) public void close();
+    method @NonNull @RequiresPermission(android.Manifest.permission.USE_VIBRATOR_HAPTIC_GENERATOR) public android.os.vibrator.HapticGeneratorChannelStream generateHapticChannelStream(@NonNull android.os.VibrationEffect);
+  }
+
+  public static final class HapticGeneratorSession.Config implements android.os.Parcelable {
+    ctor public HapticGeneratorSession.Config(@NonNull android.media.AudioFormat, @Nullable android.os.ParcelableHolder);
+    method public int describeContents();
+    method @NonNull public android.media.AudioFormat getAudioFormat();
+    method @Nullable public android.os.ParcelableHolder getVendorExtension();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.vibrator.HapticGeneratorSession.Config> CREATOR;
+  }
 
   @FlaggedApi("android.os.vibrator.vendor_vibration_effects") public final class VendorVibrationSession implements java.lang.AutoCloseable {
     method public void cancel();
@@ -12820,17 +12899,17 @@ package android.provider {
     field @Deprecated public static final String STATE = "state";
   }
 
-  @FlaggedApi("android.provider.new_default_account_api_enabled") public static final class ContactsContract.RawContacts.DefaultAccount {
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @NonNull @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static java.util.List<android.accounts.Account> getEligibleCloudAccounts(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static int getNumberOfMovableLocalContacts(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static int getNumberOfMovableSimContacts(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static void moveLocalContactsToCloudDefaultAccount(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(allOf={android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static void moveSimContactsToCloudDefaultAccount(@NonNull android.content.ContentResolver);
-    method @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static void setDefaultAccountForNewContacts(@NonNull android.content.ContentResolver, @NonNull android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState);
+  public static final class ContactsContract.RawContacts.DefaultAccount {
+    method @NonNull @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static java.util.List<android.accounts.Account> getEligibleCloudAccounts(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(allOf={android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static int getNumberOfMovableLocalContacts(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(allOf={android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static int getNumberOfMovableSimContacts(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(allOf={android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static void moveLocalContactsToCloudDefaultAccount(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(allOf={android.Manifest.permission.WRITE_CONTACTS, android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS}) public static void moveSimContactsToCloudDefaultAccount(@NonNull android.content.ContentResolver);
+    method @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static void setDefaultAccountForNewContacts(@NonNull android.content.ContentResolver, @NonNull android.provider.ContactsContract.RawContacts.DefaultAccount.DefaultAccountAndState);
   }
 
   public static final class ContactsContract.Settings implements android.provider.ContactsContract.SettingsColumns {
-    method @Deprecated @FlaggedApi("android.provider.new_default_account_api_enabled") @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static void setDefaultAccount(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account);
+    method @Deprecated @RequiresPermission(android.Manifest.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS) public static void setDefaultAccount(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account);
   }
 
   public static final class ContactsContract.SimContacts {
@@ -12999,6 +13078,7 @@ package android.provider {
     field public static final String ACTION_TETHER_SETTINGS = "android.settings.TETHER_SETTINGS";
     field public static final String ACTION_TETHER_UNSUPPORTED_CARRIER_UI = "android.settings.TETHER_UNSUPPORTED_CARRIER_UI";
     field public static final String ACTION_USER_SETTINGS = "android.settings.USER_SETTINGS";
+    field @FlaggedApi("android.app.supervision.flags.enable_supervision_settings_ui_updates") public static final String MANAGE_SUPERVISION_APP_SETTINGS = "android.settings.MANAGE_SUPERVISION_APP_SETTINGS";
   }
 
   public static final class Settings.Global extends android.provider.Settings.NameValueTable {
@@ -14217,6 +14297,7 @@ package android.service.persistentdata {
 package android.service.personalcontext {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
+    method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishInsight(@NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable android.service.personalcontext.RenderToken);
     field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
@@ -14263,6 +14344,18 @@ package android.service.personalcontext.embedded {
     method public abstract void onClientDisconnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull java.util.List<android.service.personalcontext.insight.ContextInsight>, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.embedded.InsightSurfaceVisualizerService";
+  }
+
+}
+
+package android.service.personalcontext.hint {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ConversationData implements android.os.Parcelable {
+    method @Nullable public android.app.assist.ActivityId getActivityId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationData.Builder {
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setActivityId(@Nullable android.app.assist.ActivityId);
   }
 
 }
@@ -19165,6 +19258,7 @@ package android.text {
     method @NonNull public java.util.List<android.text.FontConfig.Font> getFontList();
     method @NonNull public android.os.LocaleList getLocaleList();
     method @Deprecated @Nullable public String getName();
+    method @FlaggedApi("com.android.text.flags.insert_font_family") public int getPriority();
     method public int getVariant();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.text.FontConfig.FontFamily> CREATOR;

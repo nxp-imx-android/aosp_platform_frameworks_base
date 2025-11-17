@@ -415,6 +415,9 @@ public class ZenModeConfig implements Parcelable {
             newRule.allowManualInvocation = true;
             newRule.zenPolicy = getDefaultZenPolicy();
             newRule.pkg = PACKAGE_ANDROID;
+            if (Flags.enableDndSync()) {
+                newRule.id = MANUAL_RULE_ID;
+            }
             manualRule = newRule;
         }
     }

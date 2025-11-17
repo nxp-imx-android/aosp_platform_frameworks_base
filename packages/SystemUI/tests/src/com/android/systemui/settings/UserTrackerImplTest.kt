@@ -502,6 +502,15 @@ class UserTrackerImplTest : SysuiTestCase() {
             assertThat(tracker.isUserSwitching).isFalse()
         }
 
+    @Test
+    fun testUserSwitchObserverShouldBeRegisteredBeforeGettingCurrentUser() =
+        testScope.runTest {
+            tracker.initialize {
+                verify(iActivityManager).registerUserSwitchObserver(any(), any())
+                return@initialize 0
+            }
+        }
+
     private class TestCallback : UserTracker.Callback {
         var calledOnBeforeUserChanging = 0
         var calledOnUserChanging = 0

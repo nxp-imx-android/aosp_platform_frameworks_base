@@ -180,6 +180,9 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             invalidate()
         }
 
+    val isDozing: Boolean
+        get() = dozeFraction > 0.5f
+
     private var measuredBaseline = 0
 
     var lockscreenColor = Color.WHITE
@@ -195,6 +198,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
     override fun onTouchEvent(evt: MotionEvent): Boolean {
         if (super.onTouchEvent(evt)) return true
+        if (isDozing) return false
 
         if (clockFidgetAnimation() && evt.action == MotionEvent.ACTION_DOWN) {
             val pt = VPointF(evt.x, evt.y)
@@ -240,7 +244,6 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
         updateTextBounds()
 
-        val isDozing = dozeFraction > 0.5f
         textAnimator.setTextStyle(
             TextAnimator.Style(fVar = fontVariations.getStandard(isDozing)),
             TextAnimator.Animation(
@@ -462,7 +465,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
         onAnimateTransient(
             TextAnimator.Style(fVar = fontVariations.fidget),
-            TextAnimator.Style(fVar = fontVariations.lockscreen),
+            TextAnimator.Style(fVar = fontVariations.getStandard(isDozing)),
             TextAnimator.Animation(
                 animate = isAnimationEnabled,
                 duration = FIDGET_ANIMATION_DURATION,
@@ -662,7 +665,6 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             return
         }
 
-        val isDozing = dozeFraction > 0.5f
         setInterpolatorPaint(
             isDozing,
             TextAnimator.Style(
@@ -726,7 +728,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
         val CHARGE_INTERPOLATOR = PathInterpolator(0.26873f, 0f, 0.45042f, 1f)
         val CHARGE_DISTS =
             listOf(
-                AxisAnimation(GSFAxes.WEIGHT, 400f),
+                AxisAnimation(GSFAxes.WEIGHT, 200f),
                 AxisAnimation(GSFAxes.WIDTH, 0f),
                 AxisAnimation(GSFAxes.ROUND, 0f),
                 AxisAnimation(GSFAxes.SLANT, 0f),

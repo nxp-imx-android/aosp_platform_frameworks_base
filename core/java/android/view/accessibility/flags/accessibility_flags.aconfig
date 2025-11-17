@@ -52,6 +52,14 @@ flag {
 }
 
 flag {
+    name: "a11y_math_api"
+    namespace: "accessibility"
+    description: "Enables new APIs for an app to convey mathematical expressions."
+    bug: "394599112"
+    is_exported: true
+}
+
+flag {
     name: "a11y_overlay_callbacks"
     is_exported: true
     namespace: "accessibility"
@@ -282,10 +290,10 @@ flag {
 }
 
 flag {
-    name: "request_rectangle_deprecate_legacy_apis"
+    name: "request_rectangle_migrate_legacy_apis"
     namespace: "accessibility"
-    description: "Deprecate legacy requestRectangleOnScreen APIs that do not pass the source parameter"
-    bug: "455950272"
+    description: "Update calls to legacy requestRectangleOnScreen APIs to use the new API and pass a source parameter"
+    bug: "456809623"
 }
 
 flag {

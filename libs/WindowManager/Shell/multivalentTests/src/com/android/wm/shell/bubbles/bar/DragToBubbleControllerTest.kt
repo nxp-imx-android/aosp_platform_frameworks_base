@@ -65,7 +65,7 @@ class DragToBubbleControllerTest {
             isSmallTablet = false,
             isLandscape = false,
             isRtl = false,
-            insets = Insets.of(0, 0, 0, 0)
+            insets = Insets.of(0, 0, 0, 0),
         )
     private val bubblePositioner = BubblePositioner(context, deviceConfig)
     private val bubbleController: BubbleController = mock {
@@ -244,10 +244,8 @@ class DragToBubbleControllerTest {
     }
 
     private fun prepareBubbleController(
-        bubbleBarLocation: BubbleBarLocation = BubbleBarLocation.RIGHT,
+        bubbleBarLocation: BubbleBarLocation = BubbleBarLocation.RIGHT
     ) {
-        bubbleController.stub {
-            on { getBubbleBarLocation() } doReturn bubbleBarLocation
-        }
+        bubbleController.stub { on { getBubbleBarLocation() } doReturn bubbleBarLocation }
     }
 }

@@ -1067,20 +1067,6 @@ public class DisplayRotation {
     }
 
     /**
-     * If this is true we have updated our desired orientation, but not yet changed the real
-     * orientation our applied our screen rotation animation. For example, because a previous
-     * screen rotation was in progress.
-     *
-     * @return {@code true} if the there is an ongoing rotation change.
-     */
-    boolean needsUpdate() {
-        final int oldRotation = mRotation;
-        final int rotation = rotationForOrientation(mLastOrientation, oldRotation);
-        return oldRotation != rotation;
-    }
-
-
-    /**
      * Resets whether the screen can be rotated via the accelerometer in all 4 rotations as the
      * default behavior.
      *

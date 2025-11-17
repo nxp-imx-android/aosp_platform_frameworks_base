@@ -125,8 +125,7 @@ class BubbleTaskView @JvmOverloads constructor(
         if (BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
             task?.let { t ->
                 val bubble = bubbleController.getBubble(t)
-                if ((bubble != null && bubble.isChat)
-                    || bubbleController.shouldBeAppBubble(t)) {
+                if (bubble == null || bubble.isChat || bubbleController.shouldBeAppBubble(t)) {
                     if (Flags.bugDontRemoveTaskBubble()) {
                         taskView.unregisterTask()
                         taskView.release()

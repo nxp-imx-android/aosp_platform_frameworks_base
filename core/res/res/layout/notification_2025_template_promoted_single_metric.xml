@@ -29,53 +29,55 @@
         android:orientation="vertical"
         >
 
-        <LinearLayout
+        <com.android.internal.widget.PromotedSingleMetricNotificationFrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="top"
-            android:paddingEnd="@dimen/notification_2025_margin"
+            android:layout_weight="1"
+            android:layout_gravity="top"
             >
 
-            <!-- Left Group: Header and Label -->
-            <FrameLayout
-                android:layout_width="0dp"
+            <include layout="@layout/notification_2025_template_header" />
+
+            <!-- Note: the top margin is being set in code based on the estimated space needed for
+            the header text. -->
+            <LinearLayout
+                android:id="@+id/notification_main_column"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_marginStart="@dimen/notification_2025_content_margin_start"
+                android:layout_marginEnd="@dimen/notification_2025_margin"
                 android:orientation="vertical"
                 >
-                <include layout="@layout/notification_2025_template_header" />
-
-                <com.android.internal.widget.RemeasuringLinearLayout
-                    android:id="@+id/notification_main_column"
+                <com.android.internal.widget.ImageFloatingTextView
+                    style="@style/NotificationExpandedSingleMetricLabel"
+                    android:id="@+id/metric_label_0"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_gravity="top"
-                    >
-                <TextView
-                    android:id="@+id/metric_label_0"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|start"
+                    android:minHeight="@dimen/notification_text_height"
+                    android:ellipsize="end"
+                    android:fadingEdge="horizontal"
+                    android:gravity="top"
                     android:maxLines="1"
-                    android:layout_marginStart="@dimen/notification_2025_content_margin_start"
-                    style="@style/NotificationExpandedSingleMetricLabel"
+                    android:textAlignment="viewStart"
                     />
-                </com.android.internal.widget.RemeasuringLinearLayout>
-            </FrameLayout>
+            </LinearLayout>
 
-            <!-- Right Group: Metric Value and Chronometer -->
-            <LinearLayout
+            <!--Metric Value and Chronometer -->
+            <FrameLayout
+                android:id="@+id/metric_value_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/notification_2025_margin"
-                android:layout_gravity="end|top"
-                android:layout_marginStart="@dimen/notification_2025_margin">                                                │ >
+                android:layout_gravity="top|end"
+                android:paddingLeft="@dimen/notification_2025_margin"
+                android:paddingRight="@dimen/notification_2025_margin"
+                android:layout_marginTop="@dimen/notification_2025_right_icon_vertical_margin">
                 <TextView
                     android:id="@+id/metric_value_0"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:maxWidth="@dimen/notification_single_promoted_metric_value_max_width"
+                    android:gravity="top|end"
                     style="@style/NotificationExpandedSingleMetricValue"
                     />
                 <Chronometer
@@ -83,27 +85,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
+                    android:maxWidth="@dimen/notification_single_promoted_metric_value_max_width"
+                    android:gravity="top|end"
                     style="@style/NotificationExpandedSingleMetricValue"
                     />
-            </LinearLayout>
-        </LinearLayout>
+            </FrameLayout>
+        </com.android.internal.widget.PromotedSingleMetricNotificationFrameLayout>
 
-        <ViewStub
-            android:layout="@layout/notification_2025_reply_history_container"
-            android:id="@+id/notification_material_reply_container"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            />
-
-        <include
-            layout="@layout/notification_template_smart_reply_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/notification_2025_content_margin_start"
-            android:layout_marginEnd="@dimen/notification_2025_margin"
-            android:layout_marginTop="@dimen/notification_2025_smart_reply_container_margin"
-            />
-
-        <include layout="@layout/notification_2025_action_list" />
+            android:layout_gravity="top|start"
+            android:layout_marginTop="-16dp">
+            <include layout="@layout/notification_2025_action_list" />
+        </FrameLayout>
     </LinearLayout>
 </FrameLayout>

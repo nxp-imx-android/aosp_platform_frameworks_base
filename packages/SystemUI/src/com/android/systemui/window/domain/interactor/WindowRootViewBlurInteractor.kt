@@ -27,6 +27,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.window.data.repository.BlurAppliedListener
 import com.android.systemui.window.data.repository.WindowRootViewBlurRepository
 import com.android.systemui.window.shared.model.BlurEffect
@@ -65,7 +66,7 @@ constructor(
             combine(
                     keyguardInteractor.primaryBouncerShowing,
                     keyguardTransitionInteractor
-                        .transitionValue(PRIMARY_BOUNCER)
+                        .transitionValue(Overlays.Bouncer, PRIMARY_BOUNCER)
                         .map { it > 0f }
                         .distinctUntilChanged(),
                 ) { bouncerShowing, bouncerTransitionInProgress ->

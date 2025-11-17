@@ -1044,7 +1044,7 @@ public final class InputMethodManager {
             final var statsToken = ImeTracker.forLogging().onStart(
                     ImeTracker.TYPE_HIDE, ImeTracker.ORIGIN_CLIENT,
                     SoftInputShowHideReason.HIDE_WINDOW_LOST_FOCUS,
-                    false /* fromUser */);
+                    false /* fromUser */, UserHandle.myUserId(), mDisplayId);
             if (android.tracing.Flags.imetrackerProtolog()) {
                 ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG,
                         "onImeFocusLost, hiding IME because of STATE_ALWAYS_HIDDEN");
@@ -2551,7 +2551,8 @@ public final class InputMethodManager {
             @Nullable ResultReceiver resultReceiver, @SoftInputShowHideReason int reason) {
         // TODO(b/303041796): handle tracking physical keyboard and DPAD as user interactions
         final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_SHOW,
-                ImeTracker.ORIGIN_CLIENT, reason, ImeTracker.isFromUser(view));
+                ImeTracker.ORIGIN_CLIENT, reason, ImeTracker.isFromUser(view),
+                UserHandle.myUserId(), mDisplayId);
         return showSoftInput(view, statsToken, flags, resultReceiver, reason);
     }
 
@@ -2627,7 +2628,8 @@ public final class InputMethodManager {
         synchronized (mH) {
             final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT;
             final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_SHOW,
-                    ImeTracker.ORIGIN_CLIENT, reason, false /* fromUser */);
+                    ImeTracker.ORIGIN_CLIENT, reason, false /* fromUser */,
+                    UserHandle.myUserId(), mDisplayId);
 
             Log.w(TAG, "showSoftInputUnchecked() is a hidden method, which will be"
                     + " removed soon. If you are using androidx.appcompat.widget.SearchView,"
@@ -2755,7 +2757,8 @@ public final class InputMethodManager {
 
         if (statsToken == null) {
             statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
-                    ImeTracker.ORIGIN_CLIENT, reason, ImeTracker.isFromUser(initialServedView));
+                    ImeTracker.ORIGIN_CLIENT, reason, ImeTracker.isFromUser(initialServedView),
+                    UserHandle.myUserId(), mDisplayId);
             ImeTracker.forLatency().onRequestHide(statsToken, ImeTracker.ORIGIN_CLIENT, reason,
                     ActivityThread::currentApplication);
         }
@@ -2832,7 +2835,8 @@ public final class InputMethodManager {
 
             final int reason = SoftInputShowHideReason.HIDE_SOFT_INPUT_FROM_VIEW;
             final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
-                    ImeTracker.ORIGIN_CLIENT, reason, ImeTracker.isFromUser(view));
+                    ImeTracker.ORIGIN_CLIENT, reason, ImeTracker.isFromUser(view),
+                    UserHandle.myUserId(), mDisplayId);
             ImeTracker.forLatency().onRequestHide(statsToken,
                     ImeTracker.ORIGIN_CLIENT, reason, ActivityThread::currentApplication);
             ImeTracing.getInstance().triggerClientDump("InputMethodManager#hideSoftInputFromView",
@@ -4021,7 +4025,8 @@ public final class InputMethodManager {
     void closeCurrentInput() {
         final int reason = SoftInputShowHideReason.HIDE_CLOSE_CURRENT_SESSION;
         final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
-                ImeTracker.ORIGIN_CLIENT, reason, false /* fromUser */);
+                ImeTracker.ORIGIN_CLIENT, reason, false /* fromUser */,
+                UserHandle.myUserId(), mDisplayId);
         ImeTracker.forLatency().onRequestHide(statsToken,
                 ImeTracker.ORIGIN_CLIENT, reason,
                 ActivityThread::currentApplication);
@@ -4462,7 +4467,8 @@ public final class InputMethodManager {
     public void hideSoftInputFromInputMethod(IBinder token, @HideFlags int flags) {
         final int reason = SoftInputShowHideReason.HIDE_SOFT_INPUT_IMM_DEPRECATION;
         final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
-                ImeTracker.ORIGIN_CLIENT, reason, false /* fromUser */);
+                ImeTracker.ORIGIN_CLIENT, reason, false /* fromUser */,  UserHandle.myUserId(),
+                mDisplayId);
         InputMethodPrivilegedOperationsRegistry.get(token).hideMySoftInput(statsToken, flags,
                 reason);
     }
@@ -4484,7 +4490,8 @@ public final class InputMethodManager {
     public void showSoftInputFromInputMethod(IBinder token, @ShowFlags int flags) {
         final int reason = SoftInputShowHideReason.SHOW_SOFT_INPUT_IMM_DEPRECATION;
         final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_SHOW,
-                ImeTracker.ORIGIN_CLIENT, reason, false /* fromUser */);
+                ImeTracker.ORIGIN_CLIENT, reason, false /* fromUser */, UserHandle.myUserId(),
+                mDisplayId);
         InputMethodPrivilegedOperationsRegistry.get(token).showMySoftInput(statsToken, flags,
                 reason);
     }

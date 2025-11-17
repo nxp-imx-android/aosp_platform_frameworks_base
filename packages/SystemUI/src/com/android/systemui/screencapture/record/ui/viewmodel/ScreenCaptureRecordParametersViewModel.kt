@@ -18,17 +18,21 @@ package com.android.systemui.screencapture.record.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 class ScreenCaptureRecordParametersViewModel
 @AssistedInject
-constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
-    HydratedActivatable() {
+constructor(
+    private val interactor: ScreenCaptureRecordParametersInteractor,
+    screenRecordCameraInteractor: ScreenRecordCameraInteractor,
+) : HydratedActivatable() {
 
     val audioSource: ScreenRecordingAudioSource? by
         interactor.parameters
@@ -85,9 +89,15 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
             }
         }
 
-    val canUseFrontCamera: Boolean = ScreenCaptureRecordFeaturesInteractor.isSelfieAvailable
+    val canUseFrontCamera: Boolean by
+        if (ScreenCaptureRecordFeaturesInteractor.isSelfieAvailable) {
+                screenRecordCameraInteractor.isCameraSupported
+            } else {
+                flowOf(false)
+            }
+            .hydratedStateOf("ScreenCaptureAudioSourceViewModel#canUseFrontCamera", true)
 
-    fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
+    private fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
         interactor.setAudioSource(audioSource)
     }
 

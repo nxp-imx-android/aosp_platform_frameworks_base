@@ -28,7 +28,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS
 import com.android.systemui.kairos.BuildScope
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.asyncEvent
@@ -73,7 +72,6 @@ import kotlinx.coroutines.delay
  * represents each RAT (LTE, 3G, etc.), as well as can produce an interactor for each individual
  * icon
  */
-@ExperimentalKairosApi
 interface MobileIconsInteractorKairos {
     /** See [MobileConnectionsRepository.mobileIsDefault]. */
     val mobileIsDefault: State<Boolean>
@@ -131,7 +129,6 @@ interface MobileIconsInteractorKairos {
     val isDeviceInEmergencyCallsOnlyMode: State<Boolean>
 }
 
-@ExperimentalKairosApi
 @SysUISingleton
 class MobileIconsInteractorKairosImpl
 @Inject

@@ -27,7 +27,9 @@ import com.android.keyguard.KeyguardSecurityModel.SecurityMode.PIN
 import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
+import com.android.systemui.Flags.FLAG_WAKEFULNESS_FOR_ANIMATIONS
 import com.android.systemui.Flags.glanceableHubV2
+import com.android.systemui.Flags.wakefulnessForAnimations
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.communal.data.repository.communalSceneRepository
@@ -79,6 +81,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
+import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.verify
@@ -140,7 +143,10 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(FLAG_GLANCEABLE_HUB_V2)
+            return FlagsParameterization.allCombinationsOf(
+                FLAG_GLANCEABLE_HUB_V2,
+                FLAG_WAKEFULNESS_FOR_ANIMATIONS
+            )
                 .andSceneContainer()
         }
     }
@@ -403,7 +409,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
 
             // WHEN biometrics succeeds with wake and unlock mode
             powerInteractor.setAwakeForTest()
-            keyguardRepository.setBiometricUnlockState(BiometricUnlockMode.WAKE_AND_UNLOCK)
+            keyguardRepository.setBiometricUnlockState(BiometricUnlockMode.WAKE_AND_DISMISS)
             runCurrent()
 
             assertThat(transitionRepository)
@@ -428,15 +434,42 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
             // WHEN awaked by a request to show the primary bouncer, as can happen if SPFS is
             // touched after boot
             powerInteractor.setAwakeForTest()
-            bouncerRepository.setPrimaryShow(true)
-            advanceTimeBy(60L)
 
-            assertThat(transitionRepository)
-                .startedTransition(
-                    from = KeyguardState.DOZING,
-                    to = KeyguardState.PRIMARY_BOUNCER,
-                    animatorAssertion = { it.isNotNull() },
-                )
+            if (wakefulnessForAnimations()) {
+                runCurrent()
+
+                // Given startedTransition is running twice and we don't have a debounce to club
+                // them together, make sure the right transitions run, and they run atLeastOnce()
+                assertThat(transitionRepository)
+                    .startedTransition(
+                        from = KeyguardState.DOZING,
+                        to = KeyguardState.LOCKSCREEN,
+                        animatorAssertion = { it.isNotNull() },
+                        verificationMode = atLeastOnce(),
+                    )
+
+                bouncerRepository.setPrimaryShow(true)
+
+                runCurrent()
+
+                assertThat(transitionRepository)
+                    .startedTransition(
+                        from = KeyguardState.LOCKSCREEN,
+                        to = KeyguardState.PRIMARY_BOUNCER,
+                        animatorAssertion = { it.isNotNull() },
+                        verificationMode = atLeastOnce(),
+                    )
+            } else {
+                bouncerRepository.setPrimaryShow(true)
+                advanceTimeBy(60L)
+
+                assertThat(transitionRepository)
+                    .startedTransition(
+                        from = KeyguardState.DOZING,
+                        to = KeyguardState.PRIMARY_BOUNCER,
+                        animatorAssertion = { it.isNotNull() },
+                    )
+            }
 
             coroutineContext.cancelChildren()
         }

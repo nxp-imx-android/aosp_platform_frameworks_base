@@ -2922,6 +2922,10 @@ public class TelephonyManager {
     /**
      * Returns the ISO-3166-1 alpha-2 country code equivalent of the MCC (Mobile Country Code) of
      * the current registered operator or the cell nearby, if available.
+     *
+     * <p>If the calling app's target SDK is API level 37 or higher, this method requires
+     * {@code android.permission.QUERY_NETWORK_COUNTRY}.</p>
+     *
      * <p>
      * @return the lowercase 2 character ISO-3166-1 alpha-2 country code, or empty string if not
      * available.
@@ -2929,6 +2933,9 @@ public class TelephonyManager {
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_RADIO_ACCESS}.
      */
+    @FlaggedApi(Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
+    @RequiresPermission(value = android.Manifest.permission.QUERY_NETWORK_COUNTRY,
+            conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public String getNetworkCountryIso() {
         return getNetworkCountryIso(getSlotIndex());
@@ -2940,6 +2947,9 @@ public class TelephonyManager {
      * {@link #getNetworkCountryIso()} but allowing specifying the SIM slot index. This is used for
      * accessing network country info from the SIM slot that does not have SIM inserted.
      *
+     * <p>If the calling app's target SDK is API level 37 or higher, this method requires
+     * {@code android.permission.QUERY_NETWORK_COUNTRY}.</p>
+     *
      * @param slotIndex the SIM slot index to get network country ISO.
      *
      * @return the lowercase 2 character ISO-3166-1 alpha-2 country code, or empty string if not
@@ -2950,6 +2960,9 @@ public class TelephonyManager {
      *          {@link PackageManager#FEATURE_TELEPHONY_RADIO_ACCESS}.
      *
      */
+    @FlaggedApi(Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
+    @RequiresPermission(value = android.Manifest.permission.QUERY_NETWORK_COUNTRY,
+            conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     @NonNull
     public String getNetworkCountryIso(int slotIndex) {
@@ -4566,7 +4579,10 @@ public class TelephonyManager {
      *
      * <p>Starting with API level 29, persistent device identifiers are guarded behind additional
      * restrictions, and apps are recommended to use resettable identifiers (see <a
-     * href="/training/articles/user-data-ids">Best practices for unique identifiers</a>). This
+     * href="/training/articles/user-data-ids">Best practices for unique identifiers</a>).
+     *
+     * <p> Starting with targetSdkVersion 37, the calling app must *also* hold the
+     * {@code android.permission.QUERY_NETWORK_IDENTIFIERS} permission. This
      * method can be invoked if one of the following requirements is met:
      * <ul>
      *     <li>If the calling app has been granted the READ_PRIVILEGED_PHONE_STATE permission; this
@@ -4596,7 +4612,9 @@ public class TelephonyManager {
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      */
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
-    @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+    @FlaggedApi(Flags.FLAG_GUARD_IDENTIFIER_AND_NETWORK_COUNTRY_APIS)
+    @RequiresPermission(allOf = {android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE,
+            android.Manifest.permission.QUERY_NETWORK_IDENTIFIERS}, conditional = true)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     public String getSubscriberId() {
         return getSubscriberId(getSubId());
@@ -10906,7 +10924,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
     @RequiresPermission(READ_PRIVILEGED_PHONE_STATE)
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     public @TtyMode int getCurrentTtyMode() {
         try {
             ITelephony telephony = getITelephony();
@@ -12359,14 +12377,14 @@ public class TelephonyManager {
     /**
      * TTY (teletypewriter) mode is off.
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     public static final int TTY_MODE_OFF = 0;
 
     /**
      * TTY (teletypewriter) mode is on. The speaker is off and the microphone is muted. The user
      * will communicate with the remote party by sending and receiving text messages.
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     public static final int TTY_MODE_FULL = 1;
 
     /**
@@ -12374,7 +12392,7 @@ public class TelephonyManager {
      * speaker is on. The user will communicate with the remote party by sending text messages and
      * hearing an audible reply.
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     public static final int TTY_MODE_HCO = 2;
 
     /**
@@ -12382,7 +12400,7 @@ public class TelephonyManager {
      * microphone is still on. User will communicate with the remote party by speaking and receiving
      * text message replies.
      */
-    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
+    @FlaggedApi(android.telecom.flags.Flags.FLAG_MOVE_GET_TTY_MODE_TO_TELEPHONY_MANAGER)
     public static final int TTY_MODE_VCO = 3;
 
     /** @hide */
@@ -18078,6 +18096,23 @@ public class TelephonyManager {
         } else {
             return PhoneCapability.DEFAULT_SSSS_CAPABILITY;
         }
+    }
+
+    /**
+     * Get the modem service name.
+     * @return the service name of the modem service which bind to.
+     * @hide
+     */
+    public String getModemService() {
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.getModemService();
+            }
+        } catch (RemoteException ex) {
+            Rlog.e(TAG, "getModemService RemoteException", ex);
+        }
+        return null;
     }
 
     /**

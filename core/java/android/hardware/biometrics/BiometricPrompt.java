@@ -506,7 +506,7 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
                 throw new IllegalArgumentException(
                         "Maximum fallback option count of " + MAX_FALLBACK_OPTIONS + " exceeded");
             }
-            mPromptInfo.addFallbackOption(new FallbackOption(text, iconType + 4));
+            mPromptInfo.addFallbackOption(new FallbackOption(text, iconType));
             mFallbackOptions[mFallbackOptionCount] = new ButtonInfo(executor, listener);
             mFallbackOptionCount++;
             return this;

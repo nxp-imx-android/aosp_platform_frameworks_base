@@ -23,7 +23,6 @@ interface ClockContext {
     val context: Context
     val resources: Resources
     val settings: ClockSettings
-    val typefaceCache: TypefaceCache
     val messageBuffer: MessageBuffer
     val vibrator: Vibrator?
     val timeKeeper: TimeKeeper
@@ -34,7 +33,6 @@ data class ClockContextImpl(
     override val context: Context,
     override val resources: Resources,
     override val settings: ClockSettings,
-    override val typefaceCache: TypefaceCache,
     override val messageBuffer: MessageBuffer,
     override val vibrator: Vibrator?,
     override val timeKeeper: TimeKeeper,

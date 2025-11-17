@@ -243,7 +243,7 @@ java_library {
         "android.hardware.usb.gadget-V1.0-java",
         "android.hardware.usb.gadget-V1.1-java",
         "android.hardware.usb.gadget-V1.2-java",
-        "android.hardware.vibrator-V3-java",
+        "android.hardware.vibrator-V4-java",
         "android.se.omapi-V1-java",
         "android.system.suspend.control.internal-java",
         "devicepolicyprotosnano",

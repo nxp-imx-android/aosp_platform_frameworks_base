@@ -27,7 +27,7 @@ import android.app.admin.DevicePolicyManagerInternal
 import android.app.role.OnRoleHoldersChangedListener
 import android.app.role.RoleManager
 import android.app.supervision.ISupervisionListener
-import android.app.supervision.PackagePolicy
+import android.app.supervision.PackageUsagePolicy
 import android.app.supervision.Policy
 import android.app.supervision.SupervisionManager
 import android.app.supervision.SupervisionRecoveryInfo
@@ -180,6 +180,7 @@ class SupervisionServiceTest {
             UserHandle.ALL,
             false,
         )
+        service.setSupervisionRecoveryInfo(null)
     }
 
     @Test
@@ -959,6 +960,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun canLaunchPinRecovery_noEmailAndAlternativeRecoveryMethods_returnsFalse() {
         injector.setRoleHoldersAsUser(
             RoleManager.ROLE_SUPERVISION,
@@ -980,6 +982,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun canLaunchPinRecovery_hasVerifiedEmailButNoAlternativeRecoveryMethods_returnsTrue() {
         injector.setRoleHoldersAsUser(
             RoleManager.ROLE_SUPERVISION,
@@ -991,6 +994,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_SETTINGS_UI_UPDATES)
     fun canLaunchPinRecovery_noEmailButHasAlternativeRecoveryMethods_returnsTrue() {
         val supervisionPackage = "com.example.supervisionapp"
         injector.setRoleHoldersAsUser(
@@ -1018,22 +1022,25 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyTypeBlockedEnabled_callsSetApplicationHiddenForUserTrue() {
-        setAndVerifyPackageBlockedPolicy(true)
+        setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_BLOCKED)
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyTypeBlockedDisabled_callsSetApplicationHiddenForUserFalse() {
-        setAndVerifyPackageBlockedPolicy(false)
+        setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_ALLOWED)
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyBlocked_sendsNotification() {
         // The app will be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
 
         // The policy is set to blocked.
-        setAndVerifyPackageBlockedPolicy(enabled = true)
+        setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_BLOCKED)
         // After the policy is set, the app is hidden.
         simulatePackageDisappeared(PACKAGE_NAME, USER_ID)
 
@@ -1046,12 +1053,13 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyBlocked_noPendingNotification_doesNotSendNotification() {
         // The app will be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
 
         // The policy is set to blocked.
-        val policy = setAndVerifyPackageBlockedPolicy(enabled = true)
+        val policy = setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_BLOCKED)
         // Verify that hasPendingNotification is true, then manually set it to false.
         val policyData = getPolicyData(policy)
         assertThat(policyData?.hasPendingNotification).isTrue()
@@ -1065,13 +1073,14 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyUnblocked_sendsNotification() {
         // The app will not be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = false)
         val launchIntent = mockPackageLaunchIntent(PACKAGE_NAME)
 
         // The policy is set to unblocked.
-        setAndVerifyPackageBlockedPolicy(enabled = false)
+        setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_ALLOWED)
         // After the policy is set, the app is unhidden.
         simulatePackageAppeared(PACKAGE_NAME, USER_ID)
 
@@ -1084,13 +1093,14 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyUnblocked_noAppIntent_notificationHasNoIntent() {
         // The app will not be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = false)
         mockPackageLaunchIntent(PACKAGE_NAME, launchIntent = null)
 
         // The policy is set to unblocked.
-        setAndVerifyPackageBlockedPolicy(enabled = false)
+        setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_ALLOWED)
         // After the policy is set, the app is unhidden.
         simulatePackageAppeared(PACKAGE_NAME, USER_ID)
 
@@ -1099,6 +1109,7 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyBlocked_packageNotFound_doesNotSendNotification() {
         // The app will be hidden after the policy is set.
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
@@ -1113,7 +1124,7 @@ class SupervisionServiceTest {
             .thenThrow(PackageManager.NameNotFoundException())
 
         // The policy is set to blocked.
-        setAndVerifyPackageBlockedPolicy(enabled = true)
+        setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_BLOCKED)
         // The package disappeared callback is received for some reason.
         simulatePackageDisappeared(PACKAGE_NAME, USER_ID)
 
@@ -1123,18 +1134,33 @@ class SupervisionServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun setPolicy_packagePolicyUnblocked_stillHidden_doesNotSendNotification() {
         // Even after policy is set, the app will still be hidden
         setApplicationHiddenSetting(PACKAGE_NAME, hidden = true)
 
         // The policy is set to unblocked.
-        setAndVerifyPackageBlockedPolicy(enabled = false)
+        setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_ALLOWED)
         // The package disappeared callback is received for some reason.
         simulatePackageDisappeared(PACKAGE_NAME, USER_ID)
 
         // No notification is sent since the app is still hidden.
         verify(mockNotificationManager, never())
             .notifyAsUser(any(), any<Int>(), any<Notification>(), eq(UserHandle.of(USER_ID)))
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    fun getPolicies_returnsExpectedPolicies() {
+
+        // Verify that when no policies are set, an empty list is returned.
+        val policies = service.getPolicies(USER_ID)
+        assertThat(policies).isEmpty()
+
+        val policy = setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_BLOCKED)
+
+        val policiesAfterInsertion = service.getPolicies(USER_ID)
+        assertThat(policiesAfterInsertion).containsExactly(policy)
     }
 
     @Test
@@ -1194,24 +1220,25 @@ class SupervisionServiceTest {
         assertThat(service.hasValidRecoveryMethod(USER_ID)).isTrue()
     }
 
-    private fun setAndVerifyPackageBlockedPolicy(enabled: Boolean): PackagePolicy {
+    private fun setAndVerifyPackageBlockedPolicy(packageUsageType: Int): PackageUsagePolicy {
         val policy =
-            PackagePolicy(
-                /*version=*/ 0,
-                /*packageName=*/ PACKAGE_NAME,
-                /*restrictionType=*/ PackagePolicy.RESTRICTION_TYPE_BLOCKED,
-                enabled,
-            )
+            PackageUsagePolicy.Builder()
+                .setVersion(0)
+                .setPackageName(PACKAGE_NAME)
+                .setType(packageUsageType)
+                .build()
 
         service.setPolicy(USER_ID, policy)
         injector.awaitServiceThreadIdle()
+
+        val expectedEnabled = packageUsageType == PackageUsagePolicy.TYPE_BLOCKED
 
         verify(mockDpmInternal)
             .setApplicationHiddenBySystem(
                 eq(SupervisionManager.SUPERVISION_SYSTEM_ENTITY),
                 eq(PACKAGE_NAME),
                 eq(USER_ID),
-                eq(enabled),
+                eq(expectedEnabled),
             )
         verifySupervisionAppServiceEvent(USER_ID) {
             // Supervision apps are notified of the policy change.
@@ -1365,7 +1392,7 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun onDisableSupervision_clearsPolicies() {
-        setAndVerifyPackageBlockedPolicy(enabled = true)
+        setAndVerifyPackageBlockedPolicy(PackageUsagePolicy.TYPE_BLOCKED)
 
         assertThat(service.getUserDataLocked(USER_ID).policies).isNotEmpty()
 

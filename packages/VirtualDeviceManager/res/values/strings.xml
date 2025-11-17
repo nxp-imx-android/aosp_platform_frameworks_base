@@ -23,10 +23,10 @@
     <!-- START REQUEST COMPUTER CONTROL ACCESS DIALOG -->
 
     <!-- Label for the title of request computer control access dialog [CHAR LIMIT=70] -->
-    <string name="request_computer_control_access_dialog_title">Allow &lt;strong&gt;<xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g>&lt;/strong&gt; to fully automate your apps?</string>
+    <string name="request_computer_control_access_dialog_title">Allow &lt;strong&gt;<xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g>&lt;/strong&gt; to use screen automation to complete tasks for you?</string>
 
     <!-- Label for the description of request computer control access dialog [CHAR LIMIT=NONE] -->
-    <string name="request_computer_control_access_dialog_description">This allows &lt;strong&gt;<xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g>&lt;/strong&gt; to control other apps and see all their on-screen content in order to complete tasks on your behalf.</string>
+    <string name="request_computer_control_access_dialog_description"><xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g> will be able to control other apps and see their on-screen content.</string>
 
     <!-- Label for the allow button for request computer control access dialog. [CHAR LIMIT=40] -->
     <string name="request_computer_control_access_dialog_button_allow">Allow this time</string>
@@ -38,19 +38,6 @@
     <string name="request_computer_control_access_dialog_button_always_allow">Always allow</string>
 
     <!-- END REQUEST COMPUTER CONTROL ACCESS DIALOG -->
-
-    <!-- START NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
-
-    <!-- Label for the title of notify computer control blocked activity [CHAR LIMIT=NONE] -->
-    <string name="notify_computer_control_blocked_activity_title">This agent has requested access to an app it isn’t allowed to open. Take over from the agent or stop the task.</string>
-
-    <!-- Label for the title of notify computer control blocked permission dialog [CHAR LIMIT=NONE] -->
-    <string name="notify_computer_control_blocked_permission_dialog_title">This agent has requested a permission it isn’t allowed to have. Take over from the agent or stop the task.</string>
-
-    <!-- Label for the OK button for notify computer control blocked activity dialog. [CHAR LIMIT=40] -->
-    <string name="notify_computer_control_blocked_activity_button_ok">OK</string>
-
-    <!-- END NOTIFY COMPUTER CONTROL BLOCKED ACTIVITY DIALOG -->
 
     <!-- START AUTOMATED APP LAUNCH WARNING ACTIVITY DIALOG -->
 

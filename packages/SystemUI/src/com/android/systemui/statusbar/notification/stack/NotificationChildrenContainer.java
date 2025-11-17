@@ -50,7 +50,6 @@ import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.CrossFadeHelper;
 import com.android.systemui.statusbar.NotificationGroupingUtil;
-import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.notification.Roundable;
@@ -1848,18 +1847,6 @@ public class NotificationChildrenContainer extends ViewGroup
     public void setHeaderVisibleAmount(float headerVisibleAmount) {
         mHeaderVisibleAmount = headerVisibleAmount;
         mCurrentHeaderTranslation = (int) ((1.0f - headerVisibleAmount) * mTranslationForHeader);
-    }
-
-    /**
-     * Shows the given feedback icon, or hides the icon if null.
-     */
-    public void setFeedbackIcon(@Nullable FeedbackIcon icon) {
-        if (mGroupHeaderWrapper != null) {
-            mGroupHeaderWrapper.setFeedbackIcon(icon);
-        }
-        if (mMinimizedGroupHeaderWrapper != null) {
-            mMinimizedGroupHeaderWrapper.setFeedbackIcon(icon);
-        }
     }
 
     public void setRecentlyAudiblyAlerted(boolean audiblyAlertedRecently) {

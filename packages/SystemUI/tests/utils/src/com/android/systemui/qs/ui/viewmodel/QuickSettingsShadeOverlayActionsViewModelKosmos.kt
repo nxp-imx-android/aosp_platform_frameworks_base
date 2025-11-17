@@ -29,3 +29,17 @@ val Kosmos.quickSettingsShadeOverlayActionsViewModelFactory by
             }
         }
     }
+
+val Kosmos.quickSettingsShadeOverlayViewModelFactory by
+    Kosmos.Fixture {
+        object : QuickSettingsShadeOverlayActionsViewModel.Factory {
+            override fun create(): QuickSettingsShadeOverlayActionsViewModel {
+                return QuickSettingsShadeOverlayActionsViewModel(
+                    editModeViewModel = editModeViewModel
+                )
+            }
+        }
+    }
+
+val Kosmos.quickSettingsShadeOverlayActionsViewModel by
+    Kosmos.Fixture { quickSettingsShadeOverlayViewModelFactory.create() }

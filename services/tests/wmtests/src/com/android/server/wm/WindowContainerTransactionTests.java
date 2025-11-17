@@ -605,6 +605,63 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
     }
 
+    @Test
+    public void testReparentTasks_reparentTopOnly() {
+        // Setup: parentTask1 has two children, parentTask2 is empty.
+        final Task parentTask1 = new TaskBuilder(mSupervisor)
+                .setCreatedByOrganizer(true)
+                .build();
+        final Task parentTask2 = new TaskBuilder(mSupervisor)
+                .setCreatedByOrganizer(true)
+                .build();
+        // Unused child task 1.
+        new TaskBuilder(mSupervisor)
+                .setParentTask(parentTask1)
+                .build();
+        final Task childTask2 = new TaskBuilder(mSupervisor)
+                .setParentTask(parentTask1)
+                .build();
+        final Task childTask3 = new TaskBuilder(mSupervisor)
+                .setParentTask(parentTask1)
+                .build();
+        // `childTask3` is on top of `parentTask1`.
+        // `parentTask1` has children 3, 2, 1 from top to bottom.
+        parentTask1.positionChildAtTop(childTask3);
+
+        assertEquals(3, parentTask1.getChildCount());
+        assertEquals(0, parentTask2.getChildCount());
+        assertSame(childTask3, parentTask1.getTopChild());
+
+        // Reparent only the top task from parentTask1 to parentTask2.
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.reparentTasks(parentTask1.getTaskInfo().token,
+                parentTask2.getTaskInfo().token, null /* windowingModes */,
+                null /* activityTypes */, true /* onTop */, true /* reparentTopOnly */);
+        applyTransaction(wct);
+
+        // Verification: childTask3 moved to parentTask2, childTask1 and childTask2 remain.
+        // `parentTask1` has children 2, 1 and `parentTask2` has the child 3 from top to
+        // bottom.
+        assertEquals(2, parentTask1.getChildCount());
+        assertEquals(1, parentTask2.getChildCount());
+        assertSame(childTask2, parentTask1.getTopChild());
+        assertSame(childTask3, parentTask2.getTopChild());
+
+        // Reparent all remaining tasks from parentTask1 to parentTask2.
+        wct = new WindowContainerTransaction();
+        wct.reparentTasks(parentTask1.getTaskInfo().token,
+                parentTask2.getTaskInfo().token, null /* windowingModes */,
+                null /* activityTypes */, true /* onTop */, false /* reparentTopOnly */);
+        applyTransaction(wct);
+
+        // Verification: childTask1 and childTask2 also moved to parentTask2.
+        assertEquals(0, parentTask1.getChildCount());
+        assertEquals(3, parentTask2.getChildCount());
+        // Note that since `onTop` is `true`, children 2 and 1 should preserve their order
+        // in `parentTask2`. So `parentTask2` has now children 2, 1 and 3, from top to bottom.
+        assertSame(childTask2, parentTask2.getTopChild());
+    }
+
     private Task createTask(int taskId) {
         return new Task.Builder(mAtm)
                 .setTaskId(taskId)
@@ -620,4 +677,3 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         }
     }
 }
-

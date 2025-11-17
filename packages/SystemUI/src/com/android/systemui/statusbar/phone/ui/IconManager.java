@@ -35,7 +35,7 @@ import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.statusbar.StatusBarIcon.Shape;
 import com.android.systemui.Flags;
 import com.android.systemui.demomode.DemoModeCommandReceiver;
-import com.android.systemui.kairos.ExperimentalKairosApi;
+
 import com.android.systemui.kairos.KairosNetwork;
 import com.android.systemui.statusbar.BaseStatusBarFrameLayout;
 import com.android.systemui.statusbar.StatusBarIconView;
@@ -72,7 +72,6 @@ import java.util.Map;
 /**
  * Turns info from StatusBarIconController into ImageViews in a ViewGroup.
  */
-@OptIn(markerClass = ExperimentalKairosApi.class)
 public class IconManager implements DemoModeCommandReceiver {
     protected final ViewGroup mGroup;
     private final MobileContextProvider mMobileContextProvider;

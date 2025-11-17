@@ -48,7 +48,6 @@ flag {
     bug: "372031023"
 }
 
-
 flag {
     name: "add_type_info_to_wakelock_tag"
     namespace: "backstage_power"
@@ -57,4 +56,11 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "get_pending_job_reason_stats_api"
+    namespace: "backstage_power"
+    description: "Introduce a new getPendingJobReasonStats() API which returns a holistic view of which constraints contributed the most to why a job remained pending."
+    bug: "448485520"
 }

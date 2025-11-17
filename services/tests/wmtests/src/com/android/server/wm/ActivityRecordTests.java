@@ -137,6 +137,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -3576,6 +3577,20 @@ public class ActivityRecordTests extends WindowTestsBase {
                 activity.getRequestedOverrideConfiguration().densityDpi);
         assertEquals(Configuration.COLOR_MODE_UNDEFINED,
                 activity.getRequestedOverrideConfiguration().colorMode);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB)
+    public void testCapturedLink() {
+        final ActivityRecord activity1 = createActivityWithTask();
+        final ActivityRecord activity2 = createActivityRecord(activity1.getTask());
+        activity2.intent.setAction(Intent.ACTION_VIEW);
+        activity2.intent.setData(Uri.parse("https://source.android.com/"));
+        activity2.setState(RESUMED, "test");
+        assertNotNull(activity1.getTask().getTaskInfo().capturedLink);
+
+        activity2.makeFinishingLocked();
+        assertNull(activity1.getTask().getTaskInfo().capturedLink);
     }
 
     private ActivityRecord setupDisplayAndActivityForCameraCompat(boolean isCameraRunning,

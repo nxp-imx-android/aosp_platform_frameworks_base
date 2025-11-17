@@ -36,7 +36,7 @@ public class ContextInsightTest {
     public void testContextInsightWrapperParcelUnparcel() {
         final int inputValue = 1234;
         final String dataKey = "test-key";
-        final BundleHint hint = new BundleHint();
+        final BundleHint hint = new BundleHint.Builder().build();
         hint.getDataBundle().putInt(dataKey, inputValue);
 
         final BundleInsight insight = new BundleInsight.Builder().build();

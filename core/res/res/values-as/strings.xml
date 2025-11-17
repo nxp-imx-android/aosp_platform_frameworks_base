@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"শুনাৰ ডিভাইচ"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"সাধ্য সুবিধাৰ ব্যৱহাৰ"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"ডিছপ্লে’"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"অভিভাৱকীয় নিয়ন্ত্ৰণ"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g>এ বেটাৰী ব্যৱহাৰ কৰি আছে"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g>টা এপে বেটাৰী ব্যৱহাৰ কৰি আছে"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"বেটাৰী আৰু ডেটাৰ ব্যৱহাৰৰ বিষয়ে সবিশেষ জানিবলৈ টিপক"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"আনলক কৰিবলৈ পিন লিখক"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ভুল পিন ক\'ড।"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"আনলক কৰিবলৈ মেনু টিপাৰ পাছত ০ টিপক।"</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"জৰুৰীকালীন নম্বৰ"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"কোনো সেৱা নাই"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"স্ক্ৰীন লক কৰা হ’ল।"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"আনলক কৰিবলৈ বা জৰুৰীকালীন কল কৰিবলৈ মেনু টিপক।"</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ছিষ্টেমৰ সম্পদৰ সতৰ্কবাৰ্তা"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"সম্পদৰ অতি ব্যৱহাৰ"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"’<xliff:g id="APP_NAME">%1$s</xliff:g> এপে অতি বেছি সম্পদ ব্যৱহাৰ কৰি আছে।\""</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"আপোনাৰ অভিভাৱকে কৰা আপডে’ট"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g>ক এতিয়া বাবে আঁতৰোৱা হৈছে"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"এতিয়া <xliff:g id="APP_NAME">%1$s</xliff:g> উপলব্ধ"</string>
 </resources>

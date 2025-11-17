@@ -36,6 +36,7 @@ import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpape
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION
 import com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION
@@ -53,6 +54,7 @@ class DesksTransitionObserver(
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     @ShellMainThread private val mainScope: CoroutineScope,
     private val desktopModeEventLogger: DesktopModeEventLogger,
+    private val shellController: ShellController,
 ) {
     // Tracks the desk transitions used to keep track of the desk state. This is usually removed
     // when the transition is ready. This map represents what a single shell transition is causing
@@ -349,7 +351,11 @@ class DesksTransitionObserver(
             }
             val changeUserId = taskInfo.userId
             if (change in desktopWallpaperChanges) {
-                logD("Desktop wallpaper change")
+                // The [changeUserId] can't be used here because the DesktopWallpaperActivity uses
+                // |showForAllUsers|, so the task's userId won't reflect the user seeing this
+                // change.
+                val userId = shellController.currentUserId
+                logD("Desktop wallpaper change, currentUserId=%d", userId)
                 if (hasSeenDesk) {
                     logD("Saw desk change before desktop wallpaper change, skipping")
                     continue
@@ -357,7 +363,6 @@ class DesksTransitionObserver(
                 when {
                     change.isToBack() -> {
                         // The desktop wallpaper is moving to back without seeing a desk first.
-                        val userId = changeUserId
                         val repository = desktopUserRepositories.getProfile(userId)
                         val activeDeskId = repository.getActiveDeskId(change.endDisplayId)
                         if (activeDeskId != null) {
@@ -388,12 +393,12 @@ class DesksTransitionObserver(
                         // This is valid state, but since we don't expect desks to activate
                         // without user action, check that the desk was supposed to be active, and
                         // if not, deactivate it.
-                        val repository = desktopUserRepositories.getProfile(changeUserId)
+                        val repository = desktopUserRepositories.getProfile(userId)
                         val activeDeskId = repository.getActiveDeskId(change.endDisplayId)
                         logD(
                             "Found desktop wallpaper without a desk in front for userId=%d " +
                                 "activeDeskId=%d",
-                            changeUserId,
+                            userId,
                             activeDeskId,
                         )
                         if (activeDeskId != null) {

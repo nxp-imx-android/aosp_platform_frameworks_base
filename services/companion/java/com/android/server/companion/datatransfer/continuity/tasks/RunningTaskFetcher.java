@@ -22,8 +22,6 @@ import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityTaskManager;
 import android.app.AppOpsManager;
 import android.app.HandoffActivityParams;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffOptions;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
@@ -44,36 +42,17 @@ public class RunningTaskFetcher {
     private final int mUserId;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
-    private final PackageManager mPackageManager;
     private final AppOpsManager mAppOps;
 
     public RunningTaskFetcher(
             int userId,
             @NonNull ActivityTaskManager activityTaskManager,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-            @NonNull PackageManager packageManager,
             @NonNull AppOpsManager appOps) {
         mUserId = userId;
         mActivityTaskManager = Objects.requireNonNull(activityTaskManager);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
-        mPackageManager = Objects.requireNonNull(packageManager);
         mAppOps = Objects.requireNonNull(appOps);
-    }
-
-    @Nullable
-    public RemoteTaskInfo getRunningTaskById(int taskId) {
-        RemoteTaskInfo taskInfo =
-                getRunningTasks().stream()
-                        .filter(info -> info.id() == taskId)
-                        .findFirst()
-                        .orElse(null);
-
-        if (taskInfo == null) {
-            Slog.w(TAG, "Could not find RunningTaskInfo for taskId: " + taskId);
-            return null;
-        }
-
-        return taskInfo;
     }
 
     @NonNull
@@ -140,17 +119,6 @@ public class RunningTaskFetcher {
             return false;
         }
 
-        Intent intent = new Intent("android.intent.action.MAIN");
-        intent.addCategory("android.intent.category.HOME");
-        String defaultLauncherPackage =
-                mPackageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-                        .activityInfo
-                        .packageName;
-        if (defaultLauncherPackage == null) {
-            Slog.w(TAG, "Could not get default launcher package");
-            return true;
-        }
-
         if (mAppOps.noteOpNoThrow(
                         AppOpsManager.OP_CONTINUE_ACROSS_DEVICES,
                         taskInfo.userId,
@@ -163,6 +131,6 @@ public class RunningTaskFetcher {
             return false;
         }
 
-        return !defaultLauncherPackage.equals(taskInfo.baseActivity.getPackageName());
+        return true;
     }
 }

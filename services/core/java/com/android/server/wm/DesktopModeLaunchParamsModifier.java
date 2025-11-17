@@ -42,9 +42,7 @@ import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.DesktopModeCompatPolicy;
-import com.android.internal.protolog.ProtoLog;
-import com.android.internal.protolog.WmProtoLogGroups;
-import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
+import com.android.server.wm.LaunchParamsController.DefaultLaunchParamsModifier;
 import com.android.window.flags.Flags;
 
 import java.util.Objects;
@@ -53,10 +51,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The class that defines default launch params for tasks in desktop mode
  */
-class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
+class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
     private static final String ACTION_DRAG_DROP_VIEW =
             "org.chromium.chrome.browser.dragdrop.action.VIEW";
-    private StringBuilder mLogBuilder;
 
     @NonNull
     private final Context mContext;
@@ -81,9 +78,10 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             @NonNull LaunchParamsController.LaunchParams currentParams,
             @NonNull LaunchParamsController.LaunchParams outParams) {
 
-        initLogBuilder(phase, task, activity);
+        initLogBuilder("DesktopModeLaunchParamsModifier", phase, task, activity);
         int result = calculate(task, layout, activity, source, options, request, phase,
                 currentParams, outParams);
+        mResult = result;
         outputLog();
         return result;
     }
@@ -109,7 +107,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 + " suggested-display-area=" + suggestedDisplayArea);
 
         if (!isDesktopModeSupportedOnDisplay(display)) {
-            appendLog("desktop mode is not supported on displayId: ", display.getDisplayId());
+            appendLog("desktop mode is not supported on displayId=" + display.getDisplayId());
             return RESULT_SKIP;
         }
 
@@ -147,6 +145,12 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 // Windowing mode is resolved by desktop-first policy but not ready to resolve
                 // bounds since task is null, return RESULT_DONE to prevent other modifiers from
                 // overwriting the params.
+                return RESULT_DONE;
+            }
+            if (Flags.enableDesktopFirstPolicyFullscreenDecisionBugfix()
+                    && outParams.mWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+                // The desktop-first policy decides to use WINDOWING_MODE_FULLSCREEN with intention,
+                // return RESULT_DONE to prevent other modifiers from overwriting the params.
                 return RESULT_DONE;
             }
             hasLaunchWindowingMode = true;
@@ -265,7 +269,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 // We are in desktop, return result done to prevent other modifiers from
                 // modifying exiting task bounds or resolved windowing mode.
                 outParams.mBounds.set(overrideTaskBounds);
-                appendLog("task-has-override-bounds=%s", overrideTaskBounds);
+                appendLog("task-has-override-bounds=" + overrideTaskBounds);
                 return RESULT_DONE;
             }
         }
@@ -277,14 +281,14 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         if (inheritedBounds != null) {
             appendLog("inheriting bounds from existing closing instance");
             outParams.mBounds.set(inheritedBounds);
-            appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
+            appendLog("final desktop mode task bounds set to " + outParams.mBounds);
             // Return result done to prevent other modifiers from changing or cascading bounds.
             return RESULT_DONE;
         }
 
         DesktopModeBoundsCalculator.updateInitialBounds(task, layout, targetActivity, options,
                 display, outParams, this::appendLog);
-        appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
+        appendLog("final desktop mode task bounds set to " + outParams.mBounds);
         if (options != null && options.getFlexibleLaunchSize()) {
             // Return result done to prevent other modifiers from respecting option bounds and
             // applying further cascading. Since other modifiers are being skipped in this case,
@@ -566,18 +570,5 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
     private boolean isClosingExitingInstance(int intentFlags) {
         return (intentFlags & FLAG_ACTIVITY_CLEAR_TASK) != 0
                 || (intentFlags & FLAG_ACTIVITY_MULTIPLE_TASK) == 0;
-    }
-
-    private void initLogBuilder(int phase, Task task, ActivityRecord activity) {
-        mLogBuilder = new StringBuilder("DesktopModeLaunchParamsModifier: phase= " + phase
-                + " task=" + task + " activity=" + activity);
-    }
-
-    private void appendLog(String format, Object... args) {
-        mLogBuilder.append(" ").append(String.format(format, args));
-    }
-
-    private void outputLog() {
-        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_TASKS_LAUNCH_PARAMS, "%s", mLogBuilder.toString());
     }
 }

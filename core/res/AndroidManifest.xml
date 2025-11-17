@@ -1302,6 +1302,15 @@
                 android:description="@string/permdesc_readMediaImages"
                 android:protectionLevel="dangerous" />
 
+   <!-- Allows an application to read document files from external storage.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(android.permission.flags.Flags.FLAG_READ_MEDIA_DOCUMENTS_PERMISSION_ENABLED) -->
+    <permission android:name="android.permission.READ_MEDIA_DOCUMENTS"
+                android:label="@string/permlab_readMediaDocuments"
+                android:description="@string/permdesc_readMediaDocuments"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.permission.flags.read_media_documents_permission_enabled" />
+
     <!-- Allows an application to read image or video files from external storage that a user has
       selected via the permission prompt photo picker. Apps can check this permission to verify that
       a user has decided to use the photo picker, instead of granting access to
@@ -2702,6 +2711,14 @@
     <permission android:name="android.permission.NFC_SET_CONTROLLER_ALWAYS_ON"
         android:protectionLevel="signature|privileged" />
 
+    <!-- @SystemApi Allows applications to perform NFC gesture exchanges.
+         <p>Protection level: signature|privileged
+         @FlaggedApi(com.android.nfc.module.flags.Flags.FLAG_TAP_TO_X)
+         @hide -->
+    <permission android:name="android.permission.PERFORM_GESTURE_EXCHANGE"
+         android:protectionLevel="signature|privileged"
+         android:featureFlag="com.android.nfc.module.flags.tap_to_x"/>
+
     <!-- @SystemApi Allows an internal user to use privileged SecureElement APIs.
          Applications holding this permission can access OMAPI reset system API
          and bypass OMAPI AccessControlEnforcer.
@@ -2864,6 +2881,15 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.os.vibrator.vendor_vibration_effects" />
 
+    <!-- @SystemApi Allows access to start a haptic generator session.
+         <p>Protection level: signature|privileged|vendor privileged
+        @FlaggedApi(android.os.vibrator.Flags.FLAG_HAPTIC_PCM_GENERATION)
+        @hide
+    -->
+    <permission android:name="android.permission.USE_VIBRATOR_HAPTIC_GENERATOR"
+        android:protectionLevel="signature|privileged|vendorPrivileged"
+        android:featureFlag="android.os.vibrator.haptic_pcm_generation" />
+
     <!-- @SystemApi Allows access to the vibrator state.
          <p>Protection level: signature
          @hide
@@ -2953,6 +2979,24 @@
                 android:protectionLevel="normal"
                 android:featureFlag="com.android.window.flags.screen_recording_callbacks" />
 
+    <!-- Allows an assistant application to read screen content in the AssistStructure.
+
+         <p class="note"><strong>Note:</strong> Beginning with
+         {@link Android C android.os.Build.VERSION_CODES.CINNAMON_BUN } This
+         permission is required by any VoiceInteractionService that wishes to
+         receive screen content in the AssistStructure when the assistant's
+         VoiceInteractionService is invoked either via hotword detection or from the system.
+         If this permission is not held, the AssistStructure will only obtain window data and will
+         omit any screen content from the provided AssistStructure.
+
+         <p>Protection level: normal
+         @FlaggedApi(android.permission.flags.Flags.FLAG_RESTRICT_ASSIST_STRUCTURE_SCREEN_CONTENT_ENABLED)
+     -->
+    <permission
+        android:name="android.permission.READ_ASSIST_STRUCTURE_SCREEN_CONTENT"
+        android:protectionLevel="normal"
+        android:featureFlag="android.permission.flags.restrict_assist_structure_screen_content_enabled" />
+
     <!-- ======================================== -->
     <!-- Permissions for factory reset protection -->
     <!-- ======================================== -->
@@ -2986,6 +3030,12 @@
          @hide -->
     <permission android:name="android.permission.MANAGE_USB"
         android:protectionLevel="signature|privileged" />
+
+    <!-- Allows an application to manage app accesses for peripheral serial ports
+         @hide -->
+    <permission android:name="android.permission.MANAGE_SERIAL_PORTS"
+        android:protectionLevel="signature"
+        android:featureFlag="android.hardware.serial.flags.enable_wired_serial_api" />
 
     <!-- @SystemApi Allows an application to manage Android Debug Bridge settings.
          <p>Not for use by third-party applications.
@@ -3599,6 +3649,7 @@
          @hide @FlaggedApi("android.multiuser.hsu_allowlist_activities")
     -->
     <permission android:name="android.permission.MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS"
+        android:featureFlag="android.multiuser.hsu_allowlist_activities"
         android:protectionLevel="signature|privileged|development" />
 
     <!-- Allows an application to access data blobs across users. -->
@@ -7642,6 +7693,15 @@
     <permission android:name="android.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION"
         android:protectionLevel="signature" />
 
+    <!-- @SystemApi @hide Allows an application to query domain verification.
+         <p>Not for use by third-party applications.
+         @FlaggedApi(android.content.pm.Flags.FLAG_ENABLE_QUERY_DOMAIN_VERIFICATION)
+    -->
+    <permission
+        android:name="android.permission.QUERY_DOMAIN_VERIFICATION"
+        android:protectionLevel="signature|module"
+        android:featureFlag="android.content.pm.enable_query_domain_verification" />
+
     <!-- @SystemApi Allows applications to access serial ports via the SerialManager.
          @hide -->
     <permission android:name="android.permission.SERIAL_PORT"
@@ -8518,7 +8578,7 @@
 
     <!-- Required for apps to post promoted notifications.
          <p>This is required in addition to (not instead of)
-         {@link android.app.Manifest.permission#POST_NOTIFICATIONS}.
+         {@link android.Manifest.permission#POST_NOTIFICATIONS}.
          <p>Protection level: normal|appops
          @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION)
          -->
@@ -9771,6 +9831,14 @@
             <valid-purpose android:name="notForIdentification" />
     </permission>
 
+    <!--
+        Permission needed to request to show the Power Menu.
+        <p>Granted to certain privileged apps.
+        @FlaggedApi(android.app.Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU) -->
+    <permission android:name="android.permission.SHOW_POWER_MENU"
+        android:protectionLevel="internal|privileged"
+        android:featureFlag="android.app.statusbar_api_show_power_menu" />
+
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
     <!-- Attribution for Country Detector. -->
@@ -9985,6 +10053,20 @@
                   android:process=":ui">
         </activity>
 
+        <!-- Activity that allows the user to enable or disable App Lock for an app. -->
+        <activity android:name="com.android.internal.app.AppLockActivity"
+                  android:permission="android.permission.LOCK_APPS"
+                  android:theme="@style/Theme.Dialog.Confirmation"
+                  android:excludeFromRecents="true"
+                  android:exported="false"
+                  android:process=":ui"
+                  android:featureFlag="android.security.app_lock_core">
+            <intent-filter android:priority="100">
+                <action android:name="android.content.pm.action.SET_APP_LOCK" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <activity android:name="com.android.internal.app.UnlaunchableAppActivity"
                 android:theme="@style/Theme.Dialog.Confirmation"
                 android:excludeFromRecents="true"
@@ -10048,19 +10130,6 @@
                 android:exported="true"
                 android:systemUserOnly="true">
             <intent-filter android:priority="1000">
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name="com.android.server.updates.CertPinInstallReceiver"
-                android:exported="true"
-                android:systemUserOnly="true"
-                android:permission="android.permission.UPDATE_CONFIG">
-            <intent-filter>
-                <action android:name="android.intent.action.UPDATE_PINS" />
-                <data android:scheme="content" android:host="*" android:mimeType="*/*" />
-            </intent-filter>
-            <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>

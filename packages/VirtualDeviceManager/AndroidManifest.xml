@@ -25,14 +25,6 @@
         </activity>
 
         <activity
-            android:name=".NotifyComputerControlBlockedActivity"
-            android:theme="@style/Theme.NotifyComputerControlBlockedActivity.FilterTouches"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:launchMode="singleTop">
-        </activity>
-
-        <activity
             android:name=".AutomatedAppLaunchWarningActivity"
             android:theme="@style/Theme.AutomatedAppLaunchWarningActivity.FilterTouches"
             android:excludeFromRecents="true"

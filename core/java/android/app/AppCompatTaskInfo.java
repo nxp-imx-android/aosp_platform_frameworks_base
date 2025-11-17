@@ -79,11 +79,6 @@ public class AppCompatTaskInfo implements Parcelable {
      */
     public float topNonResizableActivityAspectRatio = PROPERTY_VALUE_UNSET;
 
-    /**
-     * Stores camera-related app compat information about a particular Task.
-     */
-    public CameraCompatTaskInfo cameraCompatTaskInfo = CameraCompatTaskInfo.create();
-
     /** Constant indicating no top activity flag has been set. */
     private static final int FLAG_UNDEFINED = 0x0;
     /** Constant base value for top activity flag. */
@@ -429,7 +424,6 @@ public class AppCompatTaskInfo implements Parcelable {
                 && topActivityLetterboxWidth == that.topActivityLetterboxWidth
                 && topActivityLetterboxHeight == that.topActivityLetterboxHeight
                 && Objects.equals(topActivityAppBounds, that.topActivityAppBounds)
-                && cameraCompatTaskInfo.equalsForTaskOrganizer(that.cameraCompatTaskInfo)
                 && topNonResizableActivityAspectRatio == that.topNonResizableActivityAspectRatio;
     }
 
@@ -447,8 +441,7 @@ public class AppCompatTaskInfo implements Parcelable {
                     == that.topActivityLetterboxHorizontalPosition
                 && topActivityLetterboxWidth == that.topActivityLetterboxWidth
                 && topActivityLetterboxHeight == that.topActivityLetterboxHeight
-                && Objects.equals(topActivityAppBounds, that.topActivityAppBounds)
-                && cameraCompatTaskInfo.equalsForCompatUi(that.cameraCompatTaskInfo);
+                && Objects.equals(topActivityAppBounds, that.topActivityAppBounds);
     }
 
     /**
@@ -462,7 +455,6 @@ public class AppCompatTaskInfo implements Parcelable {
         topActivityLetterboxHeight = source.readInt();
         topActivityAppBounds.set(Objects.requireNonNull(source.readTypedObject(Rect.CREATOR)));
         topActivityLetterboxBounds = source.readTypedObject(Rect.CREATOR);
-        cameraCompatTaskInfo = source.readTypedObject(CameraCompatTaskInfo.CREATOR);
         topNonResizableActivityAspectRatio = source.readFloat();
     }
 
@@ -478,7 +470,6 @@ public class AppCompatTaskInfo implements Parcelable {
         dest.writeInt(topActivityLetterboxHeight);
         dest.writeTypedObject(topActivityAppBounds, flags);
         dest.writeTypedObject(topActivityLetterboxBounds, flags);
-        dest.writeTypedObject(cameraCompatTaskInfo, flags);
         dest.writeFloat(topNonResizableActivityAspectRatio);
     }
 
@@ -502,7 +493,6 @@ public class AppCompatTaskInfo implements Parcelable {
                 + " isSystemFullscreenOverrideEnabled=" + isSystemFullscreenOverrideEnabled()
                 + " hasMinAspectRatioOverride=" + hasMinAspectRatioOverride()
                 + " topActivityLetterboxBounds=" + topActivityLetterboxBounds
-                + " cameraCompatTaskInfo=" + cameraCompatTaskInfo.toString()
                 + " topNonResizableActivityAspectRatio=" + topNonResizableActivityAspectRatio
                 + "}";
     }

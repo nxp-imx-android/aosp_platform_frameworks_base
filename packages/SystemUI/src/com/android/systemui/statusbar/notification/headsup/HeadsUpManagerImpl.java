@@ -432,7 +432,7 @@ public class HeadsUpManagerImpl
     @Override
     public void onExpandingFinished() {
         if (mReleaseOnExpandFinish) {
-            releaseAllImmediately();
+            releaseAllImmediately("onExpandingFinished");
             mReleaseOnExpandFinish = false;
         } else {
             for (NotificationEntry entry : getAllEntries().toList()) {
@@ -451,8 +451,9 @@ public class HeadsUpManagerImpl
     /**
      * Clears all managed notifications.
      */
-    public void releaseAllImmediately() {
-        mLogger.logReleaseAllImmediately();
+    @Override
+    public void releaseAllImmediately(String reason) {
+        mLogger.logReleaseAllImmediately(reason);
         // A copy is necessary here as we are changing the underlying map.  This would cause
         // undefined behavior if we iterated over the key set directly.
         ArraySet<String> keysToRemove = new ArraySet<>(mHeadsUpEntryMap.keySet());

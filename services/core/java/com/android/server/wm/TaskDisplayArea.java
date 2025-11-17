@@ -281,6 +281,10 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         position = findPositionForRootTask(position, task, true /* adding */);
 
         super.addChild(task, position);
+        if (task.mReparenting) {
+            addRootTaskReferenceIfNeeded(task);
+        }
+
         if (mPreferredTopFocusableRootTask != null
                 && task.isFocusable()
                 && mPreferredTopFocusableRootTask.compareTo(task) < 0) {
@@ -1114,9 +1118,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     }
 
     Task getNextFocusableRootTask(Task currentFocus, boolean ignoreCurrent) {
-        final int currentWindowingMode = currentFocus != null
-                ? currentFocus.getWindowingMode() : WINDOWING_MODE_UNDEFINED;
-
         Task candidate = null;
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final WindowContainer child = mChildren.get(i);
@@ -1620,12 +1621,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         final WindowContainer wc = rootTask.getParent();
         final int index = wc.mChildren.indexOf(rootTask) + 1;
         return (index < wc.mChildren.size()) ? (Task) wc.mChildren.get(index) : null;
-    }
-
-    /** Returns true if the root task in the windowing mode is visible. */
-    boolean isRootTaskVisible(int windowingMode) {
-        final Task rootTask = getTopRootTaskInWindowingMode(windowingMode);
-        return rootTask != null && rootTask.isVisible();
     }
 
     void removeRootTask(Task rootTask) {

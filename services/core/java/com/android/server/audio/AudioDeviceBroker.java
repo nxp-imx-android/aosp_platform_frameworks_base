@@ -56,6 +56,7 @@ import android.content.AttributionSource;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceInfo;
@@ -201,42 +202,39 @@ public class AudioDeviceBroker {
     }
 
     //-------------------------------------------------------------------
-    /*package*/ AudioDeviceBroker(@NonNull Context context, @NonNull AudioService service,
-            @NonNull AudioSystemAdapter audioSystem) {
+    /*package*/ AudioDeviceBroker(Context context, AudioService service,
+            AudioDeviceInventory deviceInventory, SystemServerAdapter systemServer,
+            AudioSystemAdapter audioSystem, PowerManager.WakeLock wakelock) {
         mContext = context;
         mAudioService = service;
-        mBtHelper = new BtHelper(this, context);
-        mDeviceInventory = new AudioDeviceInventory(this,
-                audioSystem.getAudioProductStrategies(/* filterInternal= */ true));
-        mSystemServer = SystemServerAdapter.getDefaultAdapter(mContext);
+        mDeviceInventory = deviceInventory;
+        mSystemServer = systemServer;
         mAudioSystem = audioSystem;
-        mScoManagedByAudio = scoManagedByAudio()
-                && BluetoothProperties.isScoManagedByAudioEnabled().orElse(false);
-        mCommunicationStack = new RouteSelectionStack(
-                client -> postCommunicationRouteClientDied(client),
-                AudioService.sDeviceLogger);
-        init();
-    }
+        mBrokerEventWakeLock = wakelock;
 
-    // TODO: combine these methods, error-prone
-    /** for test purposes only, inject AudioDeviceInventory and adapter for operations running
-     *  in system_server */
-    AudioDeviceBroker(@NonNull Context context, @NonNull AudioService service,
-                      @NonNull AudioDeviceInventory mockDeviceInventory,
-                      @NonNull SystemServerAdapter mockSystemServer,
-                      @NonNull AudioSystemAdapter audioSystem) {
-        mContext = context;
-        mAudioService = service;
-        mBtHelper = new BtHelper(this, context);
-        mDeviceInventory = mockDeviceInventory;
-        mSystemServer = mockSystemServer;
-        mAudioSystem = audioSystem;
         mScoManagedByAudio = scoManagedByAudio()
                 && BluetoothProperties.isScoManagedByAudioEnabled().orElse(false);
         mCommunicationStack = new RouteSelectionStack(
-                client -> postCommunicationRouteClientDied(client),
-                AudioService.sDeviceLogger);
-        init();
+                client -> postCommunicationRouteClientDied(client), AudioService.sDeviceLogger);
+        mBtHelper = new BtHelper(this);
+        deviceInventory.setDeviceBroker(this);
+
+        setupMessaging();
+
+        mCommunicationActivityDebouncer =
+                new ActivityDebouncer(mBrokerHandler, MSG_L_COMMUNICATION_ROUTE_INACTIVE,
+                        uid -> updateCommunicationClientActivity(uid, true),
+                        CLIENT_INACTIVITY_DEBOUNCE_MS
+                        );
+
+
+        initAudioHalBluetoothState();
+        initRoutingStrategyIds();
+        mPreferredCommunicationDevice = null;
+        AudioDeviceInfo device = getCommunicationDeviceInt();
+        mCurCommunicationPortId = device != null ? device.getId() : 0;
+
+        mSystemServer.registerUserStartedReceiver(mContext);
     }
 
     /**
@@ -298,24 +296,6 @@ public class AudioDeviceBroker {
                 mAccessibilityStrategyId = strategy.getId();
             }
         }
-    }
-
-    private void init() {
-        setupMessaging(mContext);
-
-        mCommunicationActivityDebouncer =
-                new ActivityDebouncer(mBrokerHandler, MSG_L_COMMUNICATION_ROUTE_INACTIVE,
-                        uid -> updateCommunicationClientActivity(uid, true),
-                        CLIENT_INACTIVITY_DEBOUNCE_MS
-                        );
-
-        initAudioHalBluetoothState();
-        initRoutingStrategyIds();
-        mPreferredCommunicationDevice = null;
-        AudioDeviceInfo device = getCommunicationDeviceInt();
-        mCurCommunicationPortId = device != null ? device.getId() : 0;
-
-        mSystemServer.registerUserStartedReceiver(mContext);
     }
 
     /*package*/ Context getContext() {
@@ -447,7 +427,7 @@ public class AudioDeviceBroker {
             RouteClient client =
                     mCommunicationStack.getClientForUid(deviceInfo.mAttributionSource.getUid());
             if (client == null || (deviceInfo.mDevice != null
-                    && !deviceInfo.mDevice.equals(client.getDevice()))) {
+                    && !deviceInfo.mDevice.equals(client.getDevice().orElse(null)))) {
                 return;
             }
         }
@@ -497,7 +477,7 @@ public class AudioDeviceBroker {
         boolean prevPrivileged = false;
         client = mCommunicationStack.getClientForUid(attributionSource.getUid());
         if (client != null) {
-            prevClientDevice = client.getDevice();
+            prevClientDevice = client.getDevice().orElse(null);
             prevPrivileged = client.isPrivileged();
         }
 
@@ -724,9 +704,10 @@ public class AudioDeviceBroker {
     private boolean isDeviceRequestedForCommunication(
             @AudioDeviceInfo.AudioDeviceType int deviceType) {
         synchronized (mDeviceStateLock) {
-            var client = mCommunicationStack.topClient();
-            AudioDeviceAttributes device = client != null ? client.getDevice() : null;
-            return device != null && device.getType() == deviceType;
+            return mCommunicationStack.topClient()
+                    .flatMap(x -> x.getDevice())
+                    .map(x -> x.getType() == deviceType)
+                    .orElse(false);
         }
     }
 
@@ -791,11 +772,7 @@ public class AudioDeviceBroker {
         if (!isBluetoothScoRequested()) {
             return null;
         }
-        RouteClient crc = mCommunicationStack.topClient();
-        if (crc == null) {
-            return null;
-        }
-        return crc.getAttributionSource();
+        return mCommunicationStack.topClient().map(x -> x.getAttributionSource()).orElse(null);
     }
 
     private static int safeUidFromAttributionSource(AttributionSource attributionSource) {
@@ -1045,6 +1022,8 @@ public class AudioDeviceBroker {
     // Lock protecting state variable related to Bluetooth audio state
     private final Object mBluetoothAudioStateLock = new Object();
 
+    // The following two variables are always false under AMSCO, so they should not be relied on at
+    // all for that code path
     // Current Bluetooth SCO audio active state indicated by BtHelper via setBluetoothScoOn().
     @GuardedBy("mBluetoothAudioStateLock")
     private boolean mBluetoothScoOn;
@@ -1179,8 +1158,14 @@ public class AudioDeviceBroker {
                     + mBluetoothScoOn + ", btScoRequesterUId: "
                     + safeUidFromAttributionSource(btScoRequesterAS)
                     + ", from: " + eventSource);
-            mBluetoothScoOn = on;
-            updateAudioHalBluetoothState();
+            // TODO: b/460593503 - Temporary workaround for certain AHAL implementations to still
+            // receive KVP under AMSCO
+            if (!mScoManagedByAudio
+                    || getContext().getPackageManager().hasSystemFeature(
+                            PackageManager.FEATURE_PC)) {
+                mBluetoothScoOn = on;
+                updateAudioHalBluetoothState();
+            }
             if (!mScoManagedByAudio) {
                 postUpdateCommunicationRouteClient(btScoRequesterAS, eventSource);
             }
@@ -1291,6 +1276,10 @@ public class AudioDeviceBroker {
 
     /*package*/ void postBluetoothDeviceConnectionChange(@NonNull BtDeviceChangedData data) {
         sendLMsgNoDelay(MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT, SENDMSG_QUEUE, data);
+    }
+
+    /*package*/ void postBluetoothHfpAudioDisconnected(BluetoothDevice device, int reason) {
+        sendILMsgNoDelay(MSG_IL_BT_HFP_AUDIO_DISCONNECTED, SENDMSG_QUEUE, reason, device);
     }
 
     /*package*/ void startBluetoothScoForClient(IBinder cb,
@@ -1809,10 +1798,7 @@ public class AudioDeviceBroker {
     private BrokerThread mBrokerThread;
     private PowerManager.WakeLock mBrokerEventWakeLock;
 
-    private void setupMessaging(Context ctxt) {
-        final PowerManager pm = (PowerManager) ctxt.getSystemService(Context.POWER_SERVICE);
-        mBrokerEventWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "handleAudioDeviceEvent");
+    private void setupMessaging() {
         mBrokerThread = new BrokerThread();
         mBrokerThread.start();
         waitForBrokerHandlerCreation();
@@ -2134,6 +2120,13 @@ public class AudioDeviceBroker {
                         }
                     }
                 } break;
+                case MSG_IL_BT_HFP_AUDIO_DISCONNECTED: {
+                    synchronized (mSetModeLock) {
+                        synchronized (mDeviceStateLock) {
+                            onHfpAudioDisconnected((BluetoothDevice) msg.obj, msg.arg1);
+                        }
+                    }
+                } break;
                 case MSG_CHECK_MUTE_MUSIC:
                     synchronized (mDeviceStateLock) {
                         checkMessagesMuteMusic(0);
@@ -2228,9 +2221,10 @@ public class AudioDeviceBroker {
     private static final int MSG_L_ACTIVE_UIDS_UPDATE = 45;
 
     private static final int MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT = 46;
-    //
+    private static final int MSG_IL_BT_HFP_AUDIO_DISCONNECTED = 47;
+
     // process set volume for Le Audio, obj is BleVolumeInfo
-    private static final int MSG_II_SET_LE_AUDIO_OUT_VOLUME = 47;
+    private static final int MSG_II_SET_LE_AUDIO_OUT_VOLUME = 48;
 
     private static final int MSG_IIL_BTLEAUDIO_TIMEOUT = 49;
 
@@ -2442,34 +2436,46 @@ public class AudioDeviceBroker {
     /**
      * Determines which preferred device for phone strategy should be sent to audio policy manager
      * as a function of current SCO audio activation state and active communication route requests.
-     * SCO audio state has the highest priority as it can result from external activation by
-     * telephony service.
+     * On the legacy path, SCO audio state has the highest priority as it can result from external
+     * activation by telephony service.
+     * Under AMSCO, we simply evaluate the top of the communication route preference stack
      * @return selected forced usage for communication.
      */
     @GuardedBy("mDeviceStateLock")
     @Nullable private AudioDeviceAttributes preferredCommunicationDevice() {
-        boolean btSCoOn = mBtHelper.isBluetoothScoOn();
-        synchronized (mBluetoothAudioStateLock) {
-            btSCoOn = (btSCoOn || mScoManagedByAudio) && mBluetoothScoOn;
-        }
-
-        if (btSCoOn) {
-            // Use the SCO device known to BtHelper so that it matches exactly
-            // what has been communicated to audio policy manager. The device
-            // returned by requestedCommunicationDevice() can be a placeholder SCO device if legacy
-            // APIs are used to start SCO audio.
-            AudioDeviceAttributes device = mBtHelper.getHeadsetAudioDevice();
-            if (device != null) {
-                return device;
+        AudioDeviceAttributes topDevice =
+                mCommunicationStack.topClient().flatMap(x -> x.getDevice()).orElse(null);
+        if (isScoManagedByAudio()) {
+            if (topDevice != null && topDevice.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+                sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
+                        0 /*unmute*/, 0);
+                // workaround before we consistently update the route stack for active device
+                // switches
+                topDevice = mBtHelper.getHeadsetAudioDevice();
             }
+            return topDevice;
+        } else {
+            boolean btScoOn = false;
+            synchronized (mBluetoothAudioStateLock) {
+                btScoOn = mBtHelper.isBluetoothScoOn() && mBluetoothScoOn;
+            }
+
+            if (btScoOn) {
+                // Use the SCO device known to BtHelper so that it matches exactly what has been
+                // communicated to audio policy manager. The device returned by
+                // requestedCommunicationDevice() can be a placeholder SCO device if legacy APIs are
+                // used to start SCO audio.
+                AudioDeviceAttributes device = mBtHelper.getHeadsetAudioDevice();
+                if (device != null) {
+                    return device;
+                }
+            }
+            if (topDevice == null || topDevice.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+                // Do not indicate BT SCO selection if SCO is requested but SCO is not ON
+                return null;
+            }
+            return topDevice;
         }
-        var client = mCommunicationStack.topClient();
-        AudioDeviceAttributes device = client != null ? client.getDevice() : null;
-        if (device == null || device.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-            // Do not indicate BT SCO selection if SCO is requested but SCO is not ON
-            return null;
-        }
-        return device;
     }
 
     /**
@@ -2595,10 +2601,10 @@ public class AudioDeviceBroker {
     private void onUpdateCommunicationRouteClient(
             @Nullable AttributionSource previousBtScoRequesterAS, String eventSource) {
 
-        RouteClient crc = mCommunicationStack.topClient();
+        RouteClient crc = mCommunicationStack.topClient().orElse(null);
         if (crc != null) {
             setCommunicationRouteForClient(crc.getToken(), crc.getAttributionSource(),
-                    crc.getDevice(), crc.isPrivileged(), eventSource);
+                    crc.getDevice().orElse(null), crc.isPrivileged(), eventSource);
         } else {
             boolean wasScoRequested = previousBtScoRequesterAS != null;
             if (!isBluetoothScoRequested() && wasScoRequested) {
@@ -2706,6 +2712,19 @@ public class AudioDeviceBroker {
         }
     }
 
+    @GuardedBy("mDeviceStateLock")
+    private void onHfpAudioDisconnected(BluetoothDevice device, int reason) {
+        // TODO: reason metrics
+        // Since we currently operate on device types within the stack for BT,
+        // unconditionally remove any preference for a SCO device
+        final AttributionSource previousBtScoRequesterAS =
+                bluetoothScoRequestOwnerAttributionSource();
+
+        mCommunicationStack.removeClientPreference(
+                x -> x.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+        onUpdateCommunicationRouteClient(
+                bluetoothScoRequestOwnerAttributionSource(), "onBluetoothHfpAudioDisconnected");
+    }
 
     List<String> getDeviceIdentityAddresses(AudioDeviceAttributes device) {
         synchronized (mDeviceStateLock) {

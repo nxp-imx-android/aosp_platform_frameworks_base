@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"청각 보조 기기"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"접근성 사용"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"디스플레이"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"자녀 보호 기능"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g>에서 배터리 사용 중"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"앱 <xliff:g id="NUMBER">%1$d</xliff:g>개에서 배터리 사용 중"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"탭하여 배터리 및 데이터 사용량 확인"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"잠금을 해제하려면 PIN 입력"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN 코드가 잘못되었습니다."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"잠금해제하려면 메뉴를 누른 다음 0을 누릅니다."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"비상 전화번호"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"서비스 불가"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"화면 잠김"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"비상 전화를 걸거나 잠금해제하려면 메뉴를 누르세요."</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"시스템 리소스 알림"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"리소스 초과 사용"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\'<xliff:g id="APP_NAME">%1$s</xliff:g> 앱이 너무 많은 리소스를 사용합니다.\'"</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"부모님이 업데이트해 주셔야 합니다"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"현재 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱은 삭제되었습니다"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> 이용 가능"</string>
 </resources>

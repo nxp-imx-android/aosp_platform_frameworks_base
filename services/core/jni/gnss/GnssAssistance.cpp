@@ -1060,12 +1060,10 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
                 env->FindClass("android/location/IonexAssistance$TecMapSnapshot");
         method_ionexAssistanceTecMapSnapshotGetEpochTimeSeconds =
                 env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getEpochTimeSeconds", "()J");
-        method_ionexAssistanceTecMapSnapshotGetRmsMap =
-                env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getRmsMap",
-                                 "()Ljava/util/List;");
         method_ionexAssistanceTecMapSnapshotGetTecMap =
-                env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getTecMap",
-                                 "()Ljava/util/List;");
+                env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getTecMap", "()[F");
+        method_ionexAssistanceTecMapSnapshotGetRmsMap =
+                env->GetMethodID(ionexAssistanceTecMapSnapshotClass, "getRmsMap", "()[F");
     }
 }
 
@@ -1175,28 +1173,28 @@ void GnssAssistanceUtil::setIonexAssistance(JNIEnv* env, jobject ionexAssistance
                                 method_ionexAssistanceTecMapSnapshotGetEpochTimeSeconds);
     ionexAssistance.tecMapSnapshot.epochTimeSeconds = epochTimeSeconds;
 
-    jobject tecMapObj =
-            env->CallObjectMethod(tecMapSnapshotObj, method_ionexAssistanceTecMapSnapshotGetTecMap);
-    jint len = env->CallIntMethod(tecMapObj, method_listSize);
-    for (uint16_t i = 0; i < len; ++i) {
-        jobject tecObj = env->CallObjectMethod(tecMapObj, method_listGet, i);
-        jfloat tec = env->CallFloatMethod(tecObj, method_floatValue);
-        ionexAssistance.tecMapSnapshot.tecMap.push_back(tec);
-        env->DeleteLocalRef(tecObj);
+    jfloatArray tecMapArray =
+            (jfloatArray)env->CallObjectMethod(tecMapSnapshotObj,
+                                               method_ionexAssistanceTecMapSnapshotGetTecMap);
+    if (tecMapArray != nullptr) {
+        jsize len = env->GetArrayLength(tecMapArray);
+        ionexAssistance.tecMapSnapshot.tecMap.resize(len);
+        env->GetFloatArrayRegion(tecMapArray, 0, len, ionexAssistance.tecMapSnapshot.tecMap.data());
+        env->DeleteLocalRef(tecMapArray);
     }
-    jobject rmsMapObj =
-            env->CallObjectMethod(tecMapSnapshotObj, method_ionexAssistanceTecMapSnapshotGetRmsMap);
-    len = env->CallIntMethod(rmsMapObj, method_listSize);
-    for (uint16_t i = 0; i < len; ++i) {
-        jobject rmsObj = env->CallObjectMethod(rmsMapObj, method_listGet, i);
-        jfloat rms = env->CallFloatMethod(rmsObj, method_floatValue);
-        ionexAssistance.tecMapSnapshot.rmsMap.push_back(rms);
-        env->DeleteLocalRef(rmsObj);
+
+    jfloatArray rmsMapArray =
+            (jfloatArray)env->CallObjectMethod(tecMapSnapshotObj,
+                                               method_ionexAssistanceTecMapSnapshotGetRmsMap);
+    if (rmsMapArray != nullptr) {
+        jsize len = env->GetArrayLength(rmsMapArray);
+        ionexAssistance.tecMapSnapshot.rmsMap.resize(len);
+        env->GetFloatArrayRegion(rmsMapArray, 0, len, ionexAssistance.tecMapSnapshot.rmsMap.data());
+        env->DeleteLocalRef(rmsMapArray);
     }
+
     ionexAssistanceOpt = ionexAssistance;
     env->DeleteLocalRef(tecMapSnapshotObj);
-    env->DeleteLocalRef(tecMapObj);
-    env->DeleteLocalRef(rmsMapObj);
 }
 
 void GnssAssistanceUtil::setQzssAssistance(JNIEnv* env, jobject qzssAssistanceObj,

@@ -19,16 +19,16 @@ package com.android.systemui.shared.clocks.view
 import android.annotation.SuppressLint
 import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.animation.GSFAxes
-import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.view.DigitalClockTextView
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
 import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
+import com.android.systemui.shared.clocks.FlexClockContext
 
 @SuppressLint("ViewConstructor")
-class FlexClockTextView(clockCtx: ClockContext, private val isLargeClock: Boolean) :
+class FlexClockTextView(clockCtx: FlexClockContext, private val isLargeClock: Boolean) :
     DigitalClockTextView(clockCtx) {
     private val isLegacyFlex: Boolean = clockCtx.settings.clockId == FLEX_CLOCK_ID
-    override val typefaceCache = clockCtx.typefaceCache.getVariantCache("")
+    override val typefaceCache = clockCtx.typefaceCache.getVariantCache(Unit)
     override var fontVariations: FontVariations
 
     private val fixedAodAxes: ClockAxisStyle

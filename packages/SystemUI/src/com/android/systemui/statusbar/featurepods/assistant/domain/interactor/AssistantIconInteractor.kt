@@ -24,6 +24,9 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.featurepods.assistant.data.repository.AssistantRepository
 import com.android.systemui.statusbar.featurepods.assistant.shared.model.AssistantIconSharedModel
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
+import com.android.systemui.statusbar.policy.domain.interactor.UserSetupInteractor
+import com.android.systemui.user.domain.interactor.UserLogoutInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -55,14 +58,28 @@ class AssistantIconInteractorImpl
 constructor(
     @Main private val resources: Resources,
     @Background private val scope: CoroutineScope,
-    deviceEntryInteractor: DeviceEntryInteractor,
+    private val userSetupInteractor: UserSetupInteractor,
+    private val userLogoutInteractor: UserLogoutInteractor,
+    private val deviceProvisioningInteractor: DeviceProvisioningInteractor,
+    private val deviceEntryInteractor: DeviceEntryInteractor,
     private val assistantRepository: AssistantRepository,
 ) : AssistantIconInteractor {
     override val assistantIconSharedModel: StateFlow<AssistantIconSharedModel> =
-        combine(deviceEntryInteractor.isDeviceEntered, assistantRepository.assistInfo) {
-                isDeviceEntered,
-                assistInfo ->
-                if (!isDeviceEntered || assistInfo == null || assistInfo.packageName == "") {
+        combine(
+                userSetupInteractor.isUserSetUp,
+                userLogoutInteractor.isLogoutEnabled,
+                deviceProvisioningInteractor.isDeviceProvisioned,
+                deviceEntryInteractor.isDeviceEntered,
+                assistantRepository.assistInfo,
+            ) { isUserSetup, isLoggedIn, isDeviceProvisioned, isDeviceEntered, assistInfo ->
+                if (
+                    !isUserSetup ||
+                        !isLoggedIn ||
+                        !isDeviceProvisioned ||
+                        !isDeviceEntered ||
+                        assistInfo == null ||
+                        assistInfo.packageName == ""
+                ) {
                     defaultSharedModel
                 } else {
                     AssistantIconSharedModel(

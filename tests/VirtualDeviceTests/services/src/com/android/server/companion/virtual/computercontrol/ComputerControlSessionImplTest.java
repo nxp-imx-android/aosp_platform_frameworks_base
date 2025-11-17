@@ -104,7 +104,6 @@ import android.view.SurfaceControl;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
@@ -115,6 +114,9 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.testutils.StubTransaction;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 import org.junit.After;
 import org.junit.Before;
@@ -132,7 +134,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Presubmit
-@RunWith(AndroidJUnit4.class)
+@RunWith(JUnitParamsRunner.class)
 public class ComputerControlSessionImplTest {
     private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
     private static final int USER_ID = UserHandle.USER_SYSTEM;
@@ -282,6 +284,7 @@ public class ComputerControlSessionImplTest {
         displayInfo.logicalWidth = DISPLAY_WIDTH;
         displayInfo.logicalHeight = DISPLAY_HEIGHT;
         displayInfo.logicalDensityDpi = DISPLAY_DPI;
+        displayInfo.rotation = Surface.ROTATION_0;
         when(mDisplayManager.getDisplayInfo(MAIN_DISPLAY_ID)).thenReturn(displayInfo);
         when(mDisplayManager.getDisplayInfo(VIRTUAL_DISPLAY_ID)).thenReturn(displayInfo);
 
@@ -301,7 +304,7 @@ public class ComputerControlSessionImplTest {
                 mVirtualAudioDevice);
         when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
         when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
-        when(mAllowlistController.isPackageAutomatable(anyString())).thenReturn(true);
+        when(mAllowlistController.isPackageAutomatable(anyString(), anyString())).thenReturn(true);
     }
 
     @After
@@ -366,6 +369,42 @@ public class ComputerControlSessionImplTest {
         assertThat(virtualTouchscreenConfig.getInputDeviceName()).contains(
                 mDefaultParams.getName());
         assertThat(virtualTouchscreenConfig.getProductId()).isEqualTo(PRODUCT_ID_TOUCHSCREEN);
+    }
+
+    @SuppressWarnings("unused") // Parameter for parametrized tests
+    private static Integer[] getAllDisplayRotations() {
+        return new Integer[]{
+                Surface.ROTATION_0,
+                Surface.ROTATION_90,
+                Surface.ROTATION_180,
+                Surface.ROTATION_270,
+        };
+    }
+
+    @Parameters(method = "getAllDisplayRotations")
+    @Test
+    public void createSession_inRotatedDisplay_createsVirtualDisplayInNaturalOrientation(
+            @Surface.Rotation int rotation)
+            throws Exception {
+        mDisplayManager.getDisplayInfo(MAIN_DISPLAY_ID).rotation = rotation;
+
+        createComputerControlSession(mDefaultParams);
+
+        verify(mVirtualDevice).createVirtualDisplay(
+                mVirtualDisplayConfigArgumentCaptor.capture(), any(), any());
+        VirtualDisplayConfig virtualDisplayConfig = mVirtualDisplayConfigArgumentCaptor.getValue();
+        assertThat(virtualDisplayConfig.getDensityDpi()).isEqualTo(DISPLAY_DPI);
+        switch (rotation) {
+            case Surface.ROTATION_0, Surface.ROTATION_180 -> {
+                assertThat(virtualDisplayConfig.getHeight()).isEqualTo(DISPLAY_HEIGHT);
+                assertThat(virtualDisplayConfig.getWidth()).isEqualTo(DISPLAY_WIDTH);
+
+            }
+            case Surface.ROTATION_90, Surface.ROTATION_270 -> {
+                assertThat(virtualDisplayConfig.getHeight()).isEqualTo(DISPLAY_WIDTH);
+                assertThat(virtualDisplayConfig.getWidth()).isEqualTo(DISPLAY_HEIGHT);
+            }
+        }
     }
 
     @Test
@@ -476,7 +515,7 @@ public class ComputerControlSessionImplTest {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any()))
                 .thenReturn(List.of(new ResolveInfo()));
-        when(mAllowlistController.isPackageAutomatable(anyString())).thenReturn(false);
+        when(mAllowlistController.isPackageAutomatable(anyString(), anyString())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class,
                 () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
@@ -603,13 +642,14 @@ public class ComputerControlSessionImplTest {
     public void createInteractiveMirror_successfullyReturnsInitializedMirror()
             throws Exception {
         createComputerControlSession(mDefaultParams);
-        final var mirrorSurface = new SurfaceControl();
+        final var displayMirror = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
-                .thenReturn(mirrorSurface);
+                .thenReturn(displayMirror);
 
         final var returnedMirrorSurface = Mockito.mock(SurfaceControl.class);
         IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
 
+        final var mirrorSurface = displayMirror.getMirrorSurfaceControl();
         verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
         assertThat(mirror).isNotNull();
         verify(mTransaction).reparent(eq(mirrorSurface), mSurfaceControlArgumentCaptor.capture());
@@ -634,40 +674,61 @@ public class ComputerControlSessionImplTest {
     @Test
     public void closeInteractiveMirror_removesMirrorSurface() throws Exception {
         createComputerControlSession(mDefaultParams);
-        final var mirrorSurface = new SurfaceControl();
+        final var displayMirror = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
-                .thenReturn(mirrorSurface);
-        final var returnedMirrorSurface = new SurfaceControl();
+                .thenReturn(displayMirror);
+        final var returnedMirrorSurface = Mockito.mock(SurfaceControl.class);
         IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
         assertThat(mirror).isNotNull();
         verify(mWindowManagerInternal).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
-        Mockito.reset(mTransaction);
+        verify(returnedMirrorSurface).copyFrom(mSurfaceControlArgumentCaptor.capture(), any());
+        clearInvocations(mTransaction);
 
         mirror.close();
 
-        verify(mTransaction).reparent(eq(mirrorSurface), eq(null));
+        verify(displayMirror).close();
+        verify(mTransaction).remove(mSurfaceControlArgumentCaptor.getValue());
     }
 
     @Test
     public void closeSession_removesAllInteractiveMirrors() throws Exception {
         createComputerControlSession(mDefaultParams);
-        final var mirrorSurface1 = new SurfaceControl();
+        final var displayMirror1 = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
-                .thenReturn(mirrorSurface1);
+                .thenReturn(displayMirror1);
         IInteractiveMirror mirror1 = mSession.createInteractiveMirror(new SurfaceControl());
         assertThat(mirror1).isNotNull();
-        final var mirrorSurface2 = new SurfaceControl();
+        final var displayMirror2 = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
-                .thenReturn(mirrorSurface2);
+                .thenReturn(displayMirror2);
         IInteractiveMirror mirror2 = mSession.createInteractiveMirror(new SurfaceControl());
         assertThat(mirror2).isNotNull();
         verify(mWindowManagerInternal, times(2)).createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID);
-        Mockito.reset(mTransaction);
+        clearInvocations(mTransaction);
 
         mSession.close();
 
-        verify(mTransaction).reparent(eq(mirrorSurface1), eq(null));
-        verify(mTransaction).reparent(eq(mirrorSurface2), eq(null));
+        verify(displayMirror1).close();
+        verify(displayMirror2).close();
+    }
+
+    @Test
+    public void duplicateCloseInteractiveMirrorCall_doesNothing() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        final var displayMirror = mockDisplayMirror();
+        when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))
+                .thenReturn(displayMirror);
+        final var returnedMirrorSurface = Mockito.mock(SurfaceControl.class);
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(returnedMirrorSurface);
+        assertThat(mirror).isNotNull();
+        mirror.close();
+        clearInvocations(mTransaction, displayMirror);
+
+        mirror.close();
+        mirror.close();
+        mSession.close();
+
+        verifyNoInteractions(displayMirror, mTransaction);
     }
 
     @Test
@@ -1094,5 +1155,11 @@ public class ComputerControlSessionImplTest {
         public boolean matches(KeyEvent event) {
             return mKeyCode == event.getKeyCode() && mAction == event.getAction();
         }
+    }
+
+    private static WindowManagerInternal.DisplayMirror mockDisplayMirror() {
+        final var mirror = Mockito.mock(WindowManagerInternal.DisplayMirror.class);
+        when(mirror.getMirrorSurfaceControl()).thenReturn(new SurfaceControl());
+        return mirror;
     }
 }

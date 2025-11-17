@@ -196,7 +196,8 @@ public class ComputerControlSessionProcessor {
                         || packageName.isEmpty()
                         || mPackageManager.getPermissionControllerPackageName().equals(packageName)
                         || mPackageManager.getLaunchIntentForPackage(packageName) == null
-                        || !mAllowlistController.isPackageAutomatable(packageName)) {
+                        || !mAllowlistController.isPackageAutomatable(
+                                packageName, callerPackageName)) {
                     throw new IllegalArgumentException(
                             "Invalid target package for ComputerControl: " + packageName);
                 }
@@ -233,19 +234,22 @@ public class ComputerControlSessionProcessor {
             // Don't bother creating the session if the requester is not around anymore.
             return;
         }
-        ComputerControlSessionImpl session;
+
         synchronized (mSessions) {
             if (!checkSessionCreationPreconditionsLocked(params, callback)) {
                 return;
             }
-            Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
-            session = new ComputerControlSessionImpl(
-                    mContext, mAllowlistController, callback.asBinder(), params, attributionSource,
-                    mVirtualDeviceFactory, (closedSession) -> {
-                synchronized (mSessions) {
-                    mSessions.remove(closedSession);
-                }
-            });
+        }
+
+        Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
+        final ComputerControlSessionImpl session = new ComputerControlSessionImpl(
+                mContext, mAllowlistController, callback.asBinder(), params, attributionSource,
+                mVirtualDeviceFactory, (closedSession) -> {
+            synchronized (mSessions) {
+                mSessions.remove(closedSession);
+            }
+        });
+        synchronized (mSessions) {
             mSessions.add(session);
         }
 

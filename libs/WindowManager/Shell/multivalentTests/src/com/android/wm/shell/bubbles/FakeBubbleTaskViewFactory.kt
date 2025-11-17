@@ -28,9 +28,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.whenever
 
-/**
- * Implementation of [BubbleTaskViewFactory] for testing.
- */
+/** Implementation of [BubbleTaskViewFactory] for testing. */
 class FakeBubbleTaskViewFactory(
     private val context: Context,
     private val mainExecutor: ShellExecutor,
@@ -38,9 +36,10 @@ class FakeBubbleTaskViewFactory(
     override fun create(): BubbleTaskView {
         val taskViewTaskController = mock<TaskViewTaskController>()
         val taskLeash = SurfaceControl.Builder().setName("taskViewLeash").build()
-        val taskView = spy(TaskView(context, mock<TaskViewController>(), taskViewTaskController)) {
-            on { surfaceControl } doReturn taskLeash
-        }
+        val taskView =
+            spy(TaskView(context, mock<TaskViewController>(), taskViewTaskController)) {
+                on { surfaceControl } doReturn taskLeash
+            }
         val taskInfo = mock<ActivityManager.RunningTaskInfo>()
         val bubbleController = mock<BubbleController>()
         whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)

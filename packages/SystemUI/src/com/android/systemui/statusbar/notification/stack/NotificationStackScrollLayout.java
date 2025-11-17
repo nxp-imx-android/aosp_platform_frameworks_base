@@ -264,8 +264,7 @@ public class NotificationStackScrollLayout
     private final ArrayList<View> mSwipedOutViews = new ArrayList<>();
     private NotificationStackSizeCalculator mNotificationStackSizeCalculator;
     private final StackStateAnimator mStateAnimator;
-    // TODO(b/332732878): call setAnimationsEnabled with scene container enabled, then remove this
-    private boolean mAnimationsEnabled = SceneContainerFlag.isEnabled();
+    private boolean mAnimationsEnabled;
     private boolean mChangePositionInProgress;
     private boolean mChildTransferInProgress;
 
@@ -3525,8 +3524,8 @@ public class NotificationStackScrollLayout
         onViewAddedInternal(row);
     }
 
+    @Override
     public void setAnimationsEnabled(boolean animationsEnabled) {
-        // TODO(b/332732878): remove the initial value of this field once the setter is called
         mAnimationsEnabled = animationsEnabled;
         updateNotificationAnimationStates();
         if (!animationsEnabled) {
@@ -4098,6 +4097,17 @@ public class NotificationStackScrollLayout
                     mScrollViewFields.sendCurrentGestureInGuts(false);
                     mScrollViewFields.sendCurrentGestureExpandingNotification(false);
                     setIsBeingDragged(false);
+                }
+            } else {
+                // Ensure that the last ACTION_UP/ACTION_CANCEL gets dispatched to scene container
+                boolean isUpOrCancel = action == ACTION_UP || action == ACTION_CANCEL;
+                if (isUpOrCancel && mSendingTouchesToSceneFramework) {
+                    MotionEvent adjustedEvent = MotionEvent.obtain(ev);
+                    adjustedEvent.setLocation(ev.getRawX(), ev.getRawY());
+                    mController.sendTouchToSceneFramework(adjustedEvent);
+                    mScrollViewFields.sendCurrentGestureInGuts(isTouchInGuts);
+                    mScrollViewFields.sendCurrentGestureExpandingNotification(
+                            mExpandingNotification);
                 }
             }
         }
@@ -6341,6 +6351,15 @@ public class NotificationStackScrollLayout
         return mExpandingNotification;
     }
 
+    @VisibleForTesting
+    void setIsExpandingNotification(boolean isExpanding) {
+        mExpandingNotification = isExpanding;
+        if (!mExpandedInThisMotion) {
+            mMaxScrollAfterExpand = getOwnScrollY();
+            mExpandedInThisMotion = true;
+        }
+    }
+
     boolean getDisallowScrollingInThisMotion() {
         return mDisallowScrollingInThisMotion;
     }
@@ -7318,11 +7337,7 @@ public class NotificationStackScrollLayout
 
         @Override
         public void expansionStateChanged(boolean isExpanding) {
-            mExpandingNotification = isExpanding;
-            if (!mExpandedInThisMotion) {
-                mMaxScrollAfterExpand = getOwnScrollY();
-                mExpandedInThisMotion = true;
-            }
+            setIsExpandingNotification(isExpanding);
         }
 
         @Override

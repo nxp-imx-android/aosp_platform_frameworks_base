@@ -408,6 +408,9 @@
     <!-- The height of notification bundle headers -->
     <dimen name="notification_bundle_header_height">48dp</dimen>
 
+    <dimen name="notification_dismiss_button_padding">2dp</dimen>
+    <dimen name="notification_dismiss_button_size">16dp</dimen>
+
     <!-- Size of icon buttons in notification info. -->
     <!-- 24dp for the icon itself + 16dp * 2 for top and bottom padding -->
     <dimen name="notification_2025_guts_button_size">56dp</dimen>
@@ -2179,6 +2182,7 @@
     <dimen name="volume_dialog_background_surface_blur_radius">23dp</dimen>
 
     <dimen name="volume_dialog_window_margin">12dp</dimen>
+    <dimen name="volume_dialog_horizontal_window_margin">52dp</dimen>
     <dimen name="volume_dialog_components_spacing">4dp</dimen>
     <dimen name="volume_dialog_floating_sliders_spacing">8dp</dimen>
     <dimen name="volume_dialog_floating_sliders_vertical_padding_negative">
@@ -2195,6 +2199,8 @@
     -->
     <dimen name="volume_dialog_slider_vertical_margin">124dp</dimen>
     <dimen name="volume_dialog_slider_vertical_margin_with_captions_toggle">130dp</dimen>
+    <dimen name="volume_dialog_slider_horizontal_margin">82dp</dimen>
+    <dimen name="volume_dialog_slider_horizontal_margin_with_captions_toggle">130dp</dimen>
     <dimen name="volume_dialog_half_opened_offset">-128dp</dimen>
     <dimen name="volume_dialog_slider_max_deviation">56dp</dimen>
 

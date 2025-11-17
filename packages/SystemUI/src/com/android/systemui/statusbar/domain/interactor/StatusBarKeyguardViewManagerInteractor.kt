@@ -105,7 +105,7 @@ constructor(
                     content = Scenes.Gone,
                     stateWithoutSceneContainer = KeyguardState.GONE,
                 ),
-                keyguardTransitionInteractor.isFinishedIn(KeyguardState.OCCLUDED),
+                keyguardTransitionInteractor.isFinishedIn(Scenes.Occluded, KeyguardState.OCCLUDED),
                 keyguardOcclusionInteractor.isShowWhenLockedActivityOnTop,
                 ::Triple,
             )

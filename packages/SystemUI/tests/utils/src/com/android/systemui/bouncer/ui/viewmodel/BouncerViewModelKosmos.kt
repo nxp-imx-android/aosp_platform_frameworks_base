@@ -19,6 +19,7 @@ package com.android.systemui.bouncer.ui.viewmodel
 import android.app.admin.devicePolicyManager
 import android.content.applicationContext
 import com.android.keyguard.domain.interactor.keyguardKeyboardInteractor
+import com.android.systemui.accessibility.domain.interactor.accessibilityInteractor
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.bouncerActionButtonInteractor
@@ -56,7 +57,6 @@ val Kosmos.bouncerOverlayContentViewModel by Fixture {
         devicePolicyManager = devicePolicyManager,
         bouncerMessageViewModelFactory = bouncerMessageViewModelFactory,
         userSwitcher = userSwitcherViewModel,
-        actionButtonInteractor = bouncerActionButtonInteractor,
         pinViewModelFactory = pinBouncerViewModelFactory,
         patternViewModelFactory = patternBouncerViewModelFactory,
         passwordViewModelFactory = passwordBouncerViewModelFactory,
@@ -113,6 +113,7 @@ val Kosmos.patternBouncerViewModelFactory by Fixture {
                 isInputEnabled = isInputEnabled,
                 onIntentionalUserInput = onIntentionalUserInput,
                 bouncerHapticPlayer = bouncerHapticPlayer,
+                a11yInteractor = accessibilityInteractor,
             )
         }
     }

@@ -196,7 +196,7 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
 
     @Test
     fun currentSaveLocation_initialValue_returnsDefaultScreenshotsFolderName() =
-        kosmos.runTest { assertThat(viewModel.currentSaveLocation).isEqualTo("Screenshots") }
+        kosmos.runTest { assertThat(viewModel.currentSaveLocationString).isEqualTo("Screenshots") }
 
     @Test
     fun currentSaveLocation_whenCustomUriIsNotActive_returnsDefaultScreenshotsFolderName() =
@@ -206,7 +206,7 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
             )
             viewModel.setCustomSaveLocationActiveStatus(false)
 
-            assertThat(viewModel.currentSaveLocation).isEqualTo("Screenshots")
+            assertThat(viewModel.currentSaveLocationString).isEqualTo("Screenshots")
         }
 
     @Test
@@ -217,7 +217,7 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
             )
             viewModel.setCustomSaveLocationActiveStatus(true)
 
-            assertThat(viewModel.currentSaveLocation).isEqualTo("Test")
+            assertThat(viewModel.currentSaveLocationString).isEqualTo("Test")
         }
     }
 
@@ -226,7 +226,7 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             viewModel.setCustomSaveLocationActiveStatus(true)
 
-            assertThat(viewModel.currentSaveLocation).isEqualTo("Screenshots")
+            assertThat(viewModel.currentSaveLocationString).isEqualTo("Screenshots")
         }
     }
 

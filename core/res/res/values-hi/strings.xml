@@ -39,7 +39,7 @@
     <string name="passwordIncorrect" msgid="917087532676155877">"गलत पासवर्ड"</string>
     <string name="mmiComplete" msgid="6341884570892520140">"MMI पूरा हुआ."</string>
     <string name="badPin" msgid="888372071306274355">"  लिखा गया पुराना पिन सही नहीं है."</string>
-    <string name="badPuk" msgid="4232069163733147376">"  लिखा गया PUK सही नहीं है."</string>
+    <string name="badPuk" msgid="4232069163733147376">"लिखा गया PUK सही नहीं है."</string>
     <string name="mismatchPin" msgid="2929611853228707473">"आपने जो पिन लिखे हैं उसका मिलान नहीं होता."</string>
     <string name="invalidPin" msgid="7542498253319440408">"कोई ऐसा पिन लिखें, जिसमें 4 से 8 अंक हों."</string>
     <string name="invalidPuk" msgid="8831151490931907083">"ऐसा PUK लिखें जो 8 अंकों या ज़्यादा का हो."</string>
@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"कान की मशीन"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"सुलभता सुविधाओं का इस्तेमाल"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"डिसप्ले"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"माता-पिता के कंट्रोल"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> बैटरी का इस्तेमाल कर रहा है"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> ऐप बैटरी का इस्तेमाल कर रहे हैं"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"बैटरी और डेटा खर्च की जानकारी के लिए छूएं"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"अनलॉक करने के लिए पिन लिखें"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"गलत पिन कोड."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"लॉक खोलने के लिए, मेन्यू दबाएं और फिर 0 दबाएं."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"आपातकालीन नंबर"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"कोई सेवा नहीं"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"स्‍क्रीन लॉक की गई है."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"लॉक खोलने के लिए मेन्यू दबाएं या आपातलकालीन कॉल करें."</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"सिस्टम के संसाधन से जुड़ी सूचनाएं"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"संसाधन का ज़्यादा इस्तेमाल"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"<xliff:g id="APP_NAME">%1$s</xliff:g> ऐप्लिकेशन बहुत ज़्यादा संसाधन इस्तेमाल कर रहा है."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"माता-पिता की ओर से किया गया अपडेट"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> को फ़िलहाल हटा दिया गया है"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> अब उपलब्ध है"</string>
 </resources>

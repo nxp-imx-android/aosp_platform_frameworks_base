@@ -659,22 +659,9 @@ public class AudioDeviceInventory {
 
     final List<AudioProductStrategy> mStrategies;
 
-    /*package*/ AudioDeviceInventory(@NonNull AudioDeviceBroker broker,
-            List<AudioProductStrategy> strategies) {
-        this(broker, AudioSystemAdapter.getDefaultAdapter(), strategies);
-    }
-
-    //-----------------------------------------------------------
-    /** for mocking only, allows to inject AudioSystem adapter */
-    /*package*/ AudioDeviceInventory(@NonNull AudioSystemAdapter audioSystem,
-            List<AudioProductStrategy> strategies) {
-        this(null, audioSystem, strategies);
-    }
-
-    private AudioDeviceInventory(@Nullable AudioDeviceBroker broker,
+    AudioDeviceInventory(
             @Nullable AudioSystemAdapter audioSystem,
             List<AudioProductStrategy> strategies) {
-        mDeviceBroker = broker;
         mAudioSystem = audioSystem;
         mStrategies = Objects.requireNonNull(strategies,
                 "Audio product strategies must not be null");

@@ -442,9 +442,6 @@ public class KeyguardService extends Service {
             checkPermission();
             if (SceneContainerFlag.isEnabled()) {
                 mKeyguardStateCallbackStartableLazy.get().addCallback(callback);
-            }
-
-            if (KeyguardWmStateRefactor.isEnabled()) {
                 mKeyguardStateCallbackInteractor.addCallback(callback);
             } else {
                 mKeyguardViewMediator.addStateMonitorCallback(callback);

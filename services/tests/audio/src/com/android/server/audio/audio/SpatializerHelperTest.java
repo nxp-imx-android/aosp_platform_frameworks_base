@@ -22,10 +22,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioFormat;
 import android.media.AudioSystem;
+import android.os.PowerManager;
 import android.util.Log;
 
 import androidx.test.filters.MediumTest;
@@ -52,6 +54,7 @@ public class SpatializerHelperTest {
     private SpatializerHelper mSpatHelper;
 
     @Mock private AudioService mMockAudioService;
+    @Mock private PowerManager.WakeLock mMockWakelock;
     @Spy private AudioSystemAdapter mSpyAudioSystem;
     @Spy private AudioDeviceBroker mSpyDeviceBroker;
 
@@ -59,11 +62,13 @@ public class SpatializerHelperTest {
     public void setUp() throws Exception {
         mMockAudioService = mock(AudioService.class);
 
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mSpyAudioSystem = spy(new NoOpAudioSystemAdapter());
-        mSpyDeviceBroker = spy(
-                new AudioDeviceBroker(
-                        InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                        mMockAudioService, mSpyAudioSystem));
+        mSpyDeviceBroker = spy(new AudioDeviceBroker(context, mMockAudioService,
+                new AudioDeviceInventory(mSpyAudioSystem,
+                        mSpyAudioSystem.getAudioProductStrategies(/* filterInternal= */ true)),
+                SystemServerAdapter.getDefaultAdapter(context), mSpyAudioSystem, mMockWakelock));
+
         mSpatHelper = new SpatializerHelper(mMockAudioService, mSpyAudioSystem,
                 mSpyDeviceBroker, /*binauralEnabledDefault=*/true, /*transauralEnabledDefault=*/
                 true, /*headTrackingEnabledDefault*/false);

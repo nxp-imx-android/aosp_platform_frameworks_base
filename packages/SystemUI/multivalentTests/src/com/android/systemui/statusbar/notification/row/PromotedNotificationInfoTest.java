@@ -46,7 +46,6 @@ import com.android.internal.logging.testing.UiEventLoggerFake;
 import com.android.systemui.Dependency;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.res.R;
-import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
@@ -106,8 +105,6 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     @Mock
     private PackageDemotionInteractor mPackageDemotionInteractor;
     @Mock
-    private AssistantFeedbackController mAssistantFeedbackController;
-    @Mock
     private TelecomManager mTelecomManager;
 
     @Before
@@ -135,7 +132,6 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 mock(NotifPipeline.class)
         ).create(mEntry);
         mRanking = mEntry.getRanking();
-        when(mAssistantFeedbackController.isFeedbackEnabled()).thenReturn(false);
 
         mTestableLooper = TestableLooper.get(this);
 
@@ -179,7 +175,6 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 false,
                 true,
                 true,
-                mAssistantFeedbackController,
                 mMetricsLogger,
                 null);
         // Click demote button

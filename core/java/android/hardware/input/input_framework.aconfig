@@ -48,14 +48,6 @@ flag {
     description: "Controls whether the connected mice's primary buttons, left and right, can be swapped."
     bug: "352598211"
 }
-
-flag {
-    name: "keyboard_a11y_shortcut_control"
-    namespace: "input"
-    description: "Adds shortcuts to toggle and control a11y keyboard features"
-    bug: "373458181"
-}
-
 flag {
     name: "touchpad_system_gesture_disable"
     namespace: "input"
@@ -87,7 +79,7 @@ flag {
 
 flag {
     name: "enable_display_color_inversion_key_gestures"
-    namespace: "input"
+    namespace: "accessibility"
     description: "Adds key gestures for display color inversion for accessibility needs"
     bug: "383730505"
 }

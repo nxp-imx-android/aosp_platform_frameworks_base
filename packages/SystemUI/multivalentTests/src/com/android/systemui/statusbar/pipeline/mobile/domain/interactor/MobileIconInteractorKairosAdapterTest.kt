@@ -22,7 +22,6 @@ import com.android.settingslib.SignalIcon
 import com.android.settingslib.mobile.MobileIconCarrierIdOverrides
 import com.android.systemui.activated
 import com.android.systemui.kairos.BuildScope
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.asIncremental
@@ -38,7 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
 import org.junit.runner.RunWith
 
-@OptIn(ExperimentalKairosApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileIconInteractorKairosAdapterTest : MobileIconInteractorTestBase() {

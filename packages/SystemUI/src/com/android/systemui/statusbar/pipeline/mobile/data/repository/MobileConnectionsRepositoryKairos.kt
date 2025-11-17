@@ -22,7 +22,6 @@ import com.android.settingslib.SignalIcon.MobileIconGroup
 import com.android.settingslib.mobile.MobileMappings
 import com.android.settingslib.mobile.MobileMappings.Config
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
@@ -31,7 +30,6 @@ import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionMod
  * Repo for monitoring the complete active subscription info list, to be consumed and filtered based
  * on various policy
  */
-@ExperimentalKairosApi
 interface MobileConnectionsRepositoryKairos {
 
     /** All active mobile connections. */

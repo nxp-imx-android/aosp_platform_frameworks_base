@@ -396,4 +396,10 @@ public abstract class DevicePolicyManagerInternal {
      */
     public abstract void removeLocalPoliciesForSystemEntities(
             @UserIdInt int userId, @NonNull List<String> systemEntities);
+
+    /**
+     * Checks if the USB_DATA_SIGNALING policy is enabled
+     * @return true if USB_DATA_SIGNALING is enabled, false otherwise.
+     */
+    public abstract boolean isUsbDataSignalingEnabled();
 }

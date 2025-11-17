@@ -16,9 +16,9 @@
 
 package com.android.systemui.screencapture.sharescreen.domain.interactor
 
-import com.android.app.activityTaskManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
 import com.android.systemui.util.AsyncActivityLauncher
 import org.mockito.kotlin.mock
 
@@ -26,7 +26,7 @@ val Kosmos.mockAsyncActivityLauncher: AsyncActivityLauncher by Fixture { mock() 
 
 val Kosmos.shareScreenUiInteractor: ShareScreenUiInteractor by Fixture {
     ShareScreenUiInteractor(
-        activityTaskManager = activityTaskManager,
+        recentTaskInteractor = screenCaptureRecentTaskInteractor,
         asyncActivityLauncher = mockAsyncActivityLauncher,
     )
 }

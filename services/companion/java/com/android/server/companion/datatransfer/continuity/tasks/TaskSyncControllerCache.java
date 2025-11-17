@@ -30,7 +30,7 @@ import java.util.Objects;
 public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncController> {
 
     private final Context mContext;
-    private final TaskContinuityMessenger mTaskContinuityMessenger;
+    private final MultiUserResourceCache<TaskContinuityMessenger> mTaskContinuityMessengerCache;
     private final ActivityTaskManager mActivityTaskManager;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final AppOpsManager mAppOps;
@@ -38,9 +38,10 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
     private final RemoteTaskFactory mRemoteTaskFactory;
 
     public TaskSyncControllerCache(
-            @NonNull Context context, @NonNull TaskContinuityMessenger taskContinuityMessenger) {
+            @NonNull Context context,
+            @NonNull MultiUserResourceCache<TaskContinuityMessenger> taskContinuityMessengerCache) {
         mContext = Objects.requireNonNull(context);
-        mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
+        mTaskContinuityMessengerCache = Objects.requireNonNull(taskContinuityMessengerCache);
         mActivityTaskManager =
                 Objects.requireNonNull(context.getSystemService(ActivityTaskManager.class));
         mActivityTaskManagerInternal =
@@ -52,16 +53,17 @@ public class TaskSyncControllerCache extends MultiUserResourceCache<TaskSyncCont
 
     @Override
     protected TaskSyncController createResourceForUser(int userId) {
+        TaskContinuityMessenger taskContinuityMessenger =
+                mTaskContinuityMessengerCache.getOrCreateResource(userId);
         return new TaskSyncController(
                 userId,
-                mTaskContinuityMessenger,
+                taskContinuityMessenger,
                 new TaskBroadcaster(
-                        mTaskContinuityMessenger,
+                        taskContinuityMessenger,
                         new RunningTaskFetcher(
                                 userId,
                                 mActivityTaskManager,
                                 mActivityTaskManagerInternal,
-                                mPackageManager,
                                 mAppOps)),
                 new RemoteTaskStore(),
                 new RemoteTaskListenerHolder(),

@@ -2650,8 +2650,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
     )
     fun addActiveTask_toTransientDesk_persistentRepoNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
@@ -2681,8 +2680,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
     )
     fun removeActiveTask_fromTransientDesk_listenersNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
@@ -2714,8 +2712,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
     )
     fun preserveDesk_transientDeskRemoved() = runTest {
         val listener = TestDeskChangeListener()
@@ -2750,8 +2747,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
     )
     fun minimizeTask_inTransientDesk_persistentRepoNotUpdated() = runTest {
         val listener = TestDeskChangeListener()

@@ -62,14 +62,13 @@ constructor(
     transitions: Set<@JvmSuppressWildcards DeviceEntryIconTransition>,
     burnInInteractor: BurnInInteractor,
     shadeInteractor: ShadeInteractor,
-    deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
+    private val deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
     transitionInteractor: KeyguardTransitionInteractor,
-    val keyguardInteractor: KeyguardInteractor,
-    val viewModel: AodToLockscreenTransitionViewModel,
+    private val keyguardInteractor: KeyguardInteractor,
     private val keyguardViewController: Lazy<KeyguardViewController>,
     private val deviceEntryInteractor: DeviceEntryInteractor,
     private val deviceEntrySourceInteractor: DeviceEntrySourceInteractor,
-    private val accessibilityInteractor: AccessibilityInteractor,
+    accessibilityInteractor: AccessibilityInteractor,
     @Application private val scope: CoroutineScope,
 ) {
     val isUdfpsSupported: StateFlow<Boolean> = deviceEntryUdfpsInteractor.isUdfpsSupported
@@ -79,6 +78,9 @@ constructor(
             started = SharingStarted.Eagerly,
             initialValue = null,
         )
+    val scaleFactor: Float
+        get() = deviceEntryUdfpsInteractor.scaleFactor
+
     private val intEvaluator = IntEvaluator()
     private val floatEvaluator = FloatEvaluator()
     private val showingAlternateBouncer: Flow<Boolean> =
@@ -148,7 +150,14 @@ constructor(
                             Edge.create(from = KeyguardState.DOZING, to = null)
                         ),
                     )
-                    .map { step -> step.to != KeyguardState.DOZING && step.to != KeyguardState.AOD }
+                    .map { step ->
+                        val goingToAodOrDozing =
+                            step.to == KeyguardState.AOD || step.to == KeyguardState.DOZING
+                        val leavingAodOrDozingForGone =
+                            (step.from == KeyguardState.AOD || step.from == KeyguardState.DOZING) &&
+                                step.to == KeyguardState.UNDEFINED
+                        !goingToAodOrDozing && !leavingAodOrDozingForGone
+                    }
                     .onStart { emit(true) }
             }
         }

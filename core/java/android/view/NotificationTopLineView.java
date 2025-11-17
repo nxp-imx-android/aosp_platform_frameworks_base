@@ -52,9 +52,6 @@ public class NotificationTopLineView extends ViewGroup {
     private View mHeaderTextDivider;
     private View mSecondaryHeaderText;
     private View mSecondaryHeaderTextDivider;
-    private OnClickListener mFeedbackListener;
-    private HeaderTouchListener mTouchListener = new HeaderTouchListener();
-    private View mFeedbackIcon;
     private View mVerificationText;
     private View mExtraToplineContent;
     private int mHeaderTextMarginEnd;
@@ -110,7 +107,6 @@ public class NotificationTopLineView extends ViewGroup {
         mHeaderTextDivider = findViewById(R.id.header_text_divider);
         mSecondaryHeaderText = findViewById(R.id.header_text_secondary);
         mSecondaryHeaderTextDivider = findViewById(R.id.header_text_secondary_divider);
-        mFeedbackIcon = findViewById(R.id.feedback);
         mVerificationText = findViewById(R.id.verification_text);
         mExtraToplineContent = findViewById(R.id.extra_topline_content);
     }
@@ -262,30 +258,11 @@ public class NotificationTopLineView extends ViewGroup {
             }
             isFirstVisibleChild = false;
         }
-        updateTouchListener();
     }
 
     @Override
     public LayoutParams generateLayoutParams(AttributeSet attrs) {
         return new MarginLayoutParams(getContext(), attrs);
-    }
-
-    private void updateTouchListener() {
-        if (mFeedbackListener == null) {
-            setOnTouchListener(null);
-            return;
-        }
-        setOnTouchListener(mTouchListener);
-        mTouchListener.bindTouchRects();
-    }
-
-    /**
-     * Sets onclick listener for feedback icon.
-     */
-    public void setFeedbackOnClickListener(OnClickListener l) {
-        mFeedbackListener = l;
-        mFeedbackIcon.setOnClickListener(mFeedbackListener);
-        updateTouchListener();
     }
 
     /**
@@ -316,94 +293,6 @@ public class NotificationTopLineView extends ViewGroup {
         setPaddingRelative(paddingStart, getPaddingTop(), getPaddingEnd(), getPaddingBottom());
     }
 
-    private class HeaderTouchListener implements OnTouchListener {
-
-        private Rect mFeedbackRect;
-        private int mTouchSlop;
-        private boolean mTrackGesture;
-        private float mDownX;
-        private float mDownY;
-
-        HeaderTouchListener() {
-        }
-
-        public void bindTouchRects() {
-            mFeedbackRect = getRectAroundView(mFeedbackIcon);
-            mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-        }
-
-        private Rect getRectAroundView(View view) {
-            float size = 48 * getResources().getDisplayMetrics().density;
-            float width = Math.max(size, view.getWidth());
-            float height = Math.max(size, view.getHeight());
-            final Rect r = new Rect();
-            if (view.getVisibility() == GONE) {
-                view = getFirstChildNotGone();
-                r.left = (int) (view.getLeft() - width / 2.0f);
-            } else {
-                r.left = (int) ((view.getLeft() + view.getRight()) / 2.0f - width / 2.0f);
-            }
-            r.top = (int) ((view.getTop() + view.getBottom()) / 2.0f - height / 2.0f);
-            r.bottom = (int) (r.top + height);
-            r.right = (int) (r.left + width);
-            return r;
-        }
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            float x = event.getX();
-            float y = event.getY();
-            switch (event.getActionMasked() & MotionEvent.ACTION_MASK) {
-                case MotionEvent.ACTION_DOWN:
-                    mTrackGesture = false;
-                    if (isInside(x, y)) {
-                        mDownX = x;
-                        mDownY = y;
-                        mTrackGesture = true;
-                        return true;
-                    }
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (mTrackGesture) {
-                        if (Math.abs(mDownX - x) > mTouchSlop
-                                || Math.abs(mDownY - y) > mTouchSlop) {
-                            mTrackGesture = false;
-                        }
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if (mTrackGesture && onTouchUp(x, y, mDownX, mDownY)) {
-                        return true;
-                    }
-                    break;
-            }
-            return mTrackGesture;
-        }
-
-        private boolean onTouchUp(float upX, float upY, float downX, float downY) {
-            if (mFeedbackIcon.isVisibleToUser()
-                    && (mFeedbackRect.contains((int) upX, (int) upY)
-                    || mFeedbackRect.contains((int) downX, (int) downY))) {
-                mFeedbackIcon.performClick();
-                return true;
-            }
-            return false;
-        }
-
-        private boolean isInside(float x, float y) {
-            return mFeedbackRect.contains((int) x, (int) y);
-        }
-    }
-
-    private View getFirstChildNotGone() {
-        for (int i = 0; i < getChildCount(); i++) {
-            final View child = getChildAt(i);
-            if (child.getVisibility() != GONE) {
-                return child;
-            }
-        }
-        return this;
-    }
 
     @Override
     public boolean hasOverlappingRendering() {
@@ -421,20 +310,14 @@ public class NotificationTopLineView extends ViewGroup {
      * Determine if the given point is touching an active part of the top line.
      */
     public boolean isInTouchRect(float x, float y) {
-        if (mFeedbackListener == null) {
-            return false;
-        }
-        return mTouchListener.isInside(x, y);
+        return false;
     }
 
     /**
      * Perform a click on an active part of the top line, if touching.
      */
     public boolean onTouchUp(float upX, float upY, float downX, float downY) {
-        if (mFeedbackListener == null) {
-            return false;
-        }
-        return mTouchListener.onTouchUp(upX, upY, downX, downY);
+        return false;
     }
 
     private final class OverflowAdjuster {

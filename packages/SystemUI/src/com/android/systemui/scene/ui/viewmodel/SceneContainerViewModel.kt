@@ -17,6 +17,7 @@
 package com.android.systemui.scene.ui.viewmodel
 
 import android.content.res.Resources
+import android.os.Build
 import android.view.MotionEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
@@ -56,6 +57,7 @@ import com.android.systemui.statusbar.domain.interactor.RemoteInputInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.NotificationContainerInteractor
 import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificationContainer
 import com.android.systemui.wallpapers.ui.viewmodel.WallpaperViewModel
+import dagger.Lazy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -71,7 +73,7 @@ class SceneContainerViewModel
 constructor(
     @ShadeDisplayAware private val resources: Resources,
     private val sceneInteractor: SceneInteractor,
-    private val desktopInteractor: DesktopInteractor,
+    desktopInteractor: DesktopInteractor,
     private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
     private val falsingInteractor: FalsingInteractor,
     private val powerInteractor: PowerInteractor,
@@ -88,8 +90,9 @@ constructor(
     val clock: KeyguardClockViewModel,
     val dualShadeEducationalTooltipsViewModelFactory: DualShadeEducationalTooltipsViewModel.Factory,
     val animateQsTilesViewModelFactory: AnimateQsTilesViewModel.Factory,
+    sceneTransitionBlurViewModelFactory: SceneTransitionBlurViewModel.Factory,
+    private val toastDisplayer: Lazy<SceneContainerToastDisplayer>,
     @Assisted private val motionEventHandlerReceiver: (MotionEventHandler?) -> Unit,
-    private val sceneTransitionBlurViewModelFactory: SceneTransitionBlurViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     /** The scene that should be rendered. */
@@ -269,7 +272,7 @@ constructor(
         if (
             toScene == Scenes.Gone && !deviceUnlockedInteractor.deviceUnlockStatus.value.isUnlocked
         ) {
-            logger.logSceneChangeRejection(
+            logger.logContentChangeRejection(
                 from = currentScene.value,
                 to = toScene,
                 originalChangeReason = null,
@@ -280,7 +283,8 @@ constructor(
         }
 
         if (!isInteractionAllowedByFalsing(toScene)) {
-            logger.logSceneChangeRejection(
+            showDebuggingToast("${toScene.debugName} rejected: false touch")
+            logger.logContentChangeRejection(
                 from = currentScene.value,
                 to = toScene,
                 originalChangeReason = null,
@@ -294,7 +298,7 @@ constructor(
         logger.logSceneChanged(
             from = currentScene.value,
             to = toScene,
-            sceneState = null,
+            keyguardState = null,
             reason = "user interaction",
             isInstant = false,
         )
@@ -311,13 +315,23 @@ constructor(
         newlyShown: OverlayKey,
         beingReplaced: OverlayKey? = null,
     ): Boolean {
-        return isInteractionAllowedByFalsing(newlyShown).also {
+        return if (isInteractionAllowedByFalsing(newlyShown)) {
             // An overlay change is guaranteed; log it.
             logger.logOverlayChangeRequested(
                 from = beingReplaced,
                 to = newlyShown,
                 reason = "user interaction",
             )
+            true
+        } else {
+            showDebuggingToast("${newlyShown.debugName} rejected: false touch")
+            logger.logContentChangeRejection(
+                from = beingReplaced,
+                to = newlyShown,
+                originalChangeReason = null,
+                rejectionReason = "Falsing: false touch detected",
+            )
+            false
         }
     }
 
@@ -394,6 +408,7 @@ constructor(
         val interactionTypeOrNull =
             when (content) {
                 Overlays.Bouncer -> Classifier.BOUNCER_SWIPE
+                Scenes.Communal -> Classifier.GLANCEABLE_HUB_SWIPE
                 Scenes.Gone -> Classifier.UNLOCK
                 Scenes.Shade -> Classifier.SHADE_DRAG
                 Overlays.NotificationsShade -> Classifier.NOTIFICATION_DRAG_DOWN
@@ -412,6 +427,14 @@ constructor(
 
             !fromLockscreenScene || !isFalseTouch
         } ?: true
+    }
+
+    private fun showDebuggingToast(text: String) {
+        if (!Build.IS_ENG && !Build.IS_USERDEBUG) {
+            return
+        }
+
+        toastDisplayer.get().displayToast(text)
     }
 
     /** Defines interface for classes that can handle externally-reported [MotionEvent]s. */

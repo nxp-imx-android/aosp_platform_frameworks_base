@@ -81,6 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"Αποθήκευση στιγμιότυπου οθόνης σε ιδιωτικό"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"Το στιγμιότυπο οθόνης αποθηκεύτηκε"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Μη δυνατή αποθήκευση του στιγμιότυπου οθόνης"</string>
+    <string name="screenshot_save_to" msgid="3294574417295882864">"Αποθήκευση σε"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"Επιλογή φακέλου"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Εξωτερική οθόνη"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Η συσκευή πρέπει να ξεκλειδωθεί για να αποθηκευτεί το στιγμιότυπο οθόνης."</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Δοκιμάστε να κάνετε ξανά λήψη του στιγμιότυπου οθόνης"</string>
@@ -171,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Κοινή χρήση ήχου"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Κοινή χρήση παραθύρου εφαρμογής"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Κοινή χρήση καρτέλας"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"Κοινή χρήση ολόκληρης της οθόνης"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"Όταν μοιράζεστε μια εφαρμογή, όλο το περιεχόμενο που εμφανίζεται ή αναπαράγεται στην εφαρμογή είναι ορατό στην εφαρμογή [APP NAME]. Επομένως, να είστε προσεκτικοί με τους κωδικούς πρόσβασης, τα στοιχεία πληρωμής, τα μηνύματα, τις φωτογραφίες, τον ήχο και το βίντεο."</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"Όταν μοιράζεστε ολόκληρη την οθόνη, όλο το περιεχόμενο που εμφανίζεται στην οθόνη είναι ορατό στην εφαρμογή [APP NAME]. Επομένως, να είστε προσεκτικοί με τους κωδικούς πρόσβασης, τα στοιχεία πληρωμής, τα μηνύματα, τις φωτογραφίες, τον ήχο και το βίντεο."</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"Λήψη στιγμιότυπου οθόνης του παραθύρου"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"Εγγραφή παραθύρου"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"Λήψη στιγμιότυπου οθόνης της επιλεγμένης περιοχής"</string>
@@ -709,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"Διαγραφή όλων"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"Διαχείριση"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"Ιστορικό"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"Ρυθμίσεις ειδοποιήσεων"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"Ιστορικό ειδοποιήσεων"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"Νέα"</string>
@@ -727,7 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"Αυτόματη μείωση έντασης ήχου συσκευής και ειδοποιήσεων για έως 2 λεπτά όταν λαμβάνετε πολλές ειδοποιήσεις ταυτόχρονα."</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Απενεργοποίηση"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Ξεκλειδώστε για εμφάνιση παλαιότ. ειδοπ."</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Αυτή η συσκευή είναι διαχειριζόμενη από τον γονέα σου"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"Ο γονέας σου διαχειρίζεται ορισμένες ρυθμίσεις"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"Ο γονέας σου διαχειρίζεται αυτή τη συσκευή"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Ορισμένες ρυθμίσεις συσκευής προστατεύονται με PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Ο οργανισμός σας κατέχει αυτήν τη συσκευή και μπορεί να παρακολουθεί την επισκεψιμότητα δικτύου."</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Ο οργανισμός <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> κατέχει αυτήν τη συσκευή και μπορεί να παρακολουθεί την επισκεψιμότητα δικτύου."</string>
@@ -903,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"Συγχαρητήρια! Το System UI Tuner προστέθηκε στις Ρυθμίσεις"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"Κατάργηση από τις Ρυθμίσεις"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"Κατάργηση System UI Tuner από τις Ρυθμίσεις και διακοπή χρήσης όλων των λειτουργιών του;"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Ενεργοποίηση Bluetooth;"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Για να συνδέσετε το πληκτρολόγιο με το tablet σας, θα πρέπει πρώτα να ενεργοποιήσετε το Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Ενεργοποίηση"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Δεν είναι δυνατή η τροποποίηση των ειδοποιήσεων κλήσεων."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Δεν είναι δυνατή η διαμόρφωση αυτής της ομάδας ειδοποιήσεων εδώ"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"Ειδοποίηση μέσω διακομιστή μεσολάβησης"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"Συνοψίστηκε από την εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"Και των <xliff:g id="APP_NAME">%1$s</xliff:g> ειδοποιήσεων"</string>
     <string name="see_more_title" msgid="7409317011708185729">"Εμφάνιση περισσότερων"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"Αυτή η ειδοποίηση &lt;b&gt;προάχθηκε σε Προεπιλογή&lt;/b&gt; αυτόματα από το σύστημα."</string>
@@ -1410,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Προτεινόμενα"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Είσοδος"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Έξοδος"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Διακόψτε την κοινόχρηστη περίοδο λειτουργίας για να μεταφέρετε μέσα σε άλλη συσκευή"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Διακοπή"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Διακοπή κοινής χρήσης"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Κοινή χρήση ήχου σε εξέλιξη"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Κοινή χρήση ήχου"</string>
@@ -1736,12 +1737,15 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Σύρετε από επάνω αριστερά, για να ανοίξετε τις ειδοποιήσεις"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Σύρετε από επάνω δεξιά, για να ανοίξετε τις Γρήγορες ρυθμίσεις"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Πίσω"</string>
-    <!-- no translation found for sign_in_button_on_bouncer (3595960142516902559) -->
-    <skip />
+    <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Σύνδεση"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Προσβασιμότητα"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Προηγούμενο"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Επόμενο"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"πλοήγηση στην επόμενη σελίδα"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"αυτόματη συμπλήρωση"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ανάπτυξη"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Κοινοποίηση ακριβούς τοποθεσίας"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Χρήση ακριβούς τοποθεσίας"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"Κοντά στην ακριβή τοποθεσία"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"Ακριβής τοποθεσία"</string>
 </resources>

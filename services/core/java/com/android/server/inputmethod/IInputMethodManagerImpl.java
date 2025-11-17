@@ -24,8 +24,8 @@ import android.annotation.BinderThread;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.annotation.UserIdInt;
 import android.os.Binder;
 import android.os.IBinder;
@@ -47,6 +47,7 @@ import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
+import com.android.internal.inputmethod.InputMethodSubtypeSafeList;
 import com.android.internal.inputmethod.StartInputFlags;
 import com.android.internal.inputmethod.StartInputReason;
 import com.android.internal.view.IInputMethodManager;
@@ -100,13 +101,7 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         InputMethodInfoSafeList getEnabledInputMethodList(@UserIdInt int userId);
 
         @NonNull
-        List<InputMethodInfo> getInputMethodListLegacy(@UserIdInt int userId,
-                @DirectBootAwareness int directBootAwareness);
-
-        @NonNull
-        List<InputMethodInfo> getEnabledInputMethodListLegacy(@UserIdInt int userId);
-
-        List<InputMethodSubtype> getEnabledInputMethodSubtypeList(String imiId,
+        InputMethodSubtypeSafeList getEnabledInputMethodSubtypeList(String imiId,
                 boolean allowsImplicitlyEnabledSubtypes, @UserIdInt int userId);
 
         InputMethodSubtype getLastInputMethodSubtype(@UserIdInt int userId);
@@ -269,19 +264,7 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
 
     @NonNull
     @Override
-    public List<InputMethodInfo> getInputMethodListLegacy(@UserIdInt int userId,
-            int directBootAwareness) {
-        return mCallback.getInputMethodListLegacy(userId, directBootAwareness);
-    }
-
-    @NonNull
-    @Override
-    public List<InputMethodInfo> getEnabledInputMethodListLegacy(@UserIdInt int userId) {
-        return mCallback.getEnabledInputMethodListLegacy(userId);
-    }
-
-    @Override
-    public List<InputMethodSubtype> getEnabledInputMethodSubtypeList(String imiId,
+    public InputMethodSubtypeSafeList getEnabledInputMethodSubtypeList(String imiId,
             boolean allowsImplicitlyEnabledSubtypes, @UserIdInt int userId) {
         return mCallback.getEnabledInputMethodSubtypeList(imiId, allowsImplicitlyEnabledSubtypes,
                 userId);

@@ -396,7 +396,8 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
      */
     @VisibleForTesting
     void validateDragFlags(int flags, int callingUid) {
-        if ((flags & View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION) != 0) {
+        if ((flags & View.DRAG_FLAG_DISABLE_DEFAULT_POINTER_ICON) != 0
+                || (flags & View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION) != 0) {
             if (!mCanStartTasksFromRecents) {
                 throw new SecurityException("Requires START_TASKS_FROM_RECENTS permission");
             }

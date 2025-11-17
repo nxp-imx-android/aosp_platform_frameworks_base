@@ -34,7 +34,6 @@ import android.widget.TextView;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.res.R;
-import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
@@ -78,14 +77,13 @@ public class PromotedNotificationInfo extends NotificationInfo {
             boolean isNonblockable,
             boolean isDismissable,
             boolean wasShownHighPriority,
-            AssistantFeedbackController assistantFeedbackController,
             MetricsLogger metricsLogger, OnClickListener onCloseClick) throws RemoteException {
         super.bindNotification(pm, iNotificationManager, appIconProvider, iconStyleProvider,
                 onUserInteractionCallback, channelEditorDialogController,
                 packageDemotionInteractor, pkg, ranking, sbn,
                 entry, entryAdapter, onSettingsClick, onAppSettingsClick, feedbackClickListener,
                 uiEventLogger, isDeviceProvisioned, isNonblockable, isDismissable,
-                wasShownHighPriority, assistantFeedbackController, metricsLogger, onCloseClick);
+                wasShownHighPriority, metricsLogger, onCloseClick);
 
         mNotificationManager = iNotificationManager;
 

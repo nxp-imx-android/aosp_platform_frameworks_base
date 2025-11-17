@@ -18,7 +18,6 @@ package android.app;
 
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.app.ConfigurationController.createNewConfigAndUpdateIfNotNull;
-import static android.app.Flags.earlyRenderThreadPriorityBoost;
 import static android.app.Flags.skipBgMemTrimOnFgApp;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
@@ -4695,18 +4694,14 @@ public final class ActivityThread extends ClientTransactionHandler
         // Initialize before creating the activity
         if (ThreadedRenderer.sRendererEnabled
                 && (r.activityInfo.flags & ActivityInfo.FLAG_HARDWARE_ACCELERATED) != 0) {
-            if (earlyRenderThreadPriorityBoost()) {
-                final int tid = HardwareRenderer.preload();
-                // Adjust the RenderThread priority as soon as it's created.
-                if (tid > 0) {
-                    try {
-                        ActivityManager.getService().setRenderThread(tid);
-                    } catch (Throwable t) {
-                        Log.w(TAG, "Failed to set scheduler for RenderThread", t);
-                    }
+            final int tid = HardwareRenderer.preload();
+            // Adjust the RenderThread priority as soon as it's created.
+            if (tid > 0) {
+                try {
+                    ActivityManager.getService().setRenderThread(tid);
+                } catch (Throwable t) {
+                    Log.w(TAG, "Failed to set scheduler for RenderThread", t);
                 }
-            } else {
-                HardwareRenderer.preload();
             }
         }
 
@@ -7127,11 +7122,9 @@ public final class ActivityThread extends ClientTransactionHandler
             return true;
         }
 
-        if (android.content.res.Flags.handleAllConfigChanges()) {
-            if ((handledConfigChanges & CONFIG_RESOURCES_UNUSED) != 0) {
-                // Report the change if activities claim they do not use resources at all.
-                return true;
-            }
+        if ((handledConfigChanges & CONFIG_RESOURCES_UNUSED) != 0) {
+            // Report the change if activities claim they do not use resources at all.
+            return true;
         }
 
         final int diffWithBucket = SizeConfigurationBuckets.filterDiff(publicDiff, currentConfig,

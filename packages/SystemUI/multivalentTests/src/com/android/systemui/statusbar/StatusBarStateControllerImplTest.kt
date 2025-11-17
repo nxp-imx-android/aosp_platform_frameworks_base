@@ -109,12 +109,16 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             underTest.state = StatusBarState.SHADE_LOCKED
         }
 
-        val logs = kosmos.uiEventLoggerFake.logs
-        assertEquals(3, logs.size)
-        val ids = logs.map(UiEventLoggerFake.FakeUiEvent::eventId)
-        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_KEYGUARD.id, ids[0])
-        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_SHADE.id, ids[1])
-        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_SHADE_LOCKED.id, ids[2])
+        val stateLogIds =
+            kosmos.uiEventLoggerFake.logs.map(UiEventLoggerFake.FakeUiEvent::eventId).filter {
+                it == StatusBarStateEvent.STATUS_BAR_STATE_KEYGUARD.id ||
+                    it == StatusBarStateEvent.STATUS_BAR_STATE_SHADE.id ||
+                    it == StatusBarStateEvent.STATUS_BAR_STATE_SHADE_LOCKED.id
+            }
+        assertEquals(3, stateLogIds.size)
+        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_KEYGUARD.id, stateLogIds[0])
+        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_SHADE.id, stateLogIds[1])
+        assertEquals(StatusBarStateEvent.STATUS_BAR_STATE_SHADE_LOCKED.id, stateLogIds[2])
     }
 
     @Test
@@ -185,7 +189,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         // Check that the doze amount is immediately set to a value slightly less than 1f. This is
         // to ensure that any scrim implementation changes its opacity immediately rather than
         // waiting an extra frame. Waiting an extra frame will cause a relayout (which is expensive)
-        // and cause us to drop a frame during the LOCKSCREEN_TRANSITION_FROM_AOD CUJ.
+        // and cause us to drop a frame during the KEYGUARD_TRANSITION_AOD_TO_LOCKSCREEN CUJ.
         assertEquals(0.99f, underTest.dozeAmount, 0.009f)
     }
 
@@ -282,7 +286,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(deviceUnlockStatus!!.isUnlocked).isTrue()
@@ -378,7 +382,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -424,7 +428,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             val deviceUnlockStatus by collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Password)
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
 
@@ -554,7 +558,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
 
             // unlock device
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(deviceUnlockStatus!!.isUnlocked).isTrue()

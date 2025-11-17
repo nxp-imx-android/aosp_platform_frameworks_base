@@ -111,7 +111,6 @@ import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.L
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import static com.android.server.power.feature.flags.Flags.interactiveDozeExperience;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
-import static com.android.systemui.shared.Flags.enableLppAssistInvocationHapticEffect;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.NonNull;
@@ -2604,13 +2603,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_ASSISTANT) {
                     handleSingleKeyGestureInKeyGestureController(
                             KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT, event);
-                    if (!enableLppAssistInvocationHapticEffect()
-                            && event.getAction() == ACTION_COMPLETE) {
-                        // The invocation effect will not play haptics so we must play the
-                        // assistant effect here
-                        performHapticFeedback(HapticFeedbackConstants.ASSISTANT_BUTTON,
-                                "Power - Long Press - Go To Assistant");
-                    }
                     return;
                 }
             }
@@ -3572,6 +3564,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN:
                 if (complete) {
                     lockNow(null /* options */);
+                    dismissKeyboardShortcutsMenu();
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL:

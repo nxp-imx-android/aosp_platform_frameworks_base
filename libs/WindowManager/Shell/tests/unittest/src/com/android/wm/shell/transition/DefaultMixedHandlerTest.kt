@@ -41,6 +41,7 @@ import com.android.wm.shell.bubbles.BubbleHelperImpl
 import com.android.wm.shell.bubbles.BubbleRootTask
 import com.android.wm.shell.bubbles.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.desktopmode.NormalAppLayerHandler
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
 import com.android.wm.shell.pip.PipTransitionController
@@ -98,6 +99,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         bubbleHelper,
     ))
     private val pinnedLayerHandler = mock<PinnedLayerHandler>()
+    private val normalAppLayerHandler = mock<NormalAppLayerHandler>()
     private val pipScheduler = mock<PipScheduler>()
 
     private val shellInit: ShellInit = ShellInit(TestShellExecutor())
@@ -107,6 +109,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         Optional.of(splitScreenController),
         pipTransitionController,
         Optional.of(pipScheduler),
+        normalAppLayerHandler,
         pinnedLayerHandler,
         Optional.of(recentsTransitionHandler),
         keyguardTransitionHandler,

@@ -372,7 +372,7 @@ public class StatusBarKeyguardViewManagerTest extends SysuiTestCase {
     @Test
     public void onPanelExpansionChanged_neverTranslatesBouncerWhenWakeAndUnlock() {
         when(mBiometricUnlockController.getMode())
-                .thenReturn(BiometricUnlockController.MODE_WAKE_AND_UNLOCK);
+                .thenReturn(BiometricUnlockController.MODE_WAKE_AND_DISMISS);
         mStatusBarKeyguardViewManager.onPanelExpansionChanged(
                 expansionEvent(
                         /* fraction= */ EXPANSION_VISIBLE,

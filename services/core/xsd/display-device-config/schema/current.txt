@@ -383,16 +383,20 @@ package com.android.server.display.config {
     method public final java.math.BigInteger getDefaultRefreshRate();
     method public final java.math.BigInteger getDefaultRefreshRateInHbmHdr();
     method public final java.math.BigInteger getDefaultRefreshRateInHbmSunlight();
+    method public final com.android.server.display.config.WorkDurations getDefaultWorkDurations();
     method public final com.android.server.display.config.BlockingZoneConfig getHigherBlockingZoneConfigs();
     method @Nullable public final com.android.server.display.config.NonNegativeFloatToFloatMap getLowPowerSupportedModes();
+    method @Nullable public final com.android.server.display.config.WorkDurations getLowPowerWorkDurations();
     method public final com.android.server.display.config.BlockingZoneConfig getLowerBlockingZoneConfigs();
     method public final com.android.server.display.config.RefreshRateZoneProfiles getRefreshRateZoneProfiles();
     method public final void setDefaultPeakRefreshRate(java.math.BigInteger);
     method public final void setDefaultRefreshRate(java.math.BigInteger);
     method public final void setDefaultRefreshRateInHbmHdr(java.math.BigInteger);
     method public final void setDefaultRefreshRateInHbmSunlight(java.math.BigInteger);
+    method public final void setDefaultWorkDurations(com.android.server.display.config.WorkDurations);
     method public final void setHigherBlockingZoneConfigs(com.android.server.display.config.BlockingZoneConfig);
     method public final void setLowPowerSupportedModes(@Nullable com.android.server.display.config.NonNegativeFloatToFloatMap);
+    method public final void setLowPowerWorkDurations(@Nullable com.android.server.display.config.WorkDurations);
     method public final void setLowerBlockingZoneConfigs(com.android.server.display.config.BlockingZoneConfig);
     method public final void setRefreshRateZoneProfiles(com.android.server.display.config.RefreshRateZoneProfiles);
   }
@@ -475,6 +479,7 @@ package com.android.server.display.config {
     ctor public ThermalThrottling();
     method public final java.util.List<com.android.server.display.config.BrightnessThrottlingMap> getBrightnessThrottlingMap();
     method public final java.util.List<com.android.server.display.config.RefreshRateThrottlingMap> getRefreshRateThrottlingMap();
+    method public final java.util.List<com.android.server.display.config.WorkDurationsThrottlingMap> getWorkDurationsThrottlingMap();
   }
 
   public class ThresholdPoint {
@@ -504,6 +509,31 @@ package com.android.server.display.config {
     method public final java.math.BigInteger getMinorVersion();
     method public final void setMajorVersion(java.math.BigInteger);
     method public final void setMinorVersion(java.math.BigInteger);
+  }
+
+  public class WorkDurations {
+    ctor public WorkDurations();
+    method public java.math.BigInteger getAppWorkDuration();
+    method public java.math.BigInteger getEarlyWorkDuration();
+    method public java.math.BigInteger getLateWorkDuration();
+    method public void setAppWorkDuration(java.math.BigInteger);
+    method public void setEarlyWorkDuration(java.math.BigInteger);
+    method public void setLateWorkDuration(java.math.BigInteger);
+  }
+
+  public class WorkDurationsThrottlingMap {
+    ctor public WorkDurationsThrottlingMap();
+    method public String getId();
+    method public final java.util.List<com.android.server.display.config.WorkDurationsThrottlingPair> getWorkDurationsThrottlingPair();
+    method public void setId(String);
+  }
+
+  public class WorkDurationsThrottlingPair {
+    ctor public WorkDurationsThrottlingPair();
+    method @NonNull public final com.android.server.display.config.ThermalStatus getThermalStatus();
+    method @Nullable public final com.android.server.display.config.WorkDurations getThermalThrottlingWorkDurations();
+    method public final void setThermalStatus(@NonNull com.android.server.display.config.ThermalStatus);
+    method public final void setThermalThrottlingWorkDurations(@Nullable com.android.server.display.config.WorkDurations);
   }
 
   public class XmlParser {

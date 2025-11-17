@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"နားကြားကိရိယာ"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"အများသုံးစွဲနိုင်မှုကို အသုံးပြုမှု"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"ဖန်သားပြင်"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"မိဘအထိန်းအချုပ်များ"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> က ဘက်ထရီကို အသုံးပြုနေသည်"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"အက်ပ် <xliff:g id="NUMBER">%1$d</xliff:g> ခုက ဘက်ထရီကို အသုံးပြုနေသည်"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"ဘက်ထရီနှင့် ဒေတာအသုံးပြုမှု အသေးစိတ်ကို ကြည့်ရန် တို့ပါ"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"သော့ဖွင့်ရန် PIN ကို ရိုက်ထည့်ပါ"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ပင်နံပါတ်မှားနေပါသည်"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"သော့ဖွင့်ရန် Menu ထိုနောက်0ကိုနှိပ်ပါ"</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"အရေးပေါ်နံပါတ်"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"ဝန်ဆောင်မှု မရှိပါ"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"မျက်နှာပြင်အားသော့ချထားသည်"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"ဖွင့်ရန်သို့မဟုတ်အရေးပေါ်ခေါ်ဆိုခြင်းပြုလုပ်ရန် မီနူးကိုနှိပ်ပါ"</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"စနစ်ရင်းမြစ် သတိပေးချက်များ"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ရင်းမြစ် အလွန်အကျွံသုံးစွဲခြင်း"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"\'<xliff:g id="APP_NAME">%1$s</xliff:g> အက်ပ်သည် ရင်းမြစ်များစွာကို သုံးနေသည်\"။"</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"သင့်မိဘထံမှ အပ်ဒိတ်"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို လောလောဆယ် ဖယ်ရှားထားသည်"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို ယခုရနိုင်ပါပြီ"</string>
 </resources>

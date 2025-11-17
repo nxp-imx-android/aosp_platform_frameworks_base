@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
  * be reported in different audio profiles. The application can choose any of the encapsulation
  * types.
  */
+@RavenwoodKeepWholeClass
 public class AudioProfile implements Parcelable {
     /**
      * No encapsulation type is specified.

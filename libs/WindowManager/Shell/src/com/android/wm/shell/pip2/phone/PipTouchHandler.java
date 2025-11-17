@@ -201,7 +201,8 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             PipUiEventLogger pipUiEventLogger,
             ShellExecutor mainExecutor,
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
-            PipDisplayTransferHandler pipDisplayTransferHandler) {
+            PipDisplayTransferHandler pipDisplayTransferHandler,
+            PipInteractionHandler pipInteractionHandler) {
         mContext = context;
         mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mShellCommandHandler = shellCommandHandler;
@@ -242,7 +243,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 pipBoundsAlgorithm,
                 pipBoundsState, mTouchState, mPipScheduler, mPipTransitionState, pipUiEventLogger,
                 menuController, this::getMovementBounds, mPipDisplayLayoutState, pipDesktopState,
-                mainExecutor, mPipPerfHintController);
+                mainExecutor, mPipPerfHintController, pipInteractionHandler);
         mPipBoundsState.addOnAspectRatioChangedCallback(aspectRatio -> onAspectRatioChanged());
 
         mMoveOnShelVisibilityChanged = () -> {

@@ -141,8 +141,12 @@ class BubbleBarAnimationHelperTest {
         val after = Runnable { semaphore.release() }
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, toBubble, /* shouldApplyAsJumpcut= */ false,
-                after)
+            animationHelper.animateSwitch(
+                fromBubble,
+                toBubble,
+                /* shouldApplyAsJumpcut= */ false,
+                after,
+            )
             animatorTestRule.advanceTimeBy(1000)
         }
         getInstrumentation().waitForIdleSync()
@@ -166,8 +170,12 @@ class BubbleBarAnimationHelperTest {
         val after = Runnable { semaphore.release() }
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, toBubble, /* shouldApplyAsJumpcut= */ true,
-                after)
+            animationHelper.animateSwitch(
+                fromBubble,
+                toBubble,
+                /* shouldApplyAsJumpcut= */ true,
+                after,
+            )
         }
         getInstrumentation().waitForIdleSync()
 
@@ -199,7 +207,11 @@ class BubbleBarAnimationHelperTest {
         activityScenario.onActivity {
             // Start an animation from A to B
             animationHelper.animateSwitch(
-                    bubbleA, bubbleB, /* shouldApplyAsJumpcut= */ false, /* endRunnable= */ null)
+                bubbleA,
+                bubbleB,
+                /* shouldApplyAsJumpcut= */ false,
+                /* endRunnable= */ null,
+            )
             // This simulates Bubble B has finished animating out
             bubbleB.bubbleBarExpandedView!!.visibility = View.INVISIBLE
             // Let it run for a bit, but not finish
@@ -224,8 +236,12 @@ class BubbleBarAnimationHelperTest {
         val toBubble = createBubble(key = "to").initialize(container)
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, toBubble, /* shouldApplyAsJumpcut= */ false,
-                /* afterAnimation= */ null)
+            animationHelper.animateSwitch(
+                fromBubble,
+                toBubble,
+                /* shouldApplyAsJumpcut= */ false,
+                /* afterAnimation= */ null,
+            )
             animatorTestRule.advanceTimeBy(1000)
         }
         getInstrumentation().waitForIdleSync()
@@ -239,11 +255,15 @@ class BubbleBarAnimationHelperTest {
         val fromBubble = createBubble("from").initialize(container)
         val toBubbleTaskController = mock<TaskViewTaskController>()
         val taskController = mock<TaskViewController>()
-        val toBubble = createBubble("to", taskController, toBubbleTaskController).initialize(
-            container)
+        val toBubble =
+            createBubble("to", taskController, toBubbleTaskController).initialize(container)
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, toBubble, /* shouldApplyAsJumpcut= */ false) {}
+            animationHelper.animateSwitch(
+                fromBubble,
+                toBubble,
+                /* shouldApplyAsJumpcut= */ false,
+            ) {}
             // Start the animation, but don't finish
             animatorTestRule.advanceTimeBy(100)
         }
@@ -265,8 +285,12 @@ class BubbleBarAnimationHelperTest {
         val after = Runnable { semaphore.release() }
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(fromBubble, overflow, /* shouldApplyAsJumpcut= */ false,
-                after)
+            animationHelper.animateSwitch(
+                fromBubble,
+                overflow,
+                /* shouldApplyAsJumpcut= */ false,
+                after,
+            )
             animatorTestRule.advanceTimeBy(1000)
         }
         getInstrumentation().waitForIdleSync()
@@ -289,8 +313,12 @@ class BubbleBarAnimationHelperTest {
         val after = Runnable { semaphore.release() }
 
         activityScenario.onActivity {
-            animationHelper.animateSwitch(overflow, toBubble, /* shouldApplyAsJumpcut= */ false,
-                after)
+            animationHelper.animateSwitch(
+                overflow,
+                toBubble,
+                /* shouldApplyAsJumpcut= */ false,
+                after,
+            )
             animatorTestRule.advanceTimeBy(1000)
         }
         getInstrumentation().waitForIdleSync()
@@ -392,15 +420,13 @@ class BubbleBarAnimationHelperTest {
         activityScenario.onActivity {
             bbev.onTaskCreated()
             // Make the TaskView invisible so that the animation waits on TaskView visibility.
-            bbev.bubbleTaskView!!.listener
-                .onTaskVisibilityChanged(0, false /* visible */)
+            bbev.bubbleTaskView!!.listener.onTaskVisibilityChanged(0, false /* visible */)
             animationHelper.animateExpansion(bubble, after)
             expandedViewWithPendingAnimationBefore =
                 animationHelper.expandedViewWithPendingAnimation
 
             animationHelper.cancelAnimations()
-            expandedViewWithPendingAnimationAfter =
-                animationHelper.expandedViewWithPendingAnimation
+            expandedViewWithPendingAnimationAfter = animationHelper.expandedViewWithPendingAnimation
         }
         getInstrumentation().waitForIdleSync()
 
@@ -510,6 +536,7 @@ class BubbleBarAnimationHelperTest {
 
     class TestActivity : Activity() {
         lateinit var container: FrameLayout
+
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             container = FrameLayout(applicationContext)

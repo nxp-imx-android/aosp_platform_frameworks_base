@@ -41,14 +41,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessibilityNew
@@ -112,9 +115,7 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.Flags
-import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
-import com.android.systemui.bouncer.ui.viewmodel.AuthMethodBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerMessageViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.MessageViewModel
@@ -202,6 +203,21 @@ fun ContentScope.BouncerContent(
             label = "offsetY",
         )
 
+    fun contentAlpha(): Float {
+        return if (isDraggingToBouncer()) {
+            min(
+                appearAnimationInterpolator.transform(
+                    // animate in along with the layout's transition
+                    layoutState.currentTransition!!.progress
+                ),
+                animatedAlpha,
+            )
+        } else {
+            // animate in separately from the layout's transition
+            animatedAlpha
+        }
+    }
+
     LaunchedEffect(Unit) {
         appearAnimationDelay =
             BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY.takeIf { viewModel.shouldDelayBouncerContent() }
@@ -237,21 +253,8 @@ fun ContentScope.BouncerContent(
                         }
                     IntOffset(x = 0, y = yOffset.toInt())
                 }
-                .graphicsLayer {
-                    alpha =
-                        if (isDraggingToBouncer()) {
-                            min(
-                                appearAnimationInterpolator.transform(
-                                    // animate in along with the layout's transition
-                                    layoutState.currentTransition!!.progress
-                                ),
-                                animatedAlpha,
-                            )
-                        } else {
-                            // animate in separately from the layout's transition
-                            animatedAlpha
-                        }
-                },
+                .graphicsLayer { alpha = contentAlpha() },
+        alphaOnEntry = { contentAlpha() },
     )
 }
 
@@ -262,9 +265,9 @@ fun ContentScope.BouncerContentLayout(
     viewModel: BouncerOverlayContentViewModel,
     dialogFactory: BouncerDialogFactory,
     modifier: Modifier,
+    alphaOnEntry: () -> Float,
 ) {
     val scale by viewModel.scale.collectAsStateWithLifecycle()
-    val showSignInButton by viewModel.showSignInButton.collectAsStateWithLifecycle()
     Box(
         modifier =
             modifier
@@ -272,14 +275,17 @@ fun ContentScope.BouncerContentLayout(
                 .semantics { customActions = viewModel.accessibilityActions }
                 .scale(scale)
                 .pointerInput(Unit) { detectTapGestures { viewModel.backgroundTap() } }
+                .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         when (layout) {
-            BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
+            BouncerOverlayLayout.STANDARD_BOUNCER ->
+                StandardLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
             BouncerOverlayLayout.BESIDE_USER_SWITCHER ->
-                BesideUserSwitcherLayout(viewModel = viewModel)
+                BesideUserSwitcherLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
             BouncerOverlayLayout.BELOW_USER_SWITCHER ->
-                BelowUserSwitcherLayout(viewModel = viewModel)
-            BouncerOverlayLayout.SPLIT_BOUNCER -> SplitLayout(viewModel = viewModel)
+                BelowUserSwitcherLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
+            BouncerOverlayLayout.SPLIT_BOUNCER ->
+                SplitLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
         }
 
         Dialog(bouncerViewModel = viewModel, dialogFactory = dialogFactory)
@@ -291,14 +297,12 @@ fun ContentScope.BouncerContentLayout(
                 modifier = Modifier.align(Alignment.BottomStart).testTag("BackButton"),
             )
         }
-        if (showSignInButton) {
-            val isSignInButtonEnabled by
-                viewModel.isSignInButtonEnabled.collectAsStateWithLifecycle()
+        if (viewModel.showSignInButton) {
             FilledTextButton(
                 onClick = viewModel::onSignIn,
                 text = stringResource(R.string.sign_in_button_on_bouncer),
                 modifier = Modifier.align(Alignment.BottomEnd).testTag("SignInButton"),
-                enabled = isSignInButtonEnabled,
+                enabled = viewModel.isSignInButtonEnabled,
             )
         }
         if (viewModel.showAccessibilityButton) {
@@ -320,6 +324,7 @@ fun ContentScope.BouncerContentLayout(
 @Composable
 private fun ContentScope.StandardLayout(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val isHeightExpanded =
@@ -339,6 +344,7 @@ private fun ContentScope.StandardLayout(
 
                 OutputArea(
                     viewModel = viewModel,
+                    alphaOnEntry = alphaOnEntry,
                     modifier = Modifier.padding(top = if (isHeightExpanded) 96.dp else 64.dp),
                 )
             }
@@ -378,22 +384,26 @@ private fun ContentScope.StandardLayout(
 @Composable
 private fun ContentScope.SplitLayout(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
-    val authMethod by viewModel.authMethodViewModel.collectAsStateWithLifecycle()
-
     Row(
         modifier =
             modifier
                 .fillMaxHeight()
                 .padding(
                     horizontal = 24.dp,
-                    vertical = if (authMethod is PasswordBouncerViewModel) 24.dp else 48.dp,
+                    vertical =
+                        if (viewModel.authMethodViewModel is PasswordBouncerViewModel) {
+                            24.dp
+                        } else {
+                            48.dp
+                        },
                 )
     ) {
         // Left side (in left-to-right locales).
         Box(modifier = Modifier.fillMaxHeight().weight(1f)) {
-            when (authMethod) {
+            when (viewModel.authMethodViewModel) {
                 is PinBouncerViewModel -> {
                     StatusMessage(
                         viewModel = viewModel.message,
@@ -401,6 +411,7 @@ private fun ContentScope.SplitLayout(
                     )
                     OutputArea(
                         viewModel = viewModel,
+                        alphaOnEntry = alphaOnEntry,
                         modifier =
                             Modifier.align(Alignment.Center).sysuiResTag("bouncer_text_entry"),
                     )
@@ -433,7 +444,7 @@ private fun ContentScope.SplitLayout(
 
         // Right side (in left-to-right locales).
         Box(modifier = Modifier.fillMaxHeight().weight(1f)) {
-            when (authMethod) {
+            when (viewModel.authMethodViewModel) {
                 is PinBouncerViewModel,
                 is PatternBouncerViewModel -> {
                     InputArea(
@@ -451,6 +462,7 @@ private fun ContentScope.SplitLayout(
                         StatusMessage(viewModel = viewModel.message)
                         OutputArea(
                             viewModel = viewModel,
+                            alphaOnEntry = alphaOnEntry,
                             modifier =
                                 Modifier.padding(top = 24.dp).sysuiResTag("bouncer_text_entry"),
                         )
@@ -469,6 +481,7 @@ private fun ContentScope.SplitLayout(
 @Composable
 private fun ContentScope.BesideUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val isLeftToRight = LocalLayoutDirection.current == LayoutDirection.Ltr
@@ -490,8 +503,6 @@ private fun ContentScope.BesideUserSwitcherLayout(
             isHeightExpanded -> PaddingValues(vertical = 128.dp)
             else -> PaddingValues(top = 96.dp, bottom = 48.dp)
         }
-
-    val authMethod by viewModel.authMethodViewModel.collectAsStateWithLifecycle()
 
     var swapAnimationEnd by remember { mutableStateOf(false) }
 
@@ -591,13 +602,16 @@ private fun ContentScope.BesideUserSwitcherLayout(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                     modifier =
-                        Modifier.fillMaxWidth().thenIf(authMethod is PasswordBouncerViewModel) {
+                        Modifier.fillMaxWidth().thenIf(
+                            viewModel.authMethodViewModel is PasswordBouncerViewModel
+                        ) {
                             Modifier.fillMaxHeight()
                         },
                 ) {
                     StatusMessage(viewModel = viewModel.message)
                     OutputArea(
                         viewModel = viewModel,
+                        alphaOnEntry = alphaOnEntry,
                         modifier = Modifier.padding(top = 24.dp).sysuiResTag("bouncer_text_entry"),
                     )
                 }
@@ -630,31 +644,45 @@ private fun ContentScope.BesideUserSwitcherLayout(
 @Composable
 private fun ContentScope.BelowUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.padding(vertical = 128.dp)) {
-        UserSwitcher(viewModel = viewModel, modifier = Modifier.fillMaxWidth())
+    Column(
+        modifier = modifier.fillMaxWidth().padding(vertical = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(Modifier.weight(1f))
+
+        UserSwitcher(viewModel = viewModel)
+
+        // Adding a larger Spacer between the UserSwitcher and the PIN/pattern/password elements, if
+        // there is extra vertical space to be filled in.
+        Spacer(Modifier.weight(3f))
+
+        StatusMessage(viewModel = viewModel.message, modifier = Modifier.padding(top = 48.dp))
 
         Spacer(Modifier.weight(1f))
 
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                StatusMessage(viewModel = viewModel.message)
-                OutputArea(viewModel = viewModel, modifier = Modifier.padding(top = 24.dp))
+        OutputArea(
+            viewModel = viewModel,
+            alphaOnEntry = alphaOnEntry,
+            modifier = Modifier.padding(top = 24.dp),
+        )
 
-                InputArea(
-                    viewModel = viewModel,
-                    pinButtonRowVerticalSpacing = 12.dp,
-                    centerPatternDotsVertically = true,
-                    modifier = Modifier.padding(top = 128.dp),
-                )
+        Spacer(Modifier.weight(1f))
 
-                ActionArea(viewModel = viewModel, modifier = Modifier.padding(top = 48.dp))
-            }
-        }
+        InputArea(
+            viewModel = viewModel,
+            pinButtonRowVerticalSpacing = 12.dp,
+            centerPatternDotsVertically = true,
+            modifier = Modifier.padding(top = 24.dp),
+        )
+
+        Spacer(Modifier.weight(1f))
+
+        ActionArea(viewModel = viewModel, modifier = Modifier.padding(top = 48.dp))
+
+        Spacer(Modifier.weight(1f))
     }
 }
 
@@ -666,8 +694,7 @@ private fun FoldAware(
     modifier: Modifier = Modifier,
 ) {
     val foldPosture: FoldPosture by foldPosture()
-    val isSplitAroundTheFoldRequired by viewModel.isFoldSplitRequired.collectAsStateWithLifecycle()
-    val isSplitAroundTheFold = foldPosture == FoldPosture.Tabletop && isSplitAroundTheFoldRequired
+    val isSplitAroundTheFold = foldPosture == FoldPosture.Tabletop && viewModel.isFoldSplitRequired
     val currentSceneKey =
         if (isSplitAroundTheFold) SceneKeys.SplitSceneKey else SceneKeys.ContiguousSceneKey
 
@@ -781,11 +808,10 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
 @Composable
 private fun ContentScope.OutputArea(
     viewModel: BouncerOverlayContentViewModel,
+    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
-    val authMethodViewModel: AuthMethodBouncerViewModel? by
-        viewModel.authMethodViewModel.collectAsStateWithLifecycle()
-    when (val nonNullViewModel = authMethodViewModel) {
+    when (val nonNullViewModel = viewModel.authMethodViewModel) {
         is PinBouncerViewModel ->
             PinInputDisplay(
                 viewModel = nonNullViewModel,
@@ -794,6 +820,7 @@ private fun ContentScope.OutputArea(
         is PasswordBouncerViewModel ->
             PasswordBouncer(
                 viewModel = nonNullViewModel,
+                alphaOnEntry = alphaOnEntry,
                 modifier = modifier.sysuiResTag("bouncer_text_entry"),
             )
         else -> Unit
@@ -812,10 +839,7 @@ private fun InputArea(
     centerPatternDotsVertically: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val authMethodViewModel: AuthMethodBouncerViewModel? by
-        viewModel.authMethodViewModel.collectAsStateWithLifecycle()
-
-    when (val nonNullViewModel = authMethodViewModel) {
+    when (val nonNullViewModel = viewModel.authMethodViewModel) {
         is PinBouncerViewModel -> {
             PinPad(
                 viewModel = nonNullViewModel,
@@ -836,13 +860,11 @@ private fun InputArea(
 
 @Composable
 private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
-    val actionButton: BouncerActionButtonModel? by
-        viewModel.actionButton.collectAsStateWithLifecycle()
     val appearFadeInAnimatable = remember { Animatable(0f) }
     val appearMoveAnimatable = remember { Animatable(0f) }
     val appearAnimationInitialOffset = with(LocalDensity.current) { 80.dp.toPx() }
 
-    actionButton?.let { actionButtonModel ->
+    viewModel.actionButton?.let { actionButtonModel ->
         LaunchedEffect(Unit) {
             appearFadeInAnimatable.animateTo(
                 targetValue = 1f,
@@ -881,10 +903,8 @@ private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modi
                     .background(color = MaterialTheme.colorScheme.secondaryContainer)
                     .semantics { role = Role.Button }
                     .combinedClickable(
-                        onClick = { actionButton?.let { viewModel.onActionButtonClicked(it) } },
-                        onLongClick = {
-                            actionButton?.let { viewModel.onActionButtonLongClicked(it) }
-                        },
+                        onClick = { viewModel.onActionButtonClicked(actionButtonModel) },
+                        onLongClick = { viewModel.onActionButtonLongClicked(actionButtonModel) },
                     )
         ) {
             Text(

@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"سمعک"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"کاربرد دسترس‌پذیری"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"نمایشگر"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"کنترل‌های والدین"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> درحال استفاده کردن از باتری است"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> برنامه درحال استفاده کردن از باتری هستند"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"برای جزئیات مربوط به مصرف باتری و داده، تک‌ضرب بزنید"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"برای بازکردن قفل، پین را تایپ کنید"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"پین کد اشتباه است."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"برای بازگشایی قفل، منو را فشار دهید و سپس 0 را فشار دهید."</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"شماره اضطراری"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"بدون سرویس"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"صفحه قفل شد."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"برای بازکردن قفل یا انجام تماس اضطراری روی «منو» فشار دهید."</string>
@@ -2201,7 +2201,7 @@
     <string name="etws_primary_default_message_tsunami" msgid="5828171463387976279">"فوراً مناطق ساحلی و محدوده رودخانه را ترک کنید و به جایی امن، مثل ارتفاعات بروید."</string>
     <string name="etws_primary_default_message_earthquake_and_tsunami" msgid="4888224011071875068">"آرام باشید و پناهگاهی در این اطراف پیدا کنید."</string>
     <string name="etws_primary_default_message_test" msgid="4583367373909549421">"آزمایش پیام‌های اضطراری"</string>
-    <string name="notification_reply_button_accessibility" msgid="5235776156579456126">"پاسخ"</string>
+    <string name="notification_reply_button_accessibility" msgid="5235776156579456126">"پاسخ دادن"</string>
     <string name="etws_primary_default_message_others" msgid="7958161706019130739"></string>
     <string name="mmcc_authentication_reject" msgid="4891965994643876369">"سیم‌کارت برای عملیات صوتی مجاز نیست"</string>
     <string name="mmcc_imsi_unknown_in_hlr" msgid="227760698553988751">"سیم‌کارت مجوز لازم برای عملیات صوتی را ندارد"</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"هشدار منابع سیستم"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"مصرف بیش از حد منابع"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"برنامه‌ی \'<xliff:g id="APP_NAME">%1$s</xliff:g>\' از منابع زیادی استفاده می‌کند."</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"به‌روزرسانی ازطرف ولی شما"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> فعلاً برداشته شده است"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> اکنون دردسترس است"</string>
 </resources>

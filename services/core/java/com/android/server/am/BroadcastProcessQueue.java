@@ -17,6 +17,7 @@
 package com.android.server.am;
 
 import static com.android.internal.util.Preconditions.checkState;
+import static com.android.server.am.BroadcastRecord.UNSPECIFIED_QUEUE_INDEX;
 import static com.android.server.am.BroadcastRecord.deliveryStateToString;
 import static com.android.server.am.BroadcastRecord.isReceiverEquals;
 import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
@@ -97,6 +98,12 @@ class BroadcastProcessQueue {
      * into a running slot.
      */
     @Nullable String runningTraceTrackName;
+
+    /**
+     * Index into the set of currently running broadcast dispatch slots that this
+     * queue occupies.
+     */
+    int runningIndex = UNSPECIFIED_QUEUE_INDEX;
 
     /**
      * Flag indicating if this process should be OOM adjusted, defined as part
@@ -1604,6 +1611,9 @@ class BroadcastProcessQueue {
         if (mProcessStartInitiatedTimestampMillis > 0) {
             pw.print("processStartInitiatedTimestamp:"); pw.println(
                     TimeUtils.formatUptime(mProcessStartInitiatedTimestampMillis));
+        }
+        if (runningIndex != UNSPECIFIED_QUEUE_INDEX) {
+            pw.print("runningIndex:"); pw.println(runningIndex);
         }
     }
 

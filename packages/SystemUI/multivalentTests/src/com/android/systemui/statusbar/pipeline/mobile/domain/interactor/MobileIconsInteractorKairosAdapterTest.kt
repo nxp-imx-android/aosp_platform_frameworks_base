@@ -25,7 +25,6 @@ import com.android.systemui.KairosBuilder
 import com.android.systemui.flags.featureFlagsClassic
 import com.android.systemui.kairos.BuildScope
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.activateKairosActivatable
@@ -56,7 +55,6 @@ import com.android.systemui.statusbar.policy.data.repository.FakeUserSetupReposi
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 
-@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileIconsInteractorKairosAdapterTest : MobileIconsInteractorTestBase() {

@@ -1901,11 +1901,13 @@ public class Notification implements Parcelable
      * {@link #extras} key: an arraylist of {@link android.app.Notification.Metric}
      * bundles provided by a {@link android.app.Notification.MetricStyle} notification (as supplied
      * to {@link MetricStyle#addMetric} and related methods.
-     *
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     static final String EXTRA_METRICS = "android.metrics";
+
+    /** {@link #extras} key: Bundle corresponding to {@link CompactContent}. */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    static final String EXTRA_COMPACT_CONTENT = "android.compactContent";
 
     /**
      * {@link InstantSource} used for obtaining "now". Normally {@link InstantSource#system()},
@@ -2123,6 +2125,29 @@ public class Notification implements Parcelable
          */
         @SystemApi
         public static final int SEMANTIC_ACTION_CONVERSATION_IS_PHISHING = 12;
+
+        /**
+         * {@code SemanticAction}: Start (or continue previously paused) content associated with the
+         * notification. This could mean starting media playback, resuming a paused timer, etc.
+         */
+        @FlaggedApi(Flags.FLAG_NOTIFICATION_SEMANTIC_ACTIONS_FOR_PLAYBACK)
+        public static final int SEMANTIC_ACTION_PLAY = 13;
+
+        /**
+         * {@code SemanticAction}: Pause the content associated with the notification. This could
+         * mean pausing media playback, pausing a running timer, etc.
+         */
+        @FlaggedApi(Flags.FLAG_NOTIFICATION_SEMANTIC_ACTIONS_FOR_PLAYBACK)
+        public static final int SEMANTIC_ACTION_PAUSE = 14;
+
+        /**
+         * {@code SemanticAction}: Stop the content associated with the notification. This could
+         * mean stopping media playback, resetting a timer, etc. It is implied that a follow-up
+         * {@link #SEMANTIC_ACTION_PLAY} would restart from the beginning, or may not be offered at
+         * all.
+         */
+        @FlaggedApi(Flags.FLAG_NOTIFICATION_SEMANTIC_ACTIONS_FOR_PLAYBACK)
+        public static final int SEMANTIC_ACTION_STOP = 15;
 
         /**
          * {@link #extras} key to a boolean defining if this action requires special visual
@@ -3004,7 +3029,10 @@ public class Notification implements Parcelable
                 SEMANTIC_ACTION_THUMBS_DOWN,
                 SEMANTIC_ACTION_CALL,
                 SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY,
-                SEMANTIC_ACTION_CONVERSATION_IS_PHISHING
+                SEMANTIC_ACTION_CONVERSATION_IS_PHISHING,
+                SEMANTIC_ACTION_PLAY,
+                SEMANTIC_ACTION_PAUSE,
+                SEMANTIC_ACTION_STOP
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface SemanticAction {}
@@ -3441,8 +3469,8 @@ public class Notification implements Parcelable
                 person.visitUris(visitor);
             }
 
-            final Parcelable[] messages = extras.getParcelableArray(EXTRA_MESSAGES,
-                    Parcelable.class);
+            final Bundle[] messages =
+                    getParcelableArrayFromBundle(extras, EXTRA_MESSAGES, Bundle.class);
             if (!ArrayUtils.isEmpty(messages)) {
                 for (MessagingStyle.Message message : MessagingStyle.Message
                         .getMessagesFromBundleArray(messages)) {
@@ -3450,8 +3478,8 @@ public class Notification implements Parcelable
                 }
             }
 
-            final Parcelable[] historic = extras.getParcelableArray(EXTRA_HISTORIC_MESSAGES,
-                    Parcelable.class);
+            final Parcelable[] historic =
+                    getParcelableArrayFromBundle(extras, EXTRA_HISTORIC_MESSAGES, Bundle.class);
             if (!ArrayUtils.isEmpty(historic)) {
                 for (MessagingStyle.Message message : MessagingStyle.Message
                         .getMessagesFromBundleArray(historic)) {
@@ -4330,9 +4358,16 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Associates an {@link ApplicationInfo} object to this notification, which should point to the
+     * package that posted it. This is normally done by {@code NotificationManagerService} before
+     * forwarding the Notification to NLSes, but can be used in tests to fake that mechanism.
+     *
      * @hide
      */
-    public static void addFieldsFromContext(ApplicationInfo ai, Notification notification) {
+    @TestApi
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static void addFieldsFromContext(@NonNull ApplicationInfo ai,
+            @NonNull Notification notification) {
         notification.extras.putParcelable(EXTRA_BUILDER_APPLICATION_INFO, ai);
     }
 
@@ -6348,6 +6383,20 @@ public class Notification implements Parcelable
             return this;
         }
 
+        /**
+         * Sets the content to be displayed in the compact representation of a
+         * {@link #FLAG_PROMOTED_ONGOING promoted ongoing} notification.
+         *
+         * <p>If {@code null}, {@link #resolveCompactContent(Context)} default content} will be
+         * used.
+         */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+        @NonNull
+        public Builder setCompactContent(@Nullable CompactContent compactContent) {
+            CompactContent.toExtras(compactContent, mN.extras);
+            return this;
+        }
+
         private void bindPhishingAlertIcon(RemoteViews contentView, StandardTemplateParams p) {
             contentView.setDrawableTint(
                     R.id.phishing_alert,
@@ -7149,22 +7198,29 @@ public class Notification implements Parcelable
         }
 
         /**
-         * Returns the actions that are not contextual.
+         * Returns the subset of actions to be shown in the actions "row" of a notification.
+         * <ul>
+         *     <li>Excludes actions with RemoteInput in live-ongoing notifications.
+         *     <li>Excludes contextual actions, which are shown separately.
+         *     <li>Limits the number of actions to 3.
+         * </ul>
          */
-        private @NonNull List<Notification.Action> getNonContextualActions() {
+        private @NonNull List<Action> getEffectiveActions() {
             if (mActions == null) return Collections.emptyList();
-            List<Notification.Action> standardActions = new ArrayList<>();
+            List<Notification.Action> effectiveActions = new ArrayList<>();
             for (Notification.Action action : mActions) {
-                // Actions with RemoteInput are ignored for RONs.
-                if (mN.isPromotedOngoing()
-                        && hasValidRemoteInput(action)) {
+                if (mN.isPromotedOngoing() && hasValidRemoteInput(action)) {
                     continue;
                 }
-                if (!action.isContextual()) {
-                    standardActions.add(action);
+                if (action.isContextual()) {
+                    continue;
+                }
+                effectiveActions.add(action);
+                if (effectiveActions.size() >= MAX_ACTION_BUTTONS) {
+                    break;
                 }
             }
-            return standardActions;
+            return effectiveActions;
         }
 
         private RemoteViews applyStandardTemplateWithActions(int layoutId,
@@ -7172,17 +7228,14 @@ public class Notification implements Parcelable
             RemoteViews contentView = applyStandardTemplate(layoutId, p, result);
 
             resetStandardTemplateWithActions(contentView);
-            boolean snoozeEnabled = bindSnoozeAction(contentView, p);
+            bindSnoozeAction(contentView, p);
             // color the snooze and bubble actions with the theme color
             ColorStateList actionColor = ColorStateList.valueOf(getStandardActionColor(p));
             contentView.setColorStateList(R.id.snooze_button, "setImageTintList", actionColor);
             contentView.setColorStateList(R.id.bubble_button, "setImageTintList", actionColor);
 
-            // In the UI, contextual actions appear separately from the standard actions, so we
-            // filter them out here.
-            List<Notification.Action> nonContextualActions = getNonContextualActions();
+            List<Notification.Action> effectiveActions = getEffectiveActions();
 
-            int numActions = Math.min(nonContextualActions.size(), MAX_ACTION_BUTTONS);
             boolean emphasizedMode = mN.fullScreenIntent != null
                     || p.mCallStyleActions
                     || ((mN.flags & FLAG_FSI_REQUESTED_BUT_DENIED) != 0);
@@ -7212,12 +7265,12 @@ public class Notification implements Parcelable
             // when there are no actions. We're making its child GONE instead.
             int actionsContainerForVisibilityChange = notificationsRedesignTemplates()
                     ? R.id.actions_container_layout : R.id.actions_container;
-            if (numActions > 0 && !p.mHideActions) {
+            if (!effectiveActions.isEmpty() && !p.mHideActions) {
                 contentView.setViewVisibility(actionsContainerForVisibilityChange, View.VISIBLE);
                 contentView.setViewVisibility(R.id.actions, View.VISIBLE);
                 updateMarginsForActions(contentView, emphasizedMode);
-                validRemoteInput = populateActionsContainer(contentView, p, nonContextualActions,
-                        numActions, emphasizedMode);
+                validRemoteInput = populateActionsContainer(contentView, p, effectiveActions,
+                        emphasizedMode);
             } else {
                 contentView.setViewVisibility(actionsContainerForVisibilityChange, View.GONE);
             }
@@ -7290,11 +7343,9 @@ public class Notification implements Parcelable
         }
 
         private boolean populateActionsContainer(RemoteViews contentView, StandardTemplateParams p,
-                List<Action> nonContextualActions, int numActions, boolean emphasizedMode) {
+                List<Action> effectiveActions, boolean emphasizedMode) {
             boolean validRemoteInput = false;
-            for (int i = 0; i < numActions; i++) {
-                Action action = nonContextualActions.get(i);
-
+            for (Action action : effectiveActions) {
                 boolean actionHasValidInput = hasValidRemoteInput(action);
                 validRemoteInput |= actionHasValidInput;
 
@@ -7303,7 +7354,7 @@ public class Notification implements Parcelable
                     // Clear the drawable
                     button.setInt(R.id.action0, "setBackgroundResource", 0);
                 }
-                if (emphasizedMode && i > 0) {
+                if (emphasizedMode && effectiveActions.indexOf(action) > 0) {
                     // Clear start margin from non-first buttons to reduce the gap between them.
                     //  (8dp remaining gap is from all buttons' standard 4dp inset).
                     button.setViewLayoutMarginDimen(R.id.action0, RemoteViews.MARGIN_START, 0);
@@ -8437,6 +8488,10 @@ public class Notification implements Parcelable
             }
         }
 
+        private int getPromotedProgressLayoutResource() {
+            return R.layout.notification_2025_template_promoted_progress;
+        }
+
         private int getActionLayoutResource() {
             return R.layout.notification_material_action;
         }
@@ -8832,8 +8887,8 @@ public class Notification implements Parcelable
      */
     public boolean hasImage() {
         if (isStyle(MessagingStyle.class) && extras != null) {
-            final Parcelable[] messages = extras.getParcelableArray(EXTRA_MESSAGES,
-                    Parcelable.class);
+            final Bundle[] messages =
+                    getParcelableArrayFromBundle(extras, EXTRA_MESSAGES, Bundle.class);
             if (!ArrayUtils.isEmpty(messages)) {
                 for (MessagingStyle.Message m : MessagingStyle.Message
                         .getMessagesFromBundleArray(messages)) {
@@ -10121,10 +10176,10 @@ public class Notification implements Parcelable
                 mUser = user;
             }
             mConversationTitle = extras.getCharSequence(EXTRA_CONVERSATION_TITLE);
-            Parcelable[] messages = extras.getParcelableArray(EXTRA_MESSAGES, Parcelable.class);
+            Bundle[] messages = getParcelableArrayFromBundle(extras, EXTRA_MESSAGES, Bundle.class);
             mMessages = Message.getMessagesFromBundleArray(messages);
-            Parcelable[] histMessages = extras.getParcelableArray(EXTRA_HISTORIC_MESSAGES,
-                    Parcelable.class);
+            Bundle[] histMessages = getParcelableArrayFromBundle(
+                    extras, EXTRA_HISTORIC_MESSAGES, Bundle.class);
             mHistoricMessages = Message.getMessagesFromBundleArray(histMessages);
             mIsGroupConversation = extras.getBoolean(EXTRA_IS_GROUP_CONVERSATION);
             mUnreadMessageCount = extras.getInt(EXTRA_CONVERSATION_UNREAD_MESSAGE_COUNT);
@@ -10446,9 +10501,7 @@ public class Notification implements Parcelable
         public RemoteViews makeCompactHeadsUpContentView() {
             final boolean isConversationLayout = mConversationType != CONVERSATION_TYPE_LEGACY;
             Icon conversationIcon = null;
-            Notification.Action remoteInputAction = null;
             if (isConversationLayout) {
-
                 conversationIcon = mShortcutIcon;
 
                 // conversation icon is m
@@ -10461,19 +10514,6 @@ public class Notification implements Parcelable
                         final Person sender = message.mSender;
                         if (sender != null) {
                             conversationIcon = sender.getIcon();
-                        }
-                    }
-                }
-
-                if (Flags.compactHeadsUpNotificationReply()) {
-                    // Get the first non-contextual inline reply action.
-                    final List<Notification.Action> nonContextualActions =
-                            mBuilder.getNonContextualActions();
-                    for (int i = 0; i < nonContextualActions.size(); i++) {
-                        final Notification.Action action = nonContextualActions.get(i);
-                        if (mBuilder.hasValidRemoteInput(action)) {
-                            remoteInputAction = action;
-                            break;
                         }
                     }
                 }
@@ -10494,6 +10534,7 @@ public class Notification implements Parcelable
                     mBuilder.getMessagingCompactHeadsUpLayoutResource(), p, bindResult);
             contentView.setViewVisibility(R.id.header_text_secondary_divider, View.GONE);
             contentView.setViewVisibility(R.id.header_text_divider, View.GONE);
+            contentView.setViewVisibility(R.id.reply_action_container, View.GONE);
             if (conversationIcon != null) {
                 contentView.setViewVisibility(R.id.icon, View.GONE);
                 contentView.setViewVisibility(R.id.conversation_face_pile, View.GONE);
@@ -10512,19 +10553,6 @@ public class Notification implements Parcelable
                         mBuilder.mN.extras);
             }
 
-            if (remoteInputAction != null) {
-                contentView.setViewVisibility(R.id.reply_action_container, View.VISIBLE);
-
-                final RemoteViews inlineReplyButton =
-                        mBuilder.generateActionButton(remoteInputAction, false, p);
-                // Clear the drawable
-                inlineReplyButton.setInt(R.id.action0, "setBackgroundResource", 0);
-                inlineReplyButton.setTextViewText(R.id.action0,
-                        mBuilder.mContext.getString(R.string.notification_compact_heads_up_reply));
-                contentView.addView(R.id.reply_action_container, inlineReplyButton);
-            } else {
-                contentView.setViewVisibility(R.id.reply_action_container, View.GONE);
-            }
             return contentView;
         }
 
@@ -12138,10 +12166,11 @@ public class Notification implements Parcelable
                     .fillTextsFrom(mBuilder).text(null)
                     .hideProgress(true)
                     .hideRightIcon(true);
-            final TemplateBindResult result = new TemplateBindResult();
-            final RemoteViews contentView = getStandardView(
-                    mBuilder.getCollapsedMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */ false);
+            return buildMetricView(
+                    mBuilder.getCollapsedMetricLayoutResource(),
+                    p,
+                    /* isExpandedView = */ false,
+                    mMetrics);
         }
 
         /** @hide */
@@ -12155,11 +12184,11 @@ public class Notification implements Parcelable
                     .hideProgress(true)
                     .hideRightIcon(true)
                     .needsExtraTextMargin(false);
-            final TemplateBindResult result = new TemplateBindResult();
-            final RemoteViews contentView = getStandardView(
-                    mBuilder.getCompactHeadsUpMetricLayoutResource(), p, result);
-            return bindMetricStyleMetrics(contentView, p,
-                    getCompactHeadsUpMetrics(), /* isExpandedView = */false);
+            return buildMetricView(
+                    mBuilder.getCompactHeadsUpMetricLayoutResource(),
+                    p,
+                    /* isExpandedView = */ false,
+                    getCompactHeadsUpMetrics());
         }
 
         private List<Metric> getCompactHeadsUpMetrics() {
@@ -12174,13 +12203,11 @@ public class Notification implements Parcelable
                     .fillTextsFrom(mBuilder).text(null)
                     .hideProgress(true)
                     .hideRightIcon(true);
-            final TemplateBindResult result = new TemplateBindResult();
-            final RemoteViews contentView = getStandardView(
-                    mBuilder.getHeadsUpMetricLayoutResource(), p, result);
-            // notification_main_column needs to have expander space.
-            // Otherwise,metric content and expander will overlap
-            result.mHeadingFullMarginSet.applyToView(contentView, R.id.notification_main_column);
-            return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */false);
+            return buildMetricView(
+                    mBuilder.getHeadsUpMetricLayoutResource(),
+                    p,
+                    /* isExpandedView = */ false,
+                    mMetrics);
         }
 
         /** @hide */
@@ -12199,13 +12226,11 @@ public class Notification implements Parcelable
                 // (even if it may be cramped).
                 p.useMinimalHeader().subTextViewId(R.id.header_text);
             }
-            final TemplateBindResult result = new TemplateBindResult();
+
             final int expandedLayoutRes;
-            boolean showActionsContainer = true;
             if (mMetrics.size() == 1) {
                 if (mBuilder.mN.isPromotedOngoing()) {
-                    expandedLayoutRes =  mBuilder.getPromotedSingleMetricLayoutResource();
-                    showActionsContainer = !mBuilder.getNonContextualActions().isEmpty();
+                    expandedLayoutRes = mBuilder.getPromotedSingleMetricLayoutResource();
                 } else {
                     expandedLayoutRes = mBuilder.getExpandedSingleMetricLayoutResource();
                 }
@@ -12213,10 +12238,51 @@ public class Notification implements Parcelable
                 expandedLayoutRes = mBuilder.getExpandedMetricLayoutResource();
             }
 
-            final RemoteViews contentView = getStandardView(expandedLayoutRes, p, result);
-            contentView.setViewVisibility(R.id.actions_container,
-                    showActionsContainer ? View.VISIBLE : View.GONE);
-            return bindMetricStyleMetrics(contentView, p, mMetrics, /* isExpandedView = */true);
+            return buildMetricView(
+                    expandedLayoutRes,
+                    p,
+                    /* isExpandedView = */ true,
+                    mMetrics);
+        }
+
+        private RemoteViews buildMetricView(
+                int layoutRes,
+                StandardTemplateParams p,
+                boolean isExpandedView,
+                List<Metric> metricsToBind) {
+
+            final boolean singleMetricWithoutTitle = mMetrics.size() == 1
+                    && TextUtils.isEmpty(p.mTitle);
+            final boolean useLabelAsTitle = singleMetricWithoutTitle && !isExpandedView;
+            final boolean useAppNameAsTitle = singleMetricWithoutTitle && isExpandedView;
+
+            if (useLabelAsTitle) {
+                p.title(getMetricLabel(metricsToBind.getFirst(),
+                        isExpandedView, /* isForSingleMetric = */true));
+            }
+
+            if (useAppNameAsTitle) {
+                p.hideAppName(false);
+            }
+
+            final TemplateBindResult result = new TemplateBindResult();
+            final RemoteViews contentView = getStandardView(layoutRes, p, result);
+
+            if (p.mViewType == StandardTemplateParams.VIEW_TYPE_HEADS_UP
+                    && layoutRes == mBuilder.getHeadsUpMetricLayoutResource()) {
+                // notification_main_column needs to have expander space.
+                // Otherwise,metric content and expander will overlap
+                result.mHeadingFullMarginSet.applyToView(contentView,
+                        R.id.notification_main_column);
+            }
+
+            bindMetricStyleMetrics(contentView, p, metricsToBind, isExpandedView);
+
+            if (useLabelAsTitle) {
+                contentView.setTextViewText(MetricView.VIEWS.getFirst().labelId(), "");
+            }
+
+            return contentView;
         }
 
         private RemoteViews bindMetricStyleMetrics(
@@ -12231,21 +12297,7 @@ public class Notification implements Parcelable
                     final Metric.MetricValue.ValueString valueString = metricValue.toValueString(
                             mBuilder.mContext);
 
-                    final CharSequence metricLabel;
-                    if (isExpandedView) {
-                        if (!TextUtils.isEmpty(valueString.subtext())) {
-                            metricLabel = mBuilder.mContext.getString(
-                                    R.string.notification_metric_label_unit,
-                                    metric.getLabel(), valueString.subtext());
-                        } else {
-                            metricLabel = metric.getLabel();
-                        }
-                    } else {
-                        // No unit shown in collapsed view.
-                        metricLabel = mBuilder.mContext.getString(
-                                R.string.notification_metric_label_separator,
-                                metric.getLabel());
-                    }
+                    final CharSequence metricLabel = getMetricLabel(metric, isExpandedView);
 
                     mBuilder.setTextViewColorSecondary(contentView, metricView.labelId(), p);
                     contentView.setTextViewText(metricView.labelId(), metricLabel);
@@ -12301,6 +12353,36 @@ public class Notification implements Parcelable
                 }
             }
             return contentView;
+        }
+
+        private CharSequence getMetricLabel(Metric metric, boolean isExpandedView) {
+            return getMetricLabel(metric, isExpandedView, /* isForSingleMetric =*/ false);
+        }
+
+        private CharSequence getMetricLabel(
+                Metric metric,
+                boolean isExpandedView,
+                boolean isForSingleMetric) {
+            final Metric.MetricValue metricValue = metric.getValue();
+            final Metric.MetricValue.ValueString valueString = metricValue.toValueString(
+                    mBuilder.mContext);
+
+            final CharSequence metricLabel;
+            if (isExpandedView || isForSingleMetric) {
+                if (!TextUtils.isEmpty(valueString.subtext())) {
+                    metricLabel = mBuilder.mContext.getString(
+                            R.string.notification_metric_label_unit,
+                            metric.getLabel(), valueString.subtext());
+                } else {
+                    metricLabel = metric.getLabel();
+                }
+            } else {
+                // No unit shown in collapsed view.
+                metricLabel = mBuilder.mContext.getString(
+                        R.string.notification_metric_label_separator,
+                        metric.getLabel());
+            }
+            return metricLabel;
         }
 
         private record MetricView(int containerId,
@@ -12450,7 +12532,10 @@ public class Notification implements Parcelable
             return mSemanticStyle;
         }
 
-        /** A superclass for the various value types used by the {@link Metric} class. */
+        /**
+         * A superclass for the various value types used by the {@link Metric} class, or included in
+         * a {@link ResolvedCompactContent}.
+         */
         public abstract static class MetricValue {
 
             private static final String KEY_TYPE = "_type";
@@ -13899,8 +13984,15 @@ public class Notification implements Parcelable
                 p.useMinimalHeader();
             }
 
+            final int progressLayoutResId;
+            if (Flags.apiNotificationActionCustom() && mBuilder.mN.isPromotedOngoing()) {
+                progressLayoutResId = mBuilder.getPromotedProgressLayoutResource();
+            } else {
+                progressLayoutResId = mBuilder.getProgressLayoutResource();
+            }
+
             // Replace the text with the big text, but only if the big text is not empty.
-            RemoteViews contentView = getStandardView(mBuilder.getProgressLayoutResource(), p,
+            RemoteViews contentView = getStandardView(progressLayoutResId, p,
                     null /* result */);
 
             // Bind progress start and end icons.
@@ -14643,6 +14735,666 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Base class for the objects that can customize the appearance of a Notification's <i>compact
+     * content</i>, such as the status bar chip when it is {@link #FLAG_PROMOTED_ONGOING promoted
+     * ongoing}.
+     *
+     * @see Builder#setCompactContent
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public abstract static class CompactContent {
+        private static final String KEY_TYPE = "type";
+        private static final int TYPE_BASIC = 1;
+        private static final String KEY_DATA = "bundle";
+
+        private CompactContent() { }
+
+        @Nullable
+        static final CompactContent fromExtras(Bundle notificationExtras) {
+            Bundle container = notificationExtras.getBundle(EXTRA_COMPACT_CONTENT);
+            if (container != null) {
+                int type = container.getInt(KEY_TYPE);
+                if (type == TYPE_BASIC) {
+                    return container.getParcelable(KEY_DATA, BasicCompactContent.class);
+                }
+            }
+
+            return null;
+        }
+
+        static final void toExtras(@Nullable CompactContent content, Bundle notificationExtras) {
+            Bundle container = new Bundle();
+            if (content instanceof BasicCompactContent basicContent) {
+                container.putInt(KEY_TYPE, TYPE_BASIC);
+                container.putParcelable(KEY_DATA, basicContent);
+            }
+            if (!container.isEmpty()) {
+                notificationExtras.putBundle(EXTRA_COMPACT_CONTENT, container);
+            } else {
+                notificationExtras.remove(EXTRA_COMPACT_CONTENT);
+            }
+        }
+    }
+
+    /**
+     * Compact content for a Notification showing an icon plus an optional short text.
+     *
+     * <p>For example, a "navigation" notification could have a chip with a small icon representing
+     * the direction of the next turn, plus a short text displaying the distance until that turn.
+     *
+     * @see Builder#setCompactContent
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static final class BasicCompactContent extends CompactContent implements Parcelable {
+        private final CompactIcon mIcon;
+        private final CompactText mText;
+
+        /**
+         * Creates a {@link BasicCompactContent} instance with a specific icon and text.
+         */
+        public BasicCompactContent(@NonNull CompactIcon icon, @NonNull CompactText text) {
+            mIcon = requireNonNull(icon);
+            mText = requireNonNull(text);
+        }
+
+        /**
+         * Creates a {@link BasicCompactContent} instance with a {@link CompactIcon#auto()} default}
+         * icon and a specific text.
+         */
+        public BasicCompactContent(@NonNull CompactText text) {
+            this(CompactIcon.auto(), text);
+        }
+
+        @NonNull
+        private CompactIcon getIcon() {
+            return mIcon;
+        }
+
+        @NonNull
+        private CompactText getText() {
+            return mText;
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeTypedObject(mIcon, flags);
+            dest.writeTypedObject(mText, flags);
+        }
+
+        public static final @NonNull Creator<BasicCompactContent> CREATOR = new Creator<>() {
+            @Override
+            public BasicCompactContent createFromParcel(Parcel source) {
+                return new BasicCompactContent(
+                        source.readTypedObject(CompactIcon.CREATOR),
+                        source.readTypedObject(CompactText.CREATOR));
+            }
+
+            @Override
+            public BasicCompactContent[] newArray(int size) {
+                return new BasicCompactContent[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+    }
+
+    /** Chooses the icon to show as part of the notification's compact content. */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static final class CompactIcon implements Parcelable {
+        private static final int ICON_AUTO = 0;
+        private static final int ICON_SMALL = 1;
+
+        /** @hide */
+        @IntDef(prefix = { "ICON_" }, value = {
+                ICON_AUTO,
+                ICON_SMALL,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface IconSource {}
+
+        private final @IconSource int mWhich;
+
+        private CompactIcon(@IconSource int which) {
+            mWhich = which;
+        }
+
+        /**
+         * The system chooses what icon to show. For example, posting app's icon, or the
+         * {@link #getSmallIcon() small icon}.
+         */
+        @NonNull
+        public static CompactIcon auto() {
+            return new CompactIcon(ICON_AUTO);
+        }
+
+        /** Shows the notification's {@link #getSmallIcon() small icon}. */
+        @NonNull
+        public static CompactIcon useSmallIcon() {
+            return new CompactIcon(ICON_SMALL);
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(mWhich);
+        }
+
+        public static final @NonNull Creator<CompactIcon> CREATOR = new Creator<>() {
+            @Override
+            public CompactIcon createFromParcel(Parcel source) {
+                return new CompactIcon(source.readInt());
+            }
+
+            @Override
+            public CompactIcon[] newArray(int size) {
+                return new CompactIcon[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+    }
+
+    /** Chooses the text to show as part of the notification's compact content. */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static final class CompactText implements Parcelable {
+        private static final int TEXT_NONE = 1;
+        private static final int TEXT_SHORT_CRITICAL = 2;
+        private static final int TEXT_WHEN_REMAINING_ADAPTIVE = 3;
+        private static final int TEXT_WHEN_STOPWATCH = 4;
+        private static final int TEXT_WHEN_TIMER = 5;
+        private static final int TEXT_STYLE_METRIC = 6;
+        private static final int TEXT_CUSTOM_METRIC = 7;
+
+        /** @hide */
+        @IntDef(prefix = { "TEXT_" }, value = {
+                TEXT_NONE,
+                TEXT_SHORT_CRITICAL,
+                TEXT_WHEN_REMAINING_ADAPTIVE,
+                TEXT_WHEN_STOPWATCH,
+                TEXT_WHEN_TIMER,
+                TEXT_STYLE_METRIC,
+                TEXT_CUSTOM_METRIC
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface TextSource {}
+
+        // This class is sort of a "union type" and doesn't expose getters, so we just mash all
+        // the fields of the different variants here. The result will be exposed properly when
+        // resolved to a MetricValue.
+        private final @TextSource int mWhich;
+        private final int mStyleMetricIndex;
+        private final @Nullable Metric.MetricValue mCustomMetricValue;
+        private @SemanticStyle int mSemanticStyle;
+
+        private CompactText(@TextSource int which, int styleMetricIndex,
+                @Nullable Metric.MetricValue customMetricValue) {
+            mWhich = which;
+            mStyleMetricIndex = styleMetricIndex;
+            mCustomMetricValue = customMetricValue;
+        }
+
+        /** The compact content will show no text. */
+        @NonNull
+        public static CompactText none() {
+            return new CompactText(TEXT_NONE, 0, null);
+        }
+
+        /**
+         * The compact content will show the string from
+         * {@link Notification#getShortCriticalText()}.
+         */
+        @NonNull
+        public static CompactText useShortCriticalText() {
+            return new CompactText(TEXT_SHORT_CRITICAL, 0, null);
+        }
+
+        /**
+         * The compact content will show the time remaining in a brief format until
+         * {@link Notification#when}, as long as that time is still in the future (otherwise, no
+         * text will be shown).
+         */
+        @NonNull
+        public static CompactText useWhenAsTimeRemaining() {
+            return new CompactText(TEXT_WHEN_REMAINING_ADAPTIVE, 0, null);
+        }
+
+        /**
+         * The compact content will show a chronometer, counting up from, or down to,
+         * {@link Notification#when}, as long as that chronometer value is positive (otherwise, no
+         * text will be shown).
+         */
+        @NonNull
+        public static CompactText useWhenAsChronometer(boolean countDown) {
+            return new CompactText(countDown ? TEXT_WHEN_TIMER : TEXT_WHEN_STOPWATCH, 0, null);
+        }
+
+        /**
+         * The compact content will show value of the metric on the attached {@link MetricStyle} at
+         * the given index. If the notification does not use {@link MetricStyle} or does not
+         * have a metric at that index, no text will be shown.
+         */
+        @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+        @NonNull
+        public static CompactText useStyleMetric(int metricIndex) {
+            return new CompactText(TEXT_STYLE_METRIC, metricIndex, null);
+        }
+
+        /** The compact content will show the given {@link Metric.MetricValue}. */
+        @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+        @NonNull
+        public static CompactText fromMetricValue(@NonNull Metric.MetricValue metricValue) {
+            return new CompactText(TEXT_CUSTOM_METRIC, 0, requireNonNull(metricValue));
+        }
+
+        /** Sets the semantic style for the compact content. */
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        @NonNull
+        public CompactText setSemanticStyle(@SemanticStyle int semanticStyle) {
+            mSemanticStyle = semanticStyle;
+            return this;
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(mWhich);
+            if (Flags.apiMetricStyle()) {
+                dest.writeInt(mStyleMetricIndex);
+                if (mCustomMetricValue != null) {
+                    // Leverage Metric's bundling (unused but required label).
+                    dest.writeBoolean(true);
+                    dest.writeBundle(Metric.toBundle(new Metric(mCustomMetricValue,  "x")));
+                } else {
+                    dest.writeBoolean(false);
+                }
+            }
+            if (Flags.apiNotificationSemanticStyle()) {
+                dest.writeInt(mSemanticStyle);
+            }
+        }
+
+        public static final @NonNull Creator<CompactText> CREATOR = new Creator<>() {
+            @Override
+            public CompactText createFromParcel(Parcel source) {
+                CompactText res = null;
+                int which = source.readInt();
+                if (Flags.apiMetricStyle()) {
+                    if (source.readBoolean()) {
+                        int styleMetricIndex = source.readInt();
+                        Metric customMetric = Metric.fromBundle(
+                                source.readBundle(getClass().getClassLoader()));
+                        res = new CompactText(which, styleMetricIndex, customMetric.getValue());
+                    } else {
+                        res = new CompactText(which, 0, null);
+                    }
+                } else {
+                    res = new CompactText(which, 0, null);
+                }
+                if (Flags.apiNotificationSemanticStyle()) {
+                    res.setSemanticStyle(source.readInt());
+                }
+                return res;
+            }
+
+            @Override
+            public CompactText[] newArray(int size) {
+                return new CompactText[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+    }
+
+    /**
+     * Base class for the "resolved" compact content to be shown for
+     * {@link #FLAG_PROMOTED_ONGOING promoted ongoing} notifications.
+     *
+     * @see #resolveCompactContent(Context)
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public abstract static class ResolvedCompactContent {
+        private ResolvedCompactContent() {
+            // Constructor private to restrict subclassing.
+        }
+    }
+
+    /**
+     * "Resolved" compact content for a Notification showing an icon plus an optional short text.
+     *
+     * @see BasicCompactContent
+     * @see #resolveCompactContent(Context)
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static final class ResolvedBasicCompactContent extends ResolvedCompactContent {
+        private final @NonNull ResolvedCompactIcon mIcon;
+        private final @Nullable Metric.MetricValue mText;
+        private final @SemanticStyle int mSemanticStyle;
+
+        private ResolvedBasicCompactContent(@NonNull ResolvedCompactIcon icon,
+                @Nullable Metric.MetricValue text, @SemanticStyle int semanticStyle) {
+            mIcon = icon;
+            mText = text;
+            mSemanticStyle = semanticStyle;
+        }
+
+        /** The icon to be shown as part of the compact content. */
+        @NonNull
+        public ResolvedCompactIcon getIcon() {
+            return mIcon;
+        }
+
+        /**
+         * The text, if any, to be shown as part of the compact content. This can be either a
+         * "fixed" text, e.g. a string, or dynamic (such as a timer or stopwatch).
+         */
+        @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+        @Nullable
+        public Metric.MetricValue getText() {
+            return mText;
+        }
+
+        @FlaggedApi(Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE)
+        @SemanticStyle
+        public int getSemanticStyle() {
+            return mSemanticStyle;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ResolvedBasicCompactContent that)) return false;
+            if (this == that) return true;
+            return Objects.equals(this.mIcon, that.mIcon)
+                    && Objects.equals(this.mText, that.mText)
+                    && this.mSemanticStyle == that.mSemanticStyle;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mIcon, mText, mSemanticStyle);
+        }
+
+        @Override
+        public String toString() {
+            return "ResolvedBasicCompactContent{"
+                    + "mIcon=" + mIcon
+                    + ", mText=" + mText
+                    + ", mSemanticStyle=" + mSemanticStyle
+                    + "}";
+        }
+    }
+
+    /**
+     * Resolved icon to show as part of the notification's compact content.
+     *
+     * @see ResolvedBasicCompactContent
+     * @see BasicCompactContent#BasicCompactContent(CompactIcon, CompactText)
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    public static class ResolvedCompactIcon {
+        /** The icon's source is not specifically known. */
+        public static final int SOURCE_UNKNOWN = 0;
+
+        /**
+         * Indicates that the displayed icon should be the notification's small icon (that is,
+         * {@link #getIcon()}} returns the same as {@link Notification#getSmallIcon()}.
+         */
+        public static final int SOURCE_SMALL_ICON = 1;
+
+        /**
+         * Indicates that the displayed icon should be the posting package's application icon in
+         * full color.
+         */
+        public static final int SOURCE_PACKAGE_APP_ICON = 2;
+
+        /** @hide */
+        @IntDef(prefix = { "SOURCE_" }, value = {
+                SOURCE_UNKNOWN,
+                SOURCE_SMALL_ICON,
+                SOURCE_PACKAGE_APP_ICON,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface ResolvedCompactIconSource {}
+
+        private final int mSource;
+        private final @Nullable Icon mIcon;
+
+        private ResolvedCompactIcon(int source, @Nullable Icon icon) {
+            mSource = source;
+            mIcon = icon;
+        }
+
+        /**
+         * Identifies the source of the icon which has been resolved.
+         *
+         * <p>This allows callers who already resolve other content (like the
+         * {@link #getSmallIcon() small icon}) to avoid duplicating that work.
+         */
+        @ResolvedCompactIconSource
+        public int getSource() {
+            return mSource;
+        }
+
+        /** The {@link Icon} representation of the content, if applicable. */
+        @Nullable
+        public Icon getIcon() {
+            return mIcon;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ResolvedCompactIcon that)) return false;
+            if (this == that) return true;
+            return this.mSource == that.mSource
+                    && Objects.equals(this.mIcon, that.mIcon);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mSource, mIcon);
+        }
+
+        @Override
+        public String toString() {
+            return "ResolvedCompactIcon{"
+                    + "mSource=" + mSource
+                    + ", mIcon=" + mIcon
+                    + "}";
+        }
+    }
+
+    /**
+     * Returns the content to be displayed in the compact representation of a
+     * {@link Notification#FLAG_PROMOTED_ONGOING promoted ongoing} notification. This method is
+     * mostly useful for {@link android.service.notification.NotificationListenerService}
+     * implementations.
+     *
+     * <p>If the Notification has a {@link CompactContent}, then this method will return a {@code
+     * Resolved*} version of the content class that was provided. (e.g. if
+     * {@link BasicCompactContent} was set, this will return {@link ResolvedBasicCompactContent}).
+     * This resolved object will contain the data that was provided or referenced by the original.
+     *
+     * <p>If the Notification does not have a {@link CompactContent}, then this method will
+     * return a {@link ResolvedBasicCompactContent}.
+     * <ul>
+     *     <li>The icon will be as if the app provided {@link CompactIcon#auto()}, unless the app
+     *     does not target {@link Build.VERSION_CODES#CINNAMON_BUN}, in which case it will be
+     *     the value of {@link #getSmallIcon()}.
+     *     <li>The text will be a {@link Metric.MetricValue} populated based on the data in the
+     *     Notification, using the following ordered list of checks:
+     *     <ol>
+     *         <li>If the Notification has {@link #getShortCriticalText()}, it will be a
+     *         {@link Metric.FixedText} with that text.
+     *         <li>If the Notification uses {@link MetricStyle}, it will be the value of the
+     *         first metric.
+     *         <li>If the Notification has {@link Builder#setUsesChronometer(boolean)} equal to
+     *         {@code true}, it will be a {@link Metric.TimeDifference} built from {@link #when}
+     *         with {@link Metric.TimeDifference#FORMAT_CHRONOMETER}. It will be a countdown if
+     *         {@link Builder#setChronometerCountDown(boolean)} is {@code true}.
+     *         <li>If the notification has {@link Builder#setShowWhen(boolean)} equal to
+     *         {@code true}, if will be a {@link Metric.TimeDifference}, counting down to
+     *         {@link #when}, with {@link Metric.TimeDifference#FORMAT_ADAPTIVE}.
+     *         <li>Otherwise it will be {@code null}.
+     *     </ol>
+     * </ul>
+     *
+     * <p>NOTE: Even when the returned value contains a text with type
+     * {@link Metric.TimeDifference}, the compact representation UI should not show negative
+     * chronometers or adaptive times that count up.
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    @NonNull
+    public ResolvedCompactContent resolveCompactContent(@NonNull Context context) {
+        requireNonNull(context);
+        Builder builder = Builder.recoverBuilder(context, this);
+
+        try {
+            CompactContent suppliedContent = CompactContent.fromExtras(this.extras);
+            if (suppliedContent != null) {
+                return CompactContentResolver.resolveCompactContent(context, this, builder,
+                        suppliedContent);
+            }
+        } catch (Exception e) {
+            // If there is trash in the extras, also fall back to the default.
+            Log.w(TAG, "Error reading or resolving supplied CompactContent", e);
+        }
+
+        CompactContent defaultContent = getDefaultCompactContent(context, builder);
+        return CompactContentResolver.resolveCompactContent(context, this, builder, defaultContent);
+    }
+
+    /**
+     * See {@link #resolveCompactContent(Context)} for the logic. ("If the Notification does not
+     * have a CompactContent...").
+     */
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    @SuppressWarnings("AndroidFrameworkCompatChange") // Cannot use CompatChange -- client side
+    // code, plus the SDK check is on a different package than the caller.
+    private BasicCompactContent getDefaultCompactContent(Context context, Builder builder) {
+        ApplicationInfo appInfo = requireNonNull(getApplicationInfo(context));
+        CompactIcon compactIcon = appInfo.targetSdkVersion >= Build.VERSION_CODES.CINNAMON_BUN
+                ? CompactIcon.auto()
+                : CompactIcon.useSmallIcon();
+
+        CompactText compactText;
+        if (!TextUtils.isEmpty(getShortCriticalText())) {
+            compactText = CompactText.useShortCriticalText();
+        } else if (Flags.apiMetricStyle()
+                && builder.getStyle() instanceof MetricStyle metricStyle
+                && !metricStyle.getMetrics().isEmpty()) {
+            compactText = CompactText.useStyleMetric(0);
+        } else if (showsChronometer()) {
+            boolean isCountdown = extras.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN);
+            compactText = CompactText.useWhenAsChronometer(isCountdown);
+        } else if (showsTime()) {
+            compactText = CompactText.useWhenAsTimeRemaining();
+        } else {
+            compactText = CompactText.none();
+        }
+
+        return new BasicCompactContent(compactIcon, compactText);
+    }
+
+    @FlaggedApi(Flags.FLAG_API_NOTIFICATION_CHIP)
+    private static class CompactContentResolver {
+        @NonNull
+        private static ResolvedCompactContent resolveCompactContent(Context context,
+                Notification notification, Notification.Builder builder,
+                @NonNull CompactContent content) {
+            if (content instanceof BasicCompactContent basic) {
+                return resolveBasicCompactContent(context, notification, builder, basic);
+            } else {
+                throw new IllegalStateException("Unexpected CompactContent: " + content);
+            }
+        }
+
+        @NonNull
+        private static ResolvedBasicCompactContent resolveBasicCompactContent(Context context,
+                Notification notification, Notification.Builder builder,
+                @NonNull BasicCompactContent content) {
+            ResolvedCompactIcon resolvedIcon = resolveCompactIcon(context, notification,
+                    content.getIcon());
+            if (Flags.apiMetricStyle()) {
+                Metric.MetricValue resolvedText = resolveCompactText(notification, builder,
+                        content.getText());
+                if (Flags.apiNotificationSemanticStyle()) {
+                    return new ResolvedBasicCompactContent(resolvedIcon, resolvedText,
+                            content.getText().mSemanticStyle);
+                } else {
+                    return new ResolvedBasicCompactContent(resolvedIcon, resolvedText,
+                            SEMANTIC_STYLE_UNSPECIFIED);
+                }
+            } else {
+                if (Flags.apiNotificationSemanticStyle()) {
+                    return new ResolvedBasicCompactContent(resolvedIcon, null,
+                            content.getText().mSemanticStyle);
+                } else {
+                    return new ResolvedBasicCompactContent(resolvedIcon, null,
+                            SEMANTIC_STYLE_UNSPECIFIED);
+                }
+            }
+        }
+
+        private static ResolvedCompactIcon resolveCompactIcon(Context context,
+                Notification notification, CompactIcon icon) {
+            ApplicationInfo appInfo = requireNonNull(notification.getApplicationInfo(context));
+            if (icon.mWhich == CompactIcon.ICON_AUTO) {
+                return new ResolvedCompactIcon(ResolvedCompactIcon.SOURCE_PACKAGE_APP_ICON,
+                        Icon.createWithResource(appInfo.packageName, appInfo.icon));
+            } else if (icon.mWhich == CompactIcon.ICON_SMALL) {
+                return new ResolvedCompactIcon(ResolvedCompactIcon.SOURCE_SMALL_ICON,
+                        notification.getSmallIcon());
+            } else {
+                throw new IllegalArgumentException("Unexpected CompactIcon: " + icon.mWhich);
+            }
+        }
+
+        @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
+        @Nullable
+        private static Metric.MetricValue resolveCompactText(Notification notification,
+                Notification.Builder builder, @NonNull CompactText text) {
+            return switch (text.mWhich) {
+                case CompactText.TEXT_NONE -> null;
+                case CompactText.TEXT_SHORT_CRITICAL -> {
+                    String shortCriticalText = notification.getShortCriticalText();
+                    if (!TextUtils.isEmpty(shortCriticalText)) {
+                        yield new Metric.FixedText(shortCriticalText);
+                    } else {
+                        yield null;
+                    }
+                }
+                case CompactText.TEXT_WHEN_REMAINING_ADAPTIVE ->
+                        Metric.TimeDifference.forTimer(Instant.ofEpochMilli(notification.when),
+                                Metric.TimeDifference.FORMAT_ADAPTIVE);
+                case CompactText.TEXT_WHEN_STOPWATCH ->
+                        Metric.TimeDifference.forStopwatch(Instant.ofEpochMilli(notification.when),
+                                Metric.TimeDifference.FORMAT_CHRONOMETER);
+                case CompactText.TEXT_WHEN_TIMER ->
+                        Metric.TimeDifference.forTimer(Instant.ofEpochMilli(notification.when),
+                                Metric.TimeDifference.FORMAT_CHRONOMETER);
+                case CompactText.TEXT_STYLE_METRIC -> {
+                    if (builder.getStyle() instanceof MetricStyle metricStyle
+                            && text.mStyleMetricIndex >= 0
+                            && text.mStyleMetricIndex < metricStyle.getMetrics().size()) {
+                        yield metricStyle.getMetrics().get(text.mStyleMetricIndex).getValue();
+                    } else {
+                        yield null;
+                    }
+                }
+                case CompactText.TEXT_CUSTOM_METRIC -> text.mCustomMetricValue;
+                default -> throw new IllegalArgumentException(
+                        "Unexpected CompactText: " + text.mWhich);
+            };
+        }
+    }
+
+    /**
      * Encapsulates the information needed to display a notification as a bubble.
      *
      * <p>A bubble is used to display app content in a floating window over the existing
@@ -15368,7 +16120,8 @@ public class Notification implements Parcelable
          * @param builder the builder to be modified
          * @return the build object for chaining
          */
-        public Builder extend(Builder builder);
+        @NonNull
+        public Builder extend(@NonNull Builder builder);
     }
 
     /**
@@ -16896,6 +17649,109 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Helper class to add projection-specific extensions to a notification.
+     * This class is used to specify metadata that is specific to notifications
+     * that may be displayed on a Projected device.
+     *
+     * <p>To create a notification with Projected extensions:
+     * <ol>
+     * <li>Create a {@link Notification.Builder} for the notification.
+     * <li>Create an {@code ProjectedExtender}.
+     * <li>Set projection-specific properties using the {@code set} methods on the
+     * {@code ProjectedExtender}.
+     * <li>Call {@link Notification.Builder#extend} to apply the extensions to
+     * the notification.
+     * </ol>
+     *
+     * <pre class="prettyprint">
+     * Notification.Builder builder = new Notification.Builder(context, CHANNEL_ID)
+     *     .setContentTitle("Example Title")
+     *     .setContentText("Example Text")
+     *     .setSmallIcon(R.drawable.ic_notification);
+     *
+     * ProjectedExtender projectedExtender = new ProjectedExtender()
+     *     .setContentIntent(projectedTapIntent);
+     *
+     * builder.extend(projectedExtender);
+     * notificationManager.notify(NOTIFICATION_ID, builder.build());
+     * </pre>
+     */
+    @FlaggedApi(Flags.FLAG_API_PROJECTED_EXTENDER)
+    public static final class ProjectedExtender implements Extender {
+        /** @hide */ @TestApi public static final String EXTRA_PROJECTED_EXTENDER =
+                "android.projected.EXTENSIONS";
+        /** @hide */ @TestApi public static final String KEY_CONTENT_INTENT = "content_intent";
+
+        private PendingIntent mContentIntent;
+
+        /**
+         * Create a {@link ProjectedExtender} with default options.
+         */
+        public ProjectedExtender() {
+        }
+
+        /**
+         * Creates an {@link ProjectedExtender} from the extensions in a
+         * {@link Notification}.
+         *
+         * @param notification The notification to extract extensions from.
+         */
+        public ProjectedExtender(@NonNull Notification notification) {
+            Bundle projectedBundle = notification.extras == null ?
+                    null : notification.extras.getBundle(EXTRA_PROJECTED_EXTENDER);
+            if (projectedBundle != null) {
+                mContentIntent = projectedBundle.getParcelable(KEY_CONTENT_INTENT,
+                        PendingIntent.class);
+            }
+        }
+
+        /**
+         * Sets the {@link PendingIntent} to be opened on the Projected device when the notification
+         * is tapped on the that device. This is distinct from the notification's main
+         * {@link Notification#contentIntent}, which is typically fired when the
+         * notification is tapped on the host device (e.g., the phone).
+         *
+         * @param intent the {@link PendingIntent} to fire on tap
+         * @return this {@code ProjectedExtender} object for chaining
+         */
+        @NonNull
+        public ProjectedExtender setContentIntent(@Nullable PendingIntent intent) {
+            mContentIntent = intent;
+            return this;
+        }
+
+        /**
+         * Returns the {@link PendingIntent} to be fired when the notification is
+         * tapped on the Projected device.
+         *
+         * @return the {@link PendingIntent} to fire on tap, or null if not set
+         */
+        @Nullable
+        public PendingIntent getContentIntent() {
+            return mContentIntent;
+        }
+
+        /**
+         * Applies the Projected extensions to the notification builder. This method is
+         * called by the {@link Notification.Builder#extend} method and should not
+         * be called directly.
+         *
+         * @param builder the notification builder to extend
+         * @return the modified notification builder
+         */
+        @Override
+        @NonNull
+        public Notification.Builder extend(@NonNull Notification.Builder builder) {
+            Bundle projectedBundle = new Bundle();
+            if (mContentIntent != null) {
+                projectedBundle.putParcelable(KEY_CONTENT_INTENT, mContentIntent);
+            }
+            builder.getExtras().putBundle(EXTRA_PROJECTED_EXTENDER, projectedBundle);
+            return builder;
+        }
+    }
+
+    /**
      * Get an array of Parcelable objects from a parcelable array bundle field.
      * Update the bundle to have a typed array so fetches in the future don't need
      * to do an array copy.
@@ -17532,9 +18388,9 @@ public class Notification implements Parcelable
                 }
             }
             // make sure every color has a valid value
-            mProtectionColor = ctx.getColor(R.color.surface_effect_3);
+            mProtectionColor = ctx.getColor(R.color.customColorSurfaceEffect3);
             mSemanticRedContainerHighColor =
-                    ctx.getColor(R.color.materialColorSemanticRedContainerHigh);
+                    ctx.getColor(R.color.semanticRedContainerHigh);
         }
 
         /** calculates the contrast color for the non-colorized notifications */

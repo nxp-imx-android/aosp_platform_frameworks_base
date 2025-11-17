@@ -39,6 +39,7 @@ import android.app.IUnsafeIntentStrictModeCallback;
 import android.app.PendingIntent;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.EnabledSince;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.BroadcastReceiver;
@@ -76,6 +77,9 @@ import android.os.strictmode.UntaggedSocketViolation;
 import android.os.strictmode.Violation;
 import android.os.strictmode.WebViewMethodCalledOnWrongThreadViolation;
 import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Printer;
@@ -166,7 +170,7 @@ import java.util.function.Consumer;
  * android.os.Binder} calls, it's still ultimately a best effort mechanism. Notably, disk or network
  * access from JNI calls won't necessarily trigger it.
  */
-@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@RavenwoodKeepPartialClass
 public final class StrictMode {
     private static final String TAG = "StrictMode";
     private static final boolean LOG_V = Log.isLoggable(TAG, Log.VERBOSE);
@@ -372,6 +376,15 @@ public final class StrictMode {
     @ChangeId
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     static final long DETECT_EXPLICIT_GC = 3400644L;
+
+    /**
+     * Enables reporting of instance count violations when a custom listener is set.
+     * Prior to this, instance count violations were not reported when a custom listener was
+     * set, but no penalty bits.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    static final long DETECT_INSTANCE_COUNT_VIOLATIONS_WHEN_LISTENER_SET = 333566037L;
 
     // TODO: wrap in some ImmutableHashMap thing.
     // Note: must be before static initialization of sVmPolicy.
@@ -1422,7 +1435,7 @@ public final class StrictMode {
     }
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static @ThreadPolicyMask int allowThreadDiskWritesMask() {
         int oldPolicyMask = getThreadPolicyMask();
         int newPolicyMask = oldPolicyMask & ~(DETECT_THREAD_DISK_WRITE | DETECT_THREAD_DISK_READ);
@@ -1448,7 +1461,7 @@ public final class StrictMode {
     }
 
     /** @hide */
-    @android.ravenwood.annotation.RavenwoodKeep
+    @RavenwoodKeep
     public static @ThreadPolicyMask int allowThreadDiskReadsMask() {
         int oldPolicyMask = getThreadPolicyMask();
         int newPolicyMask = oldPolicyMask & ~(DETECT_THREAD_DISK_READ);
@@ -2159,6 +2172,18 @@ public final class StrictMode {
                 }
             };
 
+    private static boolean shouldCheckInstanceCountViolations(final VmPolicy policy) {
+        // New behavior: run if there are limits set, and either a penalty bit or penalty
+        // listener set.
+        if (CompatChanges.isChangeEnabled(DETECT_INSTANCE_COUNT_VIOLATIONS_WHEN_LISTENER_SET)) {
+            return policy.classInstanceLimit.size() != 0 &&
+                ((policy.mask & PENALTY_ALL) != 0 || policy.mListener != null);
+        } else {
+            // Old behavior: run if there are limits set, and a penalty bit set.
+            return policy.classInstanceLimit.size() != 0 && (policy.mask & PENALTY_ALL) != 0;
+        }
+    }
+
     /**
      * Sets the policy for what actions in the VM process (on any thread) should be detected, as
      * well as the penalty if such actions occur.
@@ -2173,8 +2198,7 @@ public final class StrictMode {
             Looper looper = Looper.getMainLooper();
             if (looper != null) {
                 MessageQueue mq = looper.mQueue;
-                if (policy.classInstanceLimit.size() == 0
-                        || (sVmPolicy.mask & PENALTY_ALL) == 0) {
+                if (!shouldCheckInstanceCountViolations(policy)) {
                     mq.removeIdleHandler(sProcessIdleHandler);
                     sIsIdlerRegistered = false;
                 } else if (!sIsIdlerRegistered) {
@@ -2319,6 +2343,7 @@ public final class StrictMode {
      * policy which can be changed by other threads.
      * @hide
      */
+    @RavenwoodIgnore
     public static boolean vmRegistrationLeaksEnabled() {
         return (sVmPolicy.mask & DETECT_VM_REGISTRATION_LEAKS) != 0;
     }
@@ -2400,6 +2425,7 @@ public final class StrictMode {
      * policy which can be changed by other threads.
      * @hide
      */
+    @RavenwoodIgnore
     public static boolean vmUnsafeIntentLaunchEnabled() {
         return (sVmPolicy.mask & DETECT_VM_UNSAFE_INTENT_LAUNCH) != 0;
     }
@@ -2518,6 +2544,7 @@ public final class StrictMode {
      *
      * @hide
      */
+    @RavenwoodIgnore
     public static void assertConfigurationContext(@NonNull Context context,
             @NonNull String methodName) {
         if (vmIncorrectContextUseEnabled() && !context.isConfigurationContext()) {
@@ -3032,6 +3059,7 @@ public final class StrictMode {
      *
      * @hide
      */
+    @RavenwoodKeep
     public static Object trackActivity(Object instance) {
         return new InstanceTracker(instance);
     }
@@ -3392,6 +3420,7 @@ public final class StrictMode {
                 };
     }
 
+    @RavenwoodKeepWholeClass
     private static final class InstanceTracker {
         private static final HashMap<Class<?>, Integer> sInstanceCounts =
                 new HashMap<Class<?>, Integer>();

@@ -18,7 +18,10 @@ package com.android.systemui.biometrics
 
 import android.hardware.biometrics.BiometricRequestConstants.REASON_AUTH_BP
 import android.hardware.biometrics.BiometricRequestConstants.REASON_AUTH_KEYGUARD
+import android.hardware.biometrics.BiometricRequestConstants.REASON_AUTH_OTHER
 import android.hardware.biometrics.BiometricRequestConstants.RequestReason
+import android.hardware.fingerprint.FingerprintSensorProperties.TYPE_UDFPS_OPTICAL
+import android.hardware.fingerprint.FingerprintSensorProperties.TYPE_UDFPS_ULTRASONIC
 import android.hardware.fingerprint.IUdfpsOverlayControllerCallback
 import android.testing.TestableLooper.RunWithLooper
 import android.view.LayoutInflater
@@ -62,14 +65,15 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
+import org.mockito.Mockito.reset
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 private const val REQUEST_ID = 2L
 
@@ -103,6 +107,10 @@ class UdfpsControllerOverlayTest : SysuiTestCase() {
 
     private val onTouch = { _: View, _: MotionEvent -> true }
     private var overlayParams: UdfpsOverlayParams = UdfpsOverlayParams()
+    private var ultrasonicOverlayParams: UdfpsOverlayParams =
+        UdfpsOverlayParams(sensorType = TYPE_UDFPS_ULTRASONIC)
+    private var opticalOverlayParams: UdfpsOverlayParams =
+        UdfpsOverlayParams(sensorType = TYPE_UDFPS_OPTICAL)
     private lateinit var controllerOverlay: UdfpsControllerOverlay
 
     @Before
@@ -379,6 +387,66 @@ class UdfpsControllerOverlayTest : SysuiTestCase() {
 
                 // CLEANUP we hide to end the job that listens for the finishedGoingToSleep signal
                 controllerOverlay.hide()
+            }
+        }
+
+    @Test
+    fun setHandleTouchesOutsideOfUdfpsViewLifecycle_ultrasonic() =
+        testScope.runTest {
+            withReasonSuspend(REASON_AUTH_KEYGUARD) {
+                // WHEN a request comes to show ultrasonic UDFPS
+                controllerOverlay.show(ultrasonicOverlayParams)
+                runCurrent()
+
+                // THEN handle touches outside of the overlayTouchViewLifecycle
+                verify(udfpsOverlayInteractor).setTouchHandlingViewModel(any())
+            }
+            reset(udfpsOverlayInteractor)
+            withReasonSuspend(REASON_AUTH_BP) {
+                // WHEN a request comes to show ultrasonic UDFPS
+                controllerOverlay.show(ultrasonicOverlayParams)
+                runCurrent()
+
+                // THEN handle touches outside of the overlayTouchViewLifecycle
+                verify(udfpsOverlayInteractor).setTouchHandlingViewModel(any())
+            }
+            reset(udfpsOverlayInteractor)
+            withReasonSuspend(REASON_AUTH_OTHER) {
+                // WHEN a request comes to show ultrasonic UDFPS
+                controllerOverlay.show(ultrasonicOverlayParams)
+                runCurrent()
+
+                // THEN handle touches outside of the overlayTouchViewLifecycle
+                verify(udfpsOverlayInteractor).setTouchHandlingViewModel(any())
+            }
+        }
+
+    @Test
+    fun setHandleTouchesOutsideOfUdfpsViewLifecycle_optical() =
+        testScope.runTest {
+            withReasonSuspend(REASON_AUTH_KEYGUARD) {
+                // WHEN a request comes to show optical UDFPS
+                controllerOverlay.show(opticalOverlayParams)
+                runCurrent()
+
+                // THEN handle touches outside of the overlayTouchViewLifecycle
+                verify(udfpsOverlayInteractor, never()).setTouchHandlingViewModel(any())
+            }
+            withReasonSuspend(REASON_AUTH_BP) {
+                // WHEN a request comes to show optical UDFPS
+                controllerOverlay.show(opticalOverlayParams)
+                runCurrent()
+
+                // THEN handle touches outside of the overlayTouchViewLifecycle
+                verify(udfpsOverlayInteractor, never()).setTouchHandlingViewModel(any())
+            }
+            withReasonSuspend(REASON_AUTH_OTHER) {
+                // WHEN a request comes to show optical UDFPS
+                controllerOverlay.show(opticalOverlayParams)
+                runCurrent()
+
+                // THEN handle touches outside of the overlayTouchViewLifecycle
+                verify(udfpsOverlayInteractor, never()).setTouchHandlingViewModel(any())
             }
         }
 }

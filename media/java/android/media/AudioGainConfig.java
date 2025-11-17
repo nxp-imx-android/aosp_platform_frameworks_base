@@ -17,6 +17,7 @@
 package android.media;
 
 import android.compat.annotation.UnsupportedAppUsage;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 /**
  * The AudioGainConfig is used by APIs setting or getting values on a given gain
@@ -26,6 +27,7 @@ import android.compat.annotation.UnsupportedAppUsage;
  * @see AudioPort
  * @hide
  */
+@RavenwoodKeepWholeClass
 public class AudioGainConfig {
     AudioGain mGain;
     @UnsupportedAppUsage

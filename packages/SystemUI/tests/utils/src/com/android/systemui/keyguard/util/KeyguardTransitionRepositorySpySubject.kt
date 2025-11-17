@@ -32,9 +32,12 @@ import junit.framework.Assert.assertEquals
 import org.junit.Assert.fail
 import org.mockito.Mockito
 import org.mockito.Mockito.never
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.atLeastOnce
+import org.mockito.verification.VerificationMode
 
 /** [Subject] used to make assertions about a [Mockito.spy] KeyguardTransitionRepository. */
 class KeyguardTransitionRepositorySpySubject
@@ -81,8 +84,9 @@ private constructor(
         to: KeyguardState,
         animatorAssertion: (Subject) -> Unit,
         modeOnCanceled: TransitionModeOnCanceled? = null,
+        verificationMode: VerificationMode = times(1),
     ) {
-        withArgCaptor<TransitionInfo> { verify(repository).startTransition(capture()) }
+        withArgCaptor<TransitionInfo> { verify(repository, verificationMode).startTransition(capture()) }
             .also { transitionInfo ->
                 assertEquals(to, transitionInfo.to)
                 animatorAssertion.invoke(Truth.assertThat(transitionInfo.animator))

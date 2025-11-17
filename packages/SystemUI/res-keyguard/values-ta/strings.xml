@@ -45,8 +45,7 @@
     <string name="keyguard_accessibility_password" msgid="3524161948484801450">"சாதனத்தின் கடவுச்சொல்"</string>
     <string name="keyguard_accessibility_sim_pin_area" msgid="6272116591533888062">"சிம் பின்னுக்கான பகுதி"</string>
     <string name="keyguard_accessibility_sim_puk_area" msgid="5537294043180237374">"சிம் PUKக்கான பகுதி"</string>
-    <string name="keyguard_accessibility_pin_delete_long_click" msgid="644835965999123275">"அனைத்தையும் நீக்க இருமுறை தட்டி அழுத்திப் பிடிக்கவும்"</string>
-    <string name="keyguard_accessibility_pin_delete_long_click_partial" msgid="3633252605381482572">"அனைத்தையும் நீக்க அழுத்திப் பிடிக்கவும்"</string>
+    <string name="keyguard_accessibility_pin_delete_long_click" msgid="1530074796041838525">"அனைத்தையும் நீக்க அழுத்திப் பிடிக்கவும்"</string>
     <string name="keyboardview_keycode_delete" msgid="8489719929424895174">"நீக்கும் பட்டன்"</string>
     <string name="disable_carrier_button_text" msgid="7153361131709275746">"இ-சிம்மை முடக்கும்"</string>
     <string name="error_disable_esim_title" msgid="3802652622784813119">"eSIMஐ முடக்க முடியவில்லை"</string>

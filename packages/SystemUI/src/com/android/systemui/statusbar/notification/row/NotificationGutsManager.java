@@ -68,7 +68,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationPresenter;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.StatusBarStateControllerImpl;
-import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
 import com.android.systemui.statusbar.notification.collection.render.NotifGutsViewListener;
@@ -117,7 +116,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     private final StatusBarStateController mStatusBarStateController;
     private final IStatusBarService mStatusBarService;
     private final DeviceProvisionedController mDeviceProvisionedController;
-    private final AssistantFeedbackController mAssistantFeedbackController;
 
     // which notification is currently being longpress-examined by the user
     private NotificationGuts mNotificationGutsExposed;
@@ -168,7 +166,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             ChannelEditorDialogController channelEditorDialogController,
             PackageDemotionInteractor packageDemotionInteractor,
             UserContextProvider contextTracker,
-            AssistantFeedbackController assistantFeedbackController,
             Optional<BubblesManager> bubblesManagerOptional,
             UiEventLogger uiEventLogger,
             OnUserInteractionCallback onUserInteractionCallback,
@@ -198,7 +195,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         mContextTracker = contextTracker;
         mChannelEditorDialogController = channelEditorDialogController;
         mPackageDemotionInteractor = packageDemotionInteractor;
-        mAssistantFeedbackController = assistantFeedbackController;
         mBubblesManagerOptional = bubblesManagerOptional;
         mUiEventLogger = uiEventLogger;
         mOnUserInteractionCallback = onUserInteractionCallback;
@@ -356,8 +352,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                         row, sbn, ranking, nci);
             } else if (gutsContent instanceof PartialConversationInfo pci) {
                 initializePartialConversationNotificationInfo(row, sbn, ranking, pci);
-            } else if (gutsContent instanceof FeedbackInfo fi) {
-                initializeFeedbackInfo(row, sbn, ranking, fi);
             } else if (gutsContent instanceof PromotedPermissionGutsContent ppgc) {
                 initializeDemoteView(sbn, ppgc);
             } else if (gutsContent instanceof BundledNotificationInfo bni) {
@@ -410,28 +404,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 Log.e(TAG, "Couldn't revoke live update permission", e);
             }
         });
-    }
-
-    /**
-     * Sets up the {@link FeedbackInfo} inside the notification row's guts.
-     *
-     * @param row view to set up the guts for
-     * @param feedbackInfo view to set up/bind within {@code row}
-     */
-    private void initializeFeedbackInfo(
-            final ExpandableNotificationRow row,
-            final StatusBarNotification sbn,
-            final NotificationListenerService.Ranking ranking,
-            FeedbackInfo feedbackInfo) {
-        if (mAssistantFeedbackController.getFeedbackIcon(ranking) == null) {
-            return;
-        }
-        UserHandle userHandle = sbn.getUser();
-        PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(mContext,
-                userHandle.getIdentifier());
-
-        feedbackInfo.bindGuts(pmUser, sbn, ranking, row, mAssistantFeedbackController,
-                mStatusBarService, this);
     }
 
     /**
@@ -491,7 +463,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().isHighPriority()
                         : mHighPriorityProvider.isHighPriority(row.getEntryLegacy()),
-                mAssistantFeedbackController,
                 mMetricsLogger,
                 row.getDismissButtonOnClickListener());
     }
@@ -568,7 +539,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().isHighPriority()
                         : mHighPriorityProvider.isHighPriority(row.getEntryLegacy()),
-                mAssistantFeedbackController,
                 mMetricsLogger,
                 row.getDismissButtonOnClickListener());
     }
@@ -807,6 +777,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         }
 
         final ExpandableNotificationRow row = (ExpandableNotificationRow) view;
+        if (affectedByWorkProfileLock(row)) {
+            return false;
+        }
+
         if (row.isNotificationRowLongClickable()) {
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         }
@@ -876,6 +850,15 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         };
         guts.post(mOpenRunnable);
         return true;
+    }
+
+    boolean affectedByWorkProfileLock(ExpandableNotificationRow row) {
+        if (row.getEntryAdapter().isBundle()) {
+            return false;
+        }
+        int userId = row.getEntryAdapter().getSbn().getNormalizedUserId();
+        return mUserManager.isManagedProfile(userId)
+                && mLockscreenUserManager.isLockscreenPublicMode(userId);
     }
 
     /**

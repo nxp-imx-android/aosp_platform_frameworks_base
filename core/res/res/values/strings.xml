@@ -648,7 +648,7 @@
     <!-- Factory reset warning dialog strings--> <skip />
     <!-- Shows up in the dialog's title to warn about an impeding factory reset. [CHAR LIMIT=NONE] -->
     <string name="factory_reset_warning">Your device will be erased</string>
-    <!-- Text message in the factory reset warning dialog. This says that the the device admin app
+    <!-- Text message in the factory reset warning dialog. This says that the device admin app
          is missing or corrupted. As a result the device will be erased. [CHAR LIMIT=NONE]-->
     <string name="factory_reset_message">The admin app can\'t be used. Your device will now be
         erased.\n\nIf you have questions, contact your organization\'s admin.</string>
@@ -2299,6 +2299,11 @@
     <string name="permlab_readMediaImages">read image files from shared storage</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. "shared storage" refers to a storage space on the device that all apps with this permission can read from. [CHAR LIMIT=none] -->
     <string name="permdesc_readMediaImages">Allows the app to read image files from your shared storage.</string>
+
+     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. "shared storage" refers to a storage space on the device that all apps with this permission can read from. [CHAR LIMIT=none] -->
+    <string name="permlab_readMediaDocuments">read document files from shared storage</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. "shared storage" refers to a storage space on the device that all apps with this permission can read from. [CHAR LIMIT=none] -->
+    <string name="permdesc_readMediaDocuments">Allows the app to read document files from your shared storage.</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. "shared storage" refers to a storage space on the device that all apps with this permission can read from. [CHAR LIMIT=none] -->
     <string name="permlab_readVisualUserSelect">read user selected image and video files from shared storage</string>
@@ -5790,6 +5795,32 @@
     <!-- Title of the button to unsuspend a suspended app immediately [CHAR LIMIT=50]-->
     <string name="app_suspended_unsuspend_message">Unpause app</string>
 
+    <!-- TODO(b/436380342): Finalize AppLockActivity strings.   -->
+    <!-- Title of the dialog that is shown when the user tries to enable App Lock on the provided application [CHAR LIMIT=NONE] -->
+    <string name="enable_app_lock_dialog_title" translatable="false">
+        Lock <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>?
+    </string>
+    <!-- Text of the button that enables App Lock on an application [CHAR LIMIT=20] -->
+    <string name="enable_app_lock_dialog_enable_button_text" translatable="false">Lock</string>
+    <!-- Title of the dialog that is shown when the user tries to disable App Lock on the provided application [CHAR LIMIT=NONE] -->
+    <string name="disable_app_lock_dialog_title" translatable="false">
+        Remove App Lock from <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>?
+    </string>
+    <!-- Text of the button that disables App Lock on an application [CHAR LIMIT=40] -->
+    <string name="disable_app_lock_dialog_disable_button_text" translatable="false">Remove lock</string>
+    <!-- Message shown in a toast notifying the user about the successful enablement of App Lock on the provided application [CHAR LIMIT=NONE] -->
+    <string name="enable_app_lock_success_toast_message" translatable="false">
+        <xliff:g id="app_name" example="Gmail">%1$s</xliff:g> is locked
+    </string>
+    <!-- Message shown in a toast notifying the user about the unsuccessful enablement of App Lock on the provided application [CHAR LIMIT=NONE] -->
+    <string name="enable_app_lock_failure_toast_message" translatable="false">
+        Can\'t lock <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>
+    </string>
+    <!-- Message shown in a toast notifying the user about the successful disablement of App Lock on the provided application [CHAR LIMIT=NONE] -->
+    <string name="disable_app_lock_success_toast_message" translatable="false">
+        App Lock is removed from <xliff:g id="app_name" example="Gmail">%1$s</xliff:g>
+    </string>
+
     <!-- Title of a dialog. This text is confirming that the user wants to turn on access to their work apps, which the user had previously paused. "Work" is an adjective. [CHAR LIMIT=30] -->
     <string name="work_mode_off_title">Unpause work apps?</string>
     <!-- Title for button to unpause on work profile. [CHAR LIMIT=NONE] -->
@@ -5979,32 +6010,32 @@
     }
     </string>
 
-    <!-- Title for the autofill save dialog shown when the the contents of the activity can be saved
+    <!-- Title for the autofill save dialog shown when the contents of the activity can be saved
          by an autofill service, but the service does not know what the activity represents [CHAR LIMIT=NONE] -->
     <string name="autofill_save_title">Save to <b><xliff:g id="label" example="MyPass">%1$s</xliff:g></b>?</string>
-    <!-- Title for the autofill save dialog shown when the the contents of the activity can be saved
+    <!-- Title for the autofill save dialog shown when the contents of the activity can be saved
          by an autofill service, and the service knows what the activity represents (for example, credit card info) [CHAR LIMIT=NONE] -->
     <string name="autofill_save_title_with_type">Save <xliff:g id="type" example="Credit Card">%1$s</xliff:g> to <b><xliff:g id="label" example="MyPass">%2$s</xliff:g></b>?</string>
-    <!-- Title for the autofill save dialog shown when the the contents of the activity can be saved
+    <!-- Title for the autofill save dialog shown when the contents of the activity can be saved
          by an autofill service, and the service knows what the activity represents, and it represents 2 types of
          data (for example, password and credit card info) [CHAR LIMIT=NONE] -->
     <string name="autofill_save_title_with_2types">Save <xliff:g id="type" example="Password">%1$s</xliff:g> and <xliff:g id="type" example="Credit Card">%2$s</xliff:g> to <b><xliff:g id="label" example="MyPass">%3$s</xliff:g></b>?</string>
-    <!-- Title for the autofill save dialog shown when the the contents of the activity can be saved
+    <!-- Title for the autofill save dialog shown when the contents of the activity can be saved
          by an autofill service, and the service knows what the activity represents, and it represents 3 types of
          data (for example, username, password and credit card info) [CHAR LIMIT=NONE] -->
     <string name="autofill_save_title_with_3types">Save <xliff:g id="type" example="Username">%1$s</xliff:g>, <xliff:g id="type" example="Password">%2$s</xliff:g>, and <xliff:g id="type" example="Credit Card">%3$s</xliff:g> to <b><xliff:g id="label" example="MyPass">%4$s</xliff:g></b>?</string>
 
-    <!-- Title for the autofill update dialog shown when the the contents of the activity can be updated
+    <!-- Title for the autofill update dialog shown when the contents of the activity can be updated
          in an autofill service, but the service does not know what the activity represents [CHAR LIMIT=NONE] -->
     <string name="autofill_update_title">Update in <b><xliff:g id="label" example="MyPass">%1$s</xliff:g></b>?</string>
-    <!-- Title for the autofill update dialog shown when the the contents of the activity can be updated
+    <!-- Title for the autofill update dialog shown when the contents of the activity can be updated
          in an autofill service, and the service knows what the activity represents (for example, credit card info) [CHAR LIMIT=NONE] -->
     <string name="autofill_update_title_with_type">Update <xliff:g id="type" example="Credit Card">%1$s</xliff:g> in <b><xliff:g id="label" example="MyPass">%2$s</xliff:g></b>?</string>
-    <!-- Title for the autofill update dialog shown when the the contents of the activity can be updated
+    <!-- Title for the autofill update dialog shown when the contents of the activity can be updated
          in an autofill service, and the service knows what the activity represents, and it represents 2 types of
          data (for example, password and credit card info) [CHAR LIMIT=NONE] -->
     <string name="autofill_update_title_with_2types">Update <xliff:g id="type" example="Password">%1$s</xliff:g> and <xliff:g id="type" example="Credit Card">%2$s</xliff:g> in <b><xliff:g id="label" example="MyPass">%3$s</xliff:g></b>?</string>
-    <!-- Title for the autofill update dialog shown when the the contents of the activity can be updated
+    <!-- Title for the autofill update dialog shown when the contents of the activity can be updated
          in an autofill service, and the service knows what the activity represents, and it represents 3 types of
          data (for example, username, password and credit card info) [CHAR LIMIT=NONE] -->
     <string name="autofill_update_title_with_3types">Update these items in <b><xliff:g id="label" example="MyPass">%4$s</xliff:g></b>: <xliff:g id="type" example="Username">%1$s</xliff:g>, <xliff:g id="type" example="Password">%2$s</xliff:g>, and <xliff:g id="type" example="Credit Card">%3$s</xliff:g>?</string>

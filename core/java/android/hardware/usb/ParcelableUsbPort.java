@@ -79,11 +79,19 @@ public final class ParcelableUsbPort implements Parcelable {
      * @return The UsbPort for this object
      */
     public @NonNull UsbPort getUsbPort(@NonNull UsbManager usbManager) {
-        return new UsbPort(usbManager, mId, mSupportedModes, mSupportedContaminantProtectionModes,
-                mSupportsEnableContaminantPresenceProtection,
-                mSupportsEnableContaminantPresenceDetection,
-                mSupportsComplianceWarnings,
-                mSupportedAltModesMask);
+        UsbPort.Builder builder = new UsbPort.Builder();
+        builder.setId(mId);
+        builder.setUsbManager(usbManager);
+        builder.setSupportedModes(mSupportedModes);
+        builder.setSupportedContaminantProtectionModes(mSupportedContaminantProtectionModes);
+        builder.setSupportsEnableContaminantPresenceProtection(
+                mSupportsEnableContaminantPresenceProtection);
+        builder.setSupportsEnableContaminantPresenceDetection(
+                mSupportsEnableContaminantPresenceDetection);
+        builder.setSupportsComplianceWarnings(mSupportsComplianceWarnings);
+        builder.setSupportedAltModes(mSupportedAltModesMask);
+
+        return builder.build();
     }
 
     @Override

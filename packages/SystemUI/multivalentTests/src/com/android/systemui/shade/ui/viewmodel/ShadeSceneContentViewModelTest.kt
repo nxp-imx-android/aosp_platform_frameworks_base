@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
@@ -34,6 +35,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteract
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
+import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
@@ -58,6 +60,7 @@ import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFl
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.fakeUnfoldTransitionProgressProvider
+import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
 import kotlinx.coroutines.flow.flowOf
@@ -254,6 +257,53 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
             assertThat(squishiness).isEqualTo(1f)
         }
 
+    @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
+    fun isBlurred_whenBouncerOverlayShowingOverShadeAndBlurSupported_isTrue() =
+        kosmos.runTest {
+            assertThat(
+                    underTest.calculateBlur(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays = setOf(Overlays.Bouncer),
+                            )
+                    )
+                )
+                .isEqualTo(0f)
+
+            kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
+            kosmos.runCurrent()
+            assertThat(
+                    underTest.calculateBlur(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Lockscreen,
+                                currentOverlays = setOf(Overlays.Bouncer),
+                            )
+                    )
+                )
+                .isEqualTo(0f)
+
+            assertThat(
+                    underTest.calculateBlur(
+                        transitionState =
+                            TransitionState.Idle(
+                                currentScene = Scenes.Shade,
+                                currentOverlays = setOf(Overlays.Bouncer),
+                            )
+                    )
+                )
+                .isEqualTo(kosmos.blurConfig.maxBlurRadiusPx)
+
+            assertThat(
+                    underTest.calculateBlur(
+                        transitionState = TransitionState.Idle(currentScene = Scenes.Shade)
+                    )
+                )
+                .isEqualTo(0)
+        }
+
     private fun Kosmos.prepareConfiguration(): Int {
         val configuration = context.resources.configuration
         configuration.setLayoutDirection(Locale.US)
@@ -272,7 +322,7 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
             val isDeviceUnlocked by
                 collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
             kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_UNLOCK_COLLAPSING,
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             assertThat(isDeviceUnlocked).isTrue()

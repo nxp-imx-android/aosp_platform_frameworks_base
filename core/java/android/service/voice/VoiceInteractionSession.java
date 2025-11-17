@@ -153,6 +153,17 @@ public class VoiceInteractionSession implements KeyEvent.Callback, ComponentCall
      */
     public static final int SHOW_SOURCE_AUTOMOTIVE_SYSTEM_UI = 1 << 7;
 
+    /**
+     * Flag received in {@link #onShow}: originator requested that the session be started with
+     * included screen content in the AssistStructure.
+     *
+     * NOTE: This flag must be passed along with {@link SHOW_WITH_ASSIST} or it will have no effect,
+     * as the new session will not receive any assist data, and thus no {@link AssistStructure}
+     * will be included.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES)
+    public static final int SHOW_WITH_ASSIST_STRUCTURE_SCREEN_CONTENT = 1 << 8;
+
     /** @hide */
     public static final int VOICE_INTERACTION_ACTIVITY_EVENT_START = 1;
     /** @hide */

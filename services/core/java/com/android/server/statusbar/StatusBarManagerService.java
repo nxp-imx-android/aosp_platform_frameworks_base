@@ -37,6 +37,7 @@ import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON_OVE
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY;
 
 import android.Manifest;
+import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -77,6 +78,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PermissionEnforcer;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
@@ -89,6 +91,7 @@ import android.service.notification.NotificationStats;
 import android.service.quicksettings.TileService;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
 import android.util.IntArray;
 import android.util.Pair;
@@ -104,6 +107,7 @@ import android.window.DesktopExperienceFlags.DesktopExperienceFlag;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.infra.AndroidFuture;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.os.TransferPipe;
@@ -139,6 +143,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -195,6 +200,10 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     // for disabling the status bar
     private final ArrayList<DisableRecord> mDisableRecords = new ArrayList<DisableRecord>();
     private GlobalActionsProvider.GlobalActionsListener mGlobalActionListener;
+
+    @GuardedBy("mShowPowerMenuCallbacks")
+    private final ArraySet<AndroidFuture<Boolean>> mShowPowerMenuCallbacks = new ArraySet<>();
+    private volatile boolean mGlobalActionsShowing = false;
     private final IBinder mSysUiVisToken = new Binder();
 
     private final Object mLock = new Object();
@@ -308,6 +317,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
      * Construct the service
      */
     public StatusBarManagerService(Context context) {
+        super(PermissionEnforcer.fromContext(context));
         mContext = context;
 
         LocalServices.addService(StatusBarManagerInternal.class, mInternalService);
@@ -1048,7 +1058,9 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             IStatusBar bar = mBar;
             if (bar != null) {
                 try {
-                    bar.showGlobalActionsMenu();
+                    // Call an explicit showOrHide here as this call comes from a keycord that
+                    // can either show or hide the power menu. No behavior change.
+                    bar.showOrHideGlobalActionsMenu();
                 } catch (RemoteException ex) {}
             }
         }
@@ -1874,6 +1886,8 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             if (mGlobalActionListener == null) return;
             mGlobalActionListener.onGlobalActionsAvailableChanged(mBar != null);
         });
+        // Whenever mBar changes, we know that we are not showng mBar's Global actions.
+        mGlobalActionsShowing = false;
         // If StatusBarService dies, system_server doesn't get killed with it, so we need to make
         // sure the UDFPS callback is refreshed as well. Deferring to the handler just so to avoid
         // making registerStatusBar re-entrant.
@@ -2004,13 +2018,102 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     public void onGlobalActionsShown() {
         enforceStatusBarService();
         enforceValidCallingUser();
+        mGlobalActionsShowing = true;
 
         final long identity = Binder.clearCallingIdentity();
         try {
-            if (mGlobalActionListener == null) return;
-            mGlobalActionListener.onGlobalActionsShown();
+            if (mGlobalActionListener != null) {
+                mGlobalActionListener.onGlobalActionsShown();
+            }
+            notifyShowPowerMenuCallbacks();
         } finally {
             Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    private void notifyShowPowerMenuCallbacks() {
+        ArraySet<AndroidFuture<Boolean>> callbacks;
+        synchronized (mShowPowerMenuCallbacks) {
+            callbacks = new ArraySet<>(mShowPowerMenuCallbacks);
+            mShowPowerMenuCallbacks.clear();
+        }
+        callbacks.forEach(callback -> callback.complete(true));
+    }
+
+    /**
+     * After checking the permission, this will try to show the power menu in SystemUI.
+     *
+     * Unless replying immediately, the future will be kept as a callback until it times out. The
+     * {@code AndroidFuture} has a Boolean result and will return as follows:
+     * <ul>
+     *     <li>
+     *         {@code true} if the power menu is currently visible (immediately) or when it appears
+     *         (delayed).
+     *     </li>
+     *     <li>
+     *         {@code false} if the power menu is disabled by policy.
+     *     </li>
+     *     <li>
+     *         Throw a {@link Exception} if the call fails in any way.
+     *     </li>
+     * </ul>
+     * @param future a {@link Boolean} future for the reply
+     */
+    @Override
+    @EnforcePermission(Manifest.permission.SHOW_POWER_MENU)
+    public void showGlobalActionsFromApp(@NonNull AndroidFuture future) {
+        showGlobalActionsFromApp_enforcePermission();
+        Objects.requireNonNull(future);
+
+
+        @SuppressWarnings("unchecked") final AndroidFuture<Boolean> typedFuture = future;
+
+        if (!android.app.Flags.statusbarApiShowPowerMenu()) {
+            typedFuture.completeExceptionally(new RuntimeException("Disabled flag"));
+        }
+
+        if (mGlobalActionsProvider.isGlobalActionsDisabled()) {
+            typedFuture.complete(false);
+            return;
+        }
+
+        if (mBar == null) {
+            // In this case, there's no StatusBar, so return an error
+            future.completeExceptionally(new RuntimeException("No service to show Power Menu"));
+            return;
+        }
+
+        if (mGlobalActionsShowing) {
+            // We are already showing power menu. Return true immediately
+            typedFuture.complete(true);
+        }
+
+        synchronized (mShowPowerMenuCallbacks) {
+            mShowPowerMenuCallbacks.add(
+                    typedFuture.whenComplete((unusedResult, throwable) -> {
+                        if (throwable != null) {
+                            removeGlobalActionFutureOnTimeoutOrError(typedFuture);
+                        }
+                    })
+            );
+        }
+
+        final long identity = Binder.clearCallingIdentity();
+        IStatusBar bar = mBar;
+        if (bar != null) {
+            try {
+                bar.showGlobalActionsMenu();
+            } catch (Exception e) {
+                typedFuture.completeExceptionally(e);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+    }
+
+    private void removeGlobalActionFutureOnTimeoutOrError(AndroidFuture<Boolean> future) {
+        synchronized (mShowPowerMenuCallbacks) {
+            mShowPowerMenuCallbacks.remove(future);
         }
     }
 
@@ -2018,6 +2121,8 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     public void onGlobalActionsHidden() {
         enforceStatusBarService();
         enforceValidCallingUser();
+
+        mGlobalActionsShowing = false;
 
         final long identity = Binder.clearCallingIdentity();
         try {
@@ -2961,6 +3066,13 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
             for (int i = 0; i < reqN; i++) {
                 pw.println("    " + requests.get(i) + ",");
             }
+            pw.println("  ]");
+            ArraySet<AndroidFuture<Boolean>> callbacks;
+            synchronized (mShowPowerMenuCallbacks) {
+                callbacks = new ArraySet<>(mShowPowerMenuCallbacks);
+            }
+            pw.println("  mShowPowerMenuCallbacks=[");
+            callbacks.forEach(callback -> pw.println("    " + callback + ","));
             pw.println("  ]");
             IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ");
             mTileRequestTracker.dump(fd, ipw.increaseIndent(), args);

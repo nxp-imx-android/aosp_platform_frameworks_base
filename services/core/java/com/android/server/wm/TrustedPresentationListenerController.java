@@ -22,6 +22,7 @@ import static android.graphics.Matrix.MSKEW_X;
 import static android.graphics.Matrix.MSKEW_Y;
 import static android.view.Display.INVALID_DISPLAY;
 
+import static android.companion.virtualdevice.flags.Flags.computerControlAccess;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TPL;
 
 import android.graphics.Matrix;
@@ -44,6 +45,8 @@ import android.window.TrustedPresentationThresholds;
 import android.window.WindowInfosListener;
 
 import com.android.internal.protolog.ProtoLog;
+import com.android.server.LocalServices;
+import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.wm.utils.RegionUtils;
 
 import java.io.PrintWriter;
@@ -154,6 +157,7 @@ public class TrustedPresentationListenerController {
     private final Object mHandlerThreadLock = new Object();
     private HandlerThread mHandlerThread;
     private Handler mHandler;
+    private VirtualDeviceManagerInternal mVdmInternal;
 
     private WindowInfosListener mWindowInfosListener;
 
@@ -164,6 +168,9 @@ public class TrustedPresentationListenerController {
     private void startHandlerThreadIfNeeded() {
         synchronized (mHandlerThreadLock) {
             if (mHandler == null) {
+                if (computerControlAccess()) {
+                    mVdmInternal = LocalServices.getService(VirtualDeviceManagerInternal.class);
+                }
                 mHandlerThread = new HandlerThread("WindowInfosListenerForTpl");
                 mHandlerThread.start();
                 mHandler = new Handler(mHandlerThread.getLooper());
@@ -285,6 +292,16 @@ public class TrustedPresentationListenerController {
             if (displayId == INVALID_DISPLAY) {
                 ProtoLog.v(WM_DEBUG_TPL, "Skipping %s, no associated display %d", windowHandle.name,
                         windowHandle.displayId);
+                continue;
+            }
+
+            if (computerControlAccess()
+                    && mVdmInternal != null
+                    && mVdmInternal.isComputerControlDisplay(displayId)) {
+                // TODO(b/459548175, b/459545101): Remove this once we have a better way to handle
+                // virtual displays and mirrored content. For now, we just skip Computer Control
+                // displays and consider only the mirrored hierarchy (if the ComputerControl
+                // MirrorView is visible) for computing trusted presentation.
                 continue;
             }
 

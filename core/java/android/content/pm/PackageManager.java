@@ -346,14 +346,14 @@ public abstract class PackageManager {
      * &lt;service android:isolatedProcess="true"
                    android:nativeService="true"&gt;
      *   &lt;property
-     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME"
+     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_LIBRARY_NAME"
      *     android:value="libnativeservice.so"/&gt;
      * &lt;/service&gt;
      * </pre>
      */
     @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
-    public static final String PROPERTY_NATIVE_SERVICE_LIB_NAME =
-            "android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME";
+    public static final String PROPERTY_NATIVE_SERVICE_LIBRARY_NAME =
+            "android.app.PROPERTY_NATIVE_SERVICE_LIBRARY_NAME";
 
     /**
      * Service level {@link android.content.pm.PackageManager.Property} tag for native services
@@ -365,14 +365,14 @@ public abstract class PackageManager {
      * &lt;service android:isolatedProcess="true"
                    android:nativeService="true"&gt;
      *   &lt;property
-     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME"
+     *     android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNCTION_NAME"
      *     android:value="native_service_createService"/&gt;
      * &lt;/service&gt;
      * </pre>
      */
     @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE)
-    public static final String PROPERTY_NATIVE_SERVICE_FUNC_NAME =
-            "android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME";
+    public static final String PROPERTY_NATIVE_SERVICE_FUNCTION_NAME =
+            "android.app.PROPERTY_NATIVE_SERVICE_FUNCTION_NAME";
 
     /**
      * A property value set within the manifest.
@@ -4178,6 +4178,15 @@ public abstract class PackageManager {
      */
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_USB_HOST = "android.hardware.usb.host";
+
+    /**
+     * Feature for {@link #getSystemAvailableFeatures} and
+     * {@link #hasSystemFeature}: The device supports connecting to USB hosts
+     * as the USB device.
+     */
+    @SdkConstant(SdkConstantType.FEATURE)
+    @FlaggedApi(android.hardware.usb.flags.Flags.FLAG_ENABLE_FEATURE_USB_DEVICE)
+    public static final String FEATURE_USB_DEVICE = "android.hardware.usb.device";
 
     /**
      * Feature for {@link #getSystemAvailableFeatures} and
@@ -12327,8 +12336,8 @@ public abstract class PackageManager {
      * @param pccUid The PCC UID to map.
      * @return The corresponding application UID, or {@link Process#INVALID_UID} if the
      *         provided UID is not a valid PCC UID or no mapping exists.
-     * @hide
      */
+    @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public int getAppUidForPccUid(int pccUid) {
         throw new UnsupportedOperationException(
                 "getAppUidForPccUid not implemented in subclass");

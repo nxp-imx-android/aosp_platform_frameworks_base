@@ -26,15 +26,15 @@ import org.junit.runners.model.Statement
 /**
  * A [TestRule] that executes a given [wrappedRule] only once per unique set of parameters per test.
  *
- * This rule ensures the [wrappedRule] is evaluated only the *first* time a test is run
- * with a new set of [params]. Subsequent tests using the same parameters will bypass
- * the [wrappedRule]'s logic and execute the test statement directly. This is useful for
- * [Parameterized] tests which execute the whole class of tests with the same parameters.
+ * This rule ensures the [wrappedRule] is evaluated only the *first* time a test is run with a new
+ * set of [params]. Subsequent tests using the same parameters will bypass the [wrappedRule]'s logic
+ * and execute the test statement directly. This is useful for [Parameterized] tests which execute
+ * the whole class of tests with the same parameters.
  *
  * @param testClass test class that this rule is executed in
  * @param wrappedRule the rule that we only want to apply once per test parameter change.
- * @param params the set of test parameters for the current execution. The [wrappedRule]
- * will be re-executed whenever this set changes from the previous test run.
+ * @param params the set of test parameters for the current execution. The [wrappedRule] will be
+ *   re-executed whenever this set changes from the previous test run.
  */
 class RunOncePerParameterRule(
     private val testClass: KClass<out Any>,
@@ -42,29 +42,30 @@ class RunOncePerParameterRule(
     private vararg val params: Any,
 ) : TestRule {
 
-    override fun apply(base: Statement, description: Description) = object : Statement() {
-        override fun evaluate() {
-            // Check if we are in a new test or the parameters for this test run are new.
-            if (testClass != prevTestClass || !params.contentEquals(prevParams)) {
-                prevTestClass = testClass
-                prevParams = params
-                isExecuted.set(false)
-            }
-
-            // Decide which statement to run.
-            val statementToRun =
-                if (isExecuted.compareAndSet(false /* expect */, true /* update */)) {
-                    // First time for this param set: apply the wrapped rule, which in turn will
-                    // execute 'base'.
-                    wrappedRule.apply(base, description)
-                } else {
-                    // Subsequent times: just run 'base' directly, skipping the wrapped rule.
-                    base
+    override fun apply(base: Statement, description: Description) =
+        object : Statement() {
+            override fun evaluate() {
+                // Check if we are in a new test or the parameters for this test run are new.
+                if (testClass != prevTestClass || !params.contentEquals(prevParams)) {
+                    prevTestClass = testClass
+                    prevParams = params
+                    isExecuted.set(false)
                 }
 
-            statementToRun.evaluate()
+                // Decide which statement to run.
+                val statementToRun =
+                    if (isExecuted.compareAndSet(false /* expect */, true /* update */)) {
+                        // First time for this param set: apply the wrapped rule, which in turn will
+                        // execute 'base'.
+                        wrappedRule.apply(base, description)
+                    } else {
+                        // Subsequent times: just run 'base' directly, skipping the wrapped rule.
+                        base
+                    }
+
+                statementToRun.evaluate()
+            }
         }
-    }
 
     companion object {
         // Static fields to track execution state across test methods.

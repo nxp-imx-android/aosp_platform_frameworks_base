@@ -37,3 +37,17 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "allow_non_wake_up_deep_alarms"
+    namespace: "wear_frameworks"
+    description: "Allows using non-wakeup alarms to transition between deep alarm states."
+    bug: "458144517"
+}
+
+flag {
+    name: "offload_motion_context_for_device_idle"
+    namespace: "backstage_power"
+    description: "Use Offloaded Motion Context for device idle when available"
+    bug: "450597782"
+}

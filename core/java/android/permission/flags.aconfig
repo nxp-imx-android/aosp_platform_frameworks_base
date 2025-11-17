@@ -35,6 +35,14 @@ flag {
 }
 
 flag {
+    name: "read_media_documents_permission_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "enable permission to read documents from shared storage"
+    bug: "442892237"
+}
+
+flag {
     name: "set_next_attribution_source"
     is_exported: true
     namespace: "permissions"
@@ -503,13 +511,6 @@ flag {
 }
 
 flag {
-    name: "enforce_default_device_id_in_my_attribution_source"
-    namespace: "permissions"
-    description: "Force AttributionSource.myAttributionSource() to return a default device id"
-    bug: "343121936"
-}
-
-flag {
     name: "grant_read_blocked_numbers_to_system_ui_intelligence"
     is_exported: true
     is_fixed_read_only: true
@@ -698,5 +699,13 @@ flag {
     namespace: "wear_watchfaces"
     description: "This flag enables watchface roles support and API"
     bug: "396431730"
+}
+
+flag {
+    name: "restrict_assist_structure_screen_content_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "enable restricted usage of assist_structure screen content via the new permission"
+    bug: "437416500"
 }
 

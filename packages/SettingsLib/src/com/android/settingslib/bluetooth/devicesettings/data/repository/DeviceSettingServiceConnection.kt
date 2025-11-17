@@ -165,8 +165,16 @@ class DeviceSettingServiceConnection(
                                     .also { config ->
                                         Log.i(
                                             TAG,
-                                            "device setting config for $cachedDevice is $config",
-                                        )
+                                            "device setting config for $cachedDevice is ${
+                                                config?.run {
+                                                    (mainContentItems + moreSettingsItems +
+                                                            listOfNotNull(
+                                                                moreSettingsHelpItem
+                                                            )).joinToString {
+                                                        item -> item.settingId.toString()
+                                                    }
+                                                } ?: "null"
+                                            }")
                                     }
                             )
                         is ServiceConnectionStatus.Connecting -> flowOf()

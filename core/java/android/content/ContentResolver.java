@@ -67,6 +67,8 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepStaticInitializer;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodSupported;
 import android.ravenwood.annotation.RavenwoodSupported.SupportType;
 import android.system.Int64Ref;
@@ -106,8 +108,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * developer guide.</p>
  * </div>
  */
-@RavenwoodKeepPartialClass(comment = "kept just enough to support SettingsProvider",
-        bug = 457841012)
+@RavenwoodKeepPartialClass(bug = 457841012, comment =
+        """
+        Methods marked as conditionally supported enable tests to be able to mock ContentResolver
+        by using either MockContentResolver, TestableContentResolver (via TestableContext),
+        or wrapping a mock ContentInterface with ContentResolver#wrap.
+        The default ContentResolver obtained with Context#getContentResolver on Ravenwood
+        does not have any content provider registered other than a fake SettingsProvider,
+        so calling any of its methods will normally result in a no-op.
+        That ContentResolver is only meant to be used by APIs in android.provider.Settings.
+        """
+)
+@RavenwoodKeepStaticInitializer
 public abstract class ContentResolver implements ContentInterface {
     /**
      * Enables logic that supports deprecation of {@code _data} columns,
@@ -831,6 +843,7 @@ public abstract class ContentResolver implements ContentInterface {
     }
 
     /** @hide */
+    @RavenwoodKeep
     public static @NonNull ContentResolver wrap(@NonNull ContentInterface wrapped) {
         Objects.requireNonNull(wrapped);
 
@@ -862,6 +875,7 @@ public abstract class ContentResolver implements ContentInterface {
      * Create a {@link ContentResolver} instance that redirects all its methods
      * to the given {@link ContentProvider}.
      */
+    @RavenwoodKeep
     public static @NonNull ContentResolver wrap(@NonNull ContentProvider wrapped) {
         return wrap((ContentInterface) wrapped);
     }
@@ -870,6 +884,7 @@ public abstract class ContentResolver implements ContentInterface {
      * Create a {@link ContentResolver} instance that redirects all its methods
      * to the given {@link ContentProviderClient}.
      */
+    @RavenwoodKeep
     public static @NonNull ContentResolver wrap(@NonNull ContentProviderClient wrapped) {
         return wrap((ContentInterface) wrapped);
     }
@@ -928,6 +943,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return A MIME type for the content, or null if the URL is invalid or the type is unknown
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable String getType(@NonNull Uri url) {
         Objects.requireNonNull(url, "url");
 
@@ -994,6 +1010,7 @@ public abstract class ContentResolver implements ContentInterface {
         }
     }
 
+    @RavenwoodKeepWholeClass
     private abstract static class ResultListener<T> implements RemoteCallback.OnResultListener {
         @GuardedBy("this")
         public boolean done;
@@ -1038,6 +1055,7 @@ public abstract class ContentResolver implements ContentInterface {
         }
     }
 
+    @RavenwoodKeepWholeClass
     private static class StringResultListener extends ResultListener<String> {
         @Override
         protected String getResultFromBundle(Bundle result) {
@@ -1045,6 +1063,7 @@ public abstract class ContentResolver implements ContentInterface {
         }
     }
 
+    @RavenwoodKeepWholeClass
     private static class UriResultListener extends ResultListener<Uri> {
         @Override
         protected Uri getResultFromBundle(Bundle result) {
@@ -1070,6 +1089,7 @@ public abstract class ContentResolver implements ContentInterface {
      * null is returned.
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public @Nullable String[] getStreamTypes(@NonNull Uri url, @NonNull String mimeTypeFilter) {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(mimeTypeFilter, "mimeTypeFilter");
@@ -1128,6 +1148,7 @@ public abstract class ContentResolver implements ContentInterface {
      *         or if it crashes.
      * @see Cursor
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Cursor query(@RequiresPermission.Read @NonNull Uri uri,
             @Nullable String[] projection, @Nullable String selection,
             @Nullable String[] selectionArgs, @Nullable String sortOrder) {
@@ -1170,6 +1191,7 @@ public abstract class ContentResolver implements ContentInterface {
      *         or if it crashes.
      * @see Cursor
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Cursor query(@RequiresPermission.Read @NonNull Uri uri,
             @Nullable String[] projection, @Nullable String selection,
             @Nullable String[] selectionArgs, @Nullable String sortOrder,
@@ -1214,6 +1236,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @see Cursor
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Cursor query(final @RequiresPermission.Read @NonNull Uri uri,
             @Nullable String[] projection, @Nullable Bundle queryArgs,
             @Nullable CancellationSignal cancellationSignal) {
@@ -1294,6 +1317,7 @@ public abstract class ContentResolver implements ContentInterface {
     }
 
     /** @hide */
+    @RavenwoodKeep(conditional = true)
     public final @NonNull Uri canonicalizeOrElse(@NonNull Uri uri) {
         final Uri res = canonicalize(uri);
         return (res != null) ? res : uri;
@@ -1330,6 +1354,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @see #uncanonicalize
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Uri canonicalize(@NonNull Uri url) {
         Objects.requireNonNull(url, "url");
 
@@ -1381,6 +1406,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @see #canonicalize
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Uri uncanonicalize(@NonNull Uri url) {
         Objects.requireNonNull(url, "url");
 
@@ -1433,6 +1459,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return true if the provider actually tried refreshing.
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final boolean refresh(@NonNull Uri url, @Nullable Bundle extras,
             @Nullable CancellationSignal cancellationSignal) {
         Objects.requireNonNull(url, "url");
@@ -1488,6 +1515,7 @@ public abstract class ContentResolver implements ContentInterface {
      */
     @Override
     @SystemApi
+    @RavenwoodKeep(conditional = true)
     public int checkUriPermission(@NonNull Uri uri, int uid, @Intent.AccessUriMode int modeFlags) {
         Objects.requireNonNull(uri, "uri");
 
@@ -1523,6 +1551,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @throws FileNotFoundException if the provided URI could not be opened.
      * @see #openAssetFileDescriptor(Uri, String)
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable InputStream openInputStream(@NonNull Uri uri)
             throws FileNotFoundException {
         Objects.requireNonNull(uri, "uri");
@@ -1560,6 +1589,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return an OutputStream or {@code null} if the provider recently crashed.
      * @throws FileNotFoundException if the provided URI could not be opened.
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable OutputStream openOutputStream(@NonNull Uri uri)
             throws FileNotFoundException {
         return openOutputStream(uri, "w");
@@ -1586,6 +1616,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @throws FileNotFoundException if the provided URI could not be opened.
      * @see #openAssetFileDescriptor(Uri, String)
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable OutputStream openOutputStream(@NonNull Uri uri, @NonNull String mode)
             throws FileNotFoundException {
         AssetFileDescriptor fd = openAssetFileDescriptor(uri, mode, null);
@@ -1597,6 +1628,7 @@ public abstract class ContentResolver implements ContentInterface {
     }
 
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode,
             @Nullable CancellationSignal signal) throws FileNotFoundException {
         try {
@@ -1647,6 +1679,7 @@ public abstract class ContentResolver implements ContentInterface {
      * file exists under the URI or the mode is invalid.
      * @see #openAssetFileDescriptor(Uri, String)
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable ParcelFileDescriptor openFileDescriptor(@NonNull Uri uri,
             @NonNull String mode) throws FileNotFoundException {
         return openFileDescriptor(uri, mode, null);
@@ -1694,6 +1727,7 @@ public abstract class ContentResolver implements ContentInterface {
      * file exists under the URI or the mode is invalid.
      * @see #openAssetFileDescriptor(Uri, String)
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable ParcelFileDescriptor openFileDescriptor(@NonNull Uri uri,
             @NonNull String mode, @Nullable CancellationSignal cancellationSignal)
                     throws FileNotFoundException {
@@ -1724,6 +1758,7 @@ public abstract class ContentResolver implements ContentInterface {
     }
 
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable AssetFileDescriptor openAssetFile(@NonNull Uri uri, @NonNull String mode,
             @Nullable CancellationSignal signal) throws FileNotFoundException {
         try {
@@ -1785,6 +1820,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @throws FileNotFoundException Throws FileNotFoundException of no
      * file exists under the URI or the mode is invalid.
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable AssetFileDescriptor openAssetFileDescriptor(@NonNull Uri uri,
             @NonNull String mode) throws FileNotFoundException {
         return openAssetFileDescriptor(uri, mode, null);
@@ -1843,6 +1879,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @throws FileNotFoundException Throws FileNotFoundException of no
      * file exists under the URI or the mode is invalid.
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable AssetFileDescriptor openAssetFileDescriptor(@NonNull Uri uri,
             @NonNull String mode, @Nullable CancellationSignal cancellationSignal)
                     throws FileNotFoundException {
@@ -1965,6 +2002,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @throws FileNotFoundException
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable AssetFileDescriptor openTypedAssetFile(@NonNull Uri uri,
             @NonNull String mimeTypeFilter, @Nullable Bundle opts,
             @Nullable CancellationSignal signal) throws FileNotFoundException {
@@ -2007,6 +2045,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @throws FileNotFoundException Throws FileNotFoundException of no
      * data of the desired type exists under the URI.
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable AssetFileDescriptor openTypedAssetFileDescriptor(@NonNull Uri uri,
             @NonNull String mimeType, @Nullable Bundle opts) throws FileNotFoundException {
         return openTypedAssetFileDescriptor(uri, mimeType, opts, null);
@@ -2043,6 +2082,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @throws FileNotFoundException Throws FileNotFoundException of no
      * data of the desired type exists under the URI.
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable AssetFileDescriptor openTypedAssetFileDescriptor(@NonNull Uri uri,
             @NonNull String mimeType, @Nullable Bundle opts,
             @Nullable CancellationSignal cancellationSignal) throws FileNotFoundException {
@@ -2197,6 +2237,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return the URL of the newly created row. May return <code>null</code> if the underlying
      *         content provider returns <code>null</code>, or if it crashes.
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Uri insert(@RequiresPermission.Write @NonNull Uri url,
                 @Nullable ContentValues values) {
         return insert(url, values, null);
@@ -2221,6 +2262,7 @@ public abstract class ContentResolver implements ContentInterface {
      *             the requested Bundle arguments.
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Uri insert(@RequiresPermission.Write @NonNull Uri url,
             @Nullable ContentValues values, @Nullable Bundle extras) {
         Objects.requireNonNull(url, "url");
@@ -2267,6 +2309,7 @@ public abstract class ContentResolver implements ContentInterface {
      *   to communicate with a remote provider.
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public @NonNull ContentProviderResult[] applyBatch(@NonNull String authority,
             @NonNull ArrayList<ContentProviderOperation> operations)
                     throws RemoteException, OperationApplicationException {
@@ -2301,6 +2344,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return the number of newly created rows.
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final int bulkInsert(@RequiresPermission.Write @NonNull Uri url,
                 @NonNull ContentValues[] values) {
         Objects.requireNonNull(url, "url");
@@ -2341,6 +2385,7 @@ public abstract class ContentResolver implements ContentInterface {
                     (excluding the WHERE itself).
      * @return The number of rows deleted.
      */
+    @RavenwoodKeep(conditional = true)
     public final int delete(@RequiresPermission.Write @NonNull Uri url, @Nullable String where,
             @Nullable String[] selectionArgs) {
         return delete(url, createSqlQueryBundle(where, selectionArgs));
@@ -2362,6 +2407,7 @@ public abstract class ContentResolver implements ContentInterface {
      *             the requested Bundle arguments.
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final int delete(@RequiresPermission.Write @NonNull Uri url, @Nullable Bundle extras) {
         Objects.requireNonNull(url, "url");
 
@@ -2403,6 +2449,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return the number of rows updated.
      * @throws NullPointerException if uri or values are null
      */
+    @RavenwoodKeep(conditional = true)
     public final int update(@RequiresPermission.Write @NonNull Uri uri,
             @Nullable ContentValues values, @Nullable String where,
             @Nullable String[] selectionArgs) {
@@ -2428,6 +2475,7 @@ public abstract class ContentResolver implements ContentInterface {
      *             the requested Bundle arguments.
      */
     @Override
+    @RavenwoodKeep(conditional = true)
     public final int update(@RequiresPermission.Write @NonNull Uri uri,
             @Nullable ContentValues values, @Nullable Bundle extras) {
         Objects.requireNonNull(uri, "uri");
@@ -2472,12 +2520,14 @@ public abstract class ContentResolver implements ContentInterface {
      * @throws NullPointerException if uri or method is null
      * @throws IllegalArgumentException if uri is not known
      */
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Bundle call(@NonNull Uri uri, @NonNull String method,
             @Nullable String arg, @Nullable Bundle extras) {
         return call(uri.getAuthority(), method, arg, extras);
     }
 
     @Override
+    @RavenwoodKeep(conditional = true)
     public final @Nullable Bundle call(@NonNull String authority, @NonNull String method,
             @Nullable String arg, @Nullable Bundle extras) {
         Objects.requireNonNull(authority, "authority");
@@ -2536,6 +2586,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @hide
      */
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public final IContentProvider acquireExistingProvider(Uri uri) {
         if (!SCHEME_CONTENT.equals(uri.getScheme())) {
             return null;
@@ -2566,6 +2617,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @return The ContentProvider for the given URI, or null if no content provider is found.
      * @hide
      */
+    @RavenwoodKeep
     public final IContentProvider acquireUnstableProvider(Uri uri) {
         if (!SCHEME_CONTENT.equals(uri.getScheme())) {
             return null;
@@ -2581,6 +2633,7 @@ public abstract class ContentResolver implements ContentInterface {
      * @hide
      */
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public final IContentProvider acquireUnstableProvider(String name) {
         if (name == null) {
             return null;
@@ -4083,6 +4136,7 @@ public abstract class ContentResolver implements ContentInterface {
     /**
      * @hide
      */
+    @RavenwoodKeep
     public static @Nullable Bundle createSqlQueryBundle(
             @Nullable String selection,
             @Nullable String[] selectionArgs) {
@@ -4092,6 +4146,7 @@ public abstract class ContentResolver implements ContentInterface {
     /**
      * @hide
      */
+    @RavenwoodKeep
     public static @Nullable Bundle createSqlQueryBundle(
             @Nullable String selection,
             @Nullable String[] selectionArgs,
@@ -4192,12 +4247,14 @@ public abstract class ContentResolver implements ContentInterface {
      *             loading the thumbnail, or if
      *             {@link CancellationSignal#cancel()} was invoked.
      */
+    @RavenwoodKeep
     public @NonNull Bitmap loadThumbnail(@NonNull Uri uri, @NonNull Size size,
             @Nullable CancellationSignal signal) throws IOException {
         return loadThumbnail(this, uri, size, signal, ImageDecoder.ALLOCATOR_SOFTWARE);
     }
 
     /** @hide */
+    @RavenwoodKeep
     public static Bitmap loadThumbnail(@NonNull ContentInterface content, @NonNull Uri uri,
             @NonNull Size size, @Nullable CancellationSignal signal, int allocator)
             throws IOException {
@@ -4271,6 +4328,7 @@ public abstract class ContentResolver implements ContentInterface {
     // We can't accept an already-opened FD here, since these methods are
     // rewriting actual filesystem paths
     @SuppressLint("StreamFiles")
+    @RavenwoodKeep
     public static @NonNull Uri decodeFromFile(@NonNull File file) {
         return translateDeprecatedDataPath(file.getAbsolutePath());
     }
@@ -4290,11 +4348,13 @@ public abstract class ContentResolver implements ContentInterface {
     // We can't accept an already-opened FD here, since these methods are
     // rewriting actual filesystem paths
     @SuppressLint("StreamFiles")
+    @RavenwoodKeep
     public static @NonNull File encodeToFile(@NonNull Uri uri) {
         return new File(translateDeprecatedDataPath(uri));
     }
 
     /** @hide */
+    @RavenwoodKeep
     public static @NonNull Uri translateDeprecatedDataPath(@NonNull String path) {
         final String ssp = "//" + path.substring(DEPRECATE_DATA_PREFIX.length());
         return Uri.parse(new Uri.Builder().scheme(SCHEME_CONTENT)
@@ -4302,6 +4362,7 @@ public abstract class ContentResolver implements ContentInterface {
     }
 
     /** @hide */
+    @RavenwoodKeep
     public static @NonNull String translateDeprecatedDataPath(@NonNull Uri uri) {
         return DEPRECATE_DATA_PREFIX + uri.getEncodedSchemeSpecificPart().substring(2);
     }

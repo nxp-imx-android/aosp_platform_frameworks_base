@@ -226,7 +226,7 @@ constructor(
 
         // Get dimension resources
         wifiNetworkHeight =
-            context.resources.getDimensionPixelSize(R.dimen.internet_dialog_wifi_network_height)
+            context.resources.getDimensionPixelSize(R.dimen.tile_details_entry_height)
 
         // Initialize LiveData observer
         internetContentData.observe(lifecycleOwner!!) { internetContent ->
@@ -831,7 +831,6 @@ constructor(
                 }
             }
         }
-        wifiSettingsIcon.setColorFilter(context.getColor(R.color.connected_network_primary_color))
 
         val canShareWifi =
             internetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(

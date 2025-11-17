@@ -16,9 +16,9 @@
 
 package android.view;
 
-import static android.os.Trace.TRACE_TAG_VIEW;
 import static android.internal.perfetto.protos.Insetscontroller.InsetsControllerProto.CONTROL;
 import static android.internal.perfetto.protos.Insetscontroller.InsetsControllerProto.STATE;
+import static android.os.Trace.TRACE_TAG_VIEW;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.InsetsSource.ID_IME_CAPTION_BAR;
 import static android.view.ViewProtoLogGroups.IME_INSETS_CONTROLLER;
@@ -48,6 +48,7 @@ import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Trace;
+import android.os.UserHandle;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.Pair;
@@ -1236,7 +1237,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_SHOW,
                         ImeTracker.ORIGIN_CLIENT,
                         SoftInputShowHideReason.SHOW_SOFT_INPUT_BY_INSETS_API,
-                        mHost.isHandlingPointerEvent() /* fromUser */);
+                        mHost.isHandlingPointerEvent() /* fromUser */, UserHandle.myUserId(),
+                        mHost.getRootViewContext().getDisplayId());
             }
         }
 
@@ -1329,7 +1331,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
                         ImeTracker.ORIGIN_CLIENT,
                         SoftInputShowHideReason.HIDE_SOFT_INPUT_BY_INSETS_API,
-                        mHost.isHandlingPointerEvent() /* fromUser */);
+                        mHost.isHandlingPointerEvent() /* fromUser */,  UserHandle.myUserId(),
+                        mHost.getRootViewContext().getDisplayId());
             }
         }
         Trace.asyncTraceBegin(TRACE_TAG_VIEW, "IC.hideRequestFromApi", 0);
@@ -1421,7 +1424,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 : ImeTracker.forLogging().onStart(ImeTracker.TYPE_USER,
                         ImeTracker.ORIGIN_CLIENT,
                         SoftInputShowHideReason.CONTROL_WINDOW_INSETS_ANIMATION,
-                        mHost.isHandlingPointerEvent() /* fromUser */);
+                        mHost.isHandlingPointerEvent() /* fromUser */,  UserHandle.myUserId(),
+                        mHost.getRootViewContext().getDisplayId()
+                );
         controlAnimationUnchecked(types, cancellationSignal, listener, mFrame, mBounds, spec,
                 animationType, getLayoutInsetsDuringAnimationMode(types, fromPredictiveBack),
                 false /* useInsetsAnimationThread */, statsToken, fromPredictiveBack);

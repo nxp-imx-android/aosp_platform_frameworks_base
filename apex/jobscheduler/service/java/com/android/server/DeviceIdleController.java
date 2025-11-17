@@ -1151,6 +1151,7 @@ public class DeviceIdleController extends SystemService
         private boolean mDefaultWaitForUnlock = true;
         private boolean mDefaultUseWindowAlarms = true;
         private boolean mDefaultUseModeManager = false;
+        private boolean mDefaultUseNonWakeUpDeepAlarms = false;
 
         /**
          * A somewhat short alarm window size that we will tolerate for various alarm timings.
@@ -1424,6 +1425,13 @@ public class DeviceIdleController extends SystemService
         public boolean USE_WINDOW_ALARMS = mDefaultUseWindowAlarms;
 
         /**
+         * Whether to use non wake up alarms for deep idle transitions.
+         * Note that this does not apply to the `setIdleUntil` alarm, as that alarm will use wake up
+         * alarms to ensure the periodic entry into idle maintenance mode.
+         */
+        public boolean USE_NON_WAKE_UP_DEEP_ALARMS = mDefaultUseNonWakeUpDeepAlarms;
+
+        /**
          * Whether to use an on/off body signal to affect state transition policy.
          */
         public boolean USE_MODE_MANAGER = mDefaultUseModeManager;
@@ -1558,7 +1566,11 @@ public class DeviceIdleController extends SystemService
                     com.android.internal.R.bool.device_idle_use_window_alarms);
             mDefaultUseModeManager = res.getBoolean(
                     com.android.internal.R.bool.device_idle_use_mode_manager);
-
+            mDefaultUseNonWakeUpDeepAlarms =
+                    res.getBoolean(
+                            com.android.internal.R.bool.device_idle_use_non_wakeup_deep_alarms)
+                            && isWatch() //  currently available only for watches.
+                            && Flags.allowNonWakeUpDeepAlarms();
             FLEX_TIME_SHORT = mDefaultFlexTimeShort;
             LIGHT_IDLE_AFTER_INACTIVE_TIMEOUT = mDefaultLightIdleAfterInactiveTimeout;
             LIGHT_IDLE_TIMEOUT = mDefaultLightIdleTimeout;
@@ -1595,6 +1607,7 @@ public class DeviceIdleController extends SystemService
             WAIT_FOR_UNLOCK = mDefaultWaitForUnlock;
             USE_WINDOW_ALARMS = mDefaultUseWindowAlarms;
             USE_MODE_MANAGER = mDefaultUseModeManager;
+            USE_NON_WAKE_UP_DEEP_ALARMS = mDefaultUseNonWakeUpDeepAlarms;
         }
 
         private long getTimeout(long defTimeout, long compTimeout) {
@@ -4313,6 +4326,8 @@ public class DeviceIdleController extends SystemService
         }
         mNextAlarmTime = SystemClock.elapsedRealtime() + delay;
         if (mState == STATE_IDLE) {
+            // Always use wake up alarm for "setIdleUntil" to make sure that we eventually enter
+            // maintenance mode.
             mAlarmManager.setIdleUntil(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     mNextAlarmTime, "DeviceIdleController.deep", mDeepAlarmListener, mHandler);
         } else if (mState == STATE_LOCATING) {
@@ -4320,12 +4335,16 @@ public class DeviceIdleController extends SystemService
             mAlarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     mNextAlarmTime, "DeviceIdleController.deep", mDeepAlarmListener, mHandler);
         } else {
+            final int alarmType =
+                    mConstants.USE_NON_WAKE_UP_DEEP_ALARMS
+                            ? AlarmManager.ELAPSED_REALTIME
+                            : AlarmManager.ELAPSED_REALTIME_WAKEUP;
             if (mConstants.USE_WINDOW_ALARMS) {
-                mAlarmManager.setWindow(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                mAlarmManager.setWindow(alarmType,
                         mNextAlarmTime, mConstants.FLEX_TIME_SHORT,
                         "DeviceIdleController.deep", mDeepAlarmListener, mHandler);
             } else {
-                mAlarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                mAlarmManager.set(alarmType,
                         mNextAlarmTime, "DeviceIdleController.deep", mDeepAlarmListener, mHandler);
             }
         }

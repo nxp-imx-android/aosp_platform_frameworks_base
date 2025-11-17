@@ -16,6 +16,7 @@
 
 package com.android.systemui.screenshot
 
+import android.content.Context
 import android.net.Uri
 import android.os.UserManager
 import android.util.Log
@@ -37,6 +38,7 @@ import javax.inject.Inject
 class HeadlessScreenshotHandler
 @Inject
 constructor(
+    private val context: Context,
     private val imageExporter: ImageExporter,
     @Main private val mainExecutor: Executor,
     private val imageCapture: ImageCapture,
@@ -66,12 +68,41 @@ constructor(
                 screenshot.bitmap,
                 screenshot.userHandle,
                 screenshot.displayId,
+                screenshot.customSaveUri,
             )
         future.addListener(
             {
                 try {
                     val result = future.get()
                     Log.d(TAG, "Saved screenshot: $result")
+
+                    // Signifies custom save failed & saved to default folder instead
+                    if (
+                        screenshot.customSaveUri != null &&
+                            !result.uri.toString().startsWith(screenshot.customSaveUri.toString())
+                    ) {
+                        val customFolderName =
+                            screenshot.customSaveUri.lastPathSegment
+                                ?.split(":")
+                                ?.last()
+                                ?.split("/")
+                                ?.last()
+                                ?.let {
+                                    if (it.length > 15) {
+                                        "${it.take(15)}…"
+                                    } else {
+                                        it
+                                    }
+                                }
+                        val defaultSaveErrorText =
+                            context.getString(
+                                R.string.screenshot_custom_uri_save_fail_message,
+                                customFolderName,
+                            )
+                        notificationsControllerFactory
+                            .create(screenshot.displayId)
+                            .notifyCustomUriSaveError(defaultSaveErrorText)
+                    }
                     logScreenshotResultStatus(result.uri, screenshot)
                     finisher.accept(result.uri)
                     requestCallback.onFinish()

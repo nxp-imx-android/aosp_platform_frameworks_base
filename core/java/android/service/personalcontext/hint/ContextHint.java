@@ -24,13 +24,19 @@ import android.annotation.TestApi;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.Token;
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -56,7 +62,11 @@ public abstract class ContextHint {
                 HINT_TYPE_ERROR,
                 HINT_TYPE_BUNDLE,
                 HINT_TYPE_NOTIFICATION,
-                HINT_TYPE_TEXT_CLASSIFICATION
+                HINT_TYPE_TEXT_CLASSIFICATION,
+                HINT_TYPE_CONVERSATION,
+                HINT_TYPE_RECENT_VIEW,
+                HINT_TYPE_USER_INPUT,
+                HINT_TYPE_AUTOFILL_INLINE_REQUEST
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HintType {}
@@ -77,13 +87,27 @@ public abstract class ContextHint {
     /** Hint type for {@link TextClassificationHint}. */
     static final int HINT_TYPE_TEXT_CLASSIFICATION = 3;
 
+    /** Hint type for {@link ConversationHint}. */
+    static final int HINT_TYPE_CONVERSATION = 4;
+
+    /** Hint type for {@link RecentViewHint}. */
+    static final int HINT_TYPE_RECENT_VIEW = 5;
+
+    /** Hint type for {@link UserInputHint}. */
+    static final int HINT_TYPE_USER_INPUT = 6;
+
+    /**
+     * Hint type for {@link AutofillInlineRequestHint}.
+     */
+    static final int HINT_TYPE_AUTOFILL_INLINE_REQUEST = 7;
+
     /**
      * Object returned when there is an unparceling error.
      *
      * @hide
      */
     private static final @NonNull ContextHint ERROR_HINT =
-            new ContextHint() {
+            new ContextHint(new ConstructorParams.Builder().build()) {
                 @Override
                 public int getHintType() {
                     return HINT_TYPE_ERROR;
@@ -99,26 +123,12 @@ public abstract class ContextHint {
     // Bundle keys for data stored in the base ContextHint.
     private static final String KEY_HINT_TYPE = "key_hint_type";
     private static final String KEY_HINT_ID = "key_hint_id";
-
-    /**
-     * Bundle key used to store the data from the hint implementation, retrieved through {@link
-     * #toBundleImpl()}.
-     */
-    static final String KEY_HINT_DATA = "key_hint_data";
+    private static final String KEY_HINT_TOKENS = "key_hint_tokens";
+    private static final String KEY_HINT_DATA = "key_hint_data";
 
     /** Unique identifier for this hint. */
     private final UUID mId;
-
-    /**
-     * Internal constructor only for use by {@link #createHintFromBundle(Bundle)}. This should be
-     * called by subclasses in their private constructors used for {@link
-     * #createHintFromBundle(Bundle)}.
-     *
-     * @hide
-     */
-    ContextHint(@NonNull Bundle bundle) {
-        mId = UUID.fromString(bundle.getString(KEY_HINT_ID));
-    }
+    private final Set<Token> mTokens;
 
     /**
      * Internal constructor for generating a new hint. This should be called by subclasses in their
@@ -126,8 +136,9 @@ public abstract class ContextHint {
      *
      * @hide
      */
-    ContextHint() {
-        mId = UUID.randomUUID();
+    ContextHint(ConstructorParams params) {
+        mId = params.mId;
+        mTokens = Collections.unmodifiableSet(new HashSet<>(params.mTokens));
     }
 
     /**
@@ -143,13 +154,19 @@ public abstract class ContextHint {
         return mId;
     }
 
+    /** Returns the set of tokens that were added to this hint. */
+    @NonNull
+    public final Set<Token> getTokens() {
+        return mTokens;
+    }
+
     @NonNull
     abstract Bundle toBundleImpl();
 
     /**
      * Writes data should be used to verify the hint has not been tampered with to a {@link Parcel}.
      *
-     * If your hint stores binders or file descriptors, you must override this method
+     * <p>If your hint stores binders or file descriptors, you must override this method
      *
      * @hide
      */
@@ -169,6 +186,7 @@ public abstract class ContextHint {
         final Bundle b = new Bundle();
         b.putInt(KEY_HINT_TYPE, getHintType());
         b.putString(KEY_HINT_ID, mId.toString());
+        b.putParcelableArrayList(KEY_HINT_TOKENS, new ArrayList<>(mTokens));
         b.putBundle(KEY_HINT_DATA, toBundleImpl());
         return b;
     }
@@ -189,11 +207,23 @@ public abstract class ContextHint {
         if (bundle == null) {
             return ERROR_HINT;
         }
+
+        final Bundle data = bundle.getBundle(KEY_HINT_DATA);
+        final ConstructorParams constructorParams = new ConstructorParams(
+                UUID.fromString(bundle.getString(KEY_HINT_ID)),
+                bundle.getParcelableArrayList(KEY_HINT_TOKENS, Token.class));
+
         try {
             return switch (bundle.getInt(KEY_HINT_TYPE, HINT_TYPE_ERROR)) {
-                case HINT_TYPE_BUNDLE -> new BundleHint(bundle);
-                case HINT_TYPE_NOTIFICATION -> new NotificationHint(bundle);
-                case HINT_TYPE_TEXT_CLASSIFICATION -> new TextClassificationHint(bundle);
+                case HINT_TYPE_BUNDLE -> new BundleHint(constructorParams, data);
+                case HINT_TYPE_NOTIFICATION -> new NotificationHint(constructorParams, data);
+                case HINT_TYPE_TEXT_CLASSIFICATION -> new TextClassificationHint(constructorParams,
+                        data);
+                case HINT_TYPE_CONVERSATION -> new ConversationHint(constructorParams, data);
+                case HINT_TYPE_RECENT_VIEW -> new RecentViewHint(constructorParams, data);
+                case HINT_TYPE_USER_INPUT -> new UserInputHint(constructorParams, data);
+                case HINT_TYPE_AUTOFILL_INLINE_REQUEST -> new AutofillInlineRequestHint(
+                        constructorParams, data);
                 default -> ERROR_HINT;
             };
         } catch (Exception e) {
@@ -212,5 +242,43 @@ public abstract class ContextHint {
     @Override
     public int hashCode() {
         return Objects.hash(mId, getHintType());
+    }
+
+    /**
+     * Parameters used to create a new {@link ContextHint}.
+     *
+     * @hide
+     */
+    static class ConstructorParams {
+        private final UUID mId;
+        private final Collection<Token> mTokens;
+
+        private ConstructorParams(Collection<Token> tokens) {
+            this(UUID.randomUUID(), tokens);
+        }
+
+        private ConstructorParams(UUID id, Collection<Token> tokens) {
+            mId = id;
+            mTokens = tokens;
+        }
+
+        static final class Builder {
+            private final Set<Token> mTokens = new HashSet<>();
+
+            /**
+             * Adds a token to the resulting {@link ContextHint}.
+             *
+             * @param token the token to add
+             */
+            @NonNull
+            Builder addToken(@NonNull Token token) {
+                mTokens.add(token);
+                return this;
+            }
+
+            ConstructorParams build() {
+                return new ConstructorParams(mTokens);
+            }
+        }
     }
 }

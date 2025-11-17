@@ -21,6 +21,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER
@@ -59,10 +60,9 @@ import com.android.systemui.window.data.repository.fakeWindowRootViewBlurReposit
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runCurrent
@@ -71,6 +71,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
@@ -91,13 +92,12 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     fun authMethod_nonNullForSecureMethods_nullForNotSecureMethods() =
         testScope.runTest {
-            var authMethodViewModel: AuthMethodBouncerViewModel? = null
+            var authMethodViewModel: AuthMethodBouncerViewModel?
 
             authMethodsToTest().forEach { authMethod ->
                 kosmos.fakeAuthenticationRepository.setAuthenticationMethod(authMethod)
-                val job =
-                    underTest.authMethodViewModel.onEach { authMethodViewModel = it }.launchIn(this)
                 runCurrent()
+                authMethodViewModel = underTest.authMethodViewModel
 
                 if (authMethod.isSecure) {
                     assertWithMessage("View-model unexpectedly null for auth method $authMethod")
@@ -110,8 +110,6 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
                         .that(authMethodViewModel)
                         .isNull()
                 }
-
-                job.cancel()
             }
         }
 
@@ -119,19 +117,19 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
     fun authMethodChanged_doesNotReuseInstances() =
         testScope.runTest {
             val seen = mutableMapOf<AuthenticationMethodModel, AuthMethodBouncerViewModel>()
-            val authMethodViewModel: AuthMethodBouncerViewModel? by
-                collectLastValue(underTest.authMethodViewModel)
 
             // First pass, populate our "seen" map:
             authMethodsToTest().forEach { authMethod ->
                 kosmos.fakeAuthenticationRepository.setAuthenticationMethod(authMethod)
-                authMethodViewModel?.let { seen[authMethod] = it }
+                runCurrent()
+                underTest.authMethodViewModel?.let { seen[authMethod] = it }
             }
 
             // Second pass, assert same instances are not reused:
             authMethodsToTest().forEach { authMethod ->
                 kosmos.fakeAuthenticationRepository.setAuthenticationMethod(authMethod)
-                authMethodViewModel?.let {
+                runCurrent()
+                underTest.authMethodViewModel?.let {
                     assertThat(it.authenticationMethod).isEqualTo(authMethod)
                     assertThat(it).isNotSameInstanceAs(seen[authMethod])
                 }
@@ -143,12 +141,12 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
         testScope.runTest {
             authMethodsToTest().forEach { authMethod ->
                 kosmos.fakeAuthenticationRepository.setAuthenticationMethod(authMethod)
-                val firstInstance: AuthMethodBouncerViewModel? =
-                    collectLastValue(underTest.authMethodViewModel).invoke()
+                runCurrent()
+                val firstInstance: AuthMethodBouncerViewModel? = underTest.authMethodViewModel
 
                 kosmos.fakeAuthenticationRepository.setAuthenticationMethod(authMethod)
-                val secondInstance: AuthMethodBouncerViewModel? =
-                    collectLastValue(underTest.authMethodViewModel).invoke()
+                runCurrent()
+                val secondInstance: AuthMethodBouncerViewModel? = underTest.authMethodViewModel
 
                 firstInstance?.let { assertThat(it.authenticationMethod).isEqualTo(authMethod) }
                 assertThat(secondInstance).isSameInstanceAs(firstInstance)
@@ -171,15 +169,16 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
         testScope.runTest {
             val isInputEnabled by
                 collectLastValue(
-                    underTest.authMethodViewModel.flatMapLatest { authViewModel ->
-                        authViewModel?.isInputEnabled ?: emptyFlow()
-                    }
+                    snapshotFlow { underTest.authMethodViewModel }
+                        .flatMapLatest { authViewModel ->
+                            authViewModel?.isInputEnabled ?: emptyFlow()
+                        }
                 )
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
             assertThat(isInputEnabled).isTrue()
 
             repeat(FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT) {
-                kosmos.bouncerInteractor.authenticate(WRONG_PIN)
+                kosmos.bouncerInteractor.authenticate(WRONG_PIN + it)
             }
             assertThat(isInputEnabled).isFalse()
 
@@ -223,14 +222,16 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     fun isFoldSplitRequired() =
         testScope.runTest {
-            val isFoldSplitRequired by collectLastValue(underTest.isFoldSplitRequired)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            assertThat(isFoldSplitRequired).isTrue()
+            runCurrent()
+            assertThat(underTest.isFoldSplitRequired).isTrue()
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
-            assertThat(isFoldSplitRequired).isFalse()
+            runCurrent()
+            assertThat(underTest.isFoldSplitRequired).isFalse()
 
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
-            assertThat(isFoldSplitRequired).isTrue()
+            runCurrent()
+            assertThat(underTest.isFoldSplitRequired).isTrue()
         }
 
     @Test
@@ -242,16 +243,14 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
                 true,
             )
 
-            val showSignInButton by collectLastValue(underTest.showSignInButton)
-
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
 
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
         }
 
     @Test
@@ -263,16 +262,17 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
                 true,
             )
 
-            val showSignInButton by collectLastValue(underTest.showSignInButton)
-
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
 
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            assertThat(showSignInButton).isFalse()
+            runCurrent()
+            assertThat(underTest.showSignInButton).isFalse()
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
-            assertThat(showSignInButton).isTrue()
+            runCurrent()
+            assertThat(underTest.showSignInButton).isTrue()
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
-            assertThat(showSignInButton).isFalse()
+            runCurrent()
+            assertThat(underTest.showSignInButton).isFalse()
         }
 
     @Test
@@ -284,42 +284,37 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
                 false,
             )
 
-            val showSignInButton by collectLastValue(underTest.showSignInButton)
-
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
 
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
-            assertThat(showSignInButton).isFalse()
+            assertThat(underTest.showSignInButton).isFalse()
         }
 
     @Test
     fun isSignInButtonEnabled_PasswordBouncer() =
         kosmos.runTest {
-            val isSignInButtonEnabled by collectLastValue(underTest.isSignInButtonEnabled)
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(Password)
             runCurrent()
 
-            val authMethodViewModel: AuthMethodBouncerViewModel? =
-                collectLastValue(underTest.authMethodViewModel).invoke()
-            val passwordBouncerViewModel = authMethodViewModel as PasswordBouncerViewModel
+            val passwordBouncerViewModel = underTest.authMethodViewModel as PasswordBouncerViewModel
 
-            assertThat(isSignInButtonEnabled).isFalse()
+            assertThat(underTest.isSignInButtonEnabled).isFalse()
 
             runOnMainThreadAndWaitForIdleSync {
                 passwordBouncerViewModel.textFieldState.setTextAndPlaceCursorAtEnd("ab")
             }
             kosmos.runCurrent()
-            assertThat(isSignInButtonEnabled).isTrue()
+            assertThat(underTest.isSignInButtonEnabled).isTrue()
 
             runOnMainThreadAndWaitForIdleSync {
                 passwordBouncerViewModel.textFieldState.clearText()
             }
             kosmos.runCurrent()
-            assertThat(isSignInButtonEnabled).isFalse()
+            assertThat(underTest.isSignInButtonEnabled).isFalse()
         }
 
     @Test

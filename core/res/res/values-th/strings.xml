@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"เครื่องช่วยฟัง"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"การใช้งานการช่วยเหลือพิเศษ"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"จอแสดงผล"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"การควบคุมโดยผู้ปกครอง"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"<xliff:g id="APP_NAME">%1$s</xliff:g> กำลังใช้แบตเตอรี่"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"แอป <xliff:g id="NUMBER">%1$d</xliff:g> แอปกำลังใช้แบตเตอรี่"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"แตะเพื่อดูรายละเอียดเกี่ยวกับแบตเตอรี่และปริมาณการใช้อินเทอร์เน็ต"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"พิมพ์ PIN เพื่อปลดล็อก"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"รหัส PIN ไม่ถูกต้อง"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"หากต้องการปลดล็อก กด เมนู ตามด้วย 0"</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"หมายเลขฉุกเฉิน"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"ไม่มีบริการ"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"หน้าจอถูกล็อก"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"กด เมนู เพื่อปลดล็อกหรือโทรฉุกเฉิน"</string>

@@ -881,8 +881,15 @@ public class LauncherAppsService extends SystemService {
             if (!mShortcutServiceInternal.areShortcutsSupportedOnHomeScreen(user.getIdentifier())) {
                 return null;
             }
-            return queryActivitiesForUser(callingPackage,
-                    new Intent(Intent.ACTION_CREATE_SHORTCUT).setPackage(packageName), user);
+
+            ParceledListSlice<LauncherActivityInfoInternal> activities = queryActivitiesForUser(
+                callingPackage, new Intent(Intent.ACTION_CREATE_SHORTCUT).setPackage(packageName),
+                user);
+            if(android.content.pm.Flags.appLockShortcutRemoval() && activities != null) {
+                activities.getList().removeIf(
+                    l -> l.getActivityInfo().getApplicationInfo().isAppLockEnabled);
+            }
+            return activities;
         }
 
         private ParceledListSlice<LauncherActivityInfoInternal> queryActivitiesForUser(

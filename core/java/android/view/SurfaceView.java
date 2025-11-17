@@ -318,6 +318,8 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
 
     private int mParentSurfaceSequenceId;
 
+    private boolean mShouldEmbedAccessibilityHierarchy = true;
+
     private RemoteAccessibilityController mRemoteAccessibilityController =
         new RemoteAccessibilityController(this);
 
@@ -2349,6 +2351,48 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
         }
     }
 
+    /**
+     * Sets whether accessibility hierarchy embedding is enabled for this SurfaceView.
+     *
+     * <p>By default, when backed by a {@link SurfaceControlViewHost.SurfacePackage} through use
+     * of {@link #setChildSurfacePackage(android.view.SurfaceControlViewHost.SurfacePackage)},
+     * the embedded view hierarchy's accessibility tree is exposed as the subtree of this
+     * SurfaceView. This method allows for disabling such behavior, which may be useful when an
+     * instance is used to provide a visual preview, where its embedded content is either
+     * decorative or its accessibility information is replicated elsewhere in the view hierarchy.
+     *
+     * <p class="note"><strong>Note:</strong> This method controls only how an embedded view
+     * hierarchy is exposed to accessibility services. The SurfaceView itself may be managed
+     * using {@link View#setImportantForAccessibility(int)}.
+     *
+     * @param enabled {@code true} to enable accessibility hierarchy embedding, {@code false} to
+     *                disable.
+     *
+     * @hide
+     */
+    public void setAccessibilityHierarchyEmbeddingEnabled(boolean enabled) {
+        if (mShouldEmbedAccessibilityHierarchy == enabled) {
+            return;
+        }
+        mShouldEmbedAccessibilityHierarchy = enabled;
+        if (mSurfacePackage != null) {
+            initEmbeddedHierarchyForAccessibility(mSurfacePackage);
+        }
+    }
+
+    /**
+     * Returns whether accessibility hierarchy embedding is enabled for this SurfaceView.
+     *
+     * @return {@code true} if accessibility hierarchy embedding is enabled, {@code false}
+     *         otherwise.
+     * @see #setAccessibilityHierarchyEmbeddingEnabled(boolean)
+     *
+     * @hide
+     */
+    public boolean isAccessibilityHierarchyEmbeddingEnabled() {
+        return mShouldEmbedAccessibilityHierarchy;
+    }
+
     private void reparentSurfacePackage(SurfaceControl.Transaction t,
             SurfaceControlViewHost.SurfacePackage p) {
         final SurfaceControl sc = p.getSurfaceControl();
@@ -2404,6 +2448,12 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
     }
 
     private void initEmbeddedHierarchyForAccessibility(SurfaceControlViewHost.SurfacePackage p) {
+        if (!mShouldEmbedAccessibilityHierarchy) {
+            if (mRemoteAccessibilityController.connected()) {
+                mRemoteAccessibilityController.disassosciateHierarchy();
+            }
+            return;
+        }
         final IAccessibilityEmbeddedConnection connection = p.getAccessibilityEmbeddedConnection();
         if (mRemoteAccessibilityController.alreadyAssociated(connection)) {
             return;

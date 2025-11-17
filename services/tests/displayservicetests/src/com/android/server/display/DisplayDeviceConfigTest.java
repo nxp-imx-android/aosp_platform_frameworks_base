@@ -60,6 +60,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.R;
 import com.android.internal.display.BrightnessUtils;
+import com.android.server.display.config.DisplayDeviceConfigUtils;
 import com.android.server.display.config.HdrBrightnessData;
 import com.android.server.display.config.HighBrightnessModeData;
 import com.android.server.display.config.HysteresisLevels;
@@ -173,6 +174,10 @@ public final class DisplayDeviceConfigTest {
         assertNull(mDisplayDeviceConfig.getTempSensor().name);
         assertTrue(mDisplayDeviceConfig.isAutoBrightnessAvailable());
         assertEquals(0, mDisplayDeviceConfig.getIdleStylusTimeoutMillis());
+        assertNull(mDisplayDeviceConfig.getRefreshRateData().defaultWorkDurations);
+        assertNull(mDisplayDeviceConfig.getRefreshRateData().lowPowerWorkDurations);
+        assertTrue(mDisplayDeviceConfig.getThermalThrottlingData()
+                .getThermalThrottlingWorkDurations().isEmpty());
     }
 
     @Test
@@ -293,28 +298,28 @@ public final class DisplayDeviceConfigTest {
                 defaultThrottlingLevels = new ArrayList<>();
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.light), 800f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.light),
+                        800f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.moderate), 600f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.moderate),
+                        600f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.severe), 400f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.severe),
+                        400f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.critical), 200f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.critical),
+                        200f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.emergency), 100f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.emergency),
+                        100f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.shutdown), 50f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.shutdown),
+                        50f));
 
         DisplayDeviceConfig.PowerThrottlingData defaultThrottlingData =
                 new DisplayDeviceConfig.PowerThrottlingData(defaultThrottlingLevels);
@@ -323,28 +328,28 @@ public final class DisplayDeviceConfigTest {
                 concurrentThrottlingLevels = new ArrayList<>();
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.light), 800f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.light),
+                        800f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.moderate), 600f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.moderate),
+                        600f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.severe), 400f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.severe),
+                        400f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.critical), 200f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.critical),
+                        200f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.emergency), 100f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.emergency),
+                        100f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.PowerThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.shutdown), 50f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.shutdown),
+                        50f));
         DisplayDeviceConfig.PowerThrottlingData concurrentThrottlingData =
                 new DisplayDeviceConfig.PowerThrottlingData(concurrentThrottlingLevels);
 
@@ -566,28 +571,28 @@ public final class DisplayDeviceConfigTest {
                 defaultThrottlingLevels = new ArrayList<>();
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.light), 0.4f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.light),
+                        0.4f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.moderate), 0.3f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.moderate),
+                        0.3f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.severe), 0.2f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.severe),
+                        0.2f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.critical), 0.1f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.critical),
+                        0.1f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.emergency), 0.05f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.emergency),
+                        0.05f));
         defaultThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.shutdown), 0.025f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.shutdown),
+                        0.025f));
 
         DisplayDeviceConfig.ThermalBrightnessThrottlingData defaultThrottlingData =
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData(defaultThrottlingLevels);
@@ -596,28 +601,28 @@ public final class DisplayDeviceConfigTest {
                 concurrentThrottlingLevels = new ArrayList<>();
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.light), 0.2f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.light),
+                        0.2f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.moderate), 0.15f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.moderate),
+                        0.15f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.severe), 0.1f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.severe),
+                        0.1f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.critical), 0.05f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.critical),
+                        0.05f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.emergency), 0.025f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.emergency),
+                        0.025f));
         concurrentThrottlingLevels.add(
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData.ThrottlingLevel(
-                        DisplayDeviceConfig.convertThermalStatus(ThermalStatus.shutdown), 0.0125f
-                ));
+                        DisplayDeviceConfigUtils.convertValidThermalStatus(ThermalStatus.shutdown),
+                        0.0125f));
         DisplayDeviceConfig.ThermalBrightnessThrottlingData concurrentThrottlingData =
                 new DisplayDeviceConfig.ThermalBrightnessThrottlingData(concurrentThrottlingLevels);
 

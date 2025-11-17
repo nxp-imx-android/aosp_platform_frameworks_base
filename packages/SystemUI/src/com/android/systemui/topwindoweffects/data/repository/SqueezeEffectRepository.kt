@@ -29,8 +29,6 @@ interface SqueezeEffectRepository {
 
     data class GestureProgress(val progress: Float, val status: GestureStatus)
 
-    val isSqueezeEffectHapticEnabled: Boolean
-
     val isEffectEnabled: Flow<Boolean>
 
     val isPowerButtonPressedAsSingleGesture: Flow<Boolean>

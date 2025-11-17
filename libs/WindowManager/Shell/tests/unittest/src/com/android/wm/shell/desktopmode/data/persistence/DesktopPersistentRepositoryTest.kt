@@ -33,7 +33,6 @@ import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
-import com.android.window.flags.Flags.FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX
 import com.android.window.flags.Flags.FLAG_ENABLE_REMEMBERED_BOUNDS
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.data.Desk
@@ -549,7 +548,6 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_EXTERNAL_DISPLAY_PERSISTENCE_BUGFIX)
     fun addOrUpdateRepository_addsNewPreservedDisplay() {
         runTest(StandardTestDispatcher()) {
             // Create a basic repository state

@@ -100,8 +100,7 @@ public class PipController implements ConfigurationChangeListener,
     private static final String TAG = PipController.class.getSimpleName();
     private static final String SWIPE_TO_PIP_APP_BOUNDS = "pip_app_bounds";
     private static final String SWIPE_TO_PIP_OVERLAY = "swipe_to_pip_overlay";
-    private static final String DISPLAY_CHANGE_PIP_BOUNDS_UPDATE =
-            "display_change_pip_bounds_update";
+    private static final String DISPLAY_CHANGE_PIP_BOUNDS = "display_change_pip_bounds";
 
     private Context mContext;
     private final ShellCommandHandler mShellCommandHandler;
@@ -517,9 +516,10 @@ public class PipController implements ConfigurationChangeListener,
         if (mPipTransitionState.getPipTaskToken() == null) {
             Log.d(TAG, "PipController.onDisplayChange no PiP task token"
                     + " state=" + mPipTransitionState.getState());
+            final Rect toBounds = mPipBoundsState.getBounds();
             mPipTransitionState.setOnIdlePipTransitionStateRunnable(() -> {
                 final Bundle extra = new Bundle();
-                extra.putBoolean(DISPLAY_CHANGE_PIP_BOUNDS_UPDATE, true);
+                extra.putParcelable(DISPLAY_CHANGE_PIP_BOUNDS, toBounds);
                 mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
             });
         } else {
@@ -723,14 +723,14 @@ public class PipController implements ConfigurationChangeListener,
                 }
                 break;
             case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
-                mWaitingToPlayDisplayChangeBoundsUpdate =
-                        extra.getBoolean(DISPLAY_CHANGE_PIP_BOUNDS_UPDATE);
+                final Rect toBounds = extra.getParcelable(DISPLAY_CHANGE_PIP_BOUNDS, Rect.class);
+                mWaitingToPlayDisplayChangeBoundsUpdate = toBounds != null;
                 if (mWaitingToPlayDisplayChangeBoundsUpdate) {
                     // If we reach this point, it means display change did not send through a WCT to
                     // update the pinned task bounds in Core. Instead, the local Shell-side
                     // PiP-relevant bounds state and movement bounds were updated.
                     // So schedule a jumpcut animation to those bounds now.
-                    mPipScheduler.scheduleAnimateResizePip(mPipBoundsState.getBounds());
+                    mPipScheduler.scheduleAnimateResizePip(toBounds);
                 }
                 break;
             case PipTransitionState.CHANGING_PIP_BOUNDS:

@@ -230,6 +230,10 @@
     <string name="screenshot_save_to">Save to</string>
     <!-- Menu item text to open a file picker to select a custom folder for saving screenshots. [CHAR LIMIT=30] -->
     <string name="screenshot_select_folder">Select folder</string>
+    <!-- Title notification text when custom location save failed, saved to default folder instead. [CHAR LIMIT=100] -->
+    <string name="screenshot_custom_uri_save_fail_title">Saved to %1$s folder</string>
+    <!-- Bottom notification text when we fail to save a screenshot in a custom location. [CHAR LIMIT=100] -->
+    <string name="screenshot_custom_uri_save_fail_message">Something went wrong. Can\'t save to \"%1$s\" folder.</string>
     <!-- Appended to the notification content when a screenshot failure happens on an external display. [CHAR LIMIT=50] -->
     <string name="screenshot_failed_external_display_indication">External Display</string>
     <!-- Notification text displayed when we fail to save a screenshot due to locked storage. [CHAR LIMIT=100] -->
@@ -1750,6 +1754,9 @@
     <!-- The text for the notification history link. [CHAR LIMIT=40] -->
     <string name="manage_notifications_history_text">History</string>
 
+    <!-- The text for the notification close button -->
+    <string name="notification_dismiss_button_text">Close</string>
+
     <!-- The accessibility description for the notification settings button in the notification shade. -->
     <string name="notification_settings_button_description">Notification settings</string>
 
@@ -2282,7 +2289,10 @@
     <!-- Dialog asking if the tuner should really be removed from settings [CHAR LIMIT=NONE]-->
     <string name="remove_from_settings_prompt">Remove System UI Tuner from Settings and stop using all of its features?"</string>
 
-    <string name="qs_customize_remove" translatable="false">Remove</string>
+    <string name="tuner_remove" translatable="false">Remove</string>
+
+    <!-- Button in QS edit mode to remove the selected tile [CHAR LIMIT=12] -->
+    <string name="qs_customize_remove">Remove</string>
 
     <!-- Dialog title asking if Bluetooth should be enabled [CHAR LIMIT=NONE] -->
     <string name="enable_bluetooth_title">Turn on Bluetooth?</string>
@@ -3665,10 +3675,6 @@
     <string name="media_input_group_title">Input</string>
     <!-- Title for output device group. [CHAR LIMIT=NONE] -->
     <string name="media_output_group_title">Output</string>
-    <!-- Summary for end session dialog. [CHAR LIMIT=NONE] -->
-    <string name="media_output_end_session_dialog_summary">Stop your shared session to move media to another device</string>
-    <!-- Button text for stopping session [CHAR LIMIT=60] -->
-    <string name="media_output_end_session_dialog_stop">Stop</string>
     <!-- Button text for stopping sharing [CHAR LIMIT=60] -->
     <string name="media_output_dialog_button_stop_sharing">Stop sharing</string>
     <!-- Button text when doing audio sharing. [CHAR LIMIT=60] -->

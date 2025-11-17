@@ -46,8 +46,8 @@ interface LockscreenScope<out TScope : BaseContentScope> {
     /** Context used by element and factory to build LockscreenElements */
     val context: LockscreenElementContext
 
-    /** Creates a copy of this LockscreenScope with the specified inner scope */
-    fun <T : BaseContentScope> createChildScope(scope: T): LockscreenScope<T>
+    /** Factory used to build retargetted scopes */
+    val scopeFactory: LockscreenScopeFactory
 
     @Composable
     /** Creates an element by delegating to [ContentScope] */
@@ -91,8 +91,15 @@ interface LockscreenScope<out TScope : BaseContentScope> {
             sceneKey: SceneKey,
             content: @Composable LockscreenScope<ContentScope>.() -> Unit,
         ) {
-            transitionScope.scene(sceneKey) { parentScope.createChildScope(this).content() }
+            val scopeFactory = parentScope.scopeFactory
+            transitionScope.scene(sceneKey) { scopeFactory.create(this).content() }
         }
+    }
+
+    @Immutable
+    interface LockscreenScopeFactory {
+        /** Creates a copy of this LockscreenScope with the specified inner scope */
+        fun <T : BaseContentScope> create(scope: T): LockscreenScope<T>
     }
 
     companion object {

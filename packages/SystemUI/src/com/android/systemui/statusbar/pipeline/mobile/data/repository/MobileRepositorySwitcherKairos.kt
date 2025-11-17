@@ -27,7 +27,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.demomode.DemoMode
 import com.android.systemui.demomode.DemoModeController
 import com.android.systemui.kairos.Events
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.flatMap
@@ -70,7 +69,6 @@ import kotlinx.coroutines.channels.awaitClose
  * a change (due to `distinctUntilChanged`) and will not refresh their data providers to the demo
  * implementation.
  */
-@ExperimentalKairosApi
 @SysUISingleton
 class MobileRepositorySwitcherKairos
 @Inject

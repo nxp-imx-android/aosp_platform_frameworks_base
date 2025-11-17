@@ -144,4 +144,20 @@ public final class PersonalContextManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Mints a {@link Token} that can be attached to {@link ContextHint}, {@link ContextInsight}, or
+     * used in filters to filter for hints and insights.
+     *
+     * @hide
+     */
+    @SystemApi
+    @NonNull
+    public Token mintToken() {
+        try {
+            return mService.mintToken();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
 }

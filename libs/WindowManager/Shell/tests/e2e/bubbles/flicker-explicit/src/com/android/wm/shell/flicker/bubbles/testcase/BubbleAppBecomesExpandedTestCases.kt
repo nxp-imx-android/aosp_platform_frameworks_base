@@ -34,25 +34,20 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     val previousApp: IComponentNameMatcher
         get() = LAUNCHER
 
-    /**
-     * Verifies the focus changed from [previousApp] to bubble app.
-     */
+    /** Verifies the focus changed from [previousApp] to bubble app. */
     @Test
     fun focusChanges() {
         eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
     }
 
-    /**
-     * Verifies the bubble app replaces [previousApp] to be the top window.
-     */
+    /** Verifies the bubble app replaces [previousApp] to be the top window. */
     @Test
     fun appWindowReplacesPreviousAppAsTopWindow() {
         wmTraceSubject
             .isAppWindowOnTop(previousApp)
             .then()
             .isAppWindowOnTop(
-                ComponentNameMatcher.SNAPSHOT
-                    .or(ComponentNameMatcher.SPLASH_SCREEN),
+                ComponentNameMatcher.SNAPSHOT.or(ComponentNameMatcher.SPLASH_SCREEN),
                 isOptional = true,
             )
             .then()
@@ -60,17 +55,13 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
             .forAllEntries()
     }
 
-    /**
-     * Verifies the bubble app is the top window at the end of transition.
-     */
+    /** Verifies the bubble app is the top window at the end of transition. */
     @Test
     fun appWindowAsTopWindowAtEnd() {
         wmStateSubjectAtEnd.isAppWindowOnTop(testApp)
     }
 
-    /**
-     * Verifies the bubble app becomes the top window.
-     */
+    /** Verifies the bubble app becomes the top window. */
     @Test
     fun appWindowBecomesTopWindow() {
         wmTraceSubject
@@ -81,9 +72,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
             .forAllEntries()
     }
 
-    /**
-     * Verifies the bubble app window becomes visible.
-     */
+    /** Verifies the bubble app window becomes visible. */
     @Test
     fun appWindowBecomesVisible() {
         wmTraceSubject
@@ -94,57 +83,43 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
             .forAllEntries()
     }
 
-    /**
-     * Verifies the bubble app layer becomes visible.
-     */
+    /** Verifies the bubble app layer becomes visible. */
     @Test
     fun appLayerBecomesVisible() {
-        layersTraceSubject
-            .isInvisible(testApp)
-            .then()
-            .isVisible(testApp)
-            .forAllEntries()
+        layersTraceSubject.isInvisible(testApp).then().isVisible(testApp).forAllEntries()
     }
 
-    /**
-     * Verifies the bubble app window is visible at the end of transition.
-     */
+    /** Verifies the bubble app window is visible at the end of transition. */
     @Test
     fun appWindowIsVisibleAtEnd() {
         wmStateSubjectAtEnd.isAppWindowVisible(testApp)
     }
 
-    /**
-     * Verifies the bubble app layer is visible at the end of transition.
-     */
+    /** Verifies the bubble app layer is visible at the end of transition. */
     @Test
     fun appLayerIsVisibleAtEnd() {
         layerTraceEntrySubjectAtEnd.isVisible(testApp)
     }
 
-    /**
-     * Verifies the bubble app layer has rounded corners at the end of transition.
-     */
+    /** Verifies the bubble app layer has rounded corners at the end of transition. */
     @Test
     fun appLayerHasRoundedCorner() {
         layerTraceEntrySubjectAtEnd.hasRoundedCorners(testApp)
     }
 
-    /**
-     * Verifies the bubble window covers the bubble app.
-     */
+    /** Verifies the bubble window covers the bubble app. */
     @Test
     fun bubbleWindowCoversBubbleAppWindow() {
-        wmStateSubjectAtEnd.visibleRegion(BUBBLE)
+        wmStateSubjectAtEnd
+            .visibleRegion(BUBBLE)
             .coversAtLeast(wmStateSubjectAtEnd.visibleRegion(testApp).region)
     }
 
-    /**
-     * Verifies the bubble layer covers the bubble app.
-     */
+    /** Verifies the bubble layer covers the bubble app. */
     @Test
     fun bubbleLayerCoversBubbleAppLayer() {
-        layerTraceEntrySubjectAtEnd.visibleRegion(BUBBLE)
+        layerTraceEntrySubjectAtEnd
+            .visibleRegion(BUBBLE)
             .coversAtLeast(layerTraceEntrySubjectAtEnd.visibleRegion(testApp).region)
     }
 
@@ -157,17 +132,18 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     @Test
     fun bubbleTaskBoundsMatchBubbleTaskView() {
         // Get the WM task bounds of bubble app.
-        val bubbleAppTask = wmStateSubjectAtEnd.wmState.getTaskForActivity(testApp)
-            ?: error("Bubble app task not found")
+        val bubbleAppTask =
+            wmStateSubjectAtEnd.wmState.getTaskForActivity(testApp)
+                ?: error("Bubble app task not found")
         val taskBounds = bubbleAppTask.bounds
         // Get the task layer bounds of bubble app.
-        val taskLayer = layerTraceEntrySubjectAtEnd
-            .findAncestorLayer(testApp) { it.isTask }
-            ?: error("Bubble app task layer not found")
+        val taskLayer =
+            layerTraceEntrySubjectAtEnd.findAncestorLayer(testApp) { it.isTask }
+                ?: error("Bubble app task layer not found")
         val taskLayerBounds = taskLayer.screenBounds
         // Get the bounds of bubble task view layer.
-        val bubbleTaskViewLayer = layerTraceEntrySubjectAtEnd
-            .findAncestorLayer(testApp) {
+        val bubbleTaskViewLayer =
+            layerTraceEntrySubjectAtEnd.findAncestorLayer(testApp) {
                 BUBBLE_TASK_VIEW.layerMatchesAnyOf(it)
             } ?: error("Bubble app task view not found")
         val bubbleTaskViewLayerBounds = bubbleTaskViewLayer.screenBounds

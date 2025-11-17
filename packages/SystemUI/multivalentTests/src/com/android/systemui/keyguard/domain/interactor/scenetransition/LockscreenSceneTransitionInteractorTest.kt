@@ -352,7 +352,7 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
     @Test
     fun transition_to_ls_scene_with_changed_next_scene_is_respected_just_once() =
         testScope.runTest {
-            underTest.onSceneAboutToChange(Scenes.Lockscreen, KeyguardState.AOD)
+            underTest.setNextLockscreenTargetState(KeyguardState.AOD)
             sceneTransitions.value = goneToLs
 
             val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
@@ -1404,10 +1404,10 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
 
     /**
      * When a transition away from the lockscreen is interrupted by an `Idle(Lockscreen)`, a
-     * `sceneState` that was set during the transition is consumed and passed to KTF.
+     * `keyguardState` that was set during the transition is consumed and passed to KTF.
      */
     @Test
-    fun transition_from_ls_scene_sceneStateSet_then_interrupted_by_idle_on_ls() =
+    fun transition_from_ls_scene_keyguardStateSet_then_interrupted_by_idle_on_ls() =
         testScope.runTest {
             val currentStep by collectLastValue(kosmos.realKeyguardTransitionRepository.transitions)
             sceneTransitions.value =
@@ -1428,8 +1428,7 @@ class LockscreenSceneTransitionInteractorTest : SysuiTestCase() {
                 progress = 0.4f,
             )
 
-            val sceneState = KeyguardState.AOD
-            underTest.onSceneAboutToChange(toScene = Scenes.Lockscreen, sceneState = sceneState)
+            underTest.setNextLockscreenTargetState(KeyguardState.AOD)
             sceneTransitions.value = ObservableTransitionState.Idle(Scenes.Lockscreen)
 
             assertTransition(

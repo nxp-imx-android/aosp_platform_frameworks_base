@@ -24,7 +24,6 @@ import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_OVERRIDE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.IN_SIZE_COMPAT_MODE;
 import static android.window.DesktopExperienceFlags.ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
-import static android.window.DesktopExperienceFlags.ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX;
 
 import static com.android.server.wm.AppCompatSandboxingPolicy.ConfigOverrideHint;
 import static com.android.server.wm.AppCompatUtils.isDesktopFirst;
@@ -608,8 +607,7 @@ class AppCompatSizeCompatModePolicy {
         final boolean isOnIgnoreOrientationRequestInternalDisplay = isOnInternalDisplay()
                 && mActivityRecord.getDisplayContent().getIgnoreOrientationRequest();
 
-        return ENABLE_UPSCALING_SIZE_COMPAT_ON_EXITING_DESKTOP_BUGFIX.isTrue()
-                && (launchedInAndExitedFromDesktop || hasMovedBetweenDisplays)
+        return (launchedInAndExitedFromDesktop || hasMovedBetweenDisplays)
                 && (!isOnIgnoreOrientationRequestInternalDisplay
                         || isDesktopFirst(mActivityRecord.getDisplayArea()));
     }

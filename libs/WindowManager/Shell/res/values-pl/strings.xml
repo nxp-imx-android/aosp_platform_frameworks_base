@@ -87,8 +87,8 @@
     <string name="bubbles_user_education_manage_title" msgid="7042699946735628035">"Zarządzaj dymkami w dowolnym momencie"</string>
     <string name="bubbles_user_education_manage" msgid="3460756219946517198">"Kliknij Zarządzaj, aby wyłączyć dymki z tej aplikacji"</string>
     <string name="bubbles_user_education_got_it" msgid="3382046149225428296">"OK"</string>
-    <string name="bubble_overflow_empty_title" msgid="2397251267073294968">"Brak ostatnich dymków"</string>
-    <string name="bubble_overflow_empty_subtitle" msgid="2627417924958633713">"Tutaj będą pojawiać się ostatnie i odrzucone dymki"</string>
+    <string name="bubble_overflow_empty_title" msgid="2397251267073294968">"Brak nowych dymków"</string>
+    <string name="bubble_overflow_empty_subtitle" msgid="2627417924958633713">"Tutaj będą pojawiać się nowe i odrzucone dymki"</string>
     <string name="bubble_bar_education_stack_title" msgid="2486903590422497245">"Czatuj, korzystając z dymków"</string>
     <string name="bubble_bar_education_stack_text" msgid="2446934610817409820">"Nowe rozmowy pojawiają się jako ikony w dolnym rogu ekranu. Kliknij, aby je rozwinąć, lub przeciągnij, aby je zamknąć."</string>
     <string name="bubble_bar_education_manage_title" msgid="6148404487810835924">"Zarządzaj dymkami, kiedy chcesz"</string>
@@ -176,4 +176,5 @@
     <string name="open_by_default_splash_dialog_checkbox_text" msgid="7367791478473586694">"Zapamiętaj mój wybór"</string>
     <string name="open_by_default_splash_dialog_browser_text" msgid="4439951040200685938">"Otwórz w przeglądarce"</string>
     <string name="open_by_default_splash_dialog_app_text" msgid="2680408983754147907">"Zostań w aplikacji"</string>
+    <string name="open_by_default_splash_dialog_ask_me_later_text" msgid="2706872945449736432">"Zapytaj później"</string>
 </resources>

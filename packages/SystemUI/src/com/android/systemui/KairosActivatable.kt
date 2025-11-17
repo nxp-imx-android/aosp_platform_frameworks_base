@@ -24,7 +24,6 @@ import com.android.systemui.kairos.BuildSpec
 import com.android.systemui.kairos.CoalescingPolicy
 import com.android.systemui.kairos.Events
 import com.android.systemui.kairos.EventsLoop
-import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.IncrementalLoop
 import com.android.systemui.kairos.KairosNetwork
@@ -87,20 +86,17 @@ import kotlinx.coroutines.launch
  *
  * @see activated
  */
-@ExperimentalKairosApi
 fun interface KairosActivatable {
     /** Initializes any Kairos fields that require a [BuildScope] in order to be constructed. */
     fun BuildScope.activate()
 }
 
 /** Constructs [KairosActivatable] instances. */
-@ExperimentalKairosApi
 fun interface KairosActivatableFactory<T : KairosActivatable> {
     fun BuildScope.create(): T
 }
 
 /** Instantiates, [activates][KairosActivatable.activate], and returns a [KairosActivatable]. */
-@ExperimentalKairosApi
 fun <T : KairosActivatable> BuildScope.activated(factory: KairosActivatableFactory<T>): T =
     factory.run { create() }.apply { activate() }
 
@@ -120,7 +116,6 @@ fun <T : KairosActivatable> BuildScope.activated(factory: KairosActivatableFacto
  * }
  * ```
  */
-@ExperimentalKairosApi
 interface KairosBuilder : KairosActivatable {
     /**
      * Returns a forward-reference to a [State] that will be instantiated when this builder is
@@ -141,9 +136,8 @@ interface KairosBuilder : KairosActivatable {
 }
 
 /** Returns an [KairosBuilder] that can only be [activated][KairosActivatable.activate] once. */
-@ExperimentalKairosApi fun kairosBuilder(): KairosBuilder = KairosBuilderImpl()
+fun kairosBuilder(): KairosBuilder = KairosBuilderImpl()
 
-@OptIn(ExperimentalKairosApi::class)
 class KairosBuilderImpl @Inject constructor() : KairosBuilder {
 
     private var _builds: MutableList<KairosActivatable>? = mutableListOf()
@@ -181,7 +175,6 @@ class KairosBuilderImpl @Inject constructor() : KairosBuilder {
 
 /** Initializes [KairosActivatables][KairosActivatable] after SystemUI is initialized. */
 @SysUISingleton
-@ExperimentalKairosApi
 class KairosCoreStartable
 private constructor(
     private val appScope: CoroutineScope,
@@ -234,7 +227,6 @@ private constructor(
 }
 
 @Module
-@ExperimentalKairosApi
 interface KairosCoreStartableModule {
     @Binds
     @IntoMap

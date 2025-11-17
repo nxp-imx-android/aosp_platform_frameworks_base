@@ -60,6 +60,14 @@ flag {
 }
 
 flag {
+  name: "api_notification_chip"
+  is_exported: true
+  namespace: "notifications"
+  description: "Adds Notification.CompactContent and related classes. Mostly dependent on api_metric_style."
+  bug: "444195983"
+}
+
+flag {
   name: "modes_ui_dnd_tile"
   namespace: "systemui"
   description: "Shows a dedicated tile for the DND mode; dependent on modes_ui"
@@ -74,13 +82,6 @@ flag {
   namespace: "systemui"
   description: "Experiment to restore the pre-S behavior where standard notifications are not expandable unless they have actions."
   bug: "339523906"
-}
-
-flag {
-  name: "compact_heads_up_notification_reply"
-  namespace: "systemui"
-  description: "[Minimal HUN] Enables the compact heads up notification reply capability for Conversation Notifications"
-  bug: "336229954"
 }
 
 flag {
@@ -334,6 +335,22 @@ flag {
    namespace: "better_together"
    description: "Adds support for specifying bridged notification metadata for displaying to the user."
    bug: "438827600"
+}
+
+flag {
+  name: "notification_semantic_actions_for_playback"
+  namespace: "notifications"
+  description: "Adds semantic action values for PLAY/PAUSE/STOP"
+  is_exported: true
+  bug: "458744035"
+}
+
+flag {
+  name: "api_projected_extender"
+  namespace: "notifications"
+  description: "Guards new android.app.Notification.ProjectedExtender api"
+  bug: "455909258"
+  is_exported: true
 }
 
 # End: exported flags that cannot be removed

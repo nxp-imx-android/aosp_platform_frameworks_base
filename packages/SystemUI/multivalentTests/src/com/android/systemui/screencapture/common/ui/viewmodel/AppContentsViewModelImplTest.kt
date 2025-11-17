@@ -68,6 +68,7 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
                 userId = 3,
                 topActivityComponent = ComponentName("FakeTopPackage", "FakeTopClass"),
                 baseIntentComponent = ComponentName("FakeBasePackage", "FakeBaseClass"),
+                baseIntent = null,
                 colorBackground = 0x12345699,
                 isForegroundTask = true,
                 userType = RecentTask.UserType.STANDARD,
@@ -75,7 +76,12 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
             )
         }
     private val Kosmos.fakeMediaProjectionAppContent by
-        Kosmos.Fixture { MediaProjectionAppContent(fakeThumbnail, "FakeLabel", 123) }
+        Kosmos.Fixture {
+            MediaProjectionAppContent.Builder(123)
+                .setThumbnail(fakeThumbnail)
+                .setTitle("FakeLabel")
+                .build()
+        }
     private val Kosmos.fakeAppContent by
         Kosmos.Fixture { ScreenCaptureAppContent("FakeBasePackage", fakeMediaProjectionAppContent) }
     private val Kosmos.fakeAppContentViewModel by

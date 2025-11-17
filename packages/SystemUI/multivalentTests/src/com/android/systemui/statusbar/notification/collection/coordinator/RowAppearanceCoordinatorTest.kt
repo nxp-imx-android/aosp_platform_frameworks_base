@@ -22,8 +22,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.shared.notifications.domain.interactor.NotificationSettingsInteractor
-import com.android.systemui.statusbar.notification.AssistantFeedbackController
-import com.android.systemui.statusbar.notification.FeedbackIcon
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.InternalNotificationsApi
@@ -35,7 +33,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfte
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderEntryListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderListListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
-import com.android.systemui.statusbar.notification.collection.notifCollection
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.collection.render.NotifRowController
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -80,7 +77,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     private lateinit var bundleEntry: BundleEntry
 
     @Mock private lateinit var pipeline: NotifPipeline
-    @Mock private lateinit var assistantFeedbackController: AssistantFeedbackController
     @Mock private lateinit var sectionStyleProvider: SectionStyleProvider
 
     @Mock private lateinit var section1: NotifSection
@@ -97,7 +93,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
         coordinator =
             RowAppearanceCoordinator(
                 mContext,
-                assistantFeedbackController,
                 sectionStyleProvider,
                 notificationSettingsInteractor,
                 kosmos.applicationCoroutineScope,
@@ -115,7 +110,6 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
         afterRenderListListener = withArgCaptor {
             verify(pipeline).addOnAfterRenderListListener(capture())
         }
-        whenever(assistantFeedbackController.getFeedbackIcon(any())).thenReturn(FeedbackIcon(1, 2))
         entry1 = kosmos.buildNotificationEntry { setSection(section1) }
         entry2 = kosmos.buildNotificationEntry { setSection(section2) }
 
@@ -556,11 +550,5 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
         afterRenderEntryListener.onAfterRenderEntry(bundledChildWithSiblingsParent, controller1)
 
         verify(controller1).setSystemExpanded(eq(false))
-    }
-
-    @Test
-    fun testSetFeedbackIcon() {
-        afterRenderEntryListener.onAfterRenderEntry(entry1, controller1)
-        verify(controller1).setFeedbackIcon(eq(FeedbackIcon(1, 2)))
     }
 }

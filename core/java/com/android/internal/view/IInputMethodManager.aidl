@@ -32,6 +32,7 @@ import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputBindResult;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
+import com.android.internal.inputmethod.InputMethodSubtypeSafeList;
 
 /**
  * Public interface to the global input method manager, used by all client applications.
@@ -57,20 +58,10 @@ interface IInputMethodManager {
         + "android.Manifest.permission.QUERY_INPUT_METHOD}, conditional = true)")
     InputMethodInfoSafeList getEnabledInputMethodList(int userId);
 
-    // TODO(b/339761278): Remove after getInputMethodList() is fully deployed.
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
-            + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
-    List<InputMethodInfo> getInputMethodListLegacy(int userId, int directBootAwareness);
-
-    // TODO(b/339761278): Remove after getEnabledInputMethodList() is fully deployed.
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
-            + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
-    List<InputMethodInfo> getEnabledInputMethodListLegacy(int userId);
-
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {"
         + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, "
         + "android.Manifest.permission.QUERY_INPUT_METHOD}, conditional = true)")
-    List<InputMethodSubtype> getEnabledInputMethodSubtypeList(in @nullable String imiId,
+    InputMethodSubtypeSafeList getEnabledInputMethodSubtypeList(in @nullable String imiId,
             boolean allowsImplicitlyEnabledSubtypes, int userId);
 
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "

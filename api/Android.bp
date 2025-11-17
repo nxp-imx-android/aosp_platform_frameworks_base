@@ -279,7 +279,7 @@ java_genrule {
         ":all-modules-public-stubs-source-exportable",
         ":api-stubs-docs-non-updatable{.exportable}",
     ],
-    visibility: ["//visibility:private"], // Used by make module in //development, mind
+    visibility: ["//development/build"],
 }
 
 // This produces the same annotations.zip as framework-doc-stubs, but by using
@@ -302,6 +302,7 @@ java_genrule {
         ":all-modules-public-annotations",
         ":android-non-updatable-doc-stubs{.exportable.annotations.zip}",
     ],
+    visibility: ["//development/build"],
 }
 
 java_genrule {

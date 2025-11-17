@@ -53,6 +53,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -95,7 +96,7 @@ constructor(
     val isLockoutMessagePresent: Flow<Boolean> = lockoutMessage.map { it != null }
 
     /** The user-facing message to show in the bouncer. */
-    val message: MutableStateFlow<MessageViewModel?> = MutableStateFlow(null)
+    val message: MutableStateFlow<MessageViewModel?> = MutableStateFlow(defaultMessage())
 
     override suspend fun onActivated(): Nothing {
         if (!SceneContainerFlag.isEnabled) {
@@ -131,6 +132,20 @@ constructor(
 
     private var lockoutCountdownJob: Job? = null
 
+    private fun defaultMessage(): MessageViewModel {
+        val authMethod = authenticationInteractor.authenticationMethod.value
+        return if (authMethod == AuthenticationMethodModel.Sim) {
+            MessageViewModel(simBouncerInteractor.getDefaultMessage())
+        } else {
+            val restrictionReason = deviceUnlockedInteractor.currentDeviceEntryRestrictionReason()
+            restrictionReason.toMessage(
+                authMethod,
+                deviceEntryBiometricsAllowedInteractor.isFingerprintCurrentlyAllowedOnBouncer.value,
+                secureLockDeviceInteractor.enrolledStrongBiometricModalities.value,
+            )
+        }
+    }
+
     private suspend fun defaultBouncerMessageInitializer() {
         resetToDefault.emit(Unit)
         authenticationInteractor.authenticationMethod
@@ -159,7 +174,6 @@ constructor(
                             ?: deviceEntryRestrictedReason.toMessage(
                                 authMethod,
                                 isFpAllowedOnBouncer,
-                                isFaceAllowedOnBouncer,
                                 enrolledStrongBiometricModalities,
                             )
                     }
@@ -368,6 +382,18 @@ constructor(
                             isFingerprintAllowed,
                             isSecureLockDeviceEnabled,
                             isDuplicate) ->
+                        authenticationInteractor.lockoutEndTime?.let {
+                            if (
+                                !lockscreenLargerTimeoutTimeUnits() ||
+                                    it < clock.elapsedRealtime().milliseconds
+                            ) {
+                                // Skip setting the message only when there is an active lockout,
+                                // since the countdown job should be handling it.
+                                return@let
+                            }
+                            startLockoutCountdown()
+                            return@collectLatest
+                        }
                         message.emit(
                             BouncerMessageStrings.incorrectSecurityInput(
                                     authMethod,
@@ -387,7 +413,6 @@ constructor(
     private fun DeviceEntryRestrictionReason?.toMessage(
         authMethod: AuthenticationMethodModel,
         isFingerprintAllowedOnBouncer: Boolean,
-        isFaceAllowedOnBouncer: Boolean,
         enrolledStrongBiometricModalities: BiometricModalities,
     ): MessageViewModel {
         return when (this) {
@@ -499,7 +524,7 @@ constructor(
     }
 
     companion object {
-        private const val MESSAGE_DURATION = 2000L
+        private val MESSAGE_DURATION = 2.seconds
     }
 }
 

@@ -177,17 +177,17 @@ public abstract class RavenwoodRunnerTestBase {
             RavenwoodConfigPrivate.setCriticalErrorHandler(null);
         }
 
+        // Check the result.
+        assertWithMessage("Failure in test class [" + testClazz.getCanonicalName() + "]")
+                .that(listener.getResult())
+                .isEqualTo(stripMultiLines(expected.value()));
+
         var error = sError.get();
         if (error != null) {
             throw new RuntimeException("Failure detected in test [" + testClazz.getSimpleName()
                     + "], see the inner exception for details.",
                     error);
         }
-
-        // Check the result.
-        assertWithMessage("Failure in test class [" + testClazz.getCanonicalName() + "]")
-                .that(listener.getResult())
-                .isEqualTo(stripMultiLines(expected.value()));
 
         // After each test, make sure the main thread is alive.
         // (RavenwoodRunnerExecutionTest throws exceptions on the main thread, so we make sure

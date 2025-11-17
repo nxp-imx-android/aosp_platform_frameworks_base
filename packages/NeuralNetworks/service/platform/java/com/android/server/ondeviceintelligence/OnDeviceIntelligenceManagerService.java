@@ -100,6 +100,8 @@ import com.android.server.ondeviceintelligence.executors.IntelligenceServiceExec
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1229,6 +1231,17 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 mContext.getResources().getString(
                         R.string.config_defaultOnDeviceSandboxedInferenceService)
         };
+    }
+
+    /**
+     * Returns the configured services and namespace from the OEM specified overlay.
+     */
+    protected String[] getConfigurations() {
+        enforceShellOnly(Binder.getCallingUid(), "getConfigurations");
+        String[] serviceNames = getServiceNames();
+        List<String> configs = new ArrayList<>(Arrays.asList(serviceNames));
+        configs.add(getConfigNamespace());
+        return configs.toArray(new String[0]);
     }
 
     protected String[] getBroadcastKeys() throws Resources.NotFoundException {

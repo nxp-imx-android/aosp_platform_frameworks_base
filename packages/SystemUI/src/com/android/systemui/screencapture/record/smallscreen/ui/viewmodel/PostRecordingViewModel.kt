@@ -75,6 +75,7 @@ constructor(
         val intent =
             Intent(action)
                 .setDataAndType(videoUri, MIME_TYPE)
+                .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 .putExtra(Intent.EXTRA_STREAM, videoUri)
 
         activityStarter.startActivity(

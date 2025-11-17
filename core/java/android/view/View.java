@@ -5653,6 +5653,17 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     public static final int DRAG_FLAG_HIDE_CALLING_TASK_ON_DRAG_START = 1 << 14;
 
     /**
+     * Flag indicating that the caller wishes to disable the default {@link PointerIcon} that would
+     * otherwise be set on drag start when the input source is {@link InputDevice.SOURCE_MOUSE}.
+     *
+     * The caller must hold the {@link android.Manifest.permission#START_TASKS_FROM_RECENTS}
+     * permission in order to use this flag.
+     *
+     * @hide
+     */
+    public static final int DRAG_FLAG_DISABLE_DEFAULT_POINTER_ICON = 1 << 15;
+
+    /**
      * Vertical scroll factor cached by {@link #getVerticalScrollFactor}.
      */
     private float mVerticalScrollFactor;
@@ -8634,6 +8645,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @param rectangle The rectangle in the View's content coordinate space
      * @return Whether any parent scrolled.
      * @see AccessibilityAction#ACTION_SHOW_ON_SCREEN
+     * @see #requestRectangleOnScreen(Rect, boolean, int)
+     * <p><b>WARNING:</b> Use of this API is discouraged because it does not support
+     * user-configurable options related to display magnification behaviors. Instead, use
+     * {@link #requestRectangleOnScreen(Rect, boolean, int)} to include a request source. A request
+     * source of {@link #RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED} will be inferred from
+     * invocations of this original API.
      */
     public boolean requestRectangleOnScreen(Rect rectangle) {
         return requestRectangleOnScreen(rectangle, false);
@@ -8655,6 +8672,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      * @param rectangle The rectangle in the View's content coordinate space
      * @param immediate True to forbid animated scrolling, false otherwise
      * @return Whether any parent scrolled.
+     * @see #requestRectangleOnScreen(Rect, boolean, int)
+     * <p><b>WARNING:</b> Use of this API is discouraged because it does not support
+     * user-configurable options related to display magnification behaviors. Instead, use
+     * {@link #requestRectangleOnScreen(Rect, boolean, int)} to include a request source. A request
+     * source of {@link #RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED} will be inferred from
+     * invocations of this original API.
      */
     public boolean requestRectangleOnScreen(Rect rectangle, boolean immediate) {
         return requestRectangleOnScreen(rectangle, immediate,
@@ -16429,7 +16452,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 if (mAttachInfo != null) {
                     final Rect r = mAttachInfo.mTmpInvalRect;
                     getDrawingRect(r);
-                    return requestRectangleOnScreen(r, true);
+                    return requestRectangleOnScreen(r,
+                            true,
+                            RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED);
                 }
             } break;
             case R.id.accessibilityActionContextClick: {

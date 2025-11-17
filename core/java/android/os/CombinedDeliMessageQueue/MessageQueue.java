@@ -214,19 +214,13 @@ public final class MessageQueue {
     /* ------------------------------------------------------------------------------------------ */
 
     /**
-     * Determine if the native looper will skip epoll_wait syscalls if nativePollOnce is called with
-     * a timeout of 0, which indicates that there are already pending messages.
+     * Skip epoll_wait syscalls if nativePollOnce is called with a timeout of 0, which indicates
+     * that there are already pending messages.
      */
-    private static boolean sSkipEpollWaitForZeroTimeoutInitialized = false;
-
     static void setSkipEpollWaitForZeroTimeout(long ptr) {
-        if (sSkipEpollWaitForZeroTimeoutInitialized) {
-            return;
-        }
         if (Flags.nativeLooperSkipEpollWaitForZeroTimeout()) {
             nativeSetSkipEpollWaitForZeroTimeout(ptr);
         }
-        sSkipEpollWaitForZeroTimeoutInitialized = true;
     }
 
     private native static long nativeInit();

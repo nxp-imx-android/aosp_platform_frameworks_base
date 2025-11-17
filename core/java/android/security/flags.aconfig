@@ -170,6 +170,7 @@ flag {
     namespace: "network_security"
     description: "If enabled, the XML application flag usesCleartextTraffic is ignored for targetSdk version C+."
     bug: "415007211"
+    is_exported: true
 }
 
 flag {
@@ -208,6 +209,13 @@ flag {
     namespace: "security"
     description: "Indicate explicitly that duplicate failed lockscreen guesses are duplicates"
     bug: "322014085"
+}
+
+flag {
+    name: "enable_unclamped_lockouts"
+    namespace: "security"
+    description: "Do not clamp lockout durations to Integer.MAX_VALUE milliseconds"
+    bug: "444472965"
 }
 
 flag {

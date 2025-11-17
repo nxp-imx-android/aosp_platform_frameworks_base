@@ -20,6 +20,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -140,6 +141,14 @@ public final class CameraExtensionCharacteristics {
      * overall image quality under low light conditions.
      */
     public static final int EXTENSION_NIGHT = 4;
+
+    /**
+     * Start of device-specific extension implementations
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VENDOR_DEFINED_CAMERA_EXTENSIONS)
+    @SystemApi
+    public static final int EXTENSION_VENDOR_START = 0x4000;
 
     /**
      * @hide
@@ -577,10 +586,20 @@ public final class CameraExtensionCharacteristics {
             }
 
             public ICameraExtensionsProxyService getProxy(@Extension int extension) {
+                if (Flags.vendorDefinedCameraExtensions() &&
+                        (mConnections.get(extension) == null)) {
+                    mConnections.put(extension, new ExtensionConnection());
+                }
+
                 return mConnections.get(extension).mProxy;
             }
 
             public ServiceConnection getConnection(@Extension int extension) {
+                if (Flags.vendorDefinedCameraExtensions() &&
+                        (mConnections.get(extension) == null)) {
+                    mConnections.put(extension, new ExtensionConnection());
+                }
+
                 return mConnections.get(extension).mConnection;
             }
 
@@ -673,6 +692,45 @@ public final class CameraExtensionCharacteristics {
     }
 
     /**
+     * Checks if a given camera extension is available for a specific camera device.
+     *
+     * <p>An extension may not be available on all devices. Even if a device supports extensions
+     * in general, a specific extension might not be implemented for a particular camera ID.</p>
+     *
+     * <p>In contrast to {@link #getSupportedExtensions} this method can also be used to query
+     * the available device specific extension modes.</p>
+     *
+     * @param extensionType The camera extension to query for.
+     *
+     * @return {@code true} if the specified extension is supported for the given camera device,
+     *         {@code false} otherwise.
+     *
+     * @see #EXTENSION_AUTOMATIC
+     * @see #EXTENSION_BOKEH
+     * @see #EXTENSION_FACE_RETOUCH
+     * @see #EXTENSION_HDR
+     * @see #EXTENSION_NIGHT
+     */
+    @FlaggedApi(Flags.FLAG_VENDOR_DEFINED_CAMERA_EXTENSIONS)
+    public boolean isExtensionSupported(@Extension int extensionType) {
+        IBinder token = new Binder(TAG + "#isExtensionSupported:" + mCameraId);
+
+        boolean ret = false;
+        try {
+            if (registerClient(mContext, token, extensionType, mCameraId,
+                    mCharacteristicsMapNative)) {
+                ret = isExtensionSupported(mCameraId, extensionType, mCharacteristicsMapNative);
+            }
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Unsupported extension: " + extensionType);
+        } finally {
+            unregisterClient(mContext, token, extensionType);
+        }
+
+        return ret;
+    }
+
+    /**
      * @hide
      */
     public static boolean isExtensionSupported(String cameraId, int extensionType,
@@ -761,6 +819,11 @@ public final class CameraExtensionCharacteristics {
 
     /**
      * Return a list of supported device-specific extensions for a given camera device.
+     *
+     * <p>Do note that starting with {@link android.os.Build.VERSION_CODES#CINNAMON_BUN Android C}
+     * applications can use {@link #isExtensionSupported(String, int)} to query for
+     * public and device specific extension modes. The latter will not be included in the
+     * list here.</p>
      *
      * @return non-modifiable list of available extensions
      */

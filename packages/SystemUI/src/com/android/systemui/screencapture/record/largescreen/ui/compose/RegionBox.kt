@@ -17,6 +17,8 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import android.graphics.Rect as IntRect
+import android.view.InputDevice
+import android.view.MotionEvent
 import android.view.PointerIcon as AndroidPointerIcon
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
@@ -24,7 +26,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -49,7 +50,6 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -94,6 +94,15 @@ private enum class ButtonPlacement {
 
     /** The button is placed to the right of the selection box. */
     Right,
+}
+
+/** Types of devices that move the pointer/cursor */
+enum class PointerDevice {
+    Mouse,
+    Touchpad,
+    Touchscreen,
+    Stylus,
+    Other,
 }
 
 /**
@@ -184,6 +193,12 @@ class RegionBoxState(
     var dragMode by mutableStateOf(DragMode.NONE)
 
     /**
+     * Tracks which type of device is used to move the pointer. This will determine where the resize
+     * zone is.
+     */
+    var pointerDevice by mutableStateOf(PointerDevice.Mouse)
+
+    /**
      * Tracks which edge or corner of the selection box the user is currently dragging to resize the
      * box.
      */
@@ -217,8 +232,8 @@ class RegionBoxState(
     /**
      * Determines which drag mode is being initiated based on the given pointer type and position.
      */
-    fun startDrag(pointerType: PointerType, pointerPosition: Offset) {
-        val (newDragMode, newResizeZone) = getDragModeForPointer(pointerType, pointerPosition)
+    fun startDrag(pointerPosition: Offset) {
+        val (newDragMode, newResizeZone) = getDragModeForPointer(pointerDevice, pointerPosition)
         dragMode = newDragMode
         resizeZone = newResizeZone
         if (newDragMode == DragMode.DRAWING) {
@@ -301,15 +316,48 @@ class RegionBoxState(
         resizeZone = null
     }
 
+    /** Determines which pointer device is being used based on the given motion event. */
+    fun setPointerDevice(motionEvent: MotionEvent?) {
+        motionEvent ?: return
+
+        // Touchpads that are used to move the mouse cursor will have SOURCE_MOUSE and not
+        // SOURCE_TOUCHPAD. Use the tool type to distinguish touchpads from a normal mouse.
+        val toolType = motionEvent.getToolType(0)
+        val isMouse =
+            motionEvent.isFromSource(InputDevice.SOURCE_MOUSE) &&
+                toolType == MotionEvent.TOOL_TYPE_MOUSE
+        val isTouchpad =
+            motionEvent.isFromSource(InputDevice.SOURCE_MOUSE) &&
+                toolType == MotionEvent.TOOL_TYPE_FINGER
+        val isTouchscreen = motionEvent.isFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        val isStylus = motionEvent.isFromSource(InputDevice.SOURCE_STYLUS)
+
+        pointerDevice =
+            when {
+                isMouse -> PointerDevice.Mouse
+                isTouchpad -> PointerDevice.Touchpad
+                isTouchscreen -> PointerDevice.Touchscreen
+                isStylus -> PointerDevice.Stylus
+                else -> PointerDevice.Other
+            }
+    }
+
     /**
      * Determines which part of the region box is being hovered based on the given `pointerType` and
      * the `pointerPosition` relative to the box bounds and tap targets.
      */
-    fun updateHoverState(pointerType: PointerType, pointerPosition: Offset) {
+    fun updateHoverState(pointerChange: PointerInputChange) {
         // If there is no box, then there is nothing to hover.
         val currentRect = rect ?: return
 
-        hoveredZone = getResizeZone(pointerType, pointerPosition)
+        // Don't update hover state if the pointer is pressed to prevent flicker during drags.
+        if (pointerChange.pressed) {
+            return
+        }
+
+        val pointerPosition = pointerChange.position
+
+        hoveredZone = getResizeZone(pointerDevice, pointerPosition)
         isHoveringBox = currentRect.contains(pointerPosition)
         captureButtonBounds?.let { buttonBounds ->
             val globalButtonBounds = buttonBounds.translate(currentRect.topLeft)
@@ -318,13 +366,13 @@ class RegionBoxState(
     }
 
     private fun getDragModeForPointer(
-        pointerType: PointerType,
+        pointerDevice: PointerDevice,
         pointerPosition: Offset,
     ): Pair<DragMode, ResizeZone?> {
         // If the box is not yet created, it is a drawing drag.
         val currentRect = rect ?: return Pair(DragMode.DRAWING, null)
 
-        val currentResizeZone = getResizeZone(pointerType, pointerPosition)
+        val currentResizeZone = getResizeZone(pointerDevice, pointerPosition)
         return when {
             // If the drag is initiated within the box's resize zones, it is a resizing drag.
             currentResizeZone != null -> Pair(DragMode.RESIZING, currentResizeZone)
@@ -336,32 +384,26 @@ class RegionBoxState(
         }
     }
 
-    private fun getResizeZone(pointerType: PointerType, pointerPosition: Offset): ResizeZone? {
+    private fun getResizeZone(device: PointerDevice, pointerPosition: Offset): ResizeZone? {
         val currentRect = rect ?: return null
-
-        val pointerOffset = pointerPosition - currentRect.topLeft
-        val tapTargetSizePx = getTapTargetSize(pointerType)
 
         return getResizeZone(
             boxWidth = currentRect.width,
             boxHeight = currentRect.height,
-            pointerOffset = pointerOffset,
-            tapTargetSizePx = tapTargetSizePx,
+            pointerOffset = pointerPosition - currentRect.topLeft,
+            tapTargetSizePx = getTapTargetSize(device),
         )
     }
 
-    private fun getTapTargetSize(pointerType: PointerType): Float {
-        return with(density) { if (isPreciseTool(pointerType)) 36.dp.toPx() else 48.dp.toPx() }
+    private fun getTapTargetSize(device: PointerDevice): Float {
+        return with(density) { if (isPrecisePointerDevice(device)) 24.dp.toPx() else 48.dp.toPx() }
     }
 
-    private fun isPreciseTool(pointerType: PointerType): Boolean {
-        return when (pointerType) {
-            // Mouse, stylus, and touchpad are more accurate tools
-            PointerType.Mouse,
-            PointerType.Stylus -> true
-            // Touchscreen and other types are not
-            PointerType.Touch,
-            PointerType.Unknown -> false
+    private fun isPrecisePointerDevice(device: PointerDevice): Boolean {
+        return when (device) {
+            PointerDevice.Mouse,
+            PointerDevice.Touchpad,
+            PointerDevice.Stylus -> true
             else -> false
         }
     }
@@ -420,14 +462,8 @@ fun RegionBox(
                                 continue
                             }
 
-                            val pointerChange = pointerEvent.changes.first()
-                            // Don't update hover state if the pointer is pressed to prevent flicker
-                            // during drags.
-                            if (pointerChange.pressed) {
-                                continue
-                            }
-
-                            state.updateHoverState(pointerChange.type, pointerChange.position)
+                            state.setPointerDevice(pointerEvent.motionEvent)
+                            state.updateHoverState(pointerEvent.changes.first())
                         }
                     }
                 }
@@ -435,7 +471,7 @@ fun RegionBox(
                     detectDragGestures(
                         orientationLock = null,
                         onDragStart = { pointerChange: PointerInputChange, _, _ ->
-                            state.startDrag(pointerChange.type, pointerChange.position)
+                            state.startDrag(pointerChange.position)
                         },
                         onDrag = { pointerChange: PointerInputChange, dragAmount: Offset ->
                             pointerChange.consume()
@@ -496,73 +532,69 @@ fun RegionBox(
                 // capture button's ([PrimaryButton]) position depends on the dimension pill
                 // button [RegionDimensionsPill]'s size, which is only known after measurement.
                 SubcomposeLayout { constraints ->
+                    val pillVerticalSpacingDp = 16.dp
+                    val pillVerticalSpacingPx = with(density) { pillVerticalSpacingDp.toPx() }
+
                     // First, measure the pill [RegionDimensionsPill] to get its actual height.
-                    val dimensionPillMeasurables =
-                        subcompose("dimensionPill") {
-                            val pillVerticalSpacingDp = 16.dp
-                            RegionDimensionsPill(
-                                widthPx = currentRect.width.roundToInt(),
-                                heightPx = currentRect.height.roundToInt(),
-                                modifier =
-                                    Modifier.layout { measurable, _ ->
-                                        val pillInnerPlaceable = measurable.measure(Constraints())
-                                        val pillVerticalSpacingPx =
-                                            with(density) { pillVerticalSpacingDp.toPx() }
-                                        // Center the pill horizontally relative to the region
-                                        // box's width.
-                                        val pillX =
-                                            (currentRect.width - pillInnerPlaceable.width) / 2
-
-                                        // Calculate the Y position of the pill, and restrict it
-                                        // to stay within the screen bounds.
-                                        val pillY =
-                                            (currentRect.height + pillVerticalSpacingPx)
-                                                .coerceAtMost(
-                                                    state.screenHeight -
-                                                        currentRect.top -
-                                                        pillInnerPlaceable.height -
-                                                        pillVerticalSpacingPx
-                                                )
-                                        layout(
-                                            pillInnerPlaceable.width,
-                                            pillInnerPlaceable.height,
-                                        ) {
-                                            pillInnerPlaceable.place(
-                                                pillX.roundToInt(),
-                                                pillY.roundToInt(),
-                                            )
-                                        }
-                                    },
-                            )
-                        }
-
                     val dimensionPillPlaceable =
-                        if (
-                            state.dragMode == DragMode.RESIZING ||
-                                state.dragMode == DragMode.DRAWING
-                        ) {
-                            dimensionPillMeasurables.first().measure(constraints)
-                        } else {
-                            null
-                        }
+                        subcompose("dimensionPill") {
+                                RegionDimensionsPill(
+                                    widthPx = currentRect.width.roundToInt(),
+                                    heightPx = currentRect.height.roundToInt(),
+                                    modifier =
+                                        Modifier.layout { measurable, _ ->
+                                            val pillInnerPlaceable =
+                                                measurable.measure(Constraints())
+
+                                            // Center the pill horizontally relative to the region
+                                            // box's width.
+                                            val pillX =
+                                                (currentRect.width - pillInnerPlaceable.width) / 2
+
+                                            // Calculate the Y position of the pill, and restrict it
+                                            // to stay within the screen bounds.
+                                            val pillY =
+                                                (currentRect.height + pillVerticalSpacingPx)
+                                                    .coerceAtMost(
+                                                        state.screenHeight -
+                                                            currentRect.top -
+                                                            pillInnerPlaceable.height -
+                                                            pillVerticalSpacingPx
+                                                    )
+                                            layout(
+                                                pillInnerPlaceable.width,
+                                                pillInnerPlaceable.height,
+                                            ) {
+                                                pillInnerPlaceable.place(
+                                                    pillX.roundToInt(),
+                                                    pillY.roundToInt(),
+                                                )
+                                            }
+                                        },
+                                )
+                            }
+                            .first()
+                            .measure(constraints)
 
                     val dimensionPillHeightDp =
-                        dimensionPillPlaceable?.let { with(density) { it.height.toDp() } } ?: 0.dp
+                        with(density) { dimensionPillPlaceable.height.toDp() }
+                    val dimensionPillHeightPx = with(density) { dimensionPillHeightDp.toPx() }
 
                     // To determine the button's placement, we first need to know its size. We
                     // subcompose the button once just to measure it.
-                    val pillVerticalSpacingDp = 16.dp
                     val buttonMeasurable =
-                        subcompose("buttonMeasurer") {
-                            PrimaryButton(
-                                text = buttonText,
-                                icon = buttonIcon,
-                                onClick = onCaptureClick,
-                            )
-                        }
-                    val buttonSize = buttonMeasurable.first().measure(constraints)
-                    val buttonWidthDp = with(density) { buttonSize.width.toDp() }
-                    val buttonHeightDp = with(density) { buttonSize.height.toDp() }
+                        subcompose("buttonMeasurable") {
+                                PrimaryButton(
+                                    text = buttonText,
+                                    icon = buttonIcon,
+                                    onClick = onCaptureClick,
+                                )
+                            }
+                            .first()
+                            .measure(constraints)
+
+                    val buttonWidthDp = with(density) { buttonMeasurable.width.toDp() }
+                    val buttonHeightDp = with(density) { buttonMeasurable.height.toDp() }
 
                     // Now that we have the button's size, we can calculate its actual placement.
                     val captureButtonPlacement =
@@ -571,32 +603,33 @@ fun RegionBox(
                         } else {
                             val screenWidth = state.screenWidth
                             val screenHeight = state.screenHeight
-                            val buttonWidth = buttonSize.width.toFloat()
-                            val buttonHeight = buttonSize.height.toFloat()
-                            val spacingPx = with(density) { pillVerticalSpacingDp.toPx() }
+                            val buttonWidth = buttonMeasurable.width.toFloat()
+                            val buttonHeight = buttonMeasurable.height.toFloat()
 
                             val topRect =
                                 Rect(
                                     left =
                                         currentRect.left + (currentRect.width - buttonWidth) / 2f,
-                                    top = currentRect.top - buttonHeight - spacingPx,
+                                    top = currentRect.top - buttonHeight - pillVerticalSpacingPx,
                                     right =
                                         currentRect.left + (currentRect.width + buttonWidth) / 2f,
-                                    bottom = currentRect.top - spacingPx,
+                                    bottom = currentRect.top - pillVerticalSpacingPx,
                                 )
                             if (isRectInScreen(topRect, screenWidth, screenHeight)) {
                                 ButtonPlacement.Top
                             } else {
-                                val pillHeightPx = with(density) { dimensionPillHeightDp.toPx() }
                                 val bottomRect =
                                     Rect(
                                         left = topRect.left,
-                                        top = currentRect.bottom + pillHeightPx + spacingPx,
+                                        top =
+                                            currentRect.bottom +
+                                                dimensionPillHeightPx +
+                                                pillVerticalSpacingPx,
                                         right = topRect.right,
                                         bottom =
                                             currentRect.bottom +
-                                                pillHeightPx +
-                                                spacingPx +
+                                                dimensionPillHeightPx +
+                                                pillVerticalSpacingPx +
                                                 buttonHeight,
                                     )
                                 if (isRectInScreen(bottomRect, screenWidth, screenHeight)) {
@@ -604,11 +637,14 @@ fun RegionBox(
                                 } else {
                                     val rightRect =
                                         Rect(
-                                            left = currentRect.right + spacingPx,
+                                            left = currentRect.right + pillVerticalSpacingPx,
                                             top =
                                                 currentRect.top +
                                                     (currentRect.height - buttonHeight) / 2f,
-                                            right = currentRect.right + spacingPx + buttonWidth,
+                                            right =
+                                                currentRect.right +
+                                                    pillVerticalSpacingPx +
+                                                    buttonWidth,
                                             bottom =
                                                 currentRect.top +
                                                     (currentRect.height + buttonHeight) / 2f,
@@ -636,17 +672,12 @@ fun RegionBox(
                                                 ButtonPlacement.Top,
                                                 ButtonPlacement.Bottom,
                                                 ButtonPlacement.Inside ->
-                                                    (currentRect.width - buttonSize.width) / 2f
+                                                    (currentRect.width - buttonMeasurable.width) /
+                                                        2f
                                                 ButtonPlacement.Right ->
-                                                    currentRect.width +
-                                                        with(density) {
-                                                            pillVerticalSpacingDp.toPx()
-                                                        }
+                                                    currentRect.width + pillVerticalSpacingPx
                                                 ButtonPlacement.Left ->
-                                                    -buttonSize.width -
-                                                        with(density) {
-                                                            pillVerticalSpacingDp.toPx()
-                                                        }
+                                                    -buttonMeasurable.width - pillVerticalSpacingPx
                                             }
                                     )
                                 val targetTranslationY by
@@ -654,20 +685,16 @@ fun RegionBox(
                                         targetValue =
                                             when (captureButtonPlacement) {
                                                 ButtonPlacement.Top ->
-                                                    -buttonSize.height -
-                                                        with(density) {
-                                                            pillVerticalSpacingDp.toPx()
-                                                        }
+                                                    -buttonMeasurable.height - pillVerticalSpacingPx
                                                 ButtonPlacement.Bottom ->
-                                                    with(density) {
-                                                        currentRect.height +
-                                                            dimensionPillHeightDp.toPx() +
-                                                            pillVerticalSpacingDp.toPx()
-                                                    }
+                                                    currentRect.height +
+                                                        dimensionPillHeightPx +
+                                                        pillVerticalSpacingPx
                                                 ButtonPlacement.Inside,
                                                 ButtonPlacement.Right,
                                                 ButtonPlacement.Left ->
-                                                    (currentRect.height - buttonSize.height) / 2f
+                                                    (currentRect.height - buttonMeasurable.height) /
+                                                        2f
                                             }
                                     )
 
@@ -676,8 +703,8 @@ fun RegionBox(
                                         offset = Offset(targetTranslationX, targetTranslationY),
                                         size =
                                             Size(
-                                                width = buttonSize.width.toFloat(),
-                                                height = buttonSize.height.toFloat(),
+                                                width = buttonMeasurable.width.toFloat(),
+                                                height = buttonMeasurable.height.toFloat(),
                                             ),
                                     )
                                 PrimaryButton(
@@ -729,7 +756,13 @@ fun RegionBox(
                         // elements move as a single, synchronized unit.
                         selectionBoxPlaceable.place(0, 0)
                         captureButtonPlaceable.place(0, 0)
-                        dimensionPillPlaceable?.place(0, 0)
+
+                        if (
+                            state.dragMode == DragMode.RESIZING ||
+                                state.dragMode == DragMode.DRAWING
+                        ) {
+                            dimensionPillPlaceable.place(0, 0)
+                        }
 
                         // Show resize handles only when not interacting with the box.
                         if (state.dragMode == DragMode.NONE) {

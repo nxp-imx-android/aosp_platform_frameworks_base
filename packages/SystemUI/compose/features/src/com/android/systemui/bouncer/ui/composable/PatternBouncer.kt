@@ -21,9 +21,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,12 +40,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.integerResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,6 +65,7 @@ import com.android.systemui.bouncer.ui.composable.MotionTestKeys.entryCompleted
 import com.android.systemui.bouncer.ui.viewmodel.PatternBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.PatternDotViewModel
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.kairos.internal.util.fastForEach
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -211,8 +215,6 @@ fun PatternBouncer(
         }
     }
 
-    // This is the position of the input pointer.
-    var inputPosition: Offset? by remember { mutableStateOf(null) }
     var gridCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
     var offset: Offset by remember { mutableStateOf(Offset.Zero) }
     var scale: Float by remember { mutableFloatStateOf(1f) }
@@ -243,44 +245,77 @@ fun PatternBouncer(
                 .clipToBounds()
                 .align(Alignment.Center)
                 .onGloballyPositioned { coordinates -> gridCoordinates = coordinates }
+                .semantics {
+                    liveRegion = LiveRegionMode.Assertive
+                    contentDescription = viewModel.patternAreaContentDescription
+                }
                 .thenIf(isInputEnabled) {
-                    Modifier.pointerInput(Unit) {
-                            awaitEachGesture {
-                                awaitFirstDown()
-                                viewModel.onDown()
-                            }
-                        }
-                        .pointerInput(Unit) {
-                            detectDragGestures(
-                                onDragStart = { start ->
-                                    inputPosition = start
-                                    viewModel.onDragStart()
-                                },
-                                onDragEnd = {
-                                    inputPosition = null
+                    Modifier.pointerInput(
+                        gridCoordinates,
+                        scale,
+                        isAnimationEnabled,
+                        viewModel.isTouchExplorationEnabled,
+                    ) {
+                        coroutineScope {
+                            awaitPointerEventScope {
+                                val startDrag = { event: PointerEvent ->
+                                    viewModel.onDown()
+                                    event.changes.firstOrNull()?.let {
+                                        it.consume()
+                                        viewModel.onDragStart(it.position)
+                                    }
+                                }
+
+                                val endDrag = { event: PointerEvent ->
+                                    event.changes.firstOrNull()?.consume()
+                                    viewModel.onDragEnd()
                                     if (isAnimationEnabled) {
                                         lineFadeOutAnimatables.values.forEach { animatable ->
-                                            // Launch using the longer-lived scope because we want
-                                            // these animations to proceed to completion even if the
-                                            // surrounding scope is canceled.
+                                            // Launch using the longer-lived scope because we
+                                            // want these animations to proceed to completion
+                                            // even if the surrounding scope is canceled.
                                             scope.launch { animatable.animateTo(1f) }
                                         }
                                     }
-                                    viewModel.onDragEnd()
-                                },
-                            ) { change, _ ->
-                                inputPosition = change.position
-                                gridCoordinates?.let { coordinates ->
-                                    val positionInGrid = change.position.minus(offset)
-                                    val gridSize = scale * coordinates.size.width
-                                    viewModel.onDrag(
-                                        xPx = positionInGrid.x,
-                                        yPx = positionInGrid.y,
-                                        containerSizePx = gridSize.toInt(),
-                                    )
+                                }
+
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    when (event.type) {
+                                        PointerEventType.Press -> startDrag(event)
+
+                                        PointerEventType.Enter -> {
+                                            if (viewModel.isTouchExplorationEnabled) {
+                                                startDrag(event)
+                                            }
+                                        }
+
+                                        PointerEventType.Move -> {
+                                            event.changes.fastForEach { change ->
+                                                change.consume()
+                                                viewModel.onDrag(
+                                                    change.position.x,
+                                                    change.position.y,
+                                                    containerSizePx =
+                                                        (scale *
+                                                                (gridCoordinates?.size?.width ?: 0))
+                                                            .toInt(),
+                                                )
+                                            }
+                                        }
+
+                                        PointerEventType.Release -> endDrag(event)
+
+                                        PointerEventType.Exit -> {
+                                            if (viewModel.isTouchExplorationEnabled) {
+                                                endDrag(event)
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
+                    }
                 }
                 .motionTestValues {
                     entryAnimationCompleted exportAs entryCompleted
@@ -344,7 +379,7 @@ fun PatternBouncer(
 
                     // Draw the line between the most recently-selected dot and the input pointer
                     // position.
-                    inputPosition?.let { lineEnd ->
+                    viewModel.inputPosition?.let { lineEnd ->
                         currentDot?.let { dot ->
                             val from = pixelOffset(dot, spacing, horizontalOffset, verticalOffset)
                             val lineLength =

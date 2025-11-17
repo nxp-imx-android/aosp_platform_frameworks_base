@@ -1390,7 +1390,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
         Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
     )
     fun testOnFreeformWindowDragEnd_toDesktopModeDisplay_updateBounds() {
@@ -1520,7 +1519,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
         Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
     )
     fun testOnFreeformWindowDragMove_toNonDesktopModeDisplay_setsNoDropIcon() {

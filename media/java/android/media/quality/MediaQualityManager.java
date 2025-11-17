@@ -24,6 +24,7 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.ColorInt;
 import android.content.Context;
 import android.media.tv.flags.Flags;
 import android.os.Bundle;
@@ -383,6 +384,43 @@ public final class MediaQualityManager {
     public boolean setDefaultPictureProfile(@Nullable String pictureProfileId) {
         try {
             return mService.setDefaultPictureProfile(pictureProfileId, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Set the color for the "color mute" feature.
+     * <p> The selected color will be displayed when the color mute feature is enabled,
+     * and in the absence of a signal for the display.
+     *
+     * @param color The ARGB color to be set.
+     *
+     * @see #setColorMuteEnabled(boolean)
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
+    public void setMutedColor(@ColorInt int color) {
+        try {
+            mService.setMutedColor(color, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Sets whether color mute is enabled.
+     *
+     * <p>This feature enables the display of a colored screen in the absence of a signal to
+     * display. The color can be configured by {@link #setMutedColor(int)}.
+     *
+     * @param enable Whether color mute is enabled.
+     */
+    @FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW_C)
+    @RequiresPermission(android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
+    public void setColorMuteEnabled(boolean enable) {
+        try {
+            mService.setColorMuteEnabled(enable, mUserHandle.getIdentifier());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

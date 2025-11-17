@@ -32,7 +32,7 @@ import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.haptics.msdl.tileHapticsViewModelFactoryProvider
+import com.android.systemui.haptics.msdl.tileHapticsViewModelFactory
 import com.android.systemui.plugins.qs.QSTile
 import com.android.systemui.qs.FakeQSTile
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.Tile
@@ -50,7 +50,7 @@ import org.junit.runner.RunWith
 class TileTest : SysuiTestCase() {
     @get:Rule val composeRule = createComposeRule()
     private val kosmos = testKosmos()
-    private val tileHapticsViewModelFactoryProvider = kosmos.tileHapticsViewModelFactoryProvider
+    private val tileHapticsViewModelFactory = kosmos.tileHapticsViewModelFactory
 
     @Composable
     private fun TestTile(tile: TileViewModel, iconOnly: Boolean) {
@@ -69,7 +69,7 @@ class TileTest : SysuiTestCase() {
                                 nextTile = null,
                                 bounceEnd = true,
                             ),
-                        tileHapticsViewModelFactoryProvider = tileHapticsViewModelFactoryProvider,
+                        tileHapticsViewModelFactory = tileHapticsViewModelFactory,
                         detailsViewModel = null,
                         interactionSourceFromParent = null,
                     )

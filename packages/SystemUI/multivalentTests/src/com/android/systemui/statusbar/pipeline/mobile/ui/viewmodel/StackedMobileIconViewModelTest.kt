@@ -59,7 +59,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
     }
 
     @Before
-    fun setUp() =
+    fun setUp(): Unit =
         kosmos.run {
             // Set prerequisites for the stacked icon
             fakeMobileIconsInteractor.isStackable.value = true

@@ -383,6 +383,10 @@ public class UserIconDrawable extends Drawable implements Drawable.Callback {
         } else if (mUserIcon != null) {
             mUserIcon.recycle();
             mUserIcon = null;
+            // Although we recycled the bitmap, the BitmapShader can still have a native shared
+            // pointer to the bitmap data. Unforunately there is no recycle method, so we just
+            // have to clear the reference and wait for GC.
+            mIconPaint.setShader(null);
         }
         return this;
     }

@@ -17,7 +17,6 @@
 package com.android.systemui.keyguard.domain.interactor.scenetransition
 
 import com.android.compose.animation.scene.ObservableTransitionState
-import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -73,23 +72,18 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     private val sceneInteractor: SceneInteractor,
     private val repository: LockscreenSceneTransitionRepository,
-) : CoreStartable, SceneInteractor.OnSceneAboutToChangeListener {
+) : CoreStartable {
 
     private var currentTransitionId: UUID? = null
     private var progressJob: Job? = null
     private var transitionCurrentSceneJob: Job? = null
 
     override fun start() {
-        sceneInteractor.registerSceneStateProcessor(this)
         listenForSceneTransitionProgress()
     }
 
-    override fun onSceneAboutToChange(toScene: SceneKey, sceneState: Any?) {
-        if (toScene != Scenes.Lockscreen || sceneState == null) return
-        if (sceneState !is KeyguardState) {
-            throw IllegalArgumentException("Lockscreen sceneState needs to be a KeyguardState.")
-        }
-        repository.nextLockscreenTargetState.value = sceneState
+    fun setNextLockscreenTargetState(keyguardState: KeyguardState?) {
+        repository.nextLockscreenTargetState.value = keyguardState
     }
 
     private fun listenForSceneTransitionProgress() {

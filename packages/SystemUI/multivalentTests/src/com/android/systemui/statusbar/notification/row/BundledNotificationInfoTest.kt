@@ -46,7 +46,6 @@ import com.android.systemui.Dependency
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
@@ -94,7 +93,6 @@ class BundledNotificationInfoTest : SysuiTestCase() {
     private val mockINotificationManager = mock<INotificationManager>()
     private val channelEditorDialogController = mock<ChannelEditorDialogController>()
     private val packageDemotionInteractor = mock<PackageDemotionInteractor>()
-    private val assistantFeedbackController = mock<AssistantFeedbackController>()
     private val onSettingsClick = mock<NotificationInfo.OnSettingsClickListener>()
 
     @Before
@@ -174,9 +172,6 @@ class BundledNotificationInfoTest : SysuiTestCase() {
                 .updateRanking { it.setChannel(notificationChannel) }
                 .build()
         entryAdapter = kosmos.entryAdapterFactory.create(entry)
-        whenever(assistantFeedbackController.isFeedbackEnabled).thenReturn(false)
-        whenever(assistantFeedbackController.getInlineDescriptionResource(any()))
-            .thenReturn(R.string.notification_channel_summary_automatic)
 
         whenever(
                 mockINotificationManager.getNotificationChannel(
@@ -290,7 +285,6 @@ class BundledNotificationInfoTest : SysuiTestCase() {
         isNonblockable: Boolean = false,
         isDismissable: Boolean = true,
         wasShownHighPriority: Boolean = true,
-        assistantFeedbackController: AssistantFeedbackController = this.assistantFeedbackController,
         metricsLogger: MetricsLogger = kosmos.metricsLogger,
         onCloseClick: View.OnClickListener? = mock(),
     ) {
@@ -315,7 +309,6 @@ class BundledNotificationInfoTest : SysuiTestCase() {
             isNonblockable,
             isDismissable,
             wasShownHighPriority,
-            assistantFeedbackController,
             metricsLogger,
             onCloseClick,
         )

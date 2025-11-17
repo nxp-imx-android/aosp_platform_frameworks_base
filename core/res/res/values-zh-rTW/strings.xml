@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"助聽器"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"無障礙功能使用情形"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"螢幕"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"家長監護"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」正在耗用電量"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> 個應用程式正在耗用電量"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"輕觸即可查看電池和數據用量詳情"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"輸入 PIN 即可解鎖"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN 碼不正確。"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"如要解鎖，請按 Menu 鍵，然後按 0。"</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"緊急電話號碼"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"沒有服務"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"螢幕已鎖定。"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"按下 [Menu] 解鎖或撥打緊急電話。"</string>
@@ -1830,7 +1830,7 @@
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"色彩反轉"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"色彩校正"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"單手模式"</string>
-    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"超暗"</string>
+    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"超暗模式"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助聽器"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"自動點選 (停留時間)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"滑鼠按鍵"</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"系統資源警示"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"使用過多資源"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"應用程式「<xliff:g id="APP_NAME">%1$s</xliff:g>」使用的資源過多。"</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"家長已更新應用程式權限"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"目前已移除「<xliff:g id="APP_NAME">%1$s</xliff:g>」"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」現在可以使用"</string>
 </resources>

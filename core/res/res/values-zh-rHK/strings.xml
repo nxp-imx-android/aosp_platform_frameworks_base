@@ -326,8 +326,7 @@
     <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"助聽器"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"無障礙功能使用情況"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"顯示屏"</string>
-    <!-- no translation found for notification_channel_parental_controls (2963963315750128538) -->
-    <skip />
+    <string name="notification_channel_parental_controls" msgid="2963963315750128538">"家長監控設定"</string>
     <string name="foreground_service_app_in_background" msgid="1439289699671273555">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」正在使用電量"</string>
     <string name="foreground_service_apps_in_background" msgid="7340037176412387863">"<xliff:g id="NUMBER">%1$d</xliff:g> 個應用程式正在使用電量"</string>
     <string name="foreground_service_tap_for_details" msgid="9078123626015586751">"輕按即可查看電池和數據用量詳情"</string>
@@ -1047,6 +1046,7 @@
     <string name="keyguard_password_enter_pin_password_code" msgid="7792964196473964340">"輸入 PIN 碼即可解鎖"</string>
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"PIN 碼不正確。"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"如要解鎖，請按選單鍵，然後按 0。"</string>
+    <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"緊急電話號碼"</string>
     <string name="lockscreen_carrier_default" msgid="6192313772955399160">"沒有服務"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"螢幕已鎖定。"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"按選單鍵解鎖或撥打緊急電話。"</string>
@@ -2277,7 +2277,7 @@
     <string name="bluetooth_airplane_mode_toast" msgid="2066399056595768554">"啟用飛行模式期間，藍牙會保持開啟"</string>
     <string name="car_loading_profile" msgid="8219978381196748070">"正在載入"</string>
     <string name="file_count" msgid="3220018595056126969">"{count,plural, =1{「{file_name}」和另外 # 個檔案}other{「{file_name}」和另外 # 個檔案}}"</string>
-    <string name="chooser_no_direct_share_targets" msgid="1511722103987329028">"沒有推薦的分享對象"</string>
+    <string name="chooser_no_direct_share_targets" msgid="1511722103987329028">"沒有建議分享對象"</string>
     <string name="chooser_all_apps_button_label" msgid="3230427756238666328">"應用程式清單"</string>
     <string name="usb_device_resolve_prompt_warn" msgid="325871329788064199">"此應用程式尚未獲授予錄音權限，但可透過此 USB 裝置記錄音訊。"</string>
     <string name="accessibility_system_action_home_label" msgid="3234748160850301870">"主頁"</string>
@@ -2611,10 +2611,7 @@
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"系統資源警示"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"過量使用資源"</string>
     <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"應用程式「<xliff:g id="APP_NAME">%1$s</xliff:g>」使用太多資源。"</string>
-    <!-- no translation found for supervision_blocked_app_title (5546803865875383588) -->
-    <skip />
-    <!-- no translation found for supervision_blocked_app_content (4125452996088641559) -->
-    <skip />
-    <!-- no translation found for supervision_unblocked_app_content (8282985265957852278) -->
-    <skip />
+    <string name="supervision_blocked_app_title" msgid="5546803865875383588">"你的家長已更新設定"</string>
+    <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> 目前已被移除"</string>
+    <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"現可使用 <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
 </resources>

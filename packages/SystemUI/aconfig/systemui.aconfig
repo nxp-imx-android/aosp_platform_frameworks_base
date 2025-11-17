@@ -49,15 +49,6 @@ flag {
   bug: "388472403"
 }
 
-flag {
-   name: "notification_row_is_removed_fix"
-   namespace: "systemui"
-   description: "Fix incorrect isRemoved value in ExpandableNotificationRow"
-   bug: "417457086"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
 
 flag {
    name: "notification_children_container_min_height"
@@ -243,6 +234,17 @@ flag {
 }
 
 flag {
+    name: "brightness_icons_refresh"
+    namespace: "systemui"
+    description: "Replaces the brightness slider icon for the rounded ones"
+    bug: "456222699"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "global_actions_emphasized_font"
    namespace: "systemui"
    description: "Use emphasized font for global actions."
@@ -382,14 +384,6 @@ flag {
     description: "Forward touch/click events directly from compose instead of relying on the "
         " PhoneStatusBarView. "
     bug: "450582765"
-}
-
-flag {
-    name: "icon_refresh_2025"
-    namespace: "systemui"
-    description: "Build time flag for 2025 icon refresh"
-    bug: "391605373"
-    is_fixed_read_only: true
 }
 
 flag {
@@ -550,6 +544,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_ime_chip"
+    namespace: "systemui"
+    description: "Feature flag for the ime chip in desktop status bar"
+    bug: "443854916"
+}
+
+flag {
     name: "status_bar_chronometer_fixes"
     namespace: "systemui"
     description: "Fixes ticking behavior for the chronometer used in status bar chips"
@@ -608,30 +609,10 @@ flag {
 }
 
 flag {
-    name: "restore_show_taps_setting"
-    namespace: "systemui"
-    description: "Restore show taps setting even if screen recording session is interrupted"
-    bug: "431753924"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "clipboard_overlay_multiuser"
     namespace: "systemui"
     description: "Fix clipboard overlay for secondary users"
     bug: "217922018"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "screenshot_force_shutter_sound"
-    namespace: "systemui"
-    description: "Force screenshot sound when camera sound is forced and camera is open"
-    bug: "411503333"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -807,16 +788,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-  name: "screenshare_notification_hiding_bug_fix"
-  namespace: "systemui"
-  description: "Various bug fixes for notification redaction while screensharing"
-  bug: "312784809"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -1484,12 +1455,7 @@ flag {
     }
 }
 
-flag {
-  name: "permission_helper_ui_rich_ongoing"
-  namespace: "systemui"
-  description: "[RONs] Guards inline permission helper for demoting RONs [Guts/card version]"
-  bug: "379186372"
-}
+
 
 flag {
   name: "permission_helper_inline_ui_rich_ongoing"
@@ -1644,16 +1610,6 @@ flag {
     namespace: "systemui"
     description: "Enables the UI for the suggested devices feature."
     bug: "392942321"
-}
-
-flag {
-    name: "enable_constraint_layout_lockscreen_on_external_display"
-    namespace: "systemui"
-    description: "Uses a constraint layout to have clocks on the extenral display lockscreen"
-    bug: "415295016"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1858,16 +1814,6 @@ flag {
     bug: "428215526"
     metadata {
       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "dialog_anim_end_state_update"
-    namespace: "systemui"
-    description: "Continuously updating the endState of DialogTransitionAnimation to keep it in sync with tileShape if it gets changed during animation"
-    bug: "429189355"
-    metadata {
-        purpose: PURPOSE_BUGFIX
     }
 }
 
@@ -2085,4 +2031,11 @@ flag {
     namespace: "ailabs"
     description: "Enables showing Cue Bar while IME is visible"
     bug: "451865977"
+}
+
+flag {
+  name: "use_systemui_views_for_system_toolbar"
+  namespace: "permissions"
+  description: "Use the views moved into system ui from the framework for the system selection toolbar."
+  bug: "450977221"
 }

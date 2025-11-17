@@ -98,6 +98,7 @@ aconfig_declarations_group {
         "backstage_power_flags_lib",
         "backup_flags_lib",
         "camera_platform_flags_core_java_lib",
+        "com.android.bettertogether.d2d_connectivity_aconfig_exported",
         "com.android.eyedropper.flags-aconfig-java",
         "com.android.hardware.input-aconfig-java",
         "com.android.input.flags-aconfig-java",
@@ -111,6 +112,7 @@ aconfig_declarations_group {
         "com.android.media.flags.editing-aconfig-java",
         "com.android.media.flags.mediasession-aconfig-java",
         "com.android.media.flags.projection-aconfig-java",
+        "com.android.nfc.module.flags-aconfig-exported-java",
         "com.android.net.http.flags-aconfig-exported-java",
         "com.android.net.thread.platform.flags-aconfig-java",
         "com.android.permission.flags-aconfig-java-export",
@@ -730,6 +732,7 @@ java_aconfig_library {
 aconfig_declarations {
     name: "android.view.flags-aconfig",
     package: "android.view.flags",
+    exportable: true,
     container: "system",
     srcs: ["core/java/android/view/flags/*.aconfig"],
 }
@@ -737,6 +740,20 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.view.flags-aconfig-java",
     aconfig_declarations: "android.view.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "android.view.flags-aconfig-java-export",
+    aconfig_declarations: "android.view.flags-aconfig",
+    mode: "exported",
+    min_sdk_version: "31",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.wifi",
+        "com.android.extservices",
+        "com.android.telephonycore",
+    ],
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 

@@ -4414,6 +4414,30 @@ public final class CaptureRequest extends CameraMetadata<CaptureRequest.Key<?>>
             new Key<Float>("android.reprocess.effectiveExposureFactor", float.class);
 
     /**
+     * <p>Controls whether the camera device could also return additional
+     * physical cameras' metadata in the results.</p>
+     * <p>This control must only be turned on when device is using logical camera,
+     * which are devices that have
+     * {@link android.hardware.camera2.CameraMetadata#REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA }
+     * capability and the key is supported in the device's
+     * {@link android.hardware.camera2.CameraCharacteristics#getAvailableCaptureRequestKeys }.
+     * Once this key is set to ON, if the camera device has
+     * multiple physical cameras active, the TotalCaptureResult will contain
+     * additional physical camera metadata in the result. One of such
+     * scenario is at the time of lens switch during zoom, where in addition
+     * to the active physical camera, a secondary physical camera runs as a
+     * "follower" and produces an additional physical camera CaptureResult.
+     * The application can call {@link android.hardware.camera2.TotalCaptureResult#getPhysicalCameraTotalResults }
+     * to get the additional results.</p>
+     * <p><b>Optional</b> - The value for this key may be {@code null} on some devices.</p>
+     */
+    @PublicKey
+    @NonNull
+    @FlaggedApi(Flags.FLAG_LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS)
+    public static final Key<Boolean> LOGICAL_MULTI_CAMERA_ADDITIONAL_RESULTS =
+            new Key<Boolean>("android.logicalMultiCamera.additionalResults", boolean.class);
+
+    /**
      * <p>Mode of operation for the lens distortion correction block.</p>
      * <p>The lens distortion correction block attempts to improve image quality by fixing
      * radial, tangential, or other geometric aberrations in the camera device's optics.  If

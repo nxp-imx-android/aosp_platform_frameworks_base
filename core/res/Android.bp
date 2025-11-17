@@ -204,6 +204,8 @@ android_app {
         "com.android.media.flags.mediasession-aconfig",
         "npumanager_aconfig_flags",
         "telecom_flags",
+        "android.multiuser.flags-aconfig",
+        "com.android.nfc.module.flags-aconfig",
     ],
 }
 
@@ -260,4 +262,17 @@ filegroup {
         "//frameworks/base",
         "//frameworks/base/api",
     ],
+}
+
+// For packaging part of sdk-repo-platforms*.zip.
+genrule {
+    name: "sdk_platforms_data_res",
+    tools: ["soong_zip"],
+    srcs: [
+        "res/**/*",
+    ],
+    out: ["sdk_platforms_data_res.zip"],
+    cmd: "mkdir -p $(genDir)/out/data/ && " +
+        "cp -r frameworks/base/core/res/res/ $(genDir)/out/data/ && " +
+        "$(location soong_zip) -o $(out) -C $(genDir)/out -D $(genDir)/out",
 }

@@ -162,7 +162,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -1875,6 +1874,27 @@ public class ActivityManagerServiceTest {
                 false);
 
         assertThat(appRec.isInFullBackup()).isFalse();
+    }
+
+    @Test
+    public void testCallsForegroundServiceOptionsWithDefault_throwsException()
+            throws Exception {
+        final ForegroundServiceDelegationOptions.Builder optionsBuilder =
+                new ForegroundServiceDelegationOptions.Builder()
+                .setClientPid(1)
+                .setClientUid(2)
+                .setClientPackageName("package_name")
+                .setSticky(false)
+                .setClientInstanceName("dummy")
+                .setForegroundServiceTypes(ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+                .setDelegationService(
+                        ForegroundServiceDelegationOptions.DELEGATION_SERVICE_DEFAULT);
+        Exception e = assertThrows(
+            IllegalArgumentException.class, () -> optionsBuilder.build());
+
+        assertThat(e).hasMessageThat().isEqualTo(
+            "Default is not allowed to be passed in. "
+            + "Use a more specific Delegation Service Identifier!");
     }
 
     private static class TestHandler extends Handler {

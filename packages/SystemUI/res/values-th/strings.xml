@@ -81,6 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"กำลังบันทึกภาพหน้าจอลงในโปรไฟล์ส่วนตัว"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"บันทึกภาพหน้าจอแล้ว"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"บันทึกภาพหน้าจอไม่ได้"</string>
+    <string name="screenshot_save_to" msgid="3294574417295882864">"บันทึกไปยัง"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"เลือกโฟลเดอร์"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"จอแสดงผลภายนอก"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ต้องปลดล็อกอุปกรณ์ก่อนจึงจะบันทึกภาพหน้าจอได้"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ลองบันทึกภาพหน้าจออีกครั้ง"</string>
@@ -171,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"แชร์เสียง"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"แชร์หน้าต่างแอป"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"แชร์แท็บ"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"แชร์ทั้งหน้าจอ"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"เมื่อกำลังแชร์แอป [APP NAME] จะมองเห็นทุกสิ่งที่แสดงหรือเล่นอยู่ในแอปดังกล่าว ดังนั้นโปรดระวังสิ่งต่างๆ อย่างเช่นรหัสผ่าน รายละเอียดการชำระเงิน ข้อความ รูปภาพ รวมถึงเสียงและวิดีโอ"</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"เมื่อกำลังแชร์ทั้งหน้าจอ [APP NAME] จะมองเห็นทุกสิ่งที่อยู่บนหน้าจอ ดังนั้นโปรดระวังสิ่งต่างๆ อย่างเช่นรหัสผ่าน รายละเอียดการชำระเงิน ข้อความ รูปภาพ รวมถึงเสียงและวิดีโอ"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ถ่ายภาพหน้าจอของหน้าต่าง"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"บันทึกหน้าต่าง"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"ถ่ายภาพหน้าจอของพื้นที่ที่เลือก"</string>
@@ -709,6 +708,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"ล้างทั้งหมด"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"จัดการ"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"ประวัติ"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"การตั้งค่าการแจ้งเตือน"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"ประวัติการแจ้งเตือน"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"ใหม่"</string>
@@ -727,7 +728,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"ระบบจะลดระดับเสียงและจำนวนการแจ้งเตือนของอุปกรณ์โดยอัตโนมัติสูงสุด 2 นาทีเมื่อคุณได้รับการแจ้งเตือนพร้อมกันมากเกินไป"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ปิด"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ปลดล็อกเพื่อดูการแจ้งเตือนเก่า"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"อุปกรณ์นี้จัดการโดยผู้ปกครอง"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"การตั้งค่าบางอย่างจัดการโดยผู้ปกครอง"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"อุปกรณ์นี้จัดการโดยผู้ปกครอง"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"การตั้งค่าอุปกรณ์บางอย่างได้รับการป้องกันด้วย PIN"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"องค์กรของคุณเป็นเจ้าของอุปกรณ์นี้และอาจตรวจสอบการจราจรของข้อมูลในเครือข่าย"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> เป็นเจ้าของอุปกรณ์นี้และอาจตรวจสอบการจราจรของข้อมูลในเครือข่าย"</string>
@@ -903,6 +905,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"ยินดีด้วย! เพิ่มตัวรับสัญญาณ UI ระบบไปยังการตั้งค่าแล้ว"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"นำออกจากการตั้งค่า"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"นำตัวรับสัญญาณ UI ระบบออกจากการตั้งค่าและหยุดใช้ฟีเจอร์ทั้งหมดของตัวรับสัญญาณใช่ไหม"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"เปิดบลูทูธไหม"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"หากต้องการเชื่อมต่อแป้นพิมพ์กับแท็บเล็ต คุณต้องเปิดบลูทูธก่อน"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"เปิด"</string>
@@ -950,8 +954,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"แก้ไขการแจ้งเตือนสายเรียกเข้าไม่ได้"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"การแจ้งเตือนกลุ่มนี้กำหนดค่าที่นี่ไม่ได้"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"การแจ้งเตือนที่ผ่านพร็อกซี"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"สรุปโดย <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"การแจ้งเตือนทั้งหมดของ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="see_more_title" msgid="7409317011708185729">"ดูเพิ่ม"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"ระบบ&lt;b&gt;เลื่อนระดับการแจ้งเตือนนี้เป็นค่าเริ่มต้น&lt;/b&gt;โดยอัตโนมัติ"</string>
@@ -1410,8 +1413,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"แนะนำ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"อินพุต"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"เอาต์พุต"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"หยุดเซสชันที่แชร์อยู่เพื่อย้ายสื่อไปยังอุปกรณ์อื่น"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"หยุด"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"หยุดแชร์"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"กำลังแชร์เสียง"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"แชร์เสียง"</string>
@@ -1743,4 +1744,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ไปที่หน้าถัดไป"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ป้อนข้อความอัตโนมัติ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ขยาย"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"แชร์ตำแหน่งที่แน่นอน"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"ใช้ตำแหน่งที่แน่นอน"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"ใกล้ตำแหน่งที่แน่นอน"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"ตำแหน่งที่แน่นอน"</string>
 </resources>

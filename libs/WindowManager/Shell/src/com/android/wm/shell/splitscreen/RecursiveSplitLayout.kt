@@ -20,9 +20,9 @@ import android.graphics.Point
 import android.graphics.Rect
 
 /**
- * A stateful manager for a recursive split-screen layout. It holds the current
- * layout tree, handles user interactions (divider drags), and orchestrates calls
- * to its stateless helpers (LayoutPolicy, DividerSnapAlgorithm, LayoutEngine).
+ * A stateful manager for a recursive split-screen layout. It holds the current layout tree, handles
+ * user interactions (divider drags), and orchestrates calls to its stateless helpers (LayoutPolicy,
+ * DividerSnapAlgorithm, LayoutEngine).
  */
 class RecursiveSplitLayout {
 
@@ -38,8 +38,9 @@ class RecursiveSplitLayout {
     }
 
     /**
-     * Calculates the bounds for all elements in the current layout tree by delegating
-     * to the LayoutEngine.
+     * Calculates the bounds for all elements in the current layout tree by delegating to the
+     * LayoutEngine.
+     *
      * @param rootBounds The total available space for the layout.
      * @return A CalculatedBounds containing the calculated bounds.
      */
@@ -49,35 +50,31 @@ class RecursiveSplitLayout {
     }
 
     /**
-     * Called by the controller when a divider drag is finished.
-     * This will calculate the new layout and notify the listener.
+     * Called by the controller when a divider drag is finished. This will calculate the new layout
+     * and notify the listener.
      */
-    fun onDividerReleased(
-        nodeBefore: LayoutNode,
-        nodeAfter: LayoutNode,
-        releasePosition: Point
-    ) {
+    fun onDividerReleased(nodeBefore: LayoutNode, nodeAfter: LayoutNode, releasePosition: Point) {
         val parentNode = nodeBefore.parent ?: return
         val combinedBounds = Rect(nodeBefore.bounds).apply { union(nodeAfter.bounds) }
         val orientation = parentNode.orientation
-        val relevantReleasePos = if (orientation == BranchNode.ORIENTATION_HORIZONTAL) releasePosition.x else releasePosition.y
+        val relevantReleasePos =
+            if (orientation == BranchNode.ORIENTATION_HORIZONTAL) releasePosition.x
+            else releasePosition.y
 
         val availablePoints = layoutPolicy.getAvailableSnapPoints(nodeBefore, nodeAfter)
-        val finalTarget = snapAlgorithm.findClosestSnapTarget(
-            relevantReleasePos,
-            availablePoints,
-            combinedBounds,
-            orientation
-        )
+        val finalTarget =
+            snapAlgorithm.findClosestSnapTarget(
+                relevantReleasePos,
+                availablePoints,
+                combinedBounds,
+                orientation,
+            )
 
         val totalWeight = nodeBefore.weight + nodeAfter.weight
         val newWeightBefore = totalWeight * finalTarget.proportion
         val newWeightAfter = totalWeight - newWeightBefore
 
-        val weightChanges = mapOf(
-            nodeBefore to newWeightBefore,
-            nodeAfter to newWeightAfter
-        )
+        val weightChanges = mapOf(nodeBefore to newWeightBefore, nodeAfter to newWeightAfter)
 
         val newTree = cloneTreeWithChanges(currentTree!!, weightChanges)
         setLayout(newTree)
@@ -90,7 +87,7 @@ class RecursiveSplitLayout {
 
     private fun cloneTreeWithChanges(
         original: LayoutNode,
-        changes: Map<LayoutNode, Float>
+        changes: Map<LayoutNode, Float>,
     ): LayoutNode {
         val newWeight = changes[original] ?: original.weight
         return when (original) {
@@ -98,15 +95,14 @@ class RecursiveSplitLayout {
             is BranchNode -> {
                 val newChildren = original.children.map { cloneTreeWithChanges(it, changes) }
                 BranchNode(
-                    original.orientation,
-                    newChildren,
-                    newWeight,
-                    original.dividerSize,
-                    original.isOffscreen,
-                    original.mainChildIndex
-                ).also { newParent ->
-                    newParent.children.forEach { it.parent = newParent }
-                }
+                        original.orientation,
+                        newChildren,
+                        newWeight,
+                        original.dividerSize,
+                        original.isOffscreen,
+                        original.mainChildIndex,
+                    )
+                    .also { newParent -> newParent.children.forEach { it.parent = newParent } }
             }
             else -> throw IllegalStateException("Unknown LayoutNode type")
         }

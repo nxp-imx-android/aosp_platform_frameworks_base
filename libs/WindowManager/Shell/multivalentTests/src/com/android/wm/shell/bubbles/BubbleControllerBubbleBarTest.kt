@@ -65,6 +65,7 @@ import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
+import java.util.Optional
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -75,7 +76,6 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.Optional
 
 /** Tests for [BubbleController] when using bubble bar */
 @SmallTest
@@ -146,7 +146,7 @@ class BubbleControllerBubbleBarTest {
                 FakeBubbleAppInfoProvider(),
                 mainExecutor,
                 bgExecutor,
-                FakeBubbleUserResolver()
+                FakeBubbleUserResolver(),
             )
 
         bubbleController =
@@ -288,7 +288,7 @@ class BubbleControllerBubbleBarTest {
                 BubbleLogger.Event.BUBBLE_BAR_BUBBLE_DISMISSED_DRAG_BUBBLE.id,
                 BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED.id,
                 BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_FROM.id,
-                BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_TO.id
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_TO.id,
             )
             .inOrder()
     }
@@ -369,20 +369,18 @@ class BubbleControllerBubbleBarTest {
         assertThat(uiEventLoggerFake.logs.map { it.eventId })
             .containsExactly(
                 BubbleLogger.Event.BUBBLE_BAR_EXPANDED.id,
-                BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED.id
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED.id,
             )
             .inOrder()
         uiEventLoggerFake.logs.clear()
 
-        getInstrumentation().runOnMainSync {
-            bubbleController.collapseStack()
-        }
+        getInstrumentation().runOnMainSync { bubbleController.collapseStack() }
 
         assertThat(uiEventLoggerFake.numLogs()).isEqualTo(2)
         assertThat(uiEventLoggerFake.logs.map { it.eventId })
             .containsExactly(
                 BubbleLogger.Event.BUBBLE_BAR_COLLAPSED.id,
-                BubbleLogger.Event.BUBBLE_BAR_SESSION_ENDED.id
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_ENDED.id,
             )
             .inOrder()
     }
@@ -397,7 +395,7 @@ class BubbleControllerBubbleBarTest {
             .containsExactly(
                 BubbleLogger.Event.BUBBLE_BAR_BUBBLE_POSTED.id,
                 BubbleLogger.Event.BUBBLE_BAR_EXPANDED.id,
-                BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED.id
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_STARTED.id,
             )
             .inOrder()
     }
@@ -418,7 +416,7 @@ class BubbleControllerBubbleBarTest {
             .containsExactly(
                 BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED.id,
                 BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_FROM.id,
-                BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_TO.id
+                BubbleLogger.Event.BUBBLE_BAR_SESSION_SWITCHED_TO.id,
             )
             .inOrder()
     }
@@ -469,17 +467,18 @@ class BubbleControllerBubbleBarTest {
 
         bubbleController.promoteBubbleFromOverflow(overflowBubble)
 
-        verify(bubbleTransitions).startLaunchIntoOrConvertToBubble(
-            any(),
-            any(),
-            any(),
-            any(),
-            eq(null),
-            any(),
-            any(),
-            eq(true),
-            eq(null)
-        )
+        verify(bubbleTransitions)
+            .startLaunchIntoOrConvertToBubble(
+                any(),
+                any(),
+                any(),
+                any(),
+                eq(null),
+                any(),
+                any(),
+                eq(true),
+                eq(null),
+            )
     }
 
     private fun expandAndSelectBubble(key: String) {
@@ -492,7 +491,8 @@ class BubbleControllerBubbleBarTest {
         val bubble = FakeBubbleFactory.createChatBubble(context, key)
         bubble.setInflateSynchronously(true)
         bubble.setShouldAutoExpand(autoExpand)
-        bubbleController.inflateAndAdd(bubble,
+        bubbleController.inflateAndAdd(
+            bubble,
             /* suppressFlyout= */ true,
             /* showInShade= */ true,
             /* bubbleBarLocation = */ null,
@@ -501,12 +501,12 @@ class BubbleControllerBubbleBarTest {
     }
 
     private fun addAppBubble(): Bubble {
-        val taskInfo = ActivityManager.RunningTaskInfo().apply {
-            taskId = 123
-            baseActivity = ComponentName("com.example.app", "com.example.app.MainActivity")
-        }
-        val bubble =
-            Bubble.createTaskBubble(taskInfo, UserHandle.of(0), null)
+        val taskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                taskId = 123
+                baseActivity = ComponentName("com.example.app", "com.example.app.MainActivity")
+            }
+        val bubble = Bubble.createTaskBubble(taskInfo, UserHandle.of(0), null)
         bubble.setInflateSynchronously(true)
         bubbleController.inflateAndAdd(
             bubble,

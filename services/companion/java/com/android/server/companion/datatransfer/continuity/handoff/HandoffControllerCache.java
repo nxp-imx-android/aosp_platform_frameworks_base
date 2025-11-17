@@ -18,39 +18,38 @@ package com.android.server.companion.datatransfer.continuity.handoff;
 
 import android.annotation.NonNull;
 import android.content.Context;
-
-import com.android.server.companion.datatransfer.continuity.FeatureController;
 import com.android.server.companion.datatransfer.continuity.MultiUserResourceCache;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.tasks.TaskSyncController;
-
 import java.util.Objects;
 
 public class HandoffControllerCache extends MultiUserResourceCache<HandoffController> {
 
     private final Context mContext;
-    private final TaskContinuityMessenger mTaskContinuityMessenger;
+    private final MultiUserResourceCache<TaskContinuityMessenger> mTaskContinuityMessengerCache;
     private final MultiUserResourceCache<TaskSyncController> mTaskSyncControllerCache;
 
     public HandoffControllerCache(
             @NonNull Context context,
-            @NonNull TaskContinuityMessenger taskContinuityMessenger,
+            @NonNull MultiUserResourceCache<TaskContinuityMessenger> taskContinuityMessengerCache,
             @NonNull MultiUserResourceCache<TaskSyncController> taskSyncControllerCache) {
         mContext = Objects.requireNonNull(context);
-        mTaskContinuityMessenger = Objects.requireNonNull(taskContinuityMessenger);
+        mTaskContinuityMessengerCache = Objects.requireNonNull(taskContinuityMessengerCache);
         mTaskSyncControllerCache = Objects.requireNonNull(taskSyncControllerCache);
     }
 
     @Override
     protected HandoffController createResourceForUser(int userId) {
+        TaskContinuityMessenger taskContinuityMessenger =
+                mTaskContinuityMessengerCache.getOrCreateResource(userId);
         return new HandoffController(
                 userId,
-                mTaskContinuityMessenger,
+                taskContinuityMessenger,
                 mTaskSyncControllerCache.getOrCreateResource(userId),
-                new InboundHandoffRequestHandler(mTaskContinuityMessenger),
+                new InboundHandoffRequestHandler(taskContinuityMessenger),
                 new OutboundHandoffRequestHandler(
                         mContext,
-                        mTaskContinuityMessenger,
+                        taskContinuityMessenger,
                         mTaskSyncControllerCache.getOrCreateResource(userId)));
     }
 }

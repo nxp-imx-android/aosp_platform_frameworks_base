@@ -81,6 +81,8 @@
     <string name="screenshot_saving_private_profile" msgid="8934706048497093297">"スクリーンショットをプライベートに保存しています"</string>
     <string name="screenshot_saved_title" msgid="8893267638659083153">"スクリーンショットを保存しました"</string>
     <string name="screenshot_failed_title" msgid="3259148215671936891">"スクリーンショット保存エラー"</string>
+    <string name="screenshot_save_to" msgid="3294574417295882864">"保存先"</string>
+    <string name="screenshot_select_folder" msgid="4770537414396025502">"フォルダを選択する"</string>
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"外側ディスプレイ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"スクリーンショットを保存するには、デバイスのロックを解除する必要があります"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"スクリーンショットを撮り直してください"</string>
@@ -171,12 +173,9 @@
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"音声を共有"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"アプリ ウィンドウを共有"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"タブを共有する"</string>
-    <!-- no translation found for screen_share_entire_screen_sharing_title (9093580141248337998) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_app_sharing (4191319837838590771) -->
-    <skip />
-    <!-- no translation found for screen_share_disclaimer_full_screen_sharing (6445373139864031364) -->
-    <skip />
+    <string name="screen_share_entire_screen_sharing_title" msgid="9093580141248337998">"画面全体を共有"</string>
+    <string name="screen_share_disclaimer_app_sharing" msgid="4191319837838590771">"アプリを共有すると、そのアプリで表示または再生される内容が [アプリ名] にすべて公開されます。パスワード、お支払い情報、メッセージ、写真、音声、動画などの情報が映らないようご注意ください。"</string>
+    <string name="screen_share_disclaimer_full_screen_sharing" msgid="6445373139864031364">"画面全体を共有すると、画面に表示される内容が [アプリ名] にすべて公開されます。パスワード、お支払い情報、メッセージ、写真、音声、動画などの情報が映らないようご注意ください。"</string>
     <string name="screen_capture_toolbar_app_window_button_screenshot_a11y" msgid="1357560392667941303">"ウィンドウのスクリーンショットを撮影"</string>
     <string name="screen_capture_toolbar_app_window_button_record_a11y" msgid="8984966592912823394">"ウィンドウを録画"</string>
     <string name="screen_capture_toolbar_region_button_screenshot_a11y" msgid="2102262602357521192">"選択した領域のスクリーンショットを撮影"</string>
@@ -711,6 +710,8 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"すべて消去"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"管理"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"履歴"</string>
+    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
+    <skip />
     <string name="notification_settings_button_description" msgid="2441994740884163889">"通知設定"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"通知履歴"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"新着"</string>
@@ -729,7 +730,8 @@
     <string name="adaptive_notification_edu_hun_text" msgid="7743367744129536610">"一度に多くの通知が届いた場合に、最長 2 分間自動的にデバイスの音量が小さくなりアラートも減ります。"</string>
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"OFF にする"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ロック解除して以前の通知を表示"</string>
-    <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"このデバイスは保護者によって管理されています"</string>
+    <string name="quick_settings_disclosure_parental_controls" msgid="5560100935261229784">"一部の設定は保護者によって管理されています"</string>
+    <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"このデバイスは保護者によって管理されています"</string>
     <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"デバイスの設定の一部は PIN で保護されています。"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"これは組織が所有するデバイスで、ネットワーク トラフィックが監視されることもあります"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"これは <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> が所有するデバイスで、ネットワーク トラフィックが監視されることもあります"</string>
@@ -905,6 +907,8 @@
     <string name="tuner_toast" msgid="3812684836514766951">"システムUI調整ツールを設定に追加しました"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"設定から削除"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"設定からシステムUI調整ツールを削除して、全機能の使用を停止しますか？"</string>
+    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
+    <skip />
     <string name="enable_bluetooth_title" msgid="866883307336662596">"Bluetoothを ON にしますか？"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"タブレットでキーボードに接続するには、最初にBluetoothをONにする必要があります。"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ONにする"</string>
@@ -952,8 +956,7 @@
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"着信通知は変更できません。"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"このグループの通知はここでは設定できません"</string>
     <string name="notification_delegate_header" msgid="1264510071031479920">"代理通知"</string>
-    <!-- no translation found for notification_summarization_header (511445254923268688) -->
-    <skip />
+    <string name="notification_summarization_header" msgid="511445254923268688">"<xliff:g id="APP_NAME">%1$s</xliff:g> による要約"</string>
     <string name="notification_channel_dialog_title" msgid="6856514143093200019">"<xliff:g id="APP_NAME">%1$s</xliff:g> のすべての通知"</string>
     <string name="see_more_title" msgid="7409317011708185729">"詳細"</string>
     <string name="feedback_alerted" msgid="5192459808484271208">"この通知は、システムによって自動的に&lt;b&gt;ランクがデフォルトに上がり&lt;/b&gt;ました。"</string>
@@ -1412,8 +1415,6 @@
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"候補"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"入力"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"出力"</string>
-    <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"メディアを他のデバイスに移動する共有中のセッションを停止します。"</string>
-    <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"停止"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"共有を停止"</string>
     <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"音声を共有中"</string>
     <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"音声を共有"</string>
@@ -1745,4 +1746,8 @@
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"次のページに移動"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"自動入力"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"開く"</string>
+    <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"正確な位置情報を共有"</string>
+    <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"正確な位置情報を使用"</string>
+    <string name="location_button_text_near_precise_location" msgid="3607275724182981412">"おおよその位置情報"</string>
+    <string name="location_button_text_precise_location" msgid="4441259889842542799">"正確な位置情報"</string>
 </resources>

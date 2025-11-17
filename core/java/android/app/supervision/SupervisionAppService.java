@@ -17,6 +17,7 @@
 package android.app.supervision;
 
 import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
@@ -101,8 +102,11 @@ public class SupervisionAppService extends Service {
     /**
      * Called when a policy is changed.
      *
+     * @param policy the {@link Policy} that was changed
+     * @see Policy
      * @hide
      */
+    @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
-    public void onPolicyChanged(Policy policy) {}
+    public void onPolicyChanged(@NonNull Policy policy) {}
 }

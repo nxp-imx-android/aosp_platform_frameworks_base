@@ -24,9 +24,9 @@
             android:process=":NTS_native_process"
             android:nativeService="true"
             android:isolatedProcess="true">
-          <property android:name="android.app.PROPERTY_NATIVE_SERVICE_LIB_NAME"
+          <property android:name="android.app.PROPERTY_NATIVE_SERVICE_LIBRARY_NAME"
                      android:value="libsamplenativeservicetest.so" />
-          <property android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNC_NAME"
+          <property android:name="android.app.PROPERTY_NATIVE_SERVICE_FUNCTION_NAME"
                      android:value="native_service_createService" />
         </service>
     </application>

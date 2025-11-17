@@ -66,7 +66,7 @@ constructor(
     private val volumePanelGlobalStateInteractor: VolumePanelGlobalStateInteractor,
 ) {
 
-    init {
+    fun start() {
         volumePanelGlobalStateInteractor.globalState
             .map { it.isVisible }
             .distinctUntilChanged()

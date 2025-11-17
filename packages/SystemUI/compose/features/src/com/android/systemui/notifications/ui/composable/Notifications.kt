@@ -301,10 +301,10 @@ fun ContentScope.NestedScrollingNotificationPanel(
             ShadeColors.classicShadeNotificationScrimBg(
                 LocalContext.current,
                 blurSupported = isTransparencyEnabled,
-                // When the Notification Scrim punches a hole in its own scene, we need to use the
+                // When the Notification Scrim punches a hole in the scene bg, we need to use the
                 // composite colors of the Scene Scrim, and the Notification Scrim to achieve the
                 // same color as  in the shade types where we are NOT punching a hole.
-                withScrim = shouldPunchHoleBehindScrim,
+                composited = shouldPunchHoleBehindScrim,
             )
         )
     val expansionFraction by viewModel.expandFraction.collectAsStateWithLifecycle(0f)
@@ -477,9 +477,9 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         modifier =
                             Modifier
                                 // The DstOut blend mode is used to punch a transparent hole through
-                                // the scrim's background, cutting out the QQS tiles. This works in
-                                // conjunction with CompositingStrategy.Offscreen on the parent
-                                // to ensure the blending only affects the current Scene.
+                                // the scrim's background, cutting out the QQS tiles. When used in
+                                // conjunction with CompositingStrategy.Offscreen on the parent,
+                                // it will only affects content on the current Scene.
                                 .thenIf(shouldPunchHoleBehindScrim) {
                                     Modifier.drawBehind {
                                         drawRect(Color.Black, blendMode = BlendMode.DstOut)
@@ -599,16 +599,20 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 layout(width = background.width, height = background.height) {
                     background.place(IntOffset.Zero)
 
-                    val bottomSSNSL =
-                        Shade.Rulers.SingleShadeNestedScrollLayoutBottom.current(-1f)
-                            .takeIf { it != -1f }
-                            ?.toInt()
+                    val bottomRulerY =
+                        Shade.Rulers.SingleShadeNestedScrollLayoutBottom.current(Float.MIN_VALUE)
 
                     val contentConstraints =
-                        if (bottomSSNSL != null) {
-                            constraints.copy(minHeight = bottomSSNSL, maxHeight = bottomSSNSL)
-                        } else {
+                        if (bottomRulerY == Float.MIN_VALUE) {
+                            // no ruler defined
                             constraints
+                        } else {
+                            // maxHeight and minHeight must be >= 0
+                            val constrainedHeight = bottomRulerY.roundToInt().coerceAtLeast(0)
+                            constraints.copy(
+                                minHeight = constrainedHeight,
+                                maxHeight = constrainedHeight,
+                            )
                         }
 
                     contentMeasurable.measure(contentConstraints).place(IntOffset.Zero)

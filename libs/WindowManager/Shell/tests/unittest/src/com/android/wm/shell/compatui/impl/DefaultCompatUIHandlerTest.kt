@@ -17,6 +17,7 @@
 package com.android.wm.shell.compatui.impl
 
 import android.app.ActivityManager
+import android.content.res.Configuration
 import android.testing.AndroidTestingRunner
 import android.view.View
 import androidx.test.filters.SmallTest
@@ -28,6 +29,7 @@ import com.android.wm.shell.compatui.api.CompatUIComponentRepository
 import com.android.wm.shell.compatui.api.CompatUIComponentState
 import com.android.wm.shell.compatui.api.CompatUIInfo
 import com.android.wm.shell.compatui.api.CompatUIRepository
+import com.android.wm.shell.compatui.api.CompatUISharedState
 import com.android.wm.shell.compatui.api.CompatUISharedStateRepository
 import org.junit.Before
 import org.junit.Rule
@@ -82,6 +84,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
                 componentFactory,
                 shellExecutor,
             )
+        prepareSharedStateRepository()
     }
 
     @Test
@@ -181,6 +184,7 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
 
     @Test
     fun `when lifecycle is complete and state is created state is stored and removed`() {
+
         val fakeComponentState = object : CompatUIComponentState {}
         // We add a spec to the repository
         val fakeLifecycle =
@@ -260,5 +264,13 @@ class DefaultCompatUIHandlerTest : ShellTestCase() {
         val taskInfo = ActivityManager.RunningTaskInfo()
         taskInfo.taskId = 1
         return CompatUIInfo(taskInfo, null)
+    }
+
+    private fun prepareSharedStateRepository(taskId: Int = 1) {
+        sharedStateRepository.insert(
+            taskId,
+            CompatUISharedState(taskId = taskId, taskConfiguration = Configuration()),
+            overrideIfPresent = true,
+        )
     }
 }

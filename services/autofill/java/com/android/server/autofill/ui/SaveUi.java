@@ -20,8 +20,10 @@ import static com.android.server.autofill.AutofillManagerService.sSupportMultiUs
 import static com.android.server.autofill.Helper.sDebug;
 import static com.android.server.autofill.Helper.sVerbose;
 
+import android.annotation.LayoutRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.StyleRes;
 import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -31,6 +33,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.metrics.LogMaker;
@@ -39,6 +42,7 @@ import android.os.IBinder;
 import android.os.UserHandle;
 import android.service.autofill.BatchUpdates;
 import android.service.autofill.CustomDescription;
+import android.service.autofill.Flags;
 import android.service.autofill.InternalOnClickAction;
 import android.service.autofill.InternalTransformation;
 import android.service.autofill.InternalValidator;
@@ -92,6 +96,10 @@ final class SaveUi {
             com.android.internal.R.style.Theme_DeviceDefault_Light_Autofill_Save;
     private static final int THEME_ID_DARK =
             com.android.internal.R.style.Theme_DeviceDefault_Autofill_Save;
+    private static final int THEME_ID_EXPRESSIVE_LIGHT =
+            R.style.Theme_DeviceDefault_Light_Autofill_Dialog;
+    private static final int THEME_ID_EXPRESSIVE_DARK =
+            R.style.Theme_DeviceDefault_Autofill_Dialog;
 
     private static final int SCROLL_BAR_DEFAULT_DELAY_BEFORE_FADE_MS = 500;
 
@@ -180,15 +188,15 @@ final class SaveUi {
     // System has all permissions, see b/228957088
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
     SaveUi(@NonNull Context context, @NonNull PendingUi pendingUi,
-           @NonNull CharSequence serviceLabel, @NonNull Drawable serviceIcon,
-           @Nullable String servicePackageName, @NonNull ComponentName componentName,
-           @NonNull SaveInfo info, @NonNull ValueFinder valueFinder,
-           @NonNull OverlayControl overlayControl, @NonNull OnSaveListener listener,
-           boolean nightMode, boolean isUpdate, boolean compatMode, boolean showServiceIcon) {
+            @NonNull CharSequence serviceLabel, @NonNull Drawable serviceIcon,
+            @Nullable String servicePackageName, @NonNull ComponentName componentName,
+            @NonNull SaveInfo info, @NonNull ValueFinder valueFinder,
+            @NonNull OverlayControl overlayControl, @NonNull OnSaveListener listener,
+            boolean nightMode, boolean isUpdate, boolean compatMode, boolean showServiceIcon) {
         if (sVerbose) {
             Slogf.v(TAG, "nightMode: %b displayId: %d", nightMode, context.getDisplayId());
         }
-        mThemeId = nightMode ? THEME_ID_DARK : THEME_ID_LIGHT;
+        mThemeId = getThemeId(nightMode, context);
         mPendingUi = pendingUi;
         mListener = new OneActionThenDestroyListener(listener);
         mOverlayControl = overlayControl;
@@ -247,7 +255,10 @@ final class SaveUi {
         };
 
         final LayoutInflater inflater = LayoutInflater.from(context);
-        final View view = inflater.inflate(R.layout.autofill_save, null);
+        final View view = inflater.inflate(getLayoutResId(context), null);
+        if (showExpressiveSaveDialog(context)) {
+            view.setOnClickListener(v -> mListener.onCancel(null));
+        }
 
         final TextView titleView = view.findViewById(R.id.autofill_save_title);
 
@@ -263,8 +274,8 @@ final class SaveUi {
 
         // fallback to generic card type if set multiple types
         final int cardTypeMask = SaveInfo.SAVE_DATA_TYPE_CREDIT_CARD
-                        | SaveInfo.SAVE_DATA_TYPE_DEBIT_CARD
-                        | SaveInfo.SAVE_DATA_TYPE_PAYMENT_CARD;
+                | SaveInfo.SAVE_DATA_TYPE_DEBIT_CARD
+                | SaveInfo.SAVE_DATA_TYPE_PAYMENT_CARD;
         final int count = Integer.bitCount(mType & cardTypeMask);
         if (count > 1 || (mType & SaveInfo.SAVE_DATA_TYPE_GENERIC_CARD) != 0) {
             types.add(context.getString(R.string.autofill_save_type_generic_card));
@@ -397,7 +408,8 @@ final class SaveUi {
 
     private void adjustDividerVisibility(ScrollView scrollView, View divider) {
         boolean canScrollDown = scrollView.canScrollVertically(1); // 1 to check scrolling down
-        divider.setVisibility(canScrollDown ? View.VISIBLE : View.INVISIBLE);
+        divider.setVisibility(canScrollDown ? View.VISIBLE
+                : Flags.expressiveSaveDialog() ? View.GONE : View.INVISIBLE);
     }
 
     private boolean applyCustomDescription(@NonNull Context context, @NonNull View saveUiView,
@@ -440,7 +452,7 @@ final class SaveUi {
 
                     startIntentSenderWithRestore(pendingIntent, intent);
                     return true;
-        };
+                };
 
         try {
             // Create the remote view peer.
@@ -461,7 +473,7 @@ final class SaveUi {
                     final Pair<InternalValidator, BatchUpdates> pair = updates.get(i);
                     final InternalValidator condition = pair.first;
                     if (condition == null || !condition.isValid(valueFinder)) {
-                        if (sDebug) Slog.d(TAG, "Skipping batch update #" + i );
+                        if (sDebug) Slog.d(TAG, "Skipping batch update #" + i);
                         continue;
                     }
                     final BatchUpdates batchUpdates = pair.second;
@@ -630,8 +642,8 @@ final class SaveUi {
      * Update the pending UI, if any.
      *
      * @param operation how to update it.
-     * @param token token associated with the pending UI - if it doesn't match the pending token,
-     * the operation will be ignored.
+     * @param token     token associated with the pending UI - if it doesn't match the pending
+     *                  token, the operation will be ignored.
      */
     void onPendingUi(int operation, @NonNull IBinder token) {
         if (!mPendingUi.matches(token)) {
@@ -666,7 +678,7 @@ final class SaveUi {
         Slog.i(TAG, "Showing save dialog: " + mTitle);
         mDialog.show();
         mOverlayControl.hideOverlays();
-   }
+    }
 
     PendingUi hide() {
         if (sVerbose) Slog.v(TAG, "Hiding save dialog.");
@@ -706,6 +718,27 @@ final class SaveUi {
         return mTitle == null ? "NO TITLE" : mTitle.toString();
     }
 
+    @LayoutRes
+    private int getLayoutResId(Context context) {
+        return showExpressiveSaveDialog(context) ? R.layout.autofill_save_dialog_expressive
+                : R.layout.autofill_save;
+    }
+
+    @StyleRes
+    private int getThemeId(boolean nightMode, Context context) {
+        if (showExpressiveSaveDialog(context)) {
+            return nightMode ? THEME_ID_EXPRESSIVE_DARK : THEME_ID_EXPRESSIVE_LIGHT;
+        }
+        return nightMode ? THEME_ID_DARK : THEME_ID_LIGHT;
+    }
+
+    /** Whether to show the expressive save dialog. The expressive dialog is not shown on TVs. */
+    private boolean showExpressiveSaveDialog(Context context) {
+        Configuration configuration = context.getResources().getConfiguration();
+        int modeType = configuration.uiMode & Configuration.UI_MODE_TYPE_MASK;
+        return Flags.expressiveSaveDialog() && modeType != Configuration.UI_MODE_TYPE_TELEVISION;
+    }
+
     void dump(PrintWriter pw, String prefix) {
         pw.print(prefix); pw.print("title: "); pw.println(mTitle);
         pw.print(prefix); pw.print("subtitle: "); pw.println(mSubTitle);
@@ -720,6 +753,12 @@ final class SaveUi {
                 break;
             case THEME_ID_LIGHT:
                 pw.println(" (light)");
+                break;
+            case THEME_ID_EXPRESSIVE_DARK:
+                pw.println(" (expressive dark)");
+                break;
+            case THEME_ID_EXPRESSIVE_LIGHT:
+                pw.println(" (expressive light)");
                 break;
             default:
                 pw.println("(UNKNOWN_MODE)");

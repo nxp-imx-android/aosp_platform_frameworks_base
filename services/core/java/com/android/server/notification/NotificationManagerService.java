@@ -167,9 +167,6 @@ import static android.service.notification.NotificationListenerService.REASON_SN
 import static android.service.notification.NotificationListenerService.REASON_TIMEOUT;
 import static android.service.notification.NotificationListenerService.REASON_UNAUTOBUNDLED;
 import static android.service.notification.NotificationListenerService.REASON_USER_STOPPED;
-import static android.service.notification.NotificationListenerService.Ranking.RANKING_DEMOTED;
-import static android.service.notification.NotificationListenerService.Ranking.RANKING_PROMOTED;
-import static android.service.notification.NotificationListenerService.Ranking.RANKING_UNCHANGED;
 import static android.service.notification.NotificationListenerService.Ranking.VISIBILITY_NO_OVERRIDE;
 import static android.service.notification.NotificationListenerService.TRIM_FULL;
 import static android.service.notification.NotificationListenerService.TRIM_LIGHT;
@@ -6748,7 +6745,9 @@ public class NotificationManagerService extends SystemService {
                     || isCallerSystemOrSystemUi()
                     || hasCompanionDevice(callingPkg, UserHandle.getUserId(callingUid),
                             Set.of(AssociationRequest.DEVICE_PROFILE_WATCH,
-                                    AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION));
+                                    AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,
+                                    AssociationRequest.DEVICE_PROFILE_GLASSES,
+                                    AssociationRequest.DEVICE_PROFILE_MEDICAL));
         }
 
         private void enforcePolicyAccess(String pkg, String method) {
@@ -7274,8 +7273,11 @@ public class NotificationManagerService extends SystemService {
         public void deleteDynamicBundle(INotificationListener token, int dynamicBundleId) {
             final long identity = Binder.clearCallingIdentity();
             try {
-                synchronized (mNotificationLock) {
-                    mAssistants.checkServiceTokenLocked(token);
+                // STOPSHIP(b/438704204): remove this check before teamfood
+                if (!isCallerSystemOrSystemUi()) {
+                    synchronized (mNotificationLock) {
+                        mAssistants.checkServiceTokenLocked(token);
+                    }
                 }
                 boolean existed = mAssistants.deleteDynamicBundle(
                         Binder.getCallingUserHandle().getIdentifier(), dynamicBundleId);
@@ -7305,8 +7307,11 @@ public class NotificationManagerService extends SystemService {
 
             final long identity = Binder.clearCallingIdentity();
             try {
-                synchronized (mNotificationLock) {
-                    mAssistants.checkServiceTokenLocked(token);
+                // STOPSHIP(b/438704204): remove this check before teamfood
+                if (!isCallerSystemOrSystemUi()) {
+                    synchronized (mNotificationLock) {
+                        mAssistants.checkServiceTokenLocked(token);
+                    }
                 }
                 boolean created = mAssistants.createDynamicBundle(
                         Binder.getCallingUserHandle().getIdentifier(),
@@ -10048,10 +10053,8 @@ public class NotificationManagerService extends SystemService {
                     }
                 } else {
                     // No notification was found => maybe it was canceled by forced grouping
-                    if (Flags.notificationForceGroupSingletons()) {
-                        mGroupHelper.maybeCancelGroupChildrenForCanceledSummary(mPkg, mTag,
-                                mId, mUserId, mReason);
-                    }
+                    mGroupHelper.maybeCancelGroupChildrenForCanceledSummary(mPkg, mTag,
+                            mId, mUserId, mReason);
 
                     // No notification was found, assume that it is snoozed and cancel it.
                     if (mReason != REASON_SNOOZED) {
@@ -10328,24 +10331,20 @@ public class NotificationManagerService extends SystemService {
                         return false;
                     }
 
-                    if (Flags.notificationForceGroupSingletons()) {
-                        // Check if this is an updated for a summary for an aggregated sparse
-                        // group and remove it because that summary has been canceled
-                        if (mGroupHelper.isUpdateForCanceledSummary(r)) {
-                            if (DBG) {
-                                Log.w(TAG,
-                                        "Suppressing notification because summary was canceled: "
-                                                + r);
-                            }
-
-                            String groupKey = r.getGroupKey();
-                            NotificationRecord groupSummary = mSummaryByGroupKey.get(groupKey);
-                            if (groupSummary != null && groupSummary.getKey()
-                                    .equals(r.getKey())) {
-                                mSummaryByGroupKey.remove(groupKey);
-                            }
-                            return false;
+                    // Check if this is an updated for a summary for an aggregated sparse
+                    // group and remove it because that summary has been canceled
+                    if (mGroupHelper.isUpdateForCanceledSummary(r)) {
+                        if (DBG) {
+                            Log.w(TAG,
+                                    "Suppressing notification because summary was canceled: "
+                                            + r);
                         }
+                        String groupKey = r.getGroupKey();
+                        NotificationRecord groupSummary = mSummaryByGroupKey.get(groupKey);
+                        if (groupSummary != null && groupSummary.getKey().equals(r.getKey())) {
+                            mSummaryByGroupKey.remove(groupKey);
+                        }
+                        return false;
                     }
 
 
@@ -12462,22 +12461,17 @@ public class NotificationManagerService extends SystemService {
                     record.getImportanceExplanation(),
                     record.getSbn().getOverrideGroupKey(),
                     effectiveChannel,
-                    record.getPeopleOverride(),
                     record.getSnoozeCriteria(),
                     record.canShowBadge(),
                     record.getUserSentiment(),
                     record.isHidden(),
                     record.getLastAudiblyAlertedMs(),
-                    record.getSound() != null || record.getVibration() != null,
                     smartActions,
                     smartReplies,
                     record.canBubble(),
                     record.isTextChanged(),
                     record.isConversation(),
                     record.getShortcutInfo(),
-                    record.getRankingScore() == 0
-                            ? RANKING_UNCHANGED
-                            : (record.getRankingScore() > 0 ?  RANKING_PROMOTED : RANKING_DEMOTED),
                     record.getNotification().isBubbleNotification(),
                     record.getProposedImportance(),
                     hasSensitiveContent,

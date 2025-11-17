@@ -30,19 +30,21 @@ public class PipPinchToResizeHandler {
     private final PhonePipMenuController mPhonePipMenuController;
     private final PipScheduler mPipScheduler;
     private final PipPinchResizingAlgorithm mPinchResizingAlgorithm;
+    private final PipInteractionHandler mPipInteractionHandler;
 
     private int mFirstIndex = -1;
     private int mSecondIndex = -1;
 
     public PipPinchToResizeHandler(PipResizeGestureHandler pipResizeGestureHandler,
             PipBoundsState pipBoundsState, PhonePipMenuController phonePipMenuController,
-            PipScheduler pipScheduler) {
+            PipScheduler pipScheduler, PipInteractionHandler pipInteractionHandler) {
         mPipResizeGestureHandler = pipResizeGestureHandler;
         mPipBoundsState = pipBoundsState;
         mPhonePipMenuController = phonePipMenuController;
         mPipScheduler = pipScheduler;
 
         mPinchResizingAlgorithm = new PipPinchResizingAlgorithm();
+        mPipInteractionHandler = pipInteractionHandler;
     }
 
     /** Invoked by {@link PipResizeGestureHandler#onInputEvent} if pinch-to-resize is enabled. */
@@ -56,6 +58,9 @@ public class PipPinchToResizeHandler {
             mSecondIndex = -1;
             mPipResizeGestureHandler.setAllowGesture(false);
             mPipResizeGestureHandler.finishResize();
+
+            // End the PINCHING_PIP interaction jank CUJ tag.
+            mPipInteractionHandler.end();
         }
 
         if (ev.getPointerCount() != 2) {
@@ -80,6 +85,9 @@ public class PipPinchToResizeHandler {
 
                 // start the high perf session as the second pointer gets detected
                 mPipResizeGestureHandler.startHighPerfSession();
+
+                mPipInteractionHandler.begin(mPipScheduler.getPipLeash(),
+                        PipInteractionHandler.INTERACTION_PINCHING_PIP);
             }
         }
 
