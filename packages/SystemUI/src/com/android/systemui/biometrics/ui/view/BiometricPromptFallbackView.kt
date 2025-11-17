@@ -85,6 +85,8 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
 
     val showManageIdentityCheck by
         fallbackViewModel.showManageIdentityCheck.collectAsStateWithLifecycle(false)
+    val showIdentityCheckCredentialFallback by
+        fallbackViewModel.showIdentityCheckCredentialFallback.collectAsStateWithLifecycle(false)
     val icCredentialButtonEnabled by
         fallbackViewModel.icCredentialButtonEnabled.collectAsStateWithLifecycle(false)
     val icCredentialSubtitle by
@@ -175,7 +177,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                         )
                     }
                 }
-                if (showManageIdentityCheck) {
+                if (showIdentityCheckCredentialFallback) {
                     options.add { index, total ->
                         OptionItem(
                             icon = credentialIcon,
@@ -195,7 +197,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                 val total = options.size
                 options.forEachIndexed { index, optionComposable -> optionComposable(index, total) }
 
-                if (showManageIdentityCheck && icShowFooter) {
+                if (showIdentityCheckCredentialFallback && icShowFooter) {
                     IdentityCheckFooter(callback, context)
                 }
             }
@@ -249,9 +251,10 @@ private fun OptionItem(
     onClick: () -> Unit,
 ) {
     val shape =
-        when (index) {
-            0 -> RoundedCornerShape(28.dp, 28.dp, 4.dp, 4.dp)
-            total - 1 -> RoundedCornerShape(4.dp, 4.dp, 28.dp, 28.dp)
+        when {
+            total == 1 -> RoundedCornerShape(28.dp)
+            index == 0 -> RoundedCornerShape(28.dp, 28.dp, 4.dp, 4.dp)
+            index == total - 1 -> RoundedCornerShape(4.dp, 4.dp, 28.dp, 28.dp)
             else -> RoundedCornerShape(4.dp)
         }
 

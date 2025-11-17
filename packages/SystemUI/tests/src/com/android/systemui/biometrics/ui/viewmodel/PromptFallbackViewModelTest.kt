@@ -101,10 +101,12 @@ class PromptFallbackViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun showCredentialAndManageIdentityCheckButtons() =
+    fun showCredentialAndManageIdentityCheckButton() =
         testScope.runTest {
             val showCredential by collectLastValue(viewModel.showCredential)
             val showManageIdentityCheck by collectLastValue(viewModel.showManageIdentityCheck)
+            val showIdentityCheckCredentialFallback by
+                collectLastValue(viewModel.showIdentityCheckCredentialFallback)
 
             // When credential is allowed and identity check is inactive, show credential button
             setPrompt(
@@ -114,6 +116,7 @@ class PromptFallbackViewModelTest : SysuiTestCase() {
                 }
             )
             assertThat(showCredential).isTrue()
+            assertThat(showIdentityCheckCredentialFallback).isFalse()
             assertThat(showManageIdentityCheck).isFalse()
 
             // When credential is allowed and identity check is active, show manage button
@@ -124,6 +127,7 @@ class PromptFallbackViewModelTest : SysuiTestCase() {
                 }
             )
             assertThat(showCredential).isFalse()
+            assertThat(showIdentityCheckCredentialFallback).isTrue()
             assertThat(showManageIdentityCheck).isTrue()
 
             // When credential is not allowed, show neither button
@@ -134,6 +138,7 @@ class PromptFallbackViewModelTest : SysuiTestCase() {
                 }
             )
             assertThat(showCredential).isFalse()
+            assertThat(showIdentityCheckCredentialFallback).isFalse()
             assertThat(showManageIdentityCheck).isFalse()
 
             // When credential is allowed and identity check is not active, show neither
@@ -144,6 +149,29 @@ class PromptFallbackViewModelTest : SysuiTestCase() {
                 }
             )
             assertThat(showCredential).isFalse()
+            assertThat(showIdentityCheckCredentialFallback).isFalse()
+            assertThat(showManageIdentityCheck).isFalse()
+        }
+
+    @Test
+    fun showCredentialButOmitManageIdentityCheckButton() =
+        testScope.runTest {
+            val showCredential by collectLastValue(viewModel.showCredential)
+            val showManageIdentityCheck by collectLastValue(viewModel.showManageIdentityCheck)
+            val showIdentityCheckCredentialFallback by
+                collectLastValue(viewModel.showIdentityCheckCredentialFallback)
+
+            // When credential is allowed, identity check is active and identity check fallback
+            // is omitted
+            setPrompt(
+                PromptInfo().apply {
+                    isDeviceCredentialAllowed = true
+                    isIdentityCheckActive = true
+                    this.clearIdentityCheckFallbackOption()
+                }
+            )
+            assertThat(showCredential).isFalse()
+            assertThat(showIdentityCheckCredentialFallback).isTrue()
             assertThat(showManageIdentityCheck).isFalse()
         }
 

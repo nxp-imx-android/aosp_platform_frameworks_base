@@ -5369,6 +5369,14 @@ package android.hardware.biometrics {
     field @RequiresPermission(android.Manifest.permission.WRITE_DEVICE_CONFIG) public static final int EMPTY_SET = 0; // 0x0
   }
 
+  public class BiometricPrompt {
+    field @FlaggedApi("android.hardware.biometrics.clear_fallback_option") public static final int FALLBACK_TYPE_IDENTITY_CHECK = 1; // 0x1
+  }
+
+  public static class BiometricPrompt.Builder {
+    method @FlaggedApi("android.hardware.biometrics.clear_fallback_option") @NonNull @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public android.hardware.biometrics.BiometricPrompt.Builder clearFallbackOption(int);
+  }
+
 }
 
 package android.hardware.camera2 {

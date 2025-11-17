@@ -101,3 +101,11 @@ flag {
   description: "This flag is for the integration of Identity Check with Watch"
   bug: "397954948"
 }
+
+flag {
+  name: "clear_fallback_option"
+  is_exported: true
+  namespace: "biometrics_framework"
+  description: "Feature flag for removing a framework-added fallback option"
+  bug: "456265916"
+}

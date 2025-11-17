@@ -62,6 +62,7 @@ public class PromptInfo implements Parcelable {
     private boolean mUseParentProfileForDeviceCredential = false;
     private ComponentName mRealCallerForConfirmDeviceCredentialActivity = null;
     private String mClassNameIfItIsConfirmDeviceCredentialActivity = null;
+    private boolean mClearIdentityCheckFallbackOption = false;
 
     public PromptInfo() {
 
@@ -102,6 +103,9 @@ public class PromptInfo implements Parcelable {
             ArrayList<FallbackOption> options = new ArrayList<>();
             in.readTypedList(options, FallbackOption.CREATOR);
             mFallbackOptions = options;
+        }
+        if (Flags.clearFallbackOption()) {
+            mClearIdentityCheckFallbackOption = in.readBoolean();
         }
     }
 
@@ -153,6 +157,9 @@ public class PromptInfo implements Parcelable {
         dest.writeString(mClassNameIfItIsConfirmDeviceCredentialActivity);
         if (Flags.addFallback()) {
             dest.writeTypedList(mFallbackOptions);
+        }
+        if (Flags.clearFallbackOption()) {
+            dest.writeBoolean(mClearIdentityCheckFallbackOption);
         }
     }
 
@@ -213,6 +220,8 @@ public class PromptInfo implements Parcelable {
         } else if (mContentView != null && isContentViewMoreOptionsButtonUsed()) {
             return true;
         } else if ((mAuthenticators & BiometricManager.Authenticators.IDENTITY_CHECK) != 0) {
+            return true;
+        } else if (mClearIdentityCheckFallbackOption) {
             return true;
         }
         return false;
@@ -349,6 +358,10 @@ public class PromptInfo implements Parcelable {
         mUseParentProfileForDeviceCredential = useParentProfileForDeviceCredential;
     }
 
+    public void clearIdentityCheckFallbackOption() {
+        mClearIdentityCheckFallbackOption = true;
+    }
+
     /**
      * Set the class name of ConfirmDeviceCredentialActivity.
      */
@@ -430,6 +443,10 @@ public class PromptInfo implements Parcelable {
 
     public CharSequence getNegativeButtonText() {
         return mNegativeButtonText;
+    }
+
+    public boolean isClearIdentityCheckFallbackOption() {
+        return mClearIdentityCheckFallbackOption;
     }
 
     public boolean isConfirmationRequested() {

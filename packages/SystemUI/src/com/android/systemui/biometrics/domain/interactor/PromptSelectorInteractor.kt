@@ -108,6 +108,9 @@ interface PromptSelectorInteractor {
     /** Fingerprint sensor type */
     val fingerprintSensorType: Flow<FingerprintSensorType>
 
+    /** If Identity Check fallback needs to be cleared */
+    val clearIdentityCheckFallback: Flow<Boolean>
+
     /** The current [BiometricPromptView] shown in the prompt */
     val currentView: Flow<BiometricPromptView>
 
@@ -213,6 +216,11 @@ constructor(
     override val isIdentityCheckActive: Flow<Boolean> =
         promptRepository.promptInfo
             .map { info -> info?.isIdentityCheckActive ?: false }
+            .distinctUntilChanged()
+
+    override val clearIdentityCheckFallback: Flow<Boolean> =
+        promptRepository.promptInfo
+            .map { info -> info?.isClearIdentityCheckFallbackOption() ?: false }
             .distinctUntilChanged()
 
     override val watchRangingState: Flow<WatchRangingState> =
