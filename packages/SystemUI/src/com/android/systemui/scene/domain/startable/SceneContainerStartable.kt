@@ -475,6 +475,7 @@ constructor(
                         }
                     val isOnLockscreen = renderedScenes.contains(Scenes.Lockscreen)
                     val isOnShade = renderedScenes.contains(Scenes.Shade)
+                    val isOnCommunal = renderedScenes.contains(Scenes.Communal)
                     val isAlternateBouncerVisible = alternateBouncerInteractor.isVisibleState()
                     val isOnPrimaryBouncer = Overlays.Bouncer in renderedOverlays
                     if (!deviceUnlockStatus.isUnlocked) {
@@ -512,7 +513,7 @@ constructor(
                             alternateBouncerInteractor.hide()
 
                             // ... and go to Gone or stay on the current scene
-                            if (isOnLockscreen || !leaveShadeOpen) {
+                            if (isOnCommunal || isOnLockscreen || !leaveShadeOpen) {
                                 SwitchSceneCommand.SwitchToScene(
                                     targetSceneKey = Scenes.Gone,
                                     loggingReason =
@@ -529,7 +530,7 @@ constructor(
                             // Gone or remain in the current scene. If transition is a scene change,
                             // take the destination scene.
                             val targetScene = renderedScenes.last()
-                            if (targetScene == Scenes.Lockscreen || !leaveShadeOpen) {
+                            if (targetScene == Scenes.Lockscreen || targetScene == Scenes.Communal || !leaveShadeOpen) {
                                 val loggingReason = buildString {
                                     append(
                                         "device was unlocked while the primary bouncer was showing"
@@ -579,7 +580,7 @@ constructor(
                                 )
                             }
                         }
-                        isOnLockscreen ->
+                        isOnLockscreen || isOnCommunal ->
                             // The lockscreen should be dismissed automatically in 2 scenarios:
                             // 1. When face auth bypass is enabled and authentication happens while
                             //    the user is on the lockscreen.
