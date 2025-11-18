@@ -10635,6 +10635,7 @@ package android.appwidget {
     field public static final String EXTRA_HOST_ID = "hostId";
     field public static final int INVALID_APPWIDGET_ID = 0; // 0x0
     field public static final String META_DATA_APPWIDGET_PROVIDER = "android.appwidget.provider";
+    field @FlaggedApi("android.appwidget.flags.widget_display_changes") public static final String OPTION_APPWIDGET_DISPLAY_ID = "appWidgetDisplayId";
     field public static final String OPTION_APPWIDGET_HOST_CATEGORY = "appWidgetCategory";
     field public static final String OPTION_APPWIDGET_MAX_HEIGHT = "appWidgetMaxHeight";
     field public static final String OPTION_APPWIDGET_MAX_WIDTH = "appWidgetMaxWidth";

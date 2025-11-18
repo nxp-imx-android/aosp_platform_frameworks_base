@@ -15,12 +15,19 @@
  */
 package android.appwidget
 
+import android.app.Activity
+import android.appwidget.flags.Flags
+import android.os.Bundle
 import android.os.Process
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
+import android.util.SizeF
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RemoteViews
 import android.widget.TextView
 import androidx.core.view.size
+import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
@@ -31,6 +38,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Future
 import kotlin.test.assertIs
 import org.junit.Test
+import org.junit.Rule
 import org.junit.runner.RunWith
 
 /**
@@ -39,6 +47,9 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 class AppWidgetHostViewTest {
+    @get:Rule(order = 0)
+    val setFlagsRule = SetFlagsRule()
+
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val remoteViews = RemoteViews(context.packageName, R.layout.remote_views_test)
     private val viewAddListener = ViewAddListener()
@@ -104,6 +115,38 @@ class AppWidgetHostViewTest {
         assertThat(hostView.size).isEqualTo(1)
         val textView = assertIs<TextView>(hostView.getChildAt(0))
         assertThat(textView.text.toString()).isEqualTo("Test string")
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_WIDGET_DISPLAY_CHANGES)
+    fun updateAppWidgetSize_setsDisplayOption() {
+        var createdOptions: Bundle? = null
+        val hostView = object : AppWidgetHostView(context) {
+            init {
+                setAppWidget(
+                    0,
+                    AppWidgetManager.getInstance(context).getInstalledProviders().first()
+                )
+            }
+            override fun updateAppWidgetOptions(options: Bundle?) {
+               createdOptions = options
+            }
+        }
+        var displayId: Int? = null
+        ActivityScenario.launch(Activity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                displayId = activity.displayId
+                activity.setContentView(hostView)
+                hostView.updateAppWidgetSize(Bundle(), listOf(SizeF(100f, 100f)))
+            }
+        }
+        assertThat(displayId).isNotNull()
+        assertThat(
+            createdOptions?.getInt(
+                AppWidgetManager.OPTION_APPWIDGET_DISPLAY_ID,
+                Int.MAX_VALUE
+            )
+        ).isEqualTo(displayId)
     }
 
     private class RunnableList : ArrayList<Runnable>(), Executor {

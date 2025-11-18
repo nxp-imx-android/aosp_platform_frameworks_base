@@ -24,6 +24,7 @@ import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.removeAppWidgetServiceIoFromCriticalPath;
 import static android.appwidget.flags.Flags.securityPolicyInteractAcrossUsers;
 import static android.appwidget.flags.Flags.supportResumeRestoreAfterReboot;
+import static android.appwidget.flags.Flags.widgetDisplayChanges;
 import static android.content.Context.KEYGUARD_SERVICE;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -3881,7 +3882,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         out.endTag(null, "h");
     }
 
-    private static void serializeAppWidget(TypedXmlSerializer out, Widget widget,
+    @VisibleForTesting
+    static void serializeAppWidget(TypedXmlSerializer out, Widget widget,
             boolean saveRestoreCompleted) throws IOException {
         out.startTag(null, "g");
         out.attributeIntHex(null, "id", widget.appWidgetId);
@@ -3911,11 +3913,17 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                         AppWidgetManager.OPTION_APPWIDGET_RESTORE_COMPLETED);
                 out.attributeBoolean(null, "restore_completed", restoreCompleted);
             }
+            if (widgetDisplayChanges()) {
+                int displayId = widget.options.getInt(AppWidgetManager.OPTION_APPWIDGET_DISPLAY_ID,
+                        Display.DEFAULT_DISPLAY);
+                out.attributeIntHex(null, "display_id", displayId);
+            }
         }
         out.endTag(null, "g");
     }
 
-    private static Bundle parseWidgetIdOptions(TypedXmlPullParser parser) {
+    @VisibleForTesting
+    static Bundle parseWidgetIdOptions(TypedXmlPullParser parser) {
         Bundle options = new Bundle();
         boolean restoreCompleted = parser.getAttributeBoolean(null, "restore_completed", false);
         if (restoreCompleted) {
@@ -3946,6 +3954,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 AppWidgetProviderInfo.WIDGET_CATEGORY_UNKNOWN);
         if (category != AppWidgetProviderInfo.WIDGET_CATEGORY_UNKNOWN) {
             options.putInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY, category);
+        }
+        if (widgetDisplayChanges()) {
+            options.putInt(AppWidgetManager.OPTION_APPWIDGET_DISPLAY_ID,
+                    parser.getAttributeIntHex(null, "display_id", Display.DEFAULT_DISPLAY));
         }
         return options;
     }
