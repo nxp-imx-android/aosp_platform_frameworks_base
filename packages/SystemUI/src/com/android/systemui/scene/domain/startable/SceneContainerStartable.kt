@@ -367,7 +367,6 @@ constructor(
         handleSimUnlock()
         handleDeviceUnlockStatus()
         handlePowerState()
-        handleDreamState()
         handleShadeTouchability()
         handleDisableFlags()
     }
@@ -530,7 +529,11 @@ constructor(
                             // Gone or remain in the current scene. If transition is a scene change,
                             // take the destination scene.
                             val targetScene = renderedScenes.last()
-                            if (targetScene == Scenes.Lockscreen || targetScene == Scenes.Communal || !leaveShadeOpen) {
+                            if (
+                                targetScene == Scenes.Lockscreen ||
+                                    targetScene == Scenes.Communal ||
+                                    !leaveShadeOpen
+                            ) {
                                 val loggingReason = buildString {
                                     append(
                                         "device was unlocked while the primary bouncer was showing"
@@ -724,27 +727,6 @@ constructor(
                             loggingReason = "device is starting to wake up with a locked sim",
                         )
                     }
-                }
-            }
-        }
-    }
-
-    private fun handleDreamState() {
-        applicationScope.launch {
-            keyguardInteractor.isAbleToDream.collect { isAbleToDream ->
-                if (isAbleToDream) {
-                    switchToScene(targetSceneKey = Scenes.Dream, loggingReason = "dream started")
-                } else {
-                    switchToScene(
-                        targetSceneKey = SceneFamilies.Home,
-                        loggingReason = "dream stopped",
-                        hideOverlays =
-                            if (deviceUnlockedInteractor.isUnlocked) {
-                                HideOverlayCommand.HideAll
-                            } else {
-                                HideOverlayCommand.HideNone
-                            },
-                    )
                 }
             }
         }
