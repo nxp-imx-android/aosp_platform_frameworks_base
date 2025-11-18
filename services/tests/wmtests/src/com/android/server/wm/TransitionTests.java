@@ -96,6 +96,7 @@ import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.view.SurfaceControl;
@@ -3589,6 +3590,87 @@ public class TransitionTests extends WindowTestsBase {
                 info.getChanges().stream()
                         .noneMatch(c -> (c.getFlags() & FLAG_MOVED_TO_TOP) == 1));
         player.finish();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags
+                                                .Flags.FLAG_SET_CLIENT_DRAWN_CORNER_RADII)
+    public void testToggleClientDrawnRoundedCornersDuringTransition() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+
+        final Task task = createTask(mDisplayContent);
+        doReturn(mMockT).when(task).getSyncTransaction();
+
+        final Transition transition = createTestTransition(TRANSIT_OPEN, controller);
+        controller.moveToCollecting(transition);
+        transition.collect(task);
+        transition.mChanges.get(task).mVisible = true;
+
+        controller.requestStartTransition(transition, task /*startTask*/,
+                null /*remote*/, null /*displayChange*/);
+
+        transition.onTransactionReady(transition.getSyncId(), mMockT);
+
+        // Verify that the optimization was disabled
+        verify(mMockT).toggleClientDrawnRoundedCornersOpt(eq(task.getSurfaceControl()), eq(false));
+        assertThat(controller.mRoundedCornerOptTasks).contains(task);
+
+        player.finish();
+
+        // Verify that the optimization was re-enabled
+        verify(mMockT).toggleClientDrawnRoundedCornersOpt(eq(task.getSurfaceControl()), eq(true));
+        assertThat(controller.mRoundedCornerOptTasks).isEmpty();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags
+                                                .Flags.FLAG_SET_CLIENT_DRAWN_CORNER_RADII)
+    public void testCleanupRoundedCornerTasksOnAbort() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        registerTestTransitionPlayer();
+
+        final Task task = createTask(mDisplayContent);
+        doReturn(mMockT).when(task).getSyncTransaction();
+
+        final Transition transition = createTestTransition(TRANSIT_OPEN, controller);
+        controller.moveToCollecting(transition);
+        transition.start();
+
+        transition.collect(task);
+        controller.onRoundedCornerOptDisabled(task);
+
+        // Abort the transition
+        transition.abort();
+
+        // Verify cleanup happened even on abort
+        verify(mMockT).toggleClientDrawnRoundedCornersOpt(eq(task.getSurfaceControl()), eq(true));
+        assertThat(controller.mRoundedCornerOptTasks).isEmpty();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags
+                                                .Flags.FLAG_SET_CLIENT_DRAWN_CORNER_RADII)
+    public void testCleanupRoundedCornerTasksOnFlushRunningTransitions() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        registerTestTransitionPlayer();
+
+        final Task task = createTask(mDisplayContent);
+        doReturn(mMockT).when(task).getSyncTransaction();
+
+        final Transition transition = createTestTransition(TRANSIT_OPEN, controller);
+        controller.moveToCollecting(transition);
+        transition.start();
+
+        transition.collect(task);
+        transition.mChanges.get(task).mVisible = true;
+        transition.onTransactionReady(transition.getSyncId(), mMockT);
+
+        controller.flushRunningTransitions();
+
+        // Verify cleanup happened even on abort
+        verify(mMockT).toggleClientDrawnRoundedCornersOpt(eq(task.getSurfaceControl()), eq(true));
+        assertThat(controller.mRoundedCornerOptTasks).isEmpty();
     }
 
     private void tryFinishTransitionSyncSet(Transition transition) {

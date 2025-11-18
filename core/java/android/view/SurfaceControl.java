@@ -177,6 +177,8 @@ public final class SurfaceControl implements Parcelable {
                                                 float bottomLeft, float bottomRight,
                                                 float cropTop, float cropLeft,
                                                 float cropBottom, float cropRight);
+    private static native void nativeToggleRoundedCornerOpt(long transactionObj, long nativeObject,
+            boolean enable);
     private static native void nativeSetBackgroundBlurRadius(long transactionObj, long nativeObject,
             int blurRadius);
     private static native void nativeSetBackgroundBlurScale(long transactionObj, long nativeObject,
@@ -3659,6 +3661,28 @@ public final class SurfaceControl implements Parcelable {
                         "setLayer", this, sc, "z=" + z);
             }
             nativeSetLayer(mNativeObject, sc.mNativeObject, z);
+            return this;
+        }
+
+        /**
+         * Enable/disable rounded corner optimization for a surface.
+         *
+         * @return this
+         * @hide
+         */
+        public Transaction toggleClientDrawnRoundedCornersOpt(@NonNull SurfaceControl sc,
+                                                                        boolean enable) {
+            checkPreconditions(sc);
+            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
+                SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
+                        "toggleClientDrawnRoundedCornersOpt", this, sc, "enable=" + enable);
+            }
+            if (!com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii()) {
+                Log.w(TAG, "toggleClientDrawnRoundedCornersOpt was called but"
+                           + "set_client_drawn_corner_radii flag is disabled");
+                return this;
+            }
+            nativeToggleRoundedCornerOpt(mNativeObject, sc.mNativeObject, enable);
             return this;
         }
 
