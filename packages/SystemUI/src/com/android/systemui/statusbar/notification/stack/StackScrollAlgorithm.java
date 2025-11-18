@@ -64,6 +64,7 @@ public class StackScrollAlgorithm {
     private float mBundleGapHeight;
     private float mBundleExpandedGapHeight;
     private float mGapHeight;
+    private float mGroupingDisabledSectionGapHeight;
     private float mGapHeightOnLockscreen;
     private int mCollapsedSize;
     private boolean mEnableNotificationClipping;
@@ -121,6 +122,8 @@ public class StackScrollAlgorithm {
                 R.dimen.bundle_divider_height);
         mBundleExpandedGapHeight = res.getDimensionPixelSize(
                 R.dimen.bundle_expanded_divider_height);
+        mGroupingDisabledSectionGapHeight = res.getDimensionPixelSize(
+                R.dimen.grouping_disabled_section_gap_height);
         mNotificationScrimPadding = res.getDimensionPixelSize(R.dimen.notification_side_paddings);
         mMarginBottom = res.getDimensionPixelSize(R.dimen.notification_panel_margin_bottom);
         mQuickQsOffsetHeight = SystemBarUtils.getQuickQsOffsetHeight(context);
@@ -523,8 +526,11 @@ public class StackScrollAlgorithm {
                         ambientState.getSectionProvider(), i,
                         view, getPreviousView(i, state));
                 if (applyGapHeight) {
+                    final boolean isGroupingDisabled =
+                            ambientState.getSectionProvider().isGroupingDisabled(view);
                     currentY += getGapForLocation(
-                            ambientState.getFractionToShade(), ambientState.isOnKeyguard());
+                            ambientState.getFractionToShade(), ambientState.isOnKeyguard(),
+                            isGroupingDisabled);
                 }
             }
 
@@ -711,7 +717,9 @@ public class StackScrollAlgorithm {
                             view, getPreviousView(i, algorithmState));
             if (applyGapHeight) {
                 final float gap = getGapForLocation(
-                        ambientState.getFractionToShade(), ambientState.isOnKeyguard());
+                        ambientState.getFractionToShade(), ambientState.isOnKeyguard(),
+                        ambientState.getSectionProvider().isGroupingDisabled(view)
+                );
                 algorithmState.mCurrentYPosition += expansionFraction * gap;
                 algorithmState.mCurrentExpandedYPosition += gap;
             }
@@ -846,8 +854,10 @@ public class StackScrollAlgorithm {
             } else {
                 return mBundleGapHeight;
             }
+
         } else if (childNeedsGapHeight(sectionProvider, visibleIndex, child, previousChild)) {
-            return getGapForLocation(fractionToShade, onKeyguard);
+            return getGapForLocation(fractionToShade, onKeyguard,
+                    sectionProvider.isGroupingDisabled(child));
         } else {
             return 0;
         }
@@ -871,14 +881,19 @@ public class StackScrollAlgorithm {
     }
 
     @VisibleForTesting
-    float getGapForLocation(float fractionToShade, boolean onKeyguard) {
+    float getGapForLocation(float fractionToShade, boolean onKeyguard, boolean isGroupingDisabled) {
+        final float nominalGapHeight =
+                isGroupingDisabled ? mGroupingDisabledSectionGapHeight : mGapHeight;
+        final float nominalGapHeightOnLockscreen =
+                isGroupingDisabled ? mGroupingDisabledSectionGapHeight : mGapHeightOnLockscreen;
+
         if (fractionToShade > 0f) {
-            return MathUtils.lerp(mGapHeightOnLockscreen, mGapHeight, fractionToShade);
+            return MathUtils.lerp(nominalGapHeightOnLockscreen, nominalGapHeight, fractionToShade);
         }
         if (onKeyguard) {
-            return mGapHeightOnLockscreen;
+            return nominalGapHeightOnLockscreen;
         }
-        return mGapHeight;
+        return nominalGapHeight;
     }
 
     /**
@@ -895,7 +910,8 @@ public class StackScrollAlgorithm {
             int visibleIndex,
             View child,
             View previousChild) {
-        return sectionProvider.beginsSection(child, previousChild)
+        return (sectionProvider.beginsSection(child, previousChild)
+                || sectionProvider.isGroupingDisabled(child))
                 && visibleIndex > 0
                 && !(previousChild instanceof SectionHeaderView)
                 && !(child instanceof FooterView);
@@ -1434,8 +1450,13 @@ public class StackScrollAlgorithm {
          * notifications section. False if sections are not enabled.
          */
         boolean beginsSection(@NonNull View view, @Nullable View previous);
-    }
 
+        /**
+         * True if grouping views is disabled for the section in which view is.
+         * False if grouping is enabled.
+         */
+        boolean isGroupingDisabled(@NonNull View view);
+    }
     /**
      * Interface for telling the StackScrollAlgorithm information about the bypass state
      */
