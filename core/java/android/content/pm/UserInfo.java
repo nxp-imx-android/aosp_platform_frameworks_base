@@ -513,14 +513,16 @@ public class UserInfo implements Parcelable {
     }
 
     /**
-     * @return true if this user can be switched to by an end user through the UI.
-     * This method checks if supportsSwitchTo() is true AND the user is a full user.
+     * Returns whether this is a human user that should be able to be switched to via the UI.
+     *
+     * <p>This method checks if {@link #supportsSwitchTo()} is true AND the user is a full user.
      * It specifically excludes the headless system user, as switching to that user
-     * is typically a framework-level operation and not available to regular users
-     * via the UI.
+     * is typically a framework-level operation and not available via the usual switcher UIs.
+     *
+     * @hide
      */
     @android.ravenwood.annotation.RavenwoodThrow
-    public boolean supportsSwitchToByUser() {
+    public boolean isUiSwitchableHumanUser() {
         return supportsSwitchTo() && isFull();
     }
 
