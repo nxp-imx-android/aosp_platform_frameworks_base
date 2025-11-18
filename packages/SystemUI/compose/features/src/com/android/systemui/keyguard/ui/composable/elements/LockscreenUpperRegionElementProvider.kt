@@ -24,10 +24,12 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.dimensionResource
@@ -101,9 +103,12 @@ constructor(
         @Composable abstract fun LockscreenScope<ContentScope>.Layout(modifier: Modifier = Modifier)
 
         @Composable
-        protected fun LockscreenScope<ContentScope>.Notifications(modifier: Modifier = Modifier) {
-            Box(modifier = modifier.fillMaxHeight().then(context.burnInModifier)) {
-                AODNotifications()
+        protected fun LockscreenScope<ContentScope>.Notifications(
+            aodAlignment: Alignment,
+            modifier: Modifier = Modifier,
+        ) {
+            Box(modifier = Modifier.fillMaxSize().then(context.burnInModifier).then(modifier)) {
+                AODNotifications(Modifier.align(aodAlignment))
                 // Make the Notification section overlap with the AOD icons,
                 // to avoid jumps while animating them in.
                 AnimatedVisibility(viewModel.isNotificationStackActive) {
@@ -201,7 +206,7 @@ constructor(
                     Column {
                         LockscreenElement(Region.Clock.Small)
                         MediaCarousel()
-                        Notifications()
+                        Notifications(aodAlignment = Alignment.TopStart)
                     }
                 }
             }
@@ -277,7 +282,23 @@ constructor(
                 },
                 modifier = modifier,
             ) {
-                scene(WideScenes.CenteredClock) { LockscreenElement(Region.Clock.Large) }
+                scene(WideScenes.CenteredClock) {
+                    // Media is unsupported with centered large clock
+                    LargeClockCenter_NotifsAlign(
+                        notifAlignment =
+                            when (viewModel.shadeMode) {
+                                ShadeMode.Dual -> {
+                                    if (viewModel.useDesktopStatusBar) Alignment.TopEnd
+                                    else Alignment.TopStart
+                                }
+                                ShadeMode.Split -> Alignment.TopEnd
+                                else -> {
+                                    logger.wtf("WideLayout state is invalid")
+                                    Alignment.TopCenter
+                                }
+                            }
+                    )
+                }
                 scene(WideScenes.TwoColumn.LargeClock) {
                     when (viewModel.shadeMode) {
                         ShadeMode.Dual -> {
@@ -303,6 +324,24 @@ constructor(
         }
 
         @Composable
+        private fun LockscreenScope<ContentScope>.LargeClockCenter_NotifsAlign(
+            notifAlignment: Alignment,
+            modifier: Modifier = Modifier,
+        ) {
+            // We overlap the notification stack with large clock region so that large clock is
+            // horizontally centered as expected. Since this layout should only be used when the
+            // all notifications are in the shelf, these elements won't overlap visually in
+            // practice outside of momentarially during certain transitions.
+            Box(
+                modifier = Modifier.fillMaxSize().then(modifier),
+                contentAlignment = Alignment.Center,
+            ) {
+                LockscreenElement(Region.Clock.Large)
+                Notifications(aodAlignment = notifAlignment)
+            }
+        }
+
+        @Composable
         private fun LockscreenScope<ContentScope>.LargeClockEnd_NotifsStart_MediaStart(
             modifier: Modifier = Modifier
         ) {
@@ -310,7 +349,7 @@ constructor(
                 startContent = {
                     Column {
                         MediaCarousel()
-                        Notifications()
+                        Notifications(aodAlignment = Alignment.TopStart)
                     }
                 },
                 endContent = { LockscreenElement(Region.Clock.Large) },
@@ -327,7 +366,7 @@ constructor(
                     Column {
                         LockscreenElement(Region.Clock.Small)
                         MediaCarousel()
-                        Notifications()
+                        Notifications(aodAlignment = Alignment.TopStart)
                     }
                 },
                 modifier = modifier,
@@ -340,7 +379,7 @@ constructor(
         ) {
             TwoColumn(
                 startContent = { LockscreenElement(Region.Clock.Large) },
-                endContent = { Notifications() },
+                endContent = { Notifications(aodAlignment = Alignment.TopEnd) },
                 modifier = modifier,
             )
         }
@@ -354,7 +393,7 @@ constructor(
                 endContent = {
                     Column {
                         MediaCarousel()
-                        Notifications()
+                        Notifications(aodAlignment = Alignment.TopEnd)
                     }
                 },
                 modifier = modifier,
@@ -372,7 +411,7 @@ constructor(
                         MediaCarousel()
                     }
                 },
-                endContent = { Notifications() },
+                endContent = { Notifications(aodAlignment = Alignment.TopEnd) },
                 modifier = modifier,
             )
         }
@@ -386,7 +425,7 @@ constructor(
                 endContent = {
                     Column {
                         MediaCarousel()
-                        Notifications()
+                        Notifications(aodAlignment = Alignment.TopEnd)
                     }
                 },
                 modifier = modifier,
