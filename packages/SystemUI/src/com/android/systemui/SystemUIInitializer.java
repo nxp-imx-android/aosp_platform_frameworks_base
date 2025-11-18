@@ -98,6 +98,7 @@ public abstract class SystemUIInitializer {
                     .setKeyguardTransitions(mWMComponent.getKeyguardTransitions())
                     .setStartingSurface(mWMComponent.getStartingSurface())
                     .setDisplayAreaHelper(mWMComponent.getDisplayAreaHelper())
+                    .setRecentTasks(mWMComponent.getRecentTasks())
                     .setBackAnimation(mWMComponent.getBackAnimation())
                     .setDesktopMode(mWMComponent.getDesktopMode())
                     .setAppZoomOut(mWMComponent.getAppZoomOut())
@@ -119,21 +120,13 @@ public abstract class SystemUIInitializer {
                     .setShellTransitions(new ShellTransitions() {})
                     .setKeyguardTransitions(new KeyguardTransitions() {})
                     .setDisplayAreaHelper(Optional.ofNullable(null))
+                    .setRecentTasks(Optional.ofNullable(null))
                     .setStartingSurface(Optional.ofNullable(null))
                     .setBackAnimation(Optional.ofNullable(null))
                     .setDesktopMode(Optional.ofNullable(null))
                     .setAppZoomOut(Optional.ofNullable(null))
                     .setAppHandles(Optional.ofNullable(null));
         }
-
-        if (fromTest) {
-            builder = builder.setRecentTasks(Optional.ofNullable(null));
-        } else {
-            // Some components still needs to be initialized even if initializeComponents is false.
-            // For more details see: b/455061103.
-            builder = builder.setRecentTasks(mWMComponent.getRecentTasks());
-        }
-
         mSysUIComponent = builder.build();
 
         // Every other part of our codebase currently relies on Dependency, so we
