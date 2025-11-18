@@ -1717,16 +1717,6 @@ flag {
 }
 
 flag {
-   name: "allow_doze_touches_for_lock_icon"
-   namespace: "systemui"
-   description: "Allow touches for device entry lock icon during aod deferment."
-   bug: "433400058"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "per_display_ongoing_call_status_bar_visibility"
    namespace: "systemui"
    description: "Adds per display implementation for the logic of whether the status bar should be visible for ongoing calls."
