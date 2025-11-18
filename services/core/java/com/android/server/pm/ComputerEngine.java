@@ -2732,7 +2732,9 @@ public class ComputerEngine implements Computer {
     }
 
     /**
-     * Update given flags based on encryption status of current user.
+     * Update given flags based on encryption status of current user. Additionally, check that if
+     * {@link PackageManager#GET_APP_LOCK_INFO} is supplied, the caller has the
+     * {@link Manifest.permission.LOCK_APPS} permission.
      */
     private long updateFlags(long flags, int userId) {
         if ((flags & (PackageManager.MATCH_DIRECT_BOOT_UNAWARE
@@ -2747,6 +2749,13 @@ public class ComputerEngine implements Computer {
                 flags |= PackageManager.MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE;
             } else {
                 flags |= PackageManager.MATCH_DIRECT_BOOT_AWARE;
+            }
+        }
+        if (android.security.Flags.appLockApis()
+                && (flags & (PackageManager.GET_APP_LOCK_INFO)) != 0) {
+            if (!hasPermission(Manifest.permission.LOCK_APPS, Binder.getCallingUid())) {
+                throw new SecurityException(
+                        "Caller must hold the LOCK_APPS permission to use GET_APP_LOCK_INFO");
             }
         }
         return flags;
