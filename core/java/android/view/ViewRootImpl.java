@@ -7164,7 +7164,7 @@ public final class ViewRootImpl implements ViewParent,
                         event = KeyEvent.changeFlags(event,
                                 event.getFlags() & ~KeyEvent.FLAG_FROM_SYSTEM);
                     }
-                    enqueueInputEvent(event, null, QueuedInputEvent.FLAG_DELIVER_POST_IME, true);
+                    enqueueInputEvent(event, null, QueuedInputEvent.FLAG_SKIP_IME, true);
                 } break;
                 case MSG_DISPATCH_KEY_FROM_AUTOFILL: {
                     if (LOCAL_LOGV) {
@@ -10592,7 +10592,7 @@ public final class ViewRootImpl implements ViewParent,
      * needing a queue on the application's side.
      */
     private static final class QueuedInputEvent {
-        public static final int FLAG_DELIVER_POST_IME = 1 << 0;
+        public static final int FLAG_SKIP_IME = 1 << 0;
         public static final int FLAG_DEFERRED = 1 << 1;
         public static final int FLAG_FINISHED = 1 << 2;
         public static final int FLAG_FINISHED_HANDLED = 1 << 3;
@@ -10615,7 +10615,7 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         public boolean shouldSkipIme() {
-            if ((mFlags & FLAG_DELIVER_POST_IME) != 0) {
+            if ((mFlags & FLAG_SKIP_IME) != 0) {
                 return true;
             }
             return mEvent instanceof MotionEvent
@@ -10634,7 +10634,7 @@ public final class ViewRootImpl implements ViewParent,
         public String toString() {
             StringBuilder sb = new StringBuilder("QueuedInputEvent{flags=");
             boolean hasPrevious = false;
-            hasPrevious = flagToString("DELIVER_POST_IME", FLAG_DELIVER_POST_IME, hasPrevious, sb);
+            hasPrevious = flagToString("SKIP_IME", FLAG_SKIP_IME, hasPrevious, sb);
             hasPrevious = flagToString("DEFERRED", FLAG_DEFERRED, hasPrevious, sb);
             hasPrevious = flagToString("FINISHED", FLAG_FINISHED, hasPrevious, sb);
             hasPrevious = flagToString("FINISHED_HANDLED", FLAG_FINISHED_HANDLED, hasPrevious, sb);
@@ -10800,7 +10800,14 @@ public final class ViewRootImpl implements ViewParent,
                 stage = mSyntheticInputStage;
             } else {
                 if (predictiveBackFixImeEventsSkipBackDispatcher()) {
-                    stage = mFirstInputStage;
+                    // Optimization: Skip to Post-IME stage for pointer events (touch), unless the
+                    // SKIP_IME flag is set.
+                    // Why? The flag implies we need to handle Pre-IME logic (for KEYCODE_BACK
+                    // interception) which lives in the NativePreImeStage, so we can't take the
+                    // shortcut.
+                    boolean canSkipToPostIme = q.shouldSkipIme()
+                            && (q.mFlags & QueuedInputEvent.FLAG_SKIP_IME) == 0;
+                    stage = canSkipToPostIme ? mFirstPostImeInputStage : mFirstInputStage;
                 } else {
                     stage = q.shouldSkipIme() ? mFirstPostImeInputStage : mFirstInputStage;
                 }
