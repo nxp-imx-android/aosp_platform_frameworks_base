@@ -383,6 +383,14 @@ public final class ViewRootImpl implements ViewParent,
             SystemProperties.getBoolean("persist.wm.debug.client_transient", false);
 
     /**
+     * Allow enabling IPC rendering on a per-package basis for debugging.
+     * Use a comma-separated list of packages.
+     */
+    private static final String IPC_RENDERING_PACKAGES =
+            SystemProperties.get("viewroot.ipc_rendering_packages", "");
+    private boolean mIpcRenderingEnabled = false;
+
+    /**
      * Set this system property to true to force the view hierarchy to render
      * at 60 Hz. This can be used to measure the potential framerate.
      */
@@ -1368,6 +1376,7 @@ public final class ViewRootImpl implements ViewParent,
             preInitBufferAllocator();
             sPreInitializedBufferAllocator = true;
         }
+        mIpcRenderingEnabled = useIpcRendering();
     }
 
     public static void addFirstDrawHandler(Runnable callback) {
@@ -2036,7 +2045,7 @@ public final class ViewRootImpl implements ViewParent,
                         || insets.top != 0 || insets.bottom != 0;
                 final boolean translucent = attrs.format != PixelFormat.OPAQUE || hasSurfaceInsets;
                 final ThreadedRenderer renderer = ThreadedRenderer.create(mContext, translucent,
-                        attrs.getTitle().toString());
+                        attrs.getTitle().toString(), mIpcRenderingEnabled);
                 mAttachInfo.mThreadedRenderer = renderer;
                 renderer.setSurfaceControl(mSurfaceControl, mBlastBufferQueue);
                 updateColorModeIfNeeded(attrs.getColorMode(), attrs.getDesiredHdrHeadroom());
@@ -13944,5 +13953,12 @@ public final class ViewRootImpl implements ViewParent,
      */
     public Choreographer getChoreographer() {
         return mChoreographer;
+    }
+
+    private boolean useIpcRendering() {
+        if (IPC_RENDERING_PACKAGES.contains(mBasePackageName)) {
+            return true;
+        }
+        return false;
     }
 }
