@@ -437,9 +437,11 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
      * state checking. Returns {@code null} if the task state isn't ready to screenshot.
      */
     Pair<ActivityRecord, WindowState> checkIfReadyToScreenshot(TYPE source) {
-        if (!mService.mPolicy.isScreenOn()) {
+        if (source.mDisplayContent == null
+                || !mService.mPolicy.isScreenOn(source.mDisplayContent.getDisplayId())) {
             if (DEBUG_SCREENSHOT) {
-                Slog.i(TAG_WM, "Attempted to take screenshot while display was off.");
+                Slog.i(TAG_WM, "Attempted to take screenshot while window container was "
+                        + "detached from display or display was off.");
             }
             return null;
         }
