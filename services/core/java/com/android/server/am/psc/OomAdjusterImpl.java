@@ -1638,7 +1638,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             // If the provider has external (non-framework) process
             // dependencies, ensure that its adjustment is at least
             // FOREGROUND_APP_ADJ.
-            if (cpr.hasExternalProcessHandles()) {
+            if (cpr.getHasExternalProcessHandles()) {
                 if (adj > FOREGROUND_APP_ADJ) {
                     adj = FOREGROUND_APP_ADJ;
                     app.setCurRawAdj(adj);

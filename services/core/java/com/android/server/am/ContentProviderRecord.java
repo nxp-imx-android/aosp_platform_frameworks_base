@@ -35,6 +35,7 @@ import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.Slog;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.procstats.AssociationState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.server.am.psc.ContentProviderRecordInternal;
@@ -137,12 +138,15 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
                 && mUid == app.uid;
     }
 
+    @GuardedBy("mService")
     public void addExternalProcessHandleLocked(IBinder token, int callingUid, String callingTag) {
         if (token == null) {
             mExternalProcessNoHandleCount++;
+            notifyHasExternalProcessHandles();
         } else {
             if (mExternalProcessTokenToHandle == null) {
                 mExternalProcessTokenToHandle = new ArrayMap<>();
+                notifyHasExternalProcessHandles();
             }
             ExternalProcessHandle handle = mExternalProcessTokenToHandle.get(token);
             if (handle == null) {
@@ -154,6 +158,7 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
         }
     }
 
+    @GuardedBy("mService")
     public boolean removeExternalProcessHandleLocked(IBinder token) {
         if (hasExternalProcessHandles()) {
             boolean hasHandle = false;
@@ -170,12 +175,14 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
             }
             if (!hasHandle) {
                 mExternalProcessNoHandleCount--;
+                notifyHasExternalProcessHandles();
                 return true;
             }
         }
         return false;
     }
 
+    @GuardedBy("mService")
     private void removeExternalProcessHandleInternalLocked(IBinder token) {
         ExternalProcessHandle handle = mExternalProcessTokenToHandle.get(token);
         handle.unlinkFromOwnDeathLocked();
@@ -183,14 +190,36 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
         mExternalProcessTokenToHandle.remove(token);
         if (mExternalProcessTokenToHandle.isEmpty()) {
             mExternalProcessTokenToHandle = null;
+            notifyHasExternalProcessHandles();
         }
     }
 
-    @Override
+    /**
+     * Notifies the {@link ProcessStateController} that the state of whether this content provider
+     * has external process handles has changed.
+     * <p>
+     * This method is called whenever {@link #mExternalProcessTokenToHandle} or
+     * {@link #mExternalProcessNoHandleCount} is modified.
+     * </p>
+     */
+    @GuardedBy("mService")
+    private void notifyHasExternalProcessHandles() {
+        mService.mProcessStateController.setHasExternalProcessHandles(this,
+                hasExternalProcessHandles());
+    }
+
+    /**
+     * Calculates whether this content provider has any external process handles.
+     * The result is pushed to {@link ContentProviderRecordInternal} via
+     * {@link #notifyHasExternalProcessHandles()} to serve as the source of truth for consumers
+     * inside {@link com.android.server.am.psc} package.
+     */
+    @GuardedBy("mService")
     public boolean hasExternalProcessHandles() {
         return (mExternalProcessTokenToHandle != null || mExternalProcessNoHandleCount > 0);
     }
 
+    @GuardedBy("mService")
     public boolean hasConnectionOrHandle() {
         return !mConnections.isEmpty() || hasExternalProcessHandles();
     }
