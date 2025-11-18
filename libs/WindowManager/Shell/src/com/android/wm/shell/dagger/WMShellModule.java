@@ -1935,10 +1935,12 @@ public abstract class WMShellModule {
     static AppToWebEducationFilter provideAppToWebEducationFilter(
             Context context,
             AppToWebEducationDatastoreRepository appToWebEducationDatastoreRepository,
-            AppToWebRepository appToWebRepository
+            AppToWebRepository appToWebRepository,
+            FocusTransitionObserver focusTransitionObserver
     ) {
         return new AppToWebEducationFilter(
-                context, appToWebEducationDatastoreRepository, appToWebRepository);
+                context, appToWebEducationDatastoreRepository, appToWebRepository,
+                focusTransitionObserver);
     }
 
     @OptIn(markerClass = ExperimentalCoroutinesApi.class)
