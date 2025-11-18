@@ -43,6 +43,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.media.NotificationMediaManager
 import com.android.systemui.media.controls.data.model.MediaSortKeyModel
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.remedia.data.model.MediaDataModel
 import com.android.systemui.media.remedia.data.model.UpdateArtInfoModel
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
@@ -100,6 +101,7 @@ constructor(
     @Background val backgroundDispatcher: CoroutineDispatcher,
     private val systemClock: SystemClock,
     secureSettings: SecureSettings,
+    private val mediaControllerFactory: MediaControllerFactory,
 ) :
     MediaRepository,
     MediaPipelineRepository(
@@ -221,9 +223,11 @@ constructor(
                     if (currentModel != null && currentModel.token == token) {
                         activeControllers[currentModel.instanceId]
                     } else {
-                        // Clear controller state if changed for the same media session.
-                        currentModel?.instanceId?.let { clearControllerState(it) }
-                        token?.let { MediaController(applicationContext, it) }
+                        withContext(backgroundDispatcher) {
+                            // Clear controller state if changed for the same media session.
+                            currentModel?.instanceId?.let { clearControllerState(it) }
+                            token?.let { mediaControllerFactory.create(applicationContext, it) }
+                        }
                     }
                 val (icon, background) = getIconAndBackground(mediaData, currentModel, updateModel)
                 val mediaModel = toDataModel(controller, icon, background)
@@ -302,7 +306,8 @@ constructor(
                     },
                 durationMs = duration,
                 positionMs = position,
-                canBeScrubbed = state != PlaybackState.STATE_NONE && duration > 0L,
+                canShowSeekbar = canShowSeekbar(currentPlaybackState, metadata),
+                canBeScrubbed = isSeekAvailable(currentPlaybackState),
                 canBeDismissed = isClearable,
                 isActive = active,
                 isResume = resumption,
@@ -447,11 +452,11 @@ constructor(
                                 .find { it.instanceId == dataModel.instanceId }
                                 ?.let { latestModel ->
                                     updateMediaModelInStateLocked(latestModel) { model ->
-                                        val canBeScrubbed =
-                                            controller.playbackState?.state !=
-                                                PlaybackState.STATE_NONE && duration > 0L
+                                        val playbackState = controller.playbackState
                                         model.copy(
-                                            canBeScrubbed = canBeScrubbed,
+                                            canBeScrubbed = isSeekAvailable(playbackState),
+                                            canShowSeekbar =
+                                                canShowSeekbar(playbackState, metadata),
                                             durationMs = duration,
                                         )
                                     }
@@ -547,6 +552,14 @@ constructor(
         mediaCallbacks[instanceId]?.let { activeControllers[instanceId]?.unregisterCallback(it) }
         activeControllers.remove(instanceId)
         mediaCallbacks.remove(instanceId)
+
+        currentMedia
+            .find { it.instanceId == instanceId }
+            ?.let { latestModel ->
+                updateMediaModelInStateLocked(latestModel) { model ->
+                    model.copy(canBeScrubbed = false, canShowSeekbar = false)
+                }
+            }
     }
 
     @GuardedBy("mediaMutex")
@@ -569,6 +582,18 @@ constructor(
 
             currentMedia[currentMedia.indexOf(oldModel)] = newModel
         }
+    }
+
+    private fun canShowSeekbar(playbackState: PlaybackState?, metadata: MediaMetadata?): Boolean {
+        val duration = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
+        val state = playbackState?.state ?: PlaybackState.STATE_NONE
+        return duration > 0L && state != PlaybackState.STATE_NONE
+    }
+
+    private fun isSeekAvailable(playbackState: PlaybackState?): Boolean {
+        val state = playbackState?.state ?: PlaybackState.STATE_NONE
+        val actions = playbackState?.actions ?: 0L
+        return state != PlaybackState.STATE_NONE && (actions and PlaybackState.ACTION_SEEK_TO != 0L)
     }
 
     companion object {

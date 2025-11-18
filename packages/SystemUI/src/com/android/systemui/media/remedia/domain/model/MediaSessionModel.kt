@@ -55,9 +55,11 @@ interface MediaSessionModel {
     /** Whether the session can be hidden/dismissed by the user. */
     val canBeHidden: Boolean
 
+    val canShowSeekbar: Boolean
+
     /**
-     * Whether the session currently supports scrubbing (e.g. moving to a different position iin the
-     * playback.
+     * Whether the session currently supports scrubbing (e.g. moving to a different position in the
+     * playback.)
      */
     val canBeScrubbed: Boolean
 
