@@ -17,7 +17,11 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
+import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
+import android.os.Bundle
 import android.os.IBinder
+import android.os.IRemoteCallback
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -32,14 +36,17 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -61,6 +68,7 @@ class NormalAppLayerControllerTest : ShellTestCase() {
     @Mock private lateinit var desktopTasksController: DesktopTasksController
     @Mock private lateinit var pinnedLayerController: PinnedLayerController
     @Mock private lateinit var desktopRepository: DesktopRepository
+    @Mock private lateinit var callback: IRemoteCallback
     private lateinit var desktopState: FakeDesktopState
 
     private lateinit var normalAppLayerController: NormalAppLayerController
@@ -74,15 +82,16 @@ class NormalAppLayerControllerTest : ShellTestCase() {
 
     @Test
     fun moveTaskToNormalLayer_pinnedTaskAndActiveDesk_movesTaskToActiveDesk() {
+        setupPinnedTask(TASK_ID_0, isPinned = true)
         setupDesktopModeSupportedOnDisplay(DISPLAY_ID_0, true)
         whenever(desktopRepository.isActiveTask(TASK_ID_0)).thenReturn(false)
         whenever(desktopRepository.getActiveDeskId(DISPLAY_ID_0)).thenReturn(DESK_ID_0)
-        whenever(pinnedLayerController.isPinned(TASK_ID_0)).thenReturn(true)
 
         val wct =
             normalAppLayerController.moveTaskToNormalLayer(
                 TRANSITION_TOKEN,
                 makeTaskInfo(TASK_ID_0, DISPLAY_ID_0, USER_ID_0),
+                callback,
             )
 
         assertNotNull(wct)
@@ -97,6 +106,7 @@ class NormalAppLayerControllerTest : ShellTestCase() {
                 isNull(),
                 eq(TRANSITION_TOKEN),
             )
+        assertCallbackSuccess()
     }
 
     @Test
@@ -109,6 +119,7 @@ class NormalAppLayerControllerTest : ShellTestCase() {
             normalAppLayerController.moveTaskToNormalLayer(
                 TRANSITION_TOKEN,
                 makeTaskInfo(TASK_ID_0, DISPLAY_ID_0, USER_ID_0),
+                callback,
             )
 
         assertNotNull(wct)
@@ -121,6 +132,7 @@ class NormalAppLayerControllerTest : ShellTestCase() {
                 isNull(),
                 eq(TRANSITION_TOKEN),
             )
+        assertCallbackSuccess()
     }
 
     @Test
@@ -133,10 +145,12 @@ class NormalAppLayerControllerTest : ShellTestCase() {
             normalAppLayerController.moveTaskToNormalLayer(
                 TRANSITION_TOKEN,
                 makeTaskInfo(TASK_ID_0, DISPLAY_ID_0, USER_ID_0),
+                callback,
             )
 
         assertNotNull(wct)
         verifyNoInteractions(desktopTasksController)
+        assertCallbackSuccess()
     }
 
     @Test
@@ -147,9 +161,11 @@ class NormalAppLayerControllerTest : ShellTestCase() {
         normalAppLayerController.moveTaskToNormalLayer(
             TRANSITION_TOKEN,
             makeTaskInfo(TASK_ID_0, DISPLAY_ID_0, USER_ID_0),
+            callback,
         )
 
         verifyNoInteractions(desktopTasksController)
+        assertCallbackSuccess()
     }
 
     @Test
@@ -161,10 +177,12 @@ class NormalAppLayerControllerTest : ShellTestCase() {
             normalAppLayerController.moveTaskToNormalLayer(
                 TRANSITION_TOKEN,
                 makeTaskInfo(TASK_ID_0, DISPLAY_ID_0, USER_ID_0),
+                callback,
             )
 
         assertNotNull(wct)
         verifyNoInteractions(desktopTasksController)
+        assertCallbackSuccess()
     }
 
     @Test
@@ -177,11 +195,24 @@ class NormalAppLayerControllerTest : ShellTestCase() {
             normalAppLayerController.moveTaskToNormalLayer(
                 TRANSITION_TOKEN,
                 makeTaskInfo(TASK_ID_0, DISPLAY_ID_0, USER_ID_0),
+                callback,
             )
 
         assertNotNull(wct)
         assertTrue(wct.isEmpty)
         verifyNoInteractions(desktopTasksController)
+        assertCallbackSuccess()
+    }
+
+    private fun assertCallbackSuccess() {
+        // Mock the system state where the task is not on pinned layer anymore.
+        setupPinnedTask(TASK_ID_0, isPinned = false)
+        // Complete the transition to trigger the callback.
+        normalAppLayerController.onTransitionReady(TRANSITION_TOKEN, mock(), mock(), mock())
+        val bundleCaptor = argumentCaptor<Bundle>()
+        verify(callback).sendResult(bundleCaptor.capture())
+        val resultBundle = bundleCaptor.firstValue
+        assertEquals(RESULT_APPROVED, resultBundle.getInt(REMOTE_CALLBACK_RESULT_KEY))
     }
 
     private fun createController(

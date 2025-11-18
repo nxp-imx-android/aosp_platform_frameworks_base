@@ -50,7 +50,7 @@ import com.android.wm.shell.transition.Transitions.TransitionObserver
 class NormalAppLayerController(
     shellInit: ShellInit,
     private val transitions: Transitions,
-    private val userRepositories: DesktopUserRepositories,
+    private val userRepositories: DesktopUserRepositories?,
     private val desktopTasksController: DesktopTasksController?,
     private val pinnedLayerController: PinnedLayerController,
     private val desktopState: DesktopState,
@@ -110,36 +110,60 @@ class NormalAppLayerController(
         callback: IRemoteCallback? = null,
     ): WindowContainerTransaction {
         val wct = WindowContainerTransaction()
-        val desktopRepository = userRepositories.getProfile(taskInfo.userId)
+        val isTaskPinned = pinnedLayerController.isPinned(taskInfo.taskId)
+        if (isTaskPinned) {
+            val isDesktopModeSupportedOnDevice =
+                desktopTasksController != null && userRepositories != null
+            if (isDesktopModeSupportedOnDevice) {
+                moveToDeskIfRequired(transition, taskInfo, wct)
+            } else {
+                logE(
+                    "Pinned task=%s only supported on Desktop. " +
+                        "Skipping moving to the normal layer.",
+                    taskInfo,
+                )
+            }
+        } else {
+            logV("Task is not pinned. Skipping moving to the normal layer.")
+        }
 
-        val isDesktopModeSupportedOnDevice = desktopTasksController != null
+        // Always send a transition, even if we do not move pinned window to the normal layer due
+        // to not supported DW or invalid state, the callback must be dispatched.
+        createMoveToNormalTransition(transition, taskInfo, callback)
+        return wct
+    }
+
+    /**
+     * Decorates a [wct] to move a given task to a desk if required.
+     *
+     * Expects the device to support desktop mode, where [desktopTasksController] and
+     * [userRepositories] are not null.
+     */
+    private fun moveToDeskIfRequired(
+        transition: IBinder,
+        taskInfo: RunningTaskInfo,
+        wct: WindowContainerTransaction,
+    ) {
+        val desktopRepository = userRepositories!!.getProfile(taskInfo.userId)
         val isDesktopModeSupportedOnDisplay =
             desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)
-        val isTaskPinned = pinnedLayerController.isPinned(taskInfo.taskId)
         val isDesktopWindow = desktopRepository.isActiveTask(taskInfo.taskId)
         logV(
             "Checking moving to the desk: taskId=%s, displayId=%s " +
-                "isDesktopModeSupportedOnDevice=%b isDesktopModeSupportedOnDisplay=%b, " +
-                "isTaskPinned=%b, isDesktopWindow=%b",
+                "isDesktopModeSupportedOnDisplay=%b, isDesktopWindow=%b",
             taskInfo.taskId,
             taskInfo.displayId,
-            isDesktopModeSupportedOnDevice,
             isDesktopModeSupportedOnDisplay,
-            isTaskPinned,
             isDesktopWindow,
         )
 
-        val isMovingToDesktop =
-            isDesktopModeSupportedOnDevice &&
-                isDesktopModeSupportedOnDisplay &&
-                isTaskPinned &&
-                !isDesktopWindow
+        val isMovingToDesktop = isDesktopModeSupportedOnDisplay && !isDesktopWindow
         if (isMovingToDesktop) {
             val displayId = taskInfo.displayId
             val deskId = desktopRepository.getActiveDeskId(displayId)
             if (deskId != null) {
                 logV("Normal layer is an active desk with id=%s", deskId)
-                desktopTasksController.moveTaskToDesk(
+                desktopTasksController!!.moveTaskToDesk(
                     taskId = taskInfo.taskId,
                     deskId = deskId,
                     userId = taskInfo.userId,
@@ -153,7 +177,7 @@ class NormalAppLayerController(
                         "request. Trying to move to the default desk as a fallback.",
                     displayId,
                 )
-                desktopTasksController.moveTaskToDefaultDeskAndActivate(
+                desktopTasksController!!.moveTaskToDefaultDeskAndActivate(
                     taskId = taskInfo.taskId,
                     wct = wct,
                     transitionSource = LAYER_SWITCH,
@@ -162,18 +186,13 @@ class NormalAppLayerController(
             }
         }
 
-        if (isTaskPinned && isDesktopWindow) {
+        if (isDesktopWindow) {
             logE(
                 "Pinned task=%s can't be a desktop window in a Desk. " +
                     "Skipping moving to the normal layer.",
                 taskInfo,
             )
         }
-
-        // Always send a transition, even if we do not move pinned window to the normal layer due
-        // to not supported DW or invalid state, the callback must be dispatched.
-        createMoveToNormalTransition(transition, taskInfo, callback)
-        return wct
     }
 
     private fun createMoveToNormalTransition(
