@@ -1199,8 +1199,8 @@ public class RootTaskTests extends WindowTestsBase {
     @Test
     public void testNavigateUpTo() {
         final ActivityStartController controller = mock(ActivityStartController.class);
-        final ActivityStarter starter = new ActivityStarter(controller,
-                mAtm, mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class));
+        final ActivityStarter starter = new ActivityStarter(controller, mAtm, mAtm.mTaskSupervisor,
+                mock(ActivityStartInterceptor.class), mock(UserHelper.class));
         doReturn(controller).when(mAtm).getActivityStartController();
         spyOn(starter);
         doReturn(ActivityManager.START_SUCCESS).when(starter).execute();

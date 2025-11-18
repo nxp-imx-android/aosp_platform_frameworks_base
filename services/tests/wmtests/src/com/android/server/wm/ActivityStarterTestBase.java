@@ -70,6 +70,7 @@ abstract class ActivityStarterTestBase extends WindowTestsBase {
     protected ActivityMetricsLogger mActivityMetricsLogger;
     protected PackageManagerInternal mMockPackageManager;
     protected final UserManagerInternal mMockUmi = mock(UserManagerInternal.class);
+    protected final UserHelper mMockUserHelper = mock(UserHelper.class);
     protected AppOpsManager mAppOpsManager;
 
     @Before
@@ -112,6 +113,16 @@ abstract class ActivityStarterTestBase extends WindowTestsBase {
      */
     protected final ActivityStarter prepareStarter(@Intent.Flags int launchFlags,
             boolean mockGetRootTask, int launchMode) {
+        return prepareStarter(launchFlags, mockGetRootTask, launchMode, mMockUserHelper);
+    }
+
+    /**
+     * Same as {@link #prepareStarter(int, boolean, int)}, but explicitly setting the
+     * {@code UserHelper} (instead of using {@link #mMockUserHelper}).
+     */
+    protected final ActivityStarter prepareStarter(@Intent.Flags int launchFlags,
+            boolean mockGetRootTask, int launchMode, UserHelper userHelper) {
+
         // always allow test to start activity.
         doReturn(true).when(mSupervisor).checkStartAnyActivityPermission(
                 any(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(),
@@ -169,7 +180,7 @@ abstract class ActivityStarterTestBase extends WindowTestsBase {
         info.launchMode = launchMode;
 
         return new ActivityStarter(mController, mAtm,
-                mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class))
+                mAtm.mTaskSupervisor, mock(ActivityStartInterceptor.class), userHelper)
                 .setReason(name.getMethodName())
                 .setIntent(intent)
                 .setActivityInfo(info);
