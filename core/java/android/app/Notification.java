@@ -7338,7 +7338,7 @@ public class Notification implements Parcelable
                 boolean actionHasValidInput = hasValidRemoteInput(action.action);
                 validRemoteInput |= actionHasValidInput;
 
-                final RemoteViews button = generateActionButton(action, actions.emphasized(), p);
+                final RemoteViews button = createActionButtonView(action, actions.emphasized(), p);
                 if (actionHasValidInput && !actions.emphasized()) {
                     // Clear the drawable
                     button.setInt(R.id.action0, "setBackgroundResource", 0);
@@ -7354,8 +7354,8 @@ public class Notification implements Parcelable
         }
 
         @FlaggedApi(Flags.FLAG_API_NOTIFICATION_ACTION_CUSTOM)
-        private RemoteViews generateActionButton(ActionButton actionButton, boolean emphasizedMode,
-                StandardTemplateParams p) {
+        private RemoteViews createActionButtonView(ActionButton actionButton,
+                boolean emphasizedMode, StandardTemplateParams p) {
             Action action = actionButton.action;
             final boolean tombstone = (action.actionIntent == null);
             final boolean showIcon =
@@ -7549,7 +7549,7 @@ public class Notification implements Parcelable
             }
         }
 
-        // TODO: Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
+        // TODO: b/461794266 - Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
         private RemoteViews legacyApplyStandardTemplateWithActions(int layoutId,
                 StandardTemplateParams p, TemplateBindResult result) {
             RemoteViews contentView = applyStandardTemplate(layoutId, p, result);
@@ -7617,7 +7617,7 @@ public class Notification implements Parcelable
          *     <li>Limits the number of actions to 3.
          * </ul>
          */
-        // TODO: Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
+        // TODO: b/461794266 - Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
         private @NonNull List<Action> legacyGetEffectiveActions() {
             if (mActions == null) return Collections.emptyList();
             List<Notification.Action> effectiveActions = new ArrayList<>();
@@ -7636,7 +7636,7 @@ public class Notification implements Parcelable
             return effectiveActions;
         }
 
-        // TODO: Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
+        // TODO: b/461794266 - Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
         private boolean legacyPopulateActionsContainer(RemoteViews contentView,
                 StandardTemplateParams p, List<Action> effectiveActions, boolean emphasizedMode) {
             boolean validRemoteInput = false;
@@ -7659,7 +7659,7 @@ public class Notification implements Parcelable
             return validRemoteInput;
         }
 
-        // TODO: Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
+        // TODO: b/461794266 - Delete when inlining FLAG_API_NOTIFICATION_ACTION_CUSTOM.
         private RemoteViews legacyGenerateActionButton(Action action, boolean emphasizedMode,
                 StandardTemplateParams p) {
             final boolean tombstone = (action.actionIntent == null);
