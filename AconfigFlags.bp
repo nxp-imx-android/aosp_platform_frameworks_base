@@ -25,6 +25,7 @@ aconfig_declarations_group {
         "aconfig_trade_in_mode_flags_java_lib",
         "adpf_flags_java_lib",
         "anomaly-detector-exported-aconfig-flags-lib",
+        "android.aiseal.flags-aconfig-java",
         "android.app.appfunctions.flags-aconfig-java",
         "android.app.assist.flags-aconfig-java",
         "android.app.contentrestriction.flags-aconfig-java",
@@ -2329,6 +2330,21 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.app.privatecompute.flags-aconfig-java",
     aconfig_declarations: "android.app.privatecompute.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// AiSeal
+aconfig_declarations {
+    name: "android.aiseal.flags-aconfig",
+    exportable: true,
+    package: "android.aiseal",
+    container: "system",
+    srcs: ["core/java/android/aiseal/aiseal.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.aiseal.flags-aconfig-java",
+    aconfig_declarations: "android.aiseal.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
