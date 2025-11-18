@@ -145,13 +145,15 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                         )
                     }
                 }
-                Text(
-                    text = subTitle,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant,
-                )
+                if (subTitle.isNotEmpty()) {
+                    Text(
+                        text = subTitle,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                    )
+                }
             }
 
             Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
