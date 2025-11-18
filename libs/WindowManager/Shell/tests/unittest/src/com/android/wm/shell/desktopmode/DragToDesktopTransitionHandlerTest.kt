@@ -39,6 +39,7 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKT
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.CancelState
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
@@ -92,6 +93,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     @Mock private lateinit var bubbleController: BubbleController
     @Mock private lateinit var visualIndicator: DesktopModeVisualIndicator
     @Mock private lateinit var dragCancelCallback: Runnable
+    @Mock private lateinit var desktopConfig: DesktopConfig
     @Mock
     private lateinit var dragToDesktopStateListener:
         DragToDesktopTransitionHandler.DragToDesktopStateListener
@@ -122,6 +124,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     Optional.of(bubbleController),
                     transactionSupplier,
                     desktopState,
+                    desktopConfig,
                 )
                 .apply {
                     setSplitScreenController(splitScreenController)
@@ -545,11 +548,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
         // Verify finish is dropped.
         verify(transitions, never())
-            .startTransition(
-                eq(TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP),
-                any(),
-                eq(springHandler),
-            )
+            .startTransition(eq(TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP), any(), eq(springHandler))
     }
 
     @Test
