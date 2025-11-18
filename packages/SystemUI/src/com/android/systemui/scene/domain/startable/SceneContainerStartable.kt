@@ -730,32 +730,22 @@ constructor(
 
     private fun handleDreamState() {
         applicationScope.launch {
-            keyguardInteractor.isAbleToDream
-                .sample(sceneInteractor.transitionState, ::Pair)
-                .collect { (isAbleToDream, transitionState) ->
-                    if (transitionState.isIdle(Scenes.Communal)) {
-                        // The dream is automatically started underneath the hub, don't transition
-                        // to dream when this is happening as communal is still visible on top.
-                        return@collect
-                    }
-                    if (isAbleToDream) {
-                        switchToScene(
-                            targetSceneKey = Scenes.Dream,
-                            loggingReason = "dream started",
-                        )
-                    } else {
-                        switchToScene(
-                            targetSceneKey = SceneFamilies.Home,
-                            loggingReason = "dream stopped",
-                            hideOverlays =
-                                if (deviceUnlockedInteractor.isUnlocked) {
-                                    HideOverlayCommand.HideAll
-                                } else {
-                                    HideOverlayCommand.HideNone
-                                },
-                        )
-                    }
+            keyguardInteractor.isAbleToDream.collect { isAbleToDream ->
+                if (isAbleToDream) {
+                    switchToScene(targetSceneKey = Scenes.Dream, loggingReason = "dream started")
+                } else {
+                    switchToScene(
+                        targetSceneKey = SceneFamilies.Home,
+                        loggingReason = "dream stopped",
+                        hideOverlays =
+                            if (deviceUnlockedInteractor.isUnlocked) {
+                                HideOverlayCommand.HideAll
+                            } else {
+                                HideOverlayCommand.HideNone
+                            },
+                    )
                 }
+            }
         }
     }
 
