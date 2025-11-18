@@ -368,7 +368,7 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-CloseThenMoveFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-CloseAndKeepFocusTest",
       "keywords": [
         "device",
         "desktop"

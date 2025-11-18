@@ -123,7 +123,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.close.CloseAllAppsWithAppHeaderExitTest",
         "com.android.wm.shell.functional.fundamentals.close.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.functional.fundamentals.focus.ClickAndFocusTest",
-        "com.android.wm.shell.functional.fundamentals.focus.CloseThenMoveFocusTest",
+        "com.android.wm.shell.functional.fundamentals.focus.CloseAndKeepFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.DragAndKeepFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
@@ -546,10 +546,10 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-focus-CloseThenMoveFocusTest",
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-CloseAndKeepFocusTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.CloseThenMoveFocusTest"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.CloseAndKeepFocusTest"],
 }
 
 test_module_config {
