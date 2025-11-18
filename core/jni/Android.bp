@@ -320,6 +320,11 @@ cc_defaults_for_libandroid_runtime {
                     "libflatbuffers-cpp",
                 ],
                 default: [],
+            }) + select(release_flag("RELEASE_BUILD_EXECUTE_ONLY_MEMORY"), {
+                true: [
+                    "libtracing_perfetto",
+                ],
+                default: [],
             }),
 
             shared_libs: [
