@@ -93,7 +93,7 @@ public class RunningTaskFetcher {
         return new RemoteTaskInfo(
                 taskInfo.taskId,
                 packageName,
-                taskInfo.isVisible(),
+                taskInfo.isFocused,
                 taskInfo.lastActiveTime,
                 new HandoffOptions(isHandoffEnabled, requirePackageInstalled));
     }
