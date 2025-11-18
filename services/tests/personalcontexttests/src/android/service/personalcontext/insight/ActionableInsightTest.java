@@ -38,6 +38,7 @@ public class ActionableInsightTest {
         final InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title")
                         .setContentDescription("content description")
+                        .setSubtitle("subtitle")
                         .build();
 
         final ActionableInsight originalInsight =

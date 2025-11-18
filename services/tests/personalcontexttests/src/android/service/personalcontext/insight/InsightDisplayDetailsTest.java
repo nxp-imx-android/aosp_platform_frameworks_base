@@ -33,6 +33,7 @@ public class InsightDisplayDetailsTest {
         final InsightDisplayDetails originalDisplayDetails =
                 new InsightDisplayDetails.Builder("title")
                         .setContentDescription("content description")
+                        .setSubtitle("subtitle")
                         .build();
 
         final Parcel parcel = Parcel.obtain();

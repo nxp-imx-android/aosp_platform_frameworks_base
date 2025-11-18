@@ -43851,6 +43851,7 @@ package android.service.personalcontext.insight {
     method public int describeContents();
     method @Nullable public CharSequence getContentDescription();
     method @Nullable public android.graphics.drawable.Icon getIcon();
+    method @Nullable public CharSequence getSubtitle();
     method @Nullable public CharSequence getTitle();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightDisplayDetails> CREATOR;
@@ -43862,6 +43863,7 @@ package android.service.personalcontext.insight {
     ctor public InsightDisplayDetails.Builder(@NonNull CharSequence, @NonNull android.graphics.drawable.Icon);
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails build();
     method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setContentDescription(@Nullable CharSequence);
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setSubtitle(@Nullable CharSequence);
   }
 
 }
