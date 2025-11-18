@@ -208,10 +208,6 @@ public class ProcessStateController {
         mOomConstants.mProcStateDebugSetUidStateDelay = value;
     }
 
-    public void setOomadjUpdateQuick(boolean value) {
-        mOomConstants.mOomadjUpdateQuick = value;
-    }
-
     public void setProactiveKillsEnabled(boolean value) {
         mOomConstants.mProactiveKillsEnabled = value;
     }
