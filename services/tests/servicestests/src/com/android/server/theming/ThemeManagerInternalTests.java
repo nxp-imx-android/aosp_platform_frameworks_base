@@ -20,10 +20,12 @@ import static android.content.theming.FieldColorSource.VALUE_PRESET;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManagerInternal;
 import android.app.WallpaperColors;
 import android.content.theming.IThemeSettingsCallback;
 import android.content.theming.ThemeInfo;
@@ -79,6 +81,8 @@ public class ThemeManagerInternalTests {
     private OverlayManagerInternal mOverlayManager;
     @Mock
     private WallpaperManagerInternal mWallpaperManagerInternal;
+    @Mock
+    private ActivityManagerInternal mActivityManagerInternal;
 
     private FakeScheduledExecutorService mSchedulerExecutor;
     private ThemeStateManager mStateManager;
@@ -90,10 +94,12 @@ public class ThemeManagerInternalTests {
         LocalServices.removeServiceForTest(OverlayManagerInternal.class);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.removeServiceForTest(WallpaperManagerInternal.class);
+        LocalServices.removeServiceForTest(ActivityManagerInternal.class);
 
         LocalServices.addService(OverlayManagerInternal.class, mOverlayManager);
         LocalServices.addService(UserManagerInternal.class, mUserManager);
         LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManagerInternal);
+        LocalServices.addService(ActivityManagerInternal.class, mActivityManagerInternal);
 
         mContext = new TestableContext(InstrumentationRegistry.getTargetContext(), null);
         TestableResources testableResources = mContext.getOrCreateTestableResources();
@@ -103,6 +109,10 @@ public class ThemeManagerInternalTests {
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
 
         when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
+        when(mUserManager.getProfileIds(anyInt(), anyBoolean())).thenAnswer(invocation -> {
+            int requestedUserId = invocation.getArgument(0);
+            return new int[]{requestedUserId};
+        });
 
         mThemeSettingsManager = new ThemeSettingsManager(mWallpaperManagerInternal);
         mSchedulerExecutor = new FakeScheduledExecutorService();

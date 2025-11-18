@@ -56,16 +56,17 @@ final class ThemeOverlayHelper {
      * Applies color overlays for a given user based on their current theme state.
      *
      * @param overlayManager The service to commit the transaction to.
-     * @param statePair The state pair containing all necessary user, profile, and color info.
+     * @param snapshot The snapshot containing all necessary user, profile, and color info.
+     * @param applyToSystem whenever to apply overlays to the system user as well.
      */
     public static void applyCurrentStateOverlays(OverlayManagerInternal overlayManager,
-            ThemeStatePair statePair) throws CancellationException {
+            ThemeStatePair.OverlaySnapshot snapshot, boolean applyToSystem)
+            throws CancellationException {
 
-        final ColorScheme lightScheme = statePair.getLightScheme();
-        final ColorScheme darkScheme = statePair.getDarkScheme();
-        final int userId = statePair.userId;
-        final Set<UserHandle> managedProfiles = statePair
-                .getPendingChildProfiles()
+        final ColorScheme lightScheme = snapshot.lightScheme();
+        final ColorScheme darkScheme = snapshot.darkScheme();
+        final int userId = snapshot.userId();
+        final Set<UserHandle> managedProfiles = snapshot.profiles()
                 .stream()
                 .map(UserHandle::of)
                 .collect(Collectors.toSet());
@@ -91,7 +92,7 @@ final class ThemeOverlayHelper {
             transaction.setEnabled(identifier, true, userId);
 
             // All generated color overlays must also be applied to the system user for SystemUI.
-            if (userId != UserHandle.SYSTEM.getIdentifier()) {
+            if (applyToSystem && userId != UserHandle.SYSTEM.getIdentifier()) {
                 transaction.setEnabled(identifier, true, UserHandle.SYSTEM.getIdentifier());
             }
 
