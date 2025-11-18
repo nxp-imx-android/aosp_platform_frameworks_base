@@ -390,14 +390,12 @@ public class FontManager {
      * </pre>
      *
      * @param fallbackRequests A list of FallbackFontUpdateRequest objects. Each request must
-     *                         contain an unnamed family with a 'lang' tag. Font files referenced
-     *                         by these families must already be installed via the update() method.
+     *                         contain an unnamed family with a 'lang' tag. For the requests with
+     *                         the same 'lang' tag, they have to be sorted by their priorities from
+     *                         low to high, otherwise {@link FontManager#RESULT_ERROR_DOWNGRADING}
+     *                         error will be returned. Font files referenced by these families must
+     *                         already be installed via the update() method.
      * @return A result code.
-     * @see #RESULT_SUCCESS
-     * @see #RESULT_ERROR_FONT_UPDATER_DISABLED
-     * @see #RESULT_ERROR_FONT_NOT_FOUND
-     * @see #RESULT_ERROR_INVALID_ARGUMENT
-     * @see #RESULT_ERROR_INVALID_PRIORITY
      */
     @FlaggedApi(com.android.text.flags.Flags.FLAG_INSERT_FONT_FAMILY)
     @RequiresPermission(Manifest.permission.UPDATE_FONTS)
