@@ -18,13 +18,16 @@ package com.android.server.privatecompute;
 
 import static android.os.Process.SYSTEM_UID;
 
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.app.privatecompute.IPccService;
 import android.app.privatecompute.IResultCallback;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.content.pm.ProviderInfo;
 import android.os.BadParcelableException;
 import android.os.Binder;
 import android.os.Bundle;
@@ -35,6 +38,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
@@ -46,7 +50,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 /**
  * Local interface for the PccSandboxManager that is used by other system services to interact with
  * the PCC sandbox.
@@ -54,21 +60,119 @@ import java.util.Map;
  * @hide Only for use within system_server.
  */
 public final class PccSandboxManagerInternal {
-    private static final String TAG = PccSandboxManagerInternal.class.getSimpleName();
+    private static final String TAG = "PccSandboxManagerInternal";
 
     private final PackageManagerInternal mPackageManagerInternal;
+    private final ExecutorService mExecutor;
+    private final Future<?> mPopulatePccTrustedPackagesFuture;
+
+    @VisibleForTesting
+    @GuardedBy("mLock")
+    final Set<String> mPccTrustedPackages = new ArraySet<>();
+
+    @VisibleForTesting
+    static final int[] TRUSTED_UIDS = new int[] {
+            Process.BLUETOOTH_UID,
+            Process.SYSTEM_UID,
+            Process.PHONE_UID
+    };
+
     private final Context mContext;
     private final PccSandboxManagerServiceImpl mPccSandboxManagerService;
     private final Object mLock = new Object();
+
     @VisibleForTesting
     @GuardedBy("mLock")
     final Map<IBinder, PccServiceInfo> mPccServiceConnections = new ArrayMap<>();
 
     public PccSandboxManagerInternal(
             Context context, PccSandboxManagerServiceImpl pccSandboxManagerService) {
-        this.mContext = context;
+        mContext = context;
         mPccSandboxManagerService = pccSandboxManagerService;
-        this.mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+        mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+        mExecutor = pccSandboxManagerService.getExecutorService();
+        mPopulatePccTrustedPackagesFuture = mExecutor.submit(this::populatePccTrustedPackages);
+    }
+
+    /**
+     * Waits for the list of trusted PCC packages to be populated.
+     */
+    void awaitPccTrustedPackages() {
+        try {
+            mPopulatePccTrustedPackagesFuture.get();
+        } catch (Exception e) {
+            Slog.e(TAG, "Error populating trusted PCC packages", e);
+        }
+    }
+
+    @VisibleForTesting
+    void populatePccTrustedPackages() {
+        String systemUiPackage = mContext.getString(
+                com.android.internal.R.string.config_systemUi);
+
+        String mediaStorePackage = resolveProviderPackageName(
+                android.provider.MediaStore.AUTHORITY);
+        String telephonyPackage = resolveProviderPackageName("telephony");
+        String contactsPackage = resolveProviderPackageName(
+                android.provider.ContactsContract.AUTHORITY);
+        String calendarPackage = resolveProviderPackageName(
+                android.provider.CalendarContract.AUTHORITY);
+        String downloadsPackage = resolveProviderPackageName(
+                android.provider.Downloads.Impl.AUTHORITY);
+        String externalStoragePackage = resolveProviderPackageName(
+                android.provider.DocumentsContract.EXTERNAL_STORAGE_PROVIDER_AUTHORITY);
+
+        synchronized (mLock) {
+            if (systemUiPackage != null && !systemUiPackage.isEmpty()) {
+                mPccTrustedPackages.add(systemUiPackage);
+            }
+            if (mediaStorePackage != null) {
+                mPccTrustedPackages.add(mediaStorePackage);
+            }
+            if (telephonyPackage != null) {
+                mPccTrustedPackages.add(telephonyPackage);
+            }
+            if (contactsPackage != null) {
+                mPccTrustedPackages.add(contactsPackage);
+            }
+            if (calendarPackage != null) {
+                mPccTrustedPackages.add(calendarPackage);
+            }
+            if (downloadsPackage != null) {
+                mPccTrustedPackages.add(downloadsPackage);
+            }
+            if (externalStoragePackage != null) {
+                mPccTrustedPackages.add(externalStoragePackage);
+            }
+            Slog.d(TAG, "Trusted PCC Packages: " + mPccTrustedPackages);
+        }
+    }
+
+    @Nullable
+    private String resolveProviderPackageName(String authority) {
+        final PackageManager pm = mContext.getPackageManager();
+        ProviderInfo providerInfo = pm.resolveContentProvider(authority, 0);
+        return providerInfo != null ? providerInfo.packageName : null;
+    }
+
+    private boolean isPccTrustedApp(int appUid, String appPackage) {
+        for (int uid : TRUSTED_UIDS) {
+            if (appUid == uid) {
+                return true;
+            }
+        }
+
+        // PCS applications are trusted.
+        if (isPrivateComputeServicesUid(appUid)) {
+            return true;
+        }
+
+        synchronized (mLock) {
+            if (mPccTrustedPackages.contains(appPackage)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -242,15 +346,14 @@ public final class PccSandboxManagerInternal {
 
         // Since this method is only called if either caller or target is PCC,
         // if we're here, the caller is a PCC UID and the target is not.
-        // Allow PCC To PCS association.
-        if (isPrivateComputeServicesUid(targetUid)) {
+        // Allow PCC to trusted component association.
+        if (isPccTrustedApp(targetUid, targetPackage)) {
             return true;
         }
 
-        // TODO(b/438430261): Allow PCC to trusted component association.
-
         return false;
     }
+
 
     @VisibleForTesting
     final class PccServiceProxy extends IPccService.Stub {
