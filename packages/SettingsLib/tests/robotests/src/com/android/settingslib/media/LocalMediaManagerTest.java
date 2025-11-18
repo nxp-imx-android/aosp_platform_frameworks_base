@@ -18,7 +18,6 @@ package com.android.settingslib.media;
 
 import static android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR;
 import static android.media.RoutingChangeInfo.ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED;
-import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_MEDIA_CONTROLS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -36,6 +35,7 @@ import static org.mockito.Mockito.withSettings;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.content.ComponentName;
 import android.content.Context;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
@@ -65,12 +65,10 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowLooper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(shadows = {ShadowBluetoothAdapter.class})
@@ -641,5 +639,24 @@ public class LocalMediaManagerTest {
                 .thenReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING);
         assertThat(mLocalMediaManager.getSessionReleaseType())
                 .isEqualTo(RoutingSessionInfo.RELEASE_TYPE_SHARING);
+    }
+
+    @Test
+    public void getMissingPermissionsInfo_returnsInfoFromInfoMediaManager() {
+        ComponentName component = new ComponentName(TEST_PACKAGE_NAME, "TestClass");
+        MissingPermissionsInfo info = new MissingPermissionsInfo(component, Collections.emptySet());
+        when(mInfoMediaManager.getMissingPermissionsInfo()).thenReturn(info);
+
+        assertThat(mLocalMediaManager.getMissingPermissionsInfo()).isEqualTo(info);
+    }
+
+    @Test
+    public void onMissingPermissionsUpdated_notifiesCallbacks() {
+        ComponentName component = new ComponentName(TEST_PACKAGE_NAME, "TestClass");
+        MissingPermissionsInfo info = new MissingPermissionsInfo(component, Collections.emptySet());
+
+        mLocalMediaManager.mMediaDeviceCallback.onMissingPermissionsUpdated(info);
+
+        verify(mCallback).onMissingPermissionsUpdated(info);
     }
 }

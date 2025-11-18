@@ -16,10 +16,15 @@
 
 package com.android.systemui.media.dialog;
 
+import static android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED;
+
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +32,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.testing.TestableLooper;
 import android.view.View;
 import android.widget.Button;
@@ -47,6 +53,7 @@ import com.android.systemui.res.R;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -276,6 +283,37 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     public void onCreate_ShouldLogVisibility() {
         verify(mUiEventLogger)
                 .log(MediaOutputDialog.MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
+    public void refresh_noMissingPermissionsResolveIntent_warningSectionGone() {
+        when(mMediaSwitchingController.getMissingPermissionsResolveIntent()).thenReturn(null);
+
+        mMediaOutputDialog.refresh();
+
+        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.warning_section)
+                .getVisibility()).isEqualTo(View.GONE);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
+    public void onWarningFixButtonClick_startsActivity() {
+        mContext = spy(mContext);
+        doNothing().when(mContext).startActivity(any());
+        mMediaOutputDialog = createDialog();
+        mMediaOutputDialog.onCreate(new Bundle());
+        Intent testIntent = new Intent("test.action.intent");
+        when(mMediaSwitchingController.getMissingPermissionsResolveIntent()).thenReturn(testIntent);
+
+        mMediaOutputDialog.refresh();
+        mMediaOutputDialog.mDialogView.requireViewById(R.id.warning_fix_button).performClick();
+
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mContext).startActivity(intentCaptor.capture());
+        Intent intent = intentCaptor.getValue();
+        assertThat(intent).isEqualTo(testIntent);
+        assertThat(mMediaOutputDialog.isShowing()).isFalse();
     }
 
     private MediaOutputDialog createDialog() {

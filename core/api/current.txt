@@ -26424,10 +26424,13 @@ package android.media {
     method public int describeContents();
     method @NonNull public java.util.List<android.media.RouteListingPreference.Item> getItems();
     method @Nullable public android.content.ComponentName getLinkedItemComponentName();
+    method @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") @Nullable public android.content.ComponentName getMissingPermissionsComponentName();
     method public boolean getUseSystemOrdering();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") public static final String ACTION_RESOLVE_MISSING_PERMISSIONS = "android.media.action.RESOLVE_MISSING_PERMISSIONS";
     field public static final String ACTION_TRANSFER_MEDIA = "android.media.action.TRANSFER_MEDIA";
     field @NonNull public static final android.os.Parcelable.Creator<android.media.RouteListingPreference> CREATOR;
+    field @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") public static final String EXTRA_MISSING_PERMISSIONS = "android.media.extra.MISSING_PERMISSIONS";
     field public static final String EXTRA_ROUTE_ID = "android.media.extra.ROUTE_ID";
   }
 
@@ -26436,6 +26439,7 @@ package android.media {
     method @NonNull public android.media.RouteListingPreference build();
     method @NonNull public android.media.RouteListingPreference.Builder setItems(@NonNull java.util.List<android.media.RouteListingPreference.Item>);
     method @NonNull public android.media.RouteListingPreference.Builder setLinkedItemComponentName(@Nullable android.content.ComponentName);
+    method @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") @NonNull public android.media.RouteListingPreference.Builder setMissingPermissionsComponentName(@Nullable android.content.ComponentName);
     method @NonNull public android.media.RouteListingPreference.Builder setUseSystemOrdering(boolean);
   }
 

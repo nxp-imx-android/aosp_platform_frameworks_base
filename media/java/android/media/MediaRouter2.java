@@ -177,6 +177,18 @@ public final class MediaRouter2 {
     @GuardedBy("mLock")
     private final Map<String, MediaRoute2Info> mRoutes = new ArrayMap<>();
 
+    /**
+     * Stores the set of route permissions the target package is missing.
+     *
+     * <p>This is only used for proxy MediaRouter2 instances, where the manager can see the routes,
+     * but the target app may not.
+     *
+     * <p>Clients can use {@link RouteCallback#onMissingPermissionsUpdated(Set)} to be notified of
+     * changes.
+     */
+    @GuardedBy("mLock")
+    private final Set<String> mMissingPermissions = new ArraySet<>();
+
     private final RoutingController mSystemController;
 
     @GuardedBy("mLock")
@@ -1032,6 +1044,20 @@ public final class MediaRouter2 {
     }
 
     /**
+     * Get permissions that guard routes, and the target app has requested but was not granted.
+     *
+     * <p>This is only used for proxy MediaRouter2 instances, where the manager can see the
+     * routes, but the target app may not.
+     * @hide
+     */
+    @NonNull
+    public Set<String> getMissingPermissions() {
+        synchronized (mLock) {
+            return new ArraySet<>(mMissingPermissions);
+        }
+    }
+
+    /**
      * Registers a callback to get the result of {@link #transferTo(MediaRoute2Info)}.
      * If you register the same callback twice or more, it will be ignored.
      *
@@ -1354,7 +1380,7 @@ public final class MediaRouter2 {
             return;
         }
 
-        updateRoutesOnHandler(currentRoutes);
+        updateRoutesOnHandler(currentRoutes, /* missingPermissions=*/Collections.emptyList());
 
         RoutingSessionInfo oldInfo = mSystemController.getRoutingSessionInfo();
         mSystemController.setRoutingSessionInfo(ensureClientPackageNameForSystemSession(
@@ -1435,12 +1461,13 @@ public final class MediaRouter2 {
         mPreviousUnfilteredRoutes.putAll(routesMap);
     }
 
-    void updateRoutesOnHandler(List<MediaRoute2Info> newRoutes) {
+    void updateRoutesOnHandler(List<MediaRoute2Info> newRoutes, List<String> missingPermissions) {
         synchronized (mLock) {
             mRoutes.clear();
             for (MediaRoute2Info route : newRoutes) {
                 mRoutes.put(route.getId(), route);
             }
+            updateMissingPermissionsLocked(missingPermissions);
             updateFilteredRoutesLocked();
             if (Flags.enableRouteVisibilityControlCompatFixes()) {
                 dispatchFilteredRoutesUpdatedOnHandler(mFilteredRoutes);
@@ -1467,6 +1494,17 @@ public final class MediaRouter2 {
                             this,
                             new HashMap<>(mRoutes)));
         }
+    }
+
+    @GuardedBy("mLock")
+    void updateMissingPermissionsLocked(List<String> permissions) {
+        Set<String> newPermissions = new ArraySet<>(permissions);
+        if (newPermissions.equals(mMissingPermissions)) {
+            return;
+        }
+        mMissingPermissions.clear();
+        mMissingPermissions.addAll(permissions);
+        notifyMissingPermissionsUpdated(Collections.unmodifiableSet(newPermissions));
     }
 
     /**
@@ -1744,6 +1782,13 @@ public final class MediaRouter2 {
         }
     }
 
+    private void notifyMissingPermissionsUpdated(Set<String> permissions) {
+        for (RouteCallbackRecord record : mRouteCallbackRecords) {
+            record.mExecutor.execute(() ->
+                    record.mRouteCallback.onMissingPermissionsUpdated(permissions));
+        }
+    }
+
     private void notifyPreferredFeaturesChanged(List<String> features) {
         for (RouteCallbackRecord record : mRouteCallbackRecords) {
             record.mExecutor.execute(
@@ -1910,6 +1955,15 @@ public final class MediaRouter2 {
          */
         @SystemApi
         public void onPreferredFeaturesChanged(@NonNull List<String> preferredFeatures) {}
+
+        /**
+         * Called when permissions to see routes that the target app does not have is updated.
+         *
+         * @param missingPermissions The list of permissions as per {@link #getMissingPermissions()}
+         * @see #getMissingPermissions()
+         * @hide
+         */
+        public void onMissingPermissionsUpdated(@NonNull Set<String> missingPermissions) {}
     }
 
     /** Callback for receiving events on media transfer. */
@@ -2838,7 +2892,8 @@ public final class MediaRouter2 {
         @Override
         public void notifyRoutesUpdated(List<MediaRoute2Info> routes) {
             mHandler.sendMessage(
-                    obtainMessage(MediaRouter2::updateRoutesOnHandler, MediaRouter2.this, routes));
+                    obtainMessage(MediaRouter2::updateRoutesOnHandler, MediaRouter2.this, routes,
+                            /* missingPermissions=*/Collections.emptyList()));
         }
 
         @Override
@@ -4083,10 +4138,12 @@ public final class MediaRouter2 {
             }
 
             @Override
-            public void notifyRoutesUpdated(List<MediaRoute2Info> routes) {
+            public void notifyRoutesUpdated(List<MediaRoute2Info> routes,
+                    List<String> missingPermissions) {
                 mHandler.sendMessage(
                         obtainMessage(
-                                MediaRouter2::updateRoutesOnHandler, MediaRouter2.this, routes));
+                                MediaRouter2::updateRoutesOnHandler, MediaRouter2.this, routes,
+                                missingPermissions));
             }
 
             @Override

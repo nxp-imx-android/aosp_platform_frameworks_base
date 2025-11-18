@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -340,6 +341,12 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
 
     @NonNull
     @Override
+    protected Set<String> getMissingPermissions() {
+        return mRouter.getMissingPermissions();
+    }
+
+    @NonNull
+    @Override
     protected List<MediaRoute2Info> getTransferableRoutes(@NonNull String packageName) {
         List<RoutingController> controllers = mRouter.getControllers();
         RoutingController activeController = controllers.get(controllers.size() - 1);
@@ -396,6 +403,15 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
             Log.i(TAG, "onPreferredFeaturesChanged(): [" + TextUtils.join(",", preferredFeatures)
                     + "]");
             refreshDevices();
+        }
+
+        @Override
+        public void onMissingPermissionsUpdated(@NonNull Set<String> missingPermissions) {
+            if (DEBUG) {
+                Log.d(TAG, "onMissingPermissionsUpdated(): ["
+                        + TextUtils.join(",", missingPermissions) + "]");
+            }
+            notifyMissingPermissionsUpdated(missingPermissions);
         }
     }
 
