@@ -2238,12 +2238,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 + " taskDisplayArea, but not " + newParent);
                     }
                 } else {
-                    final Task rootTask = (Task) (
-                            (newParent != null && !(newParent instanceof TaskDisplayArea))
-                                    ? newParent : task.getRootTask());
-                    as.getDisplayArea().positionChildAt(
-                            hop.getToTop() ? POSITION_TOP : POSITION_BOTTOM, rootTask,
-                            false /* includingParents */);
+                    // Parents are the same, so just apply the requested reordering
+                    newParent.positionChildAt(hop.getToTop() ? POSITION_TOP : POSITION_BOTTOM,
+                            task, false /* includingParents */);
                 }
             } else {
                 throw new RuntimeException("Reparenting leaf Tasks is not supported now. " + task);
