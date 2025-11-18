@@ -1930,7 +1930,7 @@ public class WindowManagerService extends IWindowManager.Stub
             final boolean hideSystemAlertWindows = shouldHideNonSystemOverlayWindow(win);
             win.setForceHideNonSystemOverlayWindowIfNeeded(hideSystemAlertWindows);
 
-            // Only a presentation window needs a transition because its visibility affets the
+            // Only a presentation window needs a transition because its visibility affects the
             // lifecycle of apps below (b/390481865).
             if (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue() && win.isPresentation()) {
                 final ActionChain chain = mAtmService.mChainTracker.startTransit("addPresoWin");
