@@ -61,14 +61,16 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         // of futures while we're iterating over it.
         ImmutableList<FakeScheduledFuture<?>> futuresCopy = ImmutableList.copyOf(mFutures);
         mFutures.clear();
+        int numTasksRun = 0;
         for (FakeScheduledFuture<?> future : futuresCopy) {
             if (future.getDelay(TimeUnit.MILLISECONDS) <= 0) {
                 future.getRunnable().run();
+                numTasksRun += 1;
             } else {
                 mFutures.add(future);
             }
         }
-        return futuresCopy.size() - mFutures.size();
+        return numTasksRun;
     }
 
     @Override
