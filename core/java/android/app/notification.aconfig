@@ -330,9 +330,9 @@ flag {
 }
 
 flag {
-   name: "bridged_notifications_api"
+   name: "bridged_notifications"
    is_exported: true
-   namespace: "better_together"
+   namespace: "notifications"
    description: "Adds support for specifying bridged notification metadata for displaying to the user."
    bug: "438827600"
 }

@@ -9263,7 +9263,7 @@ public class NotificationManagerService extends SystemService {
         } else {
             notification.extras.remove(Notification.EXTRA_HIDE_STATUS_BAR_NOTIFICATION);
         }
-        if (android.app.Flags.bridgedNotificationsApi()) {
+        if (android.app.Flags.bridgedNotifications()) {
             // Ensure only allowed packages add bridged notification metadata.
             if (notification.getBridgedNotificationMetadata() != null) {
                 int hasPermission = getContext().checkPermission(

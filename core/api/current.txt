@@ -6587,7 +6587,7 @@ package android.app {
     method @Nullable public android.util.Pair<android.app.RemoteInput,android.app.Notification.Action> findRemoteInputActionPair(boolean);
     method public boolean getAllowSystemGeneratedContextualActions();
     method public int getBadgeIconType();
-    method @FlaggedApi("android.app.bridged_notifications_api") @Nullable public android.app.Notification.BridgedNotificationMetadata getBridgedNotificationMetadata();
+    method @FlaggedApi("android.app.bridged_notifications") @Nullable public android.app.Notification.BridgedNotificationMetadata getBridgedNotificationMetadata();
     method @Nullable public android.app.Notification.BubbleMetadata getBubbleMetadata();
     method public String getChannelId();
     method @NonNull public java.util.List<android.app.Notification.Action> getContextualActions();
@@ -6866,7 +6866,7 @@ package android.app {
     method public android.app.Notification.BigTextStyle setSummaryText(CharSequence);
   }
 
-  @FlaggedApi("android.app.bridged_notifications_api") public static final class Notification.BridgedNotificationMetadata implements android.os.Parcelable {
+  @FlaggedApi("android.app.bridged_notifications") public static final class Notification.BridgedNotificationMetadata implements android.os.Parcelable {
     ctor public Notification.BridgedNotificationMetadata(int, @NonNull String, @NonNull android.graphics.drawable.Icon);
     method public int describeContents();
     method @NonNull public android.graphics.drawable.Icon getIcon();
