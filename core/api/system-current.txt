@@ -5003,6 +5003,7 @@ package android.content.pm.verify.developer {
     method @NonNull public android.content.pm.SigningInfo getSigningInfo();
     method @NonNull public android.net.Uri getStagedPackageUri();
     method @NonNull public java.time.Instant getTimeoutTime();
+    method @FlaggedApi("android.content.pm.verification_service_adb") public int getVerificationFlags();
     method public void reportVerificationBypassed(int);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus, @NonNull android.os.PersistableBundle);
@@ -5015,6 +5016,8 @@ package android.content.pm.verify.developer {
     field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST = 3; // 0x3
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE = 1; // 0x1
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("android.content.pm.verification_service_adb") public static final int FLAG_VERIFICATION_FORCED_ON_ADB = 2; // 0x2
+    field @FlaggedApi("android.content.pm.verification_service_adb") public static final int FLAG_VERIFICATION_IS_ADB = 1; // 0x1
   }
 
   @FlaggedApi("android.content.pm.verification_service") public final class DeveloperVerificationStatus implements android.os.Parcelable {
