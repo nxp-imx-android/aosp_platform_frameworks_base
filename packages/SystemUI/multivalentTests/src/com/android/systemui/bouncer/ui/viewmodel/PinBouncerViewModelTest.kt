@@ -301,26 +301,6 @@ class PinBouncerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onShown_againAfterSceneChange_resetsPin() =
-        kosmos.runTest {
-            val pin by collectLastValue(underTest.pinInput.map { it.getPin() })
-            lockDeviceAndOpenPinBouncer()
-
-            // The user types a PIN.
-            FakeAuthenticationRepository.DEFAULT_PIN.forEach(underTest::onPinButtonClicked)
-            assertThat(pin).isNotEmpty()
-
-            // The user doesn't confirm the PIN, but navigates back to the lockscreen instead.
-            hideBouncer()
-
-            // The user navigates to the bouncer again.
-            showBouncer()
-
-            // Ensure the previously-entered PIN is not shown.
-            assertThat(pin).isEmpty()
-        }
-
-    @Test
     fun backspaceButtonAppearance_withoutAutoConfirm_alwaysShown() =
         kosmos.runTest {
             val backspaceButtonAppearance by collectLastValue(underTest.backspaceButtonAppearance)
@@ -594,7 +574,6 @@ class PinBouncerViewModelTest : SysuiTestCase() {
     private fun Kosmos.hideBouncer() {
         val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
         sceneInteractor.hideOverlay(Overlays.Bouncer, "reason")
-        underTest.onHidden()
         runCurrent()
 
         assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)

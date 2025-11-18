@@ -241,6 +241,7 @@ constructor(
     }
 
     override fun getInput(): List<Any> {
+        pinInput.value.isEmpty()
         return mutablePinInput.value.getPin()
     }
 

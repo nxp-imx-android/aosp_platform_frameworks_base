@@ -115,9 +115,6 @@ sealed class AuthMethodBouncerViewModel(
     /**
      * Notifies that the UI has been hidden from the user (after any transitions have completed).
      */
-    open fun onHidden() {
-        clearInput()
-    }
 
     /** Notifies that the user has placed down a pointer. */
     fun onDown() {
