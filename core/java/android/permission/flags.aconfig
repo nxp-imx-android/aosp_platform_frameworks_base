@@ -700,3 +700,11 @@ flag {
     description: "This flag controls whether to enable the new default app confirmation dialog"
     bug: "440579404"
 }
+
+flag {
+    name: "manage_default_notes_role_package_enabled"
+    is_exported: true
+    namespace: "note"
+    description: "This flag controls role managers' ability to manage the notes role via RoleManager#getDefaultApplication and RoleManager#setDefaultApplication."
+    bug: "443222861"
+}
