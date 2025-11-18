@@ -205,16 +205,6 @@ flag {
 }
 
 flag {
-    name: "throttle_motion_events_for_ui_update"
-    namespace: "accessibility"
-    description: "Throttles motion events for requesting the System UI to update magnification UIs."
-    bug: "435498747"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "type_speech_state_change_allowed"
     namespace: "accessibility"
     description: "Allow global dispatch for TYPE_SPEECH_STATE_CHANGE"
