@@ -86,7 +86,8 @@ oneway interface ITaskOrganizer {
      * {@link ITaskOrganizerController.setInterceptBackPressedOnTaskRoot} to get notified when the
      * user has pressed back on the root activity of a task controlled by the task organizer.
      */
-    void onBackPressedOnTaskRoot(in ActivityManager.RunningTaskInfo taskInfo);
+    void onBackPressedOnTaskRoot(in ActivityManager.RunningTaskInfo taskInfo,
+            boolean isFromMoveActivityTaskToBack);
 
     /**
      * Called when the IME has drawn on the organized task.

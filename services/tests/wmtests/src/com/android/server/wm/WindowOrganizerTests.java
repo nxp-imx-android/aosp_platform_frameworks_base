@@ -1377,7 +1377,8 @@ public class WindowOrganizerTests extends WindowTestsBase {
         public void onTaskInfoChanged(RunningTaskInfo info) {
         }
         @Override
-        public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo) {
+        public void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo,
+                boolean isFromMoveActivityTaskToBack) {
         }
         @Override
         public void onImeDrawnOnTask(int taskId) throws RemoteException {
@@ -1533,7 +1534,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any());
+        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean());
 
         // Enable intercepting back
         mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
@@ -1544,7 +1545,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, times(1)).onBackPressedOnTaskRoot(any());
+        verify(organizer, times(1)).onBackPressedOnTaskRoot(any(), anyBoolean());
 
         // Disable intercepting back
         mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
@@ -1555,7 +1556,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, times(1)).onBackPressedOnTaskRoot(any());
+        verify(organizer, times(1)).onBackPressedOnTaskRoot(any(), anyBoolean());
     }
 
     @Test
@@ -1574,7 +1575,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any());
+        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean());
 
         // Enable intercepting back
         mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
@@ -1585,7 +1586,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
                 new IRequestFinishCallback.Default());
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
-        verify(organizer, never()).onBackPressedOnTaskRoot(any());
+        verify(organizer, never()).onBackPressedOnTaskRoot(any(), anyBoolean());
     }
 
     @Test

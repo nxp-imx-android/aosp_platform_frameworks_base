@@ -433,11 +433,11 @@ class ActivityClientController extends IActivityClientController.Stub {
                     return false;
                 }
                 final Task rootTask = task.getRootTask();
-                if (com.android.window.flags.Flags.fixBubbleBackGesture()
-                        && rootTask != null && rootTask.isAlwaysOnTop()) {
+                if (com.android.window.flags.Flags.fixBubbleBackGesture() && rootTask != null) {
                     final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
                     if (r != null && mService.mWindowOrganizerController.mTaskOrganizerController
-                            .handleInterceptBackPressedOnTaskRoot(r)) {
+                            .handleInterceptBackPressedOnTaskRoot(r,
+                                    /* isFromMoveActivityTaskToBack= */ true)) {
                         // For AOT Task, it can't be moved to back. In this case, treat it as on
                         // back press on root if Shell is intercepting.
                         return true;
@@ -1877,7 +1877,8 @@ class ActivityClientController extends IActivityClientController.Stub {
                 final ActivityRecord root = task.getRootActivity(false /*ignoreRelinquishIdentity*/,
                         true /*setToBottomIfNone*/);
                 if (r == root && mService.mWindowOrganizerController.mTaskOrganizerController
-                        .handleInterceptBackPressedOnTaskRoot(r)) {
+                        .handleInterceptBackPressedOnTaskRoot(r,
+                                /* isFromMoveActivityTaskToBack= */ false)) {
                     // This task is handled by a task organizer that has requested the back
                     // pressed callback.
                     return;
