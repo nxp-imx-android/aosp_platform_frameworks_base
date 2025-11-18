@@ -40,6 +40,10 @@ import java.io.PrintWriter
 
 internal class ImeSwitcherMenuDialog(
     private val context: Context,
+    /** The ID of the display where the menu was requested. */
+    private val displayId: Int,
+    /** The ID of the user that requested the menu. */
+    @param:UserIdInt private val userId: Int,
     /** The interface to callback into on specific events. */
     private val listener: ImeSwitcherMenuDialogListener,
 ) {
@@ -91,8 +95,6 @@ internal class ImeSwitcherMenuDialog(
      * @param selectedImeSettingsIntent the intent for the settings activity of the selected IME, or
      *   `null` if no IME is selected, or the selected IME does not have a settings activity.
      * @param isScreenLocked whether the screen is current locked.
-     * @param displayId the ID of the display where the menu was requested.
-     * @param userId the ID of the user that requested the menu.
      */
     fun show(
         items: List<IImeSwitcherMenu.Item>,
@@ -100,11 +102,9 @@ internal class ImeSwitcherMenuDialog(
         selectedSubtypeIndex: Int,
         selectedImeSettingsIntent: Intent?,
         isScreenLocked: Boolean,
-        displayId: Int,
-        @UserIdInt userId: Int,
     ) {
         // Hide the menu in case it was already showing.
-        hide(displayId, userId)
+        hide()
 
         val menuItems = getMenuItems(items)
         val selectedIndex = getSelectedIndex(menuItems, selectedImeId, selectedSubtypeIndex)
@@ -129,7 +129,7 @@ internal class ImeSwitcherMenuDialog(
             if (!isSelected) {
                 listener.onImeAndSubtypeSelected(item.imeId, item.subtypeIndex, userId)
             }
-            hide(displayId, userId)
+            hide()
         }
 
         // Create the current IME subtypes list.
@@ -140,15 +140,9 @@ internal class ImeSwitcherMenuDialog(
         // Request focus to enable rotary scrolling on watches.
         recyclerView.requestFocus()
 
-        updateLanguageSettingsButton(
-            selectedImeSettingsIntent,
-            contentView,
-            isScreenLocked,
-            displayId,
-            userId,
-        )
+        updateLanguageSettingsButton(selectedImeSettingsIntent, contentView, isScreenLocked)
 
-        builder.setOnCancelListener { hide(displayId, userId) }
+        builder.setOnCancelListener { hide() }
         this.menuItems = menuItems
         dialog =
             builder.create().apply {
@@ -182,13 +176,8 @@ internal class ImeSwitcherMenuDialog(
         listener.onVisibilityChanged(true /* visible */, displayId, userId)
     }
 
-    /**
-     * Hides the Input Method Switcher Menu.
-     *
-     * @param displayId the ID of the display from where the menu should be hidden.
-     * @param userId the ID of the user for which the menu should be hidden.
-     */
-    fun hide(displayId: Int, @UserIdInt userId: Int) {
+    /** Hides the Input Method Switcher Menu. */
+    fun hide() {
         menuItems = null
         // Cannot use dialog.isShowing() here, as the cancel listener flow already resets mShowing.
         dialog?.let {
@@ -203,13 +192,13 @@ internal class ImeSwitcherMenuDialog(
         get() = dialog?.isShowing ?: false
 
     fun dump(pw: PrintWriter, prefix: String) {
-        pw.println()
-        pw.println(TAG)
+        pw.println("${prefix}$TAG$ u$userId")
         val showing = isShowing
-        pw.println("${prefix}isShowing: $showing")
+        val innerPrefix = "$prefix  "
+        pw.println("${innerPrefix}isShowing: $showing")
 
         if (showing) {
-            pw.println("${prefix}menuItems: $menuItems")
+            pw.println("${innerPrefix}menuItems: $menuItems")
         }
     }
 
@@ -222,15 +211,11 @@ internal class ImeSwitcherMenuDialog(
      *   no IME is selected, or the selected IME does not have a settings activity.
      * @param view the menu dialog view.
      * @param isScreenLocked whether the screen is currently locked.
-     * @param displayId the ID of the display where the menu was requested.
-     * @param userId the ID of the user that requested the menu.
      */
     private fun updateLanguageSettingsButton(
         settingsIntent: Intent?,
         view: View,
         isScreenLocked: Boolean,
-        displayId: Int,
-        @UserIdInt userId: Int,
     ) {
         val isDeviceProvisioned =
             Settings.Global.getInt(
@@ -247,7 +232,7 @@ internal class ImeSwitcherMenuDialog(
             buttonBar.visibility = View.VISIBLE
             button.setOnClickListener {
                 it.context.startActivityAsUser(settingsIntent, UserHandle.of(userId))
-                hide(displayId, userId)
+                hide()
             }
             // Indicate that the list can be scrolled.
             recyclerView.scrollIndicators = View.SCROLL_INDICATOR_BOTTOM

@@ -109,7 +109,8 @@ constructor(
             return
         }
         if (dialog == null) {
-            dialog = ImeSwitcherMenuDialog(getContext(displayId), mDialogListener)
+            dialog =
+                ImeSwitcherMenuDialog(getContext(displayId), displayId, userId, mDialogListener)
         }
         dialog!!.show(
             items,
@@ -117,8 +118,6 @@ constructor(
             selectedSubtypeIndex,
             selectedImeSettingsIntent,
             isScreenLocked,
-            displayId,
-            userId,
         )
     }
 
@@ -135,7 +134,7 @@ constructor(
         if (DEBUG) Slog.v(TAG, "Hide IME switcher menu.")
 
         dialog?.let {
-            it.hide(displayId, userId)
+            it.hide()
             dialog = null
         }
     }
