@@ -90,6 +90,9 @@ static_assert(std::atomic<int64_t>::is_always_lock_free == true,
 // Atomics should be safe to use across processes if they are lock free.
 static_assert(std::atomic<float>::is_always_lock_free == true,
               "atomic<float> is not always lock free");
+// Atomics should be safe to use across processes if they are lock free.
+static_assert(std::atomic<bool>::is_always_lock_free == true,
+              "atomic<bool> is not always lock free");
 
 // This is the data structure that is shared between processes.
 //
@@ -104,6 +107,7 @@ class alignas(8) SharedMemory { // Ensure that `sizeof(SharedMemory)` is the sam
 private:
     volatile std::atomic<int64_t> latestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis;
     volatile std::atomic<float> currentAnimatorScale;
+    volatile std::atomic<bool> isDeviceUpgrading;
 
     // LINT.IfChange(invalid_network_time)
     static constexpr int64_t INVALID_NETWORK_TIME = -1;
@@ -113,7 +117,8 @@ public:
     // Default constructor sets initial values
     SharedMemory()
           : latestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis(INVALID_NETWORK_TIME),
-            currentAnimatorScale(1.f) {}
+            currentAnimatorScale(1.f),
+            isDeviceUpgrading(false) {}
 
     int64_t getLatestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis() const {
         return latestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis;
@@ -129,6 +134,14 @@ public:
 
     float getCurrentAnimatorScale() const {
         return currentAnimatorScale;
+    }
+
+    void setIsDeviceUpgrading(bool upgrading) {
+        isDeviceUpgrading = upgrading;
+    }
+
+    bool getIsDeviceUpgrading() const {
+        return isDeviceUpgrading;
     }
 
     // The fixed size cache storage for SDK-defined system features.
@@ -147,7 +160,11 @@ static_assert(sizeof(SharedMemory) ==
                       // latestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis
                       8 +
                       // currentAnimatorScale
-                      8 +
+                      4 +
+                      // isDeviceUpgrading
+                      1 +
+                      // padding up to 8 bytes
+                      3 +
                       sizeof(SystemFeaturesCache) +
                       sizeof(SystemCacheNonce),
               "Unexpected SharedMemory size");
@@ -155,7 +172,11 @@ static_assert(offsetof(SharedMemory, systemFeaturesCache) ==
                       // latestNetworkTimeUnixEpochMillisAtZeroElapsedRealtimeMillis
                       8 +
                       // currentAnimatorScale
-                      8,
+                      4 +
+                      // isDeviceUpgrading
+                      1 +
+                      // padding up to 8 bytes,
+                      3,
               "Unexpected SystemFeaturesCache offset in SharedMemory");
 static_assert(offsetof(SharedMemory, systemPic) ==
                       offsetof(SharedMemory, systemFeaturesCache) + sizeof(SystemFeaturesCache),
@@ -249,6 +270,16 @@ static jfloat nativeGetCurrentAnimatorScale(JNIEnv* env, jclass*, jlong ptr) {
     return sharedMemory->getCurrentAnimatorScale();
 }
 
+static void nativeSetIsDeviceUpgrading(JNIEnv* env, jclass*, jlong ptr, jboolean upgrading) {
+    SharedMemory* sharedMemory = reinterpret_cast<SharedMemory*>(ptr);
+    sharedMemory->setIsDeviceUpgrading(upgrading);
+}
+
+static jboolean nativeGetIsDeviceUpgrading(JNIEnv* env, jclass*, jlong ptr) {
+    SharedMemory* sharedMemory = reinterpret_cast<SharedMemory*>(ptr);
+    return sharedMemory->getIsDeviceUpgrading();
+}
+
 static const JNINativeMethod gMethods[] = {
         {"nativeCreate", "()I", (void*)nativeCreate},
         {"nativeMap", "(IZ)J", (void*)nativeMap},
@@ -264,6 +295,8 @@ static const JNINativeMethod gMethods[] = {
         {"nativeReadSystemFeaturesCache", "(J)[I", (void*)nativeReadSystemFeaturesCache},
         {"nativeSetCurrentAnimatorScale", "(JF)V", (void*)nativeSetCurrentAnimatorScale},
         {"nativeGetCurrentAnimatorScale", "(J)F", (void*)nativeGetCurrentAnimatorScale},
+        {"nativeSetIsDeviceUpgrading", "(JZ)V", (void*)nativeSetIsDeviceUpgrading},
+        {"nativeGetIsDeviceUpgrading", "(J)Z", (void*)nativeGetIsDeviceUpgrading},
 };
 
 static const char kApplicationSharedMemoryClassName[] =
