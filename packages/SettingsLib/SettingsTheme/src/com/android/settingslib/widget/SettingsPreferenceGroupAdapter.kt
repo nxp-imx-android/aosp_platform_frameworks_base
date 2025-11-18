@@ -44,12 +44,13 @@ import com.android.settingslib.widget.theme.R
  * (yet).
  */
 @SuppressLint("RestrictedApi")
-open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
-    PreferenceGroupAdapter(preferenceGroup) {
+open class SettingsPreferenceGroupAdapter @JvmOverloads constructor(
+    preferenceGroup: PreferenceGroup,
+    private val footerDataMap: Map<String, FooterData> = emptyMap(),
+) : PreferenceGroupAdapter(preferenceGroup) {
 
     private val mPreferenceGroup = preferenceGroup
     private var mItemPositionStates = intArrayOf()
-
     private var mNormalPaddingStart = 0
     private var mGroupPaddingStart = 0
     private var mNormalPaddingEnd = 0
@@ -95,6 +96,9 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         if (SettingsThemeHelper.isExpressiveTheme(holder.itemView.context)) {
             updateBackground(holder, position)
         }
+        val preference = getItem(position)
+        val footerData = preference?.key?.let { footerDataMap[it] }
+        bindFooter(holder, footerData)
     }
 
     private fun updatePreferencesList() {

@@ -32,6 +32,7 @@ import com.android.settingslib.widget.theme.R
 /** Base class for Settings to use PreferenceFragmentCompat */
 abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
 
+    val footerDataMap = mutableMapOf<String, FooterData>()
     protected open val isPreferenceSpacingEnabled = true
 
     @CallSuper
@@ -85,9 +86,25 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
     }
 
     override fun onCreateAdapter(preferenceScreen: PreferenceScreen): RecyclerView.Adapter<*> {
-        if (SettingsThemeHelper.isExpressiveTheme(requireContext()))
-            return SettingsPreferenceGroupAdapter(preferenceScreen)
+        if (SettingsThemeHelper.isExpressiveTheme(requireContext())) {
+            return SettingsPreferenceGroupAdapter(preferenceScreen, footerDataMap)
+        }
         return super.onCreateAdapter(preferenceScreen)
+    }
+
+    /**
+     * Attaches a clickable footer to a preference.
+     *
+     * @param preferenceKey The key of the [Preference] to attach the footer to.
+     * @param text The text to display in the footer.
+     * @param listener The [View.OnClickListener] to be invoked when the footer is clicked.
+     */
+    protected fun attachFooter(
+        preferenceKey: String,
+        text: CharSequence,
+        listener: View.OnClickListener,
+    ) {
+        footerDataMap[preferenceKey] = FooterData(text, listener)
     }
 
     /** Handles the display of custom dialogs for preferences. */
