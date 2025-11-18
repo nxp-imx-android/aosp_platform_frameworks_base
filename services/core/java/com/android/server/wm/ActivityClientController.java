@@ -1453,10 +1453,9 @@ class ActivityClientController extends IActivityClientController.Stub {
                             "startLockTaskMode: Can't lock due to auth, task: " + task);
                 }
                 ActionChain chain = mService.mChainTracker.startTransit("startLockTaskModeByToken");
-                Transition newTransition = chain.isCollecting() ? null : new Transition(
-                        TRANSIT_START_LOCK_TASK_MODE,
-                        0 /* flags */,
-                        mService.getTransitionController(), mService.mWindowManager.mSyncEngine);
+                Transition newTransition = chain.isCollecting() ? null
+                        : mService.getTransitionController().createAndStartCollecting(
+                                TRANSIT_START_LOCK_TASK_MODE);
                 if (newTransition != null) {
                     mService.getTransitionController().requestStartTransition(newTransition,
                             task,
