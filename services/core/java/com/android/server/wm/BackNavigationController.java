@@ -37,7 +37,6 @@ import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFI
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BACK_PREVIEW;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
-import static com.android.window.flags.Flags.predictiveBackQuickDoubleBackSwipes;
 
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
@@ -180,7 +179,7 @@ class BackNavigationController {
         synchronized (wmService.mGlobalLock) {
             if (isMonitoringFinishTransition()) {
                 Slog.w(TAG, "Previous animation hasn't finish, status: " + mAnimationHandler);
-                if (predictiveBackQuickDoubleBackSwipes()) {
+                if (com.android.window.flags.Flags.predictiveBackQuickDoubleBackSwipes()) {
                     infoBuilder.setType(BackNavigationInfo.TYPE_IN_TRANSITION);
                     return infoBuilder.build();
                 } else {
@@ -1637,7 +1636,7 @@ class BackNavigationController {
                                     }
                                 }
                             });
-                if (Flags.deferSnapshotRemovalForPredictiveBackWithIme()
+                if (com.android.window.flags.Flags.deferSnapshotRemovalForPredictiveBackWithIme()
                         && mRequestedStartingSurfaceId != INVALID_TASK_ID) {
                     mHasImeSurface = snapshot.hasImeSurface();
                 }
