@@ -107,7 +107,7 @@ public class WindowAnimator {
         mContext = service.mContext;
         mPolicy = service.mPolicy;
         mTransaction = service.mTransactionFactory.get();
-        if (com.android.window.flags.Flags.deprecateSurfaceAnimationFrameCallback()) {
+        if (com.android.window.flags.Flags.deprecateWindowAnimatorFrameCallback()) {
             service.mAnimationHandler.runWithScissors(
                     () -> mChoreographer = Choreographer.getInstance(), 0 /* timeout */);
         } else {
