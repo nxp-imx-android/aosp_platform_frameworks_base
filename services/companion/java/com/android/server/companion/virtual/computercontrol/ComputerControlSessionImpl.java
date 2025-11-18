@@ -85,7 +85,9 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -109,7 +111,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             TimeUnit.MILLISECONDS.convert(360, TimeUnit.MINUTES);
 
     // Input device names are limited to 80 bytes, so keep the prefix shorter than that.
-    private static final int MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH = 70;
+    private static final int MAX_INPUT_DEVICE_NAME_PREFIX_BYTES = 70;
 
     // Throttle swipe events to avoid misinterpreting them as a fling. Each swipe will
     // consist of a DOWN event, 10 MOVE events spread over 500ms, and an UP event.
@@ -707,9 +709,27 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private String createInputDeviceNamePrefix(String packageName) {
         final String prefix = packageName + ":" + mParams.getName();
-        return (prefix.length() > MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH)
-                ? prefix.substring(prefix.length() - MAX_INPUT_DEVICE_NAME_PREFIX_LENGTH)
-                : prefix;
+
+        byte[] bytes = prefix.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length <= MAX_INPUT_DEVICE_NAME_PREFIX_BYTES) {
+            return prefix;
+        }
+
+        int startIndex = bytes.length - MAX_INPUT_DEVICE_NAME_PREFIX_BYTES;
+        while (startIndex < bytes.length) {
+            byte currentByte = bytes[startIndex];
+            // Check if the byte is a continuation byte (0x80 <= byte <= 0xBF)
+            // In Java, bytes are signed, so the range check is: (currentByte & 0xC0) == 0x80
+            if ((currentByte & 0xC0) == 0x80) {
+                // This is a continuation byte, so we must advance the start index
+                startIndex++;
+            } else {
+                // This is a start byte (or an ASCII byte), which is a safe cut-off point.
+                break;
+            }
+        }
+        byte[] truncatedBytes = Arrays.copyOfRange(bytes, startIndex, bytes.length);
+        return new String(truncatedBytes, StandardCharsets.UTF_8);
     }
 
     private boolean isActivityLaunchAllowed(@NonNull ComponentName componentName,
