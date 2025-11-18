@@ -216,7 +216,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     private int mSideStagePosition = SPLIT_POSITION_BOTTOM_OR_RIGHT;
     private StageOrderOperator mStageOrderOperator;
 
-    private final int mDisplayId;
+    // The display ID that the split root task is currently on.
+    private int mDisplayId;
     private SplitLayout mSplitLayout;
     private final IActivityTaskManager mActivityTaskManager;
     private ValueAnimator mDividerFadeInAnimator;
@@ -339,7 +340,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     }
 
     @Override
-    public void prepareMovingSplitScreenRoot(WindowContainerTransaction wct, int displayId) {
+    public void prepareMovingSplitScreenRoot(WindowContainerTransaction wct, int displayId,
+            boolean onTop) {
         if (mSplitRootTaskInfo == null) {
             throw new IllegalStateException("Failed to find current split screen root task info.");
         }
@@ -350,8 +352,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             final DisplayAreaInfo targetDisplayAreaInfo =
                     mRootTDAOrganizer.getDisplayAreaInfo(displayId);
             if (targetDisplayAreaInfo != null) {
-                wct.reparent(mSplitRootTaskInfo.token, targetDisplayAreaInfo.token,
-                        true /* onTop */);
+                wct.reparent(mSplitRootTaskInfo.token, targetDisplayAreaInfo.token, onTop);
+                mDisplayId = displayId;
                 ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
                         "Reparenting split screen root to display %d", displayId);
             }
@@ -889,7 +891,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         // For now, the only CUJ that can use this is LaunchAdjacent while on non-default displays.
         if (enableNonDefaultDisplaySplitBugfix()) {
             updateSplitLayoutConfig(mRootTDAOrganizer, displayId, mSplitLayout);
-            prepareMovingSplitScreenRoot(wct, displayId);
+            prepareMovingSplitScreenRoot(wct, displayId, true /* onTop */);
         }
         wct.sendPendingIntent(intent, fillInIntent, options);
 
@@ -939,7 +941,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
             RunningTaskInfo taskInfo1 = mTaskOrganizer.getRunningTaskInfo(taskId1);
             if (taskInfo1 != null) {
-                prepareMovingSplitScreenRoot(wct, taskInfo1.displayId);
+                updateSplitLayoutConfig(mRootTDAOrganizer, taskInfo1.displayId, mSplitLayout);
+                prepareMovingSplitScreenRoot(wct, taskInfo1.displayId, true /* onTop */);
             }
         }
 
@@ -1000,7 +1003,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
             if (taskInfo != null) {
                 updateSplitLayoutConfig(mRootTDAOrganizer, taskInfo.displayId, mSplitLayout);
-                prepareMovingSplitScreenRoot(wct, taskInfo.displayId);
+                prepareMovingSplitScreenRoot(wct, taskInfo.displayId, true /* onTop */);
             }
         }
 
@@ -1969,8 +1972,9 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             Objects.requireNonNull(tdaInfo);
             final int displayWindowingMode =
                     tdaInfo.configuration.windowConfiguration.getWindowingMode();
-            // In freeform-first env, we need to explicitly set the windowing mode when leaving
-            // the split-screen to be fullscreen.
+            // In a freeform-first environment (like desktop), explicitly set the windowing mode to
+            // fullscreen when leaving split-screen. On a standard display, setting it to UNDEFINED
+            // allows the task to inherit the display's default windowing mode (usually fullscreen).
             final int targetWindowingMode = displayWindowingMode == WINDOWING_MODE_FREEFORM
                     ? WINDOWING_MODE_FULLSCREEN : WINDOWING_MODE_UNDEFINED;
             toTopStage.doForAllChildTaskInfos(taskInfo -> {
@@ -1978,14 +1982,14 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             });
         }
 
-        // Reparent root task to default display if non default display split is enabled.
-        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()
-                && mSplitRootTaskInfo.displayId != DEFAULT_DISPLAY) {
-            DisplayAreaInfo displayAreaInfo = mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY);
-            if (displayAreaInfo != null) {
-                wct.reparent(mSplitRootTaskInfo.token, displayAreaInfo.token, false /* onTop */);
-            }
+        // Reparent split root task to default display if `ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX`
+        // flag is enabled.
+        // TODO: b/461541824 - Pass displayId from all split entry points.
+        if (DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue()) {
+            updateSplitLayoutConfig(mRootTDAOrganizer, DEFAULT_DISPLAY, mSplitLayout);
+            prepareMovingSplitScreenRoot(wct, DEFAULT_DISPLAY, false /* onTop */);
         }
+
         deactivateSplit(wct, stageToTop);
         mSplitState.exit();
     }
