@@ -217,8 +217,9 @@ public class SessionTracker implements CoreStartable {
         }
 
         @Override
-        public void onBiometricPromptDismissed(int reason) {
-            mBiometricPromptLogger.logPromptEnd(getSessionId(SESSION_BIOMETRIC_PROMPT), reason);
+        public void onBiometricPromptDismissed(int reason, int credentialType) {
+            mBiometricPromptLogger.logPromptEnd(getSessionId(SESSION_BIOMETRIC_PROMPT), reason,
+                    credentialType);
             endSession(SESSION_BIOMETRIC_PROMPT);
         }
     };

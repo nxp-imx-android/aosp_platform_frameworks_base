@@ -42,6 +42,7 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
+import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.SysuiTestCase;
@@ -163,14 +164,16 @@ public class SessionTrackerTest extends SysuiTestCase {
 
         // WHEN auth controller shows the biometric prompt and then hides it
         int reason = BiometricPrompt.DISMISSED_REASON_USER_CANCEL;
+        int credentialType = LockPatternUtils.CREDENTIAL_TYPE_PIN;
         mAuthControllerCallback.onBiometricPromptShown(new PromptInfo());
-        mAuthControllerCallback.onBiometricPromptDismissed(reason);
+        mAuthControllerCallback.onBiometricPromptDismissed(reason, credentialType);
 
         // THEN the biometric prompt session no longer has a session id
         assertNull(mSessionTracker.getSessionId(SESSION_BIOMETRIC_PROMPT));
 
         // THEN session end event gets sent to status bar service
-        verify(mBiometricPromptLogger).logPromptEnd(any(InstanceId.class), eq(reason));
+        verify(mBiometricPromptLogger).logPromptEnd(any(InstanceId.class), eq(reason),
+                eq(credentialType));
         verify(mStatusBarService).onSessionEnded(
                 eq(SESSION_BIOMETRIC_PROMPT), any(InstanceId.class));
     }

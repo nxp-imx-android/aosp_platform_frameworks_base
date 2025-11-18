@@ -317,7 +317,27 @@ constructor(
             isLandscape = false,
         )
 
-        logEvent(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_VIEW_SHOWN)
+        when (promptKind.value) {
+            PromptKind.Password ->
+                logEvent(
+                    SysUiStatsLog
+                        .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PASSWORD_VIEW_SHOWN
+                )
+            PromptKind.Pattern ->
+                logEvent(
+                    SysUiStatsLog
+                        .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PATTERN_VIEW_SHOWN
+                )
+            PromptKind.Pin ->
+                logEvent(
+                    SysUiStatsLog
+                        .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_PIN_VIEW_SHOWN
+                )
+            else ->
+                logEvent(
+                    SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_VIEW_SHOWN
+                )
+        }
     }
 
     override fun onSwitchToAuth() {
