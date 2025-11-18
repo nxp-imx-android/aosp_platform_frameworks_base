@@ -143,7 +143,7 @@ constructor(
             .stateInTraced(
                 name = "transitioningTo",
                 scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(),
+                started = SharingStarted.Eagerly,
                 initialValue = null,
             )
 
@@ -163,7 +163,7 @@ constructor(
             .stateInTraced(
                 name = "isTransitionUserInputOngoing",
                 scope = applicationScope,
-                started = SharingStarted.WhileSubscribed(),
+                started = SharingStarted.Eagerly,
                 initialValue = false,
             )
 
