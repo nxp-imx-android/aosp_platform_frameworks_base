@@ -411,6 +411,10 @@ public class SettingsProvider extends ContentProvider {
     @EnabledSince(targetSdkVersion=android.os.Build.VERSION_CODES.S)
     private static final long ENFORCE_READ_PERMISSION_FOR_MULTI_SIM_DATA_CALL = 172670679L;
 
+    @ChangeId
+    @EnabledSince(targetSdkVersion= Build.VERSION_CODES.CINNAMON_BUN)
+    private static final long ENFORCE_READ_PERMISSION_FOR_BIOMETRIC_KEYGUARD_ENABLED = 232799723L;
+
     @Override
     public boolean onCreate() {
         Settings.setInSystemServer();
@@ -2446,6 +2450,20 @@ public class SettingsProvider extends ContentProvider {
                     getContext().enforceCallingOrSelfPermission(
                             Manifest.permission.READ_PRIVILEGED_PHONE_STATE,
                             "access global settings MULTI_SIM_DATA_CALL_SUBSCRIPTION");
+                }
+            }
+
+            case Secure.BIOMETRIC_KEYGUARD_ENABLED,
+                 Secure.FINGERPRINT_KEYGUARD_ENABLED,
+                 Secure.FACE_KEYGUARD_ENABLED,
+                 Secure.BIOMETRIC_APP_ENABLED,
+                 Secure.FINGERPRINT_APP_ENABLED,
+                 Secure.FACE_APP_ENABLED -> {
+                if (CompatChanges.isChangeEnabled(
+                        ENFORCE_READ_PERMISSION_FOR_BIOMETRIC_KEYGUARD_ENABLED)) {
+                    getContext().enforceCallingOrSelfPermission(
+                            Manifest.permission.USE_BIOMETRIC_INTERNAL,
+                            "access secure settings " + settingName);
                 }
             }
         }
