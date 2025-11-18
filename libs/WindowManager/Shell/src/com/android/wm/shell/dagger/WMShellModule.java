@@ -2087,7 +2087,7 @@ public abstract class WMShellModule {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
                     new NormalAppLayerController(
-                            shellInit, transitions, desktopUserRepositoriesOptional.get(),
+                            shellInit, transitions, desktopUserRepositoriesOptional.orElse(null),
                             desktopTasksController.orElse(null), pinnedLayerController.get(),
                             desktopState));
         }
