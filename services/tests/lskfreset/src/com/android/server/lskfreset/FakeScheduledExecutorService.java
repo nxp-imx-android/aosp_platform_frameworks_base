@@ -16,12 +16,15 @@
 
 package com.android.server.lskfreset;
 
+import com.android.internal.util.Preconditions;
+
 import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -39,6 +42,31 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     private long mElapsedMillis = 0;
     private final List<FakeScheduledFuture<?>> mFutures = new ArrayList<>();
 
+    // The thread that can run fastForwardMillis.
+    private final Thread mExecutionThread;
+
+    /** Assert that the currently executing thread is the execution thread. */
+    private void assertExecutionThread() {
+        Preconditions.checkState(Thread.currentThread() == mExecutionThread);
+    }
+
+    /** Assert that the currently executing thread is not the execution thread. */
+    private void assertNotExecutionThread() {
+        Preconditions.checkState(Thread.currentThread() != mExecutionThread);
+    }
+
+    /**
+     * Construct a new fake implementation of ScheduledExecutorService.
+     *
+     * @param executionThread The thread that is allowed to call fastForwardMillis. It is an error
+     *     to fast forward time from any other thread. It is also an error to call any operation
+     *     that would wait/block on the execution of a task from this thread, as that would lead to
+     *     a deadlock.
+     */
+    FakeScheduledExecutorService(Thread executionThread) {
+        mExecutionThread = executionThread;
+    }
+
     /**
      * Reports the number of currently queued tasks.
      *
@@ -55,6 +83,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
      * @return The number of tasks that were executed.
      */
     int fastForwardMillis(long millis) {
+        assertExecutionThread();
         mElapsedMillis += millis;
         // Make a copy of the futures for us to iterate over, and clear out the existing mFutures.
         // Otherwise if any tasks were to schedule new tasks you would end up modifying the list
@@ -64,7 +93,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         int numTasksRun = 0;
         for (FakeScheduledFuture<?> future : futuresCopy) {
             if (future.getDelay(TimeUnit.MILLISECONDS) <= 0) {
-                future.getRunnable().run();
+                future.execute();
                 numTasksRun += 1;
             } else {
                 mFutures.add(future);
@@ -170,6 +199,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
     private class FakeScheduledFuture<V> implements ScheduledFuture<V> {
         private final Runnable mRunnable;
         private final long mTimeToExecuteAt;
+        private final CountDownLatch mCompletionLatch = new CountDownLatch(1);
         private boolean mCancelled = false;
 
         private FakeScheduledFuture(Runnable runnable, long delay) {
@@ -177,8 +207,12 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
             mTimeToExecuteAt = mElapsedMillis + delay;
         }
 
-        private Runnable getRunnable() {
-            return mRunnable;
+        private void execute() {
+            try {
+                mRunnable.run();
+            } finally {
+                mCompletionLatch.countDown();
+            }
         }
 
         @Override
@@ -212,13 +246,15 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
         @Override
         public V get() throws ExecutionException, InterruptedException {
+            assertNotExecutionThread();
+            mCompletionLatch.await();
             return null;
         }
 
         @Override
         public V get(long timeout, TimeUnit unit)
                 throws ExecutionException, InterruptedException, TimeoutException {
-            return null;
+            throw new UnsupportedOperationException();
         }
     }
 }
