@@ -825,7 +825,7 @@ public class PhysicsAnimationLayout extends FrameLayout {
          *                           be moving.
          */
         public PhysicsPropertyAnimator followAnimatedTargetAlongPath(
-                Path path,
+                PathCreator pathCreator,
                 int targetAnimDuration,
                 TimeInterpolator targetAnimInterpolator,
                 Runnable... pathAnimEndActions) {
@@ -833,6 +833,8 @@ public class PhysicsAnimationLayout extends FrameLayout {
                 mPathAnimator.cancel();
             }
 
+            Path path = pathCreator.create(
+                    mCurrentPointOnPathXProperty.get(this), mCurrentPointOnPathYProperty.get(this));
             mPathAnimator = ObjectAnimator.ofFloat(
                     this, mCurrentPointOnPathXProperty, mCurrentPointOnPathYProperty, path);
 
@@ -1212,5 +1214,15 @@ public class PhysicsAnimationLayout extends FrameLayout {
         private void setAssociatedController(PhysicsAnimationController controller) {
             mAssociatedController = controller;
         }
+    }
+
+    /**
+     * Creates a {@link Path}
+     *
+     * The current x and y coordinates of the property are available as context.
+     */
+    public interface PathCreator {
+        /** Creates the path */
+        Path create(float currentX, float currentY);
     }
 }
