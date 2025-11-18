@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.Easings
@@ -114,12 +113,13 @@ constructor(
         }
 
         @Composable
-        protected fun LockscreenScope<ContentScope>.MediaCarouselElement(
-            modifier: Modifier = Modifier,
-            bottomPadding: Dp =
-                dimensionResource(R.dimen.notification_section_divider_height_lockscreen),
-        ) {
-            LockscreenElement(MediaCarousel, Modifier.padding(bottom = bottomPadding))
+        protected fun LockscreenScope<ContentScope>.MediaCarousel(modifier: Modifier = Modifier) {
+            val bottomPadding =
+                dimensionResource(R.dimen.notification_section_divider_height_lockscreen)
+            LockscreenElement(
+                MediaCarousel,
+                Modifier.padding(bottom = bottomPadding).then(modifier),
+            )
         }
 
         @Composable
@@ -200,7 +200,7 @@ constructor(
                 scene(NarrowScenes.SmallClock) {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        MediaCarouselElement()
+                        MediaCarousel()
                         Notifications()
                     }
                 }
@@ -281,30 +281,21 @@ constructor(
                 scene(WideScenes.TwoColumn.LargeClock) {
                     when (viewModel.shadeMode) {
                         ShadeMode.Dual -> {
-                            // When using the desktop status bar, the notifications are shown at the
-                            // end of the screen due to the placement of the bell icon.
-                            if (viewModel.useDesktopStatusBar) NotificationsEndLargeClock()
-                            else NotificationsStartLargeClock()
+                            if (viewModel.useDesktopStatusBar) LargeClockStart_NotifsEnd_MediaEnd()
+                            else LargeClockEnd_NotifsStart_MediaStart()
                         }
-                        // In split shade with a large clock, the notifications are at the end of
-                        // the screen and there is no media player.
-                        ShadeMode.Split -> NotificationsEndLargeClockSplit()
+                        // Media is unsupported with large clock in split shade mode
+                        ShadeMode.Split -> LargeClockStart_NotifsEnd()
                         else -> logger.wtf("WideLayout state is invalid")
                     }
                 }
                 scene(WideScenes.TwoColumn.SmallClock) {
                     when (viewModel.shadeMode) {
                         ShadeMode.Dual -> {
-                            // When using the desktop status bar, the notifications are shown at the
-                            // end of the screen due to the placement of the bell icon.
-                            if (viewModel.useDesktopStatusBar) NotificationsEndSmallClock()
-                            // When using a small clock, everything is combined at the start of
-                            // the screen.
-                            else NotificationsStartMediaStartSmallClock()
+                            if (viewModel.useDesktopStatusBar) SmallClockStart_NotifsEnd_MediaEnd()
+                            else SmallClockStart_NotifsStart_MediaStart()
                         }
-                        // In split shade with a small clock, the notifications are drawn on the
-                        // right and the media player remains on the left.
-                        ShadeMode.Split -> NotificationsEndSmallClockSplit()
+                        ShadeMode.Split -> SmallClockStart_NotifsEnd_MediaStart()
                         else -> logger.wtf("WideLayout state is invalid")
                     }
                 }
@@ -312,13 +303,13 @@ constructor(
         }
 
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsStartLargeClock(
+        private fun LockscreenScope<ContentScope>.LargeClockEnd_NotifsStart_MediaStart(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = {
                     Column {
-                        MediaCarouselElement()
+                        MediaCarousel()
                         Notifications()
                     }
                 },
@@ -328,14 +319,14 @@ constructor(
         }
 
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsStartMediaStartSmallClock(
+        private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsStart_MediaStart(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        MediaCarouselElement()
+                        MediaCarousel()
                         Notifications()
                     }
                 },
@@ -343,10 +334,8 @@ constructor(
             )
         }
 
-        // Edge case for the split layout. Notifications at the end and no media player when using
-        // a large clock.
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsEndLargeClockSplit(
+        private fun LockscreenScope<ContentScope>.LargeClockStart_NotifsEnd(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
@@ -357,14 +346,14 @@ constructor(
         }
 
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsEndLargeClock(
+        private fun LockscreenScope<ContentScope>.LargeClockStart_NotifsEnd_MediaEnd(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = { LockscreenElement(Region.Clock.Large) },
                 endContent = {
                     Column {
-                        MediaCarouselElement()
+                        MediaCarousel()
                         Notifications()
                     }
                 },
@@ -372,16 +361,15 @@ constructor(
             )
         }
 
-        // Edge case for the split layout. Media at the start and notifications at the end.
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsEndSmallClockSplit(
+        private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsEnd_MediaStart(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = {
                     Column {
                         LockscreenElement(Region.Clock.Small)
-                        MediaCarouselElement()
+                        MediaCarousel()
                     }
                 },
                 endContent = { Notifications() },
@@ -390,14 +378,14 @@ constructor(
         }
 
         @Composable
-        private fun LockscreenScope<ContentScope>.NotificationsEndSmallClock(
+        private fun LockscreenScope<ContentScope>.SmallClockStart_NotifsEnd_MediaEnd(
             modifier: Modifier = Modifier
         ) {
             TwoColumn(
                 startContent = { LockscreenElement(Region.Clock.Small) },
                 endContent = {
                     Column {
-                        MediaCarouselElement()
+                        MediaCarousel()
                         Notifications()
                     }
                 },
