@@ -22562,6 +22562,19 @@ public final class Settings {
             "android.settings.MANAGE_APP_USE_FULL_SCREEN_INTENT";
 
     /**
+     * Broadcast Action: A request to have the system feedback handler app collect and send
+     * feedback. This is a protected intent that can only be sent by the system.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    public static final String ACTION_REQUEST_FEEDBACK =
+            "com.android.internal.intent.action.REQUEST_FEEDBACK";
+
+    /**
      * Activity Action: For system or preinstalled apps to show their {@link Activity} embedded
      * in Settings app on large screen devices.
      *

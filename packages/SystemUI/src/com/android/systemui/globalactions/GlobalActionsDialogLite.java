@@ -41,10 +41,12 @@ import android.app.WallpaperManager;
 import android.app.trust.TrustManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.pm.UserInfo;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -108,6 +110,7 @@ import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.colorextraction.ColorExtractor.GradientColors;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.MetricsLogger;
+import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.statusbar.IStatusBarService;
@@ -122,6 +125,7 @@ import com.android.systemui.animation.DialogCuj;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.animation.Expandable;
 import com.android.systemui.broadcast.BroadcastDispatcher;
+import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -158,7 +162,9 @@ import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteracto
 import dagger.Lazy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
@@ -183,6 +189,9 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
     private static final String INTERACTION_JANK_TAG = "global_actions";
 
+    @VisibleForTesting
+    protected  static final String GLOBAL_ACTION_KEY_FEEDBACK = "feedback";
+
     private static final boolean SHOW_SILENT_TOGGLE = true;
 
     // See NotificationManagerService#scheduleDurationReachedLocked
@@ -200,6 +209,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private final TelephonyListenerManager mTelephonyListenerManager;
     private final KeyguardStateController mKeyguardStateController;
     private final BroadcastDispatcher mBroadcastDispatcher;
+    private final BroadcastSender mBroadcastSender;
     protected final GlobalSettings mGlobalSettings;
     protected final SecureSettings mSecureSettings;
     protected final Resources mResources;
@@ -264,6 +274,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private final PowerManager mPowerManager;
     private final WindowRootViewBlurInteractor mBlurInteractor;
     private int mGlobalActionDialogTimeout;
+    private final PackageManager mPackageManager;
     private final Handler mHandler;
 
     private final UserTracker.Callback mOnUserSwitched = new UserTracker.Callback() {
@@ -273,7 +284,59 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             // in a handler so it will be pretty quick.
             dismissDialog();
         }
+
+        @Override
+        public void onUserChanged(int newUser, Context userContext) {
+            updateFeedbackReceiverState();
+        }
     };
+
+    @VisibleForTesting
+    @Nullable
+    ComponentName mFirstFeedbackReceiver;
+    private static final Intent FEEDBACK_INTENT = new Intent(Settings.ACTION_REQUEST_FEEDBACK);
+    private boolean isFeedbackActionEnabled() {
+        return Flags.globalActionsFeedbackAction()
+                && Arrays.asList(getDefaultActions()).contains(GLOBAL_ACTION_KEY_FEEDBACK);
+    }
+
+    private void updateFeedbackReceiverState() {
+        if (!isFeedbackActionEnabled()) {
+            return;
+        }
+
+        mBackgroundExecutor.execute(
+                () -> {
+                    final List<ResolveInfo> receivers =
+                            mPackageManager.queryBroadcastReceiversAsUser(
+                                    FEEDBACK_INTENT,
+                                    PackageManager.MATCH_DIRECT_BOOT_AWARE
+                                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE,
+                                    mUserTracker.getUserId());
+                    Log.d(TAG, "send feedback receivers: " + receivers);
+
+                    final ComponentName firstReceiver;
+                    if (receivers.isEmpty()) {
+                        firstReceiver = null;
+                    } else {
+                        final ResolveInfo ri = receivers.get(0);
+                        firstReceiver = new ComponentName(ri.activityInfo.packageName,
+                                ri.activityInfo.name);
+                    }
+
+                    if (Objects.equals(mFirstFeedbackReceiver, firstReceiver)) {
+                        return;
+                    }
+                    mMainHandler.post(() -> {
+                        if (!Objects.equals(mFirstFeedbackReceiver, firstReceiver)) {
+                            mFirstFeedbackReceiver = firstReceiver;
+                            if (mDialog != null && mDialog.isShowing()) {
+                                mDialog.refreshDialog();
+                            }
+                        }
+                    });
+                });
+    }
 
     /**
      * @param context everything needs a context :(
@@ -318,7 +381,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             GlobalActionsInteractor interactor,
             Lazy<DisplayWindowPropertiesRepository> displayWindowPropertiesRepository,
             PowerManager powerManager,
-            WindowRootViewBlurInteractor blurInteractor) {
+            WindowRootViewBlurInteractor blurInteractor,
+            BroadcastSender broadcastSender) {
         mContext = context;
         mWindowManagerFuncs = windowManagerFuncs;
         mAudioManager = audioManager;
@@ -326,6 +390,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mTelephonyListenerManager = telephonyListenerManager;
         mKeyguardStateController = keyguardStateController;
         mBroadcastDispatcher = broadcastDispatcher;
+        mBroadcastSender = broadcastSender;
         mGlobalSettings = globalSettings;
         mSecureSettings = secureSettings;
         mResources = resources;
@@ -358,6 +423,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mDisplayWindowPropertiesRepositoryLazy = displayWindowPropertiesRepository;
         mPowerManager = powerManager;
         mBlurInteractor = blurInteractor;
+        mPackageManager = packageManager;
 
         mHandler = new Handler(mMainHandler.getLooper()) {
             public void handleMessage(Message msg) {
@@ -395,6 +461,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mHasTelephonyCalling = packageManager.hasSystemFeature(
                 PackageManager.FEATURE_TELEPHONY_CALLING);
         mIsTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
+
+        updateFeedbackReceiverState(); // Initial check
 
         // get notified of phone state changes
         mTelephonyListenerManager.addServiceStateListener(mPhoneStateListener);
@@ -567,6 +635,11 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         }
     }
 
+    @VisibleForTesting
+    protected String[] getDefaultActions() {
+        return mResources.getStringArray(R.array.config_globalActionsList);
+    }
+
     private void addIfShouldShowAction(List<Action> actions, Action action) {
         if (shouldShowAction(action)) {
             actions.add(action);
@@ -618,6 +691,11 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                         addIfShouldShowAction(tempActions, new BugReportAction());
                     }
                     break;
+                case FEEDBACK:
+                    if (Flags.globalActionsFeedbackAction() && (mFirstFeedbackReceiver != null)) {
+                        addIfShouldShowAction(
+                                tempActions, new SendFeedbackAction(mFirstFeedbackReceiver));
+                    }
                 case SILENT:
                     if (mShowSilentToggle) {
                         addIfShouldShowAction(tempActions, mSilentModeAction);
@@ -1214,6 +1292,43 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             mHandler.postDelayed(() -> {
                 mLogoutInteractor.logOut();
             }, mDialogPressDelay);
+        }
+    }
+
+    // TODO: b/457788378 - Remove VisibleForTesting once the test is fixed.
+    @VisibleForTesting
+    class SendFeedbackAction extends SinglePressAction {
+        private final ComponentName mReceiver;
+
+        SendFeedbackAction(ComponentName receiver) {
+            super(com.android.systemui.res.R.drawable.ic_send_feedback,
+                    R.string.global_action_feedback);
+            mReceiver = receiver;
+        }
+
+        @Override
+        public void onPress() {
+            mUiEventLogger.log(GlobalActionsEvent.GA_FEEDBACK_PRESS);
+            final Intent intent =
+                    new Intent(FEEDBACK_INTENT)
+                            .addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+                            .setComponent(mReceiver);
+            mBroadcastSender.sendBroadcastAsUser(intent, getCurrentUser().getUserHandle());
+        }
+
+        @Override
+        public boolean showDuringKeyguard() {
+            return true;
+        }
+
+        @Override
+        public boolean showBeforeProvisioning() {
+            return true;
+        }
+
+        @Override
+        public boolean shouldShow() {
+            return true;
         }
     }
 
