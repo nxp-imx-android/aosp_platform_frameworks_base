@@ -169,7 +169,8 @@ public class ComputerControlSessionProcessor {
         });
 
         final String callerPackageName = attributionSource.getPackageName();
-        if (!mAllowlistController.isPackageAllowedToCreateSession(callerPackageName)) {
+        if (!mAllowlistController.isPackageAllowedToCreateSession(callerPackageName,
+                mPackageManager)) {
             throw new SecurityException("Caller " + callerPackageName + " is not allowlisted");
         }
 
@@ -185,19 +186,11 @@ public class ComputerControlSessionProcessor {
         }
 
         Binder.withCleanCallingIdentity(() -> {
-            // Ensure all packages the ComputerControl session should be able to launch are:
-            // 1) Applications with a valid launcher Intent
-            // 2) NOT PermissionController
-            // 3) Allowlisted in DeviceConfig
             for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
                 final String packageName = params.getTargetPackageNames().get(i);
 
-                if (packageName == null
-                        || packageName.isEmpty()
-                        || mPackageManager.getPermissionControllerPackageName().equals(packageName)
-                        || mPackageManager.getLaunchIntentForPackage(packageName) == null
-                        || !mAllowlistController.isPackageAutomatable(
-                                packageName, callerPackageName)) {
+                if (!mAllowlistController.isPackageAutomatable(
+                        packageName, callerPackageName, mPackageManager)) {
                     throw new IllegalArgumentException(
                             "Invalid target package for ComputerControl: " + packageName);
                 }
