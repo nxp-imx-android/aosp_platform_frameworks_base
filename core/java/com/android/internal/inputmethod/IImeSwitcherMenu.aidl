@@ -73,10 +73,9 @@ oneway interface IImeSwitcherMenu {
     /**
      * Hides the Input Method Switcher Menu.
      *
-     * @param displayId the ID of the display from where the menu should be hidden.
      * @param userId    the ID of the user for which the menu should be hidden.
      */
-    void hide(int displayId, int userId);
+    void hide(int userId);
 
     /**
      * Registers an interface to receive callbacks from the IME Switcher Menu controller.

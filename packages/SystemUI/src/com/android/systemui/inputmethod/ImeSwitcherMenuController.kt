@@ -64,7 +64,11 @@ constructor(
      */
     private var dialogWindowContext: Context? = null
 
-    private var dialog: ImeSwitcherMenuDialog? = null
+    /**
+     * Mapping between user IDs and the currently showing IME Switcher Menu dialog for that user. If
+     * no menu is showing, the user ID has no entry in the mapping.
+     */
+    private var dialogs: MutableMap<Int, ImeSwitcherMenuDialog> = mutableMapOf()
 
     @RequiresPermission(
         allOf =
@@ -108,11 +112,11 @@ constructor(
         if (!Flags.imeSwitcherMenuSystemui()) {
             return
         }
-        if (dialog == null) {
-            dialog =
-                ImeSwitcherMenuDialog(getContext(displayId), displayId, userId, mDialogListener)
-        }
-        dialog!!.show(
+        val dialog =
+            ImeSwitcherMenuDialog(getContext(displayId), displayId, userId, mDialogListener)
+        val oldDialog = dialogs.put(userId, dialog)
+        oldDialog?.hide()
+        dialog.show(
             items,
             selectedImeId,
             selectedSubtypeIndex,
@@ -124,19 +128,15 @@ constructor(
     /**
      * Hides the Input Method Switcher Menu.
      *
-     * @param displayId the ID of the display from where the menu should be hidden.
      * @param userId the ID of the user for which the menu should be hidden.
      */
-    private fun hide(displayId: Int, @UserIdInt userId: Int) {
+    private fun hide(@UserIdInt userId: Int) {
         if (!Flags.imeSwitcherMenuSystemui()) {
             return
         }
         if (DEBUG) Slog.v(TAG, "Hide IME switcher menu.")
 
-        dialog?.let {
-            it.hide()
-            dialog = null
-        }
+        dialogs.remove(userId)?.hide()
     }
 
     /**
@@ -154,7 +154,7 @@ constructor(
     override fun dump(pw: PrintWriter, args: Array<String>) {
         pw.println()
         pw.println(TAG)
-        dialog?.dump(pw, "  ")
+        dialogs.values.forEach { it.dump(pw, "  ") }
     }
 
     /**
@@ -246,8 +246,8 @@ constructor(
             }
         }
 
-        override fun hide(displayId: Int, @UserIdInt userId: Int) {
-            mainExecutor.execute { this@ImeSwitcherMenuController.hide(displayId, userId) }
+        override fun hide(@UserIdInt userId: Int) {
+            mainExecutor.execute { this@ImeSwitcherMenuController.hide(userId) }
         }
 
         override fun registerListener(listener: IImeSwitcherMenuListener) {

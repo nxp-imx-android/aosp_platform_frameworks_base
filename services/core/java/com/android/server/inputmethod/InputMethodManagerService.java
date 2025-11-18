@@ -509,10 +509,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         public void hide(int displayId, @UserIdInt int userId) {
             if (mIImeSwitcherMenu != null) {
                 try {
-                    mIImeSwitcherMenu.hide(displayId, userId);
+                    mIImeSwitcherMenu.hide(userId);
                 } catch (RemoteException e) {
-                    Slog.w(TAG, "Failed to hide IME Switcher Menu for user: " + userId
-                            + " on display: " + displayId, e);
+                    Slog.w(TAG, "Failed to hide IME Switcher Menu for user: " + userId, e);
                 }
             }
         }
