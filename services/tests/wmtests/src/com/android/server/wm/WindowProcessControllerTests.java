@@ -21,6 +21,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED;
 import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION;
+import static android.content.pm.ActivityInfo.PERSIST_ACROSS_REBOOTS;
 import static android.content.res.Configuration.GRAMMATICAL_GENDER_NOT_SPECIFIED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
@@ -53,6 +54,7 @@ import static org.mockito.Mockito.when;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.ActivityManagerInternal;
 import android.app.ClientTransactionHandler;
 import android.app.IApplicationThread;
 import android.app.servertransaction.ConfigurationChangeItem;
@@ -554,6 +556,106 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         mWpc.addRecentTask(task);
 
         assertEquals("Freeform-Tasks=1 On-External-Display=Yes", mWpc.getCrashTag());
+    }
+
+    @Test
+    public void testStopAndKillProcess_rootPersistableActivity_isStoppedAnKilled() {
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        final ActivityRecord activity = createActivityRecord(mWpc);
+        activity.getTask().mHandlePackageUpdate = true;
+        activity.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        activity.setState(RESUMED, "test");
+        spyOn(activity);
+
+        mWpc.stopAndKillProcessForUpdate(activity.packageName);
+
+        verify(activity).stopIfPossible();
+
+        mWpc.onActivityStopped(activity);
+
+        verify(mAtm).onProcessReadyToBeKilled(activity.packageName, mWpc);
+    }
+
+    @Test
+    public void testStopAndKillProcess_notHandled_rootPersistableActivity_isStoppedAnKilled() {
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        final ActivityRecord activity = createActivityRecord(mWpc);
+        final Task task = activity.getTask();
+        activity.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        activity.setState(RESUMED, "test");
+        spyOn(activity);
+        spyOn(task);
+
+        mWpc.stopAndKillProcessForUpdate(activity.packageName);
+
+        verify(task).moveTaskToBack(task);
+        verify(activity).stopIfPossible();
+
+        // Set state to STOPPING, or ActivityRecord#activityStoppedLocked() call will be ignored.
+        mWpc.onActivityStopped(activity);
+        waitHandlerIdle(mAtm.mH);
+
+        verify(mAtm).onProcessReadyToBeKilled(activity.packageName, mWpc);
+    }
+
+    @Test
+    public void testStopAndKillProcess_handleUpdate_noActivitiesToStop_killsProcessDelayed() {
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        final ActivityRecord activity = createActivityRecord(mWpc);
+        activity.getTask().mHandlePackageUpdate = true;
+        activity.setState(STOPPED, "test");
+
+        mWpc.stopAndKillProcessForUpdate(activity.packageName);
+
+        verify(activity, never()).stopIfPossible();
+        verify(mAtm).onProcessReadyToBeKilled(activity.packageName, mWpc);
+    }
+
+    @Test
+    public void testStopAndKillProcess_noHandlePackageUpdate_noActivitiesToStop_killsProcess() {
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        final ActivityRecord activity = createActivityRecord(mWpc);
+        activity.setState(STOPPED, "test");
+
+        mWpc.stopAndKillProcessForUpdate(activity.packageName);
+
+        verify(activity, never()).stopIfPossible();
+        verify(mAtm).onProcessReadyToBeKilled(activity.packageName, mWpc);
+    }
+
+    @Test
+    public void testOnActivityStoppedForUpdate_killsProcessWhenLastActivityStopped() {
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        final ActivityRecord activity1 = createActivityRecord(mWpc);
+        activity1.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        activity1.setState(RESUMED, "test");
+        spyOn(activity1);
+        final ActivityRecord activity2 = createActivityRecord(mWpc);
+        activity2.info.persistableMode = PERSIST_ACROSS_REBOOTS;
+        activity2.setState(RESUMED, "test");
+        spyOn(activity2);
+
+        mWpc.stopAndKillProcessForUpdate(activity1.packageName);
+        verify(activity1).stopIfPossible();
+        verify(activity2).stopIfPossible();
+
+        mWpc.onActivityStopped(activity1);
+        verify(mAtm, never()).onProcessReadyToBeKilled(activity1.packageName, mWpc);
+
+        mWpc.onActivityStopped(activity2);
+        verify(mAtm).onProcessReadyToBeKilled(activity1.packageName, mWpc);
+    }
+
+    @Test
+    public void testOnActivityStoppedForUpdate_noActivitiesToBeStopped_doesNothing() {
+        mAtm.mAmInternal = mock(ActivityManagerInternal.class);
+        final ActivityRecord activity1 = createActivityRecord(mWpc);
+        activity1.setState(STOPPED, "test");
+        spyOn(activity1);
+
+        mWpc.onActivityStopped(activity1);
+
+        verify(mAtm, never()).onProcessReadyToBeKilled(activity1.packageName, mWpc);
     }
 
     private TestDisplayContent createTestDisplayContentInContainer() {
