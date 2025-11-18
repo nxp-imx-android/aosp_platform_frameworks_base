@@ -1245,6 +1245,7 @@ aconfig_declarations {
     name: "android.app.flags-aconfig",
     package: "android.app",
     container: "system",
+    exportable: true,
     srcs: ["core/java/android/app/*.aconfig"],
 }
 
@@ -1255,6 +1256,18 @@ java_aconfig_library {
     apex_available: [
         "//apex_available:platform",
         "com.android.nfcservices",
+    ],
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "android.app.flags-aconfig-java-export",
+    aconfig_declarations: "android.app.flags-aconfig",
+    min_sdk_version: "30",
+    mode: "exported",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
     ],
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }

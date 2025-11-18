@@ -74,6 +74,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.quicksettings.TileService;
 import android.testing.TestableContext;
 
@@ -123,6 +124,9 @@ public class StatusBarManagerServiceTest {
 
     @Rule
     public TestRule mCompatChangeRule = new PlatformCompatChangeRule();
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock
     private ActivityTaskManagerInternal mActivityTaskManagerInternal;
@@ -1176,7 +1180,7 @@ public class StatusBarManagerServiceTest {
         try {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
-                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU);
+                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
             AndroidFuture<Boolean> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
@@ -1194,7 +1198,7 @@ public class StatusBarManagerServiceTest {
         try {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
-                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU);
+                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
             AndroidFuture<Boolean> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
@@ -1212,7 +1216,7 @@ public class StatusBarManagerServiceTest {
         try {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
-                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU);
+                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
             AndroidFuture<Boolean> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
@@ -1230,7 +1234,7 @@ public class StatusBarManagerServiceTest {
         try {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
-                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU);
+                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
             AndroidFuture<Boolean> future = new AndroidFuture<>();
             mStatusBarManagerService.onGlobalActionsShown();
 
@@ -1249,7 +1253,7 @@ public class StatusBarManagerServiceTest {
         try {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
-                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU);
+                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
             AndroidFuture<Boolean> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
@@ -1272,11 +1276,11 @@ public class StatusBarManagerServiceTest {
         try {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
-                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU);
+                    .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
             AndroidFuture<Boolean> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
-            assertThrows(RuntimeException.class, future::exceptionNow);
+            assertEquals(RuntimeException.class, future.exceptionNow().getClass());
         } finally {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()

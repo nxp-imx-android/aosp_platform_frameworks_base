@@ -115,7 +115,7 @@ interface IStatusBarService
 
     void onGlobalActionsShown();
     void onGlobalActionsHidden();
-    @EnforcePermission("SHOW_POWER_MENU")
+    @EnforcePermission(anyOf={"SHOW_POWER_MENU", "SHOW_POWER_MENU_PRIVILEGED"})
     void showGlobalActionsFromApp(in AndroidFuture future /* T=Boolean */);
 
     /**

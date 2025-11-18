@@ -2067,7 +2067,10 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
      * @param future a {@link Boolean} future for the reply
      */
     @Override
-    @EnforcePermission(Manifest.permission.SHOW_POWER_MENU)
+    @EnforcePermission(anyOf = {
+            Manifest.permission.SHOW_POWER_MENU,
+            Manifest.permission.SHOW_POWER_MENU_PRIVILEGED
+    })
     public void showGlobalActionsFromApp(@NonNull AndroidFuture future) {
         showGlobalActionsFromApp_enforcePermission();
         Objects.requireNonNull(future);

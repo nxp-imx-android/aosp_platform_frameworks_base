@@ -1427,7 +1427,10 @@ public class StatusBarManager {
      * @param callback will call back with the result of the request
      */
     @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
-    @RequiresPermission(Manifest.permission.SHOW_POWER_MENU)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.SHOW_POWER_MENU,
+            Manifest.permission.SHOW_POWER_MENU_PRIVILEGED
+    })
     public void showPowerMenu(
             @NonNull @CallbackExecutor Executor executor,
             @NonNull ShowPowerMenuCallback callback

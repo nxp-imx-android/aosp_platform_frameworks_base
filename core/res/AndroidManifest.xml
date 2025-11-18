@@ -9855,10 +9855,18 @@
     </permission>
 
     <!--
+    Permission needed to request to show the Power Menu.
+    <p>Granted to the current holder of the ASSISTANT role.
+    @FlaggedApi(android.app.Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU) -->
+    <permission android:name="android.permission.SHOW_POWER_MENU"
+        android:protectionLevel="internal|role"
+        android:featureFlag="android.app.statusbar_api_show_power_menu" />
+
+    <!--
         Permission needed to request to show the Power Menu.
         <p>Granted to certain privileged apps.
         @FlaggedApi(android.app.Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU) -->
-    <permission android:name="android.permission.SHOW_POWER_MENU"
+    <permission android:name="android.permission.SHOW_POWER_MENU_PRIVILEGED"
         android:protectionLevel="internal|privileged"
         android:featureFlag="android.app.statusbar_api_show_power_menu" />
 

@@ -338,6 +338,7 @@ package android {
     field public static final String SET_WALLPAPER = "android.permission.SET_WALLPAPER";
     field public static final String SET_WALLPAPER_HINTS = "android.permission.SET_WALLPAPER_HINTS";
     field @FlaggedApi("android.app.statusbar_api_show_power_menu") public static final String SHOW_POWER_MENU = "android.permission.SHOW_POWER_MENU";
+    field @FlaggedApi("android.app.statusbar_api_show_power_menu") public static final String SHOW_POWER_MENU_PRIVILEGED = "android.permission.SHOW_POWER_MENU_PRIVILEGED";
     field public static final String SIGNAL_PERSISTENT_PROCESSES = "android.permission.SIGNAL_PERSISTENT_PROCESSES";
     field @Deprecated public static final String SMS_FINANCIAL_TRANSACTIONS = "android.permission.SMS_FINANCIAL_TRANSACTIONS";
     field public static final String START_FOREGROUND_SERVICES_FROM_BACKGROUND = "android.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND";
@@ -7942,7 +7943,7 @@ package android.app {
   public class StatusBarManager {
     method @RequiresPermission(android.Manifest.permission.LAUNCH_CAPTURE_CONTENT_ACTIVITY_FOR_NOTE) public boolean canLaunchCaptureContentActivityForNote(@NonNull android.app.Activity);
     method public void requestAddTileService(@NonNull android.content.ComponentName, @NonNull CharSequence, @NonNull android.graphics.drawable.Icon, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
-    method @FlaggedApi("android.app.statusbar_api_show_power_menu") @RequiresPermission(android.Manifest.permission.SHOW_POWER_MENU) public void showPowerMenu(@NonNull java.util.concurrent.Executor, @NonNull android.app.ShowPowerMenuCallback);
+    method @FlaggedApi("android.app.statusbar_api_show_power_menu") @RequiresPermission(anyOf={android.Manifest.permission.SHOW_POWER_MENU, android.Manifest.permission.SHOW_POWER_MENU_PRIVILEGED}) public void showPowerMenu(@NonNull java.util.concurrent.Executor, @NonNull android.app.ShowPowerMenuCallback);
     field public static final int TILE_ADD_REQUEST_ERROR_APP_NOT_IN_FOREGROUND = 1004; // 0x3ec
     field public static final int TILE_ADD_REQUEST_ERROR_BAD_COMPONENT = 1002; // 0x3ea
     field public static final int TILE_ADD_REQUEST_ERROR_MISMATCHED_PACKAGE = 1000; // 0x3e8
