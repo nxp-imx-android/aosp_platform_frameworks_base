@@ -57,7 +57,7 @@ flag {
   is_exported: true
   namespace: "intentresolver"
   description: "26Q2 interactive chooser API revision."
-  bug: "404593897"
+  bug: "444268782"
 }
 
 flag {
