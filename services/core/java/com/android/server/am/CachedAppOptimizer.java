@@ -67,6 +67,7 @@ import android.app.ApplicationExitInfo.Reason;
 import android.app.ApplicationExitInfo.SubReason;
 import android.app.IApplicationThread;
 import android.content.pm.ApplicationInfo;
+import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -315,7 +316,7 @@ public class CachedAppOptimizer {
     // phones.  (A lower default has been found to work on Wear).  However, once these apps have
     // been corrected to honor their valid lifecycles, this debounce default may be lowerered or
     // set to zero.
-    @VisibleForTesting static final long DEFAULT_FREEZER_DEBOUNCE_TIMEOUT = 10_000L;
+    @VisibleForTesting final int mDefaultFreezerDebounceTimeout;
     @VisibleForTesting static final boolean DEFAULT_FREEZER_EXEMPT_INST_PKG = false;
     @VisibleForTesting static final boolean DEFAULT_FREEZER_BINDER_ENABLED = true;
     @VisibleForTesting static final long DEFAULT_FREEZER_BINDER_DIVISOR = 4;
@@ -588,7 +589,7 @@ public class CachedAppOptimizer {
     private long mFreezerBinderCallbackLast = -1;
     private boolean mBinderMonitorEnabled = false;
 
-    @VisibleForTesting volatile long mFreezerDebounceTimeout = DEFAULT_FREEZER_DEBOUNCE_TIMEOUT;
+    @VisibleForTesting volatile long mFreezerDebounceTimeout;
     @VisibleForTesting volatile boolean mFreezerExemptInstPkg = DEFAULT_FREEZER_EXEMPT_INST_PKG;
 
     private final ProcessDependencies mProcessDependencies;
@@ -619,6 +620,11 @@ public class CachedAppOptimizer {
         mSettingsObserver = new SettingsContentObserver();
         mProcLocksReader = new ProcLocksReader();
         mFreezer = mAm.getFreezer();
+
+        final Resources res = mAm.mContext.getResources();
+        mDefaultFreezerDebounceTimeout = res.getInteger(
+            com.android.internal.R.integer.config_defaultFreezerDebounceTimeout);
+        mFreezerDebounceTimeout = mDefaultFreezerDebounceTimeout;
 
         // This must be done exactly once, and as early as possible so that system_server can open
         // the singleton binder netlink socket.  mBinderMonitorEnabled will be false in test
@@ -1150,10 +1156,10 @@ public class CachedAppOptimizer {
     private void updateFreezerDebounceTimeout() {
         mFreezerDebounceTimeout = DeviceConfig.getLong(
                 DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
-                KEY_FREEZER_DEBOUNCE_TIMEOUT, DEFAULT_FREEZER_DEBOUNCE_TIMEOUT);
+                KEY_FREEZER_DEBOUNCE_TIMEOUT, mDefaultFreezerDebounceTimeout);
 
         if (mFreezerDebounceTimeout < 0) {
-            mFreezerDebounceTimeout = DEFAULT_FREEZER_DEBOUNCE_TIMEOUT;
+            mFreezerDebounceTimeout = mDefaultFreezerDebounceTimeout;
         }
         Slog.d(TAG_AM, "Freezer timeout set to " + mFreezerDebounceTimeout);
     }

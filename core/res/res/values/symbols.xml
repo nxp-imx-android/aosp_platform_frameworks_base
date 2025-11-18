@@ -6488,4 +6488,7 @@
 
   <!-- Whether to override wfc roaming mode while using ntn. -->
   <java-symbol type="bool" name="config_override_wfc_roaming_mode_while_using_ntn" />
+
+  <!-- How long to wait from eligible to freeze to freezing an app (milliseconds) -->
+  <java-symbol type="integer" name="config_defaultFreezerDebounceTimeout" />
 </resources>
