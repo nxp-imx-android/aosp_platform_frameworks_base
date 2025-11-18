@@ -61,6 +61,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventE
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MINIMIZE_BUTTON
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction.AmbiguousSource
+import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.MaximizeButtonView
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecorationActions
@@ -92,6 +93,7 @@ class AppHeaderViewHolder(
     onMaximizeHoverAnimationFinishedListener: () -> Unit,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
     private val dimensions: AppHeaderDimensions,
+    private val focusTransitionObserver: FocusTransitionObserver,
 ) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>() {
 
     data class HeaderData(
@@ -716,7 +718,14 @@ class AppHeaderViewHolder(
     }
 
     fun onMaximizeWindowHoverEnter() {
-        if (!currentTaskInfo.isFocused) return
+        if (
+            DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue &&
+                focusTransitionObserver.isDisplayLocalIsFocusedMigrationEnabled
+        ) {
+            if (!focusTransitionObserver.isFocusedOnDisplay(currentTaskInfo)) return
+        } else {
+            if (!currentTaskInfo.isFocused) return
+        }
         maximizeButtonView.startHoverAnimation()
     }
 
@@ -1001,6 +1010,7 @@ class AppHeaderViewHolder(
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
             dimensions: AppHeaderDimensions,
+            focusTransitionObserver: FocusTransitionObserver,
         ): AppHeaderViewHolder
     }
 
@@ -1017,6 +1027,7 @@ class AppHeaderViewHolder(
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
             dimensions: AppHeaderDimensions,
+            focusTransitionObserver: FocusTransitionObserver,
         ): AppHeaderViewHolder =
             AppHeaderViewHolder(
                 rootView,
@@ -1029,6 +1040,7 @@ class AppHeaderViewHolder(
                 onMaximizeHoverAnimationFinishedListener,
                 desktopModeUiEventLogger,
                 dimensions,
+                focusTransitionObserver,
             )
     }
 }

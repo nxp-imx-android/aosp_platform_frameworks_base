@@ -113,6 +113,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer;
 import com.android.wm.shell.splitscreen.SplitScreenController;
+import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.caption.OccludingElement;
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil;
@@ -126,7 +127,6 @@ import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder;
-import com.android.wm.shell.windowdecor.viewholder.util.DefaultAppHeaderDimensions;
 import com.android.wm.shell.windowdecor.viewholder.util.LargeAppHeaderDimensions;
 
 import kotlin.Pair;
@@ -216,6 +216,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final AppToWebGenericLinksParser mGenericLinksParser;
     private final AssistContentRequester mAssistContentRequester;
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
+    private final FocusTransitionObserver mFocusTransitionObserver;
 
     // Hover state for the maximize menu and button. The menu will remain open as long as either of
     // these is true. See {@link #onMaximizeHoverStateChanged()}.
@@ -277,7 +278,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopState desktopState,
             DesktopConfig desktopConfig,
             WindowDecorationActions windowDecorationActions,
-            LockTaskChangeListener lockTaskChangeListener) {
+            LockTaskChangeListener lockTaskChangeListener,
+            FocusTransitionObserver focusTransitionObserver) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
                 mainExecutor, mainDispatcher, mainScope, bgScope, bgExecutor, transitions,
@@ -292,7 +294,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 HandleMenu.HandleMenuFactory.INSTANCE, multiInstanceHelper,
                 windowDecorCaptionRepository, desktopModeEventLogger,
                 desktopModeUiEventLogger, desktopModeCompatPolicy,
-                desktopState, desktopConfig, windowDecorationActions, lockTaskChangeListener);
+                desktopState, desktopConfig, windowDecorationActions, lockTaskChangeListener,
+                focusTransitionObserver);
     }
 
     DesktopModeWindowDecoration(
@@ -336,7 +339,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopState desktopState,
             DesktopConfig desktopConfig,
             WindowDecorationActions windowDecorationActions,
-            LockTaskChangeListener lockTaskChangeListener) {
+            LockTaskChangeListener lockTaskChangeListener,
+            FocusTransitionObserver focusTransitionObserver) {
         super(context, handler, transitions, userContext, displayController, taskOrganizer,
                 taskInfo, taskSurface, surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
@@ -370,6 +374,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mDesktopConfig = desktopConfig;
         mWindowDecorationActions = windowDecorationActions;
         mLockTaskChangeListener = lockTaskChangeListener;
+        mFocusTransitionObserver = focusTransitionObserver;
     }
 
     /** Returns the last valid drag area of the task or null if the task cannot be dragged. */
@@ -1044,7 +1049,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     },
                     mDesktopModeUiEventLogger,
                     /* dimensions= */ new LargeAppHeaderDimensions(
-                            mDecorWindowContext.getResources())
+                            mDecorWindowContext.getResources()),
+                    mFocusTransitionObserver
                     );
         }
         throw new IllegalArgumentException("Unexpected layout resource id");

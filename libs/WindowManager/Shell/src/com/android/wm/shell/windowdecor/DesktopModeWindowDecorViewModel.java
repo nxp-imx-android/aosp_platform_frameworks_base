@@ -1792,6 +1792,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mWindowDecorationActions,
                     mAppToWebRepository,
                     mCaptionVisibilityHelper,
+                    mFocusTransitionObserver,
                     mLockTaskChangeListener,
                     mPinnedLayerController);
             windowDecoration =
@@ -1831,7 +1832,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             mShellDesktopState,
                             mDesktopConfig,
                             mWindowDecorationActions,
-                            mLockTaskChangeListener);
+                            mLockTaskChangeListener,
+                            mFocusTransitionObserver);
             windowDecoration = mWindowDecoratioWrapperFactory
                     .fromDesktopDecoration(desktopModeWindowDecoration);
         }
