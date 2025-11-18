@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"තිර රුව සුරැකිය නොහැකි විය"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"සුරකින්න"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"ෆෝල්ඩරය තේරීම"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"බාහිර සංදර්ශකය"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"තිර රුව සුරැකීමට පෙර උපාංගය අගුලු හැරිය යුතුය"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"තිර රුව නැවත ගැනීමට උත්සාහ කරන්න"</string>

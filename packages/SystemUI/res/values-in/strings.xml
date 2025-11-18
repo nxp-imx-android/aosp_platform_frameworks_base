@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Tidak dapat menyimpan screenshot"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Simpan ke"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Pilih folder"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Layar Eksternal"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Perangkat harus dibuka kuncinya agar screenshot dapat disimpan"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Coba ambil screenshot lagi"</string>
@@ -1171,9 +1175,9 @@
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Tetap aktifkan"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"Ikon"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> adalah pintasan keyboard untuk menggunakan <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> adalah pembaca layar yang memungkinkan Anda mendengar item yang dibacakan secara lisan. Fitur ini dapat berguna bagi orang yang kesulitan melihat layar atau orang yang mengalami gangguan penglihatan. Tindakan ini dapat mengubah cara kerja perangkat Anda."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Dengan mengaktifkan pintasan keyboard, Anda akan mengizinkan TalkBack memiliki kontrol penuh atas perangkat Anda."</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Kontrol penuh wajar diberikan pada aplikasi yang mendukung kebutuhan aksesibilitas Anda, tetapi tidak untuk sebagian besar aplikasi."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Kontrol penuh cocok untuk aplikasi yang mendukung kebutuhan aksesibilitas Anda, tetapi tidak untuk sebagian besar aplikasi."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Melihat dan mengontrol layar"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Membaca semua konten di layar dan menampilkan konten di atas aplikasi lain."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Membaca semua konten di layar dan menampilkan konten menindih aplikasi lain."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Menampilkan dan melakukan tindakan"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Melacak interaksi Anda dengan aplikasi atau sensor hardware, dan berinteraksi dengan aplikasi untuk Anda."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Menekan "<annotation id="action_key_icon">"ikon"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> akan mengaktifkan fitur aksesibilitas <xliff:g id="ID_4">^4</xliff:g>. Tindakan ini memungkinkan Anda mengontrol perangkat secara handsfree."</string>

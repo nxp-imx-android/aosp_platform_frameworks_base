@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"ସ୍କ୍ରୀନ୍‍ଶଟ୍ ସେଭ୍ କରିହେବ ନାହିଁ"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"ଏଥିରେ ସେଭ କରନ୍ତୁ"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"ଫୋଲ୍ଡର ଚୟନ କରନ୍ତୁ"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"ଏକ୍ସଟର୍ନଲ ଡିସପ୍ଲେ"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"ସ୍କ୍ରିନସଟ୍ ସେଭ୍ କରିବା ପୂର୍ବରୁ ଡିଭାଇସକୁ ଅନଲକ୍ କରାଯିବା ଆବଶ୍ୟକ"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"ପୁଣିଥରେ ସ୍କ୍ରୀନ୍‌ଶଟ୍ ନେବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ"</string>
@@ -1173,7 +1177,7 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"କୀବୋର୍ଡ ସର୍ଟକଟକୁ ଚାଲୁ କରି ଆପଣଙ୍କ ଡିଭାଇସର ସମ୍ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ କରିବାକୁ ଆପଣ TalkBackକୁ ଅନୁମତି ଦେବେ।"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"ଆପଣଙ୍କୁ ଆକ୍ସେସିବିଲିଟୀ ଆବଶ୍ୟକତାରେ ସହାୟତା କରୁଥିବା ଆପ୍ସ ପାଇଁ ସମ୍ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ ଉପଯୁକ୍ତ, କିନ୍ତୁ ଅଧିକାଂଶ ଆପ୍ସ ପାଇଁ ନୁହେଁ।"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"ଭ୍ୟୁ ଏବଂ ସ୍କ୍ରିନ ନିୟନ୍ତ୍ରଣ"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ଏହା ସ୍କ୍ରିନରେ ସମସ୍ତ ବିଷୟବସ୍ତୁ ପଢ଼ିପାରେ ଏବଂ ଅନ୍ୟ ଆପ୍ସରେ ବିଷୟବସ୍ତୁକୁ ଡିସପ୍ଲେ କରିପାରେ।"</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"ଏହା ସ୍କ୍ରିନରେ ସମସ୍ତ ବିଷୟବସ୍ତୁ ପଢ଼ିପାରେ ଏବଂ ଅନ୍ୟ ଆପ୍ସ ଉପରେ ବିଷୟବସ୍ତୁକୁ ଡିସପ୍ଲେ କରିପାରେ।"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ଭ୍ୟୁ କରି କାର୍ଯ୍ୟଗୁଡ଼ିକ କରନ୍ତୁ"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"ଏହା କୌଣସି ଆପ କିମ୍ବା ହାର୍ଡୱେର ସେନ୍ସର ସହ ଆପଣଙ୍କର ଇଣ୍ଟେରାକ୍ସନକୁ ଟ୍ରାକ କରିପାରେ ଏବଂ ଆପଣଙ୍କ ତରଫରୁ ଆପ୍ସ ସହ ଇଣ୍ଟରାକ୍ଟ କରିପାରେ।"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ଆଇକନ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>କୁ ଦବାଇବା ଫଳରେ ଏକ ଆକ୍ସେସିବିଲିଟୀ ଫିଚର <xliff:g id="ID_4">^4</xliff:g> ଚାଲୁ ହୁଏ। ଏହା ଆପଣଙ୍କୁ ଆପଣଙ୍କ ଡିଭାଇସକୁ ହେଣ୍ଡ୍ସ-ଫ୍ରି ଭାବରେ ନିୟନ୍ତ୍ରଣ କରିବାକୁ ଦିଏ।"</string>

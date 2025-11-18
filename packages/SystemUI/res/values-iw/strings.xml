@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"לא ניתן היה לשמור את צילום המסך"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"שמירה בתיקייה:"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"בחירת תיקייה"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"תצוגה במסך חיצוני"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"כדי שצילום המסך יישמר, צריך לבטל את הנעילה של המכשיר"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"אפשר לצלם שוב את המסך"</string>
@@ -1162,20 +1166,20 @@
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"להפעיל את <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_2">^2</xliff:g>‏ + <xliff:g id="ID_3">^3</xliff:g> הם מקשי הקיצור לשימוש בתכונה <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"כדי להפעיל את <xliff:g id="ID_4">%4$s</xliff:g>, צריך ללחוץ שוב על <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g>"</string>
-    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"להפעיל את מקש הקיצור של <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"להפעיל את מקשי הקיצור של <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"לא להפעיל"</string>
-    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"הפעלה של מקש הקיצור"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"מקש הקיצור <xliff:g id="ID_1">%1$s</xliff:g> הופעל"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_2">^2</xliff:g>‏ + <xliff:g id="ID_3">^3</xliff:g> הוא מקש הקיצור לשימוש בתכונת הנגישות <xliff:g id="ID_4">^4</xliff:g>. כך אפשר להגדיל את התצוגה במהירות כדי לראות טוב יותר את התוכן. כשההגדלה מופעלת, צריך ללחוץ על <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> ועל \"+\" או על \"-\" כדי לשנות את מרחק התצוגה."</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"הפעלת מקשי הקיצור"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"מקשי הקיצור לתכונה \"<xliff:g id="ID_1">%1$s</xliff:g>\" הופעלו"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_2">^2</xliff:g>‏ + <xliff:g id="ID_3">^3</xliff:g> הם מקשי הקיצור לתכונת הנגישות \"<xliff:g id="ID_4">^4</xliff:g>\". כך אפשר להגדיל את התצוגה במהירות כדי לראות טוב יותר את התוכן. כשההגדלה מופעלת, צריך ללחוץ על <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> ועל \"+\" או על \"-\" כדי לשנות את מרחק התצוגה."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"השבתת מקש הקיצור"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"לא, התחרטתי"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_2">^2</xliff:g>‏ + <xliff:g id="ID_3">^3</xliff:g> הם מקשי הקיצור לשימוש בתכונה <xliff:g id="ID_4">^4</xliff:g>. ‫<xliff:g id="ID_5">^4</xliff:g> הוא קורא מסך שמאפשר לשמוע הקראה של פריטים. זה יכול להועיל לאנשים שמתקשים לראות את המסך. שימוש בקורא המסך יכול לגרום לשינוי באופן שבו המכשיר פועל."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_2">^2</xliff:g>‏ + <xliff:g id="ID_3">^3</xliff:g> הם מקשי הקיצור לשימוש בקורא המסך <xliff:g id="ID_4">^4</xliff:g>. ‫<xliff:g id="ID_5">^4</xliff:g> מאפשר לשמוע הקראה של פריטים. זה יכול להועיל לאנשים שמתקשים לראות את המסך. שימוש בקורא המסך יכול לשנות את אופן הפעולה של המכשיר."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"‏הפעלת מקש הקיצור תאפשר ל-TalkBack לקבל שליטה מלאה במכשיר."</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"אפשרות השליטה מלאה מיועדת רק לאפליקציות שעוזרות עם צורכי הנגישות שלך, אבל לא לרוב האפליקציות."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"אפשרות השליטה המלאה מתאימה לאפליקציות לצורכי נגישות, אבל רוב האפליקציות לא תומכות בה."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"הצגת המסך ושליטה בו"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"זוהי אפשרות לקריאת כל התוכן במסך ולהצגת התוכן מעל אפליקציות אחרות."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"התכונה תוכל לקרוא את כל התוכן במסך ולהציג תוכן מעל אפליקציות אחרות."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"הצגה וביצוע של פעולות"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"התכונה תוכל לעקוב אחר הפעילות שלך באפליקציות או עם חיישני חומרה, ולבצע פעולות באפליקציות בשמך."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"התכונה יכולה לעקוב אחרי הפעילות שלך באפליקציות או עם חיישני חומרה, ולבצע בשבילך פעולות."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"לחיצה על <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_2">^2</xliff:g>‏ + <xliff:g id="ID_3">^3</xliff:g> מפעילה את תכונת הנגישות <xliff:g id="ID_4">^4</xliff:g>. הפעולה הזו מאפשרת לך לשלוט במכשיר באמצעות הקול."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"נגישות"</string>
     <string name="accessibility_quick_access_dialog_done_button_text" msgid="8013849920696848138">"סיום"</string>
@@ -1694,7 +1698,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"התאורה האחורית במקלדת"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"‏רמה %1$d מתוך %2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"שליטה במכשירים"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"גישה לשליטה במכשירים כשומר מסך"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"שומר מסך עם גישה מהירה לשליטה במכשירים"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"ביטול"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"כדי לחזור אחורה, מחליקים שמאלה או ימינה עם שלוש אצבעות על לוח המגע."</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"כדי לעבור למסך הבית, מחליקים למעלה עם שלוש אצבעות על לוח המגע"</string>

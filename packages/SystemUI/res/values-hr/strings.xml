@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Snimka zaslona nije spremljena"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Spremi u"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Odaberite mapu"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Vanjski prikaz"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Uređaj mora biti otključan da bi se snimka zaslona mogla spremiti"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Pokušajte ponovo napraviti snimku zaslona"</string>
@@ -1166,11 +1170,11 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nemoj uključiti"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Uključi prečac"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Uključen je tipkovni prečac <xliff:g id="ID_1">%1$s</xliff:g>"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"Ikona"</annotation>" radnje <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke pristupačnosti <xliff:g id="ID_4">^4</xliff:g>. Omogućuje vam da brzo povećate prikaz na zaslonu kako biste bolje vidjeli sadržaj. Kad je povećavanje uključeno, pritisnite "<annotation id="action_key_icon">"ikonu"</annotation>" radnje <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> i + ili - da biste prilagodili zumiranje."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke pristupačnosti <xliff:g id="ID_4">^4</xliff:g>. Omogućuje vam da brzo povećate prikaz na zaslonu kako biste bolje vidjeli sadržaj. Kad je povećavanje uključeno, pritisnite <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> i \"+\" ili \"-\" da biste prilagodili zumiranje."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Isključi prečac"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ostavi uključeno"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"Ikona"</annotation>" radnje <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> je čitač zaslona koji vam omogućuje da čujete stavke izgovorene naglas. To može biti korisno za osobe koje imaju poteškoća s vidom. Time se može promijeniti način na koji vaš uređaj radi."</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ako uključite tipkovni prečac, dopustit ćete TalkBacku da ima potpunu kontrolu nad vašim uređajem."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ako uključite tipkovni prečac, TalkBacku ćete dopustiti potpunu kontrolu nad vašim uređajem."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Potpuna kontrola prikladna je za aplikacije koje vam pomažu s potrebama pristupačnosti, ali ne i za većinu aplikacija."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Prikaz zaslona i upravljanje njime"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Može čitati sav sadržaj na zaslonu i prikazati sadržaj povrh drugih aplikacija."</string>

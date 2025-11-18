@@ -83,6 +83,10 @@
     <string name="screenshot_failed_title" msgid="3259148215671936891">"Kan screenshot niet opslaan"</string>
     <string name="screenshot_save_to" msgid="3294574417295882864">"Opslaan in"</string>
     <string name="screenshot_select_folder" msgid="4770537414396025502">"Map selecteren"</string>
+    <!-- no translation found for screenshot_custom_uri_save_fail_title (1584124511048051054) -->
+    <skip />
+    <!-- no translation found for screenshot_custom_uri_save_fail_message (8548656555271518389) -->
+    <skip />
     <string name="screenshot_failed_external_display_indication" msgid="6555673132061101936">"Extern scherm"</string>
     <string name="screenshot_failed_to_save_user_locked_text" msgid="6156607948256936920">"Je moet het apparaat ontgrendelen voordat het screenshot kan worden opgeslagen"</string>
     <string name="screenshot_failed_to_save_unknown_text" msgid="1506621600548684129">"Probeer opnieuw een screenshot te maken"</string>
@@ -1166,7 +1170,7 @@
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Niet aanzetten"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Sneltoets aanzetten"</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Sneltoets <xliff:g id="ID_1">%1$s</xliff:g> aangezet"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is de sneltoets om <xliff:g id="ID_4">^4</xliff:g> te gebruiken, een toegankelijkheidsfunctie. Hiermee kun je snel inzoomen op het scherm om content te vergroten. Zodra vergroting aanstaat, druk je op <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> en dan op + of - om het zoomniveau aan te passen."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is de sneltoets om de toegankelijkheidsfunctie <xliff:g id="ID_4">^4</xliff:g> te gebruiken. Hiermee kun je snel inzoomen op het scherm om content te vergroten. Zodra Vergroting aanstaat, druk je op <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> en dan op + of - om het zoomniveau aan te passen."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Sneltoets uitzetten"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Aan laten"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icoon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is de sneltoets om <xliff:g id="ID_4">^4</xliff:g> te gebruiken. <xliff:g id="ID_5">^4</xliff:g> is een schermlezer waarmee je items hardop kunt laten voorlezen. Deze kan nuttig zijn voor mensen die het scherm moeilijk kunnen zien. Hierdoor kan de manier veranderen waarop je apparaat werkt."</string>
