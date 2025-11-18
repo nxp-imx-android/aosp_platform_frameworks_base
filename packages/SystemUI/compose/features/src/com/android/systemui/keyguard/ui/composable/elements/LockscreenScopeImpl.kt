@@ -104,6 +104,13 @@ class LockscreenScopeImpl<TScope : BaseContentScope>(
         private val context: LockscreenElementContext,
     ) : LockscreenScopeFactory {
         override fun <T : BaseContentScope> create(scope: T): LockscreenScope<T> {
+            return create(scope, context)
+        }
+
+        override fun <T : BaseContentScope> create(
+            scope: T,
+            context: LockscreenElementContext,
+        ): LockscreenScope<T> {
             return LockscreenScopeImpl(sceneContainerLayoutState, scope, factory, context)
         }
     }

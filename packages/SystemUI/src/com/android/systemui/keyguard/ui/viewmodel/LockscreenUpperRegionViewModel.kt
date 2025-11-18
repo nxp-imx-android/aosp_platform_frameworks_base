@@ -25,7 +25,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.ui.composable.layout.UnfoldTranslations
+import com.android.systemui.keyguard.ui.composable.elements.UnfoldTranslations
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor

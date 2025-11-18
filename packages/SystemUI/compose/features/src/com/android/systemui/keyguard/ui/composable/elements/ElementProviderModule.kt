@@ -25,6 +25,10 @@ import dagger.multibindings.IntoSet
 interface ElementProviderModule {
     @Binds
     @IntoSet
+    fun rootElementProvider(impl: LockscreenRootElementProvider): LockscreenElementProvider
+
+    @Binds
+    @IntoSet
     fun statusBarElementProvider(impl: StatusBarElementProvider): LockscreenElementProvider
 
     @Binds

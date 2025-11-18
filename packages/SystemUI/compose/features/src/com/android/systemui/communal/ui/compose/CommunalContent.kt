@@ -51,9 +51,9 @@ import com.android.systemui.communal.ui.compose.section.HubOnboardingSection
 import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSection
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.keyguard.ui.composable.elements.IndicationAreaElementProvider
+import com.android.systemui.keyguard.ui.composable.elements.LockIconAlignmentLines
 import com.android.systemui.keyguard.ui.composable.elements.LockIconElementProvider
 import com.android.systemui.keyguard.ui.composable.elements.LockscreenElements
-import com.android.systemui.keyguard.ui.composable.layout.LockIconAlignmentLines
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
