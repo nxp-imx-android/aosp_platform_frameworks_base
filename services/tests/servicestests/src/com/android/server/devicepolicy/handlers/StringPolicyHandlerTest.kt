@@ -94,56 +94,68 @@ class StringPolicyHandlerTest {
         )
 
     @Test
-    fun setPolicy_shouldAcceptNull() {
+    fun setPolicyUnchecked_shouldAcceptNull() {
         val definition = Policy.definition
         val handler = createHandler(definition = definition)
 
-        handler.setPolicy(anyCaller, anyScope, null)
+        handler.setPolicyUnchecked(anyCaller, anyScope, null)
 
         verify(mockDelegate).clearPolicy(anyCaller, definition, anyScope)
     }
 
     @Test
-    fun setPolicy_shouldRejectValueOfWrongType() {
+    fun setPolicyUnchecked_shouldRejectValueOfWrongType() {
         val handler = createHandler()
 
         val exception =
             assertFailsWith<IllegalArgumentException> {
-                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.booleanField(true))
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.booleanField(true),
+                )
             }
 
         assertThat(exception.message).contains("is not a string")
     }
 
     @Test
-    fun setPolicy_shouldAcceptNonEmptyStrings() {
+    fun setPolicyUnchecked_shouldAcceptNonEmptyStrings() {
         val handler = createHandler()
 
-        handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.stringField("It's a string"))
+        handler.setPolicyUnchecked(
+            anyCaller,
+            anyScope,
+            PolicyValueTransport.stringField("It's a string"),
+        )
 
         verify(mockDelegate)
             .storePolicy(anyCaller, Policy.definition, anyScope, StringPolicyValue("It's a string"))
     }
 
     @Test
-    fun setPolicy_shouldRejectEmptyString() {
+    fun setPolicyUnchecked_shouldRejectEmptyString() {
         val metadataBlockingEmptyString = copyOf(Policy.metadata, emptyStringAllowed = false)
         val handler = createHandler(metadata = metadataBlockingEmptyString)
 
         val exception =
             assertFailsWith<IllegalArgumentException> {
-                handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.stringField(""))
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.stringField(""),
+                )
             }
         assertThat(exception.message)
             .contains("Empty string is not allowed for policy ${Policy.key}")
     }
 
     @Test
-    fun setPolicy_shouldAcceptEmptyString() {
+    fun setPolicyUnchecked_shouldAcceptEmptyString() {
         val metadataAllowingEmptyString = copyOf(Policy.metadata, emptyStringAllowed = true)
         val handler = createHandler(metadata = metadataAllowingEmptyString)
 
-        handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.stringField(""))
+        handler.setPolicyUnchecked(anyCaller, anyScope, PolicyValueTransport.stringField(""))
 
         verify(mockDelegate)
             .storePolicy(anyCaller, Policy.definition, anyScope, StringPolicyValue(""))

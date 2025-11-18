@@ -25691,7 +25691,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         Binder.withCleanCallingIdentity(() -> {
-            handler.setPolicy(caller, scope, value);
+            handler.checkPermissions(caller, scope);
+            handler.setPolicyUnchecked(caller, scope, value);
         });
     }
 
@@ -25721,8 +25722,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         return Binder.withCleanCallingIdentity(() -> {
-            return handler.getPolicy(caller, scope);
+            handler.checkPermissions(caller, scope);
+            return handler.getPolicyUnchecked(caller, scope);
         });
     }
-
 }

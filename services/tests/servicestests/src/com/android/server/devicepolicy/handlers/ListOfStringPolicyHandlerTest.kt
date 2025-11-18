@@ -97,24 +97,17 @@ class ListOfStringPolicyHandlerTest {
     ) =
         ListPolicyMetadata(
             /* id= */ id ?: source.id,
-            /* elementMetadata= */
-            StringPolicyMetadata(
-                /* id= */
-                id?.run {
-                    PolicyIdentifier<String>("$id#elements")
-                } ?: PolicyIdentifier<String>("${source.id.id}#elements"),
-                /* allowedScopes= */
-                allowedScopes ?: source.elementMetadata.allowedScopes,
-                /* affectedResource= */
-                affectedResource ?: source.elementMetadata.affectedResource,
-                /* requiredPermission= */
-                requiredPermission ?: source.elementMetadata.requiredPermission,
-                /* requiredCrossUserPermission= */
-                requiredCrossUserPermission ?: source.elementMetadata.requiredCrossUserPermission,
-                /* allowedDpcTypes= */
-                allowedDpcTypes ?: source.elementMetadata.allowedDpcTypes,
-                /* emptyStringAllowed= */
-                emptyStringAllowed
+            /* elementMetadata= */ StringPolicyMetadata(
+                /* id= */ id?.run { PolicyIdentifier<String>("$id#elements") }
+                    ?: PolicyIdentifier<String>("${source.id.id}#elements"),
+                /* allowedScopes= */ allowedScopes ?: source.elementMetadata.allowedScopes,
+                /* affectedResource= */ affectedResource ?: source.elementMetadata.affectedResource,
+                /* requiredPermission= */ requiredPermission
+                    ?: source.elementMetadata.requiredPermission,
+                /* requiredCrossUserPermission= */ requiredCrossUserPermission
+                    ?: source.elementMetadata.requiredCrossUserPermission,
+                /* allowedDpcTypes= */ allowedDpcTypes ?: source.elementMetadata.allowedDpcTypes,
+                /* emptyStringAllowed= */ emptyStringAllowed
                     ?: (source.elementMetadata as StringPolicyMetadata).isEmptyStringAllowed,
             ),
             /* emptyListAllowed= */ emptyListAllowed ?: source.isEmptyListAllowed,
@@ -128,24 +121,33 @@ class ListOfStringPolicyHandlerTest {
     ) = PolicyHandler<List<String>>(key, metadata, definition, delegate)
 
     @Test
-    fun setPolicy_emptyListDisallowed_shouldRejectEmptyList() {
+    fun setPolicyUnchecked_emptyListDisallowed_shouldRejectEmptyList() {
         val metadata = copyOf(Policy.metadata, emptyListAllowed = false)
         val handler = createHandler(metadata = metadata, delegate = mockDelegate)
 
-        val error = assertFailsWith<IllegalArgumentException> {
-            handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.listOfStringField(listOf()))
-        }
+        val error =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.listOfStringField(listOf()),
+                )
+            }
 
         assertThat(error.message).contains("Empty list is not allowed")
         verify(mockDelegate, never()).storePolicy<List<String>>(any(), any(), any(), any())
     }
 
     @Test
-    fun setPolicy_emptyListAllowed_shouldAllowEmptyList() {
+    fun setPolicyUnchecked_emptyListAllowed_shouldAllowEmptyList() {
         val metadata = copyOf(Policy.metadata, emptyListAllowed = true)
         val handler = createHandler(metadata = metadata, delegate = mockDelegate)
 
-        handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.listOfStringField(listOf()))
+        handler.setPolicyUnchecked(
+            anyCaller,
+            anyScope,
+            PolicyValueTransport.listOfStringField(listOf()),
+        )
         val expectedValue = ListOfStringPolicyValue(listOf())
         verify(mockDelegate, times(1)).storePolicy(any(), any(), any(), eq(expectedValue))
 
@@ -153,24 +155,24 @@ class ListOfStringPolicyHandlerTest {
     }
 
     @Test
-    fun setPolicy_shouldHandleNull() {
+    fun setPolicyUnchecked_shouldHandleNull() {
         val handler = createHandler(delegate = mockDelegate)
 
-        handler.setPolicy(anyCaller, anyScope, null)
+        handler.setPolicyUnchecked(anyCaller, anyScope, null)
 
         verify(mockDelegate).clearPolicy<List<String>>(any(), any(), any())
         verify(mockDelegate, never()).storePolicy<List<String>>(any(), any(), any(), any())
     }
 
     @Test
-    fun setPolicy_shouldHandleValidValues() {
+    fun setPolicyUnchecked_shouldHandleValidValues() {
         val listOfStrings = listOf("test_value_1", "test_value_2", "test_value_3")
         val handler = createHandler(delegate = mockDelegate)
 
-        handler.setPolicy(
+        handler.setPolicyUnchecked(
             anyCaller,
             anyScope,
-            PolicyValueTransport.listOfStringField(listOfStrings)
+            PolicyValueTransport.listOfStringField(listOfStrings),
         )
 
         val expectedValue = ListOfStringPolicyValue(listOfStrings)
@@ -178,12 +180,17 @@ class ListOfStringPolicyHandlerTest {
 
         verify(mockDelegate, never()).clearPolicy<List<String>>(any(), any(), any())
     }
+
     @Test
-    fun setPolicy_wrongValueType_shouldReject() {
+    fun setPolicyUnchecked_wrongValueType_shouldReject() {
         val handler = createHandler(delegate = mockDelegate)
 
         assertFailsWith<IllegalArgumentException> {
-            handler.setPolicy(anyCaller, anyScope, PolicyValueTransport.stringField("wrongType"))
+            handler.setPolicyUnchecked(
+                anyCaller,
+                anyScope,
+                PolicyValueTransport.stringField("wrongType"),
+            )
         }
 
         verify(mockDelegate, never()).storePolicy<List<String>>(any(), any(), any(), any())
