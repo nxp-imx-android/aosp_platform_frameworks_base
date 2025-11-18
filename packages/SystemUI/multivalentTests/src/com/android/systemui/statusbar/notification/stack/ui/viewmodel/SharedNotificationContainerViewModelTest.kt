@@ -51,6 +51,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
+import com.android.systemui.keyguard.shared.model.KeyguardState.UNDEFINED
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
@@ -1072,8 +1073,16 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
             val progress = MutableStateFlow(0f)
 
-            showLockscreen()
+            // Begin at idle on lockscreen scene.
             sceneContainerRepository.setTransitionState(transitionState)
+            transitionState.value = ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen)
+            keyguardTransitionRepository.transitionTo(from = UNDEFINED, to = LOCKSCREEN)
+
+            // Bouncer fully closed, showing Lockscreen.
+            assertThat(alpha).isEqualTo(1f)
+
+            // Begin transition to bouncer.
+            // Keyguard state is mid-transition from lockscreen.
             transitionState.value =
                 ObservableTransitionState.Transition.showOverlay(
                     overlay = Overlays.Bouncer,
@@ -1083,16 +1092,29 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                     isInitiatedByUserInput = false,
                     isUserInputOngoing = flowOf(false),
                 )
-
-            // Bouncer fully closed, showing Lockscreen.
-            assertThat(alpha).isEqualTo(1f)
+            keyguardTransitionRepository.sendTransitionStepsThroughRunning(
+                from = LOCKSCREEN,
+                to = UNDEFINED,
+                testScope = testScope,
+                throughValue = 0.5f,
+            )
 
             // Bouncer opening.
             progress.value = 0.2f
             assertThat(alpha).isLessThan(1f)
 
-            // Bouncer fully shown.
+            // Bouncer fully shown, keyguard transition complete.
             progress.value = 1f
+            keyguardTransitionRepository.sendTransitionSteps(
+                step =
+                    TransitionStep(
+                        transitionState = TransitionState.FINISHED,
+                        from = LOCKSCREEN,
+                        to = UNDEFINED,
+                    ),
+                testScope = testScope,
+                fillInSteps = true,
+            )
             assertThat(alpha).isEqualTo(0f)
         }
 
@@ -1105,8 +1127,20 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
             val progress = MutableStateFlow(0f)
 
-            showLockscreen()
+            // Start at idle on bouncer overlay
             sceneContainerRepository.setTransitionState(transitionState)
+            transitionState.value =
+                ObservableTransitionState.Idle(
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = setOf(Overlays.Bouncer),
+                )
+            keyguardTransitionRepository.transitionTo(from = LOCKSCREEN, to = UNDEFINED)
+
+            // Bouncer fully shown.
+            assertThat(alpha).isEqualTo(0f)
+
+            // Begin transition away from bouncer: scene transition bouncer -> lockscreen and
+            // keyguard transition undefined -> lockscreen.
             transitionState.value =
                 ObservableTransitionState.Transition.hideOverlay(
                     overlay = Overlays.Bouncer,
@@ -1116,15 +1150,86 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                     isInitiatedByUserInput = false,
                     isUserInputOngoing = flowOf(false),
                 )
-
-            // Bouncer fully shown.
-            assertThat(alpha).isEqualTo(0f)
+            keyguardTransitionRepository.sendTransitionStepsThroughRunning(
+                from = UNDEFINED,
+                to = LOCKSCREEN,
+                testScope = testScope,
+                throughValue = 0.5f,
+            )
 
             // Bouncer closing.
             progress.value = 0.8f
             assertThat(alpha).isGreaterThan(0f)
 
             // Bouncer gone, back to Lockscreen.
+            keyguardTransitionRepository.sendTransitionSteps(
+                step =
+                    TransitionStep(
+                        transitionState = TransitionState.FINISHED,
+                        from = UNDEFINED,
+                        to = LOCKSCREEN,
+                    ),
+                testScope = testScope,
+                fillInSteps = true,
+            )
+            progress.value = 1f
+            assertThat(alpha).isEqualTo(1f)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun alphaDoesNotChange_BouncerOverlayToAOD() =
+        kosmos.runTest {
+            val viewState = ViewStateAccessor()
+            val alpha by
+                collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
+            val progress = MutableStateFlow(0f)
+
+            // Start at idle on bouncer overlay
+            sceneContainerRepository.setTransitionState(transitionState)
+            transitionState.value =
+                ObservableTransitionState.Idle(
+                    currentScene = Scenes.Lockscreen,
+                    currentOverlays = setOf(Overlays.Bouncer),
+                )
+            keyguardTransitionRepository.transitionTo(from = LOCKSCREEN, to = UNDEFINED)
+
+            // Bouncer fully shown.
+            assertThat(alpha).isEqualTo(0f)
+
+            // Begin transition away from bouncer: scene transition bouncer -> lockscreen and
+            // keyguard transition undefined -> AOD.
+            transitionState.value =
+                ObservableTransitionState.Transition.hideOverlay(
+                    overlay = Overlays.Bouncer,
+                    toScene = Scenes.Lockscreen,
+                    currentOverlays = flowOf(emptySet()),
+                    progress = progress,
+                    isInitiatedByUserInput = false,
+                    isUserInputOngoing = flowOf(false),
+                )
+            keyguardTransitionRepository.sendTransitionStepsThroughRunning(
+                from = UNDEFINED,
+                to = AOD,
+                testScope = testScope,
+                throughValue = 0.5f,
+            )
+
+            // Bouncer closing.
+            progress.value = 0.8f
+            assertThat(alpha).isEqualTo(0f)
+
+            // Bouncer gone, settled on AOD. Alpha should only change at this point.
+            keyguardTransitionRepository.sendTransitionSteps(
+                step =
+                    TransitionStep(
+                        transitionState = TransitionState.FINISHED,
+                        from = UNDEFINED,
+                        to = AOD,
+                    ),
+                testScope = testScope,
+                fillInSteps = true,
+            )
             progress.value = 1f
             assertThat(alpha).isEqualTo(1f)
         }

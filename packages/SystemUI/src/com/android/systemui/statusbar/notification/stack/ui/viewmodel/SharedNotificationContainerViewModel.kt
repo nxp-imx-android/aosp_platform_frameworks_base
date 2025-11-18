@@ -685,12 +685,30 @@ constructor(
 
     private val bouncerOverlayNotificationAlpha: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
-            bouncerInteractor.bouncerExpansion.map {
-                when {
-                    it > 0f -> alphaForBouncerExpansion(it)
-                    else -> 1f
+            combineTransform(
+                    bouncerInteractor.bouncerExpansion,
+                    keyguardTransitionInteractor
+                        .transitionValue(LOCKSCREEN)
+                        .map { it > 0f }
+                        .distinctUntilChanged(),
+                ) { bouncerExpansion, inLockscreenTransition ->
+                    if (bouncerExpansion > 0f) {
+                        // If bouncerExpansion is nonzero, we are currently transitioning to or from
+                        // bouncer. In this case, only emit when going to/from lockscreen
+                        // (specifically the keyguard state, to distinguish from AOD or other
+                        // keyguard states on the lockscreen scene). Otherwise, let any other
+                        // relevant transition values declare the alpha if necessary.
+                        if (inLockscreenTransition) {
+                            emit(alphaForBouncerExpansion(bouncerExpansion))
+                        }
+                    } else {
+                        // Once bouncer is fully gone, emit 1 to make sure we leave the alpha in a
+                        // correct state when idle.
+                        emit(1f)
+                    }
                 }
-            }
+                .distinctUntilChanged()
+                .dumpWhileCollecting("bouncerOverlayNotificationAlpha")
         } else {
             flowOf(1f)
         }
