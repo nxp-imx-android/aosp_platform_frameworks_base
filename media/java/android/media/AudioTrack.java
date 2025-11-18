@@ -531,6 +531,23 @@ public class AudioTrack extends PlayerBase
     @Retention(RetentionPolicy.SOURCE)
     public @interface FlushFromAccuracy {}
 
+    /**
+     * Constant flag value to indicate {@link #flushWrittenFramesFromPosition(long, int)}
+     * is supported.
+     *
+     * @see #flushWrittenFramesFromPosition(long, int)
+     * @see #getFlushWrittenFramesFromPositionSupport(AudioFormat, AudioAttributes)
+     */
+    @FlaggedApi(FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD)
+    public static final int FLUSH_WRITTEN_FRAMES_SUPPORTED = 1 << 0;
+
+    /** @hide */
+    @IntDef(flag = true, prefix = "FLUSH_WRITTEN_FRAMES", value = {
+            FLUSH_WRITTEN_FRAMES_SUPPORTED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FlushWrittenFramesSupport {}
+
     // keep in sync with system/media/audio/include/system/audio-base.h
     private static final int AUDIO_OUTPUT_FLAG_FAST = 0x4;
     private static final int AUDIO_OUTPUT_FLAG_DEEP_BUFFER = 0x8;
@@ -3263,6 +3280,30 @@ public class AudioTrack extends PlayerBase
     }
 
     /**
+     * Returns a bit mask representing the current feature support for
+     * {@link #flushWrittenFramesFromPosition(long, int)} for the AudioTrack in offload mode
+     * that is created with the given {@link AudioFormat} and {@link AudioAttributes}.
+     *
+     * @param format the AudioFormat to create AudioTrack
+     * @param attributes the AudioAttributes to create AudioTrack
+     * @return a bitmask representing the {@link #flushWrittenFramesFromPosition(long, int)}
+     *     support level. If {@link #flushWrittenFramesFromPosition(long, int)} is not supported,
+     *     {@code 0} is returned.
+     *
+     * @see #flushWrittenFramesFromPosition(long, int)
+     */
+    @FlaggedApi(FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD)
+    public static @FlushWrittenFramesSupport int getFlushWrittenFramesFromPositionSupport(
+            @NonNull AudioFormat format,
+            @NonNull AudioAttributes attributes) {
+        Objects.requireNonNull(format);
+        Objects.requireNonNull(attributes);
+        return native_getFlushWrittenFramesFromPositionSupport(
+                format.getEncoding(), format.getSampleRate(), format.getChannelMask(),
+                format.getChannelIndexMask(), attributes);
+    }
+
+    /**
      * Flush all data from the given position.
      * <p> If this operation returns successfully, {@link #write} after a call to this method will
      * be written from frame position returned by this method. The method
@@ -3271,6 +3312,12 @@ public class AudioTrack extends PlayerBase
      * <p> This method is only allowed in offload mode ((i.e. tracks created with
      * {@link Builder#setOffloadedPlayback(boolean)} set to {@code true})). Applications can call
      * this function to flush data while it is actively playing.
+     *
+     * <p> Supporting this method relies on the device's capabilities. Call
+     * {@link #getFlushWrittenFramesFromPositionSupport(AudioFormat, AudioAttributes)} to query how
+     * this method is supported with the {@link AudioFormat} and {@link AudioAttributes} before
+     * creating the AudioTrack. If {@link #getFlushWrittenFramesFromPositionSupport} returns
+     * {@code 0}, UnsupportedOperationException will be thrown.
      *
      * <p> When clients request to flush from a certain position, the audio system will return the
      * actual flushed position based on the requested position, the requested flush accuracy, and
@@ -3290,10 +3337,12 @@ public class AudioTrack extends PlayerBase
      *     total written frames.
      * @return the actual flushed position or {@link #ERROR_BAD_VALUE} if the requested accuracy is
      *     {@link #FLUSH_FROM_ACCURACY_EXACT} and cannot flush from the requested position.
-     * @throws IllegalStateException if the AudioTrack is not initialized or
-     *     it is not an offload track.
-     * @throws IllegalArgumentException if it is not an offload track or {@code accuracy} is not
-     *     valid or {@code positionInFrames} is less than 0 or greater than the written frames.
+     * @throws IllegalStateException if the AudioTrack is not initialized.
+     * @throws IllegalArgumentException if {@code accuracy} is not valid or {@code positionInFrames}
+     *     is less than 0 or greater than the written frames.
+     * @throws UnsupportedOperationException if this method is not supported.
+     *
+     * @see #getFlushWrittenFramesFromPositionSupport(AudioFormat, AudioAttributes)
      */
     @CheckResult
     @FlaggedApi(FLAG_PARTIAL_FLUSH_FOR_PCM_OFFLOAD)
@@ -4761,6 +4810,9 @@ public class AudioTrack extends PlayerBase
     private native int native_setStartThresholdInFrames(int startThresholdInFrames);
     private native int native_getStartThresholdInFrames();
 
+    private static native int native_getFlushWrittenFramesFromPositionSupport(
+            int encoding, int sampleRate, int channelMask, int channelIndexMask,
+            @NonNull AudioAttributes attributes);
     private native long native_flushFromFrame(int accuracy, long positionInFrames);
 
     /**
