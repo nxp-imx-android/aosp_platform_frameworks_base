@@ -55,6 +55,7 @@ public class PrintSpoolerBaseTest extends BasePrintTest {
     private static final String LIST_VIEW = "android.widget.ListView";
     private static final int MAX_SWIPE = 100;
     private static final String EXPANDED_CONTROL_ID = "com.android.printspooler:id/duplex_spinner";
+    private static final String PDF_PRINTER = "Save as PDF";
 
     interface InterruptableConsumer<T> {
         void accept(T t) throws InterruptedException;
@@ -102,6 +103,23 @@ public class PrintSpoolerBaseTest extends BasePrintTest {
         clickOn(new UiSelector().resourceId("com.android.printspooler:id/destination_spinner"));
 
         clickOnText(printerName);
+    }
+
+    /** Select the Save to PDF printer */
+    protected void selectPdfPrinter() throws UiObjectNotFoundException {
+        UiObject2 destinationSpinner =
+                getUiDevice()
+                        .wait(
+                                Until.findObject(
+                                        By.res("com.android.printspooler:id/destination_spinner")),
+                                OPERATION_TIMEOUT_MILLIS);
+        getUiDevice().waitForIdle();
+        selectSpinnerOption(destinationSpinner, PDF_PRINTER);
+        getUiDevice()
+                .wait(
+                        Until.hasObject(
+                                By.res("com.android.printspooler:id/print_button").enabled(true)),
+                        OPERATION_TIMEOUT_MILLIS);
     }
 
     /**

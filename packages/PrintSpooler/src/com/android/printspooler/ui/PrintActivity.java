@@ -240,7 +240,11 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
      */
     private boolean mIsMoreOptionsActivityInProgress;
 
-    private ImageView mPrintButton;
+    // Print/save button.  Only one of these is used, depending on Flags.updatedButtonLayout.
+    private ImageView mPrintImageButton;
+    private Button mPrintButton;
+
+    private Button mCancelButton;
 
     private ProgressMessageController mProgressMessageController;
     private MutexFileProvider mFileProvider;
@@ -1463,9 +1467,17 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         mMoreOptionsButton = findViewById(R.id.more_options_button);
         mMoreOptionsButton.setOnClickListener(clickListener);
 
-        // Print button
-        mPrintButton = findViewById(R.id.print_button);
-        mPrintButton.setOnClickListener(clickListener);
+        // Action buttons
+        if (Flags.updatedButtonLayout()) {
+            mPrintButton = findViewById(R.id.print_button);
+            mPrintButton.setOnClickListener(clickListener);
+
+            mCancelButton = findViewById(R.id.cancel_button);
+            mCancelButton.setOnClickListener(clickListener);
+        } else {
+            mPrintImageButton = findViewById(R.id.print_button);
+            mPrintImageButton.setOnClickListener(clickListener);
+        }
 
         // The UI is now initialized
         mIsOptionsUiBound = true;
@@ -1645,7 +1657,8 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
     private final class MyClickListener implements OnClickListener {
         @Override
         public void onClick(View view) {
-            if (view == mPrintButton) {
+            if ((Flags.updatedButtonLayout() && view == mPrintButton)
+                    || (!Flags.updatedButtonLayout() && view == mPrintImageButton)) {
                 if (mCurrentPrinter != null) {
                     if (Flags.skipServiceWarning()) {
                         confirmPrint();
@@ -1676,6 +1689,8 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
                 if (mCurrentPrinter != null) {
                     startAdvancedPrintOptionsActivity(mCurrentPrinter);
                 }
+            } else if (Flags.updatedButtonLayout() && view == mCancelButton) {
+                cancelPrint();
             }
         }
     }
@@ -1686,7 +1701,8 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
     }
 
     /**
-     * Disable all options UI elements, beside the {@link #mDestinationSpinner}
+     * Disable all options UI elements, beside the {@link #mDestinationSpinner} and {@link
+     * #mCancelButton}
      *
      * @param disableRange If the range selection options should be disabled
      */
@@ -1697,7 +1713,11 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         mColorModeSpinner.setEnabled(false);
         mDuplexModeSpinner.setEnabled(false);
         mOrientationSpinner.setEnabled(false);
-        mPrintButton.setVisibility(View.GONE);
+        if (Flags.updatedButtonLayout()) {
+            mPrintButton.setEnabled(false);
+        } else {
+            mPrintImageButton.setVisibility(View.GONE);
+        }
         mMoreOptionsButton.setEnabled(false);
 
         if (disableRange) {
@@ -2011,20 +2031,38 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
 
         // Print
         if (mDestinationSpinnerAdapter.getPdfPrinter() != mCurrentPrinter) {
-            mPrintButton.setImageResource(com.android.internal.R.drawable.ic_print);
-            mPrintButton.setContentDescription(getString(R.string.print_button));
+            if (Flags.updatedButtonLayout()) {
+                mPrintButton.setText(getString(R.string.print_button));
+                mPrintButton.setContentDescription(getString(R.string.print_button));
+            } else {
+                mPrintImageButton.setImageResource(com.android.internal.R.drawable.ic_print);
+                mPrintImageButton.setContentDescription(getString(R.string.print_button));
+            }
         } else {
-            mPrintButton.setImageResource(R.drawable.ic_menu_savetopdf);
-            mPrintButton.setContentDescription(getString(R.string.savetopdf_button));
+            if (Flags.updatedButtonLayout()) {
+                mPrintButton.setText(getString(R.string.savetopdf_button));
+                mPrintButton.setContentDescription(getString(R.string.savetopdf_button));
+            } else {
+                mPrintImageButton.setImageResource(R.drawable.ic_menu_savetopdf);
+                mPrintImageButton.setContentDescription(getString(R.string.savetopdf_button));
+            }
         }
         if (!mPrintedDocument.getDocumentInfo().updated
                 ||(mRangeOptionsSpinner.getSelectedItemPosition() == 1
                 && (TextUtils.isEmpty(mPageRangeEditText.getText()) || hasErrors()))
                 || (mRangeOptionsSpinner.getSelectedItemPosition() == 0
                 && (mPrintedDocument.getDocumentInfo() == null || hasErrors()))) {
-            mPrintButton.setVisibility(View.GONE);
+            if (Flags.updatedButtonLayout()) {
+                mPrintButton.setEnabled(false);
+            } else {
+                mPrintImageButton.setVisibility(View.GONE);
+            }
         } else {
-            mPrintButton.setVisibility(View.VISIBLE);
+            if (Flags.updatedButtonLayout()) {
+                mPrintButton.setEnabled(true);
+            } else {
+                mPrintImageButton.setVisibility(View.VISIBLE);
+            }
         }
 
         // Copies

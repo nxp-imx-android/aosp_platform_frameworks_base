@@ -45,25 +45,9 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class PdfPrinterTest extends PrintSpoolerBaseTest {
     private static final String LOG_TAG = PdfPrinterTest.class.getSimpleName();
-    private static final String PDF_PRINTER = "Save as PDF";
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
-
-    private void selectPdfPrinter() throws UiObjectNotFoundException {
-        UiObject2 destinationSpinner =
-                getUiDevice()
-                        .wait(
-                                Until.findObject(
-                                        By.res("com.android.printspooler:id/destination_spinner")),
-                                OPERATION_TIMEOUT_MILLIS);
-        getUiDevice().waitForIdle();
-        selectSpinnerOption(destinationSpinner, PDF_PRINTER);
-        getUiDevice()
-                .wait(
-                        Until.hasObject(By.res("com.android.printspooler:id/print_button")),
-                        OPERATION_TIMEOUT_MILLIS);
-    }
 
     @Test
     @LargeTest

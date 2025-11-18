@@ -28,3 +28,11 @@ flag {
     description: "Display preview images in grayscale when B&W is selected."
     bug: "455021653"
 }
+
+flag {
+    name: "updated_button_layout"
+    namespace: "printing"
+    description: "Replace print icon button with explicit print and cancel buttons."
+    bug: "455021653"
+    is_fixed_read_only: true
+}
