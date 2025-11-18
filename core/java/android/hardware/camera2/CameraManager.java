@@ -3137,7 +3137,15 @@ public final class CameraManager {
             // Translate all the statuses to either 'available' or 'not available'
             //  available -> available         => no new update
             //  not available -> not available => no new update
-            if (oldStatus != null && isAvailable(status) == isAvailable(oldStatus)) {
+            boolean minimizeNotPresent = true;
+            if (Flags.deviceRemovedCallback() && (status == STATUS_NOT_PRESENT)) {
+                // STATUS_NOT_PRESENT is relatively uncommon compared to STATUS_NOT_AVAILABLE
+                // and we may not want to always group it together with STATUS_NOT_AVAILABLE
+                // when minimizing state transition notifications.
+                minimizeNotPresent = false;
+            }
+            if (oldStatus != null && isAvailable(status) == isAvailable(oldStatus) &&
+                    minimizeNotPresent) {
                 if (DEBUG) {
                     Log.v(TAG,
                             String.format(
