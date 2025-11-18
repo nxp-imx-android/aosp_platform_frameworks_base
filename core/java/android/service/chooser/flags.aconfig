@@ -53,6 +53,14 @@ flag {
 }
 
 flag {
+  name: "interactive_chooser_default_bounds"
+  is_exported: true
+  namespace: "intentresolver"
+  description: "26Q2 interactive chooser API revision."
+  bug: "404593897"
+}
+
+flag {
   name: "resolver_esc_exit"
   is_exported: false
   namespace: "intentresolver"
