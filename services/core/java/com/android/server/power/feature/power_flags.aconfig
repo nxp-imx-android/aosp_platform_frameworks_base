@@ -22,6 +22,16 @@ flag {
 }
 
 flag {
+    name: "nudge_user_activity_on_fold"
+    namespace: "display_manager"
+    description: "Nudge user activity on fold/unfold"
+    bug: "446941468"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "improve_wakelock_latency"
     namespace: "power"
     description: "Feature flag for tracking the optimizations to improve the latency of acquiring and releasing a wakelock."

@@ -4481,6 +4481,153 @@ public class PowerManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_NUDGE_USER_ACTIVITY_ON_FOLD)
+    public void testUserActivityOnDeviceStateChange_twoPowerGroups_enabled() {
+        final int nonDefaultPowerGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+
+        // Mock getDisplayGroupIds to return both default and nonDefaultPowerGroupId
+        when(mDisplayManagerInternalMock.getDisplayGroupIds()).thenReturn(
+                IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP, nonDefaultPowerGroupId}));
+        // Mock getDisplayGroupFlags for the non-default group to be adjacent
+        when(mDisplayManagerInternalMock.getDisplayGroupFlags(nonDefaultPowerGroupId))
+                .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
+
+        // Mock DisplayInfo for both groups
+        final DisplayInfo displayInfo1 = new DisplayInfo();
+        displayInfo1.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
+        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(
+                displayInfo1);
+
+        final DisplayInfo displayInfo2 = new DisplayInfo();
+        displayInfo2.displayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+        when(mDisplayManagerInternalMock.getDisplayInfo(displayInfo2.displayGroupId)).thenReturn(
+                displayInfo2);
+
+        when(mContextSpy.getSystemService(DeviceStateManager.class))
+                .thenReturn(mDeviceStateManagerMock);
+
+        createService();
+        startSystem();
+
+        final ArgumentCaptor<DeviceStateCallback> deviceStateCallbackCaptor =
+                ArgumentCaptor.forClass(DeviceStateCallback.class);
+        verify(mDeviceStateManagerMock).registerCallback(any(),
+                deviceStateCallbackCaptor.capture());
+
+        // Advance the time 10001 and verify that the device thinks it has been idle
+        // for just less than that.
+        mService.onUserActivity();
+        advanceTime(10001);
+        assertThat(mService.wasDeviceIdleForInternal(10000)).isTrue();
+
+        // Send a display state change event and advance the clock 10.
+        final DeviceStateCallback deviceStateCallback = deviceStateCallbackCaptor.getValue();
+        deviceStateCallback.onDeviceStateChanged(DEVICE_STATE_1);
+        final long timeToAdvance = 10;
+        advanceTime(timeToAdvance);
+
+        // Ensure that the device has been idle for only 10 (doesn't include the idle time
+        // before the display state event).
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+                timeToAdvance - 1)).isTrue();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+                timeToAdvance)).isFalse();
+
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
+                timeToAdvance - 1)).isTrue();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
+                timeToAdvance)).isFalse();
+
+        // Send the same state and ensure that does not trigger an update.
+        deviceStateCallback.onDeviceStateChanged(DEVICE_STATE_1);
+        advanceTime(timeToAdvance);
+        final long newTime = timeToAdvance * 2;
+
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+                newTime - 1)).isTrue();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+                newTime)).isFalse();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
+                newTime - 1)).isTrue();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
+                newTime)).isFalse();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_NUDGE_USER_ACTIVITY_ON_FOLD)
+    public void testUserActivityOnDeviceStateChange_twoPowerGroups_disabled() {
+        final int nonDefaultPowerGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+
+        // Mock getDisplayGroupIds to return both default and nonDefaultPowerGroupId
+        when(mDisplayManagerInternalMock.getDisplayGroupIds()).thenReturn(
+                IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP, nonDefaultPowerGroupId}));
+        // Mock getDisplayGroupFlags for the non-default group to be adjacent
+        when(mDisplayManagerInternalMock.getDisplayGroupFlags(nonDefaultPowerGroupId))
+                .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
+
+        // Mock DisplayInfo for both groups
+        final DisplayInfo displayInfo1 = new DisplayInfo();
+        displayInfo1.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
+        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(
+                displayInfo1);
+
+        final DisplayInfo displayInfo2 = new DisplayInfo();
+        displayInfo2.displayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+        when(mDisplayManagerInternalMock.getDisplayInfo(displayInfo2.displayGroupId)).thenReturn(
+                displayInfo2);
+
+        when(mContextSpy.getSystemService(DeviceStateManager.class))
+                .thenReturn(mDeviceStateManagerMock);
+
+        createService();
+        startSystem();
+
+        final ArgumentCaptor<DeviceStateCallback> deviceStateCallbackCaptor =
+                ArgumentCaptor.forClass(DeviceStateCallback.class);
+        verify(mDeviceStateManagerMock).registerCallback(any(),
+                deviceStateCallbackCaptor.capture());
+
+        // Advance the time 10001 and verify that the device thinks it has been idle
+        // for just less than that.
+        mService.onUserActivity();
+        advanceTime(10001);
+        assertThat(mService.wasDeviceIdleForInternal(10000)).isTrue();
+
+        // Send a display state change event and advance the clock 10.
+        final DeviceStateCallback deviceStateCallback = deviceStateCallbackCaptor.getValue();
+        deviceStateCallback.onDeviceStateChanged(DEVICE_STATE_1);
+        final long timeToAdvance = 10;
+        advanceTime(timeToAdvance);
+
+        // Ensure that the device has been idle for only 10 (doesn't include the idle time
+        // before the display state event).
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+                timeToAdvance - 1)).isTrue();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+                timeToAdvance)).isFalse();
+
+        // Ensure that this display (which did not get nudged) has been idle for longer
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
+                timeToAdvance - 1)).isTrue();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
+                timeToAdvance)).isTrue();
+
+        // Send the same state and ensure that does not trigger an update.
+        deviceStateCallback.onDeviceStateChanged(DEVICE_STATE_1);
+        advanceTime(timeToAdvance);
+        final long newTime = timeToAdvance * 2;
+
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+                newTime - 1)).isTrue();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+                newTime)).isFalse();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
+                newTime - 1)).isTrue();
+        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
+                newTime)).isTrue();
+    }
+
+    @Test
     public void testFeatureEnabledProcStateUncachedToCached_screenWakeLockDisabled(
             @TestParameter PowerManagerServiceTest.ScreenWakeLockTestParameter param) {
         doReturn(true).when(mDeviceParameterProvider)
