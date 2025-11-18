@@ -712,8 +712,7 @@
     <string name="clear_all_notifications_text" msgid="348312370303046130">"ସବୁ ଖାଲି କରନ୍ତୁ"</string>
     <string name="manage_notifications_text" msgid="6885645344647733116">"ପରିଚାଳନା କରନ୍ତୁ"</string>
     <string name="manage_notifications_history_text" msgid="57055985396576230">"ଇତିହାସ"</string>
-    <!-- no translation found for notification_dismiss_button_text (2443352751894142153) -->
-    <skip />
+    <string name="notification_dismiss_button_text" msgid="2443352751894142153">"ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="notification_settings_button_description" msgid="2441994740884163889">"ବିଜ୍ଞପ୍ତି ସେଟିଂସ"</string>
     <string name="notification_history_button_description" msgid="1578657591405033383">"ବିଜ୍ଞପ୍ତି ଇତିହାସ"</string>
     <string name="notification_section_header_incoming" msgid="850925217908095197">"ନୂଆ"</string>
@@ -909,8 +908,7 @@
     <string name="tuner_toast" msgid="3812684836514766951">"ଅଭିନନ୍ଦନ! ସିଷ୍ଟମ୍‍ UI ଟ୍ୟୁନର୍‍କୁ ସେଟିଙ୍ଗରେ ଯୋଡ଼ାଯାଇଛି"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"ସେଟିଙ୍ଗରୁ ବାହାର କରିଦିଅନ୍ତୁ"</string>
     <string name="remove_from_settings_prompt" msgid="551565437265615426">"ସେଟିଙ୍ଗରୁ ସିଷ୍ଟମ୍‍ UI ଟ୍ୟୁନର୍‍କୁ ବାହାର କରି ତାହାର ସମସ୍ତ ସୁବିଧା ବ୍ୟବହାର କରିବା ବନ୍ଦ କରିବେ?"</string>
-    <!-- no translation found for qs_customize_remove (1840904349092819026) -->
-    <skip />
+    <string name="qs_customize_remove" msgid="1840904349092819026">"କାଢ଼ି ଦିଅ"</string>
     <string name="enable_bluetooth_title" msgid="866883307336662596">"ବ୍ଲୁଟୂଥ୍‍‍ ଚାଲୁ କରିବେ?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"ଆପଣଙ୍କ ଟାବଲେଟ୍‌ରେ କୀ’ବୋର୍ଡ ସଂଯୋଗ କରିବା ପାଇଁ ଆପଣଙ୍କୁ ପ୍ରଥମେ ବ୍ଲୁଟୂଥ୍‍‍ ଅନ୍‍ କରିବାକୁ ହେବ।"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ଚାଲୁ କରନ୍ତୁ"</string>
@@ -1265,6 +1263,8 @@
     <string name="privacy_type_location" msgid="7991481648444066703">"ଲୋକେସନ"</string>
     <string name="privacy_type_microphone" msgid="9136763906797732428">"ମାଇକ୍ରୋଫୋନ"</string>
     <string name="privacy_type_media_projection" msgid="8136723828804251547">"ସ୍କ୍ରିନ ରେକର୍ଡିଂ"</string>
+    <!-- no translation found for privacy_chip_container_leading_title (4911201935798986077) -->
+    <skip />
     <string name="music_controls_no_title" msgid="4166497066552290938">"କୌଣସି ଶୀର୍ଷକ ନାହିଁ"</string>
     <string name="inattentive_sleep_warning_title" msgid="3891371591713990373">"ଷ୍ଟାଣ୍ଡବାଏ"</string>
     <string name="font_scaling_dialog_title" msgid="6273107303850248375">"ଫଣ୍ଟର ଆକାର"</string>
@@ -1412,6 +1412,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ଅଡିଓ ଆଉଟପୁଟ ପାଇଁ ଉପଲବ୍ଧ ଡିଭାଇସଗୁଡ଼ିକ।"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ଭଲ୍ୟୁମ"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (1279351363821022727) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3324600211761037516) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"କନେକ୍ଟେଡ ସ୍ପିକର"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ସ୍ପିକର ଏବଂ ଡିସପ୍ଲେ"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ପ୍ରସ୍ତାବିତ"</string>
