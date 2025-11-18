@@ -24,6 +24,8 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import kotlinx.coroutines.flow.Flow
@@ -40,10 +42,11 @@ suspend fun Kosmos.setTransition(
     fillInStateSteps: Boolean = true,
     scope: TestScope = testScope,
     repository: SceneContainerRepository = sceneContainerRepository,
+    sceneInteractor: SceneInteractor = this.sceneInteractor,
 ) {
     var state: TransitionStep? = stateTransition
     if (SceneContainerFlag.isEnabled) {
-        setSceneTransition(sceneTransition, scope, repository)
+        setSceneTransition(sceneTransition, scope, repository, sceneInteractor)
 
         if (state != null) {
             state = getStateWithUndefined(sceneTransition, state)
@@ -63,9 +66,18 @@ fun Kosmos.setSceneTransition(
     transition: ObservableTransitionState,
     scope: TestScope = testScope,
     repository: SceneContainerRepository = sceneContainerRepository,
+    sceneInteractor: SceneInteractor = this.sceneInteractor,
 ) {
     repository.setTransitionState(mutableTransitionState)
     mutableTransitionState.value = transition
+    val currentScene =
+        when (transition) {
+            is ObservableTransitionState.Idle -> transition.currentScene
+            is ObservableTransitionState.Transition.ChangeScene -> transition.toScene
+            is ObservableTransitionState.Transition.ReplaceOverlay -> transition.currentScene
+            is ObservableTransitionState.Transition.ShowOrHideOverlay -> transition.currentScene
+        }
+    sceneInteractor.changeScene(currentScene, "Kosmos.setSceneTransition")
     scope.testScheduler.runCurrent()
 }
 

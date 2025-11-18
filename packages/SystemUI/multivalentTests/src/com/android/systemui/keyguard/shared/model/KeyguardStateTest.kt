@@ -16,17 +16,21 @@
 
 package com.android.systemui.keyguard.shared.model
 
+import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.EnableSceneContainer
 import com.google.common.truth.Truth.assertThat
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class KeyguardStateTest : SysuiTestCase() {
+
+    @get:Rule val flagsRule: SetFlagsRule = SetFlagsRule()
 
     /**
      * This test makes sure that the result of [deviceIsAwakeInState] are equal for all the states
@@ -36,17 +40,19 @@ class KeyguardStateTest : SysuiTestCase() {
      * check the result passing in UNDEFINED.
      */
     @Test
-    @EnableSceneContainer
     fun assertUndefinedResultMatchesObsoleteStateResults() {
         for (state in KeyguardState.entries) {
             if (state == KeyguardState.UNDEFINED) {
                 continue
             }
+            flagsRule.enableFlags(Flags.FLAG_SCENE_CONTAINER)
             val isAwakeInSceneContainer =
                 KeyguardState.deviceIsAwakeInState(
                     state.mapToSceneContainerState(),
                     state.mapToSceneContainerContent(),
                 )
+
+            flagsRule.disableFlags(Flags.FLAG_SCENE_CONTAINER)
             val isAwake = KeyguardState.deviceIsAwakeInState(state, null)
             assertThat(isAwakeInSceneContainer).isEqualTo(isAwake)
         }

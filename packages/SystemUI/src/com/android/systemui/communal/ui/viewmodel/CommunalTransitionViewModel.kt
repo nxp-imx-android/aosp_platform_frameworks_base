@@ -152,6 +152,7 @@ constructor(
                     step.transitionState == TransitionState.CANCELED
             }
 
+    // TODO(b/461749621): Adjust for scene container or deprecate
     val recentsBackgroundColor: Flow<Color?> =
         combine(
                 showCommunalFromOccluded,

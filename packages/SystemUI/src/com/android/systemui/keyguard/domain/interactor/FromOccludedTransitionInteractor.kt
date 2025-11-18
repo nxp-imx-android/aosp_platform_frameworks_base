@@ -66,6 +66,7 @@ constructor(
     ) {
 
     override fun start() {
+        if (SceneContainerFlag.isEnabled) return
         listenForOccludedToLockscreenOrHub()
         listenForOccludedToDreaming()
         listenForOccludedToAsleep()
@@ -75,7 +76,6 @@ constructor(
     }
 
     private fun listenForOccludedToPrimaryBouncer() {
-        if (SceneContainerFlag.isEnabled) return
         scope.launch {
             keyguardInteractor.primaryBouncerShowing
                 .filterRelevantKeyguardStateAnd { isBouncerShowing -> isBouncerShowing }

@@ -28,6 +28,7 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepos
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.KeyguardState.ALTERNATE_BOUNCER
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
@@ -119,7 +120,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             steps.add(TransitionStep(LOCKSCREEN, AOD, 0f, STARTED))
             steps.add(TransitionStep(LOCKSCREEN, AOD, 0.9f, RUNNING))
             steps.add(TransitionStep(LOCKSCREEN, AOD, 1f, FINISHED))
-            steps.add(TransitionStep(AOD, GONE, 1f, STARTED))
+            steps.add(TransitionStep(AOD, OFF, 1f, STARTED))
 
             steps.forEach {
                 repository.sendTransitionStep(it)
@@ -517,7 +518,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
                 collectValues(
                     underTest.isInTransitionWhere(
                         fromStatePredicate = { it == DOZING },
-                        toStatePredicate = { it == GONE },
+                        toStatePredicate = { it == LOCKSCREEN },
                     )
                 )
 
@@ -529,29 +530,29 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
 
             assertThat(results).isEqualTo(listOf(false))
 
-            sendSteps(TransitionStep(DOZING, GONE, 0f, STARTED))
+            sendSteps(TransitionStep(DOZING, LOCKSCREEN, 0f, STARTED))
 
             assertThat(results).isEqualTo(listOf(false, true))
 
-            sendSteps(TransitionStep(DOZING, GONE, 0f, RUNNING))
+            sendSteps(TransitionStep(DOZING, LOCKSCREEN, 0f, RUNNING))
 
             assertThat(results).isEqualTo(listOf(false, true))
 
-            sendSteps(TransitionStep(DOZING, GONE, 0f, FINISHED))
+            sendSteps(TransitionStep(DOZING, LOCKSCREEN, 0f, FINISHED))
 
             assertThat(results).isEqualTo(listOf(false, true, false))
 
             sendSteps(
-                TransitionStep(GONE, DOZING, 0f, STARTED),
-                TransitionStep(GONE, DOZING, 0f, RUNNING),
-                TransitionStep(GONE, DOZING, 1f, FINISHED),
+                TransitionStep(LOCKSCREEN, DOZING, 0f, STARTED),
+                TransitionStep(LOCKSCREEN, DOZING, 0f, RUNNING),
+                TransitionStep(LOCKSCREEN, DOZING, 1f, FINISHED),
             )
 
             assertThat(results).isEqualTo(listOf(false, true, false))
 
             sendSteps(
-                TransitionStep(DOZING, GONE, 0f, STARTED),
-                TransitionStep(DOZING, GONE, 0f, RUNNING),
+                TransitionStep(DOZING, LOCKSCREEN, 0f, STARTED),
+                TransitionStep(DOZING, LOCKSCREEN, 0f, RUNNING),
             )
 
             assertThat(results).isEqualTo(listOf(false, true, false, true))
@@ -564,7 +565,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
                 collectValues(
                     underTest.isInTransitionWhere(
                         fromStatePredicate = { it == DOZING },
-                        toStatePredicate = { it == GONE },
+                        toStatePredicate = { it == LOCKSCREEN },
                     )
                 )
 
@@ -576,29 +577,29 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
 
             assertThat(results).isEqualTo(listOf(false))
 
-            sendSteps(TransitionStep(DOZING, GONE, 0f, STARTED))
+            sendSteps(TransitionStep(DOZING, LOCKSCREEN, 0f, STARTED))
 
             assertThat(results).isEqualTo(listOf(false, true))
 
-            sendSteps(TransitionStep(DOZING, GONE, 0f, RUNNING))
+            sendSteps(TransitionStep(DOZING, LOCKSCREEN, 0f, RUNNING))
 
             assertThat(results).isEqualTo(listOf(false, true))
 
-            sendSteps(TransitionStep(DOZING, GONE, 0f, CANCELED))
+            sendSteps(TransitionStep(DOZING, LOCKSCREEN, 0f, CANCELED))
 
             assertThat(results).isEqualTo(listOf(false, true))
 
             sendSteps(
-                TransitionStep(GONE, DOZING, 0f, STARTED),
-                TransitionStep(GONE, DOZING, 0f, RUNNING),
-                TransitionStep(GONE, DOZING, 1f, FINISHED),
+                TransitionStep(LOCKSCREEN, DOZING, 0f, STARTED),
+                TransitionStep(LOCKSCREEN, DOZING, 0f, RUNNING),
+                TransitionStep(LOCKSCREEN, DOZING, 1f, FINISHED),
             )
 
             assertThat(results).isEqualTo(listOf(false, true, false))
 
             sendSteps(
-                TransitionStep(DOZING, GONE, 0f, STARTED),
-                TransitionStep(DOZING, GONE, 0f, RUNNING),
+                TransitionStep(DOZING, LOCKSCREEN, 0f, STARTED),
+                TransitionStep(DOZING, LOCKSCREEN, 0f, RUNNING),
             )
 
             assertThat(results).isEqualTo(listOf(false, true, false, true))
@@ -607,7 +608,8 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
     @Test
     fun isFinishedInStateWhere() =
         testScope.runTest {
-            val results by collectValues(underTest.isFinishedInStateWhere { it == GONE })
+            val results by
+                collectValues(underTest.isFinishedInStateWhere { it == ALTERNATE_BOUNCER })
 
             sendSteps(
                 TransitionStep(AOD, DOZING, 0f, STARTED),
@@ -618,41 +620,41 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             assertThat(results)
                 .isEqualTo(
                     listOf(
-                        false // Finished in DOZING, not GONE.
+                        false // Finished in DOZING, not ALTERNATE_BOUNCER.
                     )
                 )
 
-            sendSteps(TransitionStep(DOZING, GONE, 0f, STARTED))
+            sendSteps(TransitionStep(DOZING, ALTERNATE_BOUNCER, 0f, STARTED))
 
             assertThat(results).isEqualTo(listOf(false))
 
-            sendSteps(TransitionStep(DOZING, GONE, 0f, RUNNING))
+            sendSteps(TransitionStep(DOZING, ALTERNATE_BOUNCER, 0f, RUNNING))
 
             assertThat(results).isEqualTo(listOf(false))
 
-            sendSteps(TransitionStep(DOZING, GONE, 1f, FINISHED))
+            sendSteps(TransitionStep(DOZING, ALTERNATE_BOUNCER, 1f, FINISHED))
 
             assertThat(results).isEqualTo(listOf(false, true))
 
             sendSteps(
-                TransitionStep(GONE, DOZING, 0f, STARTED),
-                TransitionStep(GONE, DOZING, 0f, RUNNING),
+                TransitionStep(ALTERNATE_BOUNCER, DOZING, 0f, STARTED),
+                TransitionStep(ALTERNATE_BOUNCER, DOZING, 0f, RUNNING),
             )
 
             assertThat(results).isEqualTo(listOf(false, true))
 
-            sendSteps(TransitionStep(GONE, DOZING, 1f, FINISHED))
+            sendSteps(TransitionStep(ALTERNATE_BOUNCER, DOZING, 1f, FINISHED))
 
             assertThat(results).isEqualTo(listOf(false, true, false))
 
             sendSteps(
-                TransitionStep(DOZING, GONE, 0f, STARTED),
-                TransitionStep(DOZING, GONE, 0f, RUNNING),
+                TransitionStep(DOZING, ALTERNATE_BOUNCER, 0f, STARTED),
+                TransitionStep(DOZING, ALTERNATE_BOUNCER, 0f, RUNNING),
             )
 
             assertThat(results).isEqualTo(listOf(false, true, false))
 
-            sendSteps(TransitionStep(DOZING, GONE, 1f, FINISHED))
+            sendSteps(TransitionStep(DOZING, ALTERNATE_BOUNCER, 1f, FINISHED))
 
             assertThat(results).isEqualTo(listOf(false, true, false, true))
         }
@@ -812,9 +814,9 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             assertEquals(listOf(OFF, LOCKSCREEN), currentStates)
 
             sendSteps(
-                TransitionStep(LOCKSCREEN, GONE, 0f, STARTED),
-                TransitionStep(LOCKSCREEN, GONE, 0.5f, RUNNING),
-                TransitionStep(LOCKSCREEN, GONE, 1f, FINISHED),
+                TransitionStep(LOCKSCREEN, AOD, 0f, STARTED),
+                TransitionStep(LOCKSCREEN, AOD, 0.5f, RUNNING),
+                TransitionStep(LOCKSCREEN, AOD, 1f, FINISHED),
             )
 
             assertEquals(
@@ -822,23 +824,23 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
                     // Default transition from OFF -> LOCKSCREEN
                     OFF,
                     LOCKSCREEN,
-                    // Transitioned to GONE
-                    GONE,
+                    // Transitioned to AOD
+                    AOD,
                 ),
                 currentStates,
             )
 
             sendSteps(
-                TransitionStep(GONE, DOZING, 0f, STARTED),
-                TransitionStep(GONE, DOZING, 0.5f, RUNNING),
-                TransitionStep(GONE, DOZING, 0.6f, CANCELED),
+                TransitionStep(AOD, DOZING, 0f, STARTED),
+                TransitionStep(AOD, DOZING, 0.5f, RUNNING),
+                TransitionStep(AOD, DOZING, 0.6f, CANCELED),
             )
 
             assertEquals(
                 listOf(
                     OFF,
                     LOCKSCREEN,
-                    GONE,
+                    AOD,
                     // Current state should not be DOZING until the post-cancelation transition is
                     // STARTED
                 ),
@@ -851,7 +853,7 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
                 listOf(
                     OFF,
                     LOCKSCREEN,
-                    GONE,
+                    AOD,
                     // DOZING -> LS STARTED, DOZING is now the current state.
                     DOZING,
                 ),
@@ -863,15 +865,15 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
                 TransitionStep(DOZING, LOCKSCREEN, 0.6f, CANCELED),
             )
 
-            assertEquals(listOf(OFF, LOCKSCREEN, GONE, DOZING), currentStates)
+            assertEquals(listOf(OFF, LOCKSCREEN, AOD, DOZING), currentStates)
 
-            sendSteps(TransitionStep(LOCKSCREEN, GONE, 0f, STARTED))
+            sendSteps(TransitionStep(LOCKSCREEN, AOD, 0f, STARTED))
 
             assertEquals(
                 listOf(
                     OFF,
                     LOCKSCREEN,
-                    GONE,
+                    AOD,
                     DOZING,
                     // LS -> GONE STARTED, LS is now the current state.
                     LOCKSCREEN,
@@ -880,19 +882,19 @@ class KeyguardTransitionInteractorTest : SysuiTestCase() {
             )
 
             sendSteps(
-                TransitionStep(LOCKSCREEN, GONE, 0.5f, RUNNING),
-                TransitionStep(LOCKSCREEN, GONE, 1f, FINISHED),
+                TransitionStep(LOCKSCREEN, AOD, 0.5f, RUNNING),
+                TransitionStep(LOCKSCREEN, AOD, 1f, FINISHED),
             )
 
             assertEquals(
                 listOf(
                     OFF,
                     LOCKSCREEN,
-                    GONE,
+                    AOD,
                     DOZING,
                     LOCKSCREEN,
                     // FINISHED in GONE, GONE is now the current state.
-                    GONE,
+                    AOD,
                 ),
                 currentStates,
             )

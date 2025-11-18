@@ -353,6 +353,7 @@ constructor(
             }
         }
 
+    @Deprecated("Will be removed with scene container")
     private val lockscreenVisibilityLegacy =
         combine(
                 transitionInteractor.currentKeyguardState,
