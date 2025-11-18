@@ -427,7 +427,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw new IllegalArgumentException(
                     "Could not find launcher activity for " + packageName + "/" + className);
         }
-        if (!mAllowlistController.isPackageAutomatable(packageName, mOwnerPackageName)) {
+        if (!mAllowlistController.isPackageAutomatable(packageName, mOwnerPackageName,
+                mOwnerContext.getPackageManager())) {
             throw new IllegalArgumentException(
                     "Trying to launch " + packageName + " which is not allowlisted");
         }

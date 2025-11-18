@@ -138,7 +138,6 @@ import java.util.function.Consumer;
 @Presubmit
 @RunWith(JUnitParamsRunner.class)
 public class ComputerControlSessionImplTest {
-    private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
     private static final int USER_ID = UserHandle.USER_SYSTEM;
     private static final int MAIN_DISPLAY_ID = 41;
     private static final int VIRTUAL_DISPLAY_ID = 42;
@@ -174,8 +173,6 @@ public class ComputerControlSessionImplTest {
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private IDisplayManager mDisplayManager;
-    @Mock
-    private PackageManager mPackageManager;
     @Mock
     private PackageManager mOwnerPackageManager;
     @Mock
@@ -267,7 +264,6 @@ public class ComputerControlSessionImplTest {
 
         when(mContext.createContextAsUser(UserHandle.of(USER_ID), /* flags = */ 0))
                 .thenReturn(mOwnerContext);
-        when(mContext.getPackageManager()).thenReturn(mPackageManager);
         when(mOwnerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
 
         LocalServices.removeAllServicesForTest();
@@ -293,8 +289,6 @@ public class ComputerControlSessionImplTest {
         when(mDisplayManager.getDisplayInfo(MAIN_DISPLAY_ID)).thenReturn(displayInfo);
         when(mDisplayManager.getDisplayInfo(VIRTUAL_DISPLAY_ID)).thenReturn(displayInfo);
 
-        when(mPackageManager.getPermissionControllerPackageName())
-                .thenReturn(PERMISSION_CONTROLLER_PACKAGE);
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
                 .thenReturn(mVirtualDevice);
 
@@ -309,7 +303,8 @@ public class ComputerControlSessionImplTest {
                 mVirtualAudioDevice);
         when(mVirtualAudioDevice.startAudioCapture(any())).thenReturn(mAudioCapture);
         when(mVirtualAudioDevice.startAudioInjection(any())).thenReturn(mAudioInjection);
-        when(mAllowlistController.isPackageAutomatable(anyString(), anyString())).thenReturn(true);
+        when(mAllowlistController.isPackageAutomatable(anyString(), anyString(), any()))
+                .thenReturn(true);
     }
 
     @After
@@ -520,7 +515,8 @@ public class ComputerControlSessionImplTest {
         createComputerControlSession(mDefaultParams);
         when(mOwnerPackageManager.queryIntentActivities(any(), any()))
                 .thenReturn(List.of(new ResolveInfo()));
-        when(mAllowlistController.isPackageAutomatable(anyString(), anyString())).thenReturn(false);
+        when(mAllowlistController.isPackageAutomatable(anyString(), anyString(), any()))
+                .thenReturn(false);
 
         assertThrows(IllegalArgumentException.class,
                 () -> mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS));
