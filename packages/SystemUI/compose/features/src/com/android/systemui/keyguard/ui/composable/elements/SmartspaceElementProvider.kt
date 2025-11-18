@@ -47,6 +47,7 @@ import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenSc
 import com.android.systemui.plugins.keyguard.ui.composable.elements.MovableLockscreenElement
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shared.R as sharedR
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
 import javax.inject.Inject
 
@@ -87,11 +88,10 @@ constructor(
 
             AndroidView(
                 factory = { ctx ->
-                    setupDWA(ctx, isWeatherEnabled, isLargeClock) {
-                        it.orientation = LinearLayout.VERTICAL
-                    }
+                    setupDate(ctx, isLargeClock) { it.orientation = LinearLayout.VERTICAL }
                 },
                 modifier = context.burnInModifier.then(context.nonAuthUIModifier),
+                update = { view -> updateDWA(view as LinearLayout, isWeatherEnabled, isLargeClock) },
             )
         }
     }
@@ -114,32 +114,50 @@ constructor(
 
             AndroidView(
                 factory = { ctx ->
-                    setupDWA(ctx, isWeatherEnabled, isLargeClock) {
-                        it.orientation = LinearLayout.HORIZONTAL
-                    }
+                    setupDate(ctx, isLargeClock) { it.orientation = LinearLayout.HORIZONTAL }
                 },
                 modifier = context.burnInModifier.then(context.nonAuthUIModifier),
+                update = { view -> updateDWA(view as LinearLayout, isWeatherEnabled, isLargeClock) },
             )
         }
     }
 
-    private fun setupDWA(
+    private fun setupDate(
         ctx: Context,
-        isWeatherEnabled: Boolean,
         isLargeClock: Boolean,
         callback: (LinearLayout) -> Unit,
     ): View {
         val dateView =
             smartspaceController.buildAndConnectDateView(ctx, isLargeClock) as LinearLayout
-        if (isWeatherEnabled) {
-            smartspaceController.buildAndConnectWeatherView(ctx, isLargeClock)?.let {
-                // Place weather right after the date, before the extras (alarm and dnd)
-                val index = if (dateView.childCount == 0) 0 else 1
-                dateView.addView(it, index)
-            }
-        }
         callback(dateView)
         return dateView
+    }
+
+    private fun updateDWA(
+        linearLayout: LinearLayout,
+        isWeatherEnabled: Boolean,
+        isLargeClock: Boolean,
+    ) {
+        val id =
+            if (isLargeClock) {
+                sharedR.id.weather_smartspace_view_large
+            } else {
+                sharedR.id.weather_smartspace_view
+            }
+        val weatherView: View? = linearLayout.findViewById(id)
+        if (weatherView == null) {
+            if (isWeatherEnabled) {
+                smartspaceController
+                    .buildAndConnectWeatherView(linearLayout.context, isLargeClock)
+                    ?.let { view ->
+                        // Place weather right after the date, before the extras (alarm and dnd)
+                        val index = if (linearLayout.childCount == 0) 0 else 1
+                        linearLayout.addView(view, index)
+                    }
+            }
+        } else if (!isWeatherEnabled) {
+            linearLayout.removeView(weatherView)
+        }
     }
 
     private inner class CardsElement : MovableLockscreenElement {
