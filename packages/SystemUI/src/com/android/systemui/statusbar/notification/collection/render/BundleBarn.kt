@@ -183,12 +183,12 @@ private fun HeaderComposeViewContent(
         BundleHeader(viewModel)
         DisposableEffect(viewModel) {
             row.setBundleHeaderViewModel(viewModel)
-            row.setOnClickListener {
+            row.setOnBundleHeaderClickedListener {
                 viewModel.onHeaderClicked()
                 row.expandNotification()
             }
             onDispose {
-                row.setOnClickListener(null)
+                row.setOnBundleHeaderClickedListener(null)
                 row.setBundleHeaderViewModel(null)
             }
         }

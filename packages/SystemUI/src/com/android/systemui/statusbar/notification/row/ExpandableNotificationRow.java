@@ -111,7 +111,6 @@ import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag;
-import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.NotificationTransitionAnimatorController;
@@ -1558,9 +1557,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private void updateClickAndFocus() {
-        boolean normalChild = !isChildInGroup() || isGroupExpanded();
-        boolean clickable = mOnClickListener != null
-                && (normalChild || isBundledSummaryClickable());
+        boolean normalChild = !isChildInGroup() || isGroupExpanded() ||
+                (NotificationBundleUi.isEnabled()
+                        && getEntryAdapter().isBundled() && isParentGroupExpanded());
+        boolean clickable = mOnClickListener != null && normalChild;
         if (isFocusable() != normalChild) {
             setFocusable(normalChild);
         }
@@ -3766,6 +3766,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mChildrenExpanded = expanded;
         if (mChildrenContainer != null) {
             mChildrenContainer.setChildrenExpanded(expanded);
+            if (isBundle()) {
+                // bundles are groups that can contain groups. reset the click state of the children
+                // so that inner groups can be clicked
+                for (ExpandableNotificationRow child : mChildrenContainer.getAttachedChildren()) {
+                    child.updateClickAndFocus();
+                }
+            }
         }
         updateBackgroundForGroupState();
         updateClickAndFocus();
@@ -4299,6 +4306,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public void setOnExpansionChangedListener(@Nullable OnExpansionChangedListener listener) {
         mExpansionChangedListener = listener;
+    }
+
+    public void setOnBundleHeaderClickedListener(@Nullable OnClickListener listener) {
+        mChildrenContainer.setBundleHeaderOnClickListener(listener);
     }
 
     /**

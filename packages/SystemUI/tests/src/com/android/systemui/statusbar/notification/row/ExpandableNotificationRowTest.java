@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.row;
 
 import static android.app.Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES;
 import static android.app.Notification.FLAG_FSI_REQUESTED_BUT_DENIED;
+import static android.app.NotificationChannel.NEWS_ID;
 
 import static com.android.systemui.log.LogAssertKt.assertRunnableLogsWtf;
 
@@ -41,6 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.AnimatedVectorDrawable;
@@ -303,23 +305,13 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         // GIVEN a group within a group
         final ExpandableNotificationRow bundle = mKosmos.createRowBundle(
                 BundleSpec.Companion.getNEWS());
-        final PipelineEntry bundleEntry =
-                ((BundleEntryAdapter) bundle.getEntryAdapter()).getEntry();
 
-        Notification groupNotif = new Notification.Builder(mContext, "channel")
-                .setSmallIcon(R.drawable.ic_menu)
-                .setGroupSummary(true)
-                .setGroup("group2")
-                .build();
-        NotificationEntry groupEntry = new NotificationEntryBuilder()
-                .setNotification(groupNotif)
-                .setParent(bundleEntry)
-                .build();
-
-        ExpandableNotificationRow group = mKosmos.createRow(groupEntry);
-        ExpandableNotificationRow child = mKosmos.createRow();
+        ExpandableNotificationRow group = mKosmos.createRowGroup(
+                new NotificationChannel(NEWS_ID, "News", 2));
         bundle.addChildNotification(group, 0);
-        group.addChildNotification(child, 0);
+
+        OnClickListener l = mock(OnClickListener.class);
+        group.setOnClickListener(l);
 
         // WHEN group is expanded
         group.expandNotification();
@@ -337,23 +329,13 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         // GIVEN a group within a group
         final ExpandableNotificationRow bundle = mKosmos.createRowBundle(
                 BundleSpec.Companion.getNEWS());
-        final PipelineEntry bundleEntry =
-                ((BundleEntryAdapter) bundle.getEntryAdapter()).getEntry();
 
-        Notification groupNotif = new Notification.Builder(mContext, "channel")
-                .setSmallIcon(R.drawable.ic_menu)
-                .setGroupSummary(true)
-                .setGroup("group2")
-                .build();
-        NotificationEntry groupEntry = new NotificationEntryBuilder()
-                .setNotification(groupNotif)
-                .setParent(bundleEntry)
-                .build();
-
-        ExpandableNotificationRow group = mKosmos.createRow(groupEntry);
-        ExpandableNotificationRow child = mKosmos.createRow();
+        ExpandableNotificationRow group = mKosmos.createRowGroup(
+                new NotificationChannel(NEWS_ID, "News", 2));
         bundle.addChildNotification(group, 0);
-        group.addChildNotification(child, 0);
+
+        OnClickListener l = mock(OnClickListener.class);
+        group.setOnClickListener(l);
 
         // WHEN group is collapsed
         group.expandNotification();
@@ -371,33 +353,22 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         // GIVEN a group within a group
         final ExpandableNotificationRow bundle = mKosmos.createRowBundle(
                 BundleSpec.Companion.getNEWS());
-        final PipelineEntry bundleEntry =
-                ((BundleEntryAdapter) bundle.getEntryAdapter()).getEntry();
 
-        Notification groupNotif = new Notification.Builder(mContext, "channel")
-                .setSmallIcon(R.drawable.ic_menu)
-                .setGroupSummary(true)
-                .setGroup("groupInBundle")
-                .build();
-        NotificationEntry groupEntry = new NotificationEntryBuilder()
-                .setNotification(groupNotif)
-                .setParent(bundleEntry)
-                .build();
-        ExpandableNotificationRow group = mKosmos.createRow(groupEntry);
-        ExpandableNotificationRow child = mKosmos.createRow();
-
+        ExpandableNotificationRow group = mKosmos.createRowGroup(
+                new NotificationChannel(NEWS_ID, "News", 2));
         bundle.addChildNotification(group, 0);
-        group.addChildNotification(child, 0);
 
         OnClickListener l = mock(OnClickListener.class);
         group.setOnClickListener(l);
 
+        bundle.expandNotification();
+        mKosmos.getGroupExpansionManager().setGroupExpanded(bundle.getEntryAdapter(), true);
         // Check that the group summary is clickable before it is expanded
         assertThat(group.isGroupExpanded()).isEqualTo(false);
         assertThat(group.isClickable()).isTrue();
         assertThat(group.isBundledSummaryClickable()).isTrue();
         assertThat(group.isSummaryWithChildren()).isTrue();
-        assertThat(child.isClickable()).isFalse();
+        assertThat(group.getChildNotificationAt(0).isClickable()).isFalse();
 
         // Check that the touch events are handled
         MotionEvent touchDown = MotionEvent.obtain(
