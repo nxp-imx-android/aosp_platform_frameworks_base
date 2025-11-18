@@ -81,10 +81,11 @@ test_module_config {
         "com.android.wm.shell.functional.FocusAppFromAllAppsTest",
         "com.android.wm.shell.functional.FocusAppFromTaskbarTest",
         "com.android.wm.shell.functional.FocusAppFromTaskbarOverflowTest",
-        "com.android.wm.shell.functional.MoveToNextDisplayTest",
-        "com.android.wm.shell.functional.MoveToNextDisplayProjectedTest",
+        "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest",
+        "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest",
         "com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest",
         "com.android.wm.shell.functional.TabTearingDesktopWindowingLimitTest",
+        "com.android.wm.shell.functional.TabTearingInteractionDependantTest",
         "com.android.wm.shell.functional.TabTearingTest",
         "com.android.wm.shell.functional.appcompat.DialogStaysInsideDesktopAppTest",
         "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
@@ -131,6 +132,7 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchInDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchOutDesktopModeTest",
         "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.CloseFullscreenTaskViaKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.CloseTaskViaKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
@@ -151,11 +153,13 @@ test_module_config {
         "com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenViaIntentTest",
         "com.android.wm.shell.functional.minimize.UnminimizeAppFromAllAppsTest",
         "com.android.wm.shell.functional.minimize.UnminimizeAppFromTaskbarTest",
+        "com.android.wm.shell.functional.multidesks.CreateDesksUntilLimitTest",
         "com.android.wm.shell.functional.multiinstance.LaunchNewInstanceFromAppWindowMenuTest",
         "com.android.wm.shell.functional.multiinstance.ManageOpenInstancesTest",
         "com.android.wm.shell.functional.overview.ClearOpenAppsFromOverviewTest",
         "com.android.wm.shell.functional.overview.CloseAppsViaOverviewThumbnailTest",
         "com.android.wm.shell.functional.overview.SwitchBetweenDesktopAndSplitScreenTest",
+        "com.android.wm.shell.functional.pip.PipInDesktopWindowingTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithCornerResizeTest",
@@ -259,6 +263,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.TabTearingDesktopWindowingLimitTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-TabTearingInteractionDependantTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.TabTearingInteractionDependantTest"],
 }
 
 test_module_config {
@@ -595,6 +606,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-CloseFullscreenTaskViaKeyboardShortcutTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.CloseFullscreenTaskViaKeyboardShortcutTest"],
 }
 
 test_module_config {
