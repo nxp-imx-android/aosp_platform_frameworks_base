@@ -177,6 +177,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
                 secureSettings = secureSettings,
                 mediaControlChipInteractor = kosmos.mediaControlChipInteractor,
                 secureLockDeviceInteractor = { kosmos.secureLockDeviceInteractor },
+                bgScope = kosmos.applicationCoroutineScope,
             )
         verify(configurationController).addCallback(capture(configListener))
         if (!MediaControlsInComposeFlag.isEnabled) {
