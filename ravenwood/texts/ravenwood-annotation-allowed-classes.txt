@@ -722,12 +722,12 @@ com.android.server.SystemService
 com.android.server.SystemServiceManager
 
 com.android.server.am.ConnectionRecord
-com.android.server.am.OomAdjuster
 
 com.android.server.am.psc.AsyncBatchSession
 com.android.server.am.psc.BatchSession
 com.android.server.am.psc.BinderSession
 com.android.server.am.psc.ConnectionRecordInternal
+com.android.server.am.psc.OomAdjuster
 com.android.server.am.psc.SyncBatchSession
 
 com.android.server.utils.TimingsTraceAndSlog

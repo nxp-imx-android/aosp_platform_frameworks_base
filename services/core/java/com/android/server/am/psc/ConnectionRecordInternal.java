@@ -20,8 +20,6 @@ import android.content.Context;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Slog;
 
-import com.android.server.am.OomAdjuster;
-import com.android.server.am.OomAdjusterImpl;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 /**

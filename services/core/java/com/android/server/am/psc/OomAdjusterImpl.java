@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.am;
+package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_BFSL;
@@ -59,6 +59,8 @@ import static com.android.server.am.ActivityManagerService.TAG_BACKUP;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_BINDER_ALLOW_OOM_MANAGEMENT;
+import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_BIND_WAIVE_PRIORITY;
+import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_UID_ALLOWLISTED;
 import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
@@ -103,16 +105,8 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
-import com.android.server.am.psc.ActiveUidsInternal;
-import com.android.server.am.psc.ConnectionRecordInternal;
-import com.android.server.am.psc.ContentProviderConnectionInternal;
-import com.android.server.am.psc.ContentProviderRecordInternal;
-import com.android.server.am.psc.ProcessListInternal;
-import com.android.server.am.psc.ProcessProviderRecordInternal;
-import com.android.server.am.psc.ProcessRecordInternal;
-import com.android.server.am.psc.ProcessServiceRecordInternal;
-import com.android.server.am.psc.ServiceRecordInternal;
-import com.android.server.am.psc.UidRecordInternal;
+import com.android.server.am.Flags;
+import com.android.server.am.ProcessList;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.lang.annotation.Retention;
@@ -265,7 +259,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         @Nullable ProcessRecordNode mNext;
         final @Nullable ProcessRecordInternal mApp;
 
-        ProcessRecordNode(@Nullable ProcessRecordInternal app) {
+        public ProcessRecordNode(@Nullable ProcessRecordInternal app) {
             mApp = app;
         }
 
@@ -608,12 +602,12 @@ public class OomAdjusterImpl extends OomAdjuster {
     private final ComputeConnectionsConsumer mComputeConnectionsConsumer =
             new ComputeConnectionsConsumer();
 
-    OomAdjusterImpl(ActivityManagerService service, ProcessListInternal processList,
+    public OomAdjusterImpl(Object serviceLock, Object procLock, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
             GlobalState globalState, Injector injector, Callback callback,
             StateGetter stateGetter, Handler updateHandler) {
-        super(service, processList, activeUids, adjusterThread, oomConstants, globalState, injector,
-                callback, stateGetter, updateHandler);
+        super(serviceLock, procLock, processList, activeUids, adjusterThread, oomConstants,
+                globalState, injector, callback, stateGetter, updateHandler);
     }
 
     private final ProcessRecordNodes mProcessRecordProcStateNodes = new ProcessRecordNodes(
@@ -629,27 +623,27 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @Override
     @VisibleForTesting
-    void resetInternal() {
+    public void resetInternal() {
         mProcessRecordProcStateNodes.reset();
         mProcessRecordAdjNodes.reset();
     }
 
-    @GuardedBy("mService")
+    @GuardedBy("mServiceLock")
     @Override
-    void onProcessEndLocked(@NonNull ProcessRecordInternal app) {
+    public void onProcessEndLocked(@NonNull ProcessRecordInternal app) {
         if (app.mLinkedNodes[ProcessRecordNode.NODE_TYPE_PROC_STATE] != null
                 && app.mLinkedNodes[ProcessRecordNode.NODE_TYPE_PROC_STATE].isLinked()) {
             unlinkProcessRecordFromList(app);
         }
     }
 
-    @GuardedBy("mService")
+    @GuardedBy("mServiceLock")
     @Override
-    void onProcessStateChanged(@NonNull ProcessRecordInternal app, int prevProcState) {
+    public void onProcessStateChanged(@NonNull ProcessRecordInternal app, int prevProcState) {
         updateProcStateSlotIfNecessary(app, prevProcState);
     }
 
-    @GuardedBy("mService")
+    @GuardedBy("mServiceLock")
     void onProcessOomAdjChanged(@NonNull ProcessRecordInternal app, int prevAdj) {
         updateAdjSlotIfNecessary(app, prevAdj);
     }
@@ -682,7 +676,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
     }
 
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     @Override
     protected boolean performUpdateOomAdjLSP(ProcessRecordInternal app,
             @OomAdjReason int oomAdjReason) {
@@ -691,7 +685,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         return true;
     }
 
-    @GuardedBy("mService")
+    @GuardedBy("mServiceLock")
     @Override
     protected void performUpdateOomAdjPendingTargetsLocked(@OomAdjReason int oomAdjReason) {
         mLastReason = oomAdjReason;
@@ -711,7 +705,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     /**
      * Perform a full update on the entire process list.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private void fullUpdateLSP(@OomAdjReason int oomAdjReason) {
         final ProcessRecordInternal topApp = getTopProcess();
         final long now = mInjector.getUptimeMillis();
@@ -760,7 +754,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     /**
      * Traverse the process graph and update processes based on changes in connection importances.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private void computeConnectionsLSP() {
         // 1st pass, iterate all nodes in order of procState importance.
         ProcessRecordInternal proc = mProcessRecordProcStateNodes.poll();
@@ -782,7 +776,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     /**
      * Perform a partial update on the target processes and their reachable processes.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private void partialUpdateLSP(@OomAdjReason int oomAdjReason,
             ArraySet<ProcessRecordInternal> targets) {
         final ProcessRecordInternal topApp = getTopProcess();
@@ -860,7 +854,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         postUpdateOomAdjInnerLSP(oomAdjReason, activeUids, now, nowElapsed, oldTime, false);
     }
 
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     @Override
     protected void collectReachableProcessesLSP(
             @NonNull ArrayList<ProcessRecordInternal> reachables) {
@@ -875,7 +869,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Mark all processes reachable from the {@code reachables} processes and add them to the
      * provided {@code reachables} list (targets excluded).
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private void collectAndMarkReachableProcessesLSP(ArrayList<ProcessRecordInternal> reachables) {
         mReachableCollectingConsumer.init(reachables);
         for (int i = 0; i < reachables.size(); i++) {
@@ -934,7 +928,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      *
      * Returns true if any client connection was skipped due to a reachablity cycle.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private boolean computeOomAdjIgnoringReachablesLSP(OomAdjusterArgs args) {
         final ProcessRecordInternal app = args.mApp;
         final ProcessRecordInternal topApp = args.mTopApp;
@@ -951,7 +945,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Stream the connections with {@code app} as a client to
      * {@code connectionConsumer}.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private static void forEachConnectionLSP(ProcessRecordInternal app,
             BiConsumer<Connection, ProcessRecordInternal> connectionConsumer) {
         final ProcessServiceRecordInternal psr =  app.getServices();
@@ -1032,7 +1026,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Stream the connections from clients with {@code app} as the host to {@code
      * connectionConsumer}.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private static void forEachClientConnectionLSP(ProcessRecordInternal app,
             BiConsumer<Connection, ProcessRecordInternal> connectionConsumer) {
         final ProcessServiceRecordInternal psr = app.getServices();
@@ -1069,7 +1063,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     /**
      * Returns true if at least one the provided values is more important than those in {@code app}.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private static boolean selfImportanceLoweredLSP(ProcessRecordInternal app, int prevProcState,
             int prevAdj, int prevCapability, boolean prevShouldNotFreeze) {
         if (app.getCurProcState() > prevProcState) {
@@ -1093,7 +1087,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Note: the client and host need to be provided as well for the isolated and sandbox
      * scenarios.
      */
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private static boolean unimportantConnectionLSP(Connection conn,
             ProcessRecordInternal host, ProcessRecordInternal client) {
         if (!Flags.skipUnimportantConnections()) {
@@ -1128,7 +1122,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         return true;
     }
 
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     private void computeOomAdjLSP(ProcessRecordInternal app, ProcessRecordInternal topApp,
             boolean doingAll, long now) {
         // We'll evaluate the reasons within getCpuCapability and getImplicitCpuCapability later.
@@ -1158,7 +1152,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         // If this UID is currently allowlisted, it should not be frozen.
         final UidRecordInternal uidRec = app.getUidRecord();
         app.setShouldNotFreeze(uidRec != null && uidRec.isCurAllowListed(), false /* dryRun */,
-                ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_UID_ALLOWLISTED, mAdjSeq);
+                SHOULD_NOT_FREEZE_REASON_UID_ALLOWLISTED, mAdjSeq);
 
         final boolean reportDebugMsgs = DEBUG_OOM_ADJ_REASON || mGlobalState.isDebugEnabled(app);
 
@@ -1784,7 +1778,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         setIntermediateSchedGroupLSP(app, schedGroup);
     }
 
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     @Override
     public boolean computeServiceHostOomAdjLSP(ConnectionRecordInternal cr,
             ProcessRecordInternal app, ProcessRecordInternal client, long now, boolean dryRun) {
@@ -2130,9 +2124,8 @@ public class OomAdjusterImpl extends OomAdjuster {
             // unfrozen.
             if (clientAdj < CACHED_APP_MIN_ADJ) {
                 if (app.setShouldNotFreeze(true, dryRun,
-                        app.shouldNotFreezeReason()
-                                | ProcessCachedOptimizerRecord
-                                .SHOULD_NOT_FREEZE_REASON_BIND_WAIVE_PRIORITY, mAdjSeq)) {
+                        app.shouldNotFreezeReason() | SHOULD_NOT_FREEZE_REASON_BIND_WAIVE_PRIORITY,
+                        mAdjSeq)) {
                     if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
                         // Do nothing, capability updated check will handle the dryrun output.
                     } else {
@@ -2228,7 +2221,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         return updated;
     }
 
-    @GuardedBy({"mService", "mProcLock"})
+    @GuardedBy({"mServiceLock", "mProcLock"})
     @Override
     public boolean computeProviderHostOomAdjLSP(ContentProviderConnectionInternal conn,
             ProcessRecordInternal app, ProcessRecordInternal client, boolean dryRun) {

@@ -5310,7 +5310,8 @@ public final class ProcessList extends ProcessListInternal
      * sequence has been incremented.
      * <p>This method checks if any UID is transitioning between background and foreground states
      * and, if so, notifies the corresponding application if network access might be blocked.
-     * This logic is triggered via a callback from the {@link OomAdjuster}.
+     * This logic is triggered via a callback from the
+     * {@link com.android.server.am.psc.OomAdjuster}.
      *
      * @param activeUids The set of UIDs whose proc state sequence was just incremented.
      */
