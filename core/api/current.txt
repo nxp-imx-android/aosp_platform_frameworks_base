@@ -57128,10 +57128,10 @@ package android.view.accessibility {
   }
 
   @FlaggedApi("android.view.accessibility.a11y_math_api") public abstract static class AccessibilityNodeInfo.StructuredDataInfo {
-    method public void addAttribute(@NonNull String, @NonNull String);
     method @Nullable public String getAttribute(@NonNull String);
     method @NonNull public java.util.Map<java.lang.String,java.lang.String> getAttributes();
     method @NonNull public String getTag();
+    method public void putAttribute(@NonNull String, @NonNull String);
     method public void removeAttribute(@NonNull String);
   }
 

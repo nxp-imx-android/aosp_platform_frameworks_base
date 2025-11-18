@@ -8109,7 +8109,7 @@ public class AccessibilityNodeInfo implements Parcelable {
          * @param attributeKey The attribute key.
          * @param value The attribute value.
          */
-        public void addAttribute(@NonNull String attributeKey, @NonNull String value) {
+        public void putAttribute(@NonNull String attributeKey, @NonNull String value) {
             getAttributesBundle().putString(attributeKey, value);
         }
 
@@ -8172,7 +8172,7 @@ public class AccessibilityNodeInfo implements Parcelable {
      * the denominator.
      * <p>
      * To add math information to a node, create an instance of {@link MathInfo}, set its attributes
-     * using {@link #addAttribute(String, String)}, and then call {@link
+     * using {@link #putAttribute(String, String)}, and then call {@link
      * #setStructuredDataInfo(StructuredDataInfo)} on the {@link AccessibilityNodeInfo}.
      */
     @FlaggedApi(Flags.FLAG_A11Y_MATH_API)
@@ -8341,9 +8341,9 @@ public class AccessibilityNodeInfo implements Parcelable {
          * {@inheritDoc}
          */
         @Override
-        public void addAttribute(@MathAttribute @NonNull String attributeKey,
+        public void putAttribute(@MathAttribute @NonNull String attributeKey,
                 @NonNull String value) {
-            super.addAttribute(attributeKey, value);
+            super.putAttribute(attributeKey, value);
         }
 
         /**
