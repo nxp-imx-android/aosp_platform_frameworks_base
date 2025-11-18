@@ -88,3 +88,10 @@ flag {
   description: "Make autofill service name in context a public API"
   bug: "390180715"
 }
+
+flag {
+  name: "string_rebuild_api"
+  namespace: "autofill"
+  description: "API to provide noise-injected text for server side string rebuild"
+  bug: "441075073"
+}
