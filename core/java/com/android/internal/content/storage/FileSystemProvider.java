@@ -655,7 +655,15 @@ public abstract class FileSystemProvider extends DocumentsProvider {
     protected final Cursor queryTrashDocuments(File parent, String[] projection)
             throws FileNotFoundException {
         String docId = getDocIdForFile(parent);
-        MatrixCursor result = new DirectoryCursor(resolveProjection(projection), docId, parent);
+        String[] trashProjections = projection;
+        if (projection == null) {
+            trashProjections = mDefaultProjection;
+            if (!ArrayUtils.contains(trashProjections, Document.COLUMN_ORIGINAL_RELATIVE_PATH)) {
+                trashProjections = ArrayUtils.appendElement(String.class, trashProjections,
+                        Document.COLUMN_ORIGINAL_RELATIVE_PATH);
+            }
+        }
+        MatrixCursor result = new DirectoryCursor(trashProjections, docId, parent);
         includeTrashFiles(result, parent);
         // include MediaStore trashed files which are not in .trash-storage location
         includeMediaStoreTrashFiles(result);
@@ -777,6 +785,11 @@ public abstract class FileSystemProvider extends DocumentsProvider {
             if (enableDocumentsTrashApi()) {
                 if (isTrashFile(file)) {
                     flags |= Document.FLAG_SUPPORTS_RESTORE;
+                    final int pathColumnIndex = ArrayUtils.indexOf(columns,
+                            Document.COLUMN_ORIGINAL_RELATIVE_PATH);
+                    if (pathColumnIndex != -1) {
+                        addOriginalRelativePath(row, columns, file);
+                    }
                 } else if (isTrashSupported(file)) {
                     flags |= Document.FLAG_SUPPORTS_TRASH;
                 }
@@ -846,6 +859,10 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         return false;
     }
 
+    protected String getRelativePathFromRoot(@NonNull String path) throws FileNotFoundException {
+        return null;
+    }
+
     /**
      * A variant of the {@link #shouldHideDocument(String)} that takes a {@link File} instead of
      * a {@link String} {@code documentId}.
@@ -909,6 +926,117 @@ public abstract class FileSystemProvider extends DocumentsProvider {
 
             if (LOG_INOTIFY) Log.d(TAG, "after stop: " + observer);
         }
+    }
+
+    /**
+     * Adds the original relative path of a trashed file to the given row.
+     * @param row The row to add the path to.
+     * @param columns The columns of the cursor.
+     * @param file The trashed file.
+     */
+    private void addOriginalRelativePath(RowBuilder row, String[] columns, File file)
+            throws FileNotFoundException {
+        final int pathColumnIndex = ArrayUtils.indexOf(columns,
+                Document.COLUMN_ORIGINAL_RELATIVE_PATH);
+        if (pathColumnIndex == -1) {
+            return;
+        }
+
+        final String originalParentPath = getOriginalParentPath(file);
+        if (originalParentPath == null) {
+            return;
+        }
+
+        final String relativePath = getRelativePathFromRoot(originalParentPath);
+        if (!TextUtils.isEmpty(relativePath)) {
+            row.add(pathColumnIndex, relativePath);
+        }
+    }
+
+    /**
+     * Gets the original absolute parent path for a given trashed file.
+     *
+     * @param file The trashed file.
+     * @return The absolute path of the original parent directory.
+     */
+    @Nullable
+    private String getOriginalParentPath(File file) {
+        if (!isTrashFile(file)) {
+            return null;
+        }
+
+        final String parentPath = file.getParent();
+        if (parentPath == null) {
+            return null;
+        }
+
+        final String trashDirSuffix = File.separator + DIRECTORY_TRASH_STORAGE;
+        final String trashDir = trashDirSuffix + File.separator;
+        final int trashRootEndIndex = parentPath.indexOf(trashDir);
+
+        // e.g., /storage/emulated/0/.trash-storage/.trashed-123-Folder
+        if (trashRootEndIndex == -1) {
+            // Check if the parent is the .trash-storage directory itself
+            if (parentPath.endsWith(trashDirSuffix)) {
+                // The original parent is the volume root.
+                return parentPath.substring(0, parentPath.length() - trashDirSuffix.length());
+            }
+
+            // If a trashed file doesn't exist inside .trash-storage then it's a legacy trashed
+            // file. e.g., /storage/emulated/0/Download/.trashed-123-file
+            return removeTrashPrefixFromPath(parentPath);
+        }
+
+        // e.g., /storage/emulated/0
+        final String volumePath = parentPath.substring(0, trashRootEndIndex);
+
+        // e.g., Download/.trashed-123-Folder
+        final String pathInsideTrash = parentPath.substring(trashRootEndIndex + trashDir.length());
+
+        // e.g., Download/Folder
+        final String cleanPathInsideTrash = removeTrashPrefixFromPath(pathInsideTrash);
+
+        return new File(volumePath, cleanPathInsideTrash).getAbsolutePath();
+    }
+
+    /**
+     * Reconstructs an original path from a path that may contain trashed directory names.
+     * This method iterates through each segment of the given path and removes the trashed prefix
+     * (e.g., ".trashed-123-") from any segment that matches the trashed file pattern.
+     *
+     * @param path The path string to clean
+     * @return The reconstructed path with trashed prefixes removed from its segments.
+     */
+    private String removeTrashPrefixFromPath(String path) {
+        if (TextUtils.isEmpty(path)) {
+            return "";
+        }
+        final String[] segments = path.split(File.separator);
+        final List<String> cleanedSegments = new ArrayList<>();
+        for (String segment : segments) {
+            cleanedSegments.add(removeTrashPrefixFromSegment(segment));
+        }
+        return String.join(File.separator, cleanedSegments);
+    }
+
+    /**
+     * Removes the trashed prefix from a single path segment if it exists.
+     * For example, ".trashed-12345-MyFolder" becomes "MyFolder".
+     *
+     * @param segment The path segment to remove the trash prefix from.
+     * @return The cleaned segment, or the original segment if it doesn't represent
+     * a trashed item.
+     */
+    private String removeTrashPrefixFromSegment(String segment) {
+        if (segment == null) {
+            return null;
+        }
+        final Matcher matcher = PATTERN_EXPIRES_FILE.matcher(segment);
+        if (matcher.matches() && PREFIX_TRASHED.equals(matcher.group(1))) {
+            // Return the original name part of the trashed file pattern
+            return matcher.group(3);
+        }
+        return segment;
     }
 
     private static class DirectoryObserver extends FileObserver {

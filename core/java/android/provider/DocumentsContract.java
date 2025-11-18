@@ -437,6 +437,13 @@ public final class DocumentsContract {
         public static final String COLUMN_CONTENT_SYNC_STATE_FLAGS = "content_sync_state_flags";
 
         /**
+         * The relative path of the original location of a trashed document.
+         * This column is only valid for trashed documents.
+         * <p>Type: STRING
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+        public static final String COLUMN_ORIGINAL_RELATIVE_PATH = "original_relative_path";
+        /**
          * Flag indicating that the document's contents are available locally.
          *
          * @see #COLUMN_CONTENT_SYNC_STATE_FLAGS
@@ -926,6 +933,16 @@ public final class DocumentsContract {
          */
         @SystemApi
         public static final int FLAG_REMOVABLE_USB = 1 << 19;
+
+        /**
+         * Flag indicating that this root can be queried to provide trashed documents.
+         *
+         * @see #COLUMN_FLAGS
+         * @see DocumentsContract#buildTrashDocumentsUri(String, String)
+         * @see DocumentsProvider#queryTrashDocuments(String, String[], Bundle, CancellationSignal)
+         */
+        @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+        public static final int FLAG_SUPPORTS_QUERY_TRASH = 1 << 20;
     }
 
     /**
@@ -1053,18 +1070,18 @@ public final class DocumentsContract {
                 .appendPath(PATH_RECENT).build();
     }
 
-
-
     /**
      * Returns URI representing the query trash documents of a specific document provider.
      *
-     * @see DocumentsProvider#queryTrashDocuments(String[])
+     * @see DocumentsProvider#queryTrashDocuments(String, String[], Bundle, CancellationSignal)
+     * @see #getRootId(Uri)
      */
     @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
     @NonNull
-    public static Uri buildTrashDocumentsUri(@NonNull String authority) {
+    public static Uri buildTrashDocumentsUri(@NonNull String authority, @NonNull String rootId) {
         return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
-                .authority(authority).appendPath(PATH_TRASH).build();
+                .authority(authority).appendPath(PATH_ROOT).appendPath(rootId)
+                .appendPath(PATH_TRASH).build();
     }
 
     /**

@@ -241,8 +241,9 @@ public class ExternalStorageProviderTest {
                     trashedFile.getCanonicalPath().startsWith(trashDir.getCanonicalPath()));
 
             // query trash documents
-            try (Cursor c = mExternalStorageProvider.queryTrashDocuments(/* projection */
-                    null)) {
+            try (Cursor c = mExternalStorageProvider.queryTrashDocuments(
+                    EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID, /* projection */
+                    null, null, null)) {
                 assertEquals("Querying trash documents should return exactly one item", 1,
                         c.getCount());
                 assertTrue("Cursor should move to the first item in trash documents",
@@ -255,6 +256,9 @@ public class ExternalStorageProviderTest {
                 assertEquals(
                         "The queried trashed file should match the originally trashed file",
                         trashedFile, queryTrashedFile);
+                String originalRelativePath = c.getString(
+                        c.getColumnIndex(DocumentsContract.Document.COLUMN_ORIGINAL_RELATIVE_PATH));
+                assertEquals(originalRelativePath, downloadsDir.getName());
             }
         } finally {
             CleanupTemporaryFilesRule.removeFilesRecursively(downloadsDir);
@@ -298,8 +302,9 @@ public class ExternalStorageProviderTest {
                     trashedFile.getCanonicalPath().startsWith(trashDir.getCanonicalPath()));
 
             // query trash items
-            try (Cursor c = mExternalStorageProvider.queryTrashDocuments(/* projection */
-                    null)) {
+            try (Cursor c = mExternalStorageProvider.queryTrashDocuments(
+                    EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID, /* projection */
+                    null, null, null)) {
                 assertEquals("Querying trash documents should return exactly one item", 1,
                         c.getCount());
             }
@@ -319,8 +324,9 @@ public class ExternalStorageProviderTest {
                     targetFile, restoredFile);
 
             // query trash items after restore
-            try (Cursor c = mExternalStorageProvider.queryTrashDocuments(/* projection */
-                    null)) {
+            try (Cursor c = mExternalStorageProvider.queryTrashDocuments(
+                    EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID, /* projection */
+                    null, null, null)) {
                 assertEquals("Querying trash documents should return 0 item", 0,
                         c.getCount());
             }
