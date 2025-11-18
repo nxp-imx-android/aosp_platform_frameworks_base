@@ -1078,6 +1078,146 @@ public class StageCoordinatorTests extends ShellTestCase {
                 mRunningTaskInfo.token.asBinder());
     }
 
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    public void startTasks_onDifferentDisplay_reparentsSplitRoot() {
+        // Setup: Define task IDs and a non-default display.
+        final int taskId1 = 1;
+        final int taskId2 = 2;
+        final int nonDefaultDisplayId = DEFAULT_DISPLAY + 1;
+
+        // The split root is on the default display.
+        mSplitRootTaskInfo.displayId = DEFAULT_DISPLAY;
+
+        // Task 1 is on the non-default display.
+        final ActivityManager.RunningTaskInfo taskInfo1 = new TestRunningTaskInfoBuilder()
+                .setTaskId(taskId1)
+                .setDisplayId(nonDefaultDisplayId)
+                .build();
+        when(mTaskOrganizer.getRunningTaskInfo(taskId1)).thenReturn(taskInfo1);
+
+        // Mock the display area info for the non-default display.
+        final WindowContainerToken displayAreaToken = new MockToken().token();
+        final DisplayAreaInfo displayAreaInfo = new DisplayAreaInfo(displayAreaToken,
+                nonDefaultDisplayId, 0);
+        when(mRootTDAOrganizer.getDisplayAreaInfo(nonDefaultDisplayId)).thenReturn(displayAreaInfo);
+
+        // Action: Call startTasks.
+        mStageCoordinator.startTasks(taskId1, null /* options1 */, taskId2,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                null /* remoteTransition */, null /* instanceId */);
+
+        // Verification: Check that the split root is reparented to the non-default display.
+        verify(mSplitScreenTransitions).startEnterTransition(anyInt(), mWctCaptor.capture(),
+                isNull(), any(), anyInt(), anyBoolean(), anyInt());
+        WindowContainerTransaction wct = mWctCaptor.getValue();
+        HierarchyOp op = wct.getHierarchyOps().stream()
+                .filter(HierarchyOp::isReparent)
+                .findFirst()
+                .orElse(null);
+
+        assertThat(op).isNotNull();
+        assertThat(op.getContainer()).isEqualTo(mSplitRootTaskInfo.token.asBinder());
+        assertThat(op.getNewParent()).isEqualTo(displayAreaToken.asBinder());
+        assertThat(op.getToTop()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    public void startTasks_onSameDisplay_doesNotReparentSplitRoot() {
+        // Setup: Define task IDs.
+        final int taskId1 = 1;
+        final int taskId2 = 2;
+
+        // The split root is on the default display.
+        mSplitRootTaskInfo.displayId = DEFAULT_DISPLAY;
+
+        // Task 1 is also on the default display.
+        final ActivityManager.RunningTaskInfo taskInfo1 = new TestRunningTaskInfoBuilder()
+                .setTaskId(taskId1)
+                .setDisplayId(DEFAULT_DISPLAY)
+                .build();
+        when(mTaskOrganizer.getRunningTaskInfo(taskId1)).thenReturn(taskInfo1);
+
+        // Action: Call startTasks.
+        mStageCoordinator.startTasks(taskId1, null /* options1 */, taskId2,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                null /* remoteTransition */, null /* instanceId */);
+
+        // Verification: Check that the split root is not reparented.
+        verify(mSplitScreenTransitions).startEnterTransition(anyInt(), mWctCaptor.capture(),
+                isNull(), any(), anyInt(), anyBoolean(), anyInt());
+        WindowContainerTransaction wct = mWctCaptor.getValue();
+        boolean hasReparentOp = wct.getHierarchyOps().stream().anyMatch(HierarchyOp::isReparent);
+
+        assertThat(hasReparentOp).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    public void startTasks_taskInfoNotFound_doesNotReparentSplitRoot() {
+        // Setup: Define task IDs.
+        final int taskId1 = 1;
+        final int taskId2 = 2;
+
+        // The split root is on the default display.
+        mSplitRootTaskInfo.displayId = DEFAULT_DISPLAY;
+
+        // Task 1 info is not found.
+        when(mTaskOrganizer.getRunningTaskInfo(taskId1)).thenReturn(null);
+
+        // Action: Call startTasks.
+        mStageCoordinator.startTasks(taskId1, null /* options1 */, taskId2,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                null /* remoteTransition */, null /* instanceId */);
+
+        // Verification: Check that the split root is not reparented.
+        verify(mSplitScreenTransitions).startEnterTransition(anyInt(), mWctCaptor.capture(),
+                isNull(), any(), anyInt(), anyBoolean(), anyInt());
+        WindowContainerTransaction wct = mWctCaptor.getValue();
+        boolean hasReparentOp = wct.getHierarchyOps().stream().anyMatch(HierarchyOp::isReparent);
+
+        assertThat(hasReparentOp).isFalse();
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX)
+    public void startTasks_onDifferentDisplay_flagDisabled_doesNotReparentSplitRoot() {
+        // Setup: Define task IDs and a non-default display.
+        final int taskId1 = 1;
+        final int taskId2 = 2;
+        final int nonDefaultDisplayId = DEFAULT_DISPLAY + 1;
+
+        // The split root is on the default display.
+        mSplitRootTaskInfo.displayId = DEFAULT_DISPLAY;
+
+        // Task 1 is on the non-default display.
+        final ActivityManager.RunningTaskInfo taskInfo1 = new TestRunningTaskInfoBuilder()
+                .setTaskId(taskId1)
+                .setDisplayId(nonDefaultDisplayId)
+                .build();
+        when(mTaskOrganizer.getRunningTaskInfo(taskId1)).thenReturn(taskInfo1);
+
+        // Mock the display area info for the non-default display.
+        final WindowContainerToken displayAreaToken = new MockToken().token();
+        final DisplayAreaInfo displayAreaInfo = new DisplayAreaInfo(displayAreaToken,
+                nonDefaultDisplayId, 0);
+        when(mRootTDAOrganizer.getDisplayAreaInfo(nonDefaultDisplayId)).thenReturn(displayAreaInfo);
+
+        // Action: Call startTasks.
+        mStageCoordinator.startTasks(taskId1, null /* options1 */, taskId2,
+                null /* options2 */, SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50,
+                null /* remoteTransition */, null /* instanceId */);
+
+        // Verification: Check that the split root is NOT reparented because the flag is disabled.
+        verify(mSplitScreenTransitions).startEnterTransition(anyInt(), mWctCaptor.capture(),
+                isNull(), any(), anyInt(), anyBoolean(), anyInt());
+        WindowContainerTransaction wct = mWctCaptor.getValue();
+        boolean hasReparentOp = wct.getHierarchyOps().stream().anyMatch(HierarchyOp::isReparent);
+
+        assertThat(hasReparentOp).isFalse();
+    }
+
     private static int getLaunchWindowingMode(Bundle options) {
         return options.getInt("android.activity.windowingMode", 0);
     }
