@@ -40,7 +40,6 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.layout.ContainerConfig
 import com.android.compose.layout.containerize
-import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerUserActionsViewModel
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -49,6 +48,7 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.Overlay
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
@@ -71,7 +71,7 @@ class BouncerOverlay
 constructor(
     private val actionsViewModelFactory: BouncerUserActionsViewModel.Factory,
     private val contentViewModelFactory: BouncerOverlayContentViewModel.Factory,
-    private val dialogFactory: BouncerDialogFactory,
+    private val dialogFactory: SystemUIDialog.Factory,
 ) : Overlay {
     override val key = Overlays.Bouncer
 
@@ -99,7 +99,7 @@ constructor(
 @Composable
 private fun ContentScope.BouncerOverlay(
     viewModel: BouncerOverlayContentViewModel,
-    dialogFactory: BouncerDialogFactory,
+    dialogFactory: SystemUIDialog.Factory,
     modifier: Modifier = Modifier,
 ) {
     val backgroundColor = viewModel.backgroundColor
