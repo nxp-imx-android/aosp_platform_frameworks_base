@@ -892,8 +892,8 @@ public class FrameTrackerTest {
         final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
         doNothing().when(tracker).postCallback(captor.capture());
         mListenerCapture.getValue().onJankDataAvailable(Arrays.asList(
-            new JankData(vsyncId, jankType, frameIntervalNanos, frameIntervalNanos, durationNs,
-                    delayNs)));
+            new JankData(vsyncId, jankType, jankType, frameIntervalNanos, frameIntervalNanos,
+                    durationNs, delayNs)));
         captor.getValue().run();
     }
 }
