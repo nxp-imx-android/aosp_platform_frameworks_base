@@ -796,6 +796,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)) {
+                if (Flags.imeSwitcherMenuSystemui()) {
+                    // Tracked by the IME Switcher Menu Controller.
+                    return;
+                }
                 final PendingResult pendingResult = getPendingResult();
                 if (pendingResult == null) {
                     return;

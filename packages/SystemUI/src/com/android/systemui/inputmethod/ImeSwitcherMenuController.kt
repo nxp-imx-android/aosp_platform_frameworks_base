@@ -20,10 +20,14 @@ import android.annotation.BinderThread
 import android.annotation.IntRange
 import android.annotation.RequiresPermission
 import android.annotation.UserIdInt
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.display.DisplayManager
+import android.os.Handler
 import android.os.RemoteException
+import android.os.UserHandle
 import android.util.Log
 import android.util.Slog
 import android.view.ContextThemeWrapper
@@ -49,11 +53,18 @@ constructor(
     private val displayManager: DisplayManager,
     private val inputMethodManager: InputMethodManager,
     @param:Main private val mainExecutor: Executor,
+    @param:Main private val mMainHandler: Handler,
 ) : CoreStartable {
 
     private val impl = IImeSwitcherMenuImpl()
 
     private val mDialogListener = DialogListener()
+
+    /**
+     * Broadcast receiver for the [Intent.ACTION_CLOSE_SYSTEM_DIALOGS] intent, used to hide the IME
+     * Switcher Menu.
+     */
+    private val broadcastReceiver = CloseSystemDialogsBroadcastReceiver()
 
     /** The interface to receive callbacks from this controller. */
     private var listener: IImeSwitcherMenuListener? = null
@@ -83,6 +94,13 @@ constructor(
             return
         }
         inputMethodManager.registerImeSwitcherMenu(impl)
+        context.registerReceiverForAllUsers(
+            broadcastReceiver,
+            IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS),
+            null /* broadcastPermission */,
+            mMainHandler,
+            Context.RECEIVER_EXPORTED,
+        )
     }
 
     /**
@@ -216,6 +234,28 @@ constructor(
                         " index: $subtypeIndex for user: $userId",
                     e,
                 )
+            }
+        }
+    }
+
+    private inner class CloseSystemDialogsBroadcastReceiver : BroadcastReceiver() {
+
+        override fun onReceive(context: Context, intent: Intent) {
+            val userId = sendingUserId
+            if (userId == UserHandle.USER_ALL) {
+                dialogs.values.forEach { it.hide() }
+                dialogs.clear()
+            } else {
+                val dialog = dialogs.remove(userId)
+                if (dialog != null) {
+                    dialog.hide()
+                } else {
+                    Log.e(
+                        TAG,
+                        "Failed to hide IME Switcher Menu from ACTION_CLOSE_SYSTEM_DIALOGS" +
+                            " for user:$userId, no dialog found.",
+                    )
+                }
             }
         }
     }
