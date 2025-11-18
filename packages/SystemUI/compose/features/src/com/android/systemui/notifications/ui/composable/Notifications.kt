@@ -411,21 +411,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 .element(Notifications.Elements.NotificationScrim)
                 .overscroll(verticalOverscrollEffect)
                 .overscroll(overscrollEffect.withoutEventHandling())
-                .graphicsLayer {
-                    shape =
-                        calculateCornerRadius(
-                                scrimCornerRadius,
-                                screenCornerRadius,
-                                { expansionFraction },
-                                shouldAnimateScrimCornerRadius(
-                                    layoutState,
-                                    shouldPunchHoleBehindScrim,
-                                    viewModel.notificationsShadeContentKey,
-                                ),
-                            )
-                            .let { scrimRounding.value.toRoundedCornerShape(it) }
-                    clip = true
-                }
                 .onGloballyPositioned { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {
@@ -455,7 +440,21 @@ fun ContentScope.NestedScrollingNotificationPanel(
                     // NotificationPanel background
                     Box(
                         modifier =
-                            Modifier
+                            Modifier.graphicsLayer {
+                                    shape =
+                                        calculateCornerRadius(
+                                                scrimCornerRadius,
+                                                screenCornerRadius,
+                                                { expansionFraction },
+                                                shouldAnimateScrimCornerRadius(
+                                                    layoutState,
+                                                    shouldPunchHoleBehindScrim,
+                                                    viewModel.notificationsShadeContentKey,
+                                                ),
+                                            )
+                                            .let { scrimRounding.value.toRoundedCornerShape(it) }
+                                    clip = true
+                                }
                                 // The DstOut blend mode is used to punch a transparent hole through
                                 // the scrim's background, cutting out the QQS tiles. When used in
                                 // conjunction with CompositingStrategy.Offscreen on the parent,
@@ -568,34 +567,31 @@ fun ContentScope.NestedScrollingNotificationPanel(
             val contentMeasurable = measurables[1][0]
 
             if (shouldFillMaxSize) {
-                // Fill the entire available space, while constraining the content.
-                // This is for cases where the background should fill the max height, but the
-                // content must *not* go over the bottom of the visible area.
-                // We find a specific boundary (bottomSSNSL) and force the content's height to match
-                // it. The background, however, is allowed to be its full, larger size.
+                // Fill the entire available space with the content, while constraining the
+                // background. We find a specific boundary (bottomRulerY) and force the background's
+                // height to match it, while ensuring it is at least as large as the content itself.
 
                 val maxConstraints = Constraints.fixed(constraints.maxWidth, constraints.maxHeight)
-                val background = backgroundMeasurable.measure(maxConstraints)
-                layout(width = background.width, height = background.height) {
-                    background.place(IntOffset.Zero)
+                val content = contentMeasurable.measure(maxConstraints)
+                layout(width = content.width, height = content.height) {
+                    content.place(IntOffset.Zero)
 
                     val bottomRulerY =
                         Shade.Rulers.SingleShadeNestedScrollLayoutBottom.current(Float.MIN_VALUE)
 
-                    val contentConstraints =
+                    val backgroundConstraints =
                         if (bottomRulerY == Float.MIN_VALUE) {
                             // no ruler defined
                             constraints
                         } else {
                             // maxHeight and minHeight must be >= 0
-                            val constrainedHeight = bottomRulerY.roundToInt().coerceAtLeast(0)
-                            constraints.copy(
-                                minHeight = constrainedHeight,
-                                maxHeight = constrainedHeight,
+                            Constraints.fixed(
+                                width = constraints.maxWidth,
+                                height = bottomRulerY.roundToInt().coerceAtLeast(content.height),
                             )
                         }
 
-                    contentMeasurable.measure(contentConstraints).place(IntOffset.Zero)
+                    backgroundMeasurable.measure(backgroundConstraints).place(IntOffset.Zero)
                 }
             } else {
                 // Make the background size match the content size.

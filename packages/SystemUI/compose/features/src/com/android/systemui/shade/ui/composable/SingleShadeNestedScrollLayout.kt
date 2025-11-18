@@ -182,26 +182,35 @@ fun ContentScope.SingleShadeNestedScrollLayout(
         val insetsTop = cutoutInsets?.getTop(this) ?: 0
         val alwaysVisibleHeader = measurables[0][0].measure(constraintsWithCutout)
         val overlappableHeader = measurables[1][0].measure(constraintsWithCutout)
-        val scrim = measurables[2][0].measure(constraintsWithCutout)
         val totalScrimOffset =
             insetsTop +
                 alwaysVisibleHeader.height +
                 overlappableHeader.height +
                 scrimOffset.value.roundToInt()
+
+        // Reduce the Scrim's height so it only fills the visible space, when we offset it down.
+        val layoutBottom = constraints.maxHeight
+        val constrainedScrimHeight = constraints.constrainHeight(layoutBottom - totalScrimOffset)
+        val scrim =
+            measurables[2][0].measure(
+                constraints.copy(
+                    minHeight = constrainedScrimHeight,
+                    maxHeight = constrainedScrimHeight,
+                )
+            )
+
         // Update the last height of the header.
         overlappableHeaderHeight.intValue = overlappableHeader.height
         minScrimHeight.intValue =
             constraints.constrainHeight(
-                constraints.maxHeight -
-                    insetsTop -
-                    alwaysVisibleHeader.height -
-                    overlappableHeader.height
+                layoutBottom - insetsTop - alwaysVisibleHeader.height - overlappableHeader.height
             )
-        val height = maxOf(alwaysVisibleHeader.height + overlappableHeader.height, scrim.height)
         layout(
             width = maxOf(alwaysVisibleHeader.width, overlappableHeader.width, scrim.width),
-            height = height,
-            rulers = { Shade.Rulers.SingleShadeNestedScrollLayoutBottom provides height.toFloat() },
+            height = layoutBottom,
+            rulers = {
+                Shade.Rulers.SingleShadeNestedScrollLayoutBottom provides layoutBottom.toFloat()
+            },
         ) {
             alwaysVisibleHeader.place(insetsLeft, insetsTop)
             overlappableHeader.place(insetsLeft, insetsTop + alwaysVisibleHeader.height)
