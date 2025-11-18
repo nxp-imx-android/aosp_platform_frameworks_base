@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.domain.interactor
 import android.content.Context
 import android.media.AudioManager
 import android.view.KeyEvent
+import com.android.systemui.Flags
 import com.android.systemui.back.domain.interactor.BackActionInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
@@ -66,6 +67,9 @@ constructor(
             }
             when (event.keyCode) {
                 KeyEvent.KEYCODE_MENU -> return dispatchMenuKeyEvent()
+            }
+            if (Flags.pressAnyKeyToAccessBouncer() && isDeviceAwake()) {
+                return collapseShadeLockedOrShowPrimaryBouncer(loggingReason = "Key pressed")
             }
         }
         return false
