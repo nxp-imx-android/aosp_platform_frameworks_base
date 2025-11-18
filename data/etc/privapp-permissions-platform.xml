@@ -752,5 +752,6 @@ applications that come with the platform
 
     <privapp-permissions package="com.android.crossdevicesync">
         <permission name="android.permission.INTERACT_ACROSS_USERS" />
+        <permission name="android.permission.MANAGE_USERS" />
     </privapp-permissions>
 </permissions>
