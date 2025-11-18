@@ -590,3 +590,13 @@ flag {
   description: "Enable the multi user management user provisioning APIs."
   bug: "425840472"
 }
+
+flag {
+  name: "policy_transparency_refactor_v2"
+  namespace: "enterprise"
+  description: "Refactor policy transparency to use new API during the rollout of policy_transparency_refactor_enabled."
+  bug: "445889973"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
