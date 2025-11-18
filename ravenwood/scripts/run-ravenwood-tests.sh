@@ -72,7 +72,7 @@ atest_opts=""
 list_options=""
 with_tools_tests=1
 
-while getopts "sx:f:dtbLa:rDRh" opt; do
+while getopts "sx:f:dtbLa:rDRhX" opt; do
 case "$opt" in
 # OPTIONS-START
     s) # Remove slow tests
@@ -107,6 +107,9 @@ case "$opt" in
         ;;
     R) # Run disabled tests too
         export RAVENWOOD_RUN_DISABLED_TESTS=1
+        ;;
+    X) # Run only disabled tests
+        export RAVENWOOD_RUN_DISABLED_TESTS=2
         ;;
     h) # Show help
         show_help
