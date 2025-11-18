@@ -399,6 +399,7 @@ class BubbleBarAnimationHelperTest {
         getInstrumentation().waitForIdleSync()
 
         assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
+        assertThat(bbev.animationMatrix).isNull()
         assertThat(afterCalled).isTrue()
     }
 
@@ -431,6 +432,7 @@ class BubbleBarAnimationHelperTest {
         getInstrumentation().waitForIdleSync()
 
         assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
+        assertThat(bbev.animationMatrix).isNull()
         assertThat(afterCalled).isTrue()
         assertThat(expandedViewWithPendingAnimationBefore).isEqualTo(bbev)
         assertThat(expandedViewWithPendingAnimationAfter).isNull()

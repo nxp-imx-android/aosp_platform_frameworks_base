@@ -138,15 +138,10 @@ public class BubbleBarAnimationHelper {
             return;
         }
 
-        mExpandedViewContainerMatrix.setScaleX(0f);
-        mExpandedViewContainerMatrix.setScaleY(0f);
-
         prepareForAnimateIn(bbev);
 
         setScaleFromBubbleBar(mExpandedViewContainerMatrix,
                 1f - EXPANDED_VIEW_ANIMATE_SCALE_AMOUNT);
-
-        bbev.setAnimationMatrix(mExpandedViewContainerMatrix);
 
         ObjectAnimator alphaAnim = createAlphaAnimator(bbev, /* visible= */ true);
         alphaAnim.setDuration(EXPANDED_VIEW_EXPAND_ALPHA_DURATION);
@@ -172,13 +167,11 @@ public class BubbleBarAnimationHelper {
                     .addUpdateListener((target, values) -> {
                         bbev.setAnimationMatrix(mExpandedViewContainerMatrix);
                     })
-                    .withEndActions(() -> {
+                    .withEndOrCancelActions(() -> {
                         bbev.setAnimationMatrix(null);
                         updateExpandedView(bbev);
-                    })
-                    .withEndOrCancelActions(() -> {
                         ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
-                                "BBAnimationHelper.animateExpansion(): finished");
+                                "BBAnimationHelper.animateExpansion.withEndOrCancelActions()");
                         if (endRunnable != null) {
                             endRunnable.run();
                         }
@@ -214,12 +207,10 @@ public class BubbleBarAnimationHelper {
             Log.w(TAG, "Trying to animate collapse without a bubble");
             return;
         }
-        bbev.setScaleX(1f);
-        bbev.setScaleY(1f);
-
-        setScaleFromBubbleBar(mExpandedViewContainerMatrix, 1f);
 
         bbev.setAnimating(true);
+
+        setScaleFromBubbleBar(mExpandedViewContainerMatrix, 1f);
 
         ObjectAnimator alphaAnim = createAlphaAnimator(bbev, /* visible= */ false);
         alphaAnim.setDuration(EXPANDED_VIEW_EXPAND_ALPHA_DURATION);
@@ -231,7 +222,6 @@ public class BubbleBarAnimationHelper {
             }
         });
         startNewAnimator(alphaAnim);
-
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix).cancel();
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix)
                 .spring(AnimatableScaleMatrix.SCALE_X,
@@ -245,13 +235,11 @@ public class BubbleBarAnimationHelper {
                 .addUpdateListener((target, values) -> {
                     bbev.setAnimationMatrix(mExpandedViewContainerMatrix);
                 })
-                .withEndActions(() -> {
+                .withEndOrCancelActions(() -> {
                     bbev.setAnimationMatrix(null);
                     bbev.resetBottomClip();
-                })
-                .withEndOrCancelActions(() -> {
                     ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
-                            "BBAnimationHelper.animateCollapse(): finished");
+                            "BBAnimationHelper.animateCollapse.withEndOrCancelActions()");
                     if (endRunnable != null) {
                         endRunnable.run();
                     }
