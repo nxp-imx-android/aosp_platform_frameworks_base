@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"আপনার শেয়ার করা স্টোরেজ থেকে ভিডিও ফাইল রিড করতে অ্যাপকে অনুমতি দিন।"</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"শেয়ার করা স্টোরেজ থেকে ছবির ফাইল রিড করা"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"আপনার শেয়ার করা স্টোরেজ থেকে ছবির ফাইল রিড করার জন্য অ্যাপকে অনুমতি দেয়।"</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"শেয়ার করা স্টোরেজ থেকে ব্যবহারকারীর বেছে নেওয়া ছবি ও ভিডিওর ফাইল রিড করুন"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"আপনার শেয়ার করা স্টোরেজ থেকে ছবি ও ভিডিওর ফাইল রিড করার জন্য অ্যাপকে অনুমতি দেয়।"</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"শেয়ার করা স্টোরেজের কন্টেন্ট মুছে ফেলুন বা পরিবর্তন করুন"</string>

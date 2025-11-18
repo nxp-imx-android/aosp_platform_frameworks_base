@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Tillåter att appen läser videofiler från delad lagring."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"läsa bildfiler från delad lagring"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Tillåter att appen läser bildfiler från delad lagring."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"läsa bild- och videofiler som användaren valt från delat lagringsutrymme"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Tillåter att appen läser bild- och videofiler som du väljer från ditt delade lagringsutrymme."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"ändra eller ta bort innehåll på delat lagringsutrymme"</string>

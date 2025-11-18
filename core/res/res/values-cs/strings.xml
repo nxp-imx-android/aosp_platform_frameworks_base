@@ -826,6 +826,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Umožňuje aplikaci čtení videosouborů ze sdíleného úložiště."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"čtení obrázkových souborů ze sdíleného úložiště"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Umožňuje aplikaci číst obrázkové soubory ze sdíleného úložiště."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"čtení vybraných obrázkových souborů a souborů videa ze sdíleného úložiště"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Umožňuje aplikaci číst vybrané obrázkové soubory a soubory videa ze sdíleného úložiště."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"úprava nebo mazání obsahu sdíleného úložiště"</string>
@@ -1834,7 +1838,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Režim jedné ruky"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Velmi tmavé zobrazení"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Sluchové pomůcky"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"Automatické klikání (doba setrvání)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Automatické kliknutí (doba setrvání)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Ovládání myši klávesnicí"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Odpojeno"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Připojeno"</string>
@@ -2302,7 +2306,7 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad doleva"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad doprava"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad střed"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"Nabídka možností automatického klikání"</string>
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"Nabídka možností automatického kliknutí"</string>
     <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"Kliknout levým tlačítkem"</string>
     <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"Kliknout pravým tlačítkem"</string>
     <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"Dvakrát kliknout"</string>

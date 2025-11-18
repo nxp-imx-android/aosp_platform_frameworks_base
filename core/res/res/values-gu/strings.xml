@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"ઍપને તમારા શેર કરાયેલા સ્ટોરેજમાંથી વીડિયો ફાઇલો વાંચવાની મંજૂરી આપે છે."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"શેર કરાયેલા સ્ટોરેજમાંથી છબી ફાઇલો વાંચવા માટે"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"ઍપને તમારા શેર કરાયેલા સ્ટોરેજમાંથી છબી ફાઇલો વાંચવાની મંજૂરી આપે છે."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"શેર કરેલા સ્ટોરેજમાંથી વપરાશકર્તા દ્વારા પસંદ કરેલી છબી અને વીડિયો ફાઇલો વાંચો"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"ઍપને તમારા શેર કરેલા સ્ટોરેજમાંથી તમે પસંદ કરેલી છબી અને વીડિયો ફાઇલો વાંચવાની મંજૂરી આપે છે."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"શેર કરેલા સ્ટોરેજ કન્ટેન્ટમાં ફેરફાર કરો/ડિલીટ કરો"</string>
@@ -1808,7 +1812,7 @@
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"ઍક્સેસિબિલિટી સંબંધિત આવશ્યકતા માટે સહાય કરતી ઍપ માટે સંપૂર્ણ નિયંત્રણ યોગ્ય છે, પણ મોટા ભાગની ઍપ માટે યોગ્ય નથી."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"જોવા અને નિયંત્રણ માટેની સ્ક્રીન"</string>
     <string name="accessibility_service_screen_control_description" msgid="6946315917771791525">"તે સ્ક્રીન પરનું બધું કન્ટેન્ટ વાંચી શકે છે અને કન્ટેન્ટને અન્ય ઍપ પર બતાવી શકે છે."</string>
-    <string name="accessibility_service_action_perform_title" msgid="779670378951658160">"ક્રિયાઓ જુઓ અને કરો"</string>
+    <string name="accessibility_service_action_perform_title" msgid="779670378951658160">"ઍક્શન જુઓ અને તેને પર્ફોર્મ કરો"</string>
     <string name="accessibility_service_action_perform_description" msgid="2718852014003170558">"તે ઍપ અથવા હાર્ડવેર સેન્સર વડે તમારી ક્રિયાપ્રતિક્રિયાને ટ્રૅક કરી શકે છે અને તમારા વતી ઍપ સાથે ક્રિયાપ્રતિક્રિયા કરી શકે છે."</string>
     <string name="accessibility_dialog_button_allow" msgid="2092558122987144530">"મંજૂરી આપો"</string>
     <string name="accessibility_dialog_button_deny" msgid="4129575637812472671">"નકારો"</string>

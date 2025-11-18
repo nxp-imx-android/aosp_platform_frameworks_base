@@ -825,6 +825,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"מאפשרת לאפליקציה לקרוא קובצי וידאו מתוך האחסון המשותף."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"קריאה של קובצי תמונה מתוך האחסון המשותף"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"מאפשרת לאפליקציה לקרוא קובצי תמונה מתוך האחסון המשותף."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"קריאה של קובצי הווידאו והתמונה שנבחרו על ידי המשתמש מתוך נפח האחסון המשותף"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"ההרשאה מאפשרת לאפליקציה לקרוא קובצי וידאו ותמונה שבחרת מתוך נפח האחסון המשותף."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"שינוי או מחיקה של תוכן האחסון המשותף שלך"</string>
@@ -1808,9 +1812,9 @@
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"להעניק לשירות \'<xliff:g id="SERVICE">%1$s</xliff:g>\' שליטה מלאה במכשיר?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"האפשרות לשליטה מלאה במכשיר לא מתאימה לרוב האפליקציות, אלא רק לאפליקציות שעוזרות עם צורכי הנגישות שלך."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"הצגת המסך ושליטה בו"</string>
-    <string name="accessibility_service_screen_control_description" msgid="6946315917771791525">"אפשרות לקריאת כל התוכן במסך ולהצגת התוכן מעל אפליקציות אחרות."</string>
+    <string name="accessibility_service_screen_control_description" msgid="6946315917771791525">"התכונה תוכל לקרוא את כל התוכן במסך ולהציג תוכן מעל אפליקציות אחרות."</string>
     <string name="accessibility_service_action_perform_title" msgid="779670378951658160">"הצגה וביצוע של פעולות"</string>
-    <string name="accessibility_service_action_perform_description" msgid="2718852014003170558">"אפשרות למעקב אחר האינטראקציה שלך עם אפליקציות או חיישני חומרה, וביצוע אינטראקציה בשמך."</string>
+    <string name="accessibility_service_action_perform_description" msgid="2718852014003170558">"התכונה יכולה לעקוב אחרי הפעילות שלך באפליקציות או עם חיישני חומרה, ולבצע בשבילך פעולות."</string>
     <string name="accessibility_dialog_button_allow" msgid="2092558122987144530">"אישור"</string>
     <string name="accessibility_dialog_button_deny" msgid="4129575637812472671">"עדיף שלא"</string>
     <string name="accessibility_dialog_button_uninstall" msgid="2952465517671708108">"הסרה"</string>
@@ -1833,7 +1837,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"מצב שימוש ביד אחת"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"מעומעם במיוחד"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"מכשירי שמיעה"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"קליק אוטומטי (משך ההמתנה)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"קליק אוטומטי"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"שליטה בעכבר מהמקלדת"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"מנותק"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"מחובר"</string>

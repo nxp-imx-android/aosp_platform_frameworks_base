@@ -824,6 +824,10 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Tillader, at appen læser videofiler fra din fælles lagerplads."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"Læse billedfiler fra den delte lagerplads"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Tillader, at appen læser billedfiler fra din delte lagerplads."</string>
+    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
+    <skip />
+    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
+    <skip />
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"læse brugervalgte billed- og videofiler fra delt lagerplads"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Tillader, at appen læser billed- og videofiler, som du vælger fra din delte lagerplads."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"ændre eller slette indholdet af din delte lagerplads"</string>
