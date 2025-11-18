@@ -174,6 +174,8 @@ public interface EntryAdapter {
 
     int getSectionBucket();
 
+    int getLoggingBucket();
+
     boolean isAmbient();
 
     @PeopleNotificationIdentifier.Companion.PeopleNotificationType int getPeopleNotificationType();

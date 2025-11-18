@@ -56,6 +56,7 @@ import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.statusbar.notification.stack.BUCKET_DYNAMIC_BUNDLE
 import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
 import com.android.systemui.statusbar.notification.stack.BUCKET_PROMO
 import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
@@ -142,7 +143,7 @@ constructor(
                     BundleSpec.RECOMMENDED,
                 )
 
-            private var bundleIds = this.bundleSpecs.map { it.key }
+            private val bundleIds = this.bundleSpecs.map { it.key }.toMutableList()
 
             /**
              * Return the id string of the bundle this ListEntry belongs in Or null if this
@@ -173,7 +174,6 @@ constructor(
 
             init {
                 if (NmContextualDisplay.isEnabled) {
-                    var newTypes: MutableList<Int> = mutableListOf()
                     backgroundExecutor.execute {
                         val dynamicBundles =
                             notificationManager.getDynamicBundles(null, userTracker.userHandle)
@@ -187,15 +187,13 @@ constructor(
                                     titleText = R.string.promotional_notification_channel_label,
                                     summaryText = dynamicBundle.bundleName,
                                     icon = com.android.settingslib.R.drawable.ic_dynamic_bundle,
-                                    bucket = dynamicBundle.dynamicBundleType,
+                                    bucket = BUCKET_DYNAMIC_BUNDLE,
                                     bundleType = dynamicBundle.dynamicBundleType,
                                 )
                             bundleSpecs.add(bundleSpec)
-                            newTypes.add(dynamicBundle.dynamicBundleType)
+                            bundleIds.add(bundleSpec.key)
                         }
-                        bundleIds = this.bundleSpecs.map { it.key }
                         mainExecutor.execute {
-                            newTypes.forEach { sectionsManager.addSection(it) }
                             val invalidator = object : Invalidator("dynamic bundles") {}
                             invalidator.invalidateList("dynamic bundles loaded")
                         }

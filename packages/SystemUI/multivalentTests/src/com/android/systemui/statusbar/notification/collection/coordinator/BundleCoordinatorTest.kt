@@ -635,12 +635,9 @@ class BundleCoordinatorTest : SysuiTestCase() {
 
         assertThat(coordinator.bundler.bundleSpecs)
             .comparingElementsUsing<BundleSpec, Int>(
-                Correspondence.transforming({ it.bundleType }, "bundleType")
+                Correspondence.transforming({ it?.bundleType }, "bundleType")
             )
             .containsAtLeast(130, 140)
-
-        verify(sectionsManager).addSection(130)
-        verify(sectionsManager).addSection(140)
     }
 
     private fun makeEntryOfChannelType(

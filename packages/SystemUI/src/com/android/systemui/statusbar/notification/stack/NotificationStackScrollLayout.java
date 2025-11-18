@@ -6905,7 +6905,7 @@ public class NotificationStackScrollLayout
                 return bucket < BUCKET_SILENT;
             case ROWS_GENTLE:
                 if (NmContextualDisplay.isEnabled()) {
-                    return row.getEntryAdapter().isBundled() || row.getEntryAdapter().isBundle();
+                    return bucket == BUCKET_SILENT;
                 } else if (NotificationBundleUi.isEnabled()) {
                     return bucket == BUCKET_SILENT
                             || bucket == BUCKET_PROMO
