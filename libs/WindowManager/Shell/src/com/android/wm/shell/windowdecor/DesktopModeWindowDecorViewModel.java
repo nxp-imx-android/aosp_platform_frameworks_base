@@ -1850,7 +1850,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         new InputPilfererImpl(mInputManager), mInputManager,
                         mFocusTransitionObserver, mShellDesktopState,
                         mMultiDisplayDragMoveIndicatorController, mTransactionFactory,
-                        mCaptionTouchStatusListener, mAppHandleMotionEventHandler);
+                        mCaptionTouchStatusListener, mAppHandleMotionEventHandler,
+                        mPinnedLayerController);
         windowDecoration.setCaptionListeners(
                 touchEventListener, touchEventListener, touchEventListener, touchEventListener);
         windowDecoration.setExclusionRegionListener(mExclusionRegionListener);

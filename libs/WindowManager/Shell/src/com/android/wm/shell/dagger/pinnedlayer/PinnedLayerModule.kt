@@ -22,6 +22,7 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.dagger.WMShellBaseModule
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.desktopmode.NormalAppLayerController
+import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
@@ -55,7 +56,7 @@ object PinnedLayerModule {
                     shellInit = shellInit,
                     transitions = transitions,
                     pinnedLayerController = pinnedLayerController.get(),
-                    normalLayerController = normalAppLayerController.get()
+                    normalLayerController = normalAppLayerController.get(),
                 )
             )
         }
@@ -70,6 +71,7 @@ object PinnedLayerModule {
         transitions: Transitions,
         displayController: DisplayController,
         desktopState: DesktopState,
+        windowDragTransitionHandler: WindowDragTransitionHandler,
     ): Optional<PinnedLayerController> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
@@ -78,6 +80,7 @@ object PinnedLayerModule {
                     transitions = transitions,
                     presentationController =
                         PinnedLayerPresentationController(context, displayController, desktopState),
+                    windowDragTransitionHandler = windowDragTransitionHandler,
                 )
             )
         }

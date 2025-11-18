@@ -36,6 +36,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay.DISPLAY_0
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -90,6 +91,7 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
     private val mockWindowDecorationExclusionTracker =
         mock<WindowDecorationGestureExclusionTracker>()
     private val mockCaptionVisibilityHelper = mock<CaptionVisibilityHelper>()
+    private val mockPinnedLayerController = mock<PinnedLayerController>()
 
     private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
     private val testHandler = TestHandler(Looper.getMainLooper())
@@ -414,6 +416,7 @@ class DesktopModeTouchEventListenerTest : ShellTestCase() {
                 appHeaderViewHolderFactory =
                     TestAppHeaderViewHolderFactory(TestAppHeaderDimensions(context.resources)),
                 windowDecorationExclusionTracker = mockWindowDecorationExclusionTracker,
+                pinnedLayerController = mockPinnedLayerController,
             )
             .also {
                 assertThat(windowDecorations[taskInfo.taskId]).isNull()

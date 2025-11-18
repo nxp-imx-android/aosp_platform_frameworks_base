@@ -60,6 +60,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.ShellDesktopState;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.AppHandleMotionEventHandler;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.CaptionTouchStatusListener;
@@ -104,6 +105,7 @@ public class DesktopModeTouchEventListener
             mCaptionTouchStatusListener;
     private final @NonNull AppHandleMotionEventHandler
             mAppHandleMotionEventHandler;
+    private final @Nullable PinnedLayerController mPinnedLayerController;
 
     private final DragDetector mHandleDragDetector;
     private final DragDetector mHeaderDragDetector;
@@ -140,11 +142,12 @@ public class DesktopModeTouchEventListener
             @Nullable InputManager inputManager,
             @NonNull FocusTransitionObserver focusTransitionObserver,
             @NonNull ShellDesktopState shellDesktopState,
-            @NonNull MultiDisplayDragMoveIndicatorController
-                    multiDisplayDragMoveIndicatorController,
+            @NonNull
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
             @NonNull Supplier<SurfaceControl.Transaction> transactionFactory,
             @Nullable CaptionTouchStatusListener captionTouchStatusListener,
-            @NonNull AppHandleMotionEventHandler appHandleMotionEventHandler) {
+            @NonNull AppHandleMotionEventHandler appHandleMotionEventHandler,
+            @Nullable PinnedLayerController pinnedLayerController) {
         mContext = context;
         mDragPositioningCallback = dragPositioningCallback;
         mWindowDecorationFinder = windowDecorationFinder;
@@ -162,6 +165,7 @@ public class DesktopModeTouchEventListener
         mTransactionFactory = transactionFactory;
         mCaptionTouchStatusListener = captionTouchStatusListener;
         mAppHandleMotionEventHandler = appHandleMotionEventHandler;
+        mPinnedLayerController = pinnedLayerController;
 
         mTaskId = taskInfo.taskId;
         mTaskToken = taskInfo.token;
@@ -244,9 +248,9 @@ public class DesktopModeTouchEventListener
             final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
             final int nextFocusedTaskId =
                     mDesktopTasksController.getTopTask(
-                        taskInfo.getDisplayId(),
-                        taskInfo.userId,
-                        taskInfo.getTaskId());
+                            taskInfo.getDisplayId(),
+                            taskInfo.userId,
+                            taskInfo.getTaskId());
             final WindowDecorationWrapper nextFocusedWindow =
                     mWindowDecorationFinder.apply(nextFocusedTaskId);
             if (nextFocusedWindow != null) nextFocusedWindow.a11yAnnounceNewFocusedWindow();
@@ -591,12 +595,15 @@ public class DesktopModeTouchEventListener
                             viewName, MotionEvent.actionToString(e.getAction()));
                 }
 
-                mDesktopTasksController.onDragPositioningMove(taskInfo,
-                        decoration.getTaskSurface(),
-                        e.getDisplayId(),
-                        e.getRawX(dragPointerIdx),
-                        e.getRawY(dragPointerIdx),
-                        mCurrentBounds);
+                if (!isPinned(taskInfo)) {
+                    mDesktopTasksController.onDragPositioningMove(
+                            taskInfo,
+                            decoration.getTaskSurface(),
+                            e.getDisplayId(),
+                            e.getRawX(dragPointerIdx),
+                            e.getRawY(dragPointerIdx),
+                            mCurrentBounds);
+                }
                 debugLogD("handleFreeformMotionEvent(%s) action=%s updated controller "
                                 + "mIsDragging=%b mCurrentBounds=%s "
                                 + "mOnDragStartInitialBounds=%s",
@@ -637,17 +644,27 @@ public class DesktopModeTouchEventListener
                         ? v.getViewRootImpl().getInputToken() : null;
                 updatePointerIcon(e, dragPointerIdx, inputToken,
                         PointerIcon.TYPE_ARROW);
-                // Tasks bounds haven't actually been updated (only its leash), so pass to
-                // DesktopTasksController to allow secondary transformations (i.e. snap resizing
-                // or transforming to fullscreen) before setting new task bounds.
+                // Tasks bounds haven't actually been updated (only its leash), so pass them to
+                // window's managing controller to allow secondary transformations (i.e. snap
+                // resizing or transforming to fullscreen) before setting new task bounds.
                 final Rect validDragArea = decoration.getValidDragArea();
-                final boolean needDragIndicatorCleanup =
-                        mDesktopTasksController.onDragPositioningEnd(
-                                taskInfo, decoration.getTaskSurface(),
-                                new PointF(
-                                        e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)),
-                                newTaskBounds, validDragArea,
-                                new Rect(mOnDragStartInitialBounds), e);
+                final boolean needDragIndicatorCleanup;
+                if (isPinned(taskInfo)) {
+                    mPinnedLayerController.onDragEnded(taskInfo, newTaskBounds);
+                    needDragIndicatorCleanup = false;
+                } else {
+                    needDragIndicatorCleanup =
+                            mDesktopTasksController.onDragPositioningEnd(
+                                    taskInfo,
+                                    decoration.getTaskSurface(),
+                                    new PointF(
+                                            e.getRawX(dragPointerIdx),
+                                            e.getRawY(dragPointerIdx)),
+                                    newTaskBounds,
+                                    validDragArea,
+                                    new Rect(mOnDragStartInitialBounds),
+                                    e);
+                }
                 debugLogD("handleFreeformMotionEvent(%s) action=%s updated controller "
                                 + "newTaskBounds%s validDragArea=%s "
                                 + "mOnDragStartInitialBounds=%s touchingButton=%b "
@@ -757,6 +774,10 @@ public class DesktopModeTouchEventListener
 
     private DesktopModeEventLogger.Companion.InputMethod getInputMethod(MotionEvent ev) {
         return DesktopModeEventLogger.getInputMethodFromMotionEvent(ev);
+    }
+
+    private boolean isPinned(ActivityManager.RunningTaskInfo taskInfo) {
+        return mPinnedLayerController != null && mPinnedLayerController.isPinned(taskInfo.taskId);
     }
 
     private void debugLogD(@NonNull String msg, @NonNull Object... args) {

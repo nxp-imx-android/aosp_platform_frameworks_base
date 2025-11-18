@@ -20,15 +20,18 @@ import android.app.ActivityManager.AppTask.WINDOWING_LAYER_PINNED
 import android.app.TaskInfo
 import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
 import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.IBinder
 import android.os.IRemoteCallback
 import android.os.RemoteException
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.desktopmode.WindowDragTransitionHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerLogs.logW
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getLayerPinnedWct
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerUtils.getLayerUnpinnedWct
@@ -47,6 +50,7 @@ class PinnedLayerController(
     shellInit: ShellInit,
     private val transitions: Transitions,
     private val presentationController: PinnedLayerPresentationController,
+    private val windowDragTransitionHandler: WindowDragTransitionHandler,
 ) : Transitions.TransitionObserver {
 
     // Stores ids of pinned TaskInfo.
@@ -161,6 +165,26 @@ class PinnedLayerController(
         return true
     }
 
+    /**
+     * Handles drag end event for the given [TaskInfo].
+     *
+     * @param taskInfo the task to update.
+     * @param dragBounds the bounds of the task when drag has ended.
+     */
+    fun onDragEnded(taskInfo: TaskInfo, dragBounds: Rect) {
+        if (isNotPinned(taskInfo.taskId)) return
+
+        // TODO(b/449118417): Handle move to display.
+
+        // TODO(b/449118417): PinnedPresentationController to clamp bounds.
+        // TODO(b/449118417): Reset leash to the original position when clamped is the same as
+        // start.
+        val wct = WindowContainerTransaction()
+        wct.setBounds(taskInfo.token, dragBounds)
+        // TODO(b/449118417): setAppBounds? caption insets exclusion?
+        transitions.startTransition(TRANSIT_CHANGE, wct, windowDragTransitionHandler)
+    }
+
     // TODO(b/449681882): Remove when Handler introduces its own state management for animations.
     fun cleanup(transition: IBinder) {
         activeTransitions.remove(transition)
@@ -256,6 +280,7 @@ class PinnedLayerController(
 
     interface PinnedTasksListener {
         fun onPinnedTasksAdded(taskInfo: TaskInfo)
+
         fun onPinnedTasksRemoved(taskInfo: TaskInfo)
     }
 }
