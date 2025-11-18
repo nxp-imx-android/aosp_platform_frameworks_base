@@ -28,7 +28,6 @@ import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
-import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputMethodSubtypeHandle;
 
@@ -102,12 +101,12 @@ final class UserData {
     IRemoteInputConnection mCurInputConnection;
 
     /**
-     * The map of {@link IRemoteComputerControlInputConnection}, provided by an active client on a
+     * The map of {@link ComputerControlInputConnectionData}, provided by an active client on a
      * computer control display.
      */
     @NonNull
-    Map<Integer, IRemoteComputerControlInputConnection> mComputerControlInputConnectionMap =
-            new HashMap<>();
+    Map<Integer, InputMethodManagerInternal.ComputerControlInputConnectionData>
+            mComputerControlInputConnectionMap = new HashMap<>();
 
     /**
      * The {@link ResultReceiver} last provided by the current client to

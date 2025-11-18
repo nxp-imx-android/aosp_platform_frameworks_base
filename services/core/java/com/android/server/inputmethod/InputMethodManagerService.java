@@ -3675,7 +3675,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 if (remoteComputerControlInputConnection != null && mVdmInternal != null
                         && mVdmInternal.isComputerControlDisplay(cs.mSelfReportedDisplayId)) {
                     userData.mComputerControlInputConnectionMap.put(cs.mSelfReportedDisplayId,
-                            remoteComputerControlInputConnection);
+                            new InputMethodManagerInternal.ComputerControlInputConnectionData(
+                                    remoteComputerControlInputConnection, editorInfo));
                 } else {
                     userData.mComputerControlInputConnectionMap.remove(
                             cs.mSelfReportedDisplayId);
@@ -6022,7 +6023,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         @Nullable
         @Override
-        public IRemoteComputerControlInputConnection getComputerControlInputConnection(
+        public ComputerControlInputConnectionData getComputerControlInputConnectionData(
                 @UserIdInt int userId, int displayId) {
             synchronized (ImfLock.class) {
                 final UserData userData = getUserData(userId);

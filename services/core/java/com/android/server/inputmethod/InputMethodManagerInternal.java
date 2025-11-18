@@ -25,6 +25,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.inputmethodservice.InputMethodService;
 import android.os.IBinder;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InlineSuggestionsRequest;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodSubtype;
@@ -335,8 +336,8 @@ public abstract class InputMethodManagerInternal {
             IBinder targetWindowToken);
 
     /**
-     * Provides the remote input connection for computer control automations running on computer
-     * control display.
+     * Provides the remote input connection data for computer control automations running on
+     * computer control display.
      *
      * <p>
      *     This will return {@code null} for non-computer control displays or if there is no
@@ -345,7 +346,7 @@ public abstract class InputMethodManagerInternal {
      * </p>
      */
     @Nullable
-    public abstract IRemoteComputerControlInputConnection getComputerControlInputConnection(
+    public abstract ComputerControlInputConnectionData getComputerControlInputConnectionData(
             @UserIdInt int userId, int displayId);
 
     /**
@@ -475,7 +476,7 @@ public abstract class InputMethodManagerInternal {
 
                 @Nullable
                 @Override
-                public IRemoteComputerControlInputConnection getComputerControlInputConnection(
+                public ComputerControlInputConnectionData getComputerControlInputConnectionData(
                         @UserIdInt int userId,  int displayId) {
                     return null;
                 }
@@ -489,5 +490,10 @@ public abstract class InputMethodManagerInternal {
         final InputMethodManagerInternal instance =
                 LocalServices.getService(InputMethodManagerInternal.class);
         return instance != null ? instance : NOP;
+    }
+
+    public record ComputerControlInputConnectionData(
+            @Nullable IRemoteComputerControlInputConnection inputConnection,
+            @Nullable EditorInfo editorInfo) {
     }
 }
