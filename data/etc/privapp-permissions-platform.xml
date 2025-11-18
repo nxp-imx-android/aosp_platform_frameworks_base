@@ -329,6 +329,8 @@ applications that come with the platform
         <permission name="android.permission.INTERACT_ACROSS_PROFILES"/>
         <!-- Permission required to test onPermissionsChangedListener -->
         <permission name="android.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS"/>
+        <!-- Needed for CTS tests only -->
+        <permission name="android.permission.INJECT_KEY_EVENTS"/>
         <permission name="android.permission.INTERACT_ACROSS_USERS"/>
         <permission name="android.permission.QUERY_USERS"/>
         <permission name="android.permission.LOCAL_MAC_ADDRESS"/>
