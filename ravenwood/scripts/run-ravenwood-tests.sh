@@ -57,6 +57,10 @@ EOF
     return
 }
 
+disable_tf_rolling_log() {
+    export ROLLING_TF_SUBPROCESS_OUTPUT=0
+}
+
 smoke=0
 include_re=""
 exclude_re=""
@@ -86,6 +90,7 @@ case "$opt" in
         ;;
     t) # Redirect log to terminal
         export RAVENWOOD_LOG_OUT=-
+        disable_tf_rolling_log
         ;;
     a) # atest options (e.g. "-t")
         atest_opts="$OPTARG"
@@ -115,11 +120,25 @@ esac
 done
 shift $(($OPTIND - 1))
 
+# The $target array contains all the tests we're actually going to execute.
 # If the rest of the arguments are available, just run these tests.
 targets=("$@")
 
+# Collect all executable tests, which we'll set to $targets later if it's empty.
+all_tests=()
+
+# Host tests under f/b/r.
+host_tests=(
+    hoststubgentest
+    tiny-framework-dump-test
+    hoststubgen-invoke-test
+    ravenwood-stats-checker
+    ravenhelpertest
+    ravenwood-scripts-sh-golden-test
+)
+
 if (( $with_tools_tests )) ; then
-    all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest ravenwood-scripts-sh-golden-test)
+    all_tests+=("${host_tests[@]}")
 fi
 
 # Allow replacing 'list-ravenwood-tests.sh' with  $LIST_TEST_COMMAND.
