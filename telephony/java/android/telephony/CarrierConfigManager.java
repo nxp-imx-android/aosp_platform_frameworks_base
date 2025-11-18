@@ -10446,6 +10446,91 @@ public class CarrierConfigManager {
             "satellite_roaming_p2p_sms_supported_bool";
 
     /**
+     * Indicate whether carrier allows users to purchase satellite plan over the non-terrestrial or
+     * terrestrial network.
+     *
+     * <p>This value will be read by settings app to display satellite purchase button to the user.
+     *
+     * <p>The default value is {@code false}.
+     *
+     * @hide
+     */
+    public static final String KEY_CARRIER_ROAMING_SATELLITE_UPSELL_SUPPORTED_BOOL =
+            "carrier_roaming_satellite_upsell_supported_bool";
+
+    /**
+     * The carrier roaming satellite upsell notification hysteresis time in seconds.
+     *
+     * <p>If the carrier supports purchasing satellite plan which is defined by {@link
+     * CarrierConfigManager#KEY_CARRIER_ROAMING_SATELLITE_UPSELL_MODE_SUPPORTED_BOOL} and the device
+     * is in {@link ServiceState#STATE_OUT_OF_SERVICE}, not connected to Wi-Fi, then hysteresis
+     * timer defined by this key will start.
+     *
+     * <p>After the timer is expired, device is marked as eligible for purchasing satellite plan.
+     *
+     * <p>The default value is 900 seconds (15 minutes).
+     *
+     * @hide
+     */
+    public static final String
+            KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_HYSTERESIS_SEC_INT =
+                    "carrier_roaming_satellite_upsell_notification_hysteresis_sec_int";
+
+    /**
+     * Satellite upsell notification display restriction reset time in seconds.
+     *
+     * <p>The device shows a notification to purchase satellite plan if device is in {@link
+     * ServiceState#STATE_OUT_OF_SERVICE} for {@link
+     * CarrierConfigManager#KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_HYSTERESIS_SEC_INT} If
+     * the user interacts with the notification, it won't be shown again immediately. Instead, the
+     * notification will reappear after below key mentioned amount of time has passed.
+     *
+     * <p>The default value is 24 hours.
+     *
+     * @hide
+     */
+    public static final String
+            KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_THROTTLE_HOURS_INT =
+                    "satellite_upsell_notification_throttle_hours_int";
+
+    /**
+     * The maximum number of times in a day that we display the satellite upsell notification. The
+     * carrier can set this key to -1 to remove the maximum daily limit.
+     *
+     * <p>The default value is 5 times.
+     *
+     * @hide
+     */
+    public static final String
+            KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_MAXIMUM_DAILY_COUNT_INT =
+                    "carrier_roaming_satellite_upsell_notification_maximum_daily_count_int";
+
+    /**
+     * The maximum number of times in a month that we display the satellite upsell notification. The
+     * carrier can set this key to -1 to remove the maximum monthly limit.
+     *
+     * <p>The default value is 20 times.
+     *
+     * @hide
+     */
+    public static final String
+            KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_MAXIMUM_MONTHLY_COUNT_INT =
+                    "carrier_roaming_satellite_upsell_notification_maximum_monthly_count_int";
+
+    /**
+     * The timeout in seconds for the satellite purchase mode.
+     *
+     * <p>If the user does not complete the purchase within this time, Telephony will exit purchase
+     * mode and tear down the internet connection.
+     *
+     * <p>The default value is 300 seconds (5 minutes).
+     *
+     * @hide
+     */
+    public static final String KEY_CARRIER_ROAMING_SATELLITE_PURCHASE_MODE_TIMEOUT_SEC_INT =
+            "carrier_roaming_satellite_purchase_mode_timeout_sec_int";
+
+    /**
      * Defines the NIDD (Non-IP Data Delivery) APN to be used for carrier roaming to satellite
      * attachment. For more on NIDD, see 3GPP TS 29.542.
      * Note this config is the only source of truth regarding the definition of the APN.
@@ -12128,6 +12213,14 @@ public class CarrierConfigManager {
                 KEY_CARRIER_ROAMING_SATELLITE_T911_TO_ESOS_HANDOVER_SUPPORTED_BOOL, false);
         sDefaults.putBoolean(KEY_SATELLITE_ESOS_SUPPORTED_BOOL, false);
         sDefaults.putBoolean(KEY_SATELLITE_ROAMING_P2P_SMS_SUPPORTED_BOOL, false);
+        sDefaults.putBoolean(KEY_CARRIER_ROAMING_SATELLITE_UPSELL_SUPPORTED_BOOL, false);
+        sDefaults.putInt(KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_HYSTERESIS_SEC_INT, 900);
+        sDefaults.putInt(KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_THROTTLE_HOURS_INT, 24);
+        sDefaults.putInt(
+                KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_MAXIMUM_DAILY_COUNT_INT, 5);
+        sDefaults.putInt(
+                KEY_CARRIER_ROAMING_SATELLITE_UPSELL_NOTIFICATION_MAXIMUM_MONTHLY_COUNT_INT, 20);
+        sDefaults.putInt(KEY_CARRIER_ROAMING_SATELLITE_PURCHASE_MODE_TIMEOUT_SEC_INT, 300);
         sDefaults.putString(KEY_SATELLITE_NIDD_APN_NAME_STRING, "");
         sDefaults.putBoolean(KEY_SATELLITE_ROAMING_TURN_OFF_SESSION_FOR_EMERGENCY_CALL_BOOL, true);
         sDefaults.putInt(KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT, 0);
