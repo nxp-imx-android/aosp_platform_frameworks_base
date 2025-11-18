@@ -30,6 +30,7 @@ import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,6 +44,7 @@ import androidx.fragment.app.DialogFragment;
  */
 public class RequestComputerControlAccessFragment extends DialogFragment {
 
+    private static final String TAG = "ComputerControlAccess";
     private static final String ARG_AGENT_PACKAGE_NAME = "argAgentPackageName";
     private static final String ARG_RESULT_RECEIVER = "argResultReceiver";
     private static final String PREF_COMPUTER_CONTROL_ACCESS_COUNTER =
@@ -81,8 +83,11 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
             mAgentAppIcon = packageManager.getApplicationIcon(appInfo);
             mAgentUid = appInfo.uid;
         } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Failed to open consent dialog because " + mAgentPackageName
+                    + " was not found");
             finish(Activity.RESULT_CANCELED);
         }
+        checkAppOp();
     }
 
     @Override
@@ -111,6 +116,18 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(view);
         return dialog;
+    }
+
+    private void checkAppOp() {
+        AppOpsManager appOpsManager = requireActivity().getSystemService(AppOpsManager.class);
+        int result = appOpsManager.noteOpNoThrow(AppOpsManager.OP_COMPUTER_CONTROL, mAgentUid,
+                mAgentPackageName, null,
+                "Package " + mAgentPackageName + " is requesting computer control access");
+        if (result == AppOpsManager.MODE_IGNORED || result == AppOpsManager.MODE_ERRORED) {
+            Log.w(TAG,
+                    mAgentPackageName + " does not have APP_OP permission to open consent dialog");
+            finish(Activity.RESULT_CANCELED);
+        }
     }
 
     private void finish(int resultCode) {

@@ -209,6 +209,17 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    public void consentDeniedInSettings_sessionNotCreated() throws Exception {
+        when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
+                .thenReturn(AppOpsManager.MODE_IGNORED);
+        mProcessor.processNewSessionRequest(
+                ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback)
+                .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
+    }
+
+    @Test
     public void callerNotAllowListed_throwsException() throws Exception {
         when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any()))
                 .thenReturn(false);
@@ -284,7 +295,7 @@ public class ComputerControlSessionProcessorTest {
     @Test
     public void onSessionPending_consentGranted_sessionCreated() throws Exception {
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
-                .thenReturn(AppOpsManager.MODE_IGNORED);
+                .thenReturn(AppOpsManager.MODE_DEFAULT);
 
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
@@ -301,7 +312,7 @@ public class ComputerControlSessionProcessorTest {
     @Test
     public void onSessionPending_consentDenied_sessionCreationFailed() throws Exception {
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
-                .thenReturn(AppOpsManager.MODE_IGNORED);
+                .thenReturn(AppOpsManager.MODE_DEFAULT);
 
         mProcessor.processNewSessionRequest(
                 ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);

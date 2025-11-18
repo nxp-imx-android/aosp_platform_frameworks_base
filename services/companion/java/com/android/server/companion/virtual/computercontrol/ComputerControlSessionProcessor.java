@@ -128,10 +128,16 @@ public class ComputerControlSessionProcessor {
         validateParams(attributionSource, params);
         startHandlerThreadIfNeeded();
 
-        final int isOpAllowed = mAppOpsManager.noteOpNoThrow(
+        final int opResult = mAppOpsManager.noteOpNoThrow(
                 AppOpsManager.OP_COMPUTER_CONTROL, attributionSource, "create session");
-        if (isOpAllowed == AppOpsManager.MODE_ALLOWED) {
+        if (opResult == AppOpsManager.MODE_ALLOWED) {
             mHandler.post(() -> createSession(attributionSource, params, callback));
+            return;
+        } else if (opResult == AppOpsManager.MODE_IGNORED
+                || opResult == AppOpsManager.MODE_ERRORED) {
+            Slog.w(TAG, "No permission to request computer control session: " + params.getName());
+            dispatchSessionCreationFailed(callback, params,
+                    ComputerControlSession.ERROR_PERMISSION_DENIED);
             return;
         }
 
