@@ -18,6 +18,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.ClockSize
@@ -45,6 +46,7 @@ constructor(
     private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     private val keyguardMediaViewModelFactory: KeyguardMediaViewModel.Factory,
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
+    private val desktopInteractor: DesktopInteractor,
 ) : ExclusiveActivatable() {
     private val hydrator = Hydrator("LockscreenUpperRegionViewModel.hydrator")
     private val keyguardMediaViewModel: KeyguardMediaViewModel by lazy {
@@ -97,6 +99,13 @@ constructor(
 
     val shadeMode: ShadeMode by
         hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
+
+    val useDesktopStatusBar: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "useDesktopStatusBar",
+            initialValue = desktopInteractor.useDesktopStatusBar.value,
+            source = desktopInteractor.useDesktopStatusBar,
+        )
 
     private val forcedClockSize: ClockSize? by
         hydrator.hydratedStateOf(
