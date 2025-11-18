@@ -510,10 +510,13 @@ final class HotwordDetectionConnection {
         }
         DetectorSession trustedSession = getDspTrustedHotwordDetectorSessionLocked();
         if (trustedSession == null) {
-            callback.onError(
+            trustedSession = getSoftwareTrustedHotwordDetectorSessionLocked();
+            if (trustedSession == null) {
+                callback.onError(
                     "Unable to start listening from wearable because the trusted hotword detection"
-                            + " session is not available.");
-            return;
+                        + " session is not available.");
+                return;
+            }
         }
         trustedSession.startListeningFromWearableLocked(
                 audioStream, audioFormat, options, callback);
