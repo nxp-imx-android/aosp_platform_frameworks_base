@@ -740,13 +740,6 @@ flag {
 }
 
 flag {
-    name: "hearing_aids_qs_tile_dialog"
-    namespace: "systemui"
-    description: "Show a dialog when clicking on hearing aids quick settings tile."
-    bug: "291423171"
-}
-
-flag {
    name: "get_connected_device_name_unsynchronized"
    namespace: "systemui"
    description: "Decide whether to fetch the connected bluetooth device name outside a synchronized block."
