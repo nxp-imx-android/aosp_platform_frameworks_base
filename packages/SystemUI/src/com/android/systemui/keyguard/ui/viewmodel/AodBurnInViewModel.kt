@@ -22,6 +22,7 @@ import com.android.app.animation.Interpolators
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.BurnInInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -31,6 +32,7 @@ import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.StateToValue
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlin.math.max
@@ -57,6 +59,7 @@ import kotlinx.coroutines.flow.stateIn
 class AodBurnInViewModel
 @Inject
 constructor(
+    @Background private val bgScope: CoroutineScope,
     @Application private val applicationScope: CoroutineScope,
     private val burnInInteractor: BurnInInteractor,
     @ShadeDisplayAware private val configurationInteractor: ConfigurationInteractor,
@@ -159,7 +162,7 @@ constructor(
                     }
             }
             .stateIn(
-                scope = applicationScope,
+                scope = if (SceneContainerFlag.isEnabled) bgScope else applicationScope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = BurnInModel(),
             )
