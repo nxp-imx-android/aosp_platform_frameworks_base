@@ -383,6 +383,10 @@ private fun ContentScope.StandardLayout(
                 }
             }
         },
+        // This makes the aboveFold area participate in the flexible vertical space
+        // distribution, ensuring the DynamicSpacer within it can shrink when vertical
+        // space is constrained (e.g., by the IME).
+        useWeightedAboveFold = viewModel.authMethodViewModel is PasswordBouncerViewModel,
     )
 }
 
@@ -645,6 +649,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
                     )
                 }
             },
+            useWeightedAboveFold = false,
         )
     }
 }
@@ -700,6 +705,7 @@ private fun FoldAware(
     viewModel: BouncerOverlayContentViewModel,
     aboveFold: @Composable BoxScope.() -> Unit,
     belowFold: @Composable BoxScope.() -> Unit,
+    useWeightedAboveFold: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val foldPosture: FoldPosture by foldPosture()
@@ -721,15 +727,12 @@ private fun FoldAware(
             FoldableScene(
                 aboveFold = aboveFold,
                 belowFold = belowFold,
-                // This makes the aboveFold area participate in the flexible vertical space
-                // distribution, ensuring the DynamicSpacer within it can shrink when vertical
-                // space is constrained (e.g., by the IME).
-                useWeightedLayout = viewModel.authMethodViewModel is PasswordBouncerViewModel,
+                useWeightedAboveFold = useWeightedAboveFold,
             )
         }
 
         scene(SceneKeys.SplitSceneKey) {
-            FoldableScene(aboveFold = aboveFold, belowFold = belowFold, useWeightedLayout = true)
+            FoldableScene(aboveFold = aboveFold, belowFold = belowFold, useWeightedAboveFold = true)
         }
     }
 }
@@ -738,7 +741,7 @@ private fun FoldAware(
 private fun ContentScope.FoldableScene(
     aboveFold: @Composable BoxScope.() -> Unit,
     belowFold: @Composable BoxScope.() -> Unit,
-    useWeightedLayout: Boolean,
+    useWeightedAboveFold: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val splitRatio =
@@ -750,7 +753,7 @@ private fun ContentScope.FoldableScene(
         // Content above the fold, when split on a foldable device in a "table top" posture:
         Box(
             modifier =
-                Modifier.element(SceneElements.AboveFold).thenIf(useWeightedLayout) {
+                Modifier.element(SceneElements.AboveFold).thenIf(useWeightedAboveFold) {
                     Modifier.weight(splitRatio)
                 }
         ) {
@@ -762,7 +765,7 @@ private fun ContentScope.FoldableScene(
             modifier =
                 Modifier.element(SceneElements.BelowFold)
                     .weight(
-                        if (useWeightedLayout) {
+                        if (useWeightedAboveFold) {
                             1 - splitRatio
                         } else {
                             1f
