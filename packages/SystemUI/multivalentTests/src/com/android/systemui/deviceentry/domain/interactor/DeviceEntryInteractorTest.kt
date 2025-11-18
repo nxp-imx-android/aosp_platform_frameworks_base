@@ -379,6 +379,25 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun showOrUnlockDevice_authMethodNotSecure_switchesToGoneSceneWhenOnCommunal() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val backStack by collectLastValue(sceneBackInteractor.backStack)
+            switchToScene(Scenes.Lockscreen)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            switchToScene(Scenes.Communal)
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+            assertThat(backStack!!.asIterable().toList()).isEqualTo(listOf(Scenes.Lockscreen))
+
+            fakeAuthenticationRepository.setAuthenticationMethod(None)
+
+            underTest.attemptDeviceEntry("test")
+
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(backStack!!.asIterable().toList()).isEmpty()
+        }
+
+    @Test
     fun showOrUnlockDevice_dismissActionAnimates_runsTransitionToGone() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
