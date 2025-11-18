@@ -1345,41 +1345,40 @@ static int get_max_packet_size(int ffs_fd) {
 }
 
 static jobjectArray android_server_UsbDeviceManager_getAccessoryStrings(JNIEnv *env,
-                                                                        jobject /* thiz */)
-{
-    int fd = open(DRIVER_NAME, O_RDWR);
-    if (fd < 0) {
-        ALOGE("could not open %s", DRIVER_NAME);
-        return NULL;
+                                                                        jobject /* thiz */) {
+    if (sVendorControlRequestMonitorThread) {
+        jclass stringClass = env->FindClass("java/lang/String");
+        jobjectArray strArray = env->NewObjectArray(6, stringClass, NULL);
+        if (!strArray) return nullptr;
+        set_accessory_string_from_ffs(env, strArray, 0);
+        set_accessory_string_from_ffs(env, strArray, 1);
+        set_accessory_string_from_ffs(env, strArray, 2);
+        set_accessory_string_from_ffs(env, strArray, 3);
+        set_accessory_string_from_ffs(env, strArray, 4);
+        set_accessory_string_from_ffs(env, strArray, 5);
+        return strArray;
+    } else {
+        int fd = open(DRIVER_NAME, O_RDWR);
+        if (fd < 0) {
+            ALOGE("could not open %s", DRIVER_NAME);
+            return NULL;
+        }
+        jclass stringClass = env->FindClass("java/lang/String");
+        jobjectArray strArray = env->NewObjectArray(6, stringClass, NULL);
+        if (!strArray) {
+            close(fd);
+            return NULL;
+        }
+        set_accessory_string(env, fd, ACCESSORY_GET_STRING_MANUFACTURER, strArray, 0);
+        set_accessory_string(env, fd, ACCESSORY_GET_STRING_MODEL, strArray, 1);
+        set_accessory_string(env, fd, ACCESSORY_GET_STRING_DESCRIPTION, strArray, 2);
+        set_accessory_string(env, fd, ACCESSORY_GET_STRING_VERSION, strArray, 3);
+        set_accessory_string(env, fd, ACCESSORY_GET_STRING_URI, strArray, 4);
+        set_accessory_string(env, fd, ACCESSORY_GET_STRING_SERIAL, strArray, 5);
+
+        close(fd);
+        return strArray;
     }
-    jclass stringClass = env->FindClass("java/lang/String");
-    jobjectArray strArray = env->NewObjectArray(6, stringClass, NULL);
-    if (!strArray) goto out;
-    set_accessory_string(env, fd, ACCESSORY_GET_STRING_MANUFACTURER, strArray, 0);
-    set_accessory_string(env, fd, ACCESSORY_GET_STRING_MODEL, strArray, 1);
-    set_accessory_string(env, fd, ACCESSORY_GET_STRING_DESCRIPTION, strArray, 2);
-    set_accessory_string(env, fd, ACCESSORY_GET_STRING_VERSION, strArray, 3);
-    set_accessory_string(env, fd, ACCESSORY_GET_STRING_URI, strArray, 4);
-    set_accessory_string(env, fd, ACCESSORY_GET_STRING_SERIAL, strArray, 5);
-
-out:
-    close(fd);
-    return strArray;
-}
-
-static jobjectArray android_server_UsbDeviceManager_getAccessoryStringsFromFfs(JNIEnv *env,
-                                                                        jobject /* thiz */)
-{
-    jclass stringClass = env->FindClass("java/lang/String");
-    jobjectArray strArray = env->NewObjectArray(6, stringClass, NULL);
-    if (!strArray) return nullptr;
-    set_accessory_string_from_ffs(env, strArray, 0);
-    set_accessory_string_from_ffs(env, strArray, 1);
-    set_accessory_string_from_ffs(env, strArray, 2);
-    set_accessory_string_from_ffs(env, strArray, 3);
-    set_accessory_string_from_ffs(env, strArray, 4);
-    set_accessory_string_from_ffs(env, strArray, 5);
-    return strArray;
 }
 
 static jint android_server_UsbDeviceManager_getMaxPacketSize(JNIEnv * /* env */,
@@ -1671,8 +1670,6 @@ static jstring android_server_UsbDeviceManager_waitAndGetProperty(JNIEnv *env, j
 static const JNINativeMethod method_table[] = {
         {"nativeGetAccessoryStrings", "()[Ljava/lang/String;",
          (void *)android_server_UsbDeviceManager_getAccessoryStrings},
-        {"nativeGetAccessoryStringsFromFfs", "()[Ljava/lang/String;",
-         (void *)android_server_UsbDeviceManager_getAccessoryStringsFromFfs},
         {"nativeGetMaxPacketSize", "()I", (void *)android_server_UsbDeviceManager_getMaxPacketSize},
         {"nativeOpenAccessory", "()Landroid/os/ParcelFileDescriptor;",
          (void *)android_server_UsbDeviceManager_openAccessory},
