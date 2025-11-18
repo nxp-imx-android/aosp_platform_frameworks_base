@@ -83,9 +83,10 @@ abstract class AbstractHsumBootUserInitializerConstructorHelpersTestCase {
         when(mMockResources.getBoolean(R.bool.config_isMainUserPermanentAdmin)).thenReturn(value);
     }
 
-    protected final void mockConfigCreateInitialUser(boolean value) {
-        Log.v(mTag, "mockConfigCreateInitialUser(" + value + ")");
-        when(mMockResources.getBoolean(R.bool.config_createInitialUser)).thenReturn(value);
+    protected final void mockConfigCreateInitialAdminUserOnHsum(boolean value) {
+        Log.v(mTag, "mockConfigCreateInitialAdminUserOnHsum(" + value + ")");
+        when(mMockResources.getBoolean(R.bool.config_createInitialAdminUserOnHsum))
+            .thenReturn(value);
     }
 
     protected final void mockIsDebuggable(boolean value) {

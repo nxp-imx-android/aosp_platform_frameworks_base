@@ -3329,10 +3329,12 @@
     -->
     <bool name="config_supportProfilesOnNonMainUser">false</bool>
 
-    <!-- Whether the system should create the initial full user on boot.
-         Notice that if config_isMainUserPermanentAdmin is true, this config is
-         ignored (as the initial user is the main user). -->
-    <bool name="config_createInitialUser">false</bool>
+    <!-- Whether to automatically create a full Admin user on boot if none currently exists.
+         If false, the system will not automatically create an initial secondary user.
+         This config is only relevant on Headless System User Mode (HSUM) devices.
+         Note that if config_isMainUserPermanentAdmin is true, then this config is
+         ignored, since an initial Admin MainUser will necessarily be created regardless. -->
+    <bool name="config_createInitialAdminUserOnHsum">true</bool>
 
     <!-- Whether the system should "designate" the main user on boot:
          - If it's true and the device doesn't have a main user (meaning it's the first boot or it
