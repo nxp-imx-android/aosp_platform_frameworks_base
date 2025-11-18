@@ -12243,6 +12243,63 @@ public final class Settings {
                 "on_device_inference_unbind_timeout_ms";
 
         /**
+         * Timeout to be used for unbinding to the configured remote
+         * {@link android.service.contentsafety.ContentSafetyService} if there are no
+         * requests in the queue. A value of -1 represents to never unbind.
+         *
+         * @hide
+         */
+        public static final String CONTENT_SAFETY_UNBIND_TIMEOUT_MS =
+                "content_safety_unbind_timeout_ms";
+
+
+        /**
+         * Timeout that represents maximum idle time before which a callback should be populated.
+         *
+         * @hide
+         */
+        public static final String CONTENT_SAFETY_IDLE_TIMEOUT_MS =
+                "content_safety_idle_timeout_ms";
+
+
+        /**
+         * Timeout that represents maximum idle time before which a callback should be populated.
+         *
+         * @hide
+         */
+        public static final String CONTENT_SAFETY_SETTINGS_IDLE_TIMEOUT_MS =
+                "content_safety_settings_idle_timeout_ms";
+
+
+        /**
+         * Timeout that represents maximum idle time before which a callback should be populated.
+         *
+         * @hide
+         */
+        public static final String CONTENT_SAFETY_SANDBOXED_IDLE_TIMEOUT_MS =
+                "content_safety_sandboxed_idle_timeout_ms";
+
+        /**
+         * Timeout to be used for unbinding to the configured remote
+         * {@link android.service.contentsafety.ContentSafetySandboxedService} if there
+         * are no requests in the queue. A value of -1 represents to never unbind.
+         *
+         * @hide
+         */
+        public static final String CONTENT_SAFETY_SANDBOXED_UNBIND_TIMEOUT_MS =
+                "content_safety_sandboxed_unbind_timeout_ms";
+
+        /**
+         * Timeout to be used for unbinding to the configured remote
+         * {@link android.service.contentsafety.ContentSafetySettingsService} if there
+         * are no requests in the queue. A value of -1 represents to never unbind.
+         *
+         * @hide
+         */
+        public static final String CONTENT_SAFETY_SETTINGS_UNBIND_TIMEOUT_MS =
+                "content_safety_settings_unbind_timeout_ms";
+
+        /**
          * Control whether Night display is currently activated.
          * @hide
          */

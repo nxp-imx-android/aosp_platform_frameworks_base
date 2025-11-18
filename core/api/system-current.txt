@@ -97,6 +97,7 @@ package android {
     field public static final String BIND_RUNTIME_PERMISSION_PRESENTER_SERVICE = "android.permission.BIND_RUNTIME_PERMISSION_PRESENTER_SERVICE";
     field @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public static final String BIND_SANDBOXED_CONTENT_SAFETY_SERVICE = "android.permission.BIND_SANDBOXED_CONTENT_SAFETY_SERVICE";
     field public static final String BIND_SATELLITE_SERVICE = "android.permission.BIND_SATELLITE_SERVICE";
+    field @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public static final String BIND_SETTINGS_CONTENT_SAFETY_SERVICE = "android.permission.BIND_SETTINGS_CONTENT_SAFETY_SERVICE";
     field public static final String BIND_SETTINGS_SUGGESTIONS_SERVICE = "android.permission.BIND_SETTINGS_SUGGESTIONS_SERVICE";
     field public static final String BIND_SOUND_TRIGGER_DETECTION_SERVICE = "android.permission.BIND_SOUND_TRIGGER_DETECTION_SERVICE";
     field @FlaggedApi("android.permission.flags.supervision_role_enabled") public static final String BIND_SUPERVISION_APP_SERVICE = "android.permission.BIND_SUPERVISION_APP_SERVICE";

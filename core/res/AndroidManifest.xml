@@ -9179,33 +9179,46 @@
     <permission android:name="android.permission.MANAGE_WEARABLE_SENSING_SERVICE"
                 android:protectionLevel="signature|privileged" />
 
-    <!-- @SystemApi Allows an app to call APIs provided by the content safety service.
+    <!-- Allows an app to call APIs provided by the content safety service.
              <p>Protection level: signature|privileged
              @SystemApi
              @hide
              @FlaggedApi(android.app.contentsafety.flags.Flags.FLAG_ENABLE_CONTENTSAFETY)
         -->
     <permission android:name="android.permission.CHECK_CONTENT_SAFETY"
-        android:protectionLevel="signature|privileged" />
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.app.contentsafety.flags.enable_contentsafety"/>
 
 
-    <!-- @SystemApi Allows an app to bind to the content safety service.
+    <!-- Ensures only the platform can bind to the content safety service.
              <p>Protection level: signature
              @SystemApi
              @hide
              @FlaggedApi(android.app.contentsafety.flags.Flags.FLAG_ENABLE_CONTENTSAFETY)
         -->
     <permission android:name="android.permission.BIND_CONTENT_SAFETY_SERVICE"
-        android:protectionLevel="signature" />
+        android:protectionLevel="signature"
+        android:featureFlag="android.app.contentsafety.flags.enable_contentsafety"/>
 
-    <!-- @SystemApi Allows an app to bind to the sandboxed content safety service.
+    <!-- Ensures only the platform can bind to the sandboxed content safety service.
              <p>Protection level: signature
              @SystemApi
              @hide
              @FlaggedApi(android.app.contentsafety.flags.Flags.FLAG_ENABLE_CONTENTSAFETY)
         -->
     <permission android:name="android.permission.BIND_SANDBOXED_CONTENT_SAFETY_SERVICE"
-        android:protectionLevel="signature" />
+        android:protectionLevel="signature"
+        android:featureFlag="android.app.contentsafety.flags.enable_contentsafety"/>
+
+    <!-- Ensures only the platform can bind to the content safety settings service.
+             <p>Protection level: signature
+             @SystemApi
+             @hide
+             @FlaggedApi(android.app.contentsafety.flags.Flags.FLAG_ENABLE_CONTENTSAFETY)
+        -->
+    <permission android:name="android.permission.BIND_SETTINGS_CONTENT_SAFETY_SERVICE"
+        android:protectionLevel="signature"
+        android:featureFlag="android.app.contentsafety.flags.enable_contentsafety"/>
 
     <!-- @SystemApi Allows an app to use the on-device intelligence service.
              <p>Protection level: signature|privileged
@@ -9221,7 +9234,6 @@
         -->
     <permission android:name="android.permission.BIND_ON_DEVICE_INTELLIGENCE_SERVICE"
         android:protectionLevel="signature|privileged" />
-
 
     <!-- @SystemApi Allows an app to bind the on-device sandboxed service.
              <p>Protection level: signature|privileged
