@@ -117,26 +117,19 @@ public class KeyguardSecurityModel {
             return SecurityMode.SimPin;
         }
 
-        final int security = whitelistIpcs(() ->
-                mLockPatternUtils.getActivePasswordQuality(userId));
-        switch (security) {
-            case DevicePolicyManager.PASSWORD_QUALITY_NUMERIC:
-            case DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX:
+        final int credentialType = whitelistIpcs(() ->
+                mLockPatternUtils.getCredentialTypeForUser(userId));
+        switch (credentialType) {
+            case LockPatternUtils.CREDENTIAL_TYPE_PIN:
                 return SecurityMode.PIN;
-
-            case DevicePolicyManager.PASSWORD_QUALITY_ALPHABETIC:
-            case DevicePolicyManager.PASSWORD_QUALITY_ALPHANUMERIC:
-            case DevicePolicyManager.PASSWORD_QUALITY_COMPLEX:
-            case DevicePolicyManager.PASSWORD_QUALITY_MANAGED:
+            case LockPatternUtils.CREDENTIAL_TYPE_PASSWORD:
                 return SecurityMode.Password;
-
-            case DevicePolicyManager.PASSWORD_QUALITY_SOMETHING:
+            case LockPatternUtils.CREDENTIAL_TYPE_PATTERN:
                 return SecurityMode.Pattern;
-            case DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED:
+            case LockPatternUtils.CREDENTIAL_TYPE_NONE:
                 return SecurityMode.None;
-
             default:
-                throw new IllegalStateException("Unknown security quality:" + security);
+                throw new IllegalStateException("Unknown credential type:" + credentialType);
         }
     }
 }
