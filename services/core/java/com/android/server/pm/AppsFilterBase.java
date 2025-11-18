@@ -347,7 +347,7 @@ public abstract class AppsFilterBase implements AppsFilterSnapshot {
                 return !isForceQueryable(targetPkgSetting.getAppId())
                         && !isImplicitlyQueryable(callingUid, targetUid)
                         && !isQueryableBySdkSandbox(callingUid, targetUid);
-            } else if (Process.isPccUid(callingAppId)) {
+            } else if (Process.isPrivateComputeCoreUid(callingAppId)) {
                 final int targetPccId = targetPkgSetting.getPccId();
                 // If the calling app is a PCC UID, it is allowed to query its own
                 // package; we can see that easily by just comparing the pcc UID of

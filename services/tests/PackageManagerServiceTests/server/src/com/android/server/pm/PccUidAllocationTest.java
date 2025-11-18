@@ -107,7 +107,7 @@ public class PccUidAllocationTest {
         try {
             ApplicationInfo appInfo = mPackageManager.getApplicationInfo(TEST_PKG_NAME, 0);
             assertTrue("PCC UID for PCC package should be in the PCC range.",
-                    Process.isPccUid(appInfo.pccUid));
+                    Process.isPrivateComputeCoreUid(appInfo.pccUid));
         } catch (PackageManager.NameNotFoundException e) {
             fail("Test package not found: " + e.getMessage());
         }
@@ -120,7 +120,7 @@ public class PccUidAllocationTest {
             ApplicationInfo appInfo = mPackageManager.getApplicationInfo(TEST_PKG_NAME, 0);
             assertEquals(Process.INVALID_UID, appInfo.pccUid);
             assertFalse("PCC UID should not be assigned if PCC flag disabled",
-                    Process.isPccUid(appInfo.pccUid));
+                    Process.isPrivateComputeCoreUid(appInfo.pccUid));
         } catch (PackageManager.NameNotFoundException e) {
             fail("Test package not found: " + e.getMessage());
         }
@@ -132,7 +132,7 @@ public class PccUidAllocationTest {
         try {
             ApplicationInfo appInfo = mPackageManager.getApplicationInfo(TEST_PKG_NAME, 0);
             assertTrue("PCC UID for PCC package should be in the PCC range.",
-                    Process.isPccUid(appInfo.pccUid));
+                    Process.isPrivateComputeCoreUid(appInfo.pccUid));
         } catch (PackageManager.NameNotFoundException e) {
             fail("Test package not found: " + e.getMessage());
         }
@@ -143,7 +143,7 @@ public class PccUidAllocationTest {
             ApplicationInfo appInfo = mPackageManager.getApplicationInfo(TEST_PKG_NAME, 0);
             assertEquals(Process.INVALID_UID, appInfo.pccUid);
             assertFalse("PCC UID should not be assigned if no PCC components are present",
-                    Process.isPccUid(appInfo.pccUid));
+                    Process.isPrivateComputeCoreUid(appInfo.pccUid));
         } catch (PackageManager.NameNotFoundException e) {
             fail("Test package not found: " + e.getMessage());
         }

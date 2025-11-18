@@ -6740,9 +6740,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
 
         @Override
-        public int getAppUidForPccUid(int pccUid) {
+        public int getAppUidForPrivateComputeCoreUid(int pccUid) {
             final int callerUid = Binder.getCallingUid();
-            if (!Process.isPccUid(pccUid)) {
+            if (!Process.isPrivateComputeCoreUid(pccUid)) {
                 return Process.INVALID_UID;
             }
 
@@ -7313,7 +7313,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
             Computer snapshot = snapshot();
             int uid = snapshot.getPackageUid(packageName, flags, userId,
-                    Process.isPccUid(callingUid));
+                    Process.isPrivateComputeCoreUid(callingUid));
             return UserHandle.isSameApp(uid, callingUid);
         }
 

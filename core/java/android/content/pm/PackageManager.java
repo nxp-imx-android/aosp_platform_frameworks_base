@@ -12338,8 +12338,8 @@ public abstract class PackageManager {
      *         provided UID is not a valid PCC UID or no mapping exists.
      */
     @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    public int getAppUidForPccUid(int pccUid) {
+    public int getAppUidForPrivateComputeCoreUid(int pccUid) {
         throw new UnsupportedOperationException(
-                "getAppUidForPccUid not implemented in subclass");
+                "getAppUidForPrivateComputeCoreUid not implemented in subclass");
     }
 }

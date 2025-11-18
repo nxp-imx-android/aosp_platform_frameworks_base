@@ -14706,7 +14706,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             final boolean runInPccSandbox = (flags & ActivityManager.INSTR_FLAG_RUN_IN_PCC) != 0;
             final int uid = runInPccSandbox ? ai.pccUid : ai.uid;
-            if (runInPccSandbox && !Process.isPccUid(uid)) {
+            if (runInPccSandbox && !Process.isPrivateComputeCoreUid(uid)) {
                 reportStartInstrumentationFailureLocked(watcher, className,
                         "Instrumentation target " + ii.targetPackage
                                 + " does not have a valid PCC uid.");
@@ -15038,7 +15038,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             } else if (!instr.mNoRestart) {
                 final int appIdToKill =
-                        Process.isPccUid(app.uid) ? UserHandle.getAppId(app.uid) : -1;
+                        Process.isPrivateComputeCoreUid(app.uid)
+                            ? UserHandle.getAppId(app.uid) : -1;
                 forceStopPackageLocked(app.info.packageName, appIdToKill, false, false, true, true,
                         false, false, app.userId, "finished inst");
             }
