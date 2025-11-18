@@ -288,8 +288,7 @@ constructor(
                                     falsingSystem.runIfNotFalseTap(
                                         FalsingManager.MODERATE_PENALTY
                                     ) {
-                                        // TODO(b/397989775): tell the UI to show the output
-                                        // switcher.
+                                        session.outputDevice.onClick(null)
                                     }
                                 },
                             )

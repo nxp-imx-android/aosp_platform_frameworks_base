@@ -23,5 +23,5 @@ data class MediaOutputDeviceModel(
     val name: String,
     val icon: Icon,
     val isInProgress: Boolean,
-    val onClick: (Expandable) -> Unit,
+    val onClick: (Expandable?) -> Unit,
 )

@@ -334,20 +334,20 @@ constructor(
         return false
     }
 
-    private fun startOutputSwitcherClick(dataModel: MediaDataModel, expandable: Expandable) {
+    private fun startOutputSwitcherClick(dataModel: MediaDataModel, expandable: Expandable?) {
         dataModel.outputDevice?.intent?.let { startDeviceIntent(dataModel.instanceId, it) }
             ?: startMediaOutputDialog(expandable, dataModel.packageName, dataModel.token)
     }
 
     private fun startMediaOutputDialog(
-        expandable: Expandable,
+        expandable: Expandable?,
         packageName: String,
         token: MediaSession.Token? = null,
     ) {
         mediaOutputDialogManager.createAndShowWithController(
             packageName,
             true,
-            expandable.dialogController(),
+            expandable?.dialogController(),
             token = token,
         )
     }
