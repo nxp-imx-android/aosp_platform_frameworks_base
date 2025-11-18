@@ -253,3 +253,11 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "apk_pqc_hybrid_signing"
+    namespace: "hardware_backed_security"
+    description: "Enable support for ML-DSA hybrid signing / verification of APKs"
+    bug: "458115629"
+}
+
