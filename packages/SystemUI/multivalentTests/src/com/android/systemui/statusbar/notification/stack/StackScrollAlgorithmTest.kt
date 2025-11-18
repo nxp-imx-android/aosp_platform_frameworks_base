@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
 import com.android.keyguard.BouncerPanelExpansionCalculator.aboutToShowBouncerProgress
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ShadeInterpolation.getContentAlpha
 import com.android.systemui.dump.DumpManager
@@ -117,8 +116,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(Flags.FLAG_NOTIFICATION_FIX_HUN_SHADOWS)
-                .andSceneContainer()
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
         }
     }
 
