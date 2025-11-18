@@ -78,13 +78,14 @@ public final class CameraConfiguration {
     /**
      * Set the current session parameters map.
      *
-     * @param params Capture request key value map of all client session parameters.
-     *               OEM can choose to apply those that are appropriate for the
-     *               specific extension.
+     * @param sessionCaptureParams Capture request key value map of all client session parameters.
+     *                             OEM can choose to apply those that are appropriate for the
+     *                             specific extension.
      */
     @FlaggedApi(Flags.FLAG_VENDOR_DEFINED_CAMERA_EXTENSIONS)
-    public void setSessionParameters(@NonNull Map<CaptureRequest.Key<?>, Object> params) {
-        mSessionParams = params;
+    public void setSessionWideParams(
+            @NonNull Map<CaptureRequest.Key<?>, Object> sessionCaptureParams) {
+        mSessionParams = sessionCaptureParams;
     }
 
     /**
@@ -92,7 +93,7 @@ public final class CameraConfiguration {
      */
     @FlaggedApi(Flags.FLAG_VENDOR_DEFINED_CAMERA_EXTENSIONS)
     @NonNull
-    public Map<CaptureRequest.Key<?>, Object> getSessionParams() {
+    public Map<CaptureRequest.Key<?>, Object> getSessionWideParams() {
         return mSessionParams;
     }
 }
