@@ -145,6 +145,7 @@ constructor(
             key = key,
             appName = appName,
             packageName = packageName,
+            componentName = contentIntent?.intent?.component,
             statusBarChipIconView = statusBarChipIconView,
             promotedContent = promotedContent,
             creationTime = creationTime,
