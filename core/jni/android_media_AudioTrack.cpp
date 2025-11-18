@@ -952,6 +952,17 @@ static jint android_media_AudioTrack_get_pos_update_period(JNIEnv *env,  jobject
     return (jint)period;
 }
 
+// ----------------------------------------------------------------------------
+static jlong android_media_AudioTrack_get_written_frames_count(JNIEnv *env, jobject thiz) {
+    sp<AudioTrack> lpTrack = getAudioTrack(env, thiz);
+
+    if (lpTrack == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException",
+                          "Unable to retrieve AudioTrack pointer for getWrittenFramesCount()");
+        return (jlong)AUDIO_JAVA_ERROR;
+    }
+    return (jlong)lpTrack->getWrittenFramesCount();
+}
 
 // ----------------------------------------------------------------------------
 static jint android_media_AudioTrack_set_position(JNIEnv *env,  jobject thiz,
@@ -1506,6 +1517,8 @@ static const JNINativeMethod gMethods[] = {
          (void *)android_media_AudioTrack_set_pos_update_period},
         {"native_get_pos_update_period", "()I",
          (void *)android_media_AudioTrack_get_pos_update_period},
+        {"native_get_written_frames_count", "()J",
+         (void *)android_media_AudioTrack_get_written_frames_count},
         {"native_set_position", "(I)I", (void *)android_media_AudioTrack_set_position},
         {"native_get_position", "()I", (void *)android_media_AudioTrack_get_position},
         {"native_get_latency", "()I", (void *)android_media_AudioTrack_get_latency},
