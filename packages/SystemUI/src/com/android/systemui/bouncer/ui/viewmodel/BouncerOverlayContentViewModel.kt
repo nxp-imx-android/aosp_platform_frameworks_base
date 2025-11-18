@@ -486,6 +486,13 @@ constructor(
         }
     }
 
+    /*
+     * Notifies that the user switcher dropdown was clicked or dismissed.
+     */
+    fun onUserSwitcherDropdown() {
+        bouncerInteractor.onIntentionalUserInput()
+    }
+
     /**
      * Notifies that a key event has occurred.
      *
@@ -498,6 +505,7 @@ constructor(
     }
 
     fun onActionButtonClicked(actionButtonModel: BouncerActionButtonModel) {
+        onIntentionalUserInput()
         when (actionButtonModel) {
             is BouncerActionButtonModel.EmergencyButtonModel -> {
                 bouncerHapticPlayer.playEmergencyButtonClickFeedback()
