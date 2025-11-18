@@ -475,9 +475,10 @@ public class BubblesTest extends SysuiTestCase {
         mPositioner.setMaxBubbles(5);
         mBubbleData = new BubbleData(mContext, mBubbleLogger, mPositioner, mEducationController,
                 syncExecutor, syncExecutor);
-
-        when(mUserManager.getProfiles(ActivityManager.getCurrentUser())).thenReturn(
-                Collections.singletonList(mock(UserInfo.class)));
+        int currentUserId = ActivityManager.getCurrentUser();
+        UserInfo currentUserInfo = createUserInfo(currentUserId);
+        when(mUserManager.getProfiles(currentUserId)).thenReturn(
+                Collections.singletonList(currentUserInfo));
 
         final FakeGlobalSettings fakeGlobalSettings = new FakeGlobalSettings();
         fakeGlobalSettings.putInt(HEADS_UP_NOTIFICATIONS_ENABLED, HEADS_UP_ON);
@@ -2889,7 +2890,7 @@ public class BubblesTest extends SysuiTestCase {
         when(mLockscreenUserManager.isCurrentProfile(anyInt())).thenAnswer(
                 (Answer<Boolean>) invocation -> invocation.<Integer>getArgument(0) == userId);
         SparseArray<UserInfo> userInfos = new SparseArray<>(1);
-        userInfos.put(userId, mock(UserInfo.class));
+        userInfos.put(userId, createUserInfo(userId));
         mBubbleController.onCurrentProfilesChanged(userInfos);
         mBubbleController.onUserChanged(userId);
     }
@@ -2898,6 +2899,13 @@ public class BubblesTest extends SysuiTestCase {
         UserHandle user = mock(UserHandle.class);
         when(user.getIdentifier()).thenReturn(userId);
         return user;
+    }
+
+    private UserInfo createUserInfo(int userId) {
+        UserInfo userInfo = mock(UserInfo.class);
+        UserHandle userHandle = createUserHandle(userId);
+        when(userInfo.getUserHandle()).thenReturn(userHandle);
+        return userInfo;
     }
 
     /**
