@@ -111,7 +111,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     @Before
     public void setUp() throws Exception {
         allowTestableLooperAsMainThread();
-        mFeatureFlags.set(Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE, false);
         mKosmos = new KosmosJavaAdapter(this);
 
         mKosmos.getGroupExpansionManager().registerGroupExpansionChangeListener(

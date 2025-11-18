@@ -243,13 +243,6 @@ object Flags {
 
     // 2700 - unfold transitions
 
-    // TODO(b/316157842): Tracking Bug
-    // Adds extra delay to notifications measure
-    @Keep
-    @JvmField
-    val ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE =
-        unreleasedFlag("enable_notifications_simulate_slow_measure")
-
     // TODO(b259590361): Tracking bug
     val EXPERIMENTAL_FLAG = unreleasedFlag("exp_flag_release")
 
