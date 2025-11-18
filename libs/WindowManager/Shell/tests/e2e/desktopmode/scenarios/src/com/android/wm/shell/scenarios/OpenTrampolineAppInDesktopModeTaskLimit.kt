@@ -30,6 +30,7 @@ import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions
 import com.android.window.flags.Flags
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -44,6 +45,7 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
+    private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
 
     private val mailAppHelper = MailAppHelper(instrumentation)
     private val mailAppDesktopHelper = DesktopModeAppHelper(mailAppHelper)
@@ -59,6 +61,7 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(
 
     @Before
     fun setup() {
+        Assume.assumeTrue(desktopConfig.maxTaskLimit > 0)
         Assume.assumeTrue(Flags.enableDesktopTaskLimitSeparateTransition())
         mailAppDesktopHelper.enterDesktopMode(wmHelper, device)
         calculatorHelper.launchViaIntent(wmHelper)
