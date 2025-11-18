@@ -19,7 +19,7 @@ in SystemUI. Many of the methods have an empty default implementation and are op
 implementations if the related event is not interesting to your use case.
 
 [DefaultClockProvider](../customization/src/com/android/systemui/shared/clocks/DefaultClockProvider.kt) and
-[FlexClockController](../customization/src/com/android/systemui/shared/clocks/FlexClockController.kt)
+[FlexClockController](../customization/src/com/android/systemui/shared/clocks/controller/FlexClockController.kt)
 implement these interfaces for the default lockscreen clock. They handle relevant events from the
 lockscreen to update and control the small and large clock view as appropriate. They forward events
 to [FlexClockTextView](../customization/src/com/android/systemui/shared/clocks/view/FlexClockTextView.kt)

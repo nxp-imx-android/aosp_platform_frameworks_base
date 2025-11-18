@@ -63,7 +63,7 @@ import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-interface DigitalClockViewAdapter {
+interface IDigitalClockView {
     val maxSize: VPointF
     var dozeFraction: Float
 
@@ -75,14 +75,14 @@ interface DigitalClockViewAdapter {
     fun requestLayout()
 }
 
-interface DigitalClockTextViewAdapter : DigitalClockViewAdapter {
+interface IDigitalClockTextView : IDigitalClockView {
     var text: String
 
     fun refreshText()
 }
 
 abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
-    TextView(clockCtx.context), DigitalClockTextViewAdapter {
+    TextView(clockCtx.context), IDigitalClockTextView {
     val lockscreenPaint = TextPaint()
     private var textStyle: FontTextStyle = FontTextStyleImpl()
     private var aodStyle: FontTextStyle = FontTextStyleImpl()
@@ -202,10 +202,8 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
         if (clockFidgetAnimation() && evt.action == MotionEvent.ACTION_DOWN) {
             val pt = VPointF(evt.x, evt.y)
-            return (parent as? DigitalClockViewGroupAdapter)?.animateFidget(
-                pt,
-                enforceBounds = false,
-            ) ?: animateFidget(pt, enforceBounds = false)
+            return (parent as? IDigitalClockViewGroup)?.animateFidget(pt, enforceBounds = false)
+                ?: animateFidget(pt, enforceBounds = false)
         }
 
         return false
@@ -322,7 +320,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
             drawnProgress = interpProgress
             val measureSize = computeMeasuredSize(interpBounds)
             setInterpolatedSize(measureSize)
-            (parent as? DigitalClockViewGroupAdapter)?.run {
+            (parent as? IDigitalClockViewGroup)?.run {
                 updateMeasuredSize()
                 updateLocation()
             } ?: setInterpolatedLocation(measureSize)
@@ -375,7 +373,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
     override fun invalidate() {
         logger.invalidate()
         super.invalidate()
-        (parent as? DigitalClockViewGroupAdapter)?.invalidate()
+        (parent as? IDigitalClockViewGroup)?.invalidate()
     }
 
     fun refreshTime() {
@@ -411,7 +409,7 @@ abstract class DigitalClockTextView(private val clockCtx: ClockContext) :
 
         if (!isAnimated) {
             requestLayout()
-            (parent as? DigitalClockViewGroupAdapter)?.requestLayout()
+            (parent as? IDigitalClockViewGroup)?.requestLayout()
         }
     }
 

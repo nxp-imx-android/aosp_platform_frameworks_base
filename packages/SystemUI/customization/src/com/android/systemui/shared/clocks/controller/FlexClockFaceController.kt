@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.shared.clocks.controller
 
 import android.icu.util.TimeZone
 import android.view.Gravity
@@ -28,7 +28,6 @@ import com.android.app.animation.Interpolators
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.clocks.ClockLogger
-import com.android.systemui.customization.clocks.DefaultClockFaceLayout
 import com.android.systemui.customization.clocks.DigitalTimeFormatter
 import com.android.systemui.customization.clocks.DigitalTimespec
 import com.android.systemui.customization.clocks.FontTextStyleImpl
@@ -37,6 +36,7 @@ import com.android.systemui.customization.clocks.utils.FontUtils.get
 import com.android.systemui.customization.clocks.utils.FontUtils.set
 import com.android.systemui.customization.clocks.utils.ViewUtils.computeLayoutDiff
 import com.android.systemui.customization.clocks.utils.ViewUtils.translation
+import com.android.systemui.customization.clocks.view.DefaultClockFaceLayout
 import com.android.systemui.customization.clocks.view.DigitalAlignment
 import com.android.systemui.customization.clocks.view.HorizontalAlignment
 import com.android.systemui.customization.clocks.view.VerticalAlignment
@@ -58,7 +58,8 @@ import com.android.systemui.plugins.keyguard.ui.clocks.ClockPositionAnimationArg
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
 import com.android.systemui.plugins.keyguard.ui.clocks.ThemeConfig
 import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
-import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
+import com.android.systemui.shared.clocks.FlexClockContext
+import com.android.systemui.shared.clocks.controller.FlexClockController.Companion.getDefaultAxes
 import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.util.Locale
 import kotlin.math.ceil

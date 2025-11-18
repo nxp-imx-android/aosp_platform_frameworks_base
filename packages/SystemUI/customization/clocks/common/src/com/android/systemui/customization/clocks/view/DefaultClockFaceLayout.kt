@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.customization.clocks
+package com.android.systemui.customization.clocks.view
 
 import android.content.Context
 import android.util.DisplayMetrics
