@@ -231,6 +231,7 @@ class HostStubGenClassProcessor(
                 options.partiallyAllowedAnnotations,
                 options.keepStaticInitializerAnnotations,
                 annotationAllowedPredicate,
+                options.ensureOutermostClassAnnotation.get,
                 filter
             )
             filter = annotFilter
