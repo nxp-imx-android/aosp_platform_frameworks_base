@@ -21,7 +21,6 @@ import static android.app.ActivityManager.UID_OBSERVER_GONE;
 import static android.os.Process.SYSTEM_UID;
 
 import static com.android.server.flags.Flags.pinGlobalQuota;
-import static com.android.server.flags.Flags.pinWebview;
 
 import android.annotation.EnforcePermission;
 import android.annotation.IntDef;
@@ -486,9 +485,6 @@ public final class PinnerService extends SystemService {
     }
 
     public int getWebviewPinQuota() {
-        if (!pinWebview()) {
-            return 0;
-        }
         int quota = mConfiguredWebviewPinBytes;
         int overrideQuota = SystemProperties.getInt("pinner.pin_webview_size", -1);
         if (overrideQuota != -1) {
