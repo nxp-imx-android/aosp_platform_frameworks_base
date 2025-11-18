@@ -68,6 +68,12 @@ internal constructor(
     @HighlightsHeader private val highlightsHeaderController: SectionHeaderController,
 ) : SectionProvider {
 
+    private val groupingDisabledBuckets =
+        buildSet<Int> {
+            if (android.app.Flags.richOngoingImprovements()) {
+                add(BUCKET_FOREGROUND_SERVICE)
+            }
+        }
     private val configurationListener =
         object : ConfigurationController.ConfigurationListener {
             override fun onLocaleListChanged() {
@@ -169,6 +175,10 @@ internal constructor(
         if (NmHighlights.isEnabled) {
             highlightsHeaderController.reinflateView(parent)
         }
+    }
+
+    override fun isGroupingDisabled(view: View): Boolean {
+        return getBucket(view) in groupingDisabledBuckets
     }
 
     override fun beginsSection(view: View, previous: View?): Boolean =
@@ -302,6 +312,16 @@ internal constructor(
             noMoreLastChild.requestBottomRoundness(0f, SECTION)
         }
 
+        if (android.app.Flags.richOngoingImprovements()) {
+            for (child in children) {
+                if (isGroupingDisabled(child)) {
+                    child.requestRoundness(1f, 1f, GROUPING_DISABLED_SECTION)
+                } else {
+                    child.requestRoundness(0f, 0f, GROUPING_DISABLED_SECTION)
+                }
+            }
+        }
+
         if (DEBUG) {
             logSections(sections)
         }
@@ -366,5 +386,6 @@ internal constructor(
         private const val TAG = "NotifSectionsManager"
         private const val DEBUG = false
         private val SECTION = SourceType.from("Section")
+        private val GROUPING_DISABLED_SECTION = SourceType.from("Grouping Disabled Section")
     }
 }
