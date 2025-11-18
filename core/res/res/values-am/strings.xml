@@ -824,10 +824,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"መተግበሪያው ከእርስዎ የተጋራ ማከማቻ የቪዲዮ ፋይሎችን እንዲያነብ ይፈቅድለታል።"</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"ከጋራ ማከማቻ የምስል ፋይሎችን አንብብ"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"መተግበሪያው ከእርስዎ የተጋራ ማከማቻ የምስል ፋይሎችን እንዲያነብ ይፈቅድለታል።"</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"የሰነድ ፋይሎችን ከተጋራ ማከማቻ ያንብቡ"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"መተግበሪያው ከእርስዎ የተጋራ ማከማቻ የሰነድ ፋይሎችን እንዲያነብ ይፈቅድለታል።"</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"ከተጋራ ማከማቻው ውስጥ በተጠቃሚ የተመረጡ የምስል እና የቪድዮ ፋይሎችን አንብብ"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"ከእርስዎ የተጋራ ማከማቻ እርስዎ የሚመርጧቸው የምስል እና የቪድዮ ፋይሎችን መተግበሪያው እንዲያነብ ይፈቅድለታል።"</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"የተጋራ ማከማቻዎን ይዘቶች ይቀይሩ ወይም ይሰርዙ"</string>

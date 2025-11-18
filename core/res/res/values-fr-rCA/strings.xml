@@ -825,10 +825,8 @@
     <string name="permdesc_readMediaVideo" msgid="3846400073770403528">"Permet à l\'appli de lire les fichiers vidéo de votre espace de stockage partagé."</string>
     <string name="permlab_readMediaImages" msgid="4057590631020986789">"lire des fichiers d\'image à partir de l\'espace de stockage partagé"</string>
     <string name="permdesc_readMediaImages" msgid="5836219373138469259">"Permet à l\'appli de lire les fichiers d\'image de votre espace de stockage partagé."</string>
-    <!-- no translation found for permlab_readMediaDocuments (5716810755602938263) -->
-    <skip />
-    <!-- no translation found for permdesc_readMediaDocuments (5665930210237304120) -->
-    <skip />
+    <string name="permlab_readMediaDocuments" msgid="5716810755602938263">"lire des fichiers de documents à partir de l\'espace de stockage partagé"</string>
+    <string name="permdesc_readMediaDocuments" msgid="5665930210237304120">"Permet à l\'appli de lire les fichiers de documents à partir de votre espace de stockage partagé."</string>
     <string name="permlab_readVisualUserSelect" msgid="5516204215354667586">"lire les fichiers d\'images et de vidéos sélectionnés par l\'utilisateur dans l\'espace de stockage partagé"</string>
     <string name="permdesc_readVisualUserSelect" msgid="8027174717714968217">"Permet à l\'appli de lire les fichiers d\'images et de vidéos que vous sélectionnez dans votre espace de stockage partagé."</string>
     <string name="permlab_sdcardWrite" msgid="4863021819671416668">"modifier ou supprimer le contenu de votre espace de stockage partagé"</string>
