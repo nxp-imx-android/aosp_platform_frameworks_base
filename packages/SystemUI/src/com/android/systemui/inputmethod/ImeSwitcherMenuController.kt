@@ -31,7 +31,6 @@ import android.view.WindowManager
 import android.view.inputmethod.Flags
 import android.view.inputmethod.InputMethodManager
 import com.android.internal.R
-import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.inputmethod.IImeSwitcherMenu
 import com.android.internal.inputmethod.IImeSwitcherMenuListener
 import com.android.systemui.CoreStartable
@@ -59,6 +58,10 @@ constructor(
     /** The interface to receive callbacks from this controller. */
     private var listener: IImeSwitcherMenuListener? = null
 
+    /**
+     * The cached display-specific window context for the IME Switcher Menu dialog to receive
+     * configuration changes.
+     */
     private var dialogWindowContext: Context? = null
 
     private var dialog: ImeSwitcherMenuDialog? = null
@@ -90,7 +93,9 @@ constructor(
      * @param isScreenLocked whether the screen is current locked.
      * @param displayId the ID of the display where the menu was requested.
      * @param userId the ID of the user that requested the menu.
+     * @throws IllegalArgumentException if the given displayId is invalid.
      */
+    @Throws(IllegalArgumentException::class)
     private fun show(
         items: List<IImeSwitcherMenu.Item>,
         selectedImeId: String?,
@@ -154,19 +159,24 @@ constructor(
     }
 
     /**
-     * Returns the window context for IME switch dialogs to receive configuration changes.
+     * Gets the display-specific window context for the IME Switcher Menu to receive configuration
+     * changes, tied to the given display. This will cache and re-use the context for the most
+     * recently requested {@code displayId}, otherwise it will compute a new context.
      *
-     * This method initializes the window context if it was not initialized, or moves the context to
-     * the targeted display if the current display of context is different from the display
-     * specified by `displayId`.
+     * @param displayId the ID of the display to get the display-specific window context for.
+     * @throws IllegalArgumentException if the given displayId is invalid.
      */
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    @Throws(IllegalArgumentException::class)
     private fun getContext(displayId: Int): Context {
         val curContext = dialogWindowContext
         if (curContext?.displayId == displayId) {
             return curContext
         }
+        // TODO: figure out the equivalent to mDisplayController.getDisplayContext in SysUI
         val display = displayManager.getDisplay(displayId)
+        if (display == null) {
+            throw IllegalArgumentException("Invalid display: $displayId")
+        }
         val windowContext =
             context.createWindowContext(
                 display,
