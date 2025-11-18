@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import com.android.compose.gesture.NestedScrollableBound
+import com.android.compose.modifiers.skipToLookaheadSize
 
 /**
  * [SceneTransitionLayout] is a container that automatically animates its content whenever its state
@@ -293,7 +294,11 @@ interface BaseContentScope : ElementStateScope {
      * Don't resize during transitions. This can for instance be used to make sure that scrollable
      * lists keep a constant size during transitions even if its elements are growing/shrinking.
      */
-    fun Modifier.noResizeDuringTransitions(): Modifier
+    @Deprecated(
+        "Use skipToLookaheadSize() instead",
+        ReplaceWith("skipToLookaheadSize()", "com.android.compose.modifiers.skipToLookaheadSize"),
+    )
+    fun Modifier.noResizeDuringTransitions(): Modifier = skipToLookaheadSize()
 
     /**
      * Temporarily disable this content swipe actions when any scrollable below this modifier has

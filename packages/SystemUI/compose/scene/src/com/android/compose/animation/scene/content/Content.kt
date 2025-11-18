@@ -84,7 +84,6 @@ import com.android.compose.animation.scene.elementAlpha
 import com.android.compose.animation.scene.elementState
 import com.android.compose.animation.scene.getAllNestedTransitionStates
 import com.android.compose.animation.scene.getScale
-import com.android.compose.animation.scene.modifiers.noResizeDuringTransitions
 import com.android.compose.gesture.NestedScrollControlState
 import com.android.compose.gesture.NestedScrollableBound
 import com.android.compose.gesture.nestedScrollController
@@ -369,10 +368,6 @@ internal class ContentScopeImpl(
             type = type,
             canOverflow = canOverflow,
         )
-    }
-
-    override fun Modifier.noResizeDuringTransitions(): Modifier {
-        return noResizeDuringTransitions(layoutState = layoutImpl.state)
     }
 
     override fun Modifier.disableSwipesWhenScrolling(bounds: NestedScrollableBound): Modifier {
