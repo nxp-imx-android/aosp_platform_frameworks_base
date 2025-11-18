@@ -61,6 +61,7 @@ import static com.android.server.wm.TaskFragment.EMBEDDING_DISALLOWED_UNTRUSTED_
 import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowTestsBase.ActivityBuilder.DEFAULT_FAKE_UID;
+import static com.android.window.flags.Flags.FLAG_TRACK_LAUNCH_ORIGINATOR;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -93,6 +94,7 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -1845,6 +1847,20 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
                 null /* inTask */, null /* inTaskFragment*/);
 
         assertNotEquals(bubbledActivity.getTask(), targetRecord.getTask());
+    }
+
+    @Test
+    @EnableFlags(FLAG_TRACK_LAUNCH_ORIGINATOR)
+    public void launchActivity_resultToHome_setsLaunchOriginatedFromHome() {
+        final Task homeTask = mRootWindowContainer.getDefaultTaskDisplayArea().getRootHomeTask();
+        final ActivityRecord homeActivity = new ActivityBuilder(mAtm).setTask(homeTask).build();
+        final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK)
+                .setResultTo(homeActivity.token);
+
+        // Launch from home.
+        starter.execute();
+
+        assertTrue(starter.mRequest.mLaunchOriginatedFromHome);
     }
 
     private ActivityRecord createBubbledActivity() {

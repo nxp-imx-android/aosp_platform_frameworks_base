@@ -46,6 +46,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -365,6 +366,28 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
     }
 
     @Test
+    public void testGetOrCreateRootTask_forcesReparentLeafTaskToTda() {
+        final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
+        final Task existingRoot = new TaskBuilder(mSupervisor).setTaskDisplayArea(tda).build();
+        final Task candidateTask = new TaskBuilder(mSupervisor)
+                .setParentTask(existingRoot)
+                .setOnTop(true)
+                .setCreateActivity(true)
+                .build();
+        final LaunchParamsController.LaunchParams params =
+                new LaunchParamsController.LaunchParams();
+        params.mIsRelaunchFromHomeToReparent = true;
+        params.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
+
+        final Task resultRootTask = tda.getOrCreateRootTask(
+                candidateTask.getTopNonFinishingActivity(), null /* options */, candidateTask,
+                null /* sourceTask */, params, 0 /* launchFlags */, candidateTask.getActivityType(),
+                true /* onTop */);
+
+        assertNotEquals("Candidate task should be reparented to TDA", existingRoot, resultRootTask);
+    }
+
+    @Test
     public void testGetOrientation_nonResizableHomeTaskWithHomeActivityPendingVisibilityChange() {
         final RootWindowContainer rootWindowContainer = mWm.mAtmService.mRootWindowContainer;
         final TaskDisplayArea defaultTaskDisplayArea =
@@ -603,7 +626,8 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         final TaskDisplayArea taskDisplayArea = candidateTask.getDisplayArea();
         final Task rootTask = taskDisplayArea.getOrCreateRootTask(windowingMode, activityType,
                 false /* onTop */, candidateTask /* candidateTask */, null /* sourceTask */,
-                null /* activityOptions */, 0 /* launchFlags */);
+                null /* activityOptions */, 0 /* launchFlags */,
+                false /* forceReparentLeafTaskToTda */);
         assertEquals(reuseCandidate, rootTask == candidateTask);
     }
 
