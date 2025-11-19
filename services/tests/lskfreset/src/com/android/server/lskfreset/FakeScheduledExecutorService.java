@@ -111,7 +111,9 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-        throw new UnsupportedOperationException();
+        FakeScheduledFuture<V> future = new FakeScheduledFuture<>(callable, unit.toMillis(delay));
+        mFutures.add(future);
+        return future;
     }
 
     @Override
@@ -143,7 +145,7 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public boolean isTerminated() {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     @Override
@@ -153,17 +155,23 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        throw new UnsupportedOperationException();
+        return schedule(task, 0, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        throw new UnsupportedOperationException();
+        return schedule(
+                () -> {
+                    task.run();
+                    return result;
+                },
+                0,
+                TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public Future<?> submit(Runnable runnable) {
-        throw new UnsupportedOperationException();
+    public Future<?> submit(Runnable task) {
+        return schedule(task, 0, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -193,23 +201,49 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
 
     @Override
     public void execute(Runnable command) {
-        throw new UnsupportedOperationException();
+        schedule(command, 0, TimeUnit.MILLISECONDS);
     }
 
     private class FakeScheduledFuture<V> implements ScheduledFuture<V> {
+        // The underlying object to be called when the scheduled time arrives. Exactly one of these
+        // will be non-null.
         private final Runnable mRunnable;
+        private final Callable<V> mCallable;
+
+        // The result of the callable, if this future is for a callable. After execution if the
+        // callable threw an exception then mResultException will be non-null; otherwise it returned
+        // mResult. Note that callables can return null and so mResult==null does not necessarily
+        // indicate that the callable was not executed.
+        private V mResult = null;
+        private ExecutionException mResultException = null;
+
         private final long mTimeToExecuteAt;
         private final CountDownLatch mCompletionLatch = new CountDownLatch(1);
         private boolean mCancelled = false;
 
         private FakeScheduledFuture(Runnable runnable, long delay) {
             mRunnable = runnable;
+            mCallable = null;
+            mTimeToExecuteAt = mElapsedMillis + delay;
+        }
+
+        private FakeScheduledFuture(Callable<V> callable, long delay) {
+            mRunnable = null;
+            mCallable = callable;
             mTimeToExecuteAt = mElapsedMillis + delay;
         }
 
         private void execute() {
             try {
-                mRunnable.run();
+                if (mRunnable != null) {
+                    mRunnable.run();
+                } else {
+                    try {
+                        mResult = mCallable.call();
+                    } catch (Exception e) {
+                        mResultException = new ExecutionException(e);
+                    }
+                }
             } finally {
                 mCompletionLatch.countDown();
             }
@@ -248,7 +282,11 @@ class FakeScheduledExecutorService implements ScheduledExecutorService {
         public V get() throws ExecutionException, InterruptedException {
             assertNotExecutionThread();
             mCompletionLatch.await();
-            return null;
+            if (mResultException != null) {
+                throw mResultException;
+            } else {
+                return mResult;
+            }
         }
 
         @Override
