@@ -60,7 +60,7 @@ class VisualInterruptionDecisionProviderImplTest : VisualInterruptionDecisionPro
             headsUpManager,
             keyguardNotificationVisibilityProvider,
             keyguardStateController,
-            newLogger,
+            logger,
             mainHandler,
             powerManager,
             statusBarStateController,
