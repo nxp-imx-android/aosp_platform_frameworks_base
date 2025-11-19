@@ -2457,8 +2457,9 @@ public class AudioDeviceBroker {
         } else {
             boolean btScoOn = false;
             synchronized (mBluetoothAudioStateLock) {
-                btScoOn = mBtHelper.isBluetoothScoOn() && mBluetoothScoOn;
+                btScoOn = mBluetoothScoOn;
             }
+            btScoOn = btScoOn && mBtHelper.isBluetoothScoOn();
 
             if (btScoOn) {
                 // Use the SCO device known to BtHelper so that it matches exactly what has been
