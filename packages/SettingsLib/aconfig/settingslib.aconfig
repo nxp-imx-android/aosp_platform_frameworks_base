@@ -75,7 +75,6 @@ flag {
     description: "Settings catalyst project migration"
     is_exported: true
     bug: "323791114"
-    is_exported: true
 }
 
 flag {
@@ -92,7 +91,6 @@ flag {
     description: "Enable WRITE_SYSTEM_PREFERENCE permission and appop"
     is_exported: true
     bug: "375193223"
-    is_exported: true
 }
 
 flag {
@@ -143,13 +141,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "hearing_devices_ambient_volume_control"
-    namespace: "accessibility"
-    description: "Enable the ambient volume control in device details and hearing devices dialog."
-    bug: "357878944"
 }
 
 flag {

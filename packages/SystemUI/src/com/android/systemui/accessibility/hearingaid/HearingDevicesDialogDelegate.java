@@ -342,9 +342,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                 if (com.android.settingslib.flags.Flags.hearingDevicesInputRoutingControl()) {
                     setupInputRoutingSpinner(dialog, activeHearingDevice);
                 }
-                if (com.android.settingslib.flags.Flags.hearingDevicesAmbientVolumeControl()) {
-                    setupAmbientControls(activeHearingDevice);
-                }
+                setupAmbientControls(activeHearingDevice);
                 setupRelatedToolsView(dialog);
             });
         });
