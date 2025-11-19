@@ -69,6 +69,7 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.qs.PageIndicator
 import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.shade.ShadeDisplayAware
@@ -138,6 +139,7 @@ constructor(
     private val secureSettings: SecureSettings,
     private val mediaControlChipInteractor: MediaControlChipInteractor,
     private val secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
+    @Background private val bgScope: CoroutineScope,
 ) : Dumpable {
     /** The current width of the carousel */
     private var currentCarouselWidth: Int = 0
@@ -312,12 +314,20 @@ constructor(
     private val isOnGone =
         keyguardTransitionInteractor
             .isFinishedIn(Scenes.Gone, GONE)
-            .stateIn(applicationScope, SharingStarted.Eagerly, true)
+            .stateIn(
+                if (SceneContainerFlag.isEnabled) bgScope else applicationScope,
+                SharingStarted.Eagerly,
+                true,
+            )
 
     private val isGoingToDozing =
         keyguardTransitionInteractor
             .isInTransition(Edge.create(to = DOZING))
-            .stateIn(applicationScope, SharingStarted.Eagerly, true)
+            .stateIn(
+                if (SceneContainerFlag.isEnabled) bgScope else applicationScope,
+                SharingStarted.Eagerly,
+                true,
+            )
 
     private var mediaFrameHeight: Int = 0
     private var mediaFrameWidth: Int = 0
