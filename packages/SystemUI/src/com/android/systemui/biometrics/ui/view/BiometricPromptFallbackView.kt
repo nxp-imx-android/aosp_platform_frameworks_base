@@ -65,7 +65,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.LinkInteractionListener
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -221,16 +224,30 @@ private fun IdentityCheckFooter(callback: Spaghetti.Callback, context: Context) 
         }
     }
 
+    val linkStyle =
+        SpanStyle(
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+        )
+
+    val focusedLinkStyle =
+        linkStyle.copy(background = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+
     val url = stringResource(R.string.biometric_dialog_identity_check_learn_more_link)
     val linkText = stringResource(R.string.biometric_dialog_identity_check_footer_link_text)
     val formatString = stringResource(R.string.biometric_dialog_identity_check_footer)
 
     val annotatedString = buildAnnotatedString {
-        // TODO: Has to be a better way to handle this
+        // TODO(b/461833412): Has to be a better way to handle this
         val placeholderIndex = formatString.indexOf("%1\$s")
         append(formatString.substring(0, placeholderIndex))
 
-        val link = LinkAnnotation.Url(url, linkInteractionListener = linkListener)
+        val link =
+            LinkAnnotation.Url(
+                url,
+                styles = TextLinkStyles(style = linkStyle, focusedStyle = focusedLinkStyle),
+                linkInteractionListener = linkListener,
+            )
         withLink(link) { append(linkText) }
     }
 
