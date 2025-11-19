@@ -180,12 +180,18 @@ public abstract class OomAdjuster {
      * will not have PROCESS_CAPABILITY_CPU_TIME.
      */
     public static final int CPU_TIME_REASON_TRANSMITTED_LEGACY = 0x4;
+    /**
+     * The process has PROCESS_CAPABILITY_CPU_TIME because it was added to the power
+     * allow list. The capability will go away as soon as it is removed from the allow list.
+     */
+    public static final int CPU_TIME_REASON_ALLOW_LIST = 0x8;
 
     @IntDef(flag = true, prefix = "CPU_TIME_REASON_", value = {
             CPU_TIME_REASON_NONE,
             CPU_TIME_REASON_OTHER,
             CPU_TIME_REASON_TRANSMITTED,
             CPU_TIME_REASON_TRANSMITTED_LEGACY,
+            CPU_TIME_REASON_ALLOW_LIST,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CpuTimeReasons {
@@ -2061,7 +2067,7 @@ public abstract class OomAdjuster {
         final UidRecordInternal uidRec = app.getUidRecord();
         if (uidRec != null && uidRec.isCurAllowListed()) {
             // Process is in the power allowlist.
-            return CPU_TIME_REASON_OTHER;
+            return CPU_TIME_REASON_ALLOW_LIST;
         }
         if (hasForegroundActivities) {
             // TODO: b/402987519 - This grants the Top Sleeping process CPU_TIME but eventually
