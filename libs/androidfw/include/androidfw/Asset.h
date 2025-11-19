@@ -18,7 +18,8 @@
 // Class providing access to a read-only asset.  Asset objects are NOT
 // thread-safe, and should not be shared across threads.
 //
-#pragma once
+#ifndef __LIBS_ASSET_H
+#define __LIBS_ASSET_H
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -126,12 +127,6 @@ public:
      * Note: not virtual so it is safe to call even when being destroyed.
      */
     virtual bool isAllocated(void) const { return false; }
-
-    /*
-     * Extract the internal data from the asset. This object isn't usable after the call.
-     */
-    using Data = std::variant<base::MappedFile, std::unique_ptr<uint8_t[]>, std::monostate>;
-    virtual Data takeData() && = 0;
 
     /*
      * Get a string identifying the asset's source.  This might be a full
@@ -284,7 +279,6 @@ public:
     off64_t getLength(void) const override { return mLength; }
     off64_t getRemainingLength(void) const override { return mLength-mOffset; }
     int openFileDescriptor(off64_t* outStart, off64_t* outLength) const override;
-    Data takeData() && override;
     bool isAllocated(void) const override { return mBuf != NULL; }
 
 private:
@@ -343,7 +337,6 @@ public:
     virtual off64_t getLength(void) const { return mUncompressedLen; }
     virtual off64_t getRemainingLength(void) const { return mUncompressedLen-mOffset; }
     virtual int openFileDescriptor(off64_t* /* outStart */, off64_t* /* outLength */) const { return -1; }
-    Data takeData() && override;
     virtual bool isAllocated(void) const { return mBuf != NULL; }
 
 private:
@@ -362,3 +355,4 @@ private:
 
 }; // namespace android
 
+#endif // __LIBS_ASSET_H

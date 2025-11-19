@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "androidfw/BigBuffer.h"
+#include "androidfw/ResourceTypes.h"
 #include "androidfw/StringPiece.h"
 #include "utils/ByteOrder.h"
 
@@ -42,9 +43,6 @@ struct NullLogger {
 #endif
 
 namespace android {
-
-class ResStringPool;
-
 namespace util {
 
 /**
