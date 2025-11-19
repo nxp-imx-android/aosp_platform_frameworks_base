@@ -5537,9 +5537,9 @@ package android.hardware.camera2.extension {
   @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public final class CameraConfiguration {
     method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getPostViewOutputSurface();
     method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getPreviewOutputSurface();
-    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") @NonNull public java.util.Map<android.hardware.camera2.CaptureRequest.Key<?>,java.lang.Object> getSessionParams();
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") @NonNull public java.util.Map<android.hardware.camera2.CaptureRequest.Key<?>,java.lang.Object> getSessionWideParams();
     method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getStillCaptureOutputSurface();
-    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") public void setSessionParameters(@NonNull java.util.Map<android.hardware.camera2.CaptureRequest.Key<?>,java.lang.Object>);
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") public void setSessionWideParams(@NonNull java.util.Map<android.hardware.camera2.CaptureRequest.Key<?>,java.lang.Object>);
   }
 
   public abstract class CameraExtensionService extends android.app.Service {

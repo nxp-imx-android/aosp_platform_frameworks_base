@@ -21114,11 +21114,11 @@ package android.hardware.camera2.params {
     method public int getExtension();
     method @NonNull public java.util.List<android.hardware.camera2.params.OutputConfiguration> getOutputConfigurations();
     method @Nullable public android.hardware.camera2.params.OutputConfiguration getPostviewOutputConfiguration();
-    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") @Nullable public android.hardware.camera2.CaptureRequest getSessionParameters();
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") @Nullable public android.hardware.camera2.CaptureRequest getSessionWideParams();
     method @NonNull public android.hardware.camera2.CameraExtensionSession.StateCallback getStateCallback();
     method public void setColorSpace(@NonNull android.graphics.ColorSpace.Named);
     method public void setPostviewOutputConfiguration(@Nullable android.hardware.camera2.params.OutputConfiguration);
-    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") public void setSessionParameters(@NonNull android.hardware.camera2.CaptureRequest);
+    method @FlaggedApi("com.android.internal.camera.flags.vendor_defined_camera_extensions") public void setSessionWideParams(@NonNull android.hardware.camera2.CaptureRequest);
   }
 
   public final class Face {
