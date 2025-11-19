@@ -40,6 +40,7 @@ import java.util.Arrays;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 final class SerializedWaveformEffectEntries implements SerializedSegment {
 
     @NonNull

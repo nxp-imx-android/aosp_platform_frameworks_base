@@ -42,6 +42,7 @@ import java.util.Locale;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 final class SerializedBasicEnvelopeEffect implements SerializedComposedEffect.SerializedSegment {
     private final BasicControlPoint[] mControlPoints;
     private final float mInitialSharpness;

@@ -181,6 +181,10 @@
       "host": true
     },
     {
+      "name": "FrameworksVibratorCoreTestsRavenwood",
+      "host": true
+    },
+    {
       "name": "InternalTestsRavenwood",
       "host": true
     },

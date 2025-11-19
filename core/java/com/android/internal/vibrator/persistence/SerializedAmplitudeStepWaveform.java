@@ -43,6 +43,7 @@ import java.util.function.BiConsumer;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 final class SerializedAmplitudeStepWaveform implements SerializedSegment {
 
     @NonNull private final long[] mTimings;

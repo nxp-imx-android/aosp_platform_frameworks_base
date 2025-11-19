@@ -38,6 +38,7 @@ import java.io.IOException;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 final class SerializedPredefinedEffect implements SerializedSegment {
 
     @NonNull

@@ -295,11 +295,13 @@ android.os.Build
 android.os.Bundle
 android.os.BundleMerger
 android.os.CancellationSignal
+android.os.CombinedVibration
 android.os.ConditionVariable
 android.os.CountDownTimer
 android.os.DeadObjectException
 android.os.DeadSystemException
 android.os.Environment
+android.os.ExternalVibration
 android.os.FileUtils
 android.os.Handler
 android.os.HandlerExecutor
@@ -344,6 +346,9 @@ android.os.UserBatteryConsumer
 android.os.UserHandle
 android.os.UserManager
 android.os.VibrationAttributes
+android.os.VibrationEffect
+android.os.Vibrator
+android.os.VibratorInfo
 android.os.WaitState
 android.os.WakeLockStats
 android.os.WorkSource
@@ -351,6 +356,27 @@ android.os.WorkSource
 android.os.connectivity.CellularBatteryStats
 android.os.connectivity.WifiActivityEnergyInfo
 android.os.connectivity.WifiBatteryStats
+
+android.os.vibrator.BasicPwleSegment
+android.os.vibrator.HapticFeedbackRequest
+android.os.vibrator.MultiVibratorInfo
+android.os.vibrator.PrebakedSegment
+android.os.vibrator.PrimitiveSegment
+android.os.vibrator.PwlePoint
+android.os.vibrator.PwleSegment
+android.os.vibrator.RampSegment
+android.os.vibrator.StepSegment
+android.os.vibrator.VendorVibrationSession
+android.os.vibrator.VibrationConfig
+android.os.vibrator.VibrationEffectSegment
+android.os.vibrator.VibratorEnvelopeEffectInfo
+android.os.vibrator.VibratorFrequencyProfile
+android.os.vibrator.VibratorFrequencyProfileLegacy
+android.os.vibrator.VibratorInfoFactory
+
+android.os.vibrator.persistence.ParsedVibration
+android.os.vibrator.persistence.VibrationXmlParser
+android.os.vibrator.persistence.VibrationXmlSerializer
 
 android.provider.Settings
 
@@ -519,6 +545,7 @@ android.util.Base64InputStream
 android.util.Base64OutputStream
 android.util.CloseGuard
 android.util.ContainerHelpers
+android.util.CopyOnWriteSparseArray
 android.util.DataUnit
 android.util.DayOfMonthCursor
 android.util.DebugUtils
@@ -582,7 +609,6 @@ android.util.SizeF
 android.util.Slog
 android.util.SparseArray
 android.util.SparseArrayMap
-android.util.CopyOnWriteSparseArray
 android.util.SparseBooleanArray
 android.util.SparseDoubleArray
 android.util.SparseIntArray
@@ -712,6 +738,25 @@ com.android.internal.util.XmlSerializerWrapper
 com.android.internal.util.XmlUtils
 
 com.android.internal.util.dump.DumpableContainerImpl
+
+com.android.internal.vibrator.persistence.LegacyVibrationEffectXmlSerializer
+com.android.internal.vibrator.persistence.SerializedAmplitudeStepWaveform
+com.android.internal.vibrator.persistence.SerializedBasicEnvelopeEffect
+com.android.internal.vibrator.persistence.SerializedComposedEffect
+com.android.internal.vibrator.persistence.SerializedCompositionPrimitive
+com.android.internal.vibrator.persistence.SerializedPredefinedEffect
+com.android.internal.vibrator.persistence.SerializedRepeatingEffect
+com.android.internal.vibrator.persistence.SerializedVendorEffect
+com.android.internal.vibrator.persistence.SerializedWaveformEffectEntries
+com.android.internal.vibrator.persistence.SerializedWaveformEnvelopeEffect
+com.android.internal.vibrator.persistence.VibrationEffectSerializer
+com.android.internal.vibrator.persistence.VibrationEffectXmlParser
+com.android.internal.vibrator.persistence.XmlConstants
+com.android.internal.vibrator.persistence.XmlParserException
+com.android.internal.vibrator.persistence.XmlReader
+com.android.internal.vibrator.persistence.XmlSerializedVibration
+com.android.internal.vibrator.persistence.XmlSerializerException
+com.android.internal.vibrator.persistence.XmlValidator
 
 com.android.modules.utils.ravenwood.RavenwoodHelper
 

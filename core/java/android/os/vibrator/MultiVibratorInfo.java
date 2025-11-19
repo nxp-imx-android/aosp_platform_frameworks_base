@@ -40,6 +40,7 @@ import java.util.function.Function;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class MultiVibratorInfo extends VibratorInfo {
     private static final String TAG = "MultiVibratorInfo";
 

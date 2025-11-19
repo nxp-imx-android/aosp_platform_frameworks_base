@@ -40,6 +40,7 @@ import java.util.Objects;
  */
 @TestApi
 @FlaggedApi(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class BasicPwleSegment extends VibrationEffectSegment {
     private final float mStartIntensity;
     private final float mEndIntensity;

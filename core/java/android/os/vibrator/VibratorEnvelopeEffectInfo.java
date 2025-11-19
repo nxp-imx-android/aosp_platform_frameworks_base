@@ -42,6 +42,7 @@ import java.util.Objects;
  * @see VibratorFrequencyProfile
  */
 @FlaggedApi(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class VibratorEnvelopeEffectInfo implements Parcelable {
     private final int mMaxSize;
     private final long mMinControlPointDurationMillis;

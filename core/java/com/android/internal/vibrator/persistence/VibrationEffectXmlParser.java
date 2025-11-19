@@ -143,6 +143,7 @@ import java.util.List;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class VibrationEffectXmlParser {
 
     /**

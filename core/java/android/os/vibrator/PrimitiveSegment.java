@@ -36,6 +36,7 @@ import java.util.Objects;
  * @hide
  */
 @TestApi
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class PrimitiveSegment extends VibrationEffectSegment {
 
     /** @hide */

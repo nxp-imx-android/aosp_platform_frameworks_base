@@ -39,6 +39,7 @@ import java.util.Objects;
  * @hide
  */
 @TestApi
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class RampSegment extends VibrationEffectSegment {
     private final float mStartAmplitude;
     private final float mStartFrequencyHz;

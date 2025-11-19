@@ -65,6 +65,7 @@ import java.util.stream.IntStream;
  *
  * <p>These effects may be any number of things, from single shot vibrations to complex waveforms.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public abstract class VibrationEffect implements Parcelable {
     private static final int PARCEL_TOKEN_COMPOSED = 1;
     private static final int PARCEL_TOKEN_VENDOR_EFFECT = 2;
