@@ -12570,10 +12570,10 @@ public class Notification implements Parcelable
                 boolean isExpandedView,
                 List<Metric> metricsToBind) {
 
-            final boolean singleMetricWithoutTitle = mMetrics.size() == 1
-                    && TextUtils.isEmpty(p.mTitle);
+            final boolean hasTitle = !TextUtils.isEmpty(p.mTitle);
+            final boolean singleMetricWithoutTitle = mMetrics.size() == 1 && !hasTitle;
             final boolean useLabelAsTitle = singleMetricWithoutTitle && !isExpandedView;
-            final boolean useAppNameAsTitle = singleMetricWithoutTitle && isExpandedView;
+            final boolean useAppNameAsTitle = !hasTitle && isExpandedView;
 
             if (useLabelAsTitle) {
                 p.title(getMetricLabel(metricsToBind.getFirst(),
