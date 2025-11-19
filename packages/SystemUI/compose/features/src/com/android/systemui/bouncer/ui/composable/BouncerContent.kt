@@ -1049,7 +1049,10 @@ private fun UserSwitcherDropdown(viewModel: BouncerOverlayContentViewModel, widt
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                     ),
-                onClick = { setDropdownExpanded(!isDropdownExpanded) },
+                onClick = {
+                    viewModel.onUserSwitcherDropdown()
+                    setDropdownExpanded(!isDropdownExpanded)
+                },
             ) {
                 val context = LocalContext.current
                 Text(
@@ -1072,7 +1075,10 @@ private fun UserSwitcherDropdown(viewModel: BouncerOverlayContentViewModel, widt
                 isExpanded = isDropdownExpanded,
                 items = dropdownItems,
                 dropDownWidth = width,
-                onDismissed = { setDropdownExpanded(false) },
+                onDismissed = {
+                    viewModel.onUserSwitcherDropdown()
+                    setDropdownExpanded(false)
+                },
             )
         }
     }
