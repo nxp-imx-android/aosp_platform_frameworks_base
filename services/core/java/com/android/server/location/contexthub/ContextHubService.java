@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.chre.flags.Flags;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -1754,7 +1755,8 @@ public class ContextHubService extends IContextHubService.Stub {
      *                    update when the BT availability changes.
      */
     private void sendBtSettingUpdate(boolean forceUpdate) {
-        final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        final BluetoothAdapter adapter =
+                mContext.getSystemService(BluetoothManager.class).getAdapter();
         // Adapter may be null if BT is not supported.
         if (adapter != null) {
             boolean btEnabled = adapter.isEnabled();
