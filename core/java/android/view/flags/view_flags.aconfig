@@ -115,6 +115,14 @@ flag {
 }
 
 flag {
+    name: "deprecate_is_credential_api"
+    namespace: "autofill"
+    description: "Deprecate isCredential api."
+    bug: "459677787"
+    is_exported: true
+}
+
+flag {
     name: "use_refactored_round_scrollbar"
     namespace: "wear_frameworks"
     description: "Use refactored round scrollbar."

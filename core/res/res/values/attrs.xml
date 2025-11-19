@@ -3078,7 +3078,8 @@
         </attr>
 
         <!-- Boolean that hints the Android System that the view is credential and associated with
-             CredentialManager -->
+             CredentialManager.
+              @deprecated The isCredential attr is no longer needed. -->
         <attr name="isCredential" format="boolean" />
 
         <!-- Hints the Android System whether the this View should be considered a scroll capture target. -->
