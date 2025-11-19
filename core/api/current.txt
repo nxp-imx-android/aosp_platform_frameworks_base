@@ -9989,6 +9989,7 @@ package android.app.privatecompute {
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class PccSandboxManager {
     method public boolean isPrivateComputeServicesUid(int);
+    method public void writeToAuditLog(@NonNull android.os.PersistableBundle);
   }
 
 }
