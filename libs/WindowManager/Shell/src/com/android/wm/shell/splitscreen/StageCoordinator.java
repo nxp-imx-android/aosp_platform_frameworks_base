@@ -34,6 +34,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
 
+import static com.android.window.flags.Flags.exitSplitOnDisplayMoveBugfix;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
@@ -3263,8 +3264,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                             EXIT_REASON_FULLSCREEN_REQUEST);
                 }
             } else if (isOpening && inFullscreen) {
-                final int activityType = triggerTask.getActivityType();
-                if (activityType == ACTIVITY_TYPE_HOME || activityType == ACTIVITY_TYPE_RECENTS) {
+                if (isHomeOrRecents(triggerTask)) {
                     // starting recents/home, so don't handle this and let it fall-through to
                     // the remote handler.
                     return null;
@@ -3484,8 +3484,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         for (int i = 0; i < info.getChanges().size(); i++) {
             final TransitionInfo.Change change = info.getChanges().get(i);
             final TaskInfo task = change.getTaskInfo();
-            if (task == null || task.getActivityType() == ACTIVITY_TYPE_HOME
-                    || task.getActivityType() == ACTIVITY_TYPE_RECENTS) {
+            if (task == null || isHomeOrRecents(task)) {
                 continue;
             }
 
@@ -3603,8 +3602,17 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 }
                 final StageTaskListener stage = getStageOfTask(taskInfo);
                 if (stage == null) {
-                    if (change.getParent() == null && !isClosingType(change.getMode())
-                            && taskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
+                    boolean isFullscreenChange = (change.getParent() == null
+                            && !isClosingType(change.getMode())
+                            && taskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN);
+                    if (com.android.window.flags.Flags.exitSplitOnDisplayMoveBugfix()) {
+                        // Split won't be covered by fullscreen tasks on another display, or by
+                        // home/recents showing behind.
+                        isFullscreenChange = isFullscreenChange
+                                && change.getEndDisplayId() == mDisplayId
+                                && !isHomeOrRecents(taskInfo);
+                    }
+                    if (isFullscreenChange) {
                         record.mContainShowFullscreenChange = true;
                     }
                     continue;
@@ -4199,6 +4207,11 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         boolean replacingMainStage = getMainStagePosition() == mSplitRequest.mActivatePosition;
         (replacingMainStage ? mMainStage : mSideStage).evictOtherChildren(wct,
                 Set.of(taskInfo.taskId));
+    }
+
+    boolean isHomeOrRecents(TaskInfo taskInfo) {
+        return taskInfo.getActivityType() == ACTIVITY_TYPE_HOME
+                || taskInfo.getActivityType() == ACTIVITY_TYPE_RECENTS;
     }
 
     boolean isLaunchToSplit(TaskInfo taskInfo) {
