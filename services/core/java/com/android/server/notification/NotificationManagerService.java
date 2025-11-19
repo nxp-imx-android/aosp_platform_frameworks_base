@@ -7098,6 +7098,12 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
+        public List<String> getEnabledZenPackages() {
+            checkCallerIsSystem();
+            return mConditionProviders.getAllowedPackages(getCallingUserHandle().getIdentifier());
+        }
+
+        @Override
         public List<ComponentName> getEnabledNotificationListeners(
                 @CannotBeSpecialUser @UserIdInt int userId) {
             checkNotificationListenerAccess();
