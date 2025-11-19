@@ -43750,11 +43750,12 @@ package android.service.personalcontext.hint {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class TextClassificationHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public String getSessionId();
     method @NonNull public android.view.textclassifier.TextClassification.Request getTextClassificationRequest();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class TextClassificationHint.Builder {
-    ctor public TextClassificationHint.Builder(@NonNull android.view.textclassifier.TextClassification.Request);
+    ctor public TextClassificationHint.Builder(@NonNull android.view.textclassifier.TextClassification.Request, @NonNull String);
     method @NonNull public android.service.personalcontext.hint.TextClassificationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.TextClassificationHint build();
   }
