@@ -81,6 +81,10 @@ import com.android.systemui.keyguard.ui.viewmodel.OffToLockscreenTransitionViewM
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.PrimaryBouncerToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
+import com.android.systemui.log.table.Diffable
+import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.TableRowLogger
+import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.res.R
@@ -97,6 +101,7 @@ import com.android.systemui.shade.shared.model.ShadeMode.Single
 import com.android.systemui.shade.shared.model.ShadeMode.Split
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
+import com.android.systemui.statusbar.notification.logging.dagger.NotificationAlphaTableLog
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.SharedNotificationContainerInteractor
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
@@ -203,6 +208,7 @@ constructor(
     unfoldTransitionInteractor: UnfoldTransitionInteractor,
     val activeNotificationsInteractor: ActiveNotificationsInteractor,
     private val mediaDataManager: MediaDataManager,
+    @NotificationAlphaTableLog private val alphaTableLogger: TableLogBuffer,
 ) : FlowDumperImpl(dumpManager) {
 
     /**
@@ -654,6 +660,7 @@ constructor(
                 }
             }
             .onStart { emit(1f) }
+            .logAlphaForTable(columnName = "alphaForShadeAndQsExpansion")
             .dumpWhileCollecting("alphaForShadeAndQsExpansion")
 
     private fun alphaForBouncerExpansion(bouncerExpansion: Float): Float {
@@ -689,42 +696,52 @@ constructor(
         }
 
     private fun alphaForTransitions(viewState: ViewStateAccessor): Flow<Float> {
-        return merge(
-            keyguardInteractor.dismissAlpha.dumpWhileCollecting("keyguardInteractor.dismissAlpha"),
+        return mergeAndLogAlphas(
+            "alphaForTransitions",
+            keyguardInteractor.dismissAlpha.dumpWhileCollecting(
+                "keyguardInteractor.dismissAlpha"
+            ) to "keyguardDismiss",
             // All transition view models are mutually exclusive, and safe to merge
-            bouncerToGoneNotificationAlpha(viewState),
-            bouncerOverlayNotificationAlpha,
-            aodToGoneTransitionViewModel.notificationAlpha(viewState),
-            aodToLockscreenTransitionViewModel.notificationAlpha,
-            aodToOccludedTransitionViewModel.lockscreenAlpha(viewState),
-            aodToGlanceableHubTransitionViewModel.lockscreenAlpha(viewState),
-            aodToPrimaryBouncerTransitionViewModel.notificationAlpha,
-            dozingToLockscreenTransitionViewModel.lockscreenAlpha,
-            dozingToOccludedTransitionViewModel.lockscreenAlpha(viewState),
-            dozingToPrimaryBouncerTransitionViewModel.notificationAlpha,
-            dreamingToLockscreenTransitionViewModel.lockscreenAlpha,
-            goneToAodTransitionViewModel.notificationAlpha,
-            goneToDreamingTransitionViewModel.lockscreenAlpha(),
-            goneToDozingTransitionViewModel.notificationAlpha,
-            goneToLockscreenTransitionViewModel.lockscreenAlpha,
-            lockscreenToDreamingTransitionViewModel.lockscreenAlpha,
-            lockscreenToGoneTransitionViewModel.notificationAlpha(viewState),
-            lockscreenToOccludedTransitionViewModel.lockscreenAlpha(viewState),
-            lockscreenToPrimaryBouncerTransitionViewModel.notificationAlpha,
-            alternateBouncerToPrimaryBouncerTransitionViewModel.notificationAlpha,
-            occludedToAodTransitionViewModel.lockscreenAlpha,
-            occludedToGoneTransitionViewModel.notificationAlpha(viewState),
-            occludedToLockscreenTransitionViewModel.lockscreenAlpha,
-            offToLockscreenTransitionViewModel.lockscreenAlpha,
-            primaryBouncerToLockscreenTransitionViewModel.lockscreenAlpha(viewState),
-            glanceableHubToLockscreenTransitionViewModel.keyguardAlpha,
-            glanceableHubToAodTransitionViewModel.lockscreenAlpha,
-            lockscreenToGlanceableHubTransitionViewModel.keyguardAlpha,
+            bouncerToGoneNotificationAlpha(viewState) to "bouncerToGone",
+            bouncerOverlayNotificationAlpha to "bouncerOverlay",
+            aodToGoneTransitionViewModel.notificationAlpha(viewState) to "aodToGone",
+            aodToLockscreenTransitionViewModel.notificationAlpha to "aodToLockscreen",
+            aodToOccludedTransitionViewModel.lockscreenAlpha(viewState) to "aodToOccluded",
+            aodToGlanceableHubTransitionViewModel.lockscreenAlpha(viewState) to
+                "aodToGlanceableHub",
+            aodToPrimaryBouncerTransitionViewModel.notificationAlpha to "aodToPrimaryBouncer",
+            dozingToLockscreenTransitionViewModel.lockscreenAlpha to "dozingToLockscreen",
+            dozingToOccludedTransitionViewModel.lockscreenAlpha(viewState) to "dozingToOccluded",
+            dozingToPrimaryBouncerTransitionViewModel.notificationAlpha to "dozingToPrimaryBouncer",
+            dreamingToLockscreenTransitionViewModel.lockscreenAlpha to "bouncerToGone",
+            goneToAodTransitionViewModel.notificationAlpha to "goneToAod",
+            goneToDreamingTransitionViewModel.lockscreenAlpha() to "goneToDreaming",
+            goneToDozingTransitionViewModel.notificationAlpha to "goneToDozing",
+            goneToLockscreenTransitionViewModel.lockscreenAlpha to "goneToLockscreen",
+            lockscreenToDreamingTransitionViewModel.lockscreenAlpha to "lockscreenToDreaming",
+            lockscreenToGoneTransitionViewModel.notificationAlpha(viewState) to "lockscreenToGone",
+            lockscreenToOccludedTransitionViewModel.lockscreenAlpha(viewState) to
+                "lockscreenToOccluded",
+            lockscreenToPrimaryBouncerTransitionViewModel.notificationAlpha to
+                "lockscreenToPrimaryBouncer",
+            alternateBouncerToPrimaryBouncerTransitionViewModel.notificationAlpha to
+                "alternateBouncerToPrimaryBouncer",
+            occludedToAodTransitionViewModel.lockscreenAlpha to "occludedToAod",
+            occludedToGoneTransitionViewModel.notificationAlpha(viewState) to "occludedToGone",
+            occludedToLockscreenTransitionViewModel.lockscreenAlpha to "occludedToLockscreen",
+            offToLockscreenTransitionViewModel.lockscreenAlpha to "offToLockscreen",
+            primaryBouncerToLockscreenTransitionViewModel.lockscreenAlpha(viewState) to
+                "primaryBouncerToLockscreen",
+            glanceableHubToLockscreenTransitionViewModel.keyguardAlpha to
+                "glanceableHubToLockscreen",
+            glanceableHubToAodTransitionViewModel.lockscreenAlpha to "glanceableHubToAod",
+            lockscreenToGlanceableHubTransitionViewModel.keyguardAlpha to
+                "lockscreenToGlanceableHub",
             if (SceneContainerFlag.isEnabled) {
                 dozingToGoneTransitionViewModel.lockscreenAlpha(viewState)
             } else {
                 emptyFlow()
-            },
+            } to "dozingToGone",
         )
     }
 
@@ -746,15 +763,24 @@ constructor(
         // state has been set, let shade alpha take over
         val isKeyguardNotVisible =
             combine(isKeyguardNotVisibleInState, keyguardInteractor.statusBarState) {
-                isKeyguardNotVisibleInState,
-                statusBarState ->
-                isKeyguardNotVisibleInState && statusBarState == SHADE
-            }
+                    isKeyguardNotVisibleInState,
+                    statusBarState ->
+                    isKeyguardNotVisibleInState && statusBarState == SHADE
+                }
+                .logDiffsForTable(
+                    alphaTableLogger,
+                    columnName = "isKeyguardNotVisible",
+                    initialValue = false,
+                )
 
         // This needs to continue collecting the current value so that when it is selected in the
         // flatMapLatest below, the last value gets emitted, to avoid the randomness of `merge`.
         val alphaForTransitionsAndShade =
-            merge(alphaForTransitions(viewState), alphaForShadeAndQsExpansion)
+            mergeAndLogAlphas(
+                    "alphaForTransitionsAndShade",
+                    alphaForTransitions(viewState) to "transitions",
+                    alphaForShadeAndQsExpansion to "shadeAndQs",
+                )
                 .flowName("alphaForTransitionsAndShade")
                 .stateIn(
                     // Use view-level scope instead of ApplicationScope, to prevent collection that
@@ -774,6 +800,7 @@ constructor(
                 }
             }
             .distinctUntilChanged()
+            .logAlphaForTable(columnName = "keyguardAlpha")
             .dumpWhileCollecting("keyguardAlpha")
     }
 
@@ -846,6 +873,7 @@ constructor(
                 }
             }
             .distinctUntilChanged()
+            .logAlphaForTable(columnName = "glanceableHubAlpha")
             .dumpWhileCollecting("glanceableHubAlpha")
 
     /**
@@ -1032,6 +1060,69 @@ constructor(
 
     fun notificationStackChangedInstant() {
         interactor.notificationsInStackChangedInstant()
+    }
+
+    private class DiffableAlpha(val alpha: Float, val columnName: String, val source: String) :
+        Diffable<DiffableAlpha> {
+        private val description
+            get() = if (source != "") "$alpha [$source]" else "$alpha"
+
+        override fun logDiffs(prevVal: DiffableAlpha, row: TableRowLogger) {
+            if (shouldLogAlpha(prevVal.alpha) || source != prevVal.source) {
+                row.logChange(columnName, description)
+            }
+        }
+
+        // Only log alpha diffs that go to or from 0 and 1: this captures when any transition
+        // begins or ends but avoids spamming logs with all of the intermediate alpha values that
+        // each flow emits.
+        private fun shouldLogAlpha(prevAlpha: Float): Boolean {
+            return if (alpha != prevAlpha) {
+                alpha == 0f || alpha == 1f || prevAlpha == 0f || prevAlpha == 1f
+            } else {
+                false
+            }
+        }
+    }
+
+    /**
+     * Logs to the alpha table only when there is a sufficient diff. We use this rather than the
+     * default logDiffsForTable for Float to restrict the frequency of emits given rapidly changing
+     * alpha values.
+     *
+     * Note that this method intentionally does not include a source parameter for DiffableAlpha, as
+     * any values coming through this flow are inherently from the same source, making it invalid to
+     * use as a parameter for comparison.
+     */
+    private fun Flow<Float>.logAlphaForTable(columnName: String): Flow<Float> {
+        return this.map { DiffableAlpha(it, columnName, "") }
+            .logDiffsForTable(
+                alphaTableLogger,
+                initialValue = DiffableAlpha(1.0f, columnName, "initial"),
+            )
+            .map { it.alpha }
+    }
+
+    /**
+     * Merge the given alpha flows, logging each one to the alpha table with the associated label.
+     *
+     * @param columnName the column name used to output to the alpha table log.
+     * @param flows a collection pairs of each input flow along with its associated label.
+     * @return the merged result of all input flows, equivalent to merge(flows).
+     */
+    private fun mergeAndLogAlphas(
+        columnName: String,
+        vararg flows: Pair<Flow<Float>, String>,
+    ): Flow<Float> {
+        return flows
+            .map { (flow, label) -> flow.map { DiffableAlpha(it, columnName, label) } }
+            .asIterable()
+            .merge()
+            .logDiffsForTable(
+                alphaTableLogger,
+                initialValue = DiffableAlpha(1.0f, columnName, "initial"),
+            )
+            .map { it.alpha }
     }
 
     data class ConfigurationBasedDimensions(

@@ -58,6 +58,7 @@ import com.android.systemui.keyguard.ui.viewmodel.primaryBouncerToLockscreenTran
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.media.controls.domain.pipeline.legacyMediaDataManagerImpl
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -126,5 +127,6 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         aodToGlanceableHubTransitionViewModel = aodToGlanceableHubTransitionViewModel,
         activeNotificationsInteractor = activeNotificationsInteractor,
         mediaDataManager = legacyMediaDataManagerImpl,
+        alphaTableLogger = logcatTableLogBuffer(this, "NotificationAlphaTableLog"),
     )
 }
