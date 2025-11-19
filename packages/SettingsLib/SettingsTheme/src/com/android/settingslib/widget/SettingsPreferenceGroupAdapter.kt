@@ -29,6 +29,7 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceGroupAdapter
 import androidx.preference.PreferenceViewHolder
+import androidx.recyclerview.widget.RecyclerView
 import com.android.settingslib.widget.theme.R
 
 /**
@@ -86,6 +87,18 @@ open class SettingsPreferenceGroupAdapter @JvmOverloads constructor(
             // Post after super class has posted their sync runnable to update preferences.
             mHandler.removeCallbacks(syncRunnable)
             mHandler.post(syncRunnable)
+        }
+    }
+
+    /**
+     * Public API to refresh a specific preference.
+     * This fixes the timing issue where data is added after the view is created.
+     */
+    fun notifyPreferenceChanged(preference: Preference) {
+        val index = getPreferenceAdapterPosition(preference)
+
+        if (index != RecyclerView.NO_POSITION) {
+            notifyItemChanged(index)
         }
     }
 

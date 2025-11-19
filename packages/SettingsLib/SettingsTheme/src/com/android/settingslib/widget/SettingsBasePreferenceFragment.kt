@@ -93,18 +93,42 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
     }
 
     /**
-     * Attaches a clickable footer to a preference.
+     * Attaches a clickable footer to a preference and handles the UI refresh.
      *
      * @param preferenceKey The key of the [Preference] to attach the footer to.
      * @param text The text to display in the footer.
      * @param listener The [View.OnClickListener] to be invoked when the footer is clicked.
      */
-    protected fun attachFooter(
+     fun attachFooter(
         preferenceKey: String,
         text: CharSequence,
         listener: View.OnClickListener,
     ) {
         footerDataMap[preferenceKey] = FooterData(text, listener)
+
+        val adapter = listView?.adapter as? SettingsPreferenceGroupAdapter
+
+        if (adapter != null) {
+            val preference = findPreference<Preference>(preferenceKey)
+
+            if (preference != null) {
+                adapter.notifyPreferenceChanged(preference)
+            }
+        }
+    }
+
+    /**
+     * Attaches a clickable footer to a preference.
+     *
+     * @param preference The object [Preference] to attach the footer to.
+     * @param text The text to display in the footer.
+     * @param listener The [View.OnClickListener] to be invoked when the footer is clicked.
+     */
+    fun attachFooter(preference: Preference, text: CharSequence, listener: View.OnClickListener) {
+        if (findPreference<Preference>(preference.key) == null) {
+            return
+        }
+        attachFooter(preference.key, text, listener)
     }
 
     /** Handles the display of custom dialogs for preferences. */
