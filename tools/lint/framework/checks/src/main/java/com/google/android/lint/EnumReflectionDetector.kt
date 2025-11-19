@@ -24,6 +24,8 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClassLiteralExpression
@@ -33,11 +35,16 @@ import org.jetbrains.uast.UClassLiteralExpression
  *
  * This detects usage of `Class.getEnumConstants()` and the base `Enum.valueOf()` method, both of
  * which rely on reflection and can be unsafe when optimizing bytecode.
+ *
+ * It also checks for generic arguments to `EnumMap` constructors, as R8 can only safely handle the
+ * case where an explicit type is provided to the constructor.
  */
 @Suppress("UnstableApiUsage")
 class EnumReflectionDetector : Detector(), SourceCodeScanner {
 
     override fun getApplicableMethodNames(): List<String> = listOf("getEnumConstants", "valueOf")
+
+    override fun getApplicableConstructorTypes(): List<String> = listOf("java.util.EnumMap")
 
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
         val evaluator = context.evaluator
@@ -59,6 +66,58 @@ class EnumReflectionDetector : Detector(), SourceCodeScanner {
                 }
             }
         }
+    }
+
+    override fun visitConstructor(
+        context: JavaContext,
+        node: UCallExpression,
+        constructor: PsiMethod,
+    ) {
+        if (constructor.containingClass?.qualifiedName != "java.util.EnumMap") return
+
+        // We are only interested in the constructor that takes a Class object type.
+        val parameters = constructor.parameterList.parameters
+        if (parameters.size != 1) return
+        val paramType = parameters[0].type as? PsiClassType ?: return
+        if (paramType.rawType().canonicalText != "java.lang.Class") return
+
+        // If the argument is a class literal (e.g., FooEnum.class), it's fine; R8 can handle this.
+        val argument = node.valueArguments.getOrNull(0) ?: return
+        if (argument is UClassLiteralExpression) return
+
+        // Also validate that the argument is a class type expression. This should generally be the
+        // case, as we're checking the *parameter* type above, but technically the AST could produce
+        // this intermediate scenario (e.g., lint is running before the compiler), so be defensive.
+        val argType = argument.getExpressionType() as? PsiClassType ?: return
+
+        // If we can determine the concrete type, it should be provided as a direct fix.
+        val typeParam = argType.parameters.getOrNull(0)
+        val enumType =
+            (typeParam as? PsiClassType)?.resolve()?.takeIf { it is PsiClass && it.isEnum }
+                as? PsiClass
+
+        val fix =
+            if (enumType != null) {
+                fix()
+                    .name("Replace with ${enumType.name}.class")
+                    .replace()
+                    .range(context.getLocation(argument))
+                    .with("${enumType.qualifiedName}.class")
+                    .shortenNames()
+                    .build()
+            } else {
+                null
+            }
+
+        val message =
+            "Reflective usage of `EnumMap` is discouraged; " +
+                if (enumType != null) {
+                    "use `new EnumMap(${enumType.name}.class)` instead."
+                } else {
+                    "prefer `new EnumMap(MyEnum.class)` if possible."
+                }
+
+        context.report(ISSUE_ENUM_MAP_CONSTRUCTOR, node, context.getLocation(node), message, fix)
     }
 
     private fun reportGetEnumConstants(context: JavaContext, node: UCallExpression) {
@@ -158,6 +217,26 @@ class EnumReflectionDetector : Detector(), SourceCodeScanner {
                 id = "ReflectiveEnumValueOf",
                 briefDescription = "Reflective usage of Enum.valueOf()",
                 explanation = ENUM_VALUE_OF_EXPLANATION,
+                category = Category.PERFORMANCE,
+                priority = ISSUE_PRIORITY,
+                severity = Severity.ERROR,
+                implementation =
+                    Implementation(EnumReflectionDetector::class.java, Scope.JAVA_FILE_SCOPE),
+            )
+
+        private val ENUM_MAP_CONSTRUCTOR_EXPLANATION =
+            """
+            Using `EnumMap` with a generic `Class` arg is generally unsafe when optimizing bytecode.
+            Prefer passing a class literal (e.g., `new EnumMap(MyEnum.class)`) whenever possible.
+            """
+                .trimIndent()
+
+        @JvmField
+        val ISSUE_ENUM_MAP_CONSTRUCTOR: Issue =
+            Issue.create(
+                id = "EnumMapConstructor",
+                briefDescription = "EnumMap constructor with non-literal class",
+                explanation = ENUM_MAP_CONSTRUCTOR_EXPLANATION,
                 category = Category.PERFORMANCE,
                 priority = ISSUE_PRIORITY,
                 severity = Severity.ERROR,
