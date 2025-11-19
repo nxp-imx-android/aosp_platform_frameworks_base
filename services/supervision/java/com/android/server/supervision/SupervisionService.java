@@ -66,6 +66,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.IpcDataCache;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
@@ -382,8 +383,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
             getUserDataLocked(userId).policies.add(policy);
             mSupervisionSettings.saveUserData();
         }
+
         executeOnServiceThread(
                 () -> {
+                    SupervisionManager.invalidateGetPoliciesCache();
                     applyPolicy(userId, policy);
                     dispatchSupervisionAppServiceEvent(
                             userId, listener -> listener.onPolicyChanged(policy));
@@ -1289,14 +1292,23 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         @Override
         public void onBootPhase(int phase) {
-            if (Flags.enableSupervisionManagerPolicyApis()
-                    && phase == SystemService.PHASE_BOOT_COMPLETED) {
-                mSupervisionService.mPackageMonitor.register(
-                        getContext(),
-                        mSupervisionService.mServiceThreadHandler.getLooper(),
-                        UserHandle.ALL,
-                        /* externalStorage= */ false);
+            switch (phase) {
+                case SystemService.PHASE_SYSTEM_SERVICES_READY -> onSystemServicesReady();
+                case SystemService.PHASE_BOOT_COMPLETED -> {
+                    if (Flags.enableSupervisionManagerPolicyApis()) {
+                        mSupervisionService.mPackageMonitor.register(
+                                getContext(),
+                                mSupervisionService.mServiceThreadHandler.getLooper(),
+                                UserHandle.ALL,
+                                /* externalStorage= */ false);
+                    }
+                }
             }
+        }
+
+        private void onSystemServicesReady() {
+            mSupervisionService.executeOnServiceThread(
+                    SupervisionManager::invalidateGetPoliciesCache);
         }
 
         @VisibleForTesting
