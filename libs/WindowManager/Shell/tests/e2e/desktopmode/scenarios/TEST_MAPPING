@@ -77,14 +77,14 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-MoveToNextDisplayTest",
+      "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
       "keywords": [
         "device",
         "desktop"
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-MoveToNextDisplayProjectedTest",
+      "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayProjectedTest",
       "keywords": [
         "device",
         "desktop"
@@ -99,6 +99,13 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-TabTearingDesktopWindowingLimitTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-TabTearingInteractionDependantTest",
       "keywords": [
         "device",
         "desktop"
@@ -361,7 +368,7 @@
       ]
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-focus-CloseThenMoveFocusTest",
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-CloseAndKeepFocusTest",
       "keywords": [
         "device",
         "desktop"
