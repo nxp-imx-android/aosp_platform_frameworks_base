@@ -156,8 +156,10 @@ constructor(
             anchoredTranslate(Smartspace.DWA.SmallClock.Row, anchor = Smartspace.Cards)
             anchoredTranslate(Smartspace.DWA.SmallClock.Column, anchor = Smartspace.Cards)
 
-            timestampRange(endMillis = 133) { exit() }
-            timestampRange(startMillis = 133, endMillis = 300) { enter() }
+            if (!viewModel.shouldSkipTransition) {
+                timestampRange(endMillis = 133) { exit() }
+                timestampRange(startMillis = 133, endMillis = 300) { enter() }
+            }
         }
 
         protected fun PropertyTransformationBuilder.fadeLargeClock() {
