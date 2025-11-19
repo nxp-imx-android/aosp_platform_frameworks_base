@@ -22,34 +22,44 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.android.compose.animation.Expandable
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
@@ -57,6 +67,7 @@ import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel
 import com.android.systemui.qs.panels.ui.compose.toolbar.Toolbar.TransitionKeys.SecurityInfoKey
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackViewModel
+import com.android.systemui.qs.panels.ui.viewmodel.toolbar.PowerMenuToggleButtonUiState
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
@@ -97,10 +108,25 @@ fun Toolbar(
             }
         }
 
-        IconButton(
-            model = viewModel.powerButtonViewModel,
-            modifier = Modifier.sysuiResTag("pm_lite"),
-        )
+        if (viewModel.useInlinePowerMenu) {
+            Box {
+                PowerMenuToggleButton(
+                    viewModel = viewModel.powerMenuToggleButtonUiState,
+                    modifier = Modifier.sysuiResTag("pm_lite"),
+                )
+                if (viewModel.isInlinePowerMenuVisible) {
+                    PowerMenu(
+                        viewModelFactory = viewModel.powerMenuViewModelFactory,
+                        onDismiss = viewModel::onPowerMenuDismissed,
+                    )
+                }
+            }
+        } else {
+            IconButton(
+                model = viewModel.powerButtonViewModel,
+                modifier = Modifier.sysuiResTag("pm_lite"),
+            )
+        }
     }
 }
 
@@ -170,7 +196,7 @@ private fun IconButton(
             modifier
                 .sizeIn(
                     minHeight = IconButtonDimensions.MinimumSize,
-                    minWidth = IconButtonDimensions.MinimumSize
+                    minWidth = IconButtonDimensions.MinimumSize,
                 )
                 .aspectRatio(1.0F)
                 .borderOnFocus(MaterialTheme.colorScheme.secondary, CornerSize(percent = 50))
@@ -185,17 +211,76 @@ private fun IconButton(
             }
         Box(
             modifier =
-                Modifier
-                    .size(IconButtonDimensions.ColoredBackgroundSize)
+                Modifier.size(IconButtonDimensions.ColoredBackgroundSize)
                     .background(color = protectionColor, shape = CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             ToolbarIcon(
                 icon = model.icon,
                 modifier = Modifier.size(IconButtonDimensions.IconSize),
-                tint = iconColor
+                tint = iconColor,
             )
         }
+    }
+}
+
+@Composable
+private fun PowerMenuToggleButton(
+    viewModel: PowerMenuToggleButtonUiState,
+    modifier: Modifier = Modifier,
+) {
+    val bgColor =
+        if (viewModel.isSelected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        }
+
+    val shape =
+        RoundedCornerShape(
+            topStart = PowerMenuToggleButtonConstants.DefaultCornerRadius,
+            topEnd = PowerMenuToggleButtonConstants.DefaultCornerRadius,
+            bottomStart = PowerMenuToggleButtonConstants.DefaultCornerRadius,
+            bottomEnd =
+                if (viewModel.isSelected) {
+                    PowerMenuToggleButtonConstants.SelectedCornerRadius
+                } else {
+                    PowerMenuToggleButtonConstants.DefaultCornerRadius
+                },
+        )
+
+    Row(
+        modifier =
+            modifier
+                .clip(shape)
+                .clickable(onClick = viewModel.onClick)
+                .background(bgColor)
+                .padding(
+                    start = PowerMenuToggleButtonConstants.PaddingStart,
+                    end = PowerMenuToggleButtonConstants.PaddingEnd,
+                    top = PowerMenuToggleButtonConstants.PaddingVertical,
+                    bottom = PowerMenuToggleButtonConstants.PaddingVertical,
+                ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PowerMenuToggleButtonConstants.IconSpacing),
+    ) {
+        val fgColor =
+            if (viewModel.isSelected) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            }
+
+        Icon(icon = viewModel.icon, tint = fgColor)
+
+        val chevronRotation by
+            animateFloatAsState(targetValue = viewModel.chevronRotation, label = "ChevronRotation")
+
+        Icon(
+            icon = viewModel.chevron,
+            tint = fgColor,
+            modifier = Modifier.graphicsLayer { rotationZ = chevronRotation },
+        )
     }
 }
 
@@ -241,6 +326,15 @@ private object Toolbar {
     }
 }
 
+private object PowerMenuToggleButtonConstants {
+    val DefaultCornerRadius = 16.dp
+    val SelectedCornerRadius = 4.dp
+    val PaddingStart = 8.dp
+    val PaddingEnd = 4.dp
+    val PaddingVertical = 4.dp
+    val IconSpacing = 6.dp
+}
+
 object IconButtonDimensions {
     val ColoredBackgroundSize: Dp
         @Composable
@@ -253,8 +347,5 @@ object IconButtonDimensions {
         get() = dimensionResource(id = R.dimen.toolbar_button_icon_size)
 
     val MinimumSize: Dp
-        @Composable
-        @ReadOnlyComposable
-        get() =
-            dimensionResource(id = R.dimen.toolbar_button_size)
+        @Composable @ReadOnlyComposable get() = dimensionResource(id = R.dimen.toolbar_button_size)
 }

@@ -67,9 +67,14 @@ constructor(
      * The list of global actions that are currently available to be displayed to the user. The
      * ordering in [actions] is preserved while filtering out actions that are not available.
      */
-    val items: List<GlobalActionUiState> by
+    val visibleActions: List<GlobalActionUiState.Visible> by
         interactor.availableGlobalActions
-            .map { available -> actions.filter { it.key in available }.map { it.state } }
+            .map { available ->
+                actions
+                    .filter { it.key in available }
+                    .map { it.state }
+                    .filterIsInstance<GlobalActionUiState.Visible>()
+            }
             .onEach { visibleActions ->
                 logger.d(
                     "Visible actions: ${visibleActions.map { it.key }} " +

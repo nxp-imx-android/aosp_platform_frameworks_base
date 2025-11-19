@@ -68,7 +68,8 @@ class PowerMenuViewModelTest : SysuiTestCase() {
             switchToScene(Scenes.Gone)
 
             // THEN items contains the lock action
-            assertThat(underTest.items.map { it.key }).containsExactly(GlobalActionType.LOCK)
+            assertThat(underTest.visibleActions.map { it.key })
+                .containsExactly(GlobalActionType.LOCK)
         }
 
     @Test
@@ -80,7 +81,7 @@ class PowerMenuViewModelTest : SysuiTestCase() {
             switchToScene(Scenes.Gone)
 
             // THEN items is empty
-            assertThat(underTest.items).isEmpty()
+            assertThat(underTest.visibleActions).isEmpty()
         }
 
     @Test
@@ -96,21 +97,23 @@ class PowerMenuViewModelTest : SysuiTestCase() {
 
             // VERIFY LOCK item is NOT present (filtered out by interactor because we are already
             // locked)
-            assertThat(underTest.items.map { it.key }).doesNotContain(GlobalActionType.LOCK)
+            assertThat(underTest.visibleActions.map { it.key })
+                .doesNotContain(GlobalActionType.LOCK)
 
             // WHEN device is unlocked and entered
             setUnlocked(true)
             switchToScene(Scenes.Gone)
 
             // THEN LOCK item IS present
-            assertThat(underTest.items.map { it.key }).contains(GlobalActionType.LOCK)
+            assertThat(underTest.visibleActions.map { it.key }).contains(GlobalActionType.LOCK)
 
             // WHEN re-locked
             setUnlocked(false)
             switchToScene(Scenes.Lockscreen)
 
             // THEN LOCK item is removed again
-            assertThat(underTest.items.map { it.key }).doesNotContain(GlobalActionType.LOCK)
+            assertThat(underTest.visibleActions.map { it.key })
+                .doesNotContain(GlobalActionType.LOCK)
         }
 
     @Test
@@ -121,7 +124,7 @@ class PowerMenuViewModelTest : SysuiTestCase() {
             fakeUserRepository.setUserManagerLogoutEnabled(true)
 
             // THEN items contains the logout action
-            assertThat(underTest.items.map { it.key }).contains(GlobalActionType.LOGOUT)
+            assertThat(underTest.visibleActions.map { it.key }).contains(GlobalActionType.LOGOUT)
         }
 
     @Test
@@ -131,7 +134,7 @@ class PowerMenuViewModelTest : SysuiTestCase() {
             globalActionsRepository.possibleGlobalActions = listOf(GlobalActionType.POWER)
 
             // THEN items contains the shutdown action
-            assertThat(underTest.items.map { it.key }).contains(GlobalActionType.POWER)
+            assertThat(underTest.visibleActions.map { it.key }).contains(GlobalActionType.POWER)
         }
 
     @Test
@@ -141,7 +144,7 @@ class PowerMenuViewModelTest : SysuiTestCase() {
             globalActionsRepository.possibleGlobalActions = listOf(GlobalActionType.RESTART)
 
             // THEN items contains the restart action
-            assertThat(underTest.items.map { it.key }).contains(GlobalActionType.RESTART)
+            assertThat(underTest.visibleActions.map { it.key }).contains(GlobalActionType.RESTART)
         }
 
     @Test
@@ -161,7 +164,7 @@ class PowerMenuViewModelTest : SysuiTestCase() {
             switchToScene(Scenes.Gone)
 
             // THEN items are in the fixed order: Lock -> Logout -> Restart -> Power
-            assertThat(underTest.items.map { it.key })
+            assertThat(underTest.visibleActions.map { it.key })
                 .containsExactly(
                     GlobalActionType.LOCK,
                     GlobalActionType.LOGOUT,

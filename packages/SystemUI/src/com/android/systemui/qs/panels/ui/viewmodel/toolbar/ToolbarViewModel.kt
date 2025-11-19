@@ -36,9 +36,11 @@ import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel.
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsSecurityButtonViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.securityButtonViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.userSwitcherViewModel
+import com.android.systemui.qs.panels.LargeScreenQSInlinePowerMenu
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import dagger.assisted.AssistedFactory
@@ -59,6 +61,8 @@ class ToolbarViewModel
 constructor(
     val editModeButtonViewModelFactory: EditModeButtonViewModel.Factory,
     val textFeedbackContentViewModelFactory: TextFeedbackContentViewModel.Factory,
+    val powerMenuViewModelFactory: PowerMenuViewModel.Factory,
+    private val shadeModeInteractor: ShadeModeInteractor,
     private val footerActionsInteractor: FooterActionsInteractor,
     private val globalActionsDialogLiteProvider: Provider<GlobalActionsDialogLite>,
     private val falsingInteractor: FalsingInteractor,
@@ -73,6 +77,13 @@ constructor(
 
     val powerButtonViewModel: FooterActionsButtonViewModel =
         PowerActionViewModel(context = qsThemedContext, onClick = ::onPowerButtonClicked)
+
+    val powerMenuToggleButtonUiState
+        get() =
+            PowerMenuToggleButtonUiState(
+                onClick = onPowerMenuToggleButtonClicked,
+                isSelected = isInlinePowerMenuVisible,
+            )
 
     val userSwitcherViewModel: FooterActionsButtonViewModel? by
         hydrator.hydratedStateOf(
@@ -97,6 +108,17 @@ constructor(
                     }
                 },
         )
+
+    /**
+     * Whether the inline power menu is visible on top of the QS panel.
+     *
+     * This state is only relevant when [ShadeModeInteractor.isQSInlinePowerMenuEnabled] is true.
+     */
+    var isInlinePowerMenuVisible by mutableStateOf(false)
+        private set
+
+    val useInlinePowerMenu =
+        shadeModeInteractor.isQSInlinePowerMenuEnabled && LargeScreenQSInlinePowerMenu.isEnabled
 
     var securityInfoViewModel: FooterActionsSecurityButtonViewModel? by mutableStateOf(null)
         private set
@@ -146,6 +168,11 @@ constructor(
         }
     }
 
+    private val onPowerMenuToggleButtonClicked = {
+        LargeScreenQSInlinePowerMenu.expectInNewMode()
+        isInlinePowerMenuVisible = !isInlinePowerMenuVisible
+    }
+
     private fun onUserSwitcherClicked(expandable: Expandable) {
         falsingInteractor.runIfNotFalseTap { footerActionsInteractor.showUserSwitcher(expandable) }
     }
@@ -158,6 +185,16 @@ constructor(
         falsingInteractor.runIfNotFalseTap {
             footerActionsInteractor.showDeviceMonitoringDialog(quickSettingsContext, expandable)
         }
+    }
+
+    /**
+     * Resets the power menu visibility state when it is dismissed by the user (e.g., clicking
+     * outside, pressing back).
+     */
+    fun onPowerMenuDismissed() {
+        LargeScreenQSInlinePowerMenu.expectInNewMode()
+        assert(shadeModeInteractor.isQSInlinePowerMenuEnabled)
+        isInlinePowerMenuVisible = false
     }
 
     @AssistedFactory
