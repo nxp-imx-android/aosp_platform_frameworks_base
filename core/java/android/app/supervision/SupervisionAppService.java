@@ -26,6 +26,9 @@ import android.app.Service;
 import android.app.supervision.flags.Flags;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Handler;
+import android.os.Looper;
+
 
 /**
  * Base class for a service that the holders of the {@link
@@ -56,22 +59,26 @@ public class SupervisionAppService extends Service {
     public static final String ACTION_SUPERVISION_APP_SERVICE =
             "android.app.action.SUPERVISION_APP_SERVICE";
 
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {};
+
     private final ISupervisionListener mBinder =
             new ISupervisionListener.Stub() {
                 @Override
                 public void onSetSupervisionEnabled(int userId, boolean enabled) {
-                    if (enabled) {
-                        SupervisionAppService.this.onSupervisionEnabled();
-                    } else {
-                        SupervisionAppService.this.onSupervisionDisabled();
-                    }
+                    mHandler.post(() -> {
+                        if (enabled) {
+                            SupervisionAppService.this.onSupervisionEnabled();
+                        } else {
+                            SupervisionAppService.this.onSupervisionDisabled();
+                        }
+                    });
                 }
 
                 @Override
                 public void onPolicyChanged(Policy policy) {
-                    if (Flags.enableSupervisionManagerPolicyApis()) {
+                    mHandler.post(() -> {
                         SupervisionAppService.this.onPolicyChanged(policy);
-                    }
+                    });
                 }
             };
 
