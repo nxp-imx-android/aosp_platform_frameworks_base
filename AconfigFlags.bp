@@ -98,6 +98,7 @@ aconfig_declarations_group {
         "art_exported_aconfig_flags_lib",
         "backstage_power_flags_lib",
         "backup_flags_lib",
+        "bluetooth_exported_flags_java_lib",
         "camera_platform_flags_core_java_lib",
         "com.android.bettertogether.d2d_connectivity_aconfig_exported",
         "com.android.eyedropper.flags-aconfig-java",

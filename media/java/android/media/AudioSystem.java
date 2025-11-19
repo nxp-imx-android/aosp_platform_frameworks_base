@@ -22,6 +22,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.TestApi;
 import android.bluetooth.BluetoothCodecConfig;
+import android.bluetooth.BluetoothCodecType;
 import android.bluetooth.BluetoothLeAudioCodecConfig;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
@@ -278,20 +279,22 @@ public class AudioSystem
     public static final int AUDIO_FORMAT_OPUS_HI_RES    = 0x08000001;
 
     /** @hide */
-    @IntDef(flag = false, prefix = "AUDIO_FORMAT_", value = {
-            AUDIO_FORMAT_INVALID,
-            AUDIO_FORMAT_DEFAULT,
-            AUDIO_FORMAT_AAC,
-            AUDIO_FORMAT_SBC,
-            AUDIO_FORMAT_APTX,
-            AUDIO_FORMAT_APTX_HD,
-            AUDIO_FORMAT_LDAC,
-            AUDIO_FORMAT_LHDC,
-            AUDIO_FORMAT_LC3,
-            AUDIO_FORMAT_OPUS,
-            AUDIO_FORMAT_OPUS_HI_RES,
-           }
-    )
+    @IntDef(
+            flag = false,
+            prefix = "AUDIO_FORMAT_",
+            value = {
+                AUDIO_FORMAT_INVALID,
+                AUDIO_FORMAT_DEFAULT,
+                AUDIO_FORMAT_AAC,
+                AUDIO_FORMAT_SBC,
+                AUDIO_FORMAT_APTX,
+                AUDIO_FORMAT_APTX_HD,
+                AUDIO_FORMAT_LDAC,
+                AUDIO_FORMAT_LHDC,
+                AUDIO_FORMAT_LC3,
+                AUDIO_FORMAT_OPUS,
+                AUDIO_FORMAT_OPUS_HI_RES,
+            })
     @Retention(RetentionPolicy.SOURCE)
     public @interface AudioFormatNativeEnumForBtCodec {}
 
@@ -318,6 +321,7 @@ public class AudioSystem
     private static final int BLUETOOTH_LE_AUDIO_CODEC_CONFIG_SOURCE_CODEC_TYPE_OPUS_HI_RES = 2;
 
     //TODO b/415848542: replace with BluetoothCodecType.CODEC_ID_LHDC
+    //Remove with a2dpCreateCodecTypeFromIdApi flag
     private static final int BLUETOOTH_CODEC_CONFIG_SOURCE_CODEC_TYPE_LHDC = 7;
     /**
      * @hide
@@ -341,6 +345,47 @@ public class AudioSystem
     }
 
     /**
+     * @hide Convert audio format enum values to Bluetooth A2DP codec values
+     * @param audioFormat the audio format to convert to codec ID.
+     * @return the codec ID, or -1 if unknown
+     */
+    public static long audioFormatToBluetoothA2dpSourceCodec(
+            @AudioFormatNativeEnumForBtCodec int audioFormat) {
+        return switch (audioFormat) {
+            case AUDIO_FORMAT_AAC -> BluetoothCodecType.CODEC_ID_AAC;
+            case AUDIO_FORMAT_SBC -> BluetoothCodecType.CODEC_ID_SBC;
+            case AUDIO_FORMAT_APTX -> BluetoothCodecType.CODEC_ID_APTX;
+            case AUDIO_FORMAT_APTX_HD -> BluetoothCodecType.CODEC_ID_APTX_HD;
+            case AUDIO_FORMAT_LDAC -> {
+                if (com.android.bluetooth.flags.Flags.a2dpLdacApi()) {
+                    yield BluetoothCodecType.CODEC_ID_SONY_LDAC;
+                }
+                yield BluetoothCodecType.CODEC_ID_LDAC;
+            }
+            case AUDIO_FORMAT_OPUS -> BluetoothCodecType.CODEC_ID_OPUS;
+            case AUDIO_FORMAT_LHDC -> {
+                if (com.android.bluetooth.flags.Flags.a2dpLhdcApi()) {
+                    yield BluetoothCodecType.CODEC_ID_LHDCV5;
+                }
+                Log.e(
+                        TAG,
+                        "Unknown audio format 0x"
+                                + Integer.toHexString(audioFormat)
+                                + " for conversion to BT codec");
+                yield -1;
+            }
+            default -> {
+                Log.e(
+                        TAG,
+                        "Unknown audio format 0x"
+                                + Integer.toHexString(audioFormat)
+                                + " for conversion to BT codec");
+                yield -1;
+            }
+        };
+    }
+
+    /**
      * @hide
      * Convert audio format enum values to Bluetooth LE audio codec values
      */
@@ -359,34 +404,41 @@ public class AudioSystem
     }
 
     /**
-     * @hide
-     * Convert an A2DP Bluetooth codec to an audio format enum
-     * @param btCodec the codec to convert.
+     * @hide Convert an A2DP Bluetooth codec to an audio format enum
+     * @param codecId the codec to convert.
      * @return the audio format, or {@link #AUDIO_FORMAT_DEFAULT} if unknown
      */
     public static @AudioFormatNativeEnumForBtCodec int bluetoothA2dpCodecToAudioFormat(
-            int btCodec) {
-        switch (btCodec) {
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_SBC:
-                return AudioSystem.AUDIO_FORMAT_SBC;
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_AAC:
-                return AudioSystem.AUDIO_FORMAT_AAC;
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_APTX:
-                return AudioSystem.AUDIO_FORMAT_APTX;
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_APTX_HD:
-                return AudioSystem.AUDIO_FORMAT_APTX_HD;
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_LDAC:
-                return AudioSystem.AUDIO_FORMAT_LDAC;
-            case BLUETOOTH_CODEC_CONFIG_SOURCE_CODEC_TYPE_LHDC:
-                return AudioSystem.AUDIO_FORMAT_LHDC;
-            case BluetoothCodecConfig.SOURCE_CODEC_TYPE_OPUS:
-                return AudioSystem.AUDIO_FORMAT_OPUS;
-            default:
-                Log.e(TAG, "Unknown A2DP BT codec 0x" + Integer.toHexString(btCodec)
-                        + " for conversion to audio format");
-                // TODO returning DEFAULT is the current behavior, should this return INVALID?
-                return AudioSystem.AUDIO_FORMAT_DEFAULT;
+            long codecId) {
+        if (codecId == BluetoothCodecType.CODEC_ID_SBC) {
+            return AudioSystem.AUDIO_FORMAT_SBC;
         }
+        if (codecId == BluetoothCodecType.CODEC_ID_AAC) {
+            return AudioSystem.AUDIO_FORMAT_AAC;
+        }
+        if (codecId == BluetoothCodecType.CODEC_ID_APTX) {
+            return AudioSystem.AUDIO_FORMAT_APTX;
+        }
+        if (codecId == BluetoothCodecType.CODEC_ID_APTX_HD) {
+            return AudioSystem.AUDIO_FORMAT_APTX_HD;
+        }
+        if (com.android.bluetooth.flags.Flags.a2dpLdacApi()) {
+            if (codecId == BluetoothCodecType.CODEC_ID_SONY_LDAC) {
+                return AudioSystem.AUDIO_FORMAT_LDAC;
+            }
+        } else if (codecId == (BluetoothCodecType.CODEC_ID_LDAC & 0xFFFFFFFFL)) {
+            return AudioSystem.AUDIO_FORMAT_LDAC;
+        }
+        if (codecId == BluetoothCodecType.CODEC_ID_OPUS) {
+            return AudioSystem.AUDIO_FORMAT_OPUS;
+        }
+        if (com.android.bluetooth.flags.Flags.a2dpLhdcApi()) {
+            if (codecId == BluetoothCodecType.CODEC_ID_LHDCV5) {
+                return AudioSystem.AUDIO_FORMAT_LHDC;
+            }
+        }
+        Log.e(TAG, "Unknown A2DP BT codec: " + codecId + " for conversion to audio format");
+        return AudioSystem.AUDIO_FORMAT_DEFAULT;
     }
 
     /**
