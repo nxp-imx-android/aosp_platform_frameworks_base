@@ -165,6 +165,7 @@ interface ICompanionDeviceManager {
 
     DeviceId setDeviceId(int associationId, in DeviceId deviceId);
 
+    @EnforcePermission("MANAGE_COMPANION_DEVICES")
     void setLocalMetadata(int userId, String key, in PersistableBundle value);
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
