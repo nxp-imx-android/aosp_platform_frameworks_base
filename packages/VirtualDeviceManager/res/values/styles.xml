@@ -61,7 +61,8 @@
         <item name="android:textSize">14sp</item>
     </style>
 
-    <style name="RequestComputerControlAccessDialogButton">
+    <style name="RequestComputerControlAccessDialogButton"
+           parent="@android:style/Widget.DeviceDefault.Button.Borderless.Colored">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">@dimen/settingslib_expressive_space_none</item>
