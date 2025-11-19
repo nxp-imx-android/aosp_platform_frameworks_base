@@ -56,13 +56,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.LinkInteractionListener
 import androidx.compose.ui.text.buildAnnotatedString
@@ -74,6 +72,8 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.biometrics.shared.model.IconType
 import com.android.systemui.biometrics.ui.binder.Spaghetti
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel
+import com.android.systemui.compose.modifiers.sysUiResTagContainer
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.res.R
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -100,7 +100,9 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
     val scrollState = rememberScrollState()
 
     PlatformTheme {
-        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp).sysUiResTagContainer()
+        ) {
             Row(
                 modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -147,7 +149,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                             text = stringResource(credentialText),
                             index = index,
                             total = total,
-                            modifier = Modifier.testTag("fallback_credential_button"),
+                            modifier = Modifier.sysuiResTag("fallback_credential_button"),
                             onClick = {
                                 promptViewModel.onSwitchToCredential()
                                 callback.onUseDeviceCredential()
@@ -265,7 +267,6 @@ private fun OptionItem(
         modifier =
             modifier
                 .fillMaxWidth()
-                .semantics { testTagsAsResourceId = true }
                 .clickable(onClick = onClick, enabled = enabled)
                 .alpha(if (enabled) 1f else 0.4f),
         shape = shape,
