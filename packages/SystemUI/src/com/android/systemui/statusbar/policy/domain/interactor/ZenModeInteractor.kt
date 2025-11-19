@@ -77,6 +77,7 @@ constructor(
             AudioManager.STREAM_MUSIC to { it.policy.priorityCategoryMedia == STATE_DISALLOW },
             AudioManager.STREAM_ALARM to { it.policy.priorityCategoryAlarms == STATE_DISALLOW },
             AudioManager.STREAM_SYSTEM to { it.policy.priorityCategorySystem == STATE_DISALLOW },
+            AudioManager.STREAM_ASSISTANT to { it.policy.priorityCategoryMedia == STATE_DISALLOW },
         )
 
     val hasNextAlarm: StateFlow<Boolean> = zenModeRepository.hasNextAlarm
