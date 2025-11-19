@@ -202,11 +202,13 @@ class BubbleDataRepository(
         /**
          * Load BubbleEntity from disk.
          * e.g.
+         * ```
          * [
          *     BubbleEntity(0, "com.example.messenger", "id-2"),
          *     BubbleEntity(10, "com.example.chat", "my-id1")
          *     BubbleEntity(0, "com.example.messenger", "id-1")
          * ]
+         * ```
          */
         val entitiesByUser = persistentRepository.readFromDisk()
 
@@ -219,9 +221,11 @@ class BubbleDataRepository(
         /**
          * Extract userId/packageName from these entities.
          * e.g.
+         * ```
          * [
          *     ShortcutKey(0, "com.example.messenger"), ShortcutKey(0, "com.example.chat")
          * ]
+         * ```
          */
         val shortcutKeys = entities.map { ShortcutKey(it.userId, it.packageName) }.toSet()
 
@@ -229,6 +233,7 @@ class BubbleDataRepository(
          * Retrieve shortcuts with given userId/packageName combination, then construct a
          * mapping from the userId/packageName pair to a list of associated ShortcutInfo.
          * e.g.
+         * ```
          * {
          *     ShortcutKey(0, "com.example.messenger") -> [
          *         ShortcutInfo(userId=0, pkg="com.example.messenger", id="id-0"),
@@ -239,6 +244,7 @@ class BubbleDataRepository(
          *         ShortcutInfo(userId=10, pkg="com.example.chat", id="id-3")
          *     ]
          * }
+         * ```
          */
         val shortcutMap = shortcutKeys.flatMap { key ->
             launcherApps.getShortcuts(
