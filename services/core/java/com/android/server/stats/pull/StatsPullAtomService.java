@@ -107,6 +107,7 @@ import android.app.StatsManager.PullAtomMetadata;
 import android.app.usage.NetworkStatsManager;
 import android.bluetooth.BluetoothActivityEnergyInfo;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.UidTraffic;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -2017,7 +2018,8 @@ public class StatsPullAtomService extends SystemService {
     }
 
     private BluetoothActivityEnergyInfo fetchBluetoothData() {
-        final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        final BluetoothAdapter adapter =
+                mContext.getSystemService(BluetoothManager.class).getAdapter();
         if (adapter != null) {
             SynchronousResultReceiver bluetoothReceiver =
                     new SynchronousResultReceiver("bluetooth");
