@@ -28,6 +28,7 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerFlags
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPermissionObserver
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerPresentationController
+import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellInit
@@ -72,6 +73,7 @@ object PinnedLayerModule {
         displayController: DisplayController,
         desktopState: DesktopState,
         windowDragTransitionHandler: WindowDragTransitionHandler,
+        transactionPool: TransactionPool,
     ): Optional<PinnedLayerController> {
         if (PinnedLayerFlags.isPinnedLayerEnabled()) {
             return Optional.of(
@@ -81,6 +83,7 @@ object PinnedLayerModule {
                     presentationController =
                         PinnedLayerPresentationController(context, displayController, desktopState),
                     windowDragTransitionHandler = windowDragTransitionHandler,
+                    transactionPool = transactionPool,
                 )
             )
         }
