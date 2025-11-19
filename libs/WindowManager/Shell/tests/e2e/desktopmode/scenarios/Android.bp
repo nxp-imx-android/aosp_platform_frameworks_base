@@ -89,6 +89,7 @@ test_module_config {
         "com.android.wm.shell.functional.TabTearingTest",
         "com.android.wm.shell.functional.appcompat.DialogStaysInsideDesktopAppTest",
         "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
+        "com.android.wm.shell.functional.appcompat.RestartSizeCompatAppInDesktopMode",
         "com.android.wm.shell.functional.appcompat.ShowAppDialogInDesktopModeTest",
         "com.android.wm.shell.functional.appcompat.ShowQuickShareDialogFromQuickSettingsTest",
         "com.android.wm.shell.functional.exit.ExitDesktopToFullScreenWithAppHeaderMenuTest",
@@ -97,6 +98,7 @@ test_module_config {
         "com.android.wm.shell.functional.externaldisplay.DragMoveWindowToNextDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
         "com.android.wm.shell.functional.externaldisplay.OpenAppWithExternalDisplayConnectedTest",
+        "com.android.wm.shell.functional.externaldisplay.ScaleDensityForExternalDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsToggleMirroringSwitchTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsUpdateRotationTest",
         "com.android.wm.shell.functional.fundamentals.DragAppWindowMultiWindowAndPipTest",
@@ -164,8 +166,6 @@ test_module_config {
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithCornerResizeTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithEdgeResizeTest",
-        "com.android.wm.shell.functional.resizing.RestartSizeCompatAppInDesktopMode",
-        "com.android.wm.shell.functional.resizing.ScaleDensityForExternalDisplayTest",
         "com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithButtonTest",
         "com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithDragTest",
         "com.android.wm.shell.functional.resizing.SnapResizeAppWindowWithKeyboardTest",
@@ -294,6 +294,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-appcompat-RestartSizeCompatAppInDesktopMode",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.appcompat.RestartSizeCompatAppInDesktopMode"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-appcompat-ShowAppDialogInDesktopModeTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -361,6 +368,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.externaldisplay.OpenAppWithExternalDisplayConnectedTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-ScaleDensityForExternalDisplayTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.ScaleDensityForExternalDisplayTest"],
 }
 
 test_module_config {
@@ -823,20 +837,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.resizing.ResizeAppWithEdgeResizeTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-resizing-RestartSizeCompatAppInDesktopMode",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.resizing.RestartSizeCompatAppInDesktopMode"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-resizing-ScaleDensityForExternalDisplayTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.resizing.ScaleDensityForExternalDisplayTest"],
 }
 
 test_module_config {

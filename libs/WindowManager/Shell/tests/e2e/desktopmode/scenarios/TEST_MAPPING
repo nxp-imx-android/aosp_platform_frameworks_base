@@ -133,6 +133,13 @@
        ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-appcompat-RestartSizeCompatAppInDesktopMode",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
       "name": "FunctionalTestsDesktopMode-appcompat-ShowAppDialogInDesktopModeTest",
       "keywords": [
         "device",
@@ -183,6 +190,13 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-externaldisplay-OpenAppWithExternalDisplayConnectedTest",
+      "keywords": [
+        "device",
+        "desktop"
+      ]
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-ScaleDensityForExternalDisplayTest",
       "keywords": [
         "device",
         "desktop"
@@ -605,63 +619,42 @@
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppWithCornerResizeTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppWithEdgeResizeTest",
       "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-resizing-RestartSizeCompatAppInDesktopMode",
-      "keywords": [
-        "device",
-        "desktop"
-      ]
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-resizing-ScaleDensityForExternalDisplayTest",
-      "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithButtonTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithDragTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithKeyboardTest",
       "keywords": [
-        "device",
         "desktop"
       ]
     },
