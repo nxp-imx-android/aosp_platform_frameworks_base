@@ -724,20 +724,6 @@ incfs::map_ptr<void> _FileAsset::ensureAlignment(const incfs::IncFsFileMap& map)
     return buf;
 }
 
-Asset::Data _FileAsset::takeData() && {
-  if (!getBuffer(true)) {
-    return Data{std::monostate()};
-  }
-  if (mBuf) {
-    return Data{std::unique_ptr<uint8_t[]>(reinterpret_cast<uint8_t*>(
-      std::exchange(mBuf, nullptr)))};
-  }
-  if (mMap) {
-    return Data{*std::move(*mMap).take_data()};
-  }
-  return Data{std::monostate()};
-}
-
 /*
  * ===========================================================================
  *      _CompressedAsset
@@ -965,12 +951,4 @@ bail:
 
 incfs::map_ptr<void> _CompressedAsset::getIncFsBuffer(bool aligned) {
     return incfs::map_ptr<void>(getBuffer(aligned));
-}
-
-Asset::Data _CompressedAsset::takeData() && {
-  if (!getBuffer(true)) {
-    return Data{std::monostate()};
-  }
-  return Data{std::unique_ptr<uint8_t[]>(reinterpret_cast<uint8_t*>(
-        std::exchange(mBuf, nullptr)))};
 }

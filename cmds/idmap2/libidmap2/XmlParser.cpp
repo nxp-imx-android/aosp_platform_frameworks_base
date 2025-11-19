@@ -155,23 +155,12 @@ Result<std::string> XmlParser::Node::GetAttributeStringValue(const std::string& 
 XmlParser::XmlParser(std::unique_ptr<ResXMLTree> tree) : tree_(std::move(tree)) {
 }
 
-Result<XmlParser> XmlParser::Create(std::unique_ptr<android::Asset>&& asset) {
-  auto tree = ResXMLTree::fromAsset(std::move(asset));
-  if (!tree) {
-    return Error("Malformed xml block in asset");
-  }
-  return InitializeParser(std::move(tree));
-}
-
 Result<XmlParser> XmlParser::Create(const void* data, size_t size, bool copy_data) {
   auto tree = std::make_unique<ResXMLTree>();
   if (tree->setTo(data, size, copy_data) != NO_ERROR) {
     return Error("Malformed xml block");
   }
-  return InitializeParser(std::move(tree));
-}
 
-Result<XmlParser> XmlParser::InitializeParser(std::unique_ptr<ResXMLTree> tree) {
   // Find the beginning of the first tag.
   XmlParser::Event event;
   while ((event = tree->next()) != XmlParser::Event::BAD_DOCUMENT &&

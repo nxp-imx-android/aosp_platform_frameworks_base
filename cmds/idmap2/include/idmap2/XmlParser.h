@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef IDMAP2_INCLUDE_IDMAP2_XMLPARSER_H_
+#define IDMAP2_INCLUDE_IDMAP2_XMLPARSER_H_
 
 #include <memory>
 #include <string>
@@ -23,6 +24,7 @@
 #include "Result.h"
 #include "android-base/macros.h"
 #include "androidfw/ResourceTypes.h"
+#include "utils/String16.h"
 
 namespace android::idmap2 {
 
@@ -122,11 +124,6 @@ struct XmlParser {
   };
 
   // Creates a new xml parser beginning at the first tag.
-  // The first overload takes the internal Asset's data and moves it into the loaded parser,
-  // so the asset is gone after the call.
-  // The second one makes a parser that either points at the passed data buffer, or copies it
-  // inside, depending on the |copy_data| parameter.
-  static Result<XmlParser> Create(std::unique_ptr<android::Asset>&& asset);
   static Result<XmlParser> Create(const void* data, size_t size, bool copy_data = false);
 
   inline iterator tree_iterator() const {
@@ -138,9 +135,10 @@ struct XmlParser {
   }
 
  private:
-  static Result<XmlParser> InitializeParser(std::unique_ptr<ResXMLTree> tree);
   explicit XmlParser(std::unique_ptr<ResXMLTree> tree);
   mutable std::unique_ptr<ResXMLTree> tree_;
 };
 
 }  // namespace android::idmap2
+
+#endif  // IDMAP2_INCLUDE_IDMAP2_XMLPARSER_H_
