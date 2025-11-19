@@ -5958,6 +5958,19 @@
   <java-symbol name="semanticRedSurfaceContainer" type="color"/>
   <java-symbol name="semanticRedSurfaceContainerHigh" type="color"/>
   <java-symbol name="semanticRedSurfaceContainerHighest" type="color"/>
+  <java-symbol name="semanticBlueContainerLow" type="color"/>
+  <java-symbol name="semanticBlueOnContainerLow" type="color"/>
+  <java-symbol name="semanticBlueContainer" type="color"/>
+  <java-symbol name="semanticBlueOnContainer" type="color"/>
+  <java-symbol name="semanticBlueOnContainerVariant" type="color"/>
+  <java-symbol name="semanticBlueContainerHigh" type="color"/>
+  <java-symbol name="semanticBlueOnContainerHigh" type="color"/>
+  <java-symbol name="semanticBlueOnSurface" type="color"/>
+  <java-symbol name="semanticBlueOnSurfaceVariant" type="color"/>
+  <java-symbol name="semanticBlueSurfaceContainerLow" type="color"/>
+  <java-symbol name="semanticBlueSurfaceContainer" type="color"/>
+  <java-symbol name="semanticBlueSurfaceContainerHigh" type="color"/>
+  <java-symbol name="semanticBlueSurfaceContainerHighest" type="color"/>
 
   <java-symbol type="attr" name="actionModeUndoDrawable" />
   <java-symbol type="attr" name="actionModeRedoDrawable" />
