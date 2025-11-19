@@ -369,8 +369,12 @@ public final class CameraAdvancedExtensionSessionImpl extends CameraExtensionSes
             cameraOutput.setReadoutTimestampEnabled(false);
             cameraOutput.setPhysicalCameraId(output.physicalCameraId);
             boolean validDynamicRangeProfile = false;
+            long currentMax = DynamicRangeProfiles.PUBLIC_MAX;
+            if (Flags.newDynamicRangeProfiles()) {
+                currentMax = DynamicRangeProfiles.CURRENT_MAX;
+            }
             for (long profile = DynamicRangeProfiles.STANDARD;
-                    profile < DynamicRangeProfiles.PUBLIC_MAX; profile <<= 1) {
+                    profile < currentMax; profile <<= 1) {
                 if (output.dynamicRangeProfile == profile) {
                     validDynamicRangeProfile = true;
                     break;
