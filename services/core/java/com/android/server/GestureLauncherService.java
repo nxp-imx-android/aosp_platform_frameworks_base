@@ -281,7 +281,6 @@ public class GestureLauncherService extends SystemService {
                     Context.POWER_SERVICE);
             mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                     "GestureLauncherService");
-            mCameraManager = mContext.getSystemService(CameraManager.class);
             updateCameraRegistered();
             updateCameraDoubleTapPowerEnabled();
             if (launchWalletOptionOnPowerDoubleTap()) {
@@ -848,9 +847,22 @@ public class GestureLauncherService extends SystemService {
         }
     }
 
+    CameraManager getCameraManager() {
+        if (mCameraManager != null) {
+            return mCameraManager;
+        }
+        mCameraManager = mContext.getSystemService(CameraManager.class);
+        return mCameraManager;
+    }
+
     void notifyCameraWarmup() {
         try {
-            mCameraManager.warmUp(CAMERA_ID_BACK);
+            CameraManager cameraManager = getCameraManager();
+            if (cameraManager != null) {
+                cameraManager.warmUp(CAMERA_ID_BACK);
+            } else {
+                Slog.e(TAG, "CameraManager is not ready yet");
+            }
         } catch (CameraAccessException e) {
             Slog.e(TAG, "Cameraservice unavailable for camera warm up hint:", e);
         }
