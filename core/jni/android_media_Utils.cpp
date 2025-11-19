@@ -486,6 +486,7 @@ status_t getLockedImageInfo(LockedImage* buffer, int idx,
             break;
         case HAL_PIXEL_FORMAT_RGBA_8888:
         case HAL_PIXEL_FORMAT_RGBX_8888:
+        case HAL_PIXEL_FORMAT_RGBA_1010102:
             // Single plane, 32bpp.
             bytesPerPixel = 4;
             LOG_ALWAYS_FATAL_IF(idx != 0, "Wrong index: %d", idx);
