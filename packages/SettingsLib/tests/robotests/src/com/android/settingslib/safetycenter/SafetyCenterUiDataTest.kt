@@ -115,8 +115,15 @@ class SafetyCenterUiDataTest {
         )
     private val issue5 =
         createIssue("issue5", user10, setOf("s1"), SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK)
-    private val dismissedIssue =
+    private val dismissedIssue1 =
         createIssue("issue6", user0, setOf("s4"), SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_OK)
+    private val dismissedIssue2 =
+        createIssue(
+            "issue7",
+            user0,
+            setOf("s3"),
+            SafetyCenterIssue.ISSUE_SEVERITY_LEVEL_RECOMMENDATION,
+        )
 
     private val testSafetyCenterUiData =
         SafetyCenterUiData(
@@ -137,7 +144,8 @@ class SafetyCenterUiDataTest {
                     "s2" to listOf(issue2, issue3),
                     "s3" to listOf(issue4),
                 ),
-            dismissedIssuesBySourceId = mapOf("s4" to listOf(dismissedIssue)),
+            dismissedIssuesBySourceId =
+                mapOf("s4" to listOf(dismissedIssue1), "s3" to listOf(dismissedIssue2)),
         )
 
     @Test
@@ -248,9 +256,9 @@ class SafetyCenterUiDataTest {
     }
 
     @Test
-    fun getDismissedIssuesForSources_filters() {
-        val issues = testSafetyCenterUiData.getDismissedIssuesForSources(listOf("s4"))
-        assertThat(issues).containsExactly(dismissedIssue)
+    fun getDismissedIssuesForSources_filtersOutGreenIssues() {
+        val issues = testSafetyCenterUiData.getDismissedIssuesForSources(listOf("s3", "s4"))
+        assertThat(issues).containsExactly(dismissedIssue2)
     }
 
     @Test
