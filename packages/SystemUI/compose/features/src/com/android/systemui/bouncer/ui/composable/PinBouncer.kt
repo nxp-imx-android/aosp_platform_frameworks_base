@@ -57,7 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.changedToDown
-import androidx.compose.ui.input.pointer.changedToUp
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.platform.LocalView
@@ -470,7 +470,10 @@ private fun Modifier.pinPadButtonInput(
                                     }
                                 }
 
-                                if (change.changedToUp()) {
+                                // The IgnoreConsumed version of changedToUp is used because the
+                                // change could have been consumed above here if it was a move
+                                // change.
+                                if (change.changedToUpIgnoreConsumed()) {
                                     if (!movedTooFar && !longClicked) {
                                         // The held pointer was released before the long click
                                         // occurred and wasn't moved too far. This is an actual
