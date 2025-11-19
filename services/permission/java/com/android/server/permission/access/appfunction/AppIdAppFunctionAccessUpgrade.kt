@@ -17,8 +17,10 @@
 package com.android.server.permission.access.appfunction
 
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_UPGRADE_GRANTED
+import android.permission.flags.Flags
 import com.android.server.permission.access.MutateStateScope
 import com.android.server.pm.pkg.PackageState
+import java.lang.IllegalStateException
 
 class AppIdAppFunctionAccessUpgrade(private val policy: AppIdAppFunctionAccessPolicy) {
     fun MutateStateScope.upgradePackageState(
@@ -26,9 +28,16 @@ class AppIdAppFunctionAccessUpgrade(private val policy: AppIdAppFunctionAccessPo
         userId: Int,
         version: Int,
     ) {
+        if (Flags.appFunctionAccessServiceEnabled()) {
+            throw IllegalStateException(
+                "The appFunctionAccessServiceEnabled flag is enabled, but the upgrade " +
+                    "version check is outdated. Please allocate a new version and remove this " +
+                    "check before enabling."
+            )
+        }
         // Version 18 is the first package version with app functions enabled. When updating to it,
         // pregrant all existing agents and targets
-        if (version < 18) {
+        if (Flags.appFunctionAccessServiceEnabled() && version < 18) {
             with(policy) {
                 if (!isValidAgent(packageState, userId)) {
                     return

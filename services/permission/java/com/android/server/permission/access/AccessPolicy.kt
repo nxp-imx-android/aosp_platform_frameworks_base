@@ -17,7 +17,7 @@
 package com.android.server.permission.access
 
 import android.content.pm.SignedPackage
-import android.permission.flags.Flags.appFunctionAccessServiceEnabled
+import android.permission.flags.Flags
 import android.util.Slog
 import com.android.modules.utils.BinaryXmlPullParser
 import com.android.modules.utils.BinaryXmlSerializer
@@ -462,8 +462,10 @@ private constructor(
         private val LOG_TAG = AccessPolicy::class.java.simpleName
 
         internal val VERSION_LATEST =
-            if (appFunctionAccessServiceEnabled()) {
-                18
+            if (Flags.accessLocalNetworkPermissionEnabled()) {
+                // Version 18 is skipped because it was taken by a rolled back launch for app
+                // function.
+                19
             } else {
                 17
             }
