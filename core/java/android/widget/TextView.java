@@ -9812,7 +9812,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                 break;
 
             case KeyEvent.KEYCODE_ESCAPE:
-                if (Flags.escapeClearsFocus() && event.hasNoModifiers()) {
+                if (event.hasNoModifiers()) {
                     if (mEditor != null && mEditor.getTextActionMode() != null) {
                         stopTextActionMode();
                         return KEY_EVENT_HANDLED;
