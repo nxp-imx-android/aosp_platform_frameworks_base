@@ -96,6 +96,13 @@ run_hoststubgen() {
     out_arg="--out-jar $OUTJAR"
   fi
 
+  local outermostAnnotationCheckArg=""
+  if (( "$TEST_OUTERMOST" )); then
+      outermostAnnotationCheckArg="--ensure-outermost-class-annotation"
+  else
+      outermostAnnotationCheckArg="--no-ensure-outermost-class-annotation"
+  fi
+
   hoststubgen \
       --debug \
       --in-jar $INJAR \
@@ -122,6 +129,7 @@ run_hoststubgen() {
           android.hosttest.annotation.HostSideTestPartiallyAllowlisted \
       $filter_arg \
       $policy_arg \
+      $outermostAnnotationCheckArg \
       $EXTRA_ARGS \
       |& tee $HOSTSTUBGEN_OUT
   HOSTSTUBGEN_RC=${PIPESTATUS[0]}
@@ -326,6 +334,63 @@ class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlist
 # it does not have an @HostSideTestPartiallyAllowlisted, because it does nott have any other annotations anyway.
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$NoAnnotations allow-annotation
 '
+
+# Tests for missing outermost annotations.
+run_for_outermost_annot_failure() {
+    local entry_filter="$1"
+    local test_name="$1"
+    local expected_error="$2"
+
+    TEST_OUTERMOST=1 HSG_ENTRY_FILTER="$entry_filter" EXTRA_ARGS="--default-throw" \
+        run_hoststubgen_for_failure \
+        "$test_name" \
+        "$expected_error" \
+        "* #always allow annotations" \
+        '#no policy'
+}
+
+run_for_outermost_annot_failure "/BadAnnot01" \
+    'BadAnnot01.foo()V has annotations(s) but the (outer-most) class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot02" \
+    'BadAnnot02.foo has annotations(s) but the (outer-most) class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot03" \
+    'BadAnnot03$StaticInner has annotations(s) but the outer-most class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot04" \
+    'BadAnnot04$NonStaticInner has annotations(s) but the outer-most class has no annotations'
+
+
+run_for_outermost_annot_failure "/BadAnnot11" \
+    'BadAnnot11$StaticInner.foo()V has annotations(s) but the (outer-most) class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot12" \
+    'BadAnnot12$StaticInner.foo has annotations(s) but the (outer-most) class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot13" \
+    'BadAnnot13$StaticInner$StaticInner2 has annotations(s) but the outer-most class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot14" \
+    'BadAnnot14$StaticInner$NonStaticInner2 has annotations(s) but the outer-most class has no annotations'
+
+
+run_for_outermost_annot_failure "/BadAnnot21" \
+    'BadAnnot21$NonStaticInner.foo()V has annotations(s) but the (outer-most) class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot22" \
+    'BadAnnot22$NonStaticInner.foo has annotations(s) but the (outer-most) class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot23" \
+    'BadAnnot23$NonStaticInner$StaticInner2 has annotations(s) but the outer-most class has no annotations'
+
+run_for_outermost_annot_failure "/BadAnnot24" \
+    'BadAnnot24$NonStaticInner$NonStaticInner2 has annotations(s) but the outer-most class has no annotations'
+
+# Good nest annotation test
+TEST_OUTERMOST=1 HSG_ENTRY_FILTER="/GoodAnnot" EXTRA_ARGS="--default-throw" run_hoststubgen_for_success 'Good annotations' \
+    "* # allow all" \
+    "# no policy"
 
 echo "All tests passed"
 exit 0

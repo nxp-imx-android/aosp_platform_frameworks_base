@@ -10,6 +10,9 @@
 --experimental-method-call-hook
     android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.onExperimentalApiCalled
 
+# TODO(b/460450157) Remove this line after fixing all violations
+--no-ensure-outermost-class-annotation
+
 # Uncomment below lines to enable each feature.
 
 # Enable method call hook.

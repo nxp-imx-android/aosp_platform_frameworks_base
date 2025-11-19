@@ -19,6 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.fail;
 
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.ravenwood.annotation.RavenwoodRemove;
 
 import org.junit.Test;
@@ -48,6 +49,7 @@ public class RavenwoodRavenizerTest {
 class ToBeRemoved {
 }
 
+@RavenwoodKeepPartialClass
 class ToBeKept {
     @RavenwoodRemove
     public static void toBeRemoved() {

@@ -20,11 +20,18 @@ import com.android.hoststubgen.filters.printAsTextPolicy
 import com.android.hoststubgen.utils.ConcurrentZipFile
 import com.android.hoststubgen.utils.ZipEntryData
 import java.io.PrintWriter
+import java.util.regex.Pattern
 
 /**
  * Actual main class.
  */
 class HostStubGen(val options: HostStubGenOptions) {
+    /**
+     * Take a regex from $HSG_ENTRY_FILTER. If set, we only process entries that match it.
+     * Used by "invoketest".
+     */
+    val entryFilter = Pattern.compile(System.getenv("HSG_ENTRY_FILTER") ?: "")
+
     fun run() {
         val errors = HostStubGenErrors()
         val inJar = ConcurrentZipFile(options.inJar.get, options.numShards.get)
@@ -101,6 +108,10 @@ class HostStubGen(val options: HostStubGenOptions) {
         processor: HostStubGenClassProcessor,
         stats: HostStubGenStats,
     ): ZipEntryData? {
+        if (!entryFilter.matcher(entry.name).find()) {
+            log.w("Entry filtered out: %s", entry.name)
+            return null
+        }
         log.d("Entry: %s", entry.name)
         log.withIndent {
             val name = entry.name
