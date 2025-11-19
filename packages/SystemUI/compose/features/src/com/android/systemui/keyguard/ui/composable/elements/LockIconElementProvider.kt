@@ -157,7 +157,7 @@ constructor(
      * the same as the bounds of the sensor.
      *
      * The bounds will have new values as the UDFPS location changes (something that definitely
-     * happens shortly after device boot).
+     * happens shortly after device boot) or the window view bounds change.
      */
     @Composable
     private fun rememberLockIconBounds(): IntRect {
@@ -171,11 +171,11 @@ constructor(
             with(LocalDensity.current) {
                 dimensionResource(clocksR.dimen.lock_icon_margin_bottom).roundToPx()
             }
+        val windowViewBounds = windowManager.currentWindowMetrics.bounds
 
         val bounds: IntRect by
-            remember(context, isUdfpsSupported, udfpsLocation) {
+            remember(context, isUdfpsSupported, udfpsLocation, windowViewBounds) {
                 derivedStateOf {
-                    val windowViewBounds = windowManager.currentWindowMetrics.bounds
                     var widthPx = windowViewBounds.right.toFloat()
                     if (featureFlags.isEnabled(Flags.LOCKSCREEN_ENABLE_LANDSCAPE)) {
                         val insets = windowManager.currentWindowMetrics.windowInsets
