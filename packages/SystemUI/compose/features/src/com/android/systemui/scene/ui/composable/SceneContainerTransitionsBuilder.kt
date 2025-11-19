@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.ui.composable
 
+import android.content.res.Resources
 import com.android.compose.animation.scene.SceneTransitions
 import com.android.compose.animation.scene.reveal.ContainerRevealHaptics
 import com.android.compose.animation.scene.transitions
@@ -33,6 +34,7 @@ interface SceneContainerTransitionsBuilder {
         shadeExpansionMotion: VerticalExpandContainerSpec,
         revealHaptics: ContainerRevealHaptics,
         animateQsTilesViewModel: AnimateQsTilesViewModel,
+        resources: Resources,
     ): SceneTransitions
 }
 
@@ -47,5 +49,6 @@ class ConstantSceneContainerTransitionsBuilder(
         shadeExpansionMotion: VerticalExpandContainerSpec,
         revealHaptics: ContainerRevealHaptics,
         animateQsTilesViewModel: AnimateQsTilesViewModel,
+        resources: Resources,
     ): SceneTransitions = transitions
 }
