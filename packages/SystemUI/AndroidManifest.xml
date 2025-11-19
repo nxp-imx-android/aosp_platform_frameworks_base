@@ -1249,6 +1249,7 @@
         <service
             android:name="com.android.systemui.locationbutton.LocationButtonRenderService"
             android:permission="android.permission.USE_LOCATION_BUTTON"
+            android:singleUser="true"
             android:exported="true"
            />
 
