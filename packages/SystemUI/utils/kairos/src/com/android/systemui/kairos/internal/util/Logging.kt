@@ -42,7 +42,7 @@ internal inline fun log(indent: Int = 0, getMessage: () -> Any?) {
 internal value class LogIndent(val currentLogIndent: Int) {
     @OptIn(ExperimentalContracts::class)
     inline fun <R> logDuration(
-        crossinline getPrefix: () -> String,
+        getPrefix: () -> String,
         start: Boolean = true,
         trace: Boolean = false,
         crossinline block: LogIndent.() -> R,
@@ -68,7 +68,7 @@ internal value class LogIndent(val currentLogIndent: Int) {
 @OptIn(ExperimentalContracts::class)
 internal inline fun <R> logDuration(
     indent: Int,
-    crossinline getPrefix: () -> String,
+    getPrefix: () -> String,
     start: Boolean = true,
     trace: Boolean = false,
     block: LogIndent.() -> R,
