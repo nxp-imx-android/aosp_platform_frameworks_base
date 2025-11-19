@@ -908,13 +908,51 @@ public final class ViewRootImpl implements ViewParent,
     private int mLastReportedInsetsStateSeq = getInitSeq();
     private int mLastReportedActiveControlsSeq = getInitSeq();
 
+    /**
+     * Whether the scroll position of items in the view hierarchy might change on the next layout.
+     * This is set when a layout is requested (e.g. via {@link #requestLayout()}).
+     */
     boolean mScrollMayChange;
+
+    /**
+     * The soft input mode for this window, as specified by
+     * {@link WindowManager.LayoutParams#softInputMode}.
+     */
     @SoftInputModeFlags
     int mSoftInputMode;
+
+    /**
+     * The last view that was scrolled to avoid being occluded by the soft keyboard. This is a weak
+     * reference to prevent possible memory leaks (if the view is no longer needed). Used in {@link
+     * WindowManager.LayoutParams#SOFT_INPUT_ADJUST_PAN} mode to avoid unnecessary scrolling if the
+     * focused view has not changed since the last adjustment.
+     *
+     * @see #scrollToRectOrFocus
+     */
     @UnsupportedAppUsage
+    @Nullable
     WeakReference<View> mLastScrolledFocus;
+
+    /**
+     * The Y coordinate that should be at the top of the window. It represents the final target
+     * position. E.g., when the IME appears, this value is used to prevent occluding the focused
+     * view when in {@link WindowManager.LayoutParams#SOFT_INPUT_ADJUST_PAN} mode.
+     */
     int mScrollY;
+
+    /**
+     * The Y coordinate of the content that is currently at the top of the window. This is the
+     * value actually used to offset the canvas during drawing. It may be an intermediate value
+     * during a scroll animation (provided by {@link #mScroller}).
+     */
     int mCurScrollY;
+
+    /**
+     * The {@link Scroller} instance used to implement smooth scrolling of the window's content.
+     * This is primarily used for the {@link WindowManager.LayoutParams#SOFT_INPUT_ADJUST_PAN}
+     * behavior to prevent occluding a focused view when the IME is shown.
+     */
+    @Nullable
     Scroller mScroller;
     private ArrayList<LayoutTransition> mPendingTransitions;
 
