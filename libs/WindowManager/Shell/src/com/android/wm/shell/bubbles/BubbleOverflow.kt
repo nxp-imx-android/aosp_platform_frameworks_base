@@ -54,16 +54,16 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
     fun initialize(
         expandedViewManager: BubbleExpandedViewManager,
         stackView: BubbleStackView,
-        positioner: BubblePositioner
+        positioner: BubblePositioner,
     ) {
         createExpandedView()
-                .initialize(
-                        expandedViewManager,
-                    stackView,
-                    positioner,
-                    /* isOverflow= */ true,
-                    /* bubbleTaskView= */ null
-                )
+            .initialize(
+                expandedViewManager,
+                stackView,
+                positioner,
+                /* isOverflow= */ true,
+                /* bubbleTaskView= */ null,
+            )
     }
 
     fun initializeForBubbleBar(
@@ -121,9 +121,9 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
                 res.getDimensionPixelSize(R.dimen.bubble_badge_size),
                 ContextCompat.getColor(
                     context,
-                    com.android.launcher3.icons.R.color.important_conversation
+                    com.android.launcher3.icons.R.color.important_conversation,
                 ),
-                res.getDimensionPixelSize(com.android.internal.R.dimen.importance_ring_stroke_width)
+                res.getDimensionPixelSize(com.android.internal.R.dimen.importance_ring_stroke_width),
             )
 
         // Update bitmap
@@ -153,7 +153,7 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
             inflater.inflate(
                 R.layout.bubble_expanded_view,
                 null /* root */,
-                false /* attachToRoot */
+                false, /* attachToRoot */
             ) as BubbleExpandedView
         view.applyThemeAttrs()
         expandedView = view
@@ -171,7 +171,7 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
             inflater.inflate(
                 R.layout.bubble_bar_expanded_view,
                 null, /* root */
-                false /* attachToRoot*/
+                false, /* attachToRoot*/
             ) as BubbleBarExpandedView
         view.applyThemeAttrs()
         bubbleBarExpandedView = view
@@ -200,7 +200,7 @@ class BubbleOverflow(private val context: Context, private val positioner: Bubbl
                 inflater.inflate(
                     R.layout.bubble_overflow_button,
                     null /* root */,
-                    false /* attachToRoot */
+                    false, /* attachToRoot */
                 ) as BadgedImageView
             overflowBtn?.initialize(positioner)
             overflowBtn?.contentDescription =
