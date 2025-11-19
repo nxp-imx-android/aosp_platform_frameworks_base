@@ -55,6 +55,7 @@ data class MediaDataModel(
     val state: MediaSessionState,
     val durationMs: Long,
     val positionMs: Long,
+    val canShowSeekbar: Boolean,
     val canBeScrubbed: Boolean,
     val canBeDismissed: Boolean,
     /**

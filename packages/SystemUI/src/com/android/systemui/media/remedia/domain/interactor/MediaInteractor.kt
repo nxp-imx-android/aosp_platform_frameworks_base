@@ -182,6 +182,9 @@ constructor(
             override val canBeHidden: Boolean
                 get() = dataModel.canBeDismissed
 
+            override val canShowSeekbar: Boolean
+                get() = dataModel.canShowSeekbar
+
             override val canBeScrubbed: Boolean
                 get() = dataModel.canBeScrubbed
 
