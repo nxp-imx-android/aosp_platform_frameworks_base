@@ -964,7 +964,7 @@ public class ContextWrapper extends Context {
     }
 
     @Override
-    public void updateServiceBindings(@NonNull List<UpdateBindingParams> params) {
+    public void updateServiceBindings(@NonNull Collection<UpdateBindingParams> params) {
         mBase.updateServiceBindings(params);
     }
 

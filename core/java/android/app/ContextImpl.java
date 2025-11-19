@@ -2326,10 +2326,9 @@ class ContextImpl extends Context {
     }
 
     @Override
-    public void updateServiceBindings(@NonNull List<UpdateBindingParams> params) {
+    public void updateServiceBindings(@NonNull Collection<UpdateBindingParams> params) {
         final ArrayList<BindUpdateInfo> updates = new ArrayList<>(params.size());
-        for (int i = 0, size = params.size(); i < size; i++) {
-            final UpdateBindingParams param = params.get(i);
+        for (UpdateBindingParams param : params) {
             final ServiceConnection conn = param.getConnection();
             if (conn == null) {
                 throw new IllegalArgumentException("connection is null");
