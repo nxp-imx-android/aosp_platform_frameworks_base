@@ -32,6 +32,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
@@ -312,6 +313,22 @@ public final class CameraManager {
     public String[] getCameraIdListNoLazy() throws CameraAccessException {
         return CameraManagerGlobal.get().getCameraIdListNoLazy(mContext.getDeviceId(),
                 getDevicePolicyFromContext(mContext));
+    }
+
+    /**
+     * Returns whether the default app social media parity is enabled for the given device.
+     *
+     * <p>When enabled, the default app image captures will be in parity with social media apps
+     * capture as per the requirements listed in section 7.5.4 of the CDD.
+     * These checks are only applicable for primary cameras only i.e.
+     * first rear facing or front facing camera returned by getCameraIdList.</p>
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    public boolean isDefaultAppSocialMediaParityEnabled() throws CameraAccessException {
+        return CameraManagerGlobal.get().isDefaultAppSocialMediaParityEnabled();
     }
 
     /**
@@ -2598,6 +2615,11 @@ public final class CameraManager {
                 }
             }
             return false;
+        }
+
+        public boolean isDefaultAppSocialMediaParityEnabled() {
+            return SystemProperties.getBoolean("ro.camera.default_app_social_media_parity_enabled",
+                    false);
         }
 
         public String[] getCameraIdListNoLazy(int deviceId, int devicePolicy) {
