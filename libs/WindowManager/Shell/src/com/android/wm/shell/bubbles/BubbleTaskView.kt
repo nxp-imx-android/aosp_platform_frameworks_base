@@ -126,7 +126,9 @@ class BubbleTaskView @JvmOverloads constructor(
             task?.let { t ->
                 val bubble = bubbleController.getBubble(t)
                 if (bubble == null || bubble.isChat || bubbleController.shouldBeAppBubble(t)) {
-                    if (Flags.bugDontRemoveTaskBubble()) {
+                    if (task.isBubbleToFullscreen() || task.isBubbleToSplit(splitScreenController)) {
+                        taskView.unregisterTask()
+                    } else if (Flags.bugDontRemoveTaskBubble()) {
                         taskView.unregisterTask()
                         taskView.release()
                         processExitBubbleTransaction(taskView)
