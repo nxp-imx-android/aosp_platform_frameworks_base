@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/google/blueprint"
 	"github.com/google/blueprint/proptools"
 
 	"android/soong/android"
@@ -109,6 +110,7 @@ type CombinedApisProperties struct {
 
 type CombinedApis struct {
 	android.ModuleBase
+	blueprint.ModuleUsesIncrementalWalkDeps
 
 	properties CombinedApisProperties
 }
