@@ -55,7 +55,6 @@ import com.android.systemui.statusbar.policy.FakeUserInfoController
 import com.android.systemui.statusbar.policy.FakeUserInfoController.FakeInfo
 import com.android.systemui.statusbar.policy.MockUserSwitcherControllerWrapper
 import com.android.systemui.user.data.repository.FakeUserRepository
-import com.android.systemui.user.domain.interactor.HeadlessSystemUserModeFake
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.nullable
@@ -128,12 +127,10 @@ class FooterActionsViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(SysUiFlags.FLAG_HSU_QS_CHANGES)
     fun settingsButton_hideForHeadlessSystemUser() = runTest {
-        val fakeHsum = HeadlessSystemUserModeFake()
-        fakeHsum.setIsHeadlessSystemUser(true)
+        userRepository.setIsCurrentUserHeadlessSystemUser(true)
         val underTest =
             utils.footerActionsViewModel(
                 showPowerButton = false,
-                hsum = fakeHsum,
                 selectedUserInteractor = selectedUserInteractor,
             )
         runBlocking { userRepository.setSelectedUserInfo(USER) }
@@ -146,12 +143,10 @@ class FooterActionsViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(SysUiFlags.FLAG_HSU_QS_CHANGES)
     fun settingsButton_showWhenNotHeadlessSystemUser() = runTest {
-        val fakeHsum = HeadlessSystemUserModeFake()
-        fakeHsum.setIsHeadlessSystemUser(false)
+        userRepository.setIsCurrentUserHeadlessSystemUser(false)
         val underTest =
             utils.footerActionsViewModel(
                 showPowerButton = false,
-                hsum = fakeHsum,
                 selectedUserInteractor = selectedUserInteractor,
             )
         runBlocking { userRepository.setSelectedUserInfo(USER) }
