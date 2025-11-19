@@ -827,6 +827,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         int effects = TRANSACT_EFFECTS_NONE;
         final int windowingMode = change.getWindowingMode();
         if (configMask != 0) {
+            // Save a copy before the configuration is updated.
+            final Rect prevRequestedBounds = new Rect(container.getRequestedOverrideConfiguration()
+                    .windowConfiguration.getBounds());
             if (windowingMode > -1 && windowingMode != container.getWindowingMode()) {
                 // Special handling for when we are setting a windowingMode in the same transaction.
                 // Setting the windowingMode is going to call onConfigurationChanged so we don't
@@ -901,9 +904,23 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 container.onRequestedOverrideConfigurationChanged(c);
             }
             effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
-            if (windowMask != 0 && container.isEmbedded()) {
-                // Changing bounds of the embedded TaskFragments may result in lifecycle changes.
-                effects |= TRANSACT_EFFECTS_LIFECYCLE;
+            if (windowMask != 0) {
+                if (container.isEmbedded()) {
+                    // Changing bounds of the embedded TaskFragments may result in lifecycle
+                    // changes.
+                    effects |= TRANSACT_EFFECTS_LIFECYCLE;
+                }
+                if (Flags.makeFillingBoundsChangeEffectLifecycle()) {
+                    final boolean hasBoundsConfigChange =
+                            (windowMask & WindowConfiguration.WINDOW_CONFIG_BOUNDS) != 0;
+                    final boolean wasFillingParent = prevRequestedBounds.isEmpty();
+                    final boolean isFillingParent = change.getConfiguration()
+                            .windowConfiguration.getBounds().isEmpty();
+                    if (hasBoundsConfigChange && (wasFillingParent || isFillingParent)) {
+                        // Changing bounds to fill or from filling may result in lifecycle changes.
+                        effects |= TRANSACT_EFFECTS_LIFECYCLE;
+                    }
+                }
             }
         }
         if ((change.getChangeMask() & WindowContainerTransaction.Change.CHANGE_FOCUSABLE) != 0) {
