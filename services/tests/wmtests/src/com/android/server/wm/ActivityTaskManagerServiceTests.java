@@ -316,6 +316,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testIsHandoffEnabledForTask_returnsFalseIfFlagDisabled() {
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
         final ActivityRecord activity = task.getTopNonFinishingActivity();
@@ -407,6 +408,7 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @DisableFlags(android.companion.Flags.FLAG_TASK_CONTINUITY)
     public void testRequestHandoffTaskData_failsIfFlagDisabled() {
         // Create a test task.
         final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
