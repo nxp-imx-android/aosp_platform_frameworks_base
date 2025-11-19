@@ -256,12 +256,6 @@ TEST_F(ManifestFixerTest, RenameManifestPackageAndFullyQualifyClasses) {
           <receiver android:name="com.foo.android.Receiver" />
           <activity-alias android:name=".activityAlias.Start"
                           android:targetActivity=".activity.Start" />
-          <private-compute>
-            <activity android:name=".activity.Start" />
-            <receiver android:name="com.foo.android.Receiver" />
-            <activity-alias android:name=".activityAlias.Start"
-                            android:targetActivity=".activity.Start" />
-          </private-compute>
         </application>
       </manifest>)EOF",
                                                             options);
@@ -319,38 +313,9 @@ TEST_F(ManifestFixerTest, RenameManifestPackageAndFullyQualifyClasses) {
   attr = el->FindAttribute(xml::kSchemaAndroid, "targetActivity");
   ASSERT_THAT(el, NotNull());
   EXPECT_THAT(attr->value, StrEq("android.activity.Start"));
-
-  xml::Element* private_compute_el = application_el->FindChild({}, "private-compute");
-  ASSERT_THAT(private_compute_el, NotNull());
-
-  el = private_compute_el->FindChild({}, "activity");
-  ASSERT_THAT(el, NotNull());
-
-  attr = el->FindAttribute(xml::kSchemaAndroid, "name");
-  ASSERT_THAT(el, NotNull());
-  EXPECT_THAT(attr->value, StrEq("android.activity.Start"));
-
-  el = private_compute_el->FindChild({}, "receiver");
-  ASSERT_THAT(el, NotNull());
-
-  attr = el->FindAttribute(xml::kSchemaAndroid, "name");
-  ASSERT_THAT(el, NotNull());
-  EXPECT_THAT(attr->value, StrEq("com.foo.android.Receiver"));
-
-  el = private_compute_el->FindChild({}, "activity-alias");
-  ASSERT_THAT(el, NotNull());
-
-  attr = el->FindAttribute(xml::kSchemaAndroid, "name");
-  ASSERT_THAT(el, NotNull());
-  EXPECT_THAT(attr->value, StrEq("android.activityAlias.Start"));
-
-  attr = el->FindAttribute(xml::kSchemaAndroid, "targetActivity");
-  ASSERT_THAT(el, NotNull());
-  EXPECT_THAT(attr->value, StrEq("android.activity.Start"));
 }
 
-TEST_F(ManifestFixerTest,
-       RenameManifestInstrumentationPackageAndFullyQualifyTarget) {
+TEST_F(ManifestFixerTest, RenameManifestInstrumentationPackageAndFullyQualifyTarget) {
   ManifestFixerOptions options;
   options.rename_instrumentation_target_package = std::string("com.android");
 

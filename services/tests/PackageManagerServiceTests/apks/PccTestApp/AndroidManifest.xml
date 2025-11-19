@@ -3,8 +3,7 @@
         package="com.android.frameworks.coretests.pcc_test_app"
         android:versionCode="1">
     <application>
-        <private-compute>
-            <service android:name=".PccService" />
-        </private-compute>
+        <service android:name=".PccService"
+            android:isPrivateComputeCoreProcess="true" />
     </application>
 </manifest>

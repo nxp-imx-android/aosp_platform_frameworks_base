@@ -172,6 +172,8 @@ public class PackageParserTest {
     private static final String TEST_APP9_APK = "PackageParserTestApp9.apk";
     private static final String TEST_APP10_APK = "PackageParserTestApp10.apk";
     private static final String TEST_APP_PCC_APK = "PackageParserTestPcc.apk";
+    private static final String TEST_APP_PCC_AND_ISOLATED_SERVICE_APK =
+            "PackageParserTestPccAndIsolatedService.apk";
     private static final String PACKAGE_NAME = "com.android.servicestests.apps.packageparserapp";
 
     @Before
@@ -982,6 +984,8 @@ public class PackageParserTest {
                             PACKAGE_NAME + ".PccActivityAliasToNormal",
                             PACKAGE_NAME + ".MyActivity",
                             PACKAGE_NAME + ".MyActivityAliasToPcc",
+                            PACKAGE_NAME + ".MyActivityExplicitlyNotPcc",
+                            PACKAGE_NAME + ".MyActivityAliasExplicitlyNotPcc",
                             "android.app.AppDetailsActivity");
 
             for (ParsedActivity activity : activities) {
@@ -993,7 +997,9 @@ public class PackageParserTest {
                             .that(activity.getFlags() & ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX)
                             .isNotEqualTo(0);
                 } else if (name.equals(PACKAGE_NAME + ".MyActivity")
-                        || name.equals(PACKAGE_NAME + ".MyActivityAliasToPcc")) {
+                        || name.equals(PACKAGE_NAME + ".MyActivityAliasToPcc")
+                        || name.equals(PACKAGE_NAME + ".MyActivityExplicitlyNotPcc")
+                        || name.equals(PACKAGE_NAME + ".MyActivityAliasExplicitlyNotPcc")) {
                     assertWithMessage("Activity " + name + " should not be in PCC sandbox")
                             .that(activity.getFlags() & ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX)
                             .isEqualTo(0);
@@ -1003,14 +1009,16 @@ public class PackageParserTest {
             // Check services
             final List<ParsedService> services = pkg.getServices();
             assertThat(services.stream().map(ParsedService::getName).collect(toList()))
-                    .containsAtLeast(PACKAGE_NAME + ".PccService", PACKAGE_NAME + ".MyService");
+                    .containsAtLeast(PACKAGE_NAME + ".PccService", PACKAGE_NAME + ".MyService",
+                            PACKAGE_NAME + ".MyServiceExplicitlyNotPcc");
             for (ParsedService service : services) {
                 final String name = service.getName();
                 if (name.equals(PACKAGE_NAME + ".PccService")) {
                     assertWithMessage("Service " + name + " should be in PCC sandbox")
                             .that(service.getFlags() & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX)
                             .isNotEqualTo(0);
-                } else if (name.equals(PACKAGE_NAME + ".MyService")) {
+                } else if (name.equals(PACKAGE_NAME + ".MyService")
+                        || name.equals(PACKAGE_NAME + ".MyServiceExplicitlyNotPcc")) {
                     assertWithMessage("Service " + name + " should not be in PCC sandbox")
                             .that(service.getFlags() & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX)
                             .isEqualTo(0);
@@ -1020,14 +1028,16 @@ public class PackageParserTest {
             // Check receivers
             final List<ParsedActivity> receivers = pkg.getReceivers();
             assertThat(receivers.stream().map(ParsedActivity::getName).collect(toList()))
-                    .containsAtLeast(PACKAGE_NAME + ".PccReceiver", PACKAGE_NAME + ".MyReceiver");
+                    .containsAtLeast(PACKAGE_NAME + ".PccReceiver", PACKAGE_NAME + ".MyReceiver",
+                            PACKAGE_NAME + ".MyReceiverExplicitlyNotPcc");
             for (ParsedActivity receiver : receivers) {
                 final String name = receiver.getName();
                 if (name.equals(PACKAGE_NAME + ".PccReceiver")) {
                     assertWithMessage("Receiver " + name + " should be in PCC sandbox")
                             .that(receiver.getFlags() & ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX)
                             .isNotEqualTo(0);
-                } else if (name.equals(PACKAGE_NAME + ".MyReceiver")) {
+                } else if (name.equals(PACKAGE_NAME + ".MyReceiver")
+                        || name.equals(PACKAGE_NAME + ".MyReceiverExplicitlyNotPcc")) {
                     assertWithMessage("Receiver " + name + " should not be in PCC sandbox")
                             .that(receiver.getFlags() & ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX)
                             .isEqualTo(0);
@@ -1037,14 +1047,16 @@ public class PackageParserTest {
             // Check providers
             final List<ParsedProvider> providers = pkg.getProviders();
             assertThat(providers.stream().map(ParsedProvider::getName).collect(toList()))
-                    .containsAtLeast(PACKAGE_NAME + ".PccProvider", PACKAGE_NAME + ".MyProvider");
+                    .containsAtLeast(PACKAGE_NAME + ".PccProvider", PACKAGE_NAME + ".MyProvider",
+                            PACKAGE_NAME + ".MyProviderExplicitlyNotPcc");
             for (ParsedProvider provider : providers) {
                 final String name = provider.getName();
                 if (name.equals(PACKAGE_NAME + ".PccProvider")) {
                     assertWithMessage("Provider " + name + " should be in PCC sandbox")
                             .that(provider.getFlags() & ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX)
                             .isNotEqualTo(0);
-                } else if (name.equals(PACKAGE_NAME + ".MyProvider")) {
+                } else if (name.equals(PACKAGE_NAME + ".MyProvider")
+                        || name.equals(PACKAGE_NAME + ".MyProviderExplicitlyNotPcc")) {
                     assertWithMessage("Provider " + name + " should not be in PCC sandbox")
                             .that(provider.getFlags() & ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX)
                             .isEqualTo(0);
@@ -1065,32 +1077,110 @@ public class PackageParserTest {
             // Check HAS_PCC_COMPONENTS flag
             assertFalse(pkg.hasPccComponents());
 
-            // Check that PCC components are not parsed
-            final List<String> activities = pkg.getActivities().stream()
-                    .map(ParsedActivity::getName)
-                    .collect(toList());
-            assertThat(activities).doesNotContain(PACKAGE_NAME + ".PccActivity");
-            assertThat(activities).doesNotContain(PACKAGE_NAME + ".PccActivityAlias");
-            assertThat(activities).doesNotContain(PACKAGE_NAME + ".PccActivityAliasToNormal");
+            // Check that PCC components are parsed but don't have FLAG_RUN_IN_PCC_SANDBOX set.
+            // Check activities
+            final List<ParsedActivity> activities = pkg.getActivities();
+            assertThat(activities.stream().map(ParsedActivity::getName).collect(toList()))
+                    .containsAtLeast(
+                            PACKAGE_NAME + ".PccActivity",
+                            PACKAGE_NAME + ".PccActivityAlias",
+                            PACKAGE_NAME + ".PccActivityAliasToNormal",
+                            PACKAGE_NAME + ".MyActivity",
+                            PACKAGE_NAME + ".MyActivityAliasToPcc",
+                            PACKAGE_NAME + ".MyActivityExplicitlyNotPcc",
+                            PACKAGE_NAME + ".MyActivityAliasExplicitlyNotPcc",
+                            "android.app.AppDetailsActivity");
 
-            final List<String> services = pkg.getServices().stream().map(ParsedService::getName)
-                    .collect(toList());
-            assertThat(services).doesNotContain(PACKAGE_NAME + ".PccService");
+            for (ParsedActivity activity : activities) {
+                final String name = activity.getName();
+                if (name.equals(PACKAGE_NAME + ".PccActivity")
+                        || name.equals(PACKAGE_NAME + ".PccActivityAlias")
+                        || name.equals(PACKAGE_NAME + ".PccActivityAliasToNormal")) {
+                    assertWithMessage("Activity " + name + " should be in PCC sandbox")
+                            .that(activity.getFlags() & ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX)
+                            .isEqualTo(0);
+                } else if (name.equals(PACKAGE_NAME + ".MyActivity")
+                        || name.equals(PACKAGE_NAME + ".MyActivityAliasToPcc")
+                        || name.equals(PACKAGE_NAME + ".MyActivityExplicitlyNotPcc")
+                        || name.equals(PACKAGE_NAME + ".MyActivityAliasExplicitlyNotPcc")) {
+                    assertWithMessage("Activity " + name + " should not be in PCC sandbox")
+                            .that(activity.getFlags() & ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX)
+                            .isEqualTo(0);
+                }
+            }
 
-            final List<String> receivers = pkg.getReceivers().stream().map(ParsedActivity::getName)
-                    .collect(toList());
-            assertThat(receivers).doesNotContain(PACKAGE_NAME + ".PccReceiver");
+            // Check services
+            final List<ParsedService> services = pkg.getServices();
+            assertThat(services.stream().map(ParsedService::getName).collect(toList()))
+                    .containsAtLeast(PACKAGE_NAME + ".PccService", PACKAGE_NAME + ".MyService",
+                            PACKAGE_NAME + ".MyServiceExplicitlyNotPcc");
+            for (ParsedService service : services) {
+                final String name = service.getName();
+                if (name.equals(PACKAGE_NAME + ".PccService")) {
+                    assertWithMessage("Service " + name + " should be in PCC sandbox")
+                            .that(service.getFlags() & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX)
+                            .isEqualTo(0);
+                } else if (name.equals(PACKAGE_NAME + ".MyService")
+                        || name.equals(PACKAGE_NAME + ".MyServiceExplicitlyNotPcc")) {
+                    assertWithMessage("Service " + name + " should not be in PCC sandbox")
+                            .that(service.getFlags() & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX)
+                            .isEqualTo(0);
+                }
+            }
 
-            final List<String> providers = pkg.getProviders().stream().map(ParsedProvider::getName)
-                    .collect(toList());
-            assertThat(providers).doesNotContain(PACKAGE_NAME + ".PccProvider");
+            // Check receivers
+            final List<ParsedActivity> receivers = pkg.getReceivers();
+            assertThat(receivers.stream().map(ParsedActivity::getName).collect(toList()))
+                    .containsAtLeast(PACKAGE_NAME + ".PccReceiver", PACKAGE_NAME + ".MyReceiver",
+                            PACKAGE_NAME + ".MyReceiverExplicitlyNotPcc");
+            for (ParsedActivity receiver : receivers) {
+                final String name = receiver.getName();
+                if (name.equals(PACKAGE_NAME + ".PccReceiver")) {
+                    assertWithMessage("Receiver " + name + " should be in PCC sandbox")
+                            .that(receiver.getFlags() & ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX)
+                            .isEqualTo(0);
+                } else if (name.equals(PACKAGE_NAME + ".MyReceiver")
+                        || name.equals(PACKAGE_NAME + ".MyReceiverExplicitlyNotPcc")) {
+                    assertWithMessage("Receiver " + name + " should not be in PCC sandbox")
+                            .that(receiver.getFlags() & ActivityInfo.FLAG_RUN_IN_PCC_SANDBOX)
+                            .isEqualTo(0);
+                }
+            }
 
-            // Check that non-PCC components are still parsed
-            assertThat(activities).contains(PACKAGE_NAME + ".MyActivity");
-            assertThat(services).contains(PACKAGE_NAME + ".MyService");
-            assertThat(receivers).contains(PACKAGE_NAME + ".MyReceiver");
-            assertThat(providers).contains(PACKAGE_NAME + ".MyProvider");
+            // Check providers
+            final List<ParsedProvider> providers = pkg.getProviders();
+            assertThat(providers.stream().map(ParsedProvider::getName).collect(toList()))
+                    .containsAtLeast(PACKAGE_NAME + ".PccProvider", PACKAGE_NAME + ".MyProvider",
+                            PACKAGE_NAME + ".MyProviderExplicitlyNotPcc");
+            for (ParsedProvider provider : providers) {
+                final String name = provider.getName();
+                if (name.equals(PACKAGE_NAME + ".PccProvider")) {
+                    assertWithMessage("Provider " + name + " should be in PCC sandbox")
+                            .that(provider.getFlags() & ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX)
+                            .isEqualTo(0);
+                } else if (name.equals(PACKAGE_NAME + ".MyProvider")
+                        || name.equals(PACKAGE_NAME + ".MyProviderExplicitlyNotPcc")) {
+                    assertWithMessage("Provider " + name + " should not be in PCC sandbox")
+                            .that(provider.getFlags() & ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX)
+                            .isEqualTo(0);
+                }
+            }
+        } finally {
+            testFile.delete();
+        }
+    }
 
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testParsePccAndIsolatedServiceFails() throws Exception {
+        final File testFile = extractFile(TEST_APP_PCC_AND_ISOLATED_SERVICE_APK);
+        try {
+            new TestPackageParser2().parsePackage(testFile, 0, false);
+            fail("Parsing a service with both isPrivateComputeCoreProcess and isolatedProcess"
+                    + " should fail.");
+        } catch (PackageParserException e) {
+            assertThat(e.getMessage()).contains(
+                    "Service has both isIsolatedProcess and isPrivateComputeCoreProcess set.");
         } finally {
             testFile.delete();
         }

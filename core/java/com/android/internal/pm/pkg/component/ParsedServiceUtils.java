@@ -50,8 +50,8 @@ public class ParsedServiceUtils {
     @NonNull
     public static ParseResult<ParsedService> parseService(String[] separateProcesses,
             ParsingPackage pkg, Resources res, XmlResourceParser parser, int flags,
-            boolean useRoundIcon, @Nullable String defaultSplitName, @NonNull ParseInput input,
-            boolean runInPccSandbox) throws XmlPullParserException, IOException {
+            boolean useRoundIcon, @Nullable String defaultSplitName, @NonNull ParseInput input)
+            throws XmlPullParserException, IOException {
         boolean visibleToEphemeral;
         boolean setExported;
 
@@ -111,8 +111,14 @@ public class ParsedServiceUtils {
                             | flag(ServiceInfo.FLAG_NATIVE_SERVICE,
                             R.styleable.AndroidManifestService_nativeService, sa)));
 
-            if (runInPccSandbox) {
-                service.setFlags(service.getFlags() | ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX);
+            if (android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()) {
+                service.setFlags(service.getFlags() | flag(ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX,
+                         R.styleable.AndroidManifestService_isPrivateComputeCoreProcess, sa));
+                if ((service.getFlags() & ServiceInfo.FLAG_ISOLATED_PROCESS) != 0
+                         && (service.getFlags() & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX) != 0) {
+                    return input.error("Service has both isIsolatedProcess and "
+                        + "isPrivateComputeCoreProcess set.");
+                }
             }
 
             if (Flags.enableSystemUserOnlyForServicesAndProviders()) {

@@ -23,10 +23,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <private-compute>
-            <service
-                android:name=".TestPccService"
-                android:exported="true" />
-        </private-compute>
+        <service
+            android:name=".TestPccService"
+            android:exported="true"
+            android:isPrivateComputeCoreProcess="true"/>
     </application>
 </manifest>

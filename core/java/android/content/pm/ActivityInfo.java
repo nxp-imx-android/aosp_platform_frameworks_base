@@ -644,7 +644,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     /**
      * Bit in {@link #flags} indicating if the activity or the receiver should run in
      * the Private Compute Core sandbox.
-     * @see android.R.styleable#AndroidManifestPrivateCompute
+     * @see android.R.styleable#AndroidManifestActivity_isPrivateComputeCoreProcess
      * @hide
      */
     public static final int FLAG_RUN_IN_PCC_SANDBOX = 0x80000;

@@ -3215,10 +3215,8 @@
          access to data managed by the application.
 
          <p>This appears as a child tag of the
-         {@link #AndroidManifestApplication application} or
-         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
-    <declare-styleable name="AndroidManifestProvider"
-        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
+         {@link #AndroidManifestApplication application} tag. -->
+    <declare-styleable name="AndroidManifestProvider" parent="AndroidManifestApplication">
         <!-- Required name of the class implementing the provider, deriving from
             {@link android.content.ContentProvider}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyProvider); as a
@@ -3261,6 +3259,8 @@
         <attr name="attributionTags" />
         <attr name="systemUserOnly" format="boolean" />
         <attr name="intentMatchingFlags"/>
+        <!-- If set to true, this component is run in a Private Compute Core Process. -->
+        <attr name="isPrivateComputeCoreProcess" format="boolean" />
     </declare-styleable>
 
     <!-- Attributes that can be supplied in an AndroidManifest.xml
@@ -3338,10 +3338,8 @@
          that can connect with it.  If none are specified, the service can
          only be accessed by direct specification of its class name.
          The service tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} or
-         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
-    <declare-styleable name="AndroidManifestService"
-        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
+         {@link #AndroidManifestApplication application} tag. -->
+    <declare-styleable name="AndroidManifestService" parent="AndroidManifestApplication">
         <!-- Required name of the class implementing the service, deriving from
             {@link android.app.Service}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyService); as a
@@ -3370,6 +3368,8 @@
              that is isolated from the rest of the system.  The only communication
              with it is through the Service API (binding and starting). -->
         <attr name="isolatedProcess" format="boolean" />
+        <!-- If set to true, this component is run in a Private Compute Core Process. -->
+        <attr name="isPrivateComputeCoreProcess" format="boolean" />
         <attr name="singleUser" />
         <attr name="directBootAware" />
         <!-- If the service is an {@link android.R.attr#isolatedProcess} service, this permits a
@@ -3464,7 +3464,7 @@
         The value is a simple integer, with higher number being initialized first. If not specified,
         the default order is 0. -->
         <attr name="initOrder" format="integer" />
-    </declare-styleable>
+   </declare-styleable>
 
     <!-- The <code>receiver</code> tag declares an
          {@link android.content.BroadcastReceiver} class that is available
@@ -3477,10 +3477,8 @@
          it will receive.  If none are specified, the receiver will only
          be run when an Intent is broadcast that is directed at its specific
          class name.  The receiver tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} or
-         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
-    <declare-styleable name="AndroidManifestReceiver"
-        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
+         {@link #AndroidManifestApplication application} tag. -->
+    <declare-styleable name="AndroidManifestReceiver" parent="AndroidManifestApplication">
         <!-- Required name of the class implementing the receiver, deriving from
             {@link android.content.BroadcastReceiver}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyReceiver); as a
@@ -3510,6 +3508,8 @@
              contained here. -->
         <attr name="attributionTags" />
         <attr name="intentMatchingFlags"/>
+         <!-- If set to true, this component is run in a Private Compute Core Process. -->
+        <attr name="isPrivateComputeCoreProcess" format="boolean" />
     </declare-styleable>
 
     <!-- The <code>activity</code> tag declares an
@@ -3522,10 +3522,8 @@
          that it can handle.  If none are specified, the activity can
          only be started through direct specification of its class name.
          The activity tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} or
-         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
-    <declare-styleable name="AndroidManifestActivity"
-        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
+         {@link #AndroidManifestApplication application} tag. -->
+    <declare-styleable name="AndroidManifestActivity" parent="AndroidManifestApplication">
         <!-- Required name of the class implementing the activity, deriving from
             {@link android.app.Activity}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyActivity); as a
@@ -3568,6 +3566,8 @@
              any value in the theme. -->
         <attr name="windowSoftInputMode" />
         <attr name="immersive" />
+        <!-- If set to true, this component is run in a Private Compute Core Process. -->
+        <attr name="isPrivateComputeCoreProcess" format="boolean" />
         <attr name="hardwareAccelerated" />
         <attr name="uiOptions" />
         <attr name="parentActivityName" />
@@ -3718,10 +3718,8 @@
          that it can handle.  If none are specified, the activity can
          only be started through direct specification of its class name.
          The activity-alias tag appears as a child tag of the
-         {@link #AndroidManifestApplication application} or
-         {@link #AndroidManifestPrivateCompute private-compute} tag. -->
-    <declare-styleable name="AndroidManifestActivityAlias"
-        parent="AndroidManifestApplication AndroidManifestPrivateCompute">
+         {@link #AndroidManifestApplication application} tag. -->
+    <declare-styleable name="AndroidManifestActivityAlias" parent="AndroidManifestApplication">
         <!-- Required name of the class implementing the activity, deriving from
             {@link android.app.Activity}.  This is a fully
             qualified class name (for example, com.mycompany.myapp.MyActivity); as a
@@ -3752,19 +3750,9 @@
         <attr name="allowUntrustedActivityEmbedding" />
         <attr name="knownActivityEmbeddingCerts" />
         <attr name="intentMatchingFlags"/>
+        <!-- If set to true, this component is run in a Private Compute Core Process. -->
+        <attr name="isPrivateComputeCoreProcess" format="boolean" />
     </declare-styleable>
-
-    <!-- The <code>private-compute</code> tag contains a set of
-         {@link #AndroidManifestProvider provider} or {@link #AndroidManifestActivity activity} or
-         {@link #AndroidManifestActivityAlias activity-alias} or
-         {@link #AndroidManifestReceiver receiver} or {@link #AndroidManifestService service} or
-         components that are available as part of the package's application components,
-         but they run in the Private Compute Core sandbox and will be subject to
-         system restrictions, limiting access to some system resources and
-         restricting communication with non-PCC components.
-         @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    -->
-    <declare-styleable name="AndroidManifestPrivateCompute" parent="AndroidManifestApplication"/>
 
     <!-- The <code>meta-data</code> tag is used to attach additional
          arbitrary data to an application component.  The data can later
