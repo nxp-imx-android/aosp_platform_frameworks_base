@@ -19,6 +19,8 @@ import static android.content.ComponentName.unflattenFromString;
 
 import android.content.ComponentName;
 
+import com.android.server.pm.GenericAllowlist.AllowlistMode;
+
 public final class UserActivitiesAllowlistTest
         extends GenericAllowlistTestCase<UserActivitiesAllowlist, ComponentName> {
 
@@ -44,8 +46,9 @@ public final class UserActivitiesAllowlistTest
     private static final ComponentName ACTIVITY_FULL_NAME = unflattenFromString(FULL_NAME);
 
 
+    private static final String NOT_ALLOWLISTED_NAME = "allowlisted/I.am...NOT";
     private static final ComponentName NOT_ALLOWLISTED_ACTIVITY =
-            unflattenFromString("allowlisted/I.am...NOT");
+            unflattenFromString(NOT_ALLOWLISTED_NAME);
     private static final String INVALID_NAME = "invalid.I.am"; // missing package
 
     public UserActivitiesAllowlistTest() {
@@ -53,8 +56,9 @@ public final class UserActivitiesAllowlistTest
     }
 
     @Override
-    protected UserActivitiesAllowlist createAllowlist(String... configAllowlist) {
-        return new UserActivitiesAllowlist(configAllowlist);
+    protected UserActivitiesAllowlist createAllowlist(@AllowlistMode int mode,
+            String... configAllowlist) {
+        return new UserActivitiesAllowlist(mode, configAllowlist);
     }
 
     @Override
@@ -125,6 +129,11 @@ public final class UserActivitiesAllowlistTest
     @Override
     protected ComponentName getNotAllowlistedElement() {
         return NOT_ALLOWLISTED_ACTIVITY;
+    }
+
+    @Override
+    protected String getNotAllowlistedName() {
+        return NOT_ALLOWLISTED_NAME;
     }
 
     @Override

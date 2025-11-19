@@ -15,7 +15,9 @@
  */
 package com.android.server.pm;
 
+import android.annotation.IntDef;
 import android.annotation.Nullable;
+import android.util.DebugUtils;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 
@@ -50,10 +52,35 @@ import java.util.stream.Stream;
  */
 abstract class GenericAllowlist<E> {
 
-    private static final String TAG = GenericAllowlist.class.getSimpleName();
+    @VisibleForTesting
+    static final boolean DEBUG = Log.isLoggable(GenericAllowlist.class.getSimpleName(), Log.DEBUG);
 
     @VisibleForTesting
-    static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    static final String ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE =
+            "isAllowed(%s): returning true only because mode is %s";
+
+    // NOTE: public because of allowlistModeToString()
+    /** Allowlist is disabled because it was set with an invalid mode. */
+    public static final int ALLOWLIST_MODE_INVALID = -1;
+    /** Allowlist is disabled. */
+    public static final int ALLOWLIST_MODE_DISABLED = 0;
+    /** Allowlist is enabled. */
+    public static final int ALLOWLIST_MODE_ENABLED = 1;
+    /**
+     * Allowlist is disabled, but {@link #isAllowed(Object)} will log when it returns {@code false}.
+     */
+    public static final int ALLOWLIST_MODE_LOG_ONLY = 2;
+
+    @IntDef(prefix = { "ALLOWLIST_MODE_" }, value = {
+            ALLOWLIST_MODE_INVALID,
+            ALLOWLIST_MODE_DISABLED,
+            ALLOWLIST_MODE_ENABLED,
+            ALLOWLIST_MODE_LOG_ONLY,
+            })
+    public @interface AllowlistMode {}
+
+    @VisibleForTesting
+    final String mTag = getClass().getSimpleName();
 
     /** Used to set mId (on constructor). */
     private static int sNextId;
@@ -75,6 +102,9 @@ abstract class GenericAllowlist<E> {
      */
     private final String[] mPermanentAllowlist;
 
+    /** Mode of the allowlist - see {@link AllowlistMode} */
+    private @AllowlistMode int mMode;
+
     /**
      * List of elements that are temporarily allowed (i.e., until reboot or set back to
      * {@code null}).
@@ -88,9 +118,16 @@ abstract class GenericAllowlist<E> {
     private final String mSingularName;
     private final String mPluralName;
 
-    protected GenericAllowlist(String singularName, String pluralName,
+    protected GenericAllowlist(@AllowlistMode int mode, String singularName, String pluralName,
             String[] permanentNormalizedNames) {
         mId = ++sNextId;
+        try {
+            mMode = validateMode(mode);
+        } catch (Exception e) {
+            Slogf.wtf(mTag, e, "Invalid mode (%d) on constructor; using ALLOWLIST_MODE_INVALID (%d)"
+                    + "instead", mode, ALLOWLIST_MODE_INVALID);
+            mMode = ALLOWLIST_MODE_INVALID;
+        }
         mSingularName = singularName;
         mPluralName = pluralName;
         mPermanentAllowlist = getValidElements(permanentNormalizedNames);
@@ -101,6 +138,20 @@ abstract class GenericAllowlist<E> {
 
     /** Converts the given element to a String. */
     protected abstract String toNormalizedName(E element);
+
+    @VisibleForTesting
+    final @AllowlistMode int getMode() {
+        return mMode;
+    }
+
+    final void setMode(@AllowlistMode int mode) {
+        int oldMode = mMode;
+        mMode = validateMode(mode);
+        if (DEBUG) {
+            Slogf.d(mTag, "setMode(): changed from %d (%s) to %d (%s)",
+                    oldMode, allowlistModeToString(oldMode), mode, allowlistModeToString(mode));
+        }
+    }
 
     // NOTE: only called by 'cmd user' (which needs to "build" the temporary allowlist based on
     // incremental actions, like add or remove an element) and unit tests, so we don't have to
@@ -124,43 +175,68 @@ abstract class GenericAllowlist<E> {
         Objects.requireNonNull(element, "element cannot be null");
         String normalizedName = toNormalizedName(element);
 
+        if (mMode == ALLOWLIST_MODE_DISABLED || mMode == ALLOWLIST_MODE_INVALID) {
+            if (DEBUG) {
+                Slogf.d(mTag, "isAllowed(%s): returning true because mode is (%d) %s",
+                        normalizedName, mMode, allowlistModeToString(mMode));
+            }
+            return true;
+        }
+
         // Checks the temporary list first...
         CopyOnWriteArrayList<String> temporaryList = mTemporaryAllowlist;
         if (temporaryList != null) {
             if (temporaryList.isEmpty()) {
                 if (DEBUG) {
-                    Slogf.d(TAG, "isAllowed(%s): returning true because temporary "
+                    Slogf.d(mTag, "isAllowed(%s): returning true because temporary "
                             + "allowlist overrides permanent allowlist and is empty, so any "
                             + "%s is allowed", normalizedName, mSingularName);
                 }
                 return true;
             }
             if (DEBUG) {
-                Slogf.d(TAG, "isAllowed(%s): checking temporary list (%s)",
+                Slogf.d(mTag, "isAllowed(%s): checking temporary list (%s)",
                         normalizedName, temporaryList);
             }
-            return temporaryList.contains(normalizedName);
+            boolean allowed = temporaryList.contains(normalizedName);
+            return checkModeAndLog(normalizedName, allowed);
         }
 
         // ...then the permanent one.
         if (mPermanentAllowlist.length == 0) {
             if (DEBUG) {
-                Slogf.d(TAG, "isAllowed(%s): returning true because permanent allowlist"
+                Slogf.d(mTag, "isAllowed(%s): returning true because permanent allowlist"
                         + "is empty, so any %s is allowed", normalizedName, mSingularName);
             }
             return true;
         }
         if (DEBUG) {
-            Slogf.d(TAG, "isAllowed(%s): checking permanent list (%s)", normalizedName,
+            Slogf.d(mTag, "isAllowed(%s): checking permanent list (%s)", normalizedName,
                     Arrays.toString(mPermanentAllowlist));
         }
-        return ArrayUtils.contains(mPermanentAllowlist, normalizedName);
+        boolean allowed = ArrayUtils.contains(mPermanentAllowlist, normalizedName);
+        return checkModeAndLog(normalizedName, allowed);
+    }
+
+    private boolean checkModeAndLog(String normalizedName, boolean allowed) {
+        if (allowed) {
+            if (DEBUG) {
+                Slogf.d(mTag, "isAllowed(%s): returning true", normalizedName);
+            }
+            return true;
+        }
+        if (mMode == ALLOWLIST_MODE_LOG_ONLY) {
+            Slogf.w(mTag, ALLOWED_BY_LOG_ONLY_MESSAGE_TEMPLATE, normalizedName,
+                    allowlistModeToString(mMode));
+            return true;
+        }
+        return false;
     }
 
     /** Sets the temporary allowlist (or resets it when passed with {@code null}. */
     final void setTemporaryAllowlist(@Nullable Collection<E> elements) {
         if (DEBUG) {
-            Slogf.d(TAG, "setTemporaryAllowList(%s)", elements);
+            Slogf.d(mTag, "setTemporaryAllowList(%s)", elements);
         }
         if (elements == null) {
             mTemporaryAllowlist = null;
@@ -173,13 +249,18 @@ abstract class GenericAllowlist<E> {
         mTemporaryAllowlist = new CopyOnWriteArrayList<>(tempList);
 
         if (DEBUG) {
-            Slogf.d(TAG, "setTemporaryAllowList(): set as %s", mTemporaryAllowlist);
+            Slogf.d(mTag, "setTemporaryAllowList(): set as %s", mTemporaryAllowlist);
         }
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return getClass().getSimpleName() + "#" + mId;
+    }
+
+    /** Gets a user-friendly representation of the given {@code mode}. */
+    public static String allowlistModeToString(@AllowlistMode int mode) {
+        return DebugUtils.constantToString(GenericAllowlist.class, "ALLOWLIST_MODE_", mode);
     }
 
     final void dump(PrintWriter writer, String prefix, String header) {
@@ -191,6 +272,7 @@ abstract class GenericAllowlist<E> {
         writer.increaseIndent();
 
         writer.printf("id: %s\n", toString());
+        writer.printf("mode: %d (%s)\n", mMode, allowlistModeToString(mMode));
         writer.printf("DEBUG: %b\n", DEBUG);
 
         dumpAllowlistStatus(writer);
@@ -202,17 +284,29 @@ abstract class GenericAllowlist<E> {
 
     private void dumpAllowlistStatus(IndentingPrintWriter writer) {
         writer.printf("%s allowlist status: ", mPluralName);
+
+        switch (mMode) {
+            case ALLOWLIST_MODE_DISABLED -> {
+                writer.println("disabled (by config)");
+                return;
+            }
+            case ALLOWLIST_MODE_LOG_ONLY-> {
+                writer.println("disabled (log-only)");
+                return;
+            }
+        }
+
         CopyOnWriteArrayList<String> temporaryList = mTemporaryAllowlist;
         if (temporaryList != null) {
             if (temporaryList.isEmpty()) {
-                writer.println("allowlisting disabled");
+                writer.println("disabled (empty temporary list)");
             } else {
                 writer.println("using temporary allowlist");
             }
             return;
         }
         if (mPermanentAllowlist.length == 0) {
-            writer.println("allowlisting disabled");
+            writer.println("disabled (empty permanent list)");
         } else {
             writer.println("using permanent allowlist");
         }
@@ -268,14 +362,14 @@ abstract class GenericAllowlist<E> {
         for (String element : elements) {
             E validElement = fromNormalizedName(element);
             if (validElement == null) {
-                Slogf.w(TAG, "Invalid %s from config: %s", mSingularName, element);
+                Slogf.w(mTag, "Invalid %s from config: %s", mSingularName, element);
                 continue;
             }
             // Must "normalize" the component into the flattened format, as the class part could
             // have been expressed as FQCN (Fully-Qualified Class Name).
             String normalizedName = toNormalizedName(validElement);
             if (set.contains(normalizedName)) {
-                Slogf.w(TAG, "%s %s already added (as %s)", mSingularName, element,
+                Slogf.w(mTag, "%s %s already added (as %s)", mSingularName, element,
                         normalizedName);
             }
             set.add(normalizedName);
@@ -283,8 +377,15 @@ abstract class GenericAllowlist<E> {
         String[] valid = new String[set.size()];
         set.toArray(valid);
         if (DEBUG) {
-            Slogf.d(TAG, "Valid %s from config: %s", Arrays.toString(valid), mPluralName);
+            Slogf.d(mTag, "Valid %s from config: %s", mPluralName, Arrays.toString(valid));
         }
         return valid;
+    }
+
+    private static @AllowlistMode int validateMode(@AllowlistMode int mode) {
+        return switch (mode) {
+            case ALLOWLIST_MODE_ENABLED, ALLOWLIST_MODE_DISABLED, ALLOWLIST_MODE_LOG_ONLY -> mode;
+            default -> throw new IllegalArgumentException("invalid mode: " + mode);
+        };
     }
 }

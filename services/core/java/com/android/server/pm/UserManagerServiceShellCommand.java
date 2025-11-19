@@ -656,6 +656,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             case "check" -> checkActivityAllowlisted(userType);
             case "reset" -> resetActivitiesAllowlist(userType);
             case "disable" -> disableActivitiesAllowlist(userType);
+            case "set-mode" -> setActivitiesAllowlistMode(userType);
             default -> printAndReturnFailed("invalid action - %s", action);
         };
     }
@@ -674,6 +675,9 @@ public class UserManagerServiceShellCommand extends ShellCommand {
                 + "specific activities (removing the previous ones)");
         pw.println("      reset - reset the allowlist to the device's default");
         pw.println("      disable - disable allowlisting (so any activity can be launched)");
+        pw.println("      set-mode <VALUE> - set's the mode. Valid values are: 0 (disabled), "
+                + "1 (enabled), 2 (dry-run)");
+
         pw.println("    where ACTIVITY is the flattened representation of the activity's "
                 + "ComponentName (i.e., package/activity)");
         pw.println("    NOTE: changes made by this command are temporary - the allowlist is reset "
@@ -682,12 +686,16 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         return RESULT_SUCCESS;
     }
 
-    private List<ComponentName> getEffectiveAllowlist(String userType) {
-        UserActivitiesAllowlist allowlist = mService.getActivitiesAllowlist(userType);
+    private UserActivitiesAllowlist getActivitiesAllowlist(String userType) {
+        final UserActivitiesAllowlist allowlist = mService.getActivitiesAllowlist(userType);
         if (allowlist == null) {
             throw new IllegalStateException("unsupported userType: " + userType);
         }
-        return allowlist.getEffectiveAllowlist();
+        return allowlist;
+    }
+
+    private List<ComponentName> getEffectiveAllowlist(String userType) {
+        return getActivitiesAllowlist(userType).getEffectiveAllowlist();
     }
 
     private int addToActivitiesAllowlist(String userType) {
@@ -754,6 +762,21 @@ public class UserManagerServiceShellCommand extends ShellCommand {
     private int disableActivitiesAllowlist(String userType) {
         Slogf.i(LOG_TAG, "disableActivitiesAllowlist(%s)", userType);
         setTemporaryActivitiesAllowlist(userType, Collections.emptyList());
+        return printAndReturnSuccess();
+    }
+
+    private int setActivitiesAllowlistMode(String userType) {
+        final int mode;
+        try {
+            mode = Integer.parseInt(getNextArgRequired());
+        } catch (Exception e) {
+            return printAndReturnFailed("Exception (%s) parsing mode argument", e);
+        }
+
+        Slogf.i(LOG_TAG, "setActivitiesAllowlistMode(%s): setting mode to %d (%s)", userType, mode,
+                UserActivitiesAllowlist.allowlistModeToString(mode));
+        getActivitiesAllowlist(userType).setMode(mode);
+
         return printAndReturnSuccess();
     }
 

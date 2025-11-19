@@ -3385,6 +3385,15 @@
              in which case, boot to the first full user. -->
     <integer name="config_hsumBootStrategy">0</integer>
 
+    <!-- Indicates the mode of activities allowlist for HSU (Headless System User)
+         This config has no effect if the device is not in HSUM.
+         0 (Default): disabled
+         1: enabled (allowlist read from arrays/hsu_allowlist_activities)
+         2: log-only (disabled, but logs what would be blocked if enabled)
+    -->
+    <integer name="config_hsuActivitiesAllowlistMode">0</integer>
+
+
     <!-- Whether multiple admins are allowed on the device. If set to true, new users can be created
          with admin privileges and admin privileges can be granted/revoked from existing users. -->
     <bool name="config_enableMultipleAdmins">false</bool>
