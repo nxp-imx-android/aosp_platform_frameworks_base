@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.resizing
+package com.android.wm.shell.functional.appcompat
 
-import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.RestartAppInDesktopMode
@@ -27,6 +27,6 @@ import org.junit.runners.BlockJUnit4ClassRunner
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @ScreenRecordRule.ScreenRecord
-@Presubmit
+@Postsubmit
 class RestartSizeCompatAppInDesktopMode :
     RestartAppInDesktopMode(isResizable = false, isLandscapeApp = false)
