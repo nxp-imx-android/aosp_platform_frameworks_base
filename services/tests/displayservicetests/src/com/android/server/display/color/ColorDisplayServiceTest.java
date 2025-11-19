@@ -36,11 +36,15 @@ import android.app.AlarmManager;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Resources;
+import android.database.ContentObserver;
 import android.hardware.display.ColorDisplayManager;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.Time;
 import android.os.Handler;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
@@ -56,9 +60,11 @@ import com.android.internal.R;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.SystemService;
+import com.android.server.accessibility.Flags;
 import com.android.server.twilight.TwilightListener;
 import com.android.server.twilight.TwilightManager;
 import com.android.server.twilight.TwilightState;
+import org.mockito.MockedStatic;
 
 import org.junit.After;
 import org.junit.Before;
@@ -102,6 +108,8 @@ public class ColorDisplayServiceTest {
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() {
@@ -120,7 +128,7 @@ public class ColorDisplayServiceTest {
 
         final MockContentResolver cr = new MockContentResolver(mContext);
         cr.addProvider(Settings.AUTHORITY, new FakeSettingsProvider());
-        doReturn(cr).when(mContext).getContentResolver();
+        doReturn(Mockito.spy(cr)).when(mContext).getContentResolver();
 
         final AlarmManager am = Mockito.mock(AlarmManager.class);
         doReturn(am).when(mContext).getSystemService(Context.ALARM_SERVICE);
@@ -1249,6 +1257,47 @@ public class ColorDisplayServiceTest {
         assertEquals(/* default = */ 44, mRbcSpy.getStrength());
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_COLOR_INVERSION_IN_SUW)
+    public void onUserChanged_whenUserNotSetupAndInversionEnabledInSuw_registersObserver() {
+        Secure.putIntForUser(mContext.getContentResolver(), Secure.USER_SETUP_COMPLETE, 0,
+                mUserId);
+        doReturn(true).when(mResourcesSpy).getBoolean(
+                R.bool.config_enableColorInversionInSetupWizard);
+
+        mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
+
+        assertDisplayInversionObserverRegistered(mUserId);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_COLOR_INVERSION_IN_SUW)
+    public void
+        onUserChanged_whenUserNotSetupAndInversionDisabledInSuwByConfig_doesNotRegisterObserver() {
+        Secure.putIntForUser(mContext.getContentResolver(), Secure.USER_SETUP_COMPLETE, 0,
+                mUserId);
+        doReturn(false).when(mResourcesSpy).getBoolean(
+                R.bool.config_enableColorInversionInSetupWizard);
+
+        mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
+
+        assertDisplayInversionObserverNotRegistered(mUserId);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_COLOR_INVERSION_IN_SUW)
+    public void
+        onUserChanged_whenUserNotSetupAndInversionDisabledInSuwByFlag_doesNotRegisterObserver() {
+        Secure.putIntForUser(mContext.getContentResolver(), Secure.USER_SETUP_COMPLETE, 0,
+                mUserId);
+        doReturn(true).when(mResourcesSpy).getBoolean(
+                R.bool.config_enableColorInversionInSetupWizard);
+
+        mCds.mHandler.runWithScissors(() -> mCds.onUserChanged(mUserId), 1000);
+
+        assertDisplayInversionObserverNotRegistered(mUserId);
+    }
+
     /**
      * Configures Night display to use a custom schedule.
      *
@@ -1399,6 +1448,34 @@ public class ColorDisplayServiceTest {
         assertWithMessage("Incorrect Display White Balance state")
                 .that(mCds.mDisplayWhiteBalanceTintController.isActivated())
                 .isEqualTo(enabled);
+    }
+
+    /**
+     * Convenience method for asserting that the content observer for display inversion is
+     * registered for a specific user.
+     *
+     * @param userId The user ID.
+     */
+    private void assertDisplayInversionObserverRegistered(int userId) {
+        verify(mContext.getContentResolver()).registerContentObserver(
+                eq(Secure.getUriFor(Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED)),
+                anyBoolean(),
+                any(ContentObserver.class),
+                eq(userId));
+    }
+
+    /**
+     * Convenience method for asserting that the content observer for display inversion is NOT
+     * registered for a specific user.
+     *
+     * @param userId The user ID.
+     */
+    private void assertDisplayInversionObserverNotRegistered(int userId) {
+        verify(mContext.getContentResolver(), never()).registerContentObserver(
+                eq(Secure.getUriFor(Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED)),
+                anyBoolean(),
+                any(ContentObserver.class),
+                eq(userId));
     }
 
     /**
