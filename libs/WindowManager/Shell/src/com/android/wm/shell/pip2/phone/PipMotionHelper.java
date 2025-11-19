@@ -87,6 +87,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
     private Context mContext;
     @NonNull private final PipBoundsState mPipBoundsState;
     @NonNull private final PipDisplayLayoutState mPipDisplayLayoutState;
+    @NonNull private final PipInteractionHandler mPipInteractionHandler;
     @NonNull private final PipScheduler mPipScheduler;
     @NonNull private final PipTransitionState mPipTransitionState;
     private final PipDesktopState mPipDesktopState;
@@ -181,7 +182,8 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
             PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             PipDesktopState pipDesktopState,
             PipUiEventLogger pipUiEventLogger,
-            PipDisplayLayoutState pipDisplayLayoutState) {
+            PipDisplayLayoutState pipDisplayLayoutState,
+            PipInteractionHandler pipInteractionHandler) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
         mPipScheduler = pipScheduler;
@@ -202,6 +204,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         mPipDesktopState = pipDesktopState;
         mPipDisplayLayoutState = pipDisplayLayoutState;
         mPipDisplayLayoutState.addDisplayIdListener(this);
+        mPipInteractionHandler = pipInteractionHandler;
     }
 
     void init() {
@@ -681,15 +684,19 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
                 mPipHighPerfSession = mPipPerfHintController.startSession(
                         this::onHighPerfSessionTimeout, "startBoundsAnimator");
             }
+            mPipInteractionHandler.begin(mPipTransitionState.getPinnedTaskLeash(),
+                    PipInteractionHandler.INTERACTION_FLING_TO_SNAP_PIP);
             if (postBoundsUpdateCallback != null) {
                 mTemporaryBoundsPhysicsAnimator
                         .addUpdateListener(mResizePipUpdateListener)
                         .withEndActions(this::onBoundsPhysicsAnimationEnd,
-                                postBoundsUpdateCallback);
+                                postBoundsUpdateCallback)
+                        .withEndOrCancelActions(mPipInteractionHandler::end);
             } else {
                 mTemporaryBoundsPhysicsAnimator
                         .addUpdateListener(mResizePipUpdateListener)
-                        .withEndActions(this::onBoundsPhysicsAnimationEnd);
+                        .withEndActions(this::onBoundsPhysicsAnimationEnd)
+                        .withEndOrCancelActions(mPipInteractionHandler::end);
             }
         }
 
