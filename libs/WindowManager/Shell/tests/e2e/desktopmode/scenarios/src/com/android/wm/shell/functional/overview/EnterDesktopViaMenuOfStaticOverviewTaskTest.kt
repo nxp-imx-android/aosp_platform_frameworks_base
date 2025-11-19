@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.overview
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.EnterDesktopWithAppHandleMenuExistingWindows
+import com.android.wm.shell.scenarios.EnterDesktopViaMenuOfStaticOverviewTask
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [EnterDesktopWithAppHandleMenuExistingWindows]. */
+/* Functional test for [EnterDesktopViaMenuOfStaticOverviewTask]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class EnterDesktopWithAppHandleMenuExistingWindowsTest :
-    EnterDesktopWithAppHandleMenuExistingWindows()
+class EnterDesktopViaMenuOfStaticOverviewTaskTest : EnterDesktopViaMenuOfStaticOverviewTask()

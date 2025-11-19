@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.fundamentals.enter
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.EnterDesktopWithDragWindowsLimit
+import com.android.wm.shell.scenarios.EnterDesktopWithAppHandleMenuExistingWindows
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [EnterDesktopWithDragWindowsLimit]. */
+/* Functional test for [EnterDesktopWithAppHandleMenuExistingWindows]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class EnterDesktopWithDragWindowsLimitTest : EnterDesktopWithDragWindowsLimit()
+class EnterDesktopWithAppHandleMenuExistingWindowsTest :
+    EnterDesktopWithAppHandleMenuExistingWindows()
