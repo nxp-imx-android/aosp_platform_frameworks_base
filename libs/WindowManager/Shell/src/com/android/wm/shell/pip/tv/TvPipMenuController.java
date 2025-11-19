@@ -31,7 +31,6 @@ import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
-import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityManager;
 import android.window.SurfaceSyncGroup;
 
@@ -125,7 +124,15 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
                 mainHandler, Context.RECEIVER_EXPORTED);
     }
 
-    void setDelegate(Delegate delegate) {
+    /**
+     * Sets the delegate that handles actions originating from the menu controller.
+     * This must be set before {@link #attach(SurfaceControl)} is called.
+     *
+     * @param delegate The delegate to handle menu actions, typically the main PiP controller.
+     * @throws IllegalStateException if the delegate has already been set.
+     * @throws IllegalArgumentException if the delegate is null.
+     */
+    public void setDelegate(Delegate delegate) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s: setDelegate(), delegate=%s", TAG, delegate);
         if (mDelegate != null) {
@@ -139,11 +146,20 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
         mDelegate = delegate;
     }
 
-    void setTvPipActionsProvider(TvPipActionsProvider tvPipActionsProvider) {
+    /**
+     * Sets the provider for PiP actions. This is required to populate the menu with actions.
+     *
+     * @param tvPipActionsProvider The provider that supplies actions to be displayed in the menu.
+     */
+    public void setTvPipActionsProvider(TvPipActionsProvider tvPipActionsProvider) {
         mTvPipActionsProvider = tvPipActionsProvider;
     }
 
-    void reloadMenu() {
+    /**
+     * Reloads the menu UI. This is typically called when a configuration change, such as a
+     * density or font scale change, requires the menu views to be recreated.
+     */
+    public void reloadMenu() {
         if (mLeash == null) {
             return;
         }
@@ -240,7 +256,14 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
         mSystemWindows.addView(v, layoutParams, 0 /* displayId */, SHELL_ROOT_LAYER_PIP);
     }
 
-    void onPipTransitionFinished(boolean enterTransition) {
+    /**
+     * Notifies the menu that a PiP transition has finished. This is used to trigger animations
+     * or state changes that should occur after the PiP window is settled.
+     *
+     * @param enterTransition {@code true} if the finished transition was for entering PiP,
+     *                        {@code false} otherwise.
+     */
+    public void onPipTransitionFinished(boolean enterTransition) {
         // There is a race between when this is called and when the last frame of the pip transition
         // is drawn. To ensure that view updates are applied only when the animation has fully drawn
         // and the menu view has been fully remeasured and relaid out, we add a small delay here by
@@ -256,7 +279,10 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
         });
     }
 
-    void showMovementMenu() {
+    /**
+     * Shows the PiP menu in "move" mode, allowing the user to reposition the PiP window.
+     */
+    public void showMovementMenu() {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s: showMovementMenu()", TAG);
         requestMenuMode(MODE_MOVE_MENU);
@@ -269,13 +295,21 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
         requestMenuMode(MODE_ALL_ACTIONS_MENU);
     }
 
-    void onPipTransitionToTargetBoundsStarted(Rect targetBounds) {
+    /**
+     * Notifies the menu that the PiP window has started a transition to new bounds.
+     *
+     * @param targetBounds The destination bounds of the PiP window.
+     */
+    public void onPipTransitionToTargetBoundsStarted(Rect targetBounds) {
         if (mPipMenuView != null) {
             mPipMenuView.onPipTransitionToTargetBoundsStarted(targetBounds);
         }
     }
 
-    void updateGravity(int gravity) {
+    /**
+     * Updates the menu's visual state to reflect the new gravity of the PiP window.
+     */
+    public void updateGravity(int gravity) {
         mPipMenuView.setPipGravity(gravity);
     }
 
@@ -283,7 +317,10 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
         return mPipMenuView.getPipMenuContainerBounds(pipBounds);
     }
 
-    void closeMenu() {
+    /**
+     * Closes the PiP menu and returns it to a non-interactive state.
+     */
+    public void closeMenu() {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s: closeMenu()", TAG);
         requestMenuMode(MODE_NO_MENU);
@@ -459,7 +496,7 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
     // Beginning of convenience methods for {@link TvPipMenuMode}
 
     @VisibleForTesting
-    boolean isMenuOpen() {
+    public boolean isMenuOpen() {
         return isMenuOpen(mCurrentMenuMode);
     }
 
@@ -468,7 +505,7 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
     }
 
     @VisibleForTesting
-    boolean isInMoveMode() {
+    public boolean isInMoveMode() {
         return mCurrentMenuMode == MODE_MOVE_MENU;
     }
 
@@ -616,7 +653,7 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
         }
     }
 
-    interface Delegate {
+    public interface Delegate {
         void movePip(int keycode);
 
         void onInMoveModeChanged();
