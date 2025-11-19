@@ -16,9 +16,13 @@
 
 package android.app.privatecompute;
 
+import android.os.PersistableBundle;
+
 /**
  * @hide
  */
 interface IPccSandboxManager {
     boolean isPrivateComputeServicesUid(int uid);
+
+    oneway void writeToAuditLog(in PersistableBundle data);
 }
