@@ -486,14 +486,18 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     menuItem.imeName = item.mImeName;
                     menuItem.subtypeName = item.mSubtypeName;
                     menuItem.layoutName = item.mLayoutName;
-                    menuItem.imi = item.mImi;
+                    menuItem.imeId = item.mImi.getId();
                     menuItem.subtypeIndex = item.mSubtypeIndex;
                     menuItems.add(menuItem);
                 }
 
+                final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
+                final var selectedImi = settings.getMethodMap().get(selectedImeId);
+                final var selectedImeSettingsIntent = selectedImi != null
+                        ? selectedImi.createImeLanguageSettingsActivityIntent() : null;
                 try {
                     mIImeSwitcherMenu.show(menuItems, selectedImeId, selectedSubtypeIndex,
-                            isScreenLocked, displayId, userId);
+                            selectedImeSettingsIntent, isScreenLocked, displayId, userId);
                 } catch (RemoteException e) {
                     Slog.w(TAG, "Failed show IME Switcher Menu for user: " + userId
                             + " on display: " + displayId, e);

@@ -36,7 +36,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.Flags
-import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ImageView
@@ -98,6 +97,8 @@ constructor(
      * @param selectedImeId the ID of the selected input method.
      * @param selectedSubtypeIndex the index of the selected subtype in the input method's array of
      *   subtypes, or [NOT_A_SUBTYPE_INDEX] if no subtype is selected.
+     * @param selectedImeSettingsIntent the intent for the settings activity of the selected IME, or
+     *   `null` if no IME is selected, or the selected IME does not have a settings activity.
      * @param isScreenLocked whether the screen is current locked.
      * @param displayId the ID of the display where the menu was requested.
      * @param userId the ID of the user that requested the menu.
@@ -106,6 +107,7 @@ constructor(
         items: List<IImeSwitcherMenu.Item>,
         selectedImeId: String?,
         selectedSubtypeIndex: Int,
+        selectedImeSettingsIntent: Intent?,
         isScreenLocked: Boolean,
         displayId: Int,
         @UserIdInt userId: Int,
@@ -142,7 +144,7 @@ constructor(
 
         val onItemClick = { item: SubtypeItem, isSelected: Boolean ->
             if (!isSelected) {
-                onImeAndSubtypeSelected(item.imi.id, item.subtypeIndex, userId)
+                onImeAndSubtypeSelected(item.imeId, item.subtypeIndex, userId)
             }
             hide(displayId, userId)
         }
@@ -155,8 +157,13 @@ constructor(
         // Request focus to enable rotary scrolling on watches.
         recyclerView.requestFocus()
 
-        val selectedItem = menuItems.getOrNull(selectedIndex)
-        updateLanguageSettingsButton(selectedItem, contentView, isScreenLocked, displayId, userId)
+        updateLanguageSettingsButton(
+            selectedImeSettingsIntent,
+            contentView,
+            isScreenLocked,
+            displayId,
+            userId,
+        )
 
         builder.setOnCancelListener { hide(displayId, userId) }
         this.menuItems = menuItems
@@ -266,25 +273,24 @@ constructor(
     }
 
     /**
-     * Updates the visibility of the Language Settings button to visible if the currently selected
-     * item specifies a (language) settings activity, the screen is not locked and the device is
-     * provisioned. Otherwise, the button won't be shown.
+     * Updates the visibility of the Language Settings button to visible if the given settings
+     * intent is non-`null`, the screen is not locked and the device is provisioned. Otherwise, the
+     * button won't be shown.
      *
-     * @param selectedItem the currently selected item, or `null` if no item is selected.
+     * @param settingsIntent the intent for the settings activity of the selected IME, or `null` if
+     *   no IME is selected, or the selected IME does not have a settings activity.
      * @param view the menu dialog view.
      * @param isScreenLocked whether the screen is currently locked.
      * @param displayId the ID of the display where the menu was requested.
      * @param userId the ID of the user that requested the menu.
      */
     private fun updateLanguageSettingsButton(
-        selectedItem: MenuItem?,
+        settingsIntent: Intent?,
         view: View,
         isScreenLocked: Boolean,
         displayId: Int,
         @UserIdInt userId: Int,
     ) {
-        val settingsIntent =
-            (selectedItem as? SubtypeItem)?.imi?.createImeLanguageSettingsActivityIntent()
         val isDeviceProvisioned =
             Settings.Global.getInt(
                 view.context.contentResolver,
@@ -350,6 +356,7 @@ constructor(
             items: List<IImeSwitcherMenu.Item>,
             selectedImeId: String?,
             selectedSubtypeIndex: Int,
+            selectedImeSettingsIntent: Intent?,
             isScreenLocked: Boolean,
             displayId: Int,
             @UserIdInt userId: Int,
@@ -359,6 +366,7 @@ constructor(
                     items,
                     selectedImeId,
                     selectedSubtypeIndex,
+                    selectedImeSettingsIntent,
                     isScreenLocked,
                     displayId,
                     userId,
@@ -393,8 +401,8 @@ constructor(
          */
         val layoutName: CharSequence?,
 
-        /** The info of the input method. */
-        val imi: InputMethodInfo,
+        /** The ID of the input method. */
+        val imeId: String,
 
         /**
          * The index of the subtype in the input method's array of subtypes, or
@@ -593,12 +601,12 @@ constructor(
 
             val numItems = items.size
             // Initialize to the last IME id to avoid headers if there is only a single IME.
-            var prevImeId = items.last().imi.id
+            var prevImeId = items.last().imeId
             var firstGroup = true
             for (i in 0..<numItems) {
                 val item = items[i]
 
-                val imeId = item.imi.id
+                val imeId = item.imeId
                 val groupChange = imeId != prevImeId
                 if (groupChange) {
                     if (!firstGroup) {
@@ -606,7 +614,7 @@ constructor(
                     }
                     // Add a header if we have at least two items, or a single item with a subtype
                     // name.
-                    val nextItemId: String? = items.getOrNull(i + 1)?.imi?.id
+                    val nextItemId: String? = items.getOrNull(i + 1)?.imeId
                     val addHeader = item.subtypeName != null || imeId == nextItemId
                     if (addHeader) {
                         menuItems.add(HeaderItem(item.imeName))
@@ -620,7 +628,7 @@ constructor(
                         item.imeName,
                         item.subtypeName,
                         item.layoutName,
-                        item.imi,
+                        item.imeId,
                         item.subtypeIndex,
                     )
                 )
@@ -651,7 +659,7 @@ constructor(
             // the list.
             return items.indexOfFirst { item ->
                 item is SubtypeItem &&
-                    item.imi.id == selectedImeId &&
+                    item.imeId == selectedImeId &&
                     ((item.subtypeIndex == 0 && selectedSubtypeIndex == NOT_A_SUBTYPE_INDEX) ||
                         item.subtypeIndex == NOT_A_SUBTYPE_INDEX ||
                         item.subtypeIndex == selectedSubtypeIndex)

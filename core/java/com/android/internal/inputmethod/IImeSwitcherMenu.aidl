@@ -16,7 +16,7 @@
 
 package com.android.internal.inputmethod;
 
-import android.view.inputmethod.InputMethodInfo;
+import android.content.Intent;
 
 import com.android.internal.inputmethod.IImeSwitcherMenuListener;
 
@@ -42,8 +42,8 @@ oneway interface IImeSwitcherMenu {
         @nullable
         CharSequence layoutName;
 
-        /** The info of the Input Method associated with this item. */
-        InputMethodInfo imi;
+        /** The ID of the Input Method associated with this item. */
+        String imeId;
 
         /**
          * The index of the subtype in the input method's array of subtypes, or {@code -1} if this
@@ -55,16 +55,20 @@ oneway interface IImeSwitcherMenu {
     /**
      * Shows the Input Method Switcher Menu, with a list of IMEs and their subtypes.
      *
-     * @param items                the list of input method and subtype items.
-     * @param selectedImeId        the ID of the selected input method.
-     * @param selectedSubtypeIndex the index of the selected subtype in the input method's array of
-     *                             subtypes, or {@code -1} if no subtype is selected.
-     * @param isScreenLocked       whether the screen is current locked.
-     * @param displayId            the ID of the display where the menu was requested.
-     * @param userId               the ID of the user that requested the menu.
+     * @param items                     the list of input method and subtype items.
+     * @param selectedImeId             the ID of the selected input method.
+     * @param selectedSubtypeIndex      the index of the selected subtype in the input method's
+     *                                  array of subtypes, or {@code -1} if no subtype is selected.
+     * @param selectedImeSettingsIntent the intent for the settings activity of the selected IME, or
+     *                                  {@code null} if no IME is selected, or the selected IME does
+     *                                  not have a settings activity.
+     * @param isScreenLocked            whether the screen is current locked.
+     * @param displayId                 the ID of the display where the menu was requested.
+     * @param userId                    the ID of the user that requested the menu.
      */
-    void show(in List<Item> items, in @nullable String selectedImeId,
-            int selectedSubtypeIndex, boolean isScreenLocked, int displayId, int userId);
+    void show(in List<Item> items, in @nullable String selectedImeId, int selectedSubtypeIndex,
+            in @nullable Intent selectedImeSettingsIntent, boolean isScreenLocked, int displayId,
+            int userId);
 
     /**
      * Hides the Input Method Switcher Menu.
