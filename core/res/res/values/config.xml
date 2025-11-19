@@ -7875,4 +7875,7 @@
      improve performance. If the application overrides onBackPressed, this configuration will
      be ignored. -->
      <bool name="config_alwaysMoveTaskToBackOnBackPressed">false</bool>
+
+    <!-- Whether to override wfc roaming mode while using ntn. -->
+    <bool name="config_override_wfc_roaming_mode_while_using_ntn">true</bool>
 </resources>
