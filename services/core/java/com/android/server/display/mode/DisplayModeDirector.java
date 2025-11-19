@@ -645,6 +645,11 @@ public class DisplayModeDirector {
     }
 
     @VisibleForTesting
+    void injectHasArrSupport(SparseBooleanArray hasArrSupport) {
+        mHasArrSupport = hasArrSupport;
+    }
+
+    @VisibleForTesting
     void injectSupportedModesByDisplay(SparseArray<Display.Mode[]> supportedModesByDisplay) {
         mSupportedModesByDisplay = supportedModesByDisplay;
     }
@@ -1221,12 +1226,20 @@ public class DisplayModeDirector {
             // used to predict if we're going to be doing frequent refresh rate switching, and if
             // so, enable the brightness observer. The logic here is more complicated and fragile
             // than necessary, and we should improve it. See b/156304339 for more info.
-            Vote peakVote = peakRefreshRate == 0f
-                    ? null
-                    : Vote.forPhysicalRefreshRates(0f,
-                            Math.max(minRefreshRate, peakRefreshRate));
-            mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_PEAK_REFRESH_RATE,
-                    peakVote);
+            if (!isVrrSupportedLocked(displayId)) {
+                Vote peakVote = peakRefreshRate == 0f
+                        ? null
+                        : Vote.forPhysicalRefreshRates(0f,
+                                Math.max(minRefreshRate, peakRefreshRate));
+                mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_PEAK_REFRESH_RATE,
+                        peakVote);
+            } else { // VRR supported: remove any refresh rate limitations.
+                // due to race condition this method might be called before hasArr flags are updated
+                // this could lead to situation when PRIORITY_USER_SETTING_PEAK_REFRESH_RATE is set
+                // whith default RR for VRR display and never changed/removed.
+                mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_PEAK_REFRESH_RATE,
+                        null);
+            }
             Vote peakRenderVote = peakRefreshRate == 0f
                     ? null
                     : Vote.forRenderFrameRates(0f, Math.max(minRefreshRate, peakRefreshRate));
