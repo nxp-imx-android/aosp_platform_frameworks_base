@@ -1280,13 +1280,6 @@ class DesktopRepository(
             if (displayId == INVALID_DISPLAY) return
 
             val desks = desktopData.desksSequence(displayId).map { it.deepCopy() }.toList()
-            if (desks.isEmpty()) {
-                logD(
-                    "updatePersistentRepository: no desks found for displayId=%d, skipping",
-                    displayId,
-                )
-                return
-            }
             if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
                 persistentUpdateQueue.post {
                     Trace.beginSection("DesktopRepository#UpdateRepoWork")

@@ -2649,9 +2649,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addActiveTask_toTransientDesk_persistentRepoNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2679,9 +2677,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeActiveTask_fromTransientDesk_listenersNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2711,9 +2707,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun preserveDesk_transientDeskRemoved() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2746,9 +2740,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun minimizeTask_inTransientDesk_persistentRepoNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2793,6 +2785,25 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         // taskId and its bounds are not saved into the storage.
         assertThat(repo.hasBoundsBeforeSnapOrMaximize(taskInfo)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_lastDeskOnDisplay_persistsEmptyList() = runTest {
+        repo.addDesk(displayId = SECOND_DISPLAY, deskId = 1, uniqueDisplayId = "unique_id_1")
+        clearInvocations(persistentRepository)
+
+        repo.removeDesk(deskId = 1)
+        bgScope.testScheduler.advanceUntilIdle()
+
+        verify(persistentRepository)
+            .addOrUpdateRepository(
+                userId = eq(DEFAULT_USER_ID),
+                desks = eq(emptyList()),
+                activeDeskId = isNull(),
+                preservedDisplays = any(),
+                rememberedBoundsRatioByPackageName = any(),
+            )
     }
 
     private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {
