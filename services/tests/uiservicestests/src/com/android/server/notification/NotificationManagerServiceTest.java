@@ -86,7 +86,6 @@ import static android.app.NotificationManager.VISIBILITY_NO_OVERRIDE;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_MUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.app.StatusBarManager.ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED;
 import static android.app.StatusBarManager.EXTRA_KM_PRIVATE_NOTIFS_ALLOWED;
 import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_ZEN_CONFIG;
@@ -125,7 +124,6 @@ import static android.service.notification.Condition.SOURCE_CONTEXT;
 import static android.service.notification.Condition.SOURCE_USER_ACTION;
 import static android.service.notification.Condition.STATE_TRUE;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOADING;
-import static android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
@@ -362,6 +360,7 @@ import com.android.server.notification.NotificationManagerService.NotificationAs
 import com.android.server.notification.NotificationManagerService.NotificationListeners;
 import com.android.server.notification.NotificationManagerService.PostNotificationTracker;
 import com.android.server.notification.NotificationManagerService.PostNotificationTrackerFactory;
+import com.android.server.notification.ZenModeHelper.Callback;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
@@ -12511,6 +12510,111 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         verify(zenModeHelper).getAutomaticZenRules(eq(Binder.getCallingUserHandle()), anyInt());
     }
 
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void internalService_getAutomaticZenRules() {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        UserHandle user = UserHandle.of(1);
+
+        mService.getInternalService().getAutomaticZenRules(user);
+
+        verify(zenModeHelper).getAutomaticZenRules(eq(user), anyInt());
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void internalService_isAutomaticZenRuleActive() {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        UserHandle user = UserHandle.of(1);
+        String id = "id";
+
+        mService.getInternalService().isAutomaticZenRuleActive(user, id);
+
+        verify(zenModeHelper).getAutomaticZenRuleState(eq(user), eq(id), anyInt());
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void internalService_isManualZenRuleActive() {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        UserHandle user = UserHandle.of(1);
+
+        mService.getInternalService().isManualZenRuleActive(user);
+
+        verify(zenModeHelper).getManualZenMode(user);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void internalService_setManualZenRuleActive() {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        UserHandle user = UserHandle.of(1);
+
+        mService.getInternalService().setManualZenRuleActive(user, true);
+
+        verify(zenModeHelper).setManualZenMode(
+                eq(user),
+                eq(ZEN_MODE_IMPORTANT_INTERRUPTIONS),
+                isNull(),
+                anyInt(),
+                anyString(),
+                isNull(),
+                anyInt());
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void internalService_setAutomaticZenRuleActive() {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        UserHandle user = UserHandle.of(1);
+        String id = "id";
+        AutomaticZenRule rule =
+                new AutomaticZenRule(
+                        "name",
+                        /* owner= */ null,
+                        /* configurationActivity= */ null,
+                        /* conditionId= */ Uri.EMPTY,
+                        /* policy= */ null,
+                        /* interruptionFilter= */ NotificationManager
+                        .INTERRUPTION_FILTER_PRIORITY,
+                        /* enabled= */ true);
+        when(zenModeHelper.getAutomaticZenRule(eq(user), eq(id), anyInt())).thenReturn(rule);
+
+        mService.getInternalService().setAutomaticZenRuleActive(user, id, true);
+
+        // Verify that the condition is set to true.
+        ArgumentCaptor<Condition> conditionCaptor = ArgumentCaptor.forClass(Condition.class);
+        verify(zenModeHelper).setAutomaticZenRuleState(
+                eq(user),
+                eq(id),
+                conditionCaptor.capture(),
+                anyInt(),
+                anyInt());
+        assertThat(conditionCaptor.getValue().state).isEqualTo(STATE_TRUE);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void internalService_addCallback() {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        Callback callback = new Callback();
+
+        mService.getInternalService().addZenModeCallback(callback);
+
+        verify(zenModeHelper).addCallback(callback);
+    }
+
+    @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
+    public void internalService_hasZenModeConfig() {
+        ZenModeHelper zenModeHelper = setUpMockZenTest();
+        UserHandle user = UserHandle.of(1);
+
+        mService.getInternalService().hasZenModeConfig(user);
+
+        verify(zenModeHelper).hasZenModeConfig(user);
+    }
+
     /** Prepares for a zen-related test that uses a mocked {@link ZenModeHelper}. */
     private ZenModeHelper setUpMockZenTest() {
         ZenModeHelper zenModeHelper = mock(ZenModeHelper.class);
@@ -12659,8 +12763,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void onConfigChanged_sendsInternalZenChangedBroadcast() throws Exception {
-        mService.mZenModeHelper.getCallbacks().forEach(c -> c.onConfigChanged());
+    public void onConfigApplied_sendsInternalZenChangedBroadcast() throws Exception {
+        mService.mZenModeHelper.getCallbacks().forEach(c -> c.onConfigApplied());
 
         Intent expected = new Intent(NotificationManager.ACTION_ZEN_CONFIGURATION_CHANGED_INTERNAL)
                 .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
