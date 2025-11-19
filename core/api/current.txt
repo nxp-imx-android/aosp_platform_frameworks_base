@@ -14461,6 +14461,7 @@ package android.content.pm {
 
   public static final class PackageManager.ApplicationInfoFlags {
     method public long getValue();
+    method @FlaggedApi("android.content.pm.prevent_unintended_sign_extension") @NonNull public static android.content.pm.PackageManager.ApplicationInfoFlags of(int);
     method @NonNull public static android.content.pm.PackageManager.ApplicationInfoFlags of(long);
   }
 
@@ -14476,6 +14477,7 @@ package android.content.pm {
 
   public static final class PackageManager.ComponentInfoFlags {
     method public long getValue();
+    method @FlaggedApi("android.content.pm.prevent_unintended_sign_extension") @NonNull public static android.content.pm.PackageManager.ComponentInfoFlags of(int);
     method @NonNull public static android.content.pm.PackageManager.ComponentInfoFlags of(long);
   }
 
@@ -14490,6 +14492,7 @@ package android.content.pm {
 
   public static final class PackageManager.PackageInfoFlags {
     method public long getValue();
+    method @FlaggedApi("android.content.pm.prevent_unintended_sign_extension") @NonNull public static android.content.pm.PackageManager.PackageInfoFlags of(int);
     method @NonNull public static android.content.pm.PackageManager.PackageInfoFlags of(long);
   }
 
@@ -14514,6 +14517,7 @@ package android.content.pm {
 
   public static final class PackageManager.ResolveInfoFlags {
     method public long getValue();
+    method @FlaggedApi("android.content.pm.prevent_unintended_sign_extension") @NonNull public static android.content.pm.PackageManager.ResolveInfoFlags of(int);
     method @NonNull public static android.content.pm.PackageManager.ResolveInfoFlags of(long);
   }
 
