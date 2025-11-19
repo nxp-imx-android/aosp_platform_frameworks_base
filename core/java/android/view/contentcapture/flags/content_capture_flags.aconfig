@@ -72,7 +72,7 @@ flag {
 
 flag {
   name: "deprecate_set_content_capture_enabled"
-  namespace: "content_capture"
+  namespace: "private_compute"
   description: "Controls the deprecation of the ContentCaptureManager#setContentCaptureEnabled method."
   bug: "454307959"
 }
