@@ -116,7 +116,7 @@ interface IStatusBarService
     void onGlobalActionsShown();
     void onGlobalActionsHidden();
     @EnforcePermission(anyOf={"SHOW_POWER_MENU", "SHOW_POWER_MENU_PRIVILEGED"})
-    void showGlobalActionsFromApp(in AndroidFuture future /* T=Boolean */);
+    void showGlobalActionsFromApp(in AndroidFuture future /* T=Integer */);
 
     /**
      * These methods are needed for global actions control which the UI is shown in sysui.

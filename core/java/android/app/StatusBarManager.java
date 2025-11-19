@@ -49,6 +49,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
@@ -77,7 +78,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 /**
@@ -603,6 +603,36 @@ public class StatusBarManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface MediaTransferReceiverState {}
+
+    /**
+     * Unknwown result of calling {@link #showPowerMenu}. Used for compatibility purposes.
+     */
+    @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
+    public static final int SHOW_POWER_MENU_RESULT_UNKNOWN = -1;
+
+    /**
+     * Result returned in a callback when a call to {@link #showPowerMenu} has succeeded and the
+     * Power Menu is currently showing.
+     */
+    @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
+    public static final int SHOW_POWER_MENU_RESULT_SHOWING = 0;
+
+    /**
+     * Result returned in a callback when a call to {@link #showPowerMenu} cannot be completed due
+     * to the Power Menu being currently disabled.
+     * @see DevicePolicyManager#LOCK_TASK_FEATURE_GLOBAL_ACTIONS
+     */
+    @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
+    public static final int SHOW_POWER_MENU_RESULT_DISABLED = 1;
+
+    /** @hide */
+    @IntDef(prefix = {"SHOW_POWER_MENU_RESULT_"}, value = {
+            SHOW_POWER_MENU_RESULT_UNKNOWN,
+            SHOW_POWER_MENU_RESULT_SHOWING,
+            SHOW_POWER_MENU_RESULT_DISABLED,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ShowPowerMenuResult {}
 
     /**
      * A map from a provider registered in
@@ -1420,11 +1450,20 @@ public class StatusBarManager {
      * {@link DevicePolicyManager}, if {@link DevicePolicyManager#LOCK_TASK_FEATURE_GLOBAL_ACTIONS}
      * is set.
      * <p>
-     * The {@code callback} will indicate when the Power Menu is visible (if possible), or may time
-     * out after a few seconds if the request doesn't complete. This callback can be reused
-     * for multiple requests.
+     * The {@code receiver} will indicate when the Power Menu is visible (if possible) in its
+     * result, or whether the Power Menu is currently disabled. If the Power Menu is currently
+     * visible when the request is made, {@link #SHOW_POWER_MENU_RESULT_SHOWING} will be returned
+     * through the callback immediately.
+     * <p>
+     * Alternatively, if the request could not be completed due to an error, it will be returned
+     * with {@link OutcomeReceiver#onError}. This error can be
+     * {@link java.util.concurrent.TimeoutException} if the request times out after a few seconds
+     * without a response, or a different {@link Exception}. In these error cases, it usually means
+     * that there's an underlying issue with the system and retrying will not succeed.
+     * <p>
+     * This callback can be reused for multiple requests.
      * @param executor an {@link Executor} in which the methods of {@code callback} will be called
-     * @param callback will call back with the result of the request
+     * @param receiver will call back with the result of the request, or a possible error
      */
     @FlaggedApi(Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
     @RequiresPermission(anyOf = {
@@ -1433,24 +1472,20 @@ public class StatusBarManager {
     })
     public void showPowerMenu(
             @NonNull @CallbackExecutor Executor executor,
-            @NonNull ShowPowerMenuCallback callback
+            @NonNull @ShowPowerMenuResult OutcomeReceiver<Integer, Throwable> receiver
     ) {
         Objects.requireNonNull(executor);
-        Objects.requireNonNull(callback);
-        AndroidFuture<Boolean> future = new AndroidFuture<Boolean>()
+        Objects.requireNonNull(receiver);
+        AndroidFuture<Integer> future = new AndroidFuture<Integer>()
                 .whenComplete((result, throwable) -> {
                     final long identity = Binder.clearCallingIdentity();
                     try {
-                        if (throwable instanceof TimeoutException) {
+                        if (throwable != null) {
                             executor.execute(
-                                    () -> callback.onError(ShowPowerMenuCallback.ERROR_TIMEOUT)
-                            );
-                        } else if (throwable != null) {
-                            executor.execute(
-                                    () -> callback.onError(ShowPowerMenuCallback.ERROR_UNKNOWN)
+                                    () -> receiver.onError(throwable)
                             );
                         } else {
-                            executor.execute(() -> callback.onPowerMenuShown(result));
+                            executor.execute(() -> receiver.onResult(result));
                         }
                     } finally {
                         Binder.restoreCallingIdentity(identity);

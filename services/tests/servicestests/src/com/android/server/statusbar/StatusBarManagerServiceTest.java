@@ -38,7 +38,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -1167,7 +1166,7 @@ public class StatusBarManagerServiceTest {
 
     @Test
     @EnableFlags(android.app.Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
-    public void testGlobalActionsDisabled_showGlobalActionsFromApp_falseImmediate()
+    public void testGlobalActionsDisabled_showGlobalActionsFromApp_disabledImmediate()
             throws Exception {
         String pkg = mContext.getPackageName();
         // disable
@@ -1181,10 +1180,11 @@ public class StatusBarManagerServiceTest {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
                     .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
-            AndroidFuture<Boolean> future = new AndroidFuture<>();
+            AndroidFuture<Integer> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
-            assertFalse(future.getNow(/* valueIfAbsent */ true));
+            assertEquals(StatusBarManager.SHOW_POWER_MENU_RESULT_DISABLED,
+                    (int) future.getNow(-1000));
         } finally {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
@@ -1199,7 +1199,7 @@ public class StatusBarManagerServiceTest {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
                     .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
-            AndroidFuture<Boolean> future = new AndroidFuture<>();
+            AndroidFuture<Integer> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
             verify(mMockStatusBar).showGlobalActionsMenu();
@@ -1217,7 +1217,7 @@ public class StatusBarManagerServiceTest {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
                     .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
-            AndroidFuture<Boolean> future = new AndroidFuture<>();
+            AndroidFuture<Integer> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
             assertThrows(TimeoutException.class, () -> future.get(1, TimeUnit.SECONDS));
@@ -1230,16 +1230,17 @@ public class StatusBarManagerServiceTest {
 
     @Test
     @EnableFlags(android.app.Flags.FLAG_STATUSBAR_API_SHOW_POWER_MENU)
-    public void showGlobalActionsFromApp_powerMenuShowing_trueImmediately() throws Exception {
+    public void showGlobalActionsFromApp_powerMenuShowing_showingImmediately() throws Exception {
         try {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
                     .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
-            AndroidFuture<Boolean> future = new AndroidFuture<>();
+            AndroidFuture<Integer> future = new AndroidFuture<>();
             mStatusBarManagerService.onGlobalActionsShown();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
-            assertTrue(future.getNow(false));
+            assertEquals(StatusBarManager.SHOW_POWER_MENU_RESULT_SHOWING,
+                    (int) future.getNow(-1000));
         } finally {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
@@ -1254,7 +1255,7 @@ public class StatusBarManagerServiceTest {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
                     .adoptShellPermissionIdentity(Manifest.permission.SHOW_POWER_MENU_PRIVILEGED);
-            AndroidFuture<Boolean> future = new AndroidFuture<>();
+            AndroidFuture<Integer> future = new AndroidFuture<>();
 
             mStatusBarManagerService.showGlobalActionsFromApp(future);
 
@@ -1262,7 +1263,8 @@ public class StatusBarManagerServiceTest {
             assertFalse(future.isDone());
 
             mStatusBarManagerService.onGlobalActionsShown();
-            assertTrue(future.getNow(false));
+            assertEquals(StatusBarManager.SHOW_POWER_MENU_RESULT_SHOWING,
+                    (int) future.getNow(-1000));
         } finally {
             InstrumentationRegistry.getInstrumentation()
                     .getUiAutomation()
