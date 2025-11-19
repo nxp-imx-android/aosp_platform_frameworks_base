@@ -627,7 +627,6 @@ public class FabricatedOverlay {
      * @param configuration The string representation of the config this overlay is enabled for
      */
     @NonNull
-    @FlaggedApi(android.content.res.Flags.FLAG_NINE_PATCH_FRRO)
     public void setNinePatchResourceValue(
             @NonNull String resourceName,
             @NonNull ParcelFileDescriptor value,
