@@ -66,6 +66,8 @@ public enum DesktopExperienceFlags {
             com.android.input.flags.Flags.FLAG_CONNECTED_DISPLAYS_CURSOR),
     DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW(Flags::deferResumeFocusInNonFocusedWindow, false,
             Flags.FLAG_DEFER_RESUME_FOCUS_IN_NON_FOCUSED_WINDOW),
+    DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED(Flags::dimmingWallpaperForMaximizedAndTiled, true,
+            Flags.FLAG_DIMMING_WALLPAPER_FOR_MAXIMIZED_AND_TILED),
     DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true,
             com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY),
     ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
