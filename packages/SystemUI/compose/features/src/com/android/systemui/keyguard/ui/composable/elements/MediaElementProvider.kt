@@ -77,7 +77,7 @@ constructor(
                 exit = fadeOut(),
             ) {
                 Element(
-                    key = Media.Elements.mediaCarousel,
+                    key = LockscreenElementKeys.MediaCarouselContainer,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
                 ) {
                     Media(
