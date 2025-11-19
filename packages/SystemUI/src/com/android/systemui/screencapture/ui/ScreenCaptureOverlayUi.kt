@@ -116,7 +116,8 @@ constructor(
             modifier = modifier.fillMaxSize(),
         ) {
             InProgressStrokes(
-                defaultBrush = viewModel.brush,
+                defaultBrush = null,
+                nextBrush = { viewModel.brush },
                 onStrokesFinished = { /* do nothing */ },
             )
         }

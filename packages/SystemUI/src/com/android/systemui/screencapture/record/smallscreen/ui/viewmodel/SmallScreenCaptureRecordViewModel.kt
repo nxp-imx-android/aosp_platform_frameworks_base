@@ -21,6 +21,7 @@ import android.app.ActivityOptions.LaunchCookie
 import android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
 import android.media.projection.StopReason
 import android.view.Display
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -44,7 +45,9 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
 class SmallScreenCaptureRecordViewModel
@@ -55,6 +58,7 @@ constructor(
     recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
     screenCaptureRecordParametersViewModelFactory: ScreenCaptureRecordParametersViewModel.Factory,
     recordDetailsTargetViewModelFactory: RecordDetailsTargetViewModel.Factory,
+    recordDetailsMarkupColorPickerViewModelFactory: RecordDetailsMarkupColorPickerViewModel.Factory,
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val markupInteractor: ScreenCaptureMarkupInteractor,
@@ -67,10 +71,14 @@ constructor(
         screenCaptureRecordParametersViewModelFactory.create()
     val recordDetailsTargetViewModel: RecordDetailsTargetViewModel =
         recordDetailsTargetViewModelFactory.create()
+    val recordDetailsMarkupColorPickerViewModel: RecordDetailsMarkupColorPickerViewModel =
+        recordDetailsMarkupColorPickerViewModelFactory.create()
 
     val isRecording: Boolean by
         screenRecordingServiceInteractor.status
             .map { it.isRecording }
+            .distinctUntilChanged()
+            .onEach(::performResetDetailsPopup)
             .hydratedStateOf(
                 traceName = "SmallScreenCaptureRecordViewModel#isRecording",
                 initialValue = screenRecordingServiceInteractor.status.value.isRecording,
@@ -79,32 +87,21 @@ constructor(
     var detailsPopup: RecordDetailsPopupType by mutableStateOf(RecordDetailsPopupType.Settings)
         private set
 
-    var shouldShowDetails: Boolean by
-        mutableStateOf(!screenRecordingServiceInteractor.status.value.isRecording)
-        private set
-
     val markupEnabled: Boolean? by
-        markupInteractor.enabled.hydratedStateOf(
-            traceName = "SmallScreenCaptureRecordViewModel#markupEnabled",
-            initialValue = null,
-        )
-
-    val shouldShowMarkupButton: Boolean = ScreenCaptureRecordFeaturesInteractor.isMarkupAvailable
-
-    val shouldShowSettingsButton: Boolean by
-        screenRecordingServiceInteractor.status
-            .map { status ->
-                if (status.isRecording) {
-                    true
-                } else {
-                    shouldShowDetails = true
-                    false
+        markupInteractor.enabled
+            .onEach { enabled ->
+                if (!enabled && detailsPopup == RecordDetailsPopupType.MarkupColorSelector) {
+                    resetDetailsPopup()
                 }
             }
             .hydratedStateOf(
-                traceName = "SmallScreenCaptureRecordViewModel#shouldShowSettingsButton",
-                initialValue = !screenRecordingServiceInteractor.status.value.isRecording,
+                traceName = "SmallScreenCaptureRecordViewModel#markupEnabled",
+                initialValue = null,
             )
+
+    val shouldShowMarkupButton: Boolean = ScreenCaptureRecordFeaturesInteractor.isMarkupAvailable
+
+    val shouldShowSettingsButton: Boolean by derivedStateOf { isRecording }
 
     override suspend fun onActivated() {
         coroutineScope {
@@ -121,6 +118,11 @@ constructor(
             launchTraced("ScreenCaptureRecordSmallScreenViewModel#recordDetailsTargetViewModel") {
                 recordDetailsTargetViewModel.activate()
             }
+            launchTraced(
+                "ScreenCaptureRecordSmallScreenViewModel#recordDetailsMarkupColorPickerViewModel"
+            ) {
+                recordDetailsMarkupColorPickerViewModel.activate()
+            }
         }
     }
 
@@ -134,6 +136,19 @@ constructor(
 
     fun showMarkupColorSelector() {
         detailsPopup = RecordDetailsPopupType.MarkupColorSelector
+    }
+
+    fun resetDetailsPopup() {
+        performResetDetailsPopup(isRecording)
+    }
+
+    private fun performResetDetailsPopup(recording: Boolean) {
+        detailsPopup =
+            if (recording) {
+                RecordDetailsPopupType.Invisible
+            } else {
+                RecordDetailsPopupType.Settings
+            }
     }
 
     fun setMarkupEnabled(enabled: Boolean) {
@@ -207,12 +222,6 @@ constructor(
                 )
             }
             else -> error("Unsupported target=$target")
-        }
-    }
-
-    fun shouldShowSettings(visible: Boolean) {
-        if (shouldShowSettingsButton) {
-            shouldShowDetails = visible
         }
     }
 

@@ -61,6 +61,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
@@ -127,8 +128,14 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                     )
                     AnimatedVisibility(visible = viewModel.shouldShowSettingsButton) {
                         ToggleToolbarButton(
-                            checked = viewModel.shouldShowDetails,
-                            onCheckedChanged = { viewModel.shouldShowSettings(it) },
+                            checked = viewModel.detailsPopup == RecordDetailsPopupType.Settings,
+                            onCheckedChanged = {
+                                if (it) {
+                                    viewModel.showSettings()
+                                } else {
+                                    viewModel.resetDetailsPopup()
+                                }
+                            },
                             icon = {
                                 LoadingIcon(
                                     icon =
@@ -161,6 +168,34 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                             },
                         )
                     }
+                    AnimatedVisibility(
+                        visible =
+                            viewModel.shouldShowMarkupButton && viewModel.markupEnabled == true
+                    ) {
+                        ToggleToolbarButton(
+                            checked =
+                                viewModel.detailsPopup ==
+                                    RecordDetailsPopupType.MarkupColorSelector,
+                            onCheckedChanged = {
+                                if (it) {
+                                    viewModel.showMarkupColorSelector()
+                                } else {
+                                    viewModel.resetDetailsPopup()
+                                }
+                            },
+                            icon = {
+                                val colorInt =
+                                    viewModel.recordDetailsMarkupColorPickerViewModel.color
+                                        ?: return@ToggleToolbarButton
+                                MarkupColorItem(
+                                    color = Color(colorInt),
+                                    selected = false,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            },
+                        )
+                    }
+
                     Spacer(Modifier.width(12.dp))
 
                     val coroutineScope = rememberCoroutineScope()
@@ -183,7 +218,7 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
             }
 
             AnimatedVisibility(
-                visible = viewModel.shouldShowDetails,
+                visible = viewModel.detailsPopup != RecordDetailsPopupType.Invisible,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
@@ -210,7 +245,6 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                                     onAppSelectorClicked = { viewModel.showAppSelector() },
                                     modifier = contentModifier,
                                 )
-
                             RecordDetailsPopupType.AppSelector ->
                                 RecordDetailsAppSelector(
                                     viewModel = viewModel.recordDetailsAppSelectorViewModel,
@@ -221,9 +255,14 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                                     },
                                     modifier = contentModifier,
                                 )
-
                             RecordDetailsPopupType.MarkupColorSelector ->
-                                RecordDetailsMarkupColorSelector(modifier = contentModifier)
+                                RecordDetailsMarkupColorPicker(
+                                    viewModel = viewModel.recordDetailsMarkupColorPickerViewModel,
+                                    modifier = contentModifier,
+                                )
+                            RecordDetailsPopupType.Invisible -> {
+                                /* do nothing */
+                            }
                         }
                     }
                 }

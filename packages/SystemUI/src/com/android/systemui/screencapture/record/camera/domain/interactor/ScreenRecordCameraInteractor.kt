@@ -16,11 +16,17 @@
 
 package com.android.systemui.screencapture.record.camera.domain.interactor
 
+import android.content.res.Resources
+import android.graphics.Color
 import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.ColorInt
+import androidx.core.content.res.use
 import com.android.app.tracing.coroutines.flow.stateInTraced
+import com.android.systemui.content.res.map
+import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.camera.data.repository.ScreenRecordCameraRepository
@@ -43,12 +49,15 @@ private const val TAG = "ScreenRecordCameraInteractor"
 class ScreenRecordCameraInteractor
 @Inject
 constructor(
+    @Main resources: Resources,
     @ScreenCapture private val coroutineScope: CoroutineScope,
     private val repository: ScreenRecordCameraRepository,
 ) {
 
-    val cameraBackgroundColors =
-        setOf(0x00000000, 0x8E3E92, 0x232D67, 0xF55E57, 0x4E8FF8, 0x1AA64A, 0xD37B00)
+    val cameraBackgroundColors: List<Int> =
+        resources.obtainTypedArray(R.array.screen_record_color_palette).use { array ->
+            array.map { index -> getColor(index, Color.TRANSPARENT) }
+        }
     val errors: Flow<Int> = repository.errors
     val state: Flow<Int> = repository.state
     val isConnected: Flow<Boolean> = repository.isConnected

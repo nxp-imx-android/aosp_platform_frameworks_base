@@ -284,4 +284,13 @@
     <color name="pin_bouncer_action_button_bg">@androidprv:color/customColorSurfaceEffect0</color>
     <!-- Bouncer background when blur is not enabled.   -->
     <color name="bouncer_fallback_bg">@android:color/system_accent2_200</color>
+
+    <array name="screen_record_color_palette">
+        <item>#8E3E92</item>
+        <item>#232D67</item>
+        <item>#F55E57</item>
+        <item>#4E8FF8</item>
+        <item>#1AA64A</item>
+        <item>#D37B00</item>
+    </array>
 </resources>
