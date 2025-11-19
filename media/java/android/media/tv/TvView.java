@@ -1476,7 +1476,6 @@ public class TvView extends ViewGroup {
             mOverlayViewCreated = false;
             mOverlayViewFrame = null;
             mSessionCallback = null;
-            mSession = null;
             if (mCallback != null) {
                 mCallback.onDisconnected(mInputId);
             }
