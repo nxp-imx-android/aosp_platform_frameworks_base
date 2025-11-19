@@ -80,7 +80,6 @@ import com.android.systemui.statusbar.notification.icon.IconManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractorImpl
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationLogger
-import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.CoordinateOnClickListener
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.ExpandableNotificationRowLogger
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.OnExpandClickListener
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL
@@ -146,7 +145,6 @@ class ExpandableNotificationRowBuilder(
     private val mHeadsUpStyleProvider: HeadsUpStyleProvider
 
     init {
-        featureFlags.setDefault(Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE)
         featureFlags.setDefault(Flags.BIGPICTURE_NOTIFICATION_LAZY_LOADING)
 
         dependency.injectTestDependency(FeatureFlagsClassic::class.java, featureFlags)
