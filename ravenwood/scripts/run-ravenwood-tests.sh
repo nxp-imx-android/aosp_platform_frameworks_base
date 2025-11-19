@@ -57,6 +57,10 @@ EOF
     return
 }
 
+disable_tf_rolling_log() {
+    export ROLLING_TF_SUBPROCESS_OUTPUT=0
+}
+
 smoke=0
 include_re=""
 exclude_re=""
@@ -68,7 +72,7 @@ atest_opts=""
 list_options=""
 with_tools_tests=1
 
-while getopts "sx:f:dtbLa:rDRh" opt; do
+while getopts "sx:f:dtbLa:rDRhX" opt; do
 case "$opt" in
 # OPTIONS-START
     s) # Remove slow tests
@@ -86,6 +90,7 @@ case "$opt" in
         ;;
     t) # Redirect log to terminal
         export RAVENWOOD_LOG_OUT=-
+        disable_tf_rolling_log
         ;;
     a) # atest options (e.g. "-t")
         atest_opts="$OPTARG"
@@ -103,6 +108,9 @@ case "$opt" in
     R) # Run disabled tests too
         export RAVENWOOD_RUN_DISABLED_TESTS=1
         ;;
+    X) # Run only disabled tests
+        export RAVENWOOD_RUN_DISABLED_TESTS=2
+        ;;
     h) # Show help
         show_help
         exit 0
@@ -115,11 +123,25 @@ esac
 done
 shift $(($OPTIND - 1))
 
+# The $target array contains all the tests we're actually going to execute.
 # If the rest of the arguments are available, just run these tests.
 targets=("$@")
 
+# Collect all executable tests, which we'll set to $targets later if it's empty.
+all_tests=()
+
+# Host tests under f/b/r.
+host_tests=(
+    hoststubgentest
+    tiny-framework-dump-test
+    hoststubgen-invoke-test
+    ravenwood-stats-checker
+    ravenhelpertest
+    ravenwood-scripts-sh-golden-test
+)
+
 if (( $with_tools_tests )) ; then
-    all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest ravenwood-scripts-sh-golden-test)
+    all_tests+=("${host_tests[@]}")
 fi
 
 # Allow replacing 'list-ravenwood-tests.sh' with  $LIST_TEST_COMMAND.

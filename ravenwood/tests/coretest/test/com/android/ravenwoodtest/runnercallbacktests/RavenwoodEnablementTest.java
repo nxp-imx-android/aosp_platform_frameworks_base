@@ -15,7 +15,10 @@
  */
 package com.android.ravenwoodtest.runnercallbacktests;
 
+import static org.junit.Assert.fail;
+
 import android.platform.test.annotations.DisabledOnRavenwood;
+import android.platform.test.annotations.EnabledOnRavenwood;
 import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodEnablementChecker.RunMode;
 
@@ -34,7 +37,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimple
     testSuiteFinished: classes
@@ -52,6 +55,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
         @Test
         @DisabledOnRavenwood
         public void test2() {
+            fail("This shouldn't be executed");
         }
     }
 
@@ -81,6 +85,128 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
         @Test
         @DisabledOnRavenwood
         public void test2() {
+        }
+    }
+
+    @RunWith(BlockJUnit4ClassRunner.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation)
+    testAssumptionFailure: This test is disabled on Ravenwood: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation)
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation)
+    testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation)
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation)
+    testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation)
+    testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation)
+    testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_NoClassAnnotation
+    testSuiteFinished: classes
+    testRunFinished: 3,0,2,0
+    """, runMode = RunMode.DisabledOnly)
+    // CHECKSTYLE:ON
+    public static class TestSimpleRunDisabledOnly_NoClassAnnotation {
+        public TestSimpleRunDisabledOnly_NoClassAnnotation() {
+        }
+
+        @Test
+        public void test1() {
+            fail("This shouldn't be executed");
+        }
+
+        @Test
+        @EnabledOnRavenwood
+        public void test2() {
+            fail("This shouldn't be executed");
+        }
+
+        @Test
+        @DisabledOnRavenwood
+        public void test3() {
+        }
+    }
+
+    @RunWith(BlockJUnit4ClassRunner.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation)
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation)
+    testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation)
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation)
+    testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation)
+    testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation)
+    testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassDisabledAnnotation
+    testSuiteFinished: classes
+    testRunFinished: 3,0,1,0
+    """, runMode = RunMode.DisabledOnly)
+    // CHECKSTYLE:ON
+    @DisabledOnRavenwood
+    public static class TestSimpleRunDisabledOnly_WithClassDisabledAnnotation {
+        public TestSimpleRunDisabledOnly_WithClassDisabledAnnotation() {
+        }
+
+        @Test
+        public void test1() {
+            // Because of the class level annotation, this method is implicitly disabled,
+            // so DisabledOnly will execute it.
+        }
+
+        @Test
+        @EnabledOnRavenwood
+        public void test2() {
+            fail("This shouldn't be executed");
+        }
+
+        @Test
+        @DisabledOnRavenwood
+        public void test3() {
+        }
+    }
+
+    @RunWith(BlockJUnit4ClassRunner.class)
+    // CHECKSTYLE:OFF Generated code
+    @Expected(value = """
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation
+    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation)
+    testAssumptionFailure: This test is disabled on Ravenwood: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation)
+    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation)
+    testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation)
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation)
+    testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation)
+    testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation)
+    testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation)
+    testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestSimpleRunDisabledOnly_WithClassEnabledAnnotation
+    testSuiteFinished: classes
+    testRunFinished: 3,0,2,0
+    """, runMode = RunMode.DisabledOnly)
+    // CHECKSTYLE:ON
+    @EnabledOnRavenwood // DisabledOnly + class-level @Enable still runs disabled tests in it.
+    public static class TestSimpleRunDisabledOnly_WithClassEnabledAnnotation {
+        public TestSimpleRunDisabledOnly_WithClassEnabledAnnotation() {
+        }
+
+        @Test
+        public void test1() {
+            fail("This shouldn't be executed");
+        }
+
+        @Test
+        @EnabledOnRavenwood
+        public void test2() {
+            fail("This shouldn't be executed");
+        }
+
+        @Test
+        @DisabledOnRavenwood
+        public void test3() {
         }
     }
 
@@ -185,7 +311,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
     testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
     testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassEnabled
     testSuiteFinished: classes
@@ -223,10 +349,10 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled
     testSuiteFinished: classes
@@ -471,7 +597,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
     testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyClassDisabledMethodEnabled_RDT_NeverMethod)
@@ -510,10 +636,10 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
     testSuiteStarted: classes
     testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel
     testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testStarted: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
-    testAssumptionFailure: got: <false>, expected: is <true>
+    testAssumptionFailure: This test is disabled on Ravenwood: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testFinished: test2(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testStarted: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)
     testFinished: test3(com.android.ravenwoodtest.runnercallbacktests.RavenwoodEnablementTest$TestWithPolicyWithForceRegex_methodLevel)

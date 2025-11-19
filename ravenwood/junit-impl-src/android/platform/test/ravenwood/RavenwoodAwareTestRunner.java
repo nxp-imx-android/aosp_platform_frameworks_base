@@ -269,6 +269,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
     private static class ClassIgnoreTestRunner extends ClassBypassTestRunner {
         ClassIgnoreTestRunner(Class<?> testClass) {
             super(testClass);
+            RavenwoodTestStats.getInstance().onTestDisabled(testClass);
         }
 
         @Override

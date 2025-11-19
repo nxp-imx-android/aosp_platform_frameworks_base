@@ -84,6 +84,10 @@
       "host": true
     },
     {
+      "name": "AudioServiceTestsRavenwood",
+      "host": true
+    },
+    {
       "name": "CarServiceHostUnitTest",
       "keywords": ["automotive_code_coverage"],
       "host": true
@@ -238,7 +242,7 @@
     }
     // AUTO-GENERATED-END
   ],
-  // LINT.ThenChange(test-mapping-frameworks/TEST_MAPPING)
+  // LINT.ThenChange(/ravenwood-framework-test-mapping/TEST_MAPPING)
   "ravenwood-postsubmit": [
     // We haven't maintained SystemUiRavenTests, and as a result, it's been demoted already.
     // Disable it until we fix the issues: b/319647875

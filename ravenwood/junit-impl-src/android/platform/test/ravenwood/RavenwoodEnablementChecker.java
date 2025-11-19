@@ -31,6 +31,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
 
 import java.io.BufferedReader;
@@ -66,6 +67,15 @@ public abstract class RavenwoodEnablementChecker {
     private static final String TAG = RavenwoodInternalUtils.TAG;
 
     /**
+     * AssumptionViolatedException subclass specifically used for "disabled on ravenwood tests".
+     */
+    public static class DisabledOnRavenwoodAssumptionException extends AssumptionViolatedException {
+        public DisabledOnRavenwoodAssumptionException(String message) {
+            super(message);
+        }
+    }
+
+    /**
      * How we want to run each test class / method.
      */
     @VisibleForTesting
@@ -97,7 +107,7 @@ public abstract class RavenwoodEnablementChecker {
         /** Run normally. Disabled tests are skipped. */
         Normal {
             @Override
-            public boolean shouldRun(@NonNull RunPolicy policy) {
+            public boolean shouldRunClass(@NonNull RunPolicy policy) {
                 return switch (policy) {
                     case Unspecified, Enabled -> true;
                     default -> false;
@@ -108,16 +118,42 @@ public abstract class RavenwoodEnablementChecker {
         /** Run the disabled tests too, along with the enabled tests. */
         AlsoDisabledTests {
             @Override
-            public boolean shouldRun(@NonNull RunPolicy policy) {
+            public boolean shouldRunClass(@NonNull RunPolicy policy) {
                 return switch (policy) {
                     case Unspecified, Enabled, Disabled -> true;
                     default -> false;
                 };
             }
+        },
+
+        /** Run only the disabled tests, except for "never" ones. */
+        DisabledOnly {
+            @Override
+            public boolean shouldRunClass(@NonNull RunPolicy policy) {
+                return switch (policy) {
+                    case Unspecified, Enabled, Disabled -> true;
+                    default -> false;
+                };
+            }
+
+            /** We only run disabled mehods */
+            @Override
+            public boolean shouldRunMethod(@NonNull RunPolicy policy) {
+                return switch (policy) {
+                    case Disabled -> true;
+                    default -> false;
+                };
+            }
         };
 
-        /** @return if a policy means "run" or not. */
-        public abstract boolean shouldRun(@NonNull RunPolicy policy);
+        /** @return if a policy means "run" or not for a class. */
+        public abstract boolean shouldRunClass(@NonNull RunPolicy policy);
+
+        /** @return if a policy means "run" or not for a method. */
+        public boolean shouldRunMethod(@NonNull RunPolicy policy) {
+            // By default, we use the same logic for classes and methods.
+            return shouldRunClass(policy);
+        }
     }
 
     /**
@@ -139,8 +175,15 @@ public abstract class RavenwoodEnablementChecker {
      * (But if a policy file says "never", we still won't run it.)
      */
     private static RunMode getDefaultRunMode() {
-            return RavenwoodEnvironment.getInstance().getBoolEnvVar("RAVENWOOD_RUN_DISABLED_TESTS")
-                ? RunMode.AlsoDisabledTests : RunMode.Normal;
+        var mode = RavenwoodEnvironment.getInstance().getEnvVar("RAVENWOOD_RUN_DISABLED_TESTS", "");
+        switch (mode) {
+            case "1":
+                return RunMode.AlsoDisabledTests;
+            case "2":
+                return RunMode.DisabledOnly;
+            default:
+                return RunMode.Normal;
+        }
     }
 
     /**
@@ -194,6 +237,17 @@ public abstract class RavenwoodEnablementChecker {
     }
 
     /**
+     * Throws {@link DisabledOnRavenwoodAssumptionException} if a test method is not supposed
+     * to be executed on Ravenwood.
+     */
+    public final void assumeShouldRunTestMethod(Description description) {
+        if (!shouldRunMethodOnRavenwood(description)) {
+            throw new DisabledOnRavenwoodAssumptionException(
+                    "This test is disabled on Ravenwood: " + description);
+        }
+    }
+
+    /**
      * @return if a test class should be executed.
      */
     public abstract boolean shouldRunClassOnRavenwood(@NonNull Class<?> testClass);
@@ -201,7 +255,7 @@ public abstract class RavenwoodEnablementChecker {
     /**
      * @return if a test method should be executed.
      */
-    public abstract boolean shouldEnableOnRavenwood(Description description);
+    public abstract boolean shouldRunMethodOnRavenwood(Description description);
 
     /**
      * @return if disabled tests would run.
@@ -250,17 +304,17 @@ public abstract class RavenwoodEnablementChecker {
 
         @Override
         public boolean shouldRunClassOnRavenwood(Class<?> testClass) {
-            return mRunMode.shouldRun(mChecker.getClassPolicy(testClass));
+            return mRunMode.shouldRunClass(mChecker.getClassPolicy(testClass));
         }
 
         @Override
-        public boolean shouldEnableOnRavenwood(Description description) {
-            return mRunMode.shouldRun(mChecker.getMethodPolicy(description));
+        public boolean shouldRunMethodOnRavenwood(Description description) {
+            return mRunMode.shouldRunMethod(mChecker.getMethodPolicy(description));
         }
 
         @Override
         public boolean wouldRunDisabledTests() {
-            return mRunMode.shouldRun(RunPolicy.Disabled);
+            return mRunMode.shouldRunMethod(RunPolicy.Disabled);
         }
     }
 
