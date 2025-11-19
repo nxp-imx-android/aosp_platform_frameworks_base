@@ -4530,7 +4530,6 @@ public abstract class Context {
                 ACTIVITY_SERVICE,
                 ALARM_SERVICE,
                 NOTIFICATION_SERVICE,
-                // @hide: CONTEXTUAL_MODE_SERVICE,
                 ACCESSIBILITY_SERVICE,
                 CAPTIONING_SERVICE,
                 KEYGUARD_SERVICE,
@@ -5035,17 +5034,6 @@ public abstract class Context {
      * @see android.app.NotificationManager
      */
     public static final String NOTIFICATION_SERVICE = "notification";
-
-    /**
-     * Use with {@link #getSystemService(String)} to retrieve a
-     * {@link android.app.modes.ContextualModeManager} for controlling modes.
-     *
-     * @see #getSystemService(String)
-     * @see android.app.modes.ContextualModeManager
-     * @hide
-     */
-    @FlaggedApi(android.service.notification.Flags.FLAG_ENABLE_DND_SYNC)
-    public static final String CONTEXTUAL_MODE_SERVICE = "contextual_mode";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
