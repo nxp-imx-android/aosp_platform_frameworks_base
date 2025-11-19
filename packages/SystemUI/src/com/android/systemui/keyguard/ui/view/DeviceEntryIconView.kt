@@ -32,9 +32,13 @@ import android.widget.ImageView
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.airbnb.lottie.LottieCompositionFactory
 import com.airbnb.lottie.LottieDrawable
+import com.android.internal.graphics.drawable.BackgroundBlurDrawable
+import com.android.systemui.Flags.enableLockscreenBlur
+import com.android.systemui.common.shared.colors.SurfaceEffectColors
 import com.android.systemui.common.ui.view.TouchHandlingView
 import com.android.systemui.log.TouchHandlingViewLogger
 import com.android.systemui.res.R
+import kotlin.math.min
 
 class DeviceEntryIconView
 @JvmOverloads
@@ -57,7 +61,62 @@ constructor(
             allowedTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop(),
             logger = logger,
         )
-    val iconView: ImageView = ImageView(context, attrs).apply { id = R.id.device_entry_icon_fg }
+    val iconView: ImageView =
+        ImageView(context, attrs).apply {
+            id = R.id.device_entry_icon_fg
+
+            if (enableLockscreenBlur()) {
+                addOnAttachStateChangeListener(
+                    object : View.OnAttachStateChangeListener {
+                        val onLayoutChangeListener =
+                            View.OnLayoutChangeListener {
+                                v,
+                                left,
+                                top,
+                                right,
+                                bottom,
+                                oldLeft,
+                                oldTop,
+                                oldRight,
+                                oldBottom ->
+                                val width = right - left
+                                val height = bottom - top
+                                if (height <= 0 || width <= 0) {
+                                    return@OnLayoutChangeListener
+                                }
+                                if (height == oldBottom - oldTop && width == oldLeft - oldRight) {
+                                    return@OnLayoutChangeListener
+                                }
+                                v?.background?.let {
+                                    if (it is BackgroundBlurDrawable) {
+                                        it.setCornerRadius(min(height, width).toFloat() / 2f)
+                                    }
+                                }
+                            }
+
+                        override fun onViewAttachedToWindow(v: View) {
+                            v.background =
+                                v.viewRootImpl.createBackgroundBlurDrawable().apply {
+                                    setCornerRadius(min(v.width, v.height).toFloat() / 2f)
+                                    setBlurRadius(
+                                        context.resources.getDimensionPixelOffset(
+                                            R.dimen.fingerprint_icon_blur_radius
+                                        )
+                                    )
+                                    setColor(SurfaceEffectColors.surfaceEffect1(context))
+                                    setAlpha(v.alpha)
+                                }
+                            v.addOnLayoutChangeListener(onLayoutChangeListener)
+                        }
+
+                        override fun onViewDetachedFromWindow(v: View) {
+                            removeOnLayoutChangeListener(onLayoutChangeListener)
+                            removeOnAttachStateChangeListener(this)
+                        }
+                    }
+                )
+            }
+        }
     val bgView: ImageView = ImageView(context, attrs).apply { id = R.id.device_entry_icon_bg }
     val aodFpDrawable: LottieDrawable = LottieDrawable()
     var accessibilityHintType: AccessibilityHintType = AccessibilityHintType.NONE

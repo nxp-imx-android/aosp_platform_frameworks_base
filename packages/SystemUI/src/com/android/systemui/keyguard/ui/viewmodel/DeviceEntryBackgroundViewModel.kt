@@ -19,6 +19,8 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import android.content.Context
 import com.android.settingslib.Utils
+import com.android.systemui.Flags.enableLockscreenBlur
+import com.android.systemui.common.shared.colors.SurfaceEffectColors
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -70,24 +72,25 @@ constructor(
 ) {
     val color: Flow<Int> =
         deviceEntryIconViewModel.useBackgroundProtection.flatMapLatest { useBackground ->
-            if (useBackground) {
-                configurationInteractor.onAnyConfigurationChange
-                    .map {
-                        Utils.getColorAttrDefaultColor(
-                            context,
-                            com.android.internal.R.attr.colorSurface,
-                        )
-                    }
-                    .onStart {
-                        emit(
+            when {
+                enableLockscreenBlur() -> flowOf(SurfaceEffectColors.surfaceEffect1(context))
+                useBackground ->
+                    configurationInteractor.onAnyConfigurationChange
+                        .map {
                             Utils.getColorAttrDefaultColor(
                                 context,
                                 com.android.internal.R.attr.colorSurface,
                             )
-                        )
-                    }
-            } else {
-                flowOf(0)
+                        }
+                        .onStart {
+                            emit(
+                                Utils.getColorAttrDefaultColor(
+                                    context,
+                                    com.android.internal.R.attr.colorSurface,
+                                )
+                            )
+                        }
+                else -> flowOf(0)
             }
         }
     val alpha: Flow<Float> =
