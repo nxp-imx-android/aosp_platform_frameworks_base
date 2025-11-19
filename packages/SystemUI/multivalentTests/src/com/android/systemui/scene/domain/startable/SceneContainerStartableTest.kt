@@ -3005,6 +3005,67 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun switchFromCommunalToGone_whenDeviceUnlocked_withBouncer() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Communal,
+                initialOverlays = setOf(Overlays.Bouncer),
+            )
+            assertThat(currentSceneKey).isEqualTo(Scenes.Communal)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+            underTest.start()
+
+            updateFingerprintAuthStatus(isSuccess = true)
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+        }
+
+    @Test
+    fun switchFromCommunalToGone_whenDeviceUnlocked_withAlternateBouncer() =
+        kosmos.runTest {
+            val alternateBouncerVisible by
+                collectLastValue(keyguardBouncerRepository.alternateBouncerVisible)
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+
+            fakeKeyguardBouncerRepository.setAlternateVisible(true)
+            assertThat(alternateBouncerVisible).isTrue()
+
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Communal,
+            )
+            assertThat(currentSceneKey).isEqualTo(Scenes.Communal)
+            underTest.start()
+
+            updateFingerprintAuthStatus(isSuccess = true)
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+            assertThat(alternateBouncerVisible).isFalse()
+        }
+
+    @Test
+    fun switchFromCommunalToGone_whenDeviceUnlocked_dismissesLockscreen() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Communal,
+            )
+            assertThat(currentSceneKey).isEqualTo(Scenes.Communal)
+            underTest.start()
+
+            updateFingerprintAuthStatus(isSuccess = true)
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
     fun handleDeviceUnlockStatus_returnsToLsFromBouncer_whenGoesToSleep() =
         kosmos.runTest {
             val authMethod by collectLastValue(authenticationInteractor.authenticationMethod)
