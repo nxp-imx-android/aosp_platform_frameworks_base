@@ -346,13 +346,15 @@ constructor(
                         null -> OngoingActivityChipModel.Content.IconOnly
                         is PromotedNotificationContentModel.When.Time -> {
                             OngoingActivityChipModel.Content.ShortTimeDelta(
-                                time = time.currentTimeMillis
+                                time = time.currentTimeMillis,
+                                timeSource = systemClock,
                             )
                         }
                         is PromotedNotificationContentModel.When.Chronometer -> {
                             OngoingActivityChipModel.Content.Timer(
                                 startTimeMs = time.elapsedRealtimeMillis,
                                 isEventInFuture = time.isCountDown,
+                                timeSource = systemClock,
                             )
                         }
                     }

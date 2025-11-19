@@ -45,6 +45,8 @@ import com.android.systemui.Flags
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.chips.ui.viewmodel.Chronometer
+import com.android.systemui.statusbar.chips.ui.viewmodel.EventTime
 import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
@@ -88,8 +90,10 @@ fun ChipContent(
         is OngoingActivityChipModel.Content.Timer -> {
             val timerState =
                 rememberChronometerState(
-                    eventTimeMillis = viewModel.startTimeMs,
-                    isCountDown = viewModel.isEventInFuture,
+                    Chronometer.Running(
+                        EventTime.ElapsedRealtime(viewModel.startTimeMs),
+                        isCountdown = viewModel.isEventInFuture,
+                    ),
                     timeSource = viewModel.timeSource,
                 )
             timerState.currentTimeText?.let { text ->

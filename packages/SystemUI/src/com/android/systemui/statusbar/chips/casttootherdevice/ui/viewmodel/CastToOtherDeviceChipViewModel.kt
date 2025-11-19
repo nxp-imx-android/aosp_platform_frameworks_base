@@ -211,7 +211,8 @@ constructor(
             content =
                 OngoingActivityChipModel.Content.Timer(
                     // TODO(b/332662551): Maybe use a MediaProjection API to fetch this time.
-                    startTimeMs = systemClock.elapsedRealtime()
+                    startTimeMs = systemClock.elapsedRealtime(),
+                    timeSource = systemClock,
                 ),
             colors = ColorsModel.Red,
             clickBehavior =

@@ -40,6 +40,7 @@ import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper.Companion.TransitionAwareChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper.Companion.TransitionState
 import com.android.systemui.testKosmos
+import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,7 +69,11 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                 OngoingActivityChipModel.Active(
                     key = KEY,
                     icon = createIcon(R.drawable.ic_cake),
-                    content = OngoingActivityChipModel.Content.Timer(startTimeMs = 100L),
+                    content =
+                        OngoingActivityChipModel.Content.Timer(
+                            startTimeMs = 100L,
+                            kosmos.fakeSystemClock,
+                        ),
                     colors = ColorsModel.AccentThemed,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
                 )
@@ -103,7 +108,11 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                 OngoingActivityChipModel.Active(
                     key = KEY,
                     icon = createIcon(R.drawable.ic_cake),
-                    content = OngoingActivityChipModel.Content.Timer(startTimeMs = 100L),
+                    content =
+                        OngoingActivityChipModel.Content.Timer(
+                            startTimeMs = 100L,
+                            kosmos.fakeSystemClock,
+                        ),
                     colors = ColorsModel.AccentThemed,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
                 )
@@ -144,7 +153,11 @@ class ChipTransitionHelperTest : SysuiTestCase() {
                 OngoingActivityChipModel.Active(
                     key = KEY,
                     icon = createIcon(R.drawable.ic_cake),
-                    content = OngoingActivityChipModel.Content.Timer(startTimeMs = 100L),
+                    content =
+                        OngoingActivityChipModel.Content.Timer(
+                            startTimeMs = 100L,
+                            kosmos.fakeSystemClock,
+                        ),
                     colors = ColorsModel.AccentThemed,
                     clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
                 )
