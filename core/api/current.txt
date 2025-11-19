@@ -57729,6 +57729,7 @@ package android.view.contentcapture {
     method @NonNull public android.view.autofill.AutofillId newAutofillId(@NonNull android.view.autofill.AutofillId, long);
     method @NonNull public final android.view.ViewStructure newViewStructure(@NonNull android.view.View);
     method @NonNull public final android.view.ViewStructure newVirtualViewStructure(@NonNull android.view.autofill.AutofillId, long);
+    method @FlaggedApi("android.view.contentcapture.flags.content_interaction_api_enabled") public void notifyContentInteractionEvent(@NonNull android.view.autofill.AutofillId);
     method public final void notifySessionPaused();
     method public final void notifySessionResumed();
     method public final void notifyViewAppeared(@NonNull android.view.ViewStructure);
