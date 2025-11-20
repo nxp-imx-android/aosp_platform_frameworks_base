@@ -98,6 +98,9 @@ object LockscreenElementKeys {
     /** The UMO's lockscreen element */
     val MediaCarousel = ElementKey("LockscreenMediaCarousel")
 
+    /** The inner Element for the UMO composable */
+    val MediaCarouselContainer = ElementKey("LockscreenMediaCarousel-Element")
+
     object Notifications {
         /** The notification stack display on lockscreen */
         val Stack = ElementKey("LockscreenNotificationStack")
