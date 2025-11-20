@@ -30,6 +30,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.android.systemui.Flags
 import com.android.systemui.util.time.SystemClock
 import java.time.Duration
+import java.time.Instant
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 import kotlinx.coroutines.delay
@@ -53,7 +54,7 @@ import kotlinx.coroutines.delay
  */
 class ChronometerState(
     private val timeSource: SystemClock,
-    private val formatter: Formatter,
+    private val formatter: Formatter = Formatter.Chronometer,
     val chronometer: Chronometer,
 ) {
     private val areChronometerFixesEnabled = Flags.statusBarChronometerFixes()
@@ -184,6 +185,19 @@ sealed class EventTime {
         @ElapsedRealtimeLong
         override fun asElapsedRealtime(timeSource: SystemClock): Long {
             return elapsedRealtime
+        }
+    }
+
+    /**
+     * Chronometer whose zero time is expressed in the base of [SystemClock.currentTime] (i.e. UTC
+     * time). Can skip forwards or backwards if device clock changes (excluding timezone
+     * adjustments).
+     */
+    data class ClockTime(val instant: Instant) : EventTime() {
+        @ElapsedRealtimeLong
+        override fun asElapsedRealtime(timeSource: SystemClock): Long {
+            return (timeSource.elapsedRealtime() +
+                (instant.toEpochMilli() - timeSource.currentTimeMillis()))
         }
     }
 }

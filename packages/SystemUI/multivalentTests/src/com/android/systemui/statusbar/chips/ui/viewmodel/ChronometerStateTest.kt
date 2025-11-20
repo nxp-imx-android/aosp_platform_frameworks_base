@@ -23,8 +23,11 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.testKosmos
+import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
+import java.time.Instant
+import java.time.temporal.ChronoUnit.SECONDS
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -50,6 +53,7 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Before
     fun setup() {
+        fakeTimeSource.setCurrentTime(SYSTEM_NOW)
         fakeTimeSource.setElapsedRealtime(0)
     }
 
@@ -179,24 +183,112 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    fun textUpdates_isEventInFutureFalse_timeInPast() = runTest {
-        val eventTime = 1000L
+    fun initialText_countdownToSystemClockFuture_isTimeRemaining() = runTest {
         val state =
             ChronometerState(
                 fakeTimeSource,
                 Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = false),
+                chronometer =
+                    Chronometer.Running(
+                        EventTime.ClockTime(SYSTEM_NOW.plus(10, SECONDS)),
+                        isCountdown = true,
+                    ),
+            )
+        assertThat(state.currentTimeText).isEqualTo("00:10")
+    }
+
+    @Test
+    fun initialText_countdownToSystemClockPast_isNull() = runTest {
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Chronometer,
+                chronometer =
+                    Chronometer.Running(
+                        EventTime.ClockTime(SYSTEM_NOW.minus(10, SECONDS)),
+                        isCountdown = true,
+                    ),
+            )
+        assertThat(state.currentTimeText).isNull()
+    }
+
+    @Test
+    fun initialText_countupFromSystemClockPast_isTimeElapsed() = runTest {
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Chronometer,
+                chronometer =
+                    Chronometer.Running(
+                        EventTime.ClockTime(SYSTEM_NOW.minus(10, SECONDS)),
+                        isCountdown = false,
+                    ),
+            )
+        assertThat(state.currentTimeText).isEqualTo("00:10")
+    }
+
+    @Test
+    fun initialText_countupFromSystemClockFuture_isNull() = runTest {
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Chronometer,
+                chronometer =
+                    Chronometer.Running(
+                        EventTime.ClockTime(SYSTEM_NOW.plus(10, SECONDS)),
+                        isCountdown = false,
+                    ),
+            )
+        assertThat(state.currentTimeText).isNull()
+    }
+
+    enum class RunningTimeTest {
+        ELAPSED_REALTIME {
+            override fun newEventTime(atMillis: Long) = EventTime.ElapsedRealtime(atMillis)
+
+            override fun setClock(clock: FakeSystemClock, millis: Long) {
+                clock.setElapsedRealtime(millis)
+            }
+        },
+        CLOCK_TIME {
+            override fun newEventTime(atMillis: Long) =
+                EventTime.ClockTime(SYSTEM_NOW.plusMillis(atMillis))
+
+            override fun setClock(clock: FakeSystemClock, millis: Long) {
+                clock.setCurrentTime(SYSTEM_NOW.plusMillis(millis))
+            }
+        };
+
+        abstract fun newEventTime(atMillis: Long): EventTime
+
+        abstract fun setClock(clock: FakeSystemClock, millis: Long)
+    }
+
+    @Test
+    fun textUpdates_elapsedRealtime_isEventInFutureFalse_timeInPast() =
+        textUpdates_isEventInFutureFalse_timeInPast(RunningTimeTest.ELAPSED_REALTIME)
+
+    @Test
+    fun textUpdates_clockTime_isEventInFutureFalse_timeInPast() =
+        textUpdates_isEventInFutureFalse_timeInPast(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_isEventInFutureFalse_timeInPast(test: RunningTimeTest) = runTest {
+        val eventTime = 1000L
+        test.setClock(fakeTimeSource, eventTime)
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Chronometer,
+                Chronometer.Running(test.newEventTime(eventTime), isCountdown = false),
             )
         val job = startChronometer(state)
 
         val elapsedTime = 5000L
-        fakeTimeSource.setElapsedRealtime(eventTime + elapsedTime)
-        advanceTimeBy(elapsedTime)
+        advanceClockAndTestByMillis(elapsedTime)
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(elapsedTime / 1000))
 
         val additionalTime = 6000L
-        fakeTimeSource.setElapsedRealtime(fakeTimeSource.elapsedRealtime() + additionalTime)
-        advanceTimeBy(additionalTime)
+        advanceClockAndTestByMillis(additionalTime)
         assertThat(state.currentTimeText)
             .isEqualTo(formatElapsedTime((elapsedTime + additionalTime) / 1000))
 
@@ -204,25 +296,34 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    fun textUpdates_isEventInFutureFalse_timeChangesFromFutureToPast() = runTest {
+    fun textUpdates_elapedRealtime_isEventInFutureFalse_timeChangesFromFutureToPast() =
+        textUpdates_isEventInFutureFalse_timeChangesFromFutureToPast(
+            RunningTimeTest.ELAPSED_REALTIME
+        )
+
+    @Test
+    fun textUpdates_clockTime_isEventInFutureFalse_timeChangesFromFutureToPast() =
+        textUpdates_isEventInFutureFalse_timeChangesFromFutureToPast(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_isEventInFutureFalse_timeChangesFromFutureToPast(
+        test: RunningTimeTest
+    ) = runTest {
         val eventTime = 15_000L
         val state =
             ChronometerState(
                 fakeTimeSource,
                 Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = false),
+                Chronometer.Running(test.newEventTime(eventTime), isCountdown = false),
             )
         val job = startChronometer(state)
 
         // WHEN the time is 5 but the eventTime is 15
-        fakeTimeSource.setElapsedRealtime(5_000L)
-        advanceTimeBy(5_000L)
+        advanceClockAndTestByMillis(5_000L)
         // THEN no text is shown
         assertThat(state.currentTimeText).isNull()
 
         // WHEN the time advances to 40
-        fakeTimeSource.setElapsedRealtime(40_000L)
-        advanceTimeBy(35_000)
+        advanceClockAndTestByMillis(35_000)
         // THEN text is shown as 25 seconds (40 - 15)
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 25))
 
@@ -230,124 +331,162 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    fun textUpdates_isEventInFutureTrue_timeInFuture() = runTest {
+    fun textUpdates_elapsedRealtime_isEventInFutureTrue_timeInFuture() =
+        textUpdates_isEventInFutureTrue_timeInFuture(RunningTimeTest.ELAPSED_REALTIME)
+
+    @Test
+    fun textUpdates_clockTime_isEventInFutureTrue_timeInFuture() =
+        textUpdates_isEventInFutureTrue_timeInFuture(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_isEventInFutureTrue_timeInFuture(test: RunningTimeTest) = runTest {
         val eventTime = 15_000L
         val state =
             ChronometerState(
                 fakeTimeSource,
                 Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = true),
+                Chronometer.Running(test.newEventTime(eventTime), isCountdown = true),
             )
         val job = startChronometer(state)
 
-        fakeTimeSource.setElapsedRealtime(5_000L)
-        advanceTimeBy(5_000L)
+        advanceClockAndTestByMillis(5_000L)
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 10))
 
         val additionalTime = 6000L
-        fakeTimeSource.setElapsedRealtime(fakeTimeSource.elapsedRealtime() + additionalTime)
-        advanceTimeBy(additionalTime)
+        advanceClockAndTestByMillis(additionalTime)
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 4))
 
         job.cancelAndJoin()
     }
 
     @Test
-    fun textUpdates_isEventInFutureTrue_timeChangesFromFutureToPast() = runTest {
-        val eventTime = 15_000L
-        val state =
-            ChronometerState(
-                fakeTimeSource,
-                Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = true),
-            )
-        val job = startChronometer(state)
-
-        // WHEN the time is 5 and the eventTime is 15
-        fakeTimeSource.setElapsedRealtime(5_000L)
-        advanceTimeBy(5_000L)
-        // THEN 10 seconds is shown
-        assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 10))
-
-        // WHEN the time advances to 40 (past the event time)
-        fakeTimeSource.setElapsedRealtime(40_000L)
-        advanceTimeBy(35_000)
-        // THEN no text is shown
-        assertThat(state.currentTimeText).isNull()
-
-        job.cancelAndJoin()
-    }
+    fun textUpdates_elapsedRealtime_isEventInFutureTrue_timeChangesFromFutureToPast() =
+        textUpdates_isEventInFutureTrue_timeChangesFromFutureToPast(
+            RunningTimeTest.ELAPSED_REALTIME
+        )
 
     @Test
-    fun textUpdates_isEventInFutureFalse_initialDelaySkewIsCorrect() = runTest {
-        // Event is at 1000ms, and our current time is 4480ms
-        // We should show 00:03 for 520ms, and then update to 00:04
-        val eventTime = 1_000L
-        fakeTimeSource.setElapsedRealtime(4_480L)
-        val state =
-            ChronometerState(
-                fakeTimeSource,
-                Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = false),
-            )
-        val job = startChronometer(state)
+    fun textUpdates_clockTime_isEventInFutureTrue_timeChangesFromFutureToPast() =
+        textUpdates_isEventInFutureTrue_timeChangesFromFutureToPast(RunningTimeTest.CLOCK_TIME)
 
-        assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 3))
+    private fun textUpdates_isEventInFutureTrue_timeChangesFromFutureToPast(test: RunningTimeTest) =
+        runTest {
+            val eventTime = 15_000L
+            val state =
+                ChronometerState(
+                    fakeTimeSource,
+                    Formatter.Chronometer,
+                    Chronometer.Running(test.newEventTime(eventTime), isCountdown = true),
+                )
+            val job = startChronometer(state)
 
-        advanceTime(525L) // A few milliseconds buffer above 520ms
+            // WHEN the time is 5 and the eventTime is 15
+            advanceClockAndTestByMillis(5_000L)
+            // THEN 10 seconds is shown
+            assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 10))
 
-        assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 4))
+            // WHEN the time advances to 40 (past the event time)
+            advanceClockAndTestByMillis(35_000)
+            // THEN no text is shown
+            assertThat(state.currentTimeText).isNull()
 
-        job.cancelAndJoin()
-    }
+            job.cancelAndJoin()
+        }
+
+    @Test
+    fun textUpdates_elapsedRealtime_isEventInFutureFalse_initialDelaySkewIsCorrect() =
+        textUpdates_isEventInFutureFalse_initialDelaySkewIsCorrect(RunningTimeTest.ELAPSED_REALTIME)
+
+    @Test
+    fun textUpdates_clockTime_isEventInFutureFalse_initialDelaySkewIsCorrect() =
+        textUpdates_isEventInFutureFalse_initialDelaySkewIsCorrect(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_isEventInFutureFalse_initialDelaySkewIsCorrect(test: RunningTimeTest) =
+        runTest {
+            // Event is at 1000ms, and our current time is 4480ms
+            // We should show 00:03 for 520ms, and then update to 00:04
+            val eventTime = 1_000L
+            test.setClock(fakeTimeSource, 4_480L)
+            val state =
+                ChronometerState(
+                    fakeTimeSource,
+                    Formatter.Chronometer,
+                    Chronometer.Running(test.newEventTime(eventTime), isCountdown = false),
+                )
+            val job = startChronometer(state)
+
+            assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 3))
+
+            advanceClockAndTestByMillis(525L) // A few milliseconds buffer above 520ms
+
+            assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 4))
+
+            job.cancelAndJoin()
+        }
 
     /** Regression test for b/450909625. */
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
-    fun textUpdates_isEventInFutureTrue_initialDelaySkewIsCorrect() = runTest {
-        // Event is at 5000ms, and our current time is 2980ms
-        // We should show 00:02 for 20ms, and then update to 00:01
-        val eventTime = 5_000L
-        fakeTimeSource.setElapsedRealtime(2_980L)
-        val state =
-            ChronometerState(
-                fakeTimeSource,
-                Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = true),
-            )
-        val job = startChronometer(state)
+    fun textUpdates_elapsedRealtime_isEventInFutureTrue_initialDelaySkewIsCorrect() =
+        textUpdates_isEventInFutureTrue_initialDelaySkewIsCorrect(RunningTimeTest.ELAPSED_REALTIME)
 
-        assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 2))
+    /** Regression test for b/450909625. */
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
+    fun textUpdates_clockTime_isEventInFutureTrue_initialDelaySkewIsCorrect() =
+        textUpdates_isEventInFutureTrue_initialDelaySkewIsCorrect(RunningTimeTest.CLOCK_TIME)
 
-        advanceTime(25L) // A few milliseconds buffer above 20ms
+    private fun textUpdates_isEventInFutureTrue_initialDelaySkewIsCorrect(test: RunningTimeTest) =
+        runTest {
+            // Event is at 5000ms, and our current time is 2980ms
+            // We should show 00:02 for 20ms, and then update to 00:01
+            val eventTime = 5_000L
+            test.setClock(fakeTimeSource, 2_980L)
+            val state =
+                ChronometerState(
+                    fakeTimeSource,
+                    Formatter.Chronometer,
+                    Chronometer.Running(test.newEventTime(eventTime), isCountdown = true),
+                )
+            val job = startChronometer(state)
 
-        assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 1))
+            assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 2))
 
-        job.cancelAndJoin()
-    }
+            advanceClockAndTestByMillis(25L) // A few milliseconds buffer above 20ms
+
+            assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 1))
+
+            job.cancelAndJoin()
+        }
 
     @Test
-    fun textUpdates_isEventInFutureFalse_ticksEachSecond() = runTest {
+    fun textUpdates_elapsedRealtime_isEventInFutureFalse_ticksEachSecond() =
+        textUpdates_isEventInFutureFalse_ticksEachSecond(RunningTimeTest.ELAPSED_REALTIME)
+
+    @Test
+    fun textUpdates_clockTime_isEventInFutureFalse_ticksEachSecond() =
+        textUpdates_isEventInFutureFalse_ticksEachSecond(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_isEventInFutureFalse_ticksEachSecond(test: RunningTimeTest) = runTest {
         val eventTime = 1_000L
-        fakeTimeSource.setElapsedRealtime(4_200L)
+        test.setClock(fakeTimeSource, 4_200L)
         val state =
             ChronometerState(
                 fakeTimeSource,
                 Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = false),
+                Chronometer.Running(test.newEventTime(eventTime), isCountdown = false),
             )
         val job = startChronometer(state)
 
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 3))
 
         // First: get past the initial skew of 800ms (with a few milliseconds buffer)
-        advanceTime(805L)
+        advanceClockAndTestByMillis(805L)
 
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 4))
 
         // Then, verify we tick every second
         for (i in 1L..50L) {
-            advanceTime(1000L)
+            advanceClockAndTestByMillis(1000L)
             assertThat(state.currentTimeText)
                 .isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 4 + i))
         }
@@ -357,26 +496,34 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
-    fun textUpdates_isEventInFutureTrue_ticksEachSecond() = runTest {
+    fun textUpdates_elapsedRealtime_isEventInFutureTrue_ticksEachSecond() =
+        textUpdates_isEventInFutureTrue_ticksEachSecond(RunningTimeTest.ELAPSED_REALTIME)
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
+    fun textUpdates_clockTime_isEventInFutureTrue_ticksEachSecond() =
+        textUpdates_isEventInFutureTrue_ticksEachSecond(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_isEventInFutureTrue_ticksEachSecond(test: RunningTimeTest) = runTest {
         val eventTime = 100_000L
-        fakeTimeSource.setElapsedRealtime(4_800L)
+        test.setClock(fakeTimeSource, 4_800L)
         val state =
             ChronometerState(
                 fakeTimeSource,
                 Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = true),
+                Chronometer.Running(test.newEventTime(eventTime), isCountdown = true),
             )
         val job = startChronometer(state)
 
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 95))
 
         // First: get past the initial skew of 200ms (with a few milliseconds buffer)
-        advanceTime(205L)
+        advanceClockAndTestByMillis(205L)
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 94))
 
         // Then, verify we tick every second
         for (i in 1L..50L) {
-            advanceTime(1000L)
+            advanceClockAndTestByMillis(1000L)
             assertThat(state.currentTimeText)
                 .isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 94 - i))
         }
@@ -385,91 +532,113 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    fun textUpdates_afterResettingBase_isEventInFutureFalse() = runTest {
-        val initialElapsedTime = 30000L
-        val startTime = 50000L
-        val state =
-            ChronometerState(
-                fakeTimeSource,
-                Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(startTime), isCountdown = false),
-            )
-        val job = startChronometer(state)
-
-        fakeTimeSource.setElapsedRealtime(startTime + initialElapsedTime)
-        advanceTimeBy(initialElapsedTime)
-        assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(initialElapsedTime / 1000))
-
-        job.cancelAndJoin()
-
-        val newElapsedTime = 5000L
-        val newStartTime = 100000L
-        val newState =
-            ChronometerState(
-                fakeTimeSource,
-                Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(newStartTime), isCountdown = false),
-            )
-        val newJob = startChronometer(newState)
-
-        fakeTimeSource.setElapsedRealtime(newStartTime + newElapsedTime)
-        advanceTimeBy(newElapsedTime)
-        assertThat(newState.currentTimeText).isEqualTo(formatElapsedTime(newElapsedTime / 1000))
-
-        newJob.cancelAndJoin()
-    }
+    fun textUpdates_elapsedRealtime_afterResettingBase_isEventInFutureFalse() =
+        textUpdates_afterResettingBase_isEventInFutureFalse(RunningTimeTest.ELAPSED_REALTIME)
 
     @Test
-    fun textUpdates_afterResettingBase_isEventInFutureTrue() = runTest {
+    fun textUpdates_clockTime_afterResettingBase_isEventInFutureFalse() =
+        textUpdates_afterResettingBase_isEventInFutureFalse(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_afterResettingBase_isEventInFutureFalse(test: RunningTimeTest) =
+        runTest {
+            val initialElapsedTime = 30000L
+            val startTime = 50000L
+            test.setClock(fakeTimeSource, startTime)
+            val state =
+                ChronometerState(
+                    fakeTimeSource,
+                    Formatter.Chronometer,
+                    Chronometer.Running(test.newEventTime(startTime), isCountdown = false),
+                )
+            val job = startChronometer(state)
+
+            advanceClockAndTestByMillis(initialElapsedTime)
+            assertThat(state.currentTimeText)
+                .isEqualTo(formatElapsedTime(initialElapsedTime / 1000))
+
+            job.cancelAndJoin()
+
+            val newElapsedTime = 5000L
+            val newStartTime = 100000L
+            test.setClock(fakeTimeSource, newStartTime)
+            val newState =
+                ChronometerState(
+                    fakeTimeSource,
+                    Formatter.Chronometer,
+                    Chronometer.Running(test.newEventTime(newStartTime), isCountdown = false),
+                )
+            val newJob = startChronometer(newState)
+
+            advanceClockAndTestByMillis(newElapsedTime)
+            assertThat(newState.currentTimeText).isEqualTo(formatElapsedTime(newElapsedTime / 1000))
+
+            newJob.cancelAndJoin()
+        }
+
+    @Test
+    fun textUpdates_elapsedRealtime_afterResettingBase_isEventInFutureTrue() =
+        textUpdates_afterResettingBase_isEventInFutureTrue(RunningTimeTest.ELAPSED_REALTIME)
+
+    @Test
+    fun textUpdates_clockTime_afterResettingBase_isEventInFutureTrue() =
+        textUpdates_afterResettingBase_isEventInFutureTrue(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_afterResettingBase_isEventInFutureTrue(test: RunningTimeTest) =
+        runTest {
+            val initialElapsedTime = 40_000L
+            val eventTime = 50_000L
+            val state =
+                ChronometerState(
+                    fakeTimeSource,
+                    Formatter.Chronometer,
+                    Chronometer.Running(test.newEventTime(eventTime), isCountdown = true),
+                )
+            val job = startChronometer(state)
+
+            advanceClockAndTestByMillis(initialElapsedTime)
+            // Time should be 50 - 40 = 10
+            assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 10))
+
+            job.cancelAndJoin()
+
+            val newElapsedTime = 75_000L
+            val newEventTime = 100_000L
+            val newState =
+                ChronometerState(
+                    fakeTimeSource,
+                    Formatter.Chronometer,
+                    Chronometer.Running(test.newEventTime(newEventTime), isCountdown = true),
+                )
+            val newJob = startChronometer(newState)
+
+            advanceClockAndTestByMillis(newElapsedTime - initialElapsedTime)
+            // Time should be 100 - 75 = 25
+            assertThat(newState.currentTimeText)
+                .isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 25))
+
+            newJob.cancelAndJoin()
+        }
+
+    @Test
+    fun textUpdates_elapsedRealtime_afterResettingisEventInFuture() =
+        textUpdates_afterResettingisEventInFuture(RunningTimeTest.ELAPSED_REALTIME)
+
+    @Test
+    fun textUpdates_clockTime_afterResettingisEventInFuture() =
+        textUpdates_afterResettingisEventInFuture(RunningTimeTest.CLOCK_TIME)
+
+    private fun textUpdates_afterResettingisEventInFuture(test: RunningTimeTest) = runTest {
         val initialElapsedTime = 40_000L
         val eventTime = 50_000L
         val state =
             ChronometerState(
                 fakeTimeSource,
                 Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = true),
+                Chronometer.Running(test.newEventTime(eventTime), isCountdown = true),
             )
         val job = startChronometer(state)
 
-        fakeTimeSource.setElapsedRealtime(initialElapsedTime)
-        advanceTimeBy(initialElapsedTime)
-        // Time should be 50 - 40 = 10
-        assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 10))
-
-        job.cancelAndJoin()
-
-        val newElapsedTime = 75_000L
-        val newEventTime = 100_000L
-        val newState =
-            ChronometerState(
-                fakeTimeSource,
-                Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(newEventTime), isCountdown = true),
-            )
-        val newJob = startChronometer(newState)
-
-        fakeTimeSource.setElapsedRealtime(newElapsedTime)
-        advanceTimeBy(newElapsedTime - initialElapsedTime)
-        // Time should be 100 - 75 = 25
-        assertThat(newState.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 25))
-
-        newJob.cancelAndJoin()
-    }
-
-    @Test
-    fun textUpdates_afterResettingisEventInFuture() = runTest {
-        val initialElapsedTime = 40_000L
-        val eventTime = 50_000L
-        val state =
-            ChronometerState(
-                fakeTimeSource,
-                Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = true),
-            )
-        val job = startChronometer(state)
-
-        fakeTimeSource.setElapsedRealtime(initialElapsedTime)
-        advanceTimeBy(initialElapsedTime)
+        advanceClockAndTestByMillis(initialElapsedTime)
         // Time should be 50 - 40 = 10
         assertThat(state.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 10))
 
@@ -480,16 +649,46 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
             ChronometerState(
                 fakeTimeSource,
                 Formatter.Chronometer,
-                Chronometer.Running(EventTime.ElapsedRealtime(eventTime), isCountdown = false),
+                Chronometer.Running(test.newEventTime(eventTime), isCountdown = false),
             )
         val newJob = startChronometer(newState)
 
-        fakeTimeSource.setElapsedRealtime(newElapsedTime)
-        advanceTimeBy(newElapsedTime - initialElapsedTime)
+        advanceClockAndTestByMillis(newElapsedTime - initialElapsedTime)
         // Time should be 70 - 50 = 20
         assertThat(newState.currentTimeText).isEqualTo(formatElapsedTime(/* elapsedSeconds= */ 20))
 
         newJob.cancelAndJoin()
+    }
+
+    @Test
+    fun textUpdates_systemClockJumps_textUpdatesOnNextTick() = runTest {
+        // Timer started 30 seconds ago.
+        fakeTimeSource.setCurrentTime(SYSTEM_NOW)
+        val state =
+            ChronometerState(
+                fakeTimeSource,
+                Formatter.Chronometer,
+                Chronometer.Running(
+                    EventTime.ClockTime(SYSTEM_NOW.minusSeconds(30)),
+                    isCountdown = false,
+                ),
+            )
+        val job = startChronometer(state)
+        assertThat(state.currentTimeText).isEqualTo("00:30")
+
+        // 5 seconds pass, all normal
+        advanceClockAndTestByMillis(5_000)
+        assertThat(state.currentTimeText).isEqualTo("00:35")
+
+        // Now, we CHANGE the system clock, so it SKIPS forward by 10 seconds
+        fakeTimeSource.setCurrentTime(fakeTimeSource.currentTime().plusSeconds(10))
+        // Then, after 1 second of real time passes...
+        advanceClockAndTestByMillis(1_000)
+
+        // ... the chronometer has also jumped.
+        assertThat(state.currentTimeText).isEqualTo("00:46")
+
+        job.cancelAndJoin()
     }
 
     /** Starts the chronometer ticking. */
@@ -501,8 +700,8 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     /** Advances both the time source and the test clock by the same amount. */
-    private fun TestScope.advanceTime(additionalTime: Long) {
-        fakeTimeSource.setElapsedRealtime(fakeTimeSource.elapsedRealtime() + additionalTime)
+    private fun TestScope.advanceClockAndTestByMillis(additionalTime: Long) {
+        fakeTimeSource.advanceTime(additionalTime)
         advanceTimeBy(additionalTime)
     }
 
@@ -512,5 +711,7 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
         }
+
+        private val SYSTEM_NOW = Instant.ofEpochMilli(1763645100000) // 2025-11-20 13:25:00 UTC
     }
 }
