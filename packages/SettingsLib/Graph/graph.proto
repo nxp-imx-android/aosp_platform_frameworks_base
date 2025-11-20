@@ -31,13 +31,24 @@ message PreferenceScreenProto {
   // If the preference screen is parameterized.
   optional bool parameterized = 5;
   // Available parameters of the parameterized screen.
-  repeated BundleProto parameters = 6;
+  // Deprecated: Use key_parameters instead. See b/447555338 for details.
+  repeated BundleProto parameters = 6 [deprecated = true];
+  // Schema for the key-value parameters, as a string.
+  optional string parameters_schema = 7;
+  // Available type-safe parameters of the parameterized screen
+  repeated KeyParametersProto key_parameters = 8;
 }
 
 // Proto of parameterized preference screen
 message ParameterizedPreferenceScreenProto {
   // Arguments to materialize the parameterized screen.
-  optional BundleProto args = 1;
+  oneof args_oneof {
+    // Legacy bundle to pass the arguments. This is deprecated, please use
+    // key_parameters for new usages. See b/447555338 for details.
+    BundleProto args = 1 [deprecated = true];
+    // A map of string to string representing the parameters
+    KeyParametersProto key_parameters = 3;
+  }
   // Materialized screen.
   optional PreferenceScreenProto screen = 2;
 }
@@ -114,8 +125,12 @@ message PreferenceProto {
       // app or activity belongs to other app.
       IntentProto intent = 2;
     }
-    // Arguments to materialize the parameterized screen.
-    optional BundleProto args = 3;
+    oneof args_oneof {
+      // Arguments to materialize the parameterized screen.
+      BundleProto args = 3 [deprecated = true];
+      // A map of string to string representing the parameters
+      KeyParametersProto key_parameters = 4;
+    }
   }
 }
 
@@ -225,3 +240,9 @@ message BundleProto {
     }
   }
 }
+
+// Proto of KeyParameters
+message KeyParametersProto {
+  map<string, string> values = 1;
+}
+

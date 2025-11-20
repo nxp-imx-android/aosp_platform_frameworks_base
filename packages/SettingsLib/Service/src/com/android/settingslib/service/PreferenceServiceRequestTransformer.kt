@@ -25,6 +25,7 @@ import android.service.settings.preferences.SetValueRequest
 import android.service.settings.preferences.SetValueResult
 import android.service.settings.preferences.SettingsPreferenceMetadata
 import android.service.settings.preferences.SettingsPreferenceValue
+import com.android.settingslib.catalyst.flags.Flags as CatalystFlags
 import com.android.settingslib.graph.PreferenceGetterErrorCode
 import com.android.settingslib.graph.PreferenceGetterFlags
 import com.android.settingslib.graph.PreferenceGetterRequest
@@ -163,7 +164,21 @@ fun transformFrameworkSetValueRequest(request: SetValueRequest): PreferenceSette
         else -> return null
     }
     // TODO: support parameterized screen
-    return PreferenceSetterRequest(request.screenKey, null, request.preferenceKey, valueProto)
+    return if (CatalystFlags.catalystUseKeyParameters()) {
+        PreferenceSetterRequest(
+            screenKey = request.screenKey,
+            keyParameters = null,
+            request.preferenceKey,
+            valueProto
+        )
+    } else {
+        PreferenceSetterRequest(
+            screenKey = request.screenKey,
+            args = null,
+            request.preferenceKey,
+            valueProto
+        )
+    }
 }
 
 /** Translate Catalyst SET VALUE result to Framework SET VALUE result */
