@@ -177,6 +177,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun testCantDragDownWhenQSExpanded() =
         testScope.runTest {
             assertTrue("Can't drag down on keyguard", transitionController.canDragDown())
@@ -185,6 +186,14 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableSceneContainer
+    fun testCantDragDownOnLockscreen_inFlexiglass() =
+        testScope.runTest {
+            assertFalse("Can drag down on keyguard", transitionController.canDragDown())
+        }
+
+    @Test
+    @DisableSceneContainer
     fun testCanDragDownInLockedDownShade() =
         testScope.runTest {
             whenever(statusbarStateController.state).thenReturn(StatusBarState.SHADE_LOCKED)
@@ -530,7 +539,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         testScope.runTest {
             transitionController.qS = null
 
-            assertTrue("Can't drag down on keyguard", transitionController.canDragDown())
+            assertFalse("Can drag down on keyguard", transitionController.canDragDown())
         }
 
     private fun enableSplitShade() {

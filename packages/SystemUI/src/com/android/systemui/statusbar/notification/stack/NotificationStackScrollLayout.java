@@ -4129,6 +4129,13 @@ public class NotificationStackScrollLayout
         setIsBeingDragged(true);
     }
 
+    // Only when scene container is enabled, mark that we are being dragged so that we start
+    // dispatching the rest of the gesture to scene container.
+    void startDraggingOnLockscreen() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        setIsBeingDragged(true);
+    }
+
     /**
      * @return Whether NSSL should dispatch this event to the SceneContainer Framework. When false,
      * the NSSL will handle the event itself.
