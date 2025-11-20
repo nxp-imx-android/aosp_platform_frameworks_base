@@ -91,8 +91,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifier = Modifier) {
     val isInputEnabled: Boolean by viewModel.isInputEnabled.collectAsStateWithLifecycle()
-    val backspaceButtonAppearance by
-        viewModel.backspaceButtonAppearance.collectAsStateWithLifecycle()
     val confirmButtonAppearance by viewModel.confirmButtonAppearance.collectAsStateWithLifecycle()
     val animateFailure: Boolean by viewModel.animateFailure.collectAsStateWithLifecycle()
     val isDigitButtonAnimationEnabled: Boolean by
@@ -135,7 +133,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             icon =
                 Icon.Resource(
                     resId =
-                        if (backspaceButtonAppearance == ActionButtonAppearance.Shown) {
+                        if (viewModel.backspaceButtonAppearance == ActionButtonAppearance.Shown) {
                             R.drawable.pin_bouncer_delete_outline
                         } else {
                             R.drawable.pin_bouncer_delete_filled
@@ -149,7 +147,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             onLongPressed = viewModel::onBackspaceButtonLongPressed,
             onLongClickLabel =
                 stringResource(R.string.keyguard_accessibility_pin_delete_long_click),
-            appearance = backspaceButtonAppearance,
+            appearance = viewModel.backspaceButtonAppearance,
             scaling = buttonScaleAnimatables[9]::value,
             elementId = "delete_button",
         )
