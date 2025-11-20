@@ -303,34 +303,32 @@ class PinBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun backspaceButtonAppearance_withoutAutoConfirm_alwaysShown() =
         kosmos.runTest {
-            val backspaceButtonAppearance by collectLastValue(underTest.backspaceButtonAppearance)
-
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
 
-            assertThat(backspaceButtonAppearance).isEqualTo(ActionButtonAppearance.Shown)
+            assertThat(underTest.backspaceButtonAppearance).isEqualTo(ActionButtonAppearance.Shown)
         }
 
     @Test
     fun backspaceButtonAppearance_withAutoConfirmButNoInput_isHidden() =
         kosmos.runTest {
-            val backspaceButtonAppearance by collectLastValue(underTest.backspaceButtonAppearance)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
             fakeAuthenticationRepository.setAutoConfirmFeatureEnabled(true)
+            runCurrent()
 
-            assertThat(backspaceButtonAppearance).isEqualTo(ActionButtonAppearance.Hidden)
+            assertThat(underTest.backspaceButtonAppearance).isEqualTo(ActionButtonAppearance.Hidden)
         }
 
     @Test
     fun backspaceButtonAppearance_withAutoConfirmAndInput_isShownQuiet() =
         kosmos.runTest {
-            val backspaceButtonAppearance by collectLastValue(underTest.backspaceButtonAppearance)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pin)
             fakeAuthenticationRepository.setAutoConfirmFeatureEnabled(true)
             runCurrent()
 
             underTest.onPinButtonClicked(1)
+            runCurrent()
 
-            assertThat(backspaceButtonAppearance).isEqualTo(ActionButtonAppearance.Subtle)
+            assertThat(underTest.backspaceButtonAppearance).isEqualTo(ActionButtonAppearance.Subtle)
         }
 
     @Test

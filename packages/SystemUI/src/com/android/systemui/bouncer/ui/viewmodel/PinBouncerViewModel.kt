@@ -25,6 +25,7 @@ import android.view.KeyEvent.KEYCODE_NUMPAD_0
 import android.view.KeyEvent.KEYCODE_NUMPAD_9
 import android.view.KeyEvent.isConfirmKey
 import android.view.View
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -95,10 +96,21 @@ constructor(
     /** The length of the PIN for which we should show a hint. */
     val hintedPinLength: StateFlow<Int?> = _hintedPinLength.asStateFlow()
 
-    private val _backspaceButtonAppearance = MutableStateFlow(ActionButtonAppearance.Hidden)
     /** Appearance of the backspace button. */
-    val backspaceButtonAppearance: StateFlow<ActionButtonAppearance> =
-        _backspaceButtonAppearance.asStateFlow()
+    val backspaceButtonAppearance: ActionButtonAppearance by
+        combine(
+                mutablePinInput,
+                interactor.isAutoConfirmEnabled,
+                ::computeBackspaceButtonAppearance,
+            )
+            .hydratedStateOf(
+                traceName = "backspaceButtonAppearance",
+                initialValue =
+                    computeBackspaceButtonAppearance(
+                        mutablePinInput.value,
+                        interactor.isAutoConfirmEnabled.value,
+                    ),
+            )
 
     private val _confirmButtonAppearance = MutableStateFlow(ActionButtonAppearance.Hidden)
     /** Appearance of the confirm button. */
@@ -137,17 +149,6 @@ constructor(
                         interactor.hintedPinLength
                     }
                     .collect { _hintedPinLength.value = it }
-            }
-            launch {
-                combine(mutablePinInput, interactor.isAutoConfirmEnabled) {
-                        mutablePinEntries,
-                        isAutoConfirmEnabled ->
-                        computeBackspaceButtonAppearance(
-                            pinInput = mutablePinEntries,
-                            isAutoConfirmEnabled = isAutoConfirmEnabled,
-                        )
-                    }
-                    .collect { _backspaceButtonAppearance.value = it }
             }
             launch { mutablePinInput.collect { _readyToTryAuthenticate.value = !it.isEmpty() } }
             launch {
