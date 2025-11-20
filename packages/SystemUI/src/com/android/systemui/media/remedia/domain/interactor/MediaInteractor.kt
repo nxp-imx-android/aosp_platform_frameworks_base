@@ -54,6 +54,9 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 /**
  * Defines interface for classes that can provide business logic in the domain of the media controls
@@ -77,7 +80,7 @@ interface MediaInteractor {
     fun seek(sessionKey: Any, to: Long)
 
     /** Hide the representation of the media session with the given [sessionKey]. */
-    fun hide(sessionKey: Any, delayMs: Long)
+    fun hide(sessionKey: Any, delayMs: Long, userInitiated: Boolean)
 
     /** Open media settings. */
     fun openMediaSettings()
@@ -96,6 +99,7 @@ class MediaInteractorImpl
 @Inject
 constructor(
     @Application val applicationContext: Context,
+    @Application val applicationScope: CoroutineScope,
     val repository: MediaRepository,
     val mediaDataProcessor: MediaDataProcessor,
     private val keyguardStateController: KeyguardStateController,
@@ -106,7 +110,15 @@ constructor(
 ) : MediaInteractor {
 
     override val sessions: List<MediaSessionModel>
-        get() = repository.currentMedia.map { toMediaSessionModel(it) }
+        get() =
+            repository.currentMedia.mapNotNull {
+                if (it.needsImmediateRemoval) {
+                    hide(it.instanceId, 0, repository.isSwipedAway)
+                    null
+                } else {
+                    toMediaSessionModel(it)
+                }
+            }
 
     override val currentCarouselIndex: Int
         get() = repository.currentCarouselIndex
@@ -117,12 +129,24 @@ constructor(
     override val isGutsVisible: Boolean
         get() = repository.isGutsVisible
 
+    init {
+        repository.visualStabilityListenerFlow
+            .onEach {
+                repository.keysNeedRemoval.forEach { key ->
+                    hide(key, delayMs = 0, repository.isUserInitiatedRemovalQueued)
+                }
+                repository.cleanKeysNeedRemoval()
+                reorderMedia()
+            }
+            .launchIn(applicationScope)
+    }
+
     override fun seek(sessionKey: Any, to: Long) {
         repository.seek(sessionKey as InstanceId, to)
     }
 
-    override fun hide(sessionKey: Any, delayMs: Long) {
-        mediaDataProcessor.dismissMediaData(sessionKey as InstanceId, delayMs, userInitiated = true)
+    override fun hide(sessionKey: Any, delayMs: Long, userInitiated: Boolean) {
+        mediaDataProcessor.dismissMediaData(sessionKey as InstanceId, delayMs, userInitiated)
     }
 
     override fun openMediaSettings() {

@@ -28,6 +28,7 @@ import com.android.systemui.media.controls.domain.pipeline.mediaResumeListener
 import com.android.systemui.media.controls.domain.pipeline.mediaSessionBasedFilter
 import com.android.systemui.media.controls.domain.pipeline.mediaTimeoutListener
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
+import com.android.systemui.media.remedia.data.repository.mediaRepository
 
 val Kosmos.mediaCarouselInteractor by
     Kosmos.Fixture {
@@ -41,6 +42,7 @@ val Kosmos.mediaCarouselInteractor by
             mediaDataCombineLatest = mediaDataCombineLatest,
             mediaDataFilter = mediaDataFilter,
             mediaPipelineRepository = mediaPipelineRepository,
+            mediaRepository = mediaRepository,
             keyguardTransitionInteractor = keyguardTransitionInteractor,
             deviceEntryInteractor = deviceEntryInteractor,
         )

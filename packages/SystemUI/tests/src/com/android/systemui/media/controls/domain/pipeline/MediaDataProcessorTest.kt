@@ -64,6 +64,7 @@ import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.media.controls.util.fakeMediaControllerFactory
 import com.android.systemui.media.controls.util.mediaFlags
 import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
+import com.android.systemui.media.remedia.data.repository.mediaRepository
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.SbnBuilder
 import com.android.systemui.statusbar.notificationLockscreenUserManager
@@ -151,6 +152,7 @@ class MediaDataProcessorTest() : SysuiTestCase() {
     private val mediaControllerFactory = kosmos.fakeMediaControllerFactory
     private val notificationLockscreenUserManager = kosmos.notificationLockscreenUserManager
     private val mediaPipelineRepository = kosmos.mediaPipelineRepository
+    private val mediaRepository = kosmos.mediaRepository
     private val mediaDataFilter = kosmos.mediaDataFilter
 
     private val instanceIdSequence = InstanceIdSequenceFake(1 shl 20)
@@ -204,6 +206,7 @@ class MediaDataProcessorTest() : SysuiTestCase() {
                 mediaDataCombineLatest = mediaDataCombineLatest,
                 mediaDataFilter = mediaDataFilter,
                 mediaPipelineRepository = mediaPipelineRepository,
+                mediaRepository = mediaRepository,
                 keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor,
                 deviceEntryInteractor = kosmos.deviceEntryInteractor,
             )
