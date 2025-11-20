@@ -433,17 +433,16 @@ fun rememberMutableSceneTransitionLayoutState(
     deferTransitionProgress: Boolean = false,
 ): MutableSceneTransitionLayoutState {
     val motionScheme = MaterialTheme.motionScheme
-    val viewRootImpl = LocalView.current.viewRootImpl
+    val localView = LocalView.current
     val uiDelegate = remember {
         object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
             override var transitions = transitions
             override var motionScheme: MotionScheme = motionScheme
-            override val viewRootImpl: ViewRootImpl = viewRootImpl
+            override val viewRootImpl: ViewRootImpl? = localView.viewRootImpl
+            val localView = localView
         }
     }
-    check(viewRootImpl == uiDelegate.viewRootImpl) {
-        "The ViewRootImpl of a STL is not expected to change"
-    }
+    check(localView == uiDelegate.localView) { "The LocalView of a STL is not expected to change" }
 
     val layoutState = remember {
         MutableSceneTransitionLayoutStateImpl(
@@ -994,17 +993,18 @@ internal class HoistedSceneTransitionLayoutStateImpl(
         transitions: SceneTransitions
     ): MutableSceneTransitionLayoutStateImpl {
         val motionScheme = MaterialTheme.motionScheme
-        val viewRootImpl = LocalView.current.viewRootImpl
+        val localView = LocalView.current
         val delegate = remember {
             object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
                 override var transitions: SceneTransitions = transitions
                 override var motionScheme: MotionScheme = motionScheme
-                override val viewRootImpl: ViewRootImpl = viewRootImpl
+                override val viewRootImpl: ViewRootImpl? = localView.viewRootImpl
+                val localView = localView
             }
         }
 
-        check(viewRootImpl == delegate.viewRootImpl) {
-            "The ViewRootImpl of a STL is not expected to change"
+        check(localView == delegate.localView) {
+            "The LocalView of a STL is not expected to change"
         }
 
         DisposableEffect(Unit) {
