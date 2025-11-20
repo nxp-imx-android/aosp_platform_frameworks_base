@@ -29,6 +29,7 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.icon.IconPack
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotifBindPipeline
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
@@ -175,6 +176,10 @@ class NotificationEntryAdapter(
 
     override fun getStyle(): String? {
         return entry.notificationStyle
+    }
+
+    override fun getPromotedContentModel(): PromotedNotificationContentModels? {
+        return entry.promotedNotificationContentModels
     }
 
     override fun getSectionBucket(): Int {
