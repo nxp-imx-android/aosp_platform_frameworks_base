@@ -347,6 +347,33 @@ public final class AidlConversionUnitTests {
     }
 
     @Test
+    public void testAudioFormatConversionApiIamfBaseAac() {
+        final AudioFormatDescription aidl = new AudioFormatDescription();
+        aidl.type = AudioFormatType.NON_PCM;
+        aidl.encoding = MediaFormat.MIMETYPE_AUDIO_IAMF + ".base.aac";
+        final int api = AidlConversion.aidl2api_AudioFormat_AudioFormatEncoding(aidl);
+        assertEquals(AudioFormat.ENCODING_IAMF_BASE_PROFILE_AAC, api);
+    }
+
+    @Test
+    public void testAudioFormatConversionApiIamfBaseEnhancedAac() {
+        final AudioFormatDescription aidl = new AudioFormatDescription();
+        aidl.type = AudioFormatType.NON_PCM;
+        aidl.encoding = MediaFormat.MIMETYPE_AUDIO_IAMF + ".base_enhanced.aac";
+        final int api = AidlConversion.aidl2api_AudioFormat_AudioFormatEncoding(aidl);
+        assertEquals(AudioFormat.ENCODING_IAMF_BASE_ENHANCED_PROFILE_AAC, api);
+    }
+
+    @Test
+    public void testAudioFormatConversionApiIamfSimpleAac() {
+        final AudioFormatDescription aidl = new AudioFormatDescription();
+        aidl.type = AudioFormatType.NON_PCM;
+        aidl.encoding = MediaFormat.MIMETYPE_AUDIO_IAMF + ".simple.aac";
+        final int api = AidlConversion.aidl2api_AudioFormat_AudioFormatEncoding(aidl);
+        assertEquals(AudioFormat.ENCODING_IAMF_SIMPLE_PROFILE_AAC, api);
+    }
+
+    @Test
     public void testAudioChannelConversionLegacyDefault() {
         final int legacy = 0; /*AUDIO_CHANNEL_NONE*/
         final AudioChannelLayout aidl =
