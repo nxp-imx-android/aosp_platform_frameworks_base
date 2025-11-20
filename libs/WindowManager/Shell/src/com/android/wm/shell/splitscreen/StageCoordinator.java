@@ -1203,6 +1203,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             //  specific cases in the future. Only focusing on parity with starting intent/task
             activateSplit(wct, false /* reparentToTop */, SPLIT_INDEX_UNDEFINED);
         }
+        mSplitState.setAnimatingToState(snapPosition);
         mSplitLayout.setDivideRatio(snapPosition);
         updateWindowBounds(mSplitLayout, wct);
         wct.reorder(mSplitRootTaskInfo.token, true);
@@ -1287,6 +1288,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }
 
         setSideStagePosition(splitPosition, wct);
+        mSplitState.setAnimatingToState(snapPosition);
         mSplitLayout.setDivideRatio(snapPosition);
         updateWindowBounds(mSplitLayout, wct);
 
@@ -4038,6 +4040,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 if (isSwapToFocusTargetSide) {
                     mSplitLayout.flingDividerToOtherSide(enteringPosition);
                 } else {
+                    mSplitState.setAnimatingToState(SNAP_TO_2_50_50);
                     mSplitLayout.flingDividerToCenter(() -> {
                         notifySplitAnimationStatus(false /* animationRunning */);
                     });
