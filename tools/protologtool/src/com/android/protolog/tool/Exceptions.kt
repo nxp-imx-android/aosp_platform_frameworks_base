@@ -20,7 +20,7 @@ import java.lang.Exception
 
 open class CodeProcessingException(
     message: String,
-    context: ParsingContext,
+    val context: ParsingContext,
     cause: Throwable? = null,
 ) :
     Exception(

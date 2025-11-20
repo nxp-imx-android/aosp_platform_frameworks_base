@@ -63,11 +63,15 @@ java_genrule {
         ":protolog-impl",
         ":wmtests-sources",
     ],
-    tools: ["protologtool"],
+    tools: [
+        "protologtool",
+        "soong_javac_wrapper",
+    ],
     cmd: "$(location protologtool) transform-protolog-calls " +
         "--protolog-class com.android.internal.protolog.ProtoLog " +
         "--loggroups-class com.android.internal.protolog.WmProtoLogGroups " +
         "--loggroups-jar $(location :protolog-groups) " +
+        "--javac-wrapper-path $(location soong_javac_wrapper) " +
         // Used for the ProtoLogIntegrationTest, where don't test decoding or writing to file
         // so the parameters below are irrelevant.
         "--viewer-config-file-path /some/unused/file/path.pb " +

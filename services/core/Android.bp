@@ -58,11 +58,15 @@ java_genrule {
         ":protolog-groups",
         ":services.core-sources-am-wm",
     ],
-    tools: ["protologtool"],
+    tools: [
+        "protologtool",
+        "soong_javac_wrapper",
+    ],
     cmd: "$(location protologtool) transform-protolog-calls " +
         "--protolog-class com.android.internal.protolog.ProtoLog " +
         "--loggroups-class com.android.internal.protolog.WmProtoLogGroups " +
         "--loggroups-jar $(location :protolog-groups) " +
+        "--javac-wrapper-path $(location soong_javac_wrapper) " +
         "--viewer-config-file-path /etc/core.protolog.pb " +
         "--output-srcjar $(out) " +
         "$(locations :services.core-sources-am-wm)",
@@ -75,11 +79,15 @@ java_genrule {
         ":protolog-groups",
         ":services.core-sources-am-wm",
     ],
-    tools: ["protologtool"],
+    tools: [
+        "protologtool",
+        "soong_javac_wrapper",
+    ],
     cmd: "$(location protologtool) generate-viewer-config " +
         "--protolog-class com.android.internal.protolog.ProtoLog " +
         "--loggroups-class com.android.internal.protolog.WmProtoLogGroups " +
         "--loggroups-jar $(location :protolog-groups) " +
+        "--javac-wrapper-path $(location soong_javac_wrapper) " +
         "--viewer-config $(out) " +
         "$(locations :services.core-sources-am-wm)",
     out: ["core.protolog.pb"],

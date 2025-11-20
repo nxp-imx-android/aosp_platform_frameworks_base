@@ -31,6 +31,7 @@ class CommandOptions(args: Array<String>) {
         private const val VIEWER_CONFIG_PARAM = "--viewer-config"
         private const val OUTPUT_SOURCE_JAR_PARAM = "--output-srcjar"
         private const val VIEWER_CONFIG_FILE_PATH_PARAM = "--viewer-config-file-path"
+        private const val JAVAC_PATH_PARAM = "--javac-wrapper-path"
         private val parameters =
             setOf(
                 PROTOLOG_CLASS_PARAM,
@@ -39,6 +40,7 @@ class CommandOptions(args: Array<String>) {
                 VIEWER_CONFIG_PARAM,
                 OUTPUT_SOURCE_JAR_PARAM,
                 VIEWER_CONFIG_FILE_PATH_PARAM,
+                JAVAC_PATH_PARAM,
             )
 
         val USAGE =
@@ -48,12 +50,12 @@ class CommandOptions(args: Array<String>) {
 
             $TRANSFORM_CALLS_CMD $PROTOLOG_CLASS_PARAM <class name>
                 $PROTOLOGGROUP_CLASS_PARAM <class name> $PROTOLOGGROUP_JAR_PARAM <config.jar>
-                $OUTPUT_SOURCE_JAR_PARAM <output.srcjar> [<input.java>]
+                $JAVAC_PATH_PARAM <path> $OUTPUT_SOURCE_JAR_PARAM <output.srcjar> [<input.java>]
             - processes java files replacing stub calls with logging code.
 
             $GENERATE_CONFIG_CMD $PROTOLOG_CLASS_PARAM <class name>
                 $PROTOLOGGROUP_CLASS_PARAM <class name> $PROTOLOGGROUP_JAR_PARAM <config.jar>
-                $VIEWER_CONFIG_PARAM <viewer.pb> [<input.java>]
+                $JAVAC_PATH_PARAM <path> $VIEWER_CONFIG_PARAM <viewer.pb> [<input.java>]
             - creates viewer config file from given java files.
         """
                 .trimIndent()
@@ -169,6 +171,7 @@ class CommandOptions(args: Array<String>) {
     val outputSourceJarArg: String
     val logProtofileArg: String
     val viewerConfigFilePathArg: String
+    val javacWrapperPathArg: String?
     val javaSourceArgs: List<String>
     val command: String
 
@@ -217,6 +220,7 @@ class CommandOptions(args: Array<String>) {
                 outputSourceJarArg = validateSrcJarName(getParam(OUTPUT_SOURCE_JAR_PARAM, params))
                 viewerConfigFilePathArg =
                     validateViewerConfigFilePath(getParam(VIEWER_CONFIG_FILE_PATH_PARAM, params))
+                javacWrapperPathArg = getOptionalParam(JAVAC_PATH_PARAM, params)
                 javaSourceArgs = validateJavaInputList(inputFiles)
                 logProtofileArg = ""
             }
@@ -230,6 +234,7 @@ class CommandOptions(args: Array<String>) {
                 outputSourceJarArg = validateNotSpecified(OUTPUT_SOURCE_JAR_PARAM, params)
                 viewerConfigFilePathArg =
                     validateNotSpecified(VIEWER_CONFIG_FILE_PATH_PARAM, params)
+                javacWrapperPathArg = getOptionalParam(JAVAC_PATH_PARAM, params)
                 javaSourceArgs = validateJavaInputList(inputFiles)
                 logProtofileArg = ""
             }
