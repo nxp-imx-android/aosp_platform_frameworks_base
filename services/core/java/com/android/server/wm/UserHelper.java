@@ -25,6 +25,7 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_USER_VI
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 
+import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
@@ -50,12 +51,30 @@ final class UserHelper {
             ? UserHelper.class.getSimpleName()
             : TAG_ATM;
 
+    private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED = 1;
+    private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM = -1;
+    private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NO_ALLOWLIST = -2;
+    private static final int ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY = -3;
+
+    @IntDef(prefix = { "ACTIVITY_LAUNCH_INTEGRATION_STATUS_" }, value = {
+            ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED,
+            ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM,
+            ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NO_ALLOWLIST,
+            ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY,
+    })
+    private @interface ActivityLaunchIntegrationStatus {}
+
     private final boolean mIsHeadlessSystemUserMode;
     private final UserManagerInternal mUmi;
+    private final @ActivityLaunchIntegrationStatus int mActivityLaunchIntegrationStatus;
 
     UserHelper(UserManagerInternal umi) {
         mIsHeadlessSystemUserMode = umi.isHeadlessSystemUserMode();
         mUmi = umi;
+        //TODO(b/455582152): integrate with allowlist mode to support other 2 statuses
+        mActivityLaunchIntegrationStatus = mIsHeadlessSystemUserMode
+                ? ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED
+                : ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM;
     }
 
     /**
@@ -64,6 +83,13 @@ final class UserHelper {
      * @return {@code START_SUCCESS} is valid, or specific error code if it isn't.
      */
     public int checkRequest(Request request, int displayId) {
+        if (mActivityLaunchIntegrationStatus != ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED) {
+            if (DEBUG_USER_VISIBILITY) {
+                Slogf.d(TAG, "checkRequest(%s): skipping because status is %s", request,
+                        activityLaunchIntegrationStatusToString(mActivityLaunchIntegrationStatus));
+            }
+            return START_SUCCESS;
+        }
         ActivityInfo aInfo = request.activityInfo;
         if (aInfo == null) {
             // The caller should have checked before, but it doesn't hurt to double check...
@@ -81,6 +107,7 @@ final class UserHelper {
             return START_SUCCESS;
         }
 
+        // TODO(b/412177078): remove this use case once it's checking if the current user is HSU
         int userId = getUserId(aInfo);
         boolean showForAllUsers = (aInfo.flags & ActivityInfo.FLAG_SHOW_FOR_ALL_USERS) != 0;
         if (showForAllUsers) {
@@ -88,11 +115,13 @@ final class UserHelper {
                 Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
                         + "its marked as 'showForAllUsers' (currentUserId=%d)",
                         intent.getComponent().flattenToShortString(), userId,
-                        ActivityManager.getCurrentUser());
+                        getCurrentUserId());
             }
             return START_SUCCESS;
         }
 
+        // TODO(b/456300837): check if the current user is the HSU instead (and remove displayId
+        // from the method signature) and update comment
         // The goal of the allowlist is to avoid activities being shown when they shouldn't (for
         // example, in a login screen that's displayed when user 0 is the current user), but
         // there might be cases where the activity is being launched on a different user, which is
@@ -109,7 +138,7 @@ final class UserHelper {
                 Slogf.d(TAG, "Not checking if activity %s is allowlisted for user %d because "
                         + "it's visible on display %d (currentUserId=%d)",
                         intent.getComponent().flattenToShortString(), userId, displayId,
-                        ActivityManager.getCurrentUser());
+                        getCurrentUserId());
             }
             return START_SUCCESS;
         }
@@ -129,10 +158,15 @@ final class UserHelper {
 
         if (DEBUG_USER_VISIBILITY) {
             Slogf.d(TAG, "Activity %s is allowlisted for user %d (currentUser=%d)",
-                    compName.flattenToShortString(), userId, ActivityManager.getCurrentUser());
+                    compName.flattenToShortString(), userId, getCurrentUserId());
         }
 
         return START_SUCCESS;
+    }
+
+    // TODO(b/456300837): use callback to set it locally (when user switches) and inline it instead
+    private @UserIdInt int getCurrentUserId() {
+        return ActivityManager.getCurrentUser();
     }
 
     /**
@@ -178,5 +212,20 @@ final class UserHelper {
         String prefix2 = prefix + "  ";
         pw.printf("%sTAG=%s\n", prefix2, TAG);
         pw.printf("%smIsHeadlessSystemUserMode=%b\n", prefix2, mIsHeadlessSystemUserMode);
+        pw.printf("%smActivityLaunchIntegrationStatus=%d (%s)\n", prefix2,
+                mActivityLaunchIntegrationStatus,
+                activityLaunchIntegrationStatusToString(mActivityLaunchIntegrationStatus));
+    }
+
+    private static String activityLaunchIntegrationStatusToString(@ActivityLaunchIntegrationStatus
+            int status) {
+        // Cannot use DebugUtils.constantToString because status constants are private
+        return switch (status) {
+            case ACTIVITY_LAUNCH_INTEGRATION_STATUS_ENABLED -> "ENABLED";
+            case ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NOT_HSUM -> "DISABLED_NOT_HSUM";
+            case ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_NO_ALLOWLIST-> "DISABLED_NO_ALLOWLIST";
+            case ACTIVITY_LAUNCH_INTEGRATION_STATUS_DISABLED_LOG_ONLY-> "DISABLED_LOG_ONLY";
+            default -> "UNKNOWN_" + status;
+        };
     }
 }
