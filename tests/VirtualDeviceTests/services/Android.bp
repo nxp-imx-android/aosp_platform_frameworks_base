@@ -21,6 +21,7 @@ android_test {
 
     static_libs: [
         "CtsVirtualDeviceCommonLib",
+        "StatsdTestUtils",
         "androidx.test.runner",
         "flag-junit",
         "junit",
@@ -29,7 +30,9 @@ android_test {
         "services.companion",
         "services.core",
         "servicestests-utils-mockito-extended",
+        "statsdprotolite",
         "truth",
+        "truth-liteproto-extension",
     ],
 
     libs: [
