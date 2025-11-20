@@ -79,6 +79,7 @@ import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_MAX_ADJ;
+import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_TRANSMITTED;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_TRANSMITTED_LEGACY;
@@ -141,6 +142,7 @@ import com.android.server.am.ProcessStateController.ProcessLruUpdater;
 import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.tests.assertutils.FlagAssert;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 import com.android.server.wm.ActivityTaskManagerService;
@@ -4537,6 +4539,40 @@ public class MockingOomAdjusterTests {
         // Move app from pending freeze to frozen
         app.mOptRecord.setPendingFreeze(false);
         app.mOptRecord.setFrozen(true);
+
+        // trigger again
+        updateOomAdj(app);
+
+        assertFreezeState(app, true);
+        assertThatProcess(app).notHasCpuTimeCapability();
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    public void testUpdateOomAdj_addToAllowList() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, false);
+
+        // trigger an update that will freeze app.
+        updateOomAdj(app);
+
+        assertFreezeState(app, true);
+        assertThatProcess(app).notHasCpuTimeCapability();
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
+
+        // add to the allow list
+        final UidRecordInternal uidRec = app.getUidRecord();
+        uidRec.setCurAllowListed(true);
+
+        // trigger again
+        updateOomAdj(app);
+
+        assertFreezeState(app, false);
+        assertThatProcess(app).hasCpuTimeCapability().withExactReasons(CPU_TIME_REASON_ALLOW_LIST);
+
+        // remove from the allow list
+        uidRec.setCurAllowListed(false);
 
         // trigger again
         updateOomAdj(app);
