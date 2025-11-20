@@ -1886,6 +1886,14 @@ public class TelephonyManager {
             "android.telephony.extra.SIM_COMBINATION_NAMES";
 
     /**
+     * Optional extra for incoming and outgoing calls containing a long which specifies the Epoch
+     * time the call was created.
+     * @hide
+     */
+    public static final String EXTRA_CALL_CREATED_EPOCH_TIME_MILLIS =
+            "android.telephony.extra.CALL_CREATED_EPOCH_TIME_MILLIS";
+
+    /**
      * <p>Broadcast Action: The emergency callback mode is changed.
      * <ul>
      *   <li><em>EXTRA_PHONE_IN_ECM_STATE</em> - A boolean value,true=phone in ECM,
