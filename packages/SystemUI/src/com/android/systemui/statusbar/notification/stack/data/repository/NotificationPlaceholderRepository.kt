@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.stack.data.repository
 
-import com.android.compose.animation.scene.Scale
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
@@ -58,11 +57,4 @@ class NotificationPlaceholderRepository @Inject constructor() {
 
     /** The bounds of the QuickSettings Overlay panel (in window coordinates). */
     var qsPanelShapeInWindow = SynchronouslyObservableState<ShadeScrimShape?>(null)
-
-    /**
-     * The scale required by the
-     * [com.android.systemui.notifications.ui.composable.Notifications.Elements.StackPlaceholder]
-     * STL element.
-     */
-    var drawScale = SynchronouslyObservableState(Scale.Default)
 }

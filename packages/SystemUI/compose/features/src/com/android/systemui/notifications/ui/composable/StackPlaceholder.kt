@@ -19,20 +19,15 @@ package com.android.systemui.notifications.ui.composable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.animation.scene.Scale
-import com.android.systemui.notifications.ui.composable.Notifications.Elements
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 
@@ -57,11 +52,9 @@ internal fun ContentScope.StackPlaceholder(
     Box(
         modifier =
             modifier
-                .element(Elements.StackPlaceholder)
+                .element(Notifications.Elements.StackPlaceholder)
                 .debugBackground(viewModel, DEBUG_STACK_COLOR)
-                .onSizeChanged { size ->
-                    debugLog(viewModel) { "$tag.STACK onSizeChanged: size=$size" }
-                }
+                .onSizeChanged { size -> debugLog(viewModel) { "$tag.STACK onSizeChanged: size=$size" } }
                 .onGloballyPositioned { coordinates: LayoutCoordinates ->
                     // This element is opted out of the shared element system, so there can be
                     // multiple instances of it during a transition. Thus we need to determine which
@@ -78,13 +71,6 @@ internal fun ContentScope.StackPlaceholder(
                         }
                         stackScrollView.setStackTop(positionInWindow.y)
                     }
-                }
-                .graphicsLayer {
-                    // Read the ElementKey properties after composition, when the Element is
-                    // already added to STL's node map.
-                    viewModel.setPlaceholderScale(
-                        Elements.StackPlaceholder.currentScale() ?: Scale.Default
-                    )
                 }
     ) {
         if (viewModel.isVisualDebuggingEnabled) {
