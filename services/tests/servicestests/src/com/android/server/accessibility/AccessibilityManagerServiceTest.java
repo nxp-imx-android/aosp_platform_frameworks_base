@@ -149,6 +149,7 @@ import com.android.server.accessibility.magnification.FullScreenMagnificationCon
 import com.android.server.accessibility.magnification.MagnificationConnectionManager;
 import com.android.server.accessibility.magnification.MagnificationController;
 import com.android.server.accessibility.magnification.MagnificationProcessor;
+import com.android.server.accessibility.utils.TileServiceUtil;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -1062,7 +1063,20 @@ public class AccessibilityManagerServiceTest {
         installedServices.add(info_b);
         installedServices.add(info_c);
         userState.buildInstalledServicesMapLocked(installedServices);
-        userState.updateTileServiceMapForAccessibilityServiceLocked();
+        userState.updateTileServiceMapForAccessibilityServiceLocked(
+                Set.of(
+                        new ComponentName(
+                                info_a.getComponentName().getPackageName(),
+                                info_a.getTileServiceName()),
+                        new ComponentName(
+                                info_b.getComponentName().getPackageName(),
+                                info_b.getTileServiceName()),
+                        new ComponentName(
+                                info_c.getComponentName().getPackageName(),
+                                info_c.getTileServiceName())
+
+                )
+        );
 
         Set<String> shortcutTargets = Set.of(
                 info_a.getComponentName().flattenToString(),
@@ -2867,7 +2881,17 @@ public class AccessibilityManagerServiceTest {
         installedServices.addAll(
                 List.of(alwaysOnServiceInfo, standardServiceInfo));
         userState.buildInstalledServicesMapLocked(installedServices);
-        userState.updateTileServiceMapForAccessibilityServiceLocked();
+        ComponentName alwaysOnA11yServiceTile =
+                new ComponentName(TARGET_ALWAYS_ON_A11Y_SERVICE.getPackageName(),
+                        alwaysOnServiceInfo.getTileServiceName());
+        TileServiceUtil.setupPackageManagerForValidTileService(
+                mMockPackageManagerInternal,
+                userState.mUserId,
+                alwaysOnA11yServiceTile
+        );
+        userState.updateTileServiceMapForAccessibilityServiceLocked(
+                Set.of(alwaysOnA11yServiceTile)
+        );
     }
 
     private void sendBroadcastToAccessibilityManagerService(Intent intent, @UserIdInt int userId) {
@@ -3039,6 +3063,10 @@ public class AccessibilityManagerServiceTest {
         if (hasQsTile) {
             when(accessibilityServiceInfo.getTileServiceName())
                     .thenReturn(componentName.flattenToString() + "_Tile");
+            TileServiceUtil.setupPackageManagerForValidTileService(
+                    mMockPackageManagerInternal, mTestableContext.getUserId(),
+                    new ComponentName(componentName.getPackageName(),
+                            accessibilityServiceInfo.getTileServiceName()));
         }
 
         return accessibilityServiceInfo;
