@@ -32,6 +32,8 @@ sealed class PopupChipId(val value: String) {
     data object ShareScreenPrivacyIndicator : PopupChipId("ShareScreenPrivacyIndicator")
 
     data object AssistantIcon : PopupChipId("AssistantIcon")
+
+    data object ImeIndicator : PopupChipId("ImeIndicator")
 }
 
 /** Model for an optionally clickable icon that is displayed on the chip. */

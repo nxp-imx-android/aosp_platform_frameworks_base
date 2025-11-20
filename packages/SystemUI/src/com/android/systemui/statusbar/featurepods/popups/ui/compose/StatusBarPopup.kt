@@ -107,10 +107,12 @@ fun StatusBarPopup(
                     )
                 }
                 /**
-                 * Some chip ids (e.g. AssistantIcon) have custom [PopupChipModel.Shown.showPopup]
-                 * and don't rely on this Composable.
+                 * Some chip ids (e.g. AssistantIcon, ImeIndicator) have custom
+                 * [PopupChipModel.Shown.showPopup] and don't rely on this Composable.
                  */
                 is PopupChipId.AssistantIcon -> {}
+
+                is PopupChipId.ImeIndicator -> {}
             }
             // Future popup types will be handled here.
         }
