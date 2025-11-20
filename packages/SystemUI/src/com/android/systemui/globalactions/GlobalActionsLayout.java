@@ -19,21 +19,16 @@ package com.android.systemui.globalactions;
 import static com.android.systemui.Flags.blurOnMoreSurfaces;
 
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.graphics.drawable.BackgroundBlurDrawable;
-import com.android.settingslib.Utils;
 import com.android.systemui.HardwareBgDrawable;
 import com.android.systemui.MultiListLayout;
-import com.android.systemui.common.shared.colors.SurfaceEffectColors;
 import com.android.systemui.res.R;
 import com.android.systemui.util.leak.RotationUtils;
 
@@ -63,24 +58,9 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
     private void setBackgrounds() {
         ViewGroup listView = getListView();
 
-        Drawable listBackground;
-        if (blurOnMoreSurfaces()) {
-            BackgroundBlurDrawable blurDrawable =
-                    listView.getViewRootImpl().createBackgroundBlurDrawable();
-            int dialogCornerRadius = getResources().getDimensionPixelSize(
-                    Utils.getThemeAttr(getContext(),
-                            android.R.attr.dialogCornerRadius));
-            blurDrawable.setCornerRadius(dialogCornerRadius);
-            blurDrawable.setBlurRadius(getResources().getDimensionPixelSize(
-                    R.dimen.global_actions_blur_radius));
-            GradientDrawable surfaceEffect = new GradientDrawable();
-            surfaceEffect.setCornerRadius(dialogCornerRadius);
-            listBackground = new LayerDrawable(new Drawable[]{blurDrawable, surfaceEffect});
-        } else {
-            int listBgColor = getResources().getColor(
-                    R.color.global_actions_grid_background, null);
-            listBackground = getBackgroundDrawable(listBgColor);
-        }
+        int listBgColor = getResources().getColor(
+                R.color.global_actions_grid_background, null);
+        Drawable listBackground = getBackgroundDrawable(listBgColor);
 
         if (listBackground != null) {
             listView.setBackground(listBackground);
@@ -100,11 +80,18 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
 
     private void updateIsBlurSupported() {
         if (blurOnMoreSurfaces() && mBackgroundsSet && mIsBlurSupported != null) {
-            LayerDrawable layerDrawable = (LayerDrawable) getListView().getBackground();
-            layerDrawable.getDrawable(0).setVisible(mIsBlurSupported, false);
-            ((GradientDrawable) layerDrawable.getDrawable(1)).setColor(
-                    mContext.getColor(mIsBlurSupported ? R.color.global_actions_grid_background_blur
+            updateBackground(mContext.getColor(
+                    mIsBlurSupported ? R.color.global_actions_grid_background_blur
                             : R.color.global_actions_grid_background_blur_fallback));
+        }
+    }
+
+    private void updateBackground(int color) {
+        Drawable drawable = getListView().getBackground();
+        if (drawable instanceof GradientDrawable gradientDrawable) {
+            gradientDrawable.setColor(color);
+        } else {
+            drawable.setTint(color);
         }
     }
 
