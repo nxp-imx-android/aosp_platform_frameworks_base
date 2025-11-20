@@ -1,0 +1,13 @@
+package: "android.bluetooth.platform.flags"
+container: "system"
+
+# This file contains aconfig flags used from platform code
+# Flags used for module APIs must be in aconfig files under each modules
+
+flag {
+    name: "grant_permission_via_module_protection_level"
+    namespace: "bluetooth"
+    description: "Grant permission to Bluetooth using the module protection level instead of relying on a runtime race condition to provide the Bluetooth ROLE by the permission module"
+    bug: "395709071"
+}
+

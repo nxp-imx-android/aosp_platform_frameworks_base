@@ -41,6 +41,7 @@ aconfig_declarations_group {
         "android.app.usage.flags-aconfig-java",
         "android.app.wearable.flags-aconfig-java",
         "android.appwidget.flags-aconfig-java",
+        "android.bluetooth.platform.flags-aconfig-java",
         "android.chre.flags-aconfig-java",
         "android.companion.flags-aconfig-java",
         "android.companion.virtual.flags-aconfig-java",
@@ -2029,6 +2030,24 @@ java_aconfig_library {
 java_aconfig_library {
     name: "backup_flags_lib",
     aconfig_declarations: "backup_flags",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// Bluetooth
+aconfig_declarations {
+    name: "android.bluetooth.platform.flags-aconfig",
+    package: "android.bluetooth.platform.flags",
+    container: "system",
+    srcs: ["bluetooth/bluetooth.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.bluetooth.platform.flags-aconfig-java",
+    aconfig_declarations: "android.bluetooth.platform.flags-aconfig",
+    min_sdk_version: "33",
+    apex_available: [
+        "//apex_available:platform",
+    ],
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
