@@ -59,6 +59,7 @@ import android.hardware.power.SupportInfo;
 import android.hardware.power.WorkDuration;
 import android.os.Binder;
 import android.os.CpuHeadroomParamsInternal;
+import android.os.DeadObjectException;
 import android.os.Flags;
 import android.os.GpuHeadroomParamsInternal;
 import android.os.Handler;
@@ -1024,6 +1025,8 @@ public final class HintManagerService extends SystemService {
             if (mConfig != null) {
                 try {
                     mPowerHal.closeSessionChannel(mTgid, mUid);
+                } catch (DeadObjectException e) {
+                    // If the remote end is dead, then we can assume the channel is closed.
                 } catch (RemoteException e) {
                     throw new IllegalStateException("Failed to close session channel!", e);
                 }
