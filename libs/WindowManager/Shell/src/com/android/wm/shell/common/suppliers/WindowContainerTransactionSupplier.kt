@@ -32,7 +32,7 @@ import javax.inject.Inject
  * [WindowContainerTransaction]s.
  */
 @WMSingleton
-class WindowContainerTransactionSupplier @Inject constructor(
-) : Supplier<WindowContainerTransaction> {
+class WindowContainerTransactionSupplier @Inject constructor() :
+    Supplier<WindowContainerTransaction> {
     override fun get(): WindowContainerTransaction = WindowContainerTransaction()
 }

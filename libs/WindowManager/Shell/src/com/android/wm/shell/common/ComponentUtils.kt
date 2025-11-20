@@ -23,17 +23,17 @@ import com.android.wm.shell.ShellTaskOrganizer
 
 /** Utils to obtain [ComponentName]s. */
 object ComponentUtils {
-    /** Retrieves the package name from an [Intent].  */
+    /** Retrieves the package name from an [Intent]. */
     @JvmStatic
     fun getPackageName(intent: Intent?): String? =
         intent?.component?.packageName ?: intent?.`package`
 
-    /** Retrieves the package name from a [PendingIntent].  */
+    /** Retrieves the package name from a [PendingIntent]. */
     @JvmStatic
     fun getPackageName(pendingIntent: PendingIntent?): String? =
         getPackageName(pendingIntent?.intent)
 
-    /** Retrieves the package name from a [taskId].  */
+    /** Retrieves the package name from a [taskId]. */
     @JvmStatic
     fun getPackageName(taskId: Int, taskOrganizer: ShellTaskOrganizer): String? {
         return getPackageName(taskOrganizer.getRunningTaskInfo(taskId))

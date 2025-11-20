@@ -41,19 +41,16 @@ class QuitFocusedAppKeyGestureHandler(
     val desktopModeKeyGestureHandler: Optional<DesktopModeKeyGestureHandler>,
     val activityTaskManagerService: IActivityTaskManager,
     val focusTransitionObserver: FocusTransitionObserver,
-    @ShellMainThread val executor: ShellExecutor
+    @ShellMainThread val executor: ShellExecutor,
 ) : InputManager.KeyGestureEventHandler {
     init {
         inputManager.registerKeyGestureEventHandler(
             listOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
-            this
+            this,
         )
     }
 
-    override fun handleKeyGestureEvent(
-        event: KeyGestureEvent,
-        focusedToken: IBinder?
-    ) {
+    override fun handleKeyGestureEvent(event: KeyGestureEvent, focusedToken: IBinder?) {
         if (event.keyGestureType != KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK) {
             logW("Unsupported key gesture received $event")
             return

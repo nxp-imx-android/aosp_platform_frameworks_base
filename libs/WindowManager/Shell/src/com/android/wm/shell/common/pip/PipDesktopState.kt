@@ -40,10 +40,9 @@ class PipDesktopState(
     recentsTransitionHandler: RecentsTransitionHandler,
     private val desktopUserRepositoriesOptional: Optional<DesktopUserRepositories>,
     private val dragToDesktopTransitionHandlerOptional: Optional<DragToDesktopTransitionHandler>,
-    val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
+    val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
 ) {
-    @RecentsTransitionState
-    private var recentsTransitionState = TRANSITION_STATE_NOT_RUNNING
+    @RecentsTransitionState private var recentsTransitionState = TRANSITION_STATE_NOT_RUNNING
 
     init {
         recentsTransitionHandler.addTransitionStateListener(
@@ -67,8 +66,8 @@ class PipDesktopState(
      */
     fun isDesktopWindowingPipEnabled(): Boolean =
         DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
-                desktopUserRepositoriesOptional.isPresent &&
-                dragToDesktopTransitionHandlerOptional.isPresent
+            desktopUserRepositoriesOptional.isPresent &&
+            dragToDesktopTransitionHandlerOptional.isPresent
 
     /**
      * Returns whether PiP in Connected Displays is enabled by checking the following:
@@ -78,8 +77,8 @@ class PipDesktopState(
      */
     fun isConnectedDisplaysPipEnabled(): Boolean =
         isDesktopWindowingPipEnabled() &&
-                DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue &&
-                PipFlags.isPip2ExperimentEnabled
+            DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue &&
+            PipFlags.isPip2ExperimentEnabled
 
     /**
      * Returns whether dragging PiP in Connected Displays is enabled by checking the following:
@@ -89,13 +88,12 @@ class PipDesktopState(
      */
     fun isDraggingPipAcrossDisplaysEnabled(): Boolean =
         DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue &&
-                isConnectedDisplaysPipEnabled()
+            isConnectedDisplaysPipEnabled()
 
     /** Returns whether the display with the PiP task is in freeform windowing mode. */
     private fun isDisplayInFreeform(): Boolean {
-        val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(
-            pipDisplayLayoutState.displayId
-        )
+        val tdaInfo =
+            rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(pipDisplayLayoutState.displayId)
 
         return tdaInfo?.configuration?.windowConfiguration?.windowingMode == WINDOWING_MODE_FREEFORM
     }
@@ -113,7 +111,7 @@ class PipDesktopState(
             rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId),
         )
         return desktopUserRepositoriesOptional.get().current.isAnyDeskActive(displayId) ||
-                rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
+            rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
     }
 
     /** Returns whether the display with the given id is a Desktop-first display. */
@@ -133,10 +131,12 @@ class PipDesktopState(
         logD(
             "isFreeFloatingPipEnabled flag=%b isPipInDesktopMode=%b isDisplayDesktopFirst=%b",
             Flags.enableDesktopWindowingFreeFloatingPip(),
-            isPipInDesktopMode, rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId),
+            isPipInDesktopMode,
+            rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId),
         )
         return Flags.enableDesktopWindowingFreeFloatingPip() &&
-                isPipInDesktopMode && rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
+            isPipInDesktopMode &&
+            rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
     }
 
     /** Returns whether Recents is in the middle of animating. */
@@ -150,7 +150,7 @@ class PipDesktopState(
         // in the middle of Recents animation from Desktop session.
         if (isRecentsAnimating() && isInDesktop) {
             logD(
-                "getOutPipWindowingMode forcing WINDOWING_MODE_FULLSCREEN due to Recents animating",
+                "getOutPipWindowingMode forcing WINDOWING_MODE_FULLSCREEN due to Recents animating"
             )
             return WINDOWING_MODE_FULLSCREEN
         }
@@ -170,11 +170,14 @@ class PipDesktopState(
         // 2) Otherwise, set windowing mode to FREEFORM.
         logD(
             "getOutPipWindowingMode isInDesktop=%b isDisplayInFreeform=%b",
-            isInDesktop, isDisplayInFreeform(),
+            isInDesktop,
+            isDisplayInFreeform(),
         )
         if (isInDesktop) {
-            return if (isDisplayInFreeform()
-                || DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            return if (
+                isDisplayInFreeform() ||
+                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+            ) {
                 WINDOWING_MODE_UNDEFINED
             } else {
                 WINDOWING_MODE_FREEFORM
