@@ -160,6 +160,7 @@ public class TimeZoneDetectorStrategyImplTest {
     private FakeEnvironment mFakeEnvironment;
     private FakeTimeZoneChangeEventListener mFakeTimeZoneChangeEventTracker;
     private FakeFusedTimeZoneDetector mFakeFusedTimeZoneDetector;
+    private FakeTimeZoneOffsetChangeEventListener mFakeTimeZoneOffsetChangeEventListener;
 
     private TimeZoneDetectorStrategyImpl mTimeZoneDetectorStrategy;
 
@@ -171,13 +172,15 @@ public class TimeZoneDetectorStrategyImplTest {
                 CONFIG_AUTO_DISABLED_GEO_DISABLED);
         mFakeTimeZoneChangeEventTracker = new FakeTimeZoneChangeEventListener();
         mFakeFusedTimeZoneDetector = new FakeFusedTimeZoneDetector();
+        mFakeTimeZoneOffsetChangeEventListener = new FakeTimeZoneOffsetChangeEventListener();
 
         mTimeZoneDetectorStrategy =
                 new TimeZoneDetectorStrategyImpl(
                         mFakeServiceConfigAccessorSpy,
                         mFakeEnvironment,
                         mFakeTimeZoneChangeEventTracker,
-                        mFakeFusedTimeZoneDetector);
+                        mFakeFusedTimeZoneDetector,
+                        mFakeTimeZoneOffsetChangeEventListener);
     }
 
     @Test

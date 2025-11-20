@@ -69,6 +69,8 @@ public final class ConfigurationInternal {
     private final boolean mNotificationsEnabledSetting;
     private final boolean mNotificationTrackingSupported;
     private final boolean mManualChangeTrackingSupported;
+    private final boolean mTimeZoneOffsetChangeNotificationsSupported;
+    private final boolean mTimeZoneOffsetChangeNotificationsEnabledSetting;
 
     private ConfigurationInternal(Builder builder) {
         mTelephonyDetectionSupported = builder.mTelephonyDetectionSupported;
@@ -84,6 +86,10 @@ public final class ConfigurationInternal {
         mGeoDetectionEnabledSetting = builder.mGeoDetectionEnabledSetting;
         mNotificationsSupported = builder.mNotificationsSupported;
         mNotificationsEnabledSetting = builder.mNotificationsEnabledSetting;
+        mTimeZoneOffsetChangeNotificationsSupported =
+                builder.mTimeZoneOffsetChangeNotificationsSupported;
+        mTimeZoneOffsetChangeNotificationsEnabledSetting =
+                builder.mTimeZoneOffsetChangeNotificationsEnabledSetting;
         mNotificationTrackingSupported = builder.mNotificationsTrackingSupported;
         mManualChangeTrackingSupported = builder.mManualChangeTrackingSupported;
     }
@@ -116,6 +122,11 @@ public final class ConfigurationInternal {
      */
     public boolean areNotificationsSupported() {
         return mNotificationsSupported;
+    }
+
+    /** Returns true if the device supports time zone offset change (e.g. DST) notifications. */
+    public boolean areTimeZoneOffsetChangeNotificationsSupported() {
+        return mTimeZoneOffsetChangeNotificationsSupported;
     }
 
     /**
@@ -257,8 +268,20 @@ public final class ConfigurationInternal {
         return areNotificationsSupported() && getNotificationsEnabledSetting();
     }
 
+    /**
+     * Returns true if time zone offset change (e.g. DST) notifications can be shown on this device.
+     */
+    public boolean getTimeZoneOffsetChangeNotificationsEnabledBehavior() {
+        return areTimeZoneOffsetChangeNotificationsSupported()
+                && getTimeZoneOffsetChangeNotificationsEnabledSetting();
+    }
+
     private boolean getNotificationsEnabledSetting() {
         return mNotificationsEnabledSetting;
+    }
+
+    private boolean getTimeZoneOffsetChangeNotificationsEnabledSetting() {
+        return mTimeZoneOffsetChangeNotificationsEnabledSetting;
     }
 
     @NonNull
@@ -329,6 +352,15 @@ public final class ConfigurationInternal {
         }
         builder.setConfigureNotificationsEnabledCapability(configureNotificationsEnabledCapability);
 
+        final @CapabilityState int configureTimeZoneOffsetChangeNotificationsEnabledCapability;
+        if (areTimeZoneOffsetChangeNotificationsSupported()) {
+            configureTimeZoneOffsetChangeNotificationsEnabledCapability = CAPABILITY_POSSESSED;
+        } else {
+            configureTimeZoneOffsetChangeNotificationsEnabledCapability = CAPABILITY_NOT_SUPPORTED;
+        }
+        builder.setConfigureTimeZoneOffsetChangeNotificationsEnabledCapability(
+                configureTimeZoneOffsetChangeNotificationsEnabledCapability);
+
         return builder.build();
     }
 
@@ -338,6 +370,8 @@ public final class ConfigurationInternal {
                 .setAutoDetectionEnabled(getAutoDetectionEnabledSetting())
                 .setGeoDetectionEnabled(getGeoDetectionEnabledSetting())
                 .setNotificationsEnabled(getNotificationsEnabledSetting())
+                .setTimeZoneOffsetChangeNotificationsEnabled(
+                        getTimeZoneOffsetChangeNotificationsEnabledSetting())
                 .build();
     }
 
@@ -356,6 +390,10 @@ public final class ConfigurationInternal {
         }
         if (newConfiguration.hasIsNotificationsEnabled()) {
             builder.setNotificationsEnabledSetting(newConfiguration.areNotificationsEnabled());
+        }
+        if (newConfiguration.hasIsTimeZoneOffsetChangeNotificationsEnabled()) {
+            builder.setTimeZoneOffsetChangeNotificationsEnabledSetting(
+                    newConfiguration.areTimeZoneOffsetChangeNotificationsEnabled());
         }
         return builder.build();
     }
@@ -382,17 +420,32 @@ public final class ConfigurationInternal {
                 && mNotificationsSupported == that.mNotificationsSupported
                 && mNotificationsEnabledSetting == that.mNotificationsEnabledSetting
                 && mNotificationTrackingSupported == that.mNotificationTrackingSupported
-                && mManualChangeTrackingSupported == that.mManualChangeTrackingSupported;
+                && mManualChangeTrackingSupported == that.mManualChangeTrackingSupported
+                && mTimeZoneOffsetChangeNotificationsSupported
+                        == that.mTimeZoneOffsetChangeNotificationsSupported
+                && mTimeZoneOffsetChangeNotificationsEnabledSetting
+                        == that.mTimeZoneOffsetChangeNotificationsEnabledSetting;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mUserId, mUserConfigAllowed, mTelephonyDetectionSupported,
-                mGeoDetectionSupported, mTelephonyFallbackSupported,
-                mGeoDetectionRunInBackgroundEnabled, mEnhancedMetricsCollectionEnabled,
-                mAutoDetectionEnabledSetting, mLocationEnabledSetting, mGeoDetectionEnabledSetting,
-                mNotificationsSupported, mNotificationsEnabledSetting,
-                mNotificationTrackingSupported, mManualChangeTrackingSupported);
+        return Objects.hash(
+                mUserId,
+                mUserConfigAllowed,
+                mTelephonyDetectionSupported,
+                mGeoDetectionSupported,
+                mTelephonyFallbackSupported,
+                mGeoDetectionRunInBackgroundEnabled,
+                mEnhancedMetricsCollectionEnabled,
+                mAutoDetectionEnabledSetting,
+                mLocationEnabledSetting,
+                mGeoDetectionEnabledSetting,
+                mNotificationsSupported,
+                mNotificationsEnabledSetting,
+                mNotificationTrackingSupported,
+                mManualChangeTrackingSupported,
+                mTimeZoneOffsetChangeNotificationsSupported,
+                mTimeZoneOffsetChangeNotificationsEnabledSetting);
     }
 
     @Override
@@ -412,6 +465,10 @@ public final class ConfigurationInternal {
                 + ", mNotificationsEnabledSetting=" + mNotificationsEnabledSetting
                 + ", mNotificationTrackingSupported=" + mNotificationTrackingSupported
                 + ", mManualChangeTrackingSupported=" + mManualChangeTrackingSupported
+                + ", mTimeZoneOffsetChangeNotificationsSupported="
+                + mTimeZoneOffsetChangeNotificationsSupported
+                + ", mTimeZoneOffsetChangeNotificationsEnabledSetting="
+                + mTimeZoneOffsetChangeNotificationsEnabledSetting
                 + '}';
     }
 
@@ -434,6 +491,8 @@ public final class ConfigurationInternal {
         private boolean mNotificationsEnabledSetting;
         private boolean mNotificationsTrackingSupported;
         private boolean mManualChangeTrackingSupported;
+        private boolean mTimeZoneOffsetChangeNotificationsSupported;
+        private boolean mTimeZoneOffsetChangeNotificationsEnabledSetting;
 
         /**
          * Creates a new Builder.
@@ -458,6 +517,10 @@ public final class ConfigurationInternal {
             this.mNotificationsEnabledSetting = toCopy.mNotificationsEnabledSetting;
             this.mNotificationsTrackingSupported = toCopy.mNotificationTrackingSupported;
             this.mManualChangeTrackingSupported = toCopy.mManualChangeTrackingSupported;
+            this.mTimeZoneOffsetChangeNotificationsSupported =
+                    toCopy.mTimeZoneOffsetChangeNotificationsSupported;
+            this.mTimeZoneOffsetChangeNotificationsEnabledSetting =
+                    toCopy.mTimeZoneOffsetChangeNotificationsEnabledSetting;
         }
 
         /**
@@ -572,6 +635,18 @@ public final class ConfigurationInternal {
          */
         public Builder setManualChangeTrackingSupported(boolean supported) {
             mManualChangeTrackingSupported = supported;
+            return this;
+        }
+
+        /** Sets the value of the daylight saving time notification setting for this user. */
+        public Builder setTimeZoneOffsetChangeNotificationsEnabledSetting(boolean enabled) {
+            mTimeZoneOffsetChangeNotificationsEnabledSetting = enabled;
+            return this;
+        }
+
+        /** Sets whether daylight saving time notifications are supported on this device. */
+        public Builder setTimeZoneOffsetChangeNotificationsSupported(boolean enabled) {
+            mTimeZoneOffsetChangeNotificationsSupported = enabled;
             return this;
         }
 
