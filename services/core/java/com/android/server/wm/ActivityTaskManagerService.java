@@ -4341,11 +4341,15 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         synchronized (mGlobalLock) {
             final Task task = mRootWindowContainer.anyTaskForId(taskId,
                     MATCH_ATTACHED_TASK_ONLY);
+            boolean handled = false;
             if (task != null) {
                 final ActivityRecord r = task.getTopWaitSplashScreenActivity();
                 if (r != null) {
-                    r.onCopySplashScreenFinish(parcelable);
+                    handled = r.onCopySplashScreenFinish(parcelable);
                 }
+            }
+            if (!handled && parcelable != null) {
+                parcelable.clearIfNeeded();
             }
         }
     }
