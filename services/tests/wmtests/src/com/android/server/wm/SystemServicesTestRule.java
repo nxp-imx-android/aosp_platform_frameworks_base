@@ -44,7 +44,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import android.annotation.Nullable;
-import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityThread;
 import android.app.AppOpsManager;
@@ -72,7 +71,6 @@ import android.os.PowerSaveState;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.DeviceConfig;
-import android.util.IntArray;
 import android.util.Log;
 import android.view.DisplayInfo;
 import android.view.InputChannel;
@@ -368,16 +366,6 @@ public class SystemServicesTestRule implements TestRule {
         };
         when(umi.isUserVisible(anyInt())).thenAnswer(isUserVisibleAnswer);
         when(umi.isUserVisible(anyInt(), anyInt())).thenAnswer(isUserVisibleAnswer);
-
-
-        Answer<IntArray> visibleUsersOnDisplayAnswer = invocation -> {
-            int displayId = invocation.getArgument(0);
-            int currentUserId = ActivityManager.getCurrentUser();
-            IntArray visibleUsers = IntArray.wrap(new int[] { currentUserId });
-            Log.d(TAG, "UMI.getVisibleUsers(" + displayId + "): returning " + visibleUsers);
-            return visibleUsers;
-        };
-        when(umi.getVisibleUsers(anyInt())).thenAnswer(visibleUsersOnDisplayAnswer);
 
         final var gimi = mock(
                 GrammaticalInflectionManagerInternal.class, withSettings().stubOnly());

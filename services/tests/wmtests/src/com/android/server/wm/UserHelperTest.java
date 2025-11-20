@@ -34,7 +34,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.os.UserHandle;
-import android.util.IntArray;
 
 import com.android.server.pm.UserActivitiesAllowlist;
 import com.android.server.pm.UserManagerInternal;
@@ -56,8 +55,6 @@ import java.io.StringWriter;
 public final class UserHelperTest {
 
     private static final @UserIdInt int USER_ID = 007;
-    private static final @UserIdInt int ANOTHER_USER_ID = 42;
-
     private static final ComponentName COMP_NAME =
             ComponentName.createRelative("The.name.is.Bond", "James.Bond");
 
@@ -94,9 +91,6 @@ public final class UserHelperTest {
         // Mock as not allowlisted by default so it's simpler to test corner-case scenarios (like
         // null info)
         mockHsuActivityAllowlisted(false);
-
-        // Similarly, mock as visible by default.
-        mockGetVisibleUsers(DEFAULT_DISPLAY, USER_SYSTEM);
     }
 
     @Test
@@ -144,61 +138,14 @@ public final class UserHelperTest {
     }
 
     @Test
-    public void testCheckRequest_notAllowlistedNotVisible_allowlistedToOneVisibleUsers_success() {
-        mockGetVisibleUsers(DEFAULT_DISPLAY, USER_ID, ANOTHER_USER_ID);
-        mockActivityAllowlisted(USER_SYSTEM, false);
-        mockActivityAllowlisted(USER_ID, true);
-        mockActivityAllowlisted(ANOTHER_USER_ID, false);
+    public void testCheckRequest_notAllowlistedButVisible_success() {
+        mockIsUserVisible(USER_SYSTEM, DEFAULT_DISPLAY, true);
 
         expect.withMessage("checkRequest()")
                 .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
                 .isEqualTo(START_SUCCESS);
 
         verifyUmiNotNotifiedActivityBlockedOnHsu();
-    }
-
-    @Test
-    public void
-            testCheckRequest_notAllowlistedNotVisible_notAllowlistedToAnyVisibleUsers_failure() {
-        mockGetVisibleUsers(DEFAULT_DISPLAY, USER_ID, ANOTHER_USER_ID);
-        mockActivityAllowlisted(USER_SYSTEM, false);
-        mockActivityAllowlisted(USER_ID, false);
-        mockActivityAllowlisted(ANOTHER_USER_ID, false);
-
-        expect.withMessage("checkRequest()")
-                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
-                .isEqualTo(START_NOT_ALLOWED_FOR_USER);
-
-        verifyUmiNotifiedActivityBlockedOnHsu();
-    }
-
-    @Test
-    public void testCheckRequest_notAllowlistedAndVisible_allowlistedToOneVisibleUsers_success() {
-        mockGetVisibleUsers(DEFAULT_DISPLAY, USER_SYSTEM, USER_ID, ANOTHER_USER_ID);
-        mockActivityAllowlisted(USER_SYSTEM, false);
-        mockActivityAllowlisted(USER_ID, true);
-        mockActivityAllowlisted(ANOTHER_USER_ID, false);
-
-        expect.withMessage("checkRequest()")
-                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
-                .isEqualTo(START_SUCCESS);
-
-        verifyUmiNotNotifiedActivityBlockedOnHsu();
-    }
-
-    @Test
-    public void
-            testCheckRequest_notAllowlistedAndVisible_notAllowlistedToAnyVisibleUsers_failure() {
-        mockGetVisibleUsers(DEFAULT_DISPLAY, USER_SYSTEM, USER_ID, ANOTHER_USER_ID);
-        mockActivityAllowlisted(USER_SYSTEM, false);
-        mockActivityAllowlisted(USER_ID, false);
-        mockActivityAllowlisted(ANOTHER_USER_ID, false);
-
-        expect.withMessage("checkRequest()")
-                .that(mUserHelper.checkRequest(mRequest, DEFAULT_DISPLAY))
-                .isEqualTo(START_NOT_ALLOWED_FOR_USER);
-
-        verifyUmiNotifiedActivityBlockedOnHsu();
     }
 
     @Test
@@ -348,8 +295,8 @@ public final class UserHelperTest {
         mockActivityAllowlisted(USER_SYSTEM, value);
     }
 
-    private void mockGetVisibleUsers(int displayId, @UserIdInt int... userIds) {
-        when(mMockUmi.getVisibleUsers(displayId)).thenReturn(IntArray.wrap(userIds));
+    private void mockIsUserVisible(@UserIdInt int userId, int displayId, boolean visible) {
+        when(mMockUmi.isUserVisible(userId, displayId)).thenReturn(visible);
     }
 
     private void verifyUmiNotifiedActivityBlockedOnHsu() {
