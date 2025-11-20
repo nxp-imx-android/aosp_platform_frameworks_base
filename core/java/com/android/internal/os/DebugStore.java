@@ -285,6 +285,20 @@ public class DebugStore {
                         Integer.toHexString(pendingResultId)));
     }
 
+    /**
+     * Records the calling of {@code sendFinished} on a BroadcastReceiver's PendingResult.
+     *
+     * @param pendingResultId The object ID of the PendingResult associated with the broadcast.
+     */
+    @UnsupportedAppUsage
+    public static void recordSendFinished(int pendingResultId) {
+        sDebugStoreNative.recordEvent(
+                "SendFinished",
+                List.of(
+                        "prid",
+                        Integer.toHexString(pendingResultId)));
+    }
+
     /** Records the scheduling of an application bind. */
     @UnsupportedAppUsage
     public static void recordScheduleBindApplication() {
