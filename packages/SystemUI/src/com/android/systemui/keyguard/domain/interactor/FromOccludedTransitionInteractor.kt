@@ -84,6 +84,7 @@ constructor(
     }
 
     private fun listenForOccludedToDreaming() {
+        if (SceneContainerFlag.isEnabled) return
         scope.launch {
             keyguardInteractor.isAbleToDream
                 .filterRelevantKeyguardStateAnd { isAbleToDream -> isAbleToDream }
@@ -92,6 +93,7 @@ constructor(
     }
 
     private fun listenForOccludedToLockscreenOrHub() {
+        if (SceneContainerFlag.isEnabled) return
         if (KeyguardWmStateRefactor.isEnabled) {
             scope.launch {
                 keyguardOcclusionInteractor.isShowWhenLockedActivityOnTop
